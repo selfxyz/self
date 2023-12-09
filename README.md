@@ -22,7 +22,7 @@ As a first application, users who can prove they indeed hold a valid passport ca
 
 - ✅ Basic passport verifier circuit
 - 🚧 Optimization
-- ✅ Selective disclosure
+- 🚧 Selective disclosure
 - ✅ Basic react native frontend
 - ✅ Passport verification pipeline, android
 - 🚧 Passport verification pipeline, iOS
