@@ -38,7 +38,7 @@ import { config } from "@gluestack-ui/config" // Optional if you want to use def
 
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import {getFirstName, formatDuration, formatProof} from './utils/utils';
+import {getFirstName, formatDuration } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -294,13 +294,10 @@ function App(): JSX.Element {
       const deserializedProof = JSON.parse(parsedResponse.serialized_proof);
       console.log('deserializedProof', deserializedProof);
       
-      const proofFormattedForSolidity = formatProof(deserializedProof);
-      console.log('proofFormattedForSolidity', proofFormattedForSolidity);
-
       setProofTime(parsedResponse.duration);
       setTotalTime(end - start);
 
-      setProofResult(JSON.stringify(proofFormattedForSolidity));
+      setProofResult(JSON.stringify(deserializedProof));
 
       // les outputs publics vont être postés on-chain comment ?
     });
