@@ -1,24 +1,14 @@
 import { describe } from 'mocha'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { arraysAreEqual, bytesToBigDecimal, formatAndConcatenateDataHashes, formatMrz, splitToWords } from '../utils/utils'
+import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatAndConcatenateDataHashes, formatMrz, splitToWords } from '../../common/src/utils/utils'
 import { groth16 } from 'snarkjs'
-import { hash, toUnsignedByte } from '../utils/computeEContent'
-import { DataHash, PassportData } from '../utils/types'
-import { genSampleData } from '../utils/sampleData'
+import { DataHash, PassportData } from '../../common/src/utils/types'
+import { getPassportData } from '../../common/src/utils/passportData'
+import { attributeToPosition } from '../../common/src/constants/constants'
 const fs = require('fs');
 
 chai.use(chaiAsPromised)
-
-const attributeToPosition = {
-  issuing_state: [2, 4],
-  name: [5, 43],
-  passport_number: [44, 52],
-  nationality: [54, 56],
-  date_of_birth: [57, 62],
-  gender: [64, 65],
-  expiry_date: [65, 71],
-}
 
 describe('Circuit tests', function () {
   this.timeout(0)
@@ -27,15 +17,7 @@ describe('Circuit tests', function () {
   let inputs: any;
 
   this.beforeAll(async () => {
-    if (fs.existsSync('inputs/passportData.json')) {
-      passportData = require('../inputs/passportData.json');
-    } else {
-      passportData = (await genSampleData()) as PassportData;
-      if (!fs.existsSync("inputs/")) {
-        fs.mkdirSync("inputs/");
-      }
-      fs.writeFileSync('inputs/passportData.json', JSON.stringify(passportData));
-    }
+    const passportData = getPassportData();
 
     const formattedMrz = formatMrz(passportData.mrz);
     const mrzHash = hash(formatMrz(passportData.mrz));
@@ -61,7 +43,7 @@ describe('Circuit tests', function () {
       dataHashes: concatenatedDataHashes.map(toUnsignedByte).map(byte => String(byte)),
       eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
       pubkey: splitToWords(
-        BigInt(passportData.modulus),
+        BigInt(passportData.pubKey.modulus),
         BigInt(64),
         BigInt(32)
       ),
@@ -70,7 +52,7 @@ describe('Circuit tests', function () {
         BigInt(64),
         BigInt(32)
       ),
-      address: "0x9D392187c08fc28A86e1354aD63C70897165b982",
+      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
     }
     
   })
@@ -81,8 +63,8 @@ describe('Circuit tests', function () {
 
       const { proof, publicSignals } = await groth16.fullProve(
         inputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
+        "build/proof_of_passport_js/proof_of_passport.wasm",
+        "build/proof_of_passport_final.zkey"
       )
 
       // console.log('proof done');
@@ -110,8 +92,8 @@ describe('Circuit tests', function () {
 
       return expect(groth16.fullProve(
         invalidInputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
+        "build/proof_of_passport_js/proof_of_passport.wasm",
+        "build/proof_of_passport_final.zkey"
       )).to.be.rejected;
     })
 
@@ -123,8 +105,8 @@ describe('Circuit tests', function () {
 
       return expect(groth16.fullProve(
         invalidInputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
+        "build/proof_of_passport_js/proof_of_passport.wasm",
+        "build/proof_of_passport_final.zkey"
       )).to.be.rejected;
     })
     
@@ -136,324 +118,111 @@ describe('Circuit tests', function () {
 
       return expect(groth16.fullProve(
         invalidInputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
+        "build/proof_of_passport_js/proof_of_passport.wasm",
+        "build/proof_of_passport_final.zkey"
       )).to.be.rejected;
+    })
+
+    it.only("shouldn't allow address maleability", async function () {
+      const { proof, publicSignals } = await groth16.fullProve(
+        inputs,
+        "build/proof_of_passport_js/proof_of_passport.wasm",
+        "build/proof_of_passport_final.zkey"
+      )
+
+      console.log('proof done');
+      console.log('publicSignals', publicSignals);
+
+      publicSignals[publicSignals.length - 1] = BigInt("0xC5B4F2A7Ea7F675Fca6EF724d6E06FFB40dFC93F").toString();
+
+      const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
+      return expect(await groth16.verify(
+        vKey,
+        publicSignals,
+        proof
+      )).to.be.false;
     })
   })
 
   describe('Selective disclosure', function() {
-    it('Disclosing nationality', async function () {
-      const attributeToReveal = {
-        issuing_state: false,
-        name: false,
-        passport_number: false,
-        nationality: true,
-        date_of_birth: false,
-        gender: false,
-        expiry_date: false,
-      }
+    const attributeCombinations = [
+      ['issuing_state', 'name'],
+      ['passport_number', 'nationality', 'date_of_birth'],
+      ['gender', 'expiry_date'],
+    ];
 
-      const bitmap = Array(88).fill('0');
+    attributeCombinations.forEach(combination => {
+      it(`Disclosing ${combination.join(", ")}`, async function () {
+        const attributeToReveal = Object.keys(attributeToPosition).reduce((acc, attribute) => {
+          acc[attribute] = combination.includes(attribute);
+          return acc;
+        }, {});
+  
+        const bitmap = Array(88).fill('0');
 
-      Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-        if (reveal) {
-          const [start, end] = attributeToPosition[attribute];
-          bitmap.fill('1', start, end + 1);
-        }
-      });
-
-      inputs = {
-        ...inputs,
-        reveal_bitmap: bitmap.map(String),
-      }
-
-      const { proof, publicSignals } = await groth16.fullProve(
-        inputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
-      )
-
-      console.log('proof done');
-      // console.log('proof:', proof);
-      // console.log('publicSignals', publicSignals)
-
-      const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
-      const verified = await groth16.verify(
-        vKey,
-        publicSignals,
-        proof
-      )
-
-      assert(verified == true, 'Should verifiable')
-
-      console.log('proof verified');
-
-      const firstThreeElements = publicSignals.slice(0, 3);
-      const bytesCount = [31, 31, 26]; // bytes for each of the first three elements
-
-      const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
-        const bytes = bytesCount[index];
-        const elementBigInt = BigInt(element);
-        const byteMask = BigInt(255); // 0xFF
-      
-        const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
-          return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+        Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
+          if (reveal) {
+            const [start, end] = attributeToPosition[attribute];
+            bitmap.fill('1', start, end + 1);
+          }
         });
-      
-        return bytesOfElement;
-      });
-      const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-
-      console.log(result);
-
-      for(let i = 0; i < result.length; i++) {
-        if (bitmap[i] == '1') {
-          assert(result[i] != '\x00', 'Should reveal');
-        } else {
-          assert(result[i] == '\x00', 'Should not reveal');
+  
+        inputs = {
+          ...inputs,
+          reveal_bitmap: bitmap.map(String),
         }
-      }
-    })
-
-    it('Disclosing name', async function () {
-      const attributeToReveal = {
-        issuing_state: false,
-        name: true,
-        passport_number: false,
-        nationality: false,
-        date_of_birth: false,
-        gender: false,
-        expiry_date: false,
-      }
-
-      const bitmap = Array(88).fill('0');
-
-      Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-        if (reveal) {
-          const [start, end] = attributeToPosition[attribute];
-          bitmap.fill('1', start, end + 1);
-        }
-      });
-
-      inputs = {
-        ...inputs,
-        reveal_bitmap: bitmap.map(String),
-      }
-
-      const { proof, publicSignals } = await groth16.fullProve(
-        inputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
-      )
-
-      console.log('proof done');
-      // console.log('proof:', proof);
-      // console.log('publicSignals', publicSignals)
-
-      const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
-      const verified = await groth16.verify(
-        vKey,
-        publicSignals,
-        proof
-      )
-
-      assert(verified == true, 'Should verifiable')
-
-      console.log('proof verified');
-
-      const firstThreeElements = publicSignals.slice(0, 3);
-      const bytesCount = [31, 31, 26]; // bytes for each of the first three elements
-
-      const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
-        const bytes = bytesCount[index];
-        const elementBigInt = BigInt(element);
-        const byteMask = BigInt(255); // 0xFF
-      
-        const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
-          return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+  
+        const { proof, publicSignals } = await groth16.fullProve(
+          inputs,
+          "build/proof_of_passport_js/proof_of_passport.wasm",
+          "build/proof_of_passport_final.zkey"
+        )
+  
+        console.log('proof done');
+  
+        const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
+        const verified = await groth16.verify(
+          vKey,
+          publicSignals,
+          proof
+        )
+  
+        assert(verified == true, 'Should verifiable')
+  
+        console.log('proof verified');
+  
+        const firstThreeElements = publicSignals.slice(0, 3);
+        const bytesCount = [31, 31, 26]; // nb of bytes in each of the first three field elements
+  
+        const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
+          const bytes = bytesCount[index];
+          const elementBigInt = BigInt(element);
+          const byteMask = BigInt(255); // 0xFF
+        
+          const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
+            return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+          });
+        
+          return bytesOfElement;
         });
-      
-        return bytesOfElement;
-      });
-      const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-
-      console.log(result);
-
-      for(let i = 0; i < result.length; i++) {
-        if (bitmap[i] == '1') {
-          assert(result[i] != '\x00', 'Should reveal');
-        } else {
-          assert(result[i] == '\x00', 'Should not reveal');
-        }
-      }
-    })
-
-    it('Disclosing date of birth', async function () {
-      const attributeToReveal = {
-        issuing_state: false,
-        name: false,
-        passport_number: false,
-        nationality: false,
-        date_of_birth: true,
-        gender: false,
-        expiry_date: false,
-      }
-
-      const bitmap = Array(88).fill('0');
-
-      Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-        if (reveal) {
-          const [start, end] = attributeToPosition[attribute];
-          bitmap.fill('1', start, end + 1);
+        
+        const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
+  
+        console.log(result);
+  
+        for(let i = 0; i < result.length; i++) {
+          if (bitmap[i] == '1') {
+            const char = String.fromCharCode(Number(inputs.mrz[i + 5]));
+            assert(result[i] == char, 'Should reveal the right one');
+          } else {
+            assert(result[i] == '\x00', 'Should not reveal');
+          }
         }
       });
+    });
 
-      inputs = {
-        ...inputs,
-        reveal_bitmap: bitmap.map(String),
-      }
-
-      const { proof, publicSignals } = await groth16.fullProve(
-        inputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
-      )
-
-      console.log('proof done');
-      // console.log('proof:', proof);
-      // console.log('publicSignals', publicSignals)
-
-      const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
-      const verified = await groth16.verify(
-        vKey,
-        publicSignals,
-        proof
-      )
-
-      assert(verified == true, 'Should verifiable')
-
-      console.log('proof verified');
-
-      const firstThreeElements = publicSignals.slice(0, 3);
-      const bytesCount = [31, 31, 26]; // bytes for each of the first three elements
-
-      const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
-        const bytes = bytesCount[index];
-        const elementBigInt = BigInt(element);
-        const byteMask = BigInt(255); // 0xFF
-      
-        const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
-          return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
-        });
-      
-        return bytesOfElement;
-      });
-      const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-
-      console.log(result);
-
-      for(let i = 0; i < result.length; i++) {
-        if (bitmap[i] == '1') {
-          assert(result[i] != '\x00', 'Should reveal');
-        } else {
-          assert(result[i] == '\x00', 'Should not reveal');
-        }
-      }
-    })
-
-    it('Disclosing multiple things', async function () {
-      const attributeToReveal = {
-        issuing_state: true,
-        name: false,
-        passport_number: false,
-        nationality: true,
-        date_of_birth: true,
-        gender: false,
-        expiry_date: true,
-      }
-
-      const bitmap = Array(88).fill('0');
-
-      Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-        if (reveal) {
-          const [start, end] = attributeToPosition[attribute];
-          bitmap.fill('1', start, end + 1);
-        }
-      });
-
-      inputs = {
-        ...inputs,
-        reveal_bitmap: bitmap.map(String),
-      }
-
-      const { proof, publicSignals } = await groth16.fullProve(
-        inputs,
-        "build/passport_js/passport.wasm",
-        "build/passport_final.zkey"
-      )
-
-      console.log('proof done');
-      // console.log('proof:', proof);
-      // console.log('publicSignals', publicSignals)
-
-      const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
-      const verified = await groth16.verify(
-        vKey,
-        publicSignals,
-        proof
-      )
-
-      assert(verified == true, 'Should verifiable')
-
-      console.log('proof verified');
-
-      const firstThreeElements = publicSignals.slice(0, 3);
-      const bytesCount = [31, 31, 26]; // bytes for each of the first three elements
-
-      const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
-        const bytes = bytesCount[index];
-        const elementBigInt = BigInt(element);
-        const byteMask = BigInt(255); // 0xFF
-      
-        const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
-          return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
-        });
-      
-        return bytesOfElement;
-      });
-      const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-
-      console.log(result);
-
-      for(let i = 0; i < result.length; i++) {
-        if (bitmap[i] == '1') {
-          assert(result[i] != '\x00', 'Should reveal');
-        } else {
-          assert(result[i] == '\x00', 'Should not reveal');
-        }
-      }
-    })
 
   })
 })
 
 
-
-// [
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', 'F',    'R',
-//   'A',    '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00', '\x00', '\x00', '\x00',
-//   '\x00', '\x00', '\x00', '\x00'
-// ]
-
-// P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02

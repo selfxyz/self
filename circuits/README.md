@@ -1,6 +1,6 @@
-# Embassy
+# Proof of Passport Circuits
 
-Embassy circuits verify signatures of passport-emitting authorities.
+Proof of Passport circuits verify signatures of passport-emitting authorities.
 
 🚧 under heavy development 🚧
 

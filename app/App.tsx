@@ -38,7 +38,7 @@ import { config } from "@gluestack-ui/config" // Optional if you want to use def
 
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import {checkInputs, getFirstName} from './utils/checks';
+import {getFirstName, formatDuration, formatProof} from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -46,9 +46,17 @@ import {
   DEFAULT_ADDRESS,
   LOCAL_IP,
 } from '@env';
-import {DataHash, PassportData} from './types/passportData';
-import {arraysAreEqual, bytesToBigDecimal, dataHashesObjToArray, formatAndConcatenateDataHashes, formatDuration, formatMrz, formatProof, splitToWords} from './utils/utils';
-import {hash, toUnsignedByte} from './utils/computeEContent';
+import {DataHash, PassportData} from '../common/src/utils/types';
+import {
+  hash,
+  toUnsignedByte,
+  checkInputs,
+  bytesToBigDecimal,
+  dataHashesObjToArray,
+  formatAndConcatenateDataHashes,
+  formatMrz,
+  splitToWords
+} from '../common/src/utils/utils';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 console.log('LOCAL_IP', LOCAL_IP);

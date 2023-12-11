@@ -37,14 +37,14 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'com.wdullaer:materialdatetimepicker:3.5.2'
-    implementation 'org.jmrtd:jmrtd:0.7.18'
+    implementation 'org.jmrtd:jmrtd:0.7.18' // getting different errors whether it's 18 or 40 // 23 <== this works
     // implementation files('../../../../../jmrtd-0.7.18-sources/target/jmrtd-0.7.18.jar')
     // implementation files('../../app/libs/jmrtd-0.7.18.jar')
     implementation 'net.sf.scuba:scuba-sc-android:0.0.18'
     implementation 'com.madgag.spongycastle:prov:1.54.0.0'
     implementation 'com.gemalto.jp2:jp2-android:1.0.3'
     implementation 'com.github.mhshams:jnbis:1.1.0'
-    implementation 'org.bouncycastle:bcpkix-jdk15on:1.65' // do not update
+    // implementation 'org.bouncycastle:bcpkix-jdk15on:1.65' // do not update
     implementation 'commons-io:commons-io:2.8.0'
     implementation 'com.squareup.okhttp3:okhttp:4.9.0'
     implementation 'com.android.support:appcompat-v7:25.1.0'

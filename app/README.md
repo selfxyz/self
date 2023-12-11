@@ -1,4 +1,4 @@
-# Embassy App
+# Proof of Passport App
 
 Only Android right now, under heavy development
 

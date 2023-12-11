@@ -1,20 +1,13 @@
 import * as crypto from 'crypto';
 import {
   arraysAreEqual,
-  dataHashesObjToArray,
   formatMrz,
-  assembleMrz,
-  findTimeOfSignature,
-  parsePubKeyString,
   formatAndConcatenateDataHashes,
-  assembleEContent,
-  hexToDecimal,
   bytesToBigDecimal,
-} from '../utils/utils';
+} from '../../common/src/utils/utils';
 import * as forge from 'node-forge';
-import passportData from '../inputs/passportData_florent.json';
-import {DataHash} from '../utils/types';
-import { genSampleData } from '../utils/sampleData';
+import passportData from '../../common/inputs/passportData.json';
+import {DataHash} from '../../common/src/utils/types';
 
 // This script tests the whole flow from MRZ to signature
 // The passportData is imported from passportData.json written by the server
@@ -54,7 +47,7 @@ console.log(
 // Create the public key
 const rsa = forge.pki.rsa;
 const publicKey = rsa.setPublicKey(
-  new forge.jsbn.BigInteger(passportData.modulus, 10),
+  new forge.jsbn.BigInteger(passportData.pubKey.modulus, 10),
   new forge.jsbn.BigInteger("10001", 16),
 );
 
@@ -63,7 +56,7 @@ const md = forge.md.sha256.create();
 md.update(forge.util.binary.raw.encode(new Uint8Array(passportData.eContent)));
 const hashOfEContent = md.digest().getBytes();
 
-console.log('modulus', passportData.modulus);
+console.log('modulus', passportData.pubKey.modulus);
 console.log('eContent', bytesToBigDecimal(passportData.eContent));
 console.log('signature', bytesToBigDecimal(passportData.encryptedDigest));
 

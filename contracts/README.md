@@ -1,6 +1,6 @@
-# Sample Hardhat Project
+# Proof of Passport Contracts
 
-Contracts for embassy.
+Contracts for Proof of Passport.
 
 🚧 under heavy development 🚧
 

@@ -1,3 +1,11 @@
+//
+//  BACHandler.swift
+//  NFCTest
+//
+//  Created by Andy Qua on 07/06/2019.
+//  Copyright © 2019 Andy Qua. All rights reserved.
+//
+
 import Foundation
 
 #if !os(macOS)

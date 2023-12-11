@@ -254,8 +254,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         override fun doInBackground(vararg params: Void?): Exception? {
             try {
                 isoDep.timeout = 10000
+                Log.e("MY_LOGS", "This should obvsly log")
                 val cardService = CardService.getInstance(isoDep)
+                Log.e("MY_LOGS", "cardService gotten")
                 cardService.open()
+                Log.e("MY_LOGS", "cardService opened")
                 val service = PassportService(
                     cardService,
                     PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
@@ -263,31 +266,42 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     false,
                     false,
                 )
+                Log.e("MY_LOGS", "service gotten")
                 service.open()
+                Log.e("MY_LOGS", "service opened")
                 var paceSucceeded = false
                 try {
+                    Log.e("MY_LOGS", "trying to get cardAccessFile...")
                     val cardAccessFile = CardAccessFile(service.getInputStream(PassportService.EF_CARD_ACCESS))
+                    Log.e("MY_LOGS", "cardAccessFile: ${cardAccessFile}")
+
                     val securityInfoCollection = cardAccessFile.securityInfos
                     for (securityInfo: SecurityInfo in securityInfoCollection) {
                         if (securityInfo is PACEInfo) {
+                            Log.e("MY_LOGS", "trying PACE...")
                             service.doPACE(
                                 bacKey,
                                 securityInfo.objectIdentifier,
                                 PACEInfo.toParameterSpec(securityInfo.parameterId),
                                 null,
                             )
+                            Log.e("MY_LOGS", "PACE succeeded")
                             paceSucceeded = true
                         }
                     }
                 } catch (e: Exception) {
-                    Log.w(TAG, e)
+                    Log.w("MY_LOGS", e)
                 }
+                Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
                 service.sendSelectApplet(paceSucceeded)
                 if (!paceSucceeded) {
                     try {
+                        Log.e("MY_LOGS", "trying to get EF_COM...")
                         service.getInputStream(PassportService.EF_COM).read()
                     } catch (e: Exception) {
-                        service.doBAC(bacKey)
+                        Log.e("MY_LOGS", "doing BAC")
+                        service.doBAC(bacKey) // <======================== error happens here
+                        Log.e("MY_LOGS", "BAC done")
                     }
                 }
 
