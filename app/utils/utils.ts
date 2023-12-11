@@ -12,31 +12,3 @@ export function formatDuration(durationInMs: number) {
 
   return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
 }
-
-export function formatProof(proof: any) {
-  const formattedProof: { [key: string]: any } = {};
-
-  for (const key in proof) {
-    if (Object.hasOwnProperty.call(proof, key)) {
-      const element = proof[key];
-
-      if (key === 'b') {
-        // Special formatting for 'b'
-        formattedProof[key] = element.map((complex: string) => {
-          const matches = complex.match(/QuadExtField\(([^)]+)\)/);
-          if (matches && matches[1]) {
-            return matches[1].split(' + ').map(num => {
-              return num.replace(' * u', '').trim();
-            });
-          }
-          return [];
-        });
-      } else {
-        // Direct copy for 'a' and 'c'
-        formattedProof[key] = [...element];
-      }
-    }
-  }
-
-  return formattedProof;
-}

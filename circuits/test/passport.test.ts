@@ -10,6 +10,8 @@ const fs = require('fs');
 
 chai.use(chaiAsPromised)
 
+console.log("The snarkjs error logs are normal and expected is the tests pass.")
+
 describe('Circuit tests', function () {
   this.timeout(0)
 
