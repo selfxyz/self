@@ -37,8 +37,15 @@ And install the targets like this:
 rustup target add aarch64-linux-android
 ```
 
-To run the server:
+To run the server, first connect your phone to your computer, allow access, then:
 ```
 yarn start
 ```
 Then press `a` for android or `i` for iOS
+
+To export an apk:
+```
+cd android
+./gradlew assembleRelease
+```
+The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
