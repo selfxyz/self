@@ -357,7 +357,7 @@ function App(): JSX.Element {
                   <InputField
                     value={passportNumber}
                     onChangeText={setPassportNumber}
-                    placeholder={DEFAULT_PNUMBER ?? 'Passport Number'}
+                    placeholder={"Passport Number"}
                   />
                 </Input>
                 <Text>Date of Birth</Text>
@@ -370,7 +370,7 @@ function App(): JSX.Element {
                   <InputField
                     value={dateOfBirth}
                     onChangeText={setDateOfBirth}
-                    placeholder={DEFAULT_DOB ?? "YYMMDD"}
+                    placeholder={"YYMMDD"}
                   />
                 </Input>
                 <Text>Date of Expiry</Text>
@@ -383,7 +383,7 @@ function App(): JSX.Element {
                   <InputField
                     value={dateOfExpiry}
                     onChangeText={setDateOfExpiry}
-                    placeholder={DEFAULT_DOE ?? "YYMMDD"}
+                    placeholder={"YYMMDD"}
                   />
                 </Input>
 
