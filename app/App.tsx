@@ -35,10 +35,11 @@ import {
   ButtonSpinner,
 } from "@gluestack-ui/themed"
 import { config } from "@gluestack-ui/config" // Optional if you want to use default theme
+import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import {getFirstName, formatDuration } from './utils/utils';
+import {getFirstName, formatDuration, checkInputs } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -50,7 +51,6 @@ import {DataHash, PassportData} from '../common/src/utils/types';
 import {
   hash,
   toUnsignedByte,
-  checkInputs,
   bytesToBigDecimal,
   dataHashesObjToArray,
   formatAndConcatenateDataHashes,
@@ -193,11 +193,15 @@ function App(): JSX.Element {
     setStep('scanCompleted');
   }
 
-
-  
-
   async function scan() {
-    checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
+    const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry)
+    if (!check.success) {
+      Toast.show({
+        type: 'error',
+        text1: check.message,
+      })
+      return
+    }
     // 1. start a scan
     // 2. press the back of your android phone against the passport
     // 3. wait for the scan(...) Promise to get resolved/rejected
@@ -212,8 +216,12 @@ function App(): JSX.Element {
       console.log('response', response);
       console.log('scanned');
       handleResponse(response);
-    } catch (e) {
+    } catch (e: any) {
       console.log('error during scan :', e);
+      Toast.show({
+        type: 'error',
+        text1: e.message,
+      })
     }
   }
 
@@ -557,6 +565,7 @@ function App(): JSX.Element {
           </View>
         </ScrollView>
       </SafeAreaView>
+      <Toast config={toastConfig} />
     </GluestackUIProvider>
   );
 }
@@ -594,3 +603,49 @@ const styles = StyleSheet.create({
 });
 
 export default App;
+
+
+export const toastConfig = {
+  info: (props: ToastProps) => (
+    <BaseToast
+      {...props}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 15,
+        fontWeight: "600",
+      }}
+      text2Style={{
+        fontSize: 15,
+        fontWeight: "500",
+      }}
+    />
+  ),
+  error: (props: ToastProps) => (
+    <ErrorToast
+      {...props}
+      contentContainerStyle={{ paddingHorizontal: 15}}
+      text1Style={{
+        fontSize: 15,
+        fontWeight: "600",
+      }}
+      text2Style={{
+        fontSize: 15,
+        fontWeight: "400",
+      }}
+    />
+  ),
+  success: (props: ToastProps) => (
+    <SuccessToast
+      {...props}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
+      text1Style={{
+        fontSize: 15,
+        fontWeight: "600",
+      }}
+      text2Style={{
+        fontSize: 15,
+        fontWeight: "400",
+      }}
+    />
+  ),
+};

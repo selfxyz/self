@@ -6,7 +6,7 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
-    "start": "react-native start",
+    "start": "watchman watch-del-all && react-native start",
     "test": "jest"
   },
   "dependencies": {
@@ -23,7 +23,8 @@
     "react": "18.2.0",
     "react-native": "0.72.3",
     "react-native-passport-reader": "^1.0.3",
-    "react-native-svg": "13.4.0"
+    "react-native-svg": "13.4.0",
+    "react-native-toast-message": "^2.2.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
