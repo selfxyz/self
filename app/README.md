@@ -12,6 +12,11 @@ Install `nodejs v18`
 yarn
 ```
 
+In `/common`, also run:
+```bash
+yarn
+```
+
 #### Add circuit build
 
 Go to the `circuit` folder of the monorepo and build the circuit.
