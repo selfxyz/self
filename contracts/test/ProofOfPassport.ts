@@ -7,14 +7,15 @@ import { attributeToPosition } from "../../common/src/constants/constants";
 import { formatMrz, splitToWords, formatAndConcatenateDataHashes, toUnsignedByte, hash, bytesToBigDecimal } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { countryCodes } from "../../common/src/constants/constants";
+import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 
 const fs = require('fs');
 
-describe("ProofOfPassport", function () {
+describe("Proof of Passport", function () {
   this.timeout(0);
 
   async function deployFixture() {
-    const [owner, otherAccount] = await ethers.getSigners();
+    const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
 
     const Verifier = await ethers.getContractFactory("Groth16Verifier");
     const verifier = await Verifier.deploy();
@@ -106,10 +107,10 @@ describe("ProofOfPassport", function () {
     const callData = JSON.parse(`[${cd}]`);
     console.log('callData', callData);
 
-    return { verifier, proofOfPassport, owner, otherAccount, passportData, inputs, proof, publicSignals, revealChars, callData };
+    return { verifier, proofOfPassport, formatter, owner, otherAccount, thirdAccount, passportData, inputs, proof, publicSignals, revealChars, callData };
   }
 
-  describe("Deployment", function () {
+  describe("Proof of Passport SBT", function () {
     it("Verifier verifies a correct proof", async () => {
       const { verifier, callData } = await loadFixture(deployFixture);
 
@@ -118,13 +119,13 @@ describe("ProofOfPassport", function () {
       ).to.be.true;
     });
 
-    it("Should allow a user to mint a SBT", async function () {
-      const { proofOfPassport, otherAccount, callData } = await loadFixture(
+    it("Should allow SBT minting", async function () {
+      const { proofOfPassport, otherAccount, thirdAccount, callData } = await loadFixture(
         deployFixture
       );
 
       await proofOfPassport
-        .connect(otherAccount)
+        .connect(thirdAccount) // fine that it's not the same account as address is taken from the proof
         .mint(...callData);
 
       expect(await proofOfPassport.balanceOf(otherAccount.address)).to.equal(1);
@@ -173,5 +174,50 @@ describe("ProofOfPassport", function () {
       }
       console.log('parsedTokenURI', parsedTokenURI);
     });
+
+    it("Should convert ISO dates to unix timestamps correctly", async function () {
+      const { formatter } = await loadFixture(
+        deployFixture
+      );
+
+      const unix_timestamp = await formatter.dateToUnixTimestamp("230512") // 2023 05 12
+      console.log('unix_timestamp', unix_timestamp.toString());
+
+      var date = new Date(Number(unix_timestamp) * 1000);
+      console.log("date:", date.toUTCString());
+
+      expect(date.getUTCFullYear()).to.equal(2023);
+      expect(date.getUTCMonth()).to.equal(4);
+      expect(date.getUTCDate()).to.equal(12);
+    })
+
+    it("Should support expiry", async function () {
+      const { proofOfPassport, otherAccount, callData } = await loadFixture(
+        deployFixture
+      );
+
+      const tx = await proofOfPassport
+      .connect(otherAccount)
+      .mint(...callData);
+
+      await tx.wait();
+
+      const tokenURI = await proofOfPassport.tokenURI(0);
+      const decodedTokenURI = Buffer.from(tokenURI.split(',')[1], 'base64').toString();
+      const parsedTokenURI = JSON.parse(decodedTokenURI);
+
+      const expired = parsedTokenURI.attributes.find((attribute: any) => attribute.trait_type === 'Expired');
+      expect(expired.value).to.equal('No');
+
+      await time.increaseTo(2240161656); // 2040
+
+      const tokenURIAfter = await proofOfPassport.tokenURI(0);
+      const decodedTokenURIAfter = Buffer.from(tokenURIAfter.split(',')[1], 'base64').toString();
+      const parsedTokenURIAfter = JSON.parse(decodedTokenURIAfter);
+
+      const expiredAfter = parsedTokenURIAfter.attributes.find((attribute: any) => attribute.trait_type === 'Expired');
+
+      expect(expiredAfter.value).to.equal('Yes');
+    })
   });
 });

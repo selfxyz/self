@@ -61,10 +61,10 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         uint256[2] memory c,
         uint256[6] memory inputs
     ) public {
-        // Check eth address committed to in proof matches msg.sender, to avoid replayability
-        require(address(uint160(inputs[5])) == msg.sender, "Invalid address");
         // check that the nullifier has not been used before
         require(!nullifiers[inputs[3]], "Signature already nullified");
+
+
 
         // Verify that the public key for RSA matches the hardcoded one
         // for (uint256 i = body_len; i < msg_len - 1; i++) {
@@ -79,8 +79,9 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
         // Effects: Mint token
+        address addr = address(uint160(inputs[5]));
         uint256 newTokenId = totalSupply();
-        _mint(msg.sender, newTokenId);
+        _mint(addr, newTokenId);
         nullifiers[inputs[3]] = true;
 
 
@@ -174,6 +175,8 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
                     attributes.values[5],
                     '"},{"trait_type": "Expiry date", "value": "',
                     formatter.formatDate(attributes.values[6]),
+                    '"},{"trait_type": "Expired", "value": "',
+                    isExpired(_tokenId) ? "Yes" : "No",
                     '"}',
                 "],",
                 '"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://github.com/zk-passport/proof-of-passport","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
@@ -189,5 +192,12 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
                     baseURI.encode()
                 )
             );
+    }
+
+    function isExpired(uint256 _tokenId) public view returns (bool) {
+        Attributes memory attributes = tokenAttributes[_tokenId];
+        uint256 expiryDate = formatter.dateToUnixTimestamp(attributes.values[6]);
+
+        return block.timestamp > expiryDate;
     }
 }

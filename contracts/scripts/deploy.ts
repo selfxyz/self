@@ -13,7 +13,6 @@ async function main() {
   await formatter.waitForDeployment();
   await formatter.addCountryCodes(Object.entries(countryCodes));
 
-
   console.log(`Formatter deployed to ${formatter.target}`);
 
   const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
