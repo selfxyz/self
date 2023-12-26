@@ -6,6 +6,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {Groth16Verifier} from "./Verifier.sol";
 import {Base64} from "./libraries/Base64.sol";
+import {Formatter} from "./libraries/Formatter.sol";
 import "hardhat/console.sol";
 
 contract ProofOfPassport is ERC721Enumerable, Ownable {
@@ -13,6 +14,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
     using Base64 for *;
 
     Groth16Verifier public immutable verifier;
+    Formatter public formatter;
     address public cscaPubkey = 0x0000000000000000000000000000000000000000;
 
     mapping(uint256 => bool) public nullifiers;
@@ -32,8 +34,9 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
 
     mapping(uint256 => Attributes) private tokenAttributes;
 
-    constructor(Groth16Verifier v) ERC721("ProofOfPassport", "ProofOfPassport") {
+    constructor(Groth16Verifier v, Formatter f) ERC721("ProofOfPassport", "ProofOfPassport") {
         verifier = v;
+        formatter = f;
         setupAttributes();
         transferOwnership(msg.sender);
     }
@@ -147,23 +150,30 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
 
         console.log("Issuing state in tokenURI", attributes.values[0]);
 
+        string memory firstName;
+        string memory lastName;
+
+        (firstName, lastName) = formatter.formatName(attributes.values[1]);
+
         bytes memory baseURI = (
             abi.encodePacked(
                 '{ "attributes": [',
                     '{"trait_type": "Issuing State", "value": "',
-                    attributes.values[0],
-                    '"},{"trait_type": "Name", "value": "',
-                    attributes.values[1],
+                    formatter.formatCountryName(attributes.values[0]),
+                    '"},{"trait_type": "FirstName", "value": "',
+                    firstName,
+                    '"},{"trait_type": "LastName", "value": "',
+                    lastName,
                     '"},{"trait_type": "Passport Number", "value": "',
                     attributes.values[2],
                     '"},{"trait_type": "Nationality", "value": "',
-                    attributes.values[3],
+                    formatter.formatCountryName(attributes.values[3]),
                     '"},{"trait_type": "Date of birth", "value": "',
-                    attributes.values[4],
+                    formatter.formatDate(attributes.values[4]),
                     '"},{"trait_type": "Gender", "value": "',
                     attributes.values[5],
                     '"},{"trait_type": "Expiry date", "value": "',
-                    attributes.values[6],
+                    formatter.formatDate(attributes.values[6]),
                     '"}',
                 "],",
                 '"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://github.com/zk-passport/proof-of-passport","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',

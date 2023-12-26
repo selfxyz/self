@@ -6,6 +6,8 @@ import { getPassportData } from "../../common/src/utils/passportData";
 import { attributeToPosition } from "../../common/src/constants/constants";
 import { formatMrz, splitToWords, formatAndConcatenateDataHashes, toUnsignedByte, hash, bytesToBigDecimal } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
+import { countryCodes } from "../../common/src/constants/constants";
+
 const fs = require('fs');
 
 describe("ProofOfPassport", function () {
@@ -19,9 +21,16 @@ describe("ProofOfPassport", function () {
     await verifier.waitForDeployment();
   
     console.log(`Verifier deployed to ${verifier.target}`);
-  
+
+    const Formatter = await ethers.getContractFactory("Formatter");
+    const formatter = await Formatter.deploy();
+    await formatter.waitForDeployment();
+    await formatter.addCountryCodes(Object.entries(countryCodes));
+
+    console.log(`Formatter deployed to ${formatter.target}`);
+
     const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-    const proofOfPassport = await ProofOfPassport.deploy(verifier.target);
+    const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
     await proofOfPassport.waitForDeployment();
   
     console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
@@ -126,32 +135,43 @@ describe("ProofOfPassport", function () {
         deployFixture
       );
 
-      callData[0][1] = "0x1cdbaf59a0439d55f19162ee0be5a501f5b55c669a6e1f8d27b75d95ff31ff7b";
+      const badCallData = JSON.parse(JSON.stringify(callData));
+
+      badCallData[0][1] = "0x1cdbaf59a0439d55f19162ee0be5a501f5b55c669a6e1f8d27b75d95ff31ff7b";
 
       expect(
         proofOfPassport
           .connect(otherAccount)
-          .mint(...callData)
+          .mint(...badCallData as any)
       ).to.be.revertedWith("Invalid proof");
     });
 
-    it.only("Should have a correct tokenURI a user to mint a SBT", async function () {
+    it("Should have a correct tokenURI a user to mint a SBT", async function () {
       const { proofOfPassport, otherAccount, callData } = await loadFixture(
         deployFixture
       );
+
+      console.log('callData', callData)
 
       const tx = await proofOfPassport
         .connect(otherAccount)
         .mint(...callData);
 
-      const receipt = await tx.wait();
+      await tx.wait();
 
       const tokenURI = await proofOfPassport.tokenURI(0);
 
       console.log('tokenURI', tokenURI);
 
-      // expect(await proofOfPassport.balanceOf(otherAccount.address)).to.equal(1);
-    });
+      const decodedTokenURI = Buffer.from(tokenURI.split(',')[1], 'base64').toString();
+      let parsedTokenURI;
 
+      try {
+        parsedTokenURI = JSON.parse(decodedTokenURI);
+      } catch (e) {
+        assert(false, 'TokenURI is not a valid JSON');
+      }
+      console.log('parsedTokenURI', parsedTokenURI);
+    });
   });
 });
