@@ -1,19 +1,17 @@
 import { ethers } from "hardhat";
 
 async function main() {
-  const Verifier = await ethers.getContractFactory("Verifier");
+  const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
+  await verifier.waitForDeployment();
 
-  await verifier.deployed();
+  console.log(`Verifier deployed to ${verifier.target}`);
 
-  console.log(`RsaSha256Verifier deployed to ${verifier.address}`);
+  const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
+  const proofOfPassport = await ProofOfPassport.deploy(verifier.target);
+  await proofOfPassport.waitForDeployment();
 
-  const ProofOfBaguette = await ethers.getContractFactory("ProofOfBaguette");
-  const proofOfBaguette = await ProofOfBaguette.deploy(verifier.address);
-
-  await proofOfBaguette.deployed();
-
-  console.log(`ProofOfBaguette deployed to ${proofOfBaguette.address}`);
+  console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere

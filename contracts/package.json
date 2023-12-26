@@ -2,12 +2,14 @@
   "name": "hardhat-project",
   "devDependencies": {
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@types/snarkjs": "^0.7.7",
     "hardhat": "^2.17.0",
     "ts-node": "^10.9.1",
     "typescript": "^5.1.6"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.2",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "snarkjs": "^0.7.2"
   }
 }
