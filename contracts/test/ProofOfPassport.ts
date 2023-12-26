@@ -8,6 +8,7 @@ import { formatMrz, splitToWords, formatAndConcatenateDataHashes, toUnsignedByte
 import { groth16 } from 'snarkjs'
 import { countryCodes } from "../../common/src/constants/constants";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
+import axios from 'axios';
 
 const fs = require('fs');
 
@@ -220,4 +221,38 @@ describe("Proof of Passport", function () {
       expect(expiredAfter.value).to.equal('Yes');
     })
   });
+
+  describe.only("Minting using lambda function", function () {
+    it.skip("Should allow minting using lambda function", async function () {
+      const { callData } = await loadFixture(
+        deployFixture
+      );
+
+      const proofOfPassportOnMumbaiAddress = '0xaf0f1669385182829d0DEa233E83299DED28954A';
+      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
+      const proofOfPassportOnMumbai = await ethers.getContractAt('ProofOfPassport', proofOfPassportOnMumbaiAddress);
+
+      const transactionRequest = await proofOfPassportOnMumbai
+        .mint.populateTransaction(...callData);
+
+      console.log('transactionRequest', transactionRequest);
+
+      try {
+        const apiEndpoint = process.env.AWS_ENDPOINT;
+        if (!apiEndpoint) {
+          throw new Error('AWS_ENDPOINT env variable is not set');
+        }
+        const response = await axios.post(apiEndpoint, {
+          chain: "mumbai",
+          tx_data: transactionRequest
+        });
+        console.log('response status', response.status)
+        console.log('response data', response.data)
+        const receipt = await provider.waitForTransaction(response.data.hash);
+        console.log('receipt', receipt)
+      } catch (err) {
+        console.log('err', err);
+      }
+    });
+  })
 });

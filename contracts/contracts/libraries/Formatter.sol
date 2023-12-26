@@ -10,7 +10,6 @@ contract Formatter is Ownable {
         transferOwnership(msg.sender);
     }
 
-
     function formatName(string memory input) public pure returns (string memory firstName, string memory lastName) {
         bytes memory inputBytes = bytes(input);
         bytes memory firstNameBytes;
