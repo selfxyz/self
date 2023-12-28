@@ -2,6 +2,7 @@ import { DataHash, PassportData } from "./types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "./utils";
 import * as forge from 'node-forge';
 const fs = require('fs');
+const path = require('path');
 
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
@@ -76,14 +77,19 @@ export function genSampleData(): PassportData {
 }
 
 export function getPassportData(): PassportData {
-  if (fs.existsSync('../../inputs/passportData.json')) {
-    return require('../../inputs/passportData.json');
+  const passportDataPath = path.join(__dirname, '../../inputs/passportData.json');
+
+  if (fs.existsSync(passportDataPath)) {
+    return require(passportDataPath);
   } else {
     const sampleData = genSampleData();
-    if (!fs.existsSync('../../inputs/')) {
-      fs.mkdirSync('../../inputs/');
+    const inputsDir = path.join(__dirname, '../../inputs/');
+
+    if (!fs.existsSync(inputsDir)) {
+      fs.mkdirSync(inputsDir);
     }
-    fs.writeFileSync('../../inputs/passportData.json', JSON.stringify(sampleData));
+
+    fs.writeFileSync(passportDataPath, JSON.stringify(sampleData));
     return sampleData;
   }
 }
