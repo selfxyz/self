@@ -15,6 +15,10 @@ const config: HardhatUserConfig = {
       url: "https://polygon.llamarpc.com",
       accounts: [process.env.PKEY as string],
     },
+    mumbai: {
+      url: "https://polygon-mumbai-bor.publicnode.com",
+      accounts: [process.env.PKEY as string],
+    }
   },
 };
 
