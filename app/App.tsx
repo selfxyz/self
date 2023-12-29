@@ -306,8 +306,6 @@ function App(): JSX.Element {
       setTotalTime(end - start);
 
       setProofResult(JSON.stringify(deserializedProof));
-
-      // les outputs publics vont être postés on-chain comment ?
     });
   };
 

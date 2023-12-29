@@ -3,14 +3,14 @@ import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatAndConcatenateDataHashes, formatMrz, splitToWords } from '../../common/src/utils/utils'
 import { groth16 } from 'snarkjs'
-import { DataHash, PassportData } from '../../common/src/utils/types'
+import { DataHash } from '../../common/src/utils/types'
 import { getPassportData } from '../../common/src/utils/passportData'
 import { attributeToPosition } from '../../common/src/constants/constants'
 const fs = require('fs');
 
 chai.use(chaiAsPromised)
 
-console.log("The snarkjs following error logs are normal and expected if the tests pass.")
+console.log("The following snarkjs error logs are normal and expected if the tests pass.")
 
 describe('Circuit tests', function () {
   this.timeout(0)
