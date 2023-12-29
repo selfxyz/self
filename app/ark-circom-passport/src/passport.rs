@@ -1,4 +1,4 @@
-use ark_circom::{CircomBuilder, CircomConfig};
+use ark_circom::{ethereum, CircomBuilder, CircomConfig};
 use ark_std::rand::thread_rng;
 use color_eyre::Result;
 use std::os::raw::c_int;
@@ -8,6 +8,10 @@ use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::{Groth16, Proof};
 // use ark_ff::QuadExtField;
 use ark_ec::AffineRepr;
+
+use num_bigint::{BigInt, Sign};
+extern crate hex;
+use hex::decode;
 
 use std::time::Instant;
 use std::convert::TryInto;
@@ -36,7 +40,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
     _: JClass,
 ) -> jstring {
     android_logger::init_once(Config::default().with_min_level(Level::Trace));
-    log::warn!("log before imports");
+    log::error!("log before imports");
 
     let my_int: c_int = -1;
     let my_str: String = "no_proof".to_string();
@@ -58,7 +62,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_proveRSAInRust(
     _: JClass,
 ) -> c_int {
     fn run() -> Result<u128, Box<dyn std::error::Error>> {
-        println!("log before imports");
+        log::error!("log before imports");
         Ok(10)
     }
     match run() {
@@ -83,7 +87,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     address: JString,
 ) -> jstring {
     
-    log::warn!("formatting inputsaaaa...");
+    log::error!("formatting inputsaaaa...");
     fn run_proof(
         mrz: JObject,
         reveal_bitmap: JObject,
@@ -96,8 +100,8 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     ) -> Result<jstring, Box<dyn std::error::Error>> {
         android_logger::init_once(Config::default().with_min_level(Level::Trace));
 
-        log::warn!("formatting inputs...");
-        log::warn!("mrz_veccccccc");
+        log::error!("formatting inputs...");
+        log::error!("mrz_veccccccc");
         
         let mrz_vec: Vec<String> = java_arraylist_to_rust_vec(&env, mrz)?;
         let reveal_bitmap_vec: Vec<String> = java_arraylist_to_rust_vec(&env, reveal_bitmap)?;
@@ -107,18 +111,18 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         let pubkey_vec: Vec<String> = java_arraylist_to_rust_vec(&env, pubkey)?;
         let address_str: String = env.get_string(address)?.into();
 
-        log::warn!("mrz_vec {:?}", mrz_vec);
-        log::warn!("reveal_bitmap_vec {:?}", reveal_bitmap_vec);
-        log::warn!("data_hashes_vec {:?}", data_hashes_vec);
-        log::warn!("e_content_bytes_vec {:?}", e_content_bytes_vec);
-        log::warn!("signature_vec {:?}", signature_vec);
-        log::warn!("pubkey_vec {:?}", pubkey_vec);
-        log::warn!("address_str {:?}", address_str);
+        log::error!("mrz_vec {:?}", mrz_vec);
+        log::error!("reveal_bitmap_vec {:?}", reveal_bitmap_vec);
+        log::error!("data_hashes_vec {:?}", data_hashes_vec);
+        log::error!("e_content_bytes_vec {:?}", e_content_bytes_vec);
+        log::error!("signature_vec {:?}", signature_vec);
+        log::error!("pubkey_vec {:?}", pubkey_vec);
+        log::error!("address_str {:?}", address_str);
         
-        log::warn!("loading circuit...");
-        const MAIN_WASM: &'static [u8] = include_bytes!("../passport/passport.wasm");
-        const MAIN_R1CS: &'static [u8] = include_bytes!("../passport/passport.r1cs");
-        log::warn!("circuit loaded");
+        log::error!("loading circuit...");
+        const MAIN_WASM: &'static [u8] = include_bytes!("../passport/proof_of_passport.wasm");
+        const MAIN_R1CS: &'static [u8] = include_bytes!("../passport/proof_of_passport.r1cs");
+        log::error!("circuit loaded");
         
         let cfg = CircomConfig::<Bn254>::from_bytes(MAIN_WASM, MAIN_R1CS)?;
 
@@ -143,6 +147,9 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
             .filter_map(|s| s.parse::<u128>().ok())
             .for_each(|n| builder.push_input("pubkey", n));
 
+        let address_bigint = BigInt::from_bytes_be(Sign::Plus, &decode(&address_str[2..])?);
+        builder.push_input("address", address_bigint);
+
         // create an empty instance for setting it up
         let circom = builder.setup();
         
@@ -150,20 +157,25 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         let params = GrothBn::generate_random_parameters_with_reduction(circom, &mut rng)?;
         
         let circom = builder.build()?;
-        println!("circuit built");
+        log::error!("circuit built");
         
         let inputs = circom.get_public_inputs().unwrap();
-        
+        log::error!("inputs: {:?}", inputs);
+
+        let converted_inputs: ethereum::Inputs = inputs.as_slice().into();
+        let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
+        let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
+        log::error!("Serialized inputs: {:?}", serialized_inputs);
+
         let start1 = Instant::now();
         
         let proof = GrothBn::prove(&params, circom, &mut rng)?;
         
         let proof_str = proof_to_proof_str(&proof);
-
         let serialized_proof = serde_json::to_string(&proof_str).unwrap();
 
         let duration1 = start1.elapsed();
-        println!("proof generated. Took: {:?}", duration1);
+        log::error!("proof generated. Took: {:?}", duration1);
         
         let start2 = Instant::now();
 
@@ -171,13 +183,14 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         
         let verified = GrothBn::verify_with_processed_vk(&pvk, &inputs, &proof)?;
         let duration2 = start2.elapsed();
-        println!("proof verified. Took: {:?}", duration2);
+        log::error!("proof verified. Took: {:?}", duration2);
 
         assert!(verified);
 
         let combined = json!({
             "duration": duration1.as_millis(),
-            "serialized_proof": serialized_proof
+            "serialized_proof": serialized_proof,
+            "serialized_inputs": serialized_inputs
         });
         
         let combined_str = combined.to_string();
