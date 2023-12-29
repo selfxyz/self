@@ -33,24 +33,16 @@ template ProofOfPassport(n, k) {
     // we take nullifier = signature[0, 1] which it 64 + 64 bits long, so chance of collision is 2^128
     signal output nullifier <== signature[0] * 2**64 + signature[1];
 
-    // Calculate the Poseidon hash of public public key and outputs it
-    // This can be used to verify the public key is correct in contract without requiring the actual key
-    // We are converting pub_key (modulus) in to 9 chunks of 242 bits, assuming original n, k are 121 and 17.
-    // This is because Posiedon circuit only support array of 16 elements.
-    // Otherwise we would have to output the ceil(256/31) = 9 field elements of the public key
-    var k2_chunked_size = k >> 1;
-    if(k % 2 == 1) {
-        k2_chunked_size += 1;
-    }
-    signal pubkey_hash_input[k2_chunked_size];
-    for(var i = 0; i < k2_chunked_size; i++) {
-        if(i==k2_chunked_size-1 && k2_chunked_size % 2 == 1) {
-            pubkey_hash_input[i] <== pubkey[2*i];
+    // we don't do Poseidon hash cuz it makes arkworks crash for obscure reasons
+    // we output the pubkey as 11 field elements. 9 is doable also cuz ceil(254/31) = 9
+    signal output pubkey_packed[11];
+    for (var i = 0; i < 11; i++) {
+        if (i < 10) {
+            pubkey_packed[i] <== pubkey[3*i] * 64 * 64 + pubkey[3*i + 1] * 64 + pubkey[3*i + 2];
         } else {
-            pubkey_hash_input[i] <== pubkey[2*i] + (1<<n) * pubkey[2*i+1];
+            pubkey_packed[i] <== pubkey[3*i] * 64 * 64;
         }
     }
-    signal output pubkey_hash <== Poseidon(k2_chunked_size)(pubkey_hash_input);
 }
 
 component main { public [ address ] } = ProofOfPassport(64, 32);

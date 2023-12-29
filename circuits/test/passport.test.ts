@@ -3,19 +3,18 @@ import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatAndConcatenateDataHashes, formatMrz, splitToWords } from '../../common/src/utils/utils'
 import { groth16 } from 'snarkjs'
-import { DataHash, PassportData } from '../../common/src/utils/types'
+import { DataHash } from '../../common/src/utils/types'
 import { getPassportData } from '../../common/src/utils/passportData'
 import { attributeToPosition } from '../../common/src/constants/constants'
 const fs = require('fs');
 
 chai.use(chaiAsPromised)
 
-console.log("The snarkjs error logs are normal and expected is the tests pass.")
+console.log("The following snarkjs error logs are normal and expected if the tests pass.")
 
 describe('Circuit tests', function () {
   this.timeout(0)
 
-  let passportData: PassportData;
   let inputs: any;
 
   this.beforeAll(async () => {
@@ -30,14 +29,12 @@ describe('Circuit tests', function () {
     
     const concatenatedDataHashesHashDigest = hash(concatenatedDataHashes);
 
-    // console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest)
-    // console.log('passportData.eContent.slice(72, 72 + 32)', passportData.eContent.slice(72, 72 + 32))
     assert(
       arraysAreEqual(passportData.eContent.slice(72, 72 + 32), concatenatedDataHashesHashDigest),
       'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
     )
 
-    const reveal_bitmap = Array.from({ length: 88 }, (_, i) => (i >= 16 && i <= 22) ? '1' : '0');
+    const reveal_bitmap = Array(88).fill('1');
 
     inputs = {
       mrz: formattedMrz.map(byte => String(byte)),
@@ -54,25 +51,18 @@ describe('Circuit tests', function () {
         BigInt(64),
         BigInt(32)
       ),
-      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
+      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8", // sample address
     }
     
   })
   
   describe('Proof', function() {
     it('should prove and verify with valid inputs', async function () {
-      // console.log('inputs', inputs)
-
       const { proof, publicSignals } = await groth16.fullProve(
         inputs,
         "build/proof_of_passport_js/proof_of_passport.wasm",
         "build/proof_of_passport_final.zkey"
       )
-
-      // console.log('proof done');
-
-      const revealChars = publicSignals.slice(0, 88).map((byte: string) => String.fromCharCode(parseInt(byte, 10))).join('');
-      // console.log('reveal chars', revealChars);
 
       const vKey = JSON.parse(fs.readFileSync("build/verification_key.json"));
       const verified = await groth16.verify(
@@ -82,8 +72,6 @@ describe('Circuit tests', function () {
       )
 
       assert(verified == true, 'Should verifiable')
-
-      // console.log('proof verified');
     })
 
     it('should fail to prove with invalid mrz', async function () {
@@ -125,15 +113,12 @@ describe('Circuit tests', function () {
       )).to.be.rejected;
     })
 
-    it.only("shouldn't allow address maleability", async function () {
+    it("shouldn't allow address maleability", async function () {
       const { proof, publicSignals } = await groth16.fullProve(
         inputs,
         "build/proof_of_passport_js/proof_of_passport.wasm",
         "build/proof_of_passport_final.zkey"
       )
-
-      console.log('proof done');
-      console.log('publicSignals', publicSignals);
 
       publicSignals[publicSignals.length - 1] = BigInt("0xC5B4F2A7Ea7F675Fca6EF724d6E06FFB40dFC93F").toString();
 

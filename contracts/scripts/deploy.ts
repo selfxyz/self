@@ -1,19 +1,25 @@
 import { ethers } from "hardhat";
+import { countryCodes } from "../../common/src/constants/constants";
 
 async function main() {
-  const Verifier = await ethers.getContractFactory("Verifier");
+  const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
+  await verifier.waitForDeployment();
 
-  await verifier.deployed();
+  console.log(`Verifier deployed to ${verifier.target}`);
 
-  console.log(`RsaSha256Verifier deployed to ${verifier.address}`);
+  const Formatter = await ethers.getContractFactory("Formatter");
+  const formatter = await Formatter.deploy();
+  await formatter.waitForDeployment();
+  await formatter.addCountryCodes(Object.entries(countryCodes));
 
-  const ProofOfBaguette = await ethers.getContractFactory("ProofOfBaguette");
-  const proofOfBaguette = await ProofOfBaguette.deploy(verifier.address);
+  console.log(`Formatter deployed to ${formatter.target}`);
 
-  await proofOfBaguette.deployed();
+  const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
+  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
+  await proofOfPassport.waitForDeployment();
 
-  console.log(`ProofOfBaguette deployed to ${proofOfBaguette.address}`);
+  console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
 }
 
 // We recommend this pattern to be able to use async/await everywhere
