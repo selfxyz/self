@@ -21,7 +21,6 @@ type GrothBn = Groth16<Bn254>;
 extern crate jni;
 use jni::objects::{JClass, JObject, JValue, JString};
 use jni::JNIEnv;
-use jni::sys::jobject;
 use jni::sys::jstring;
 
 use log::Level;

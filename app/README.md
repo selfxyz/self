@@ -20,7 +20,6 @@ yarn
 #### Add circuit build
 
 Go to the `circuit` folder of the monorepo and build the circuit.
-Then, place `passport.r1cs` and `passport.wasm` in `ark-circom-passport/passport/`
 
 #### Build native lib
 
@@ -32,8 +31,7 @@ This will build the `libhalo2_circom_passport.so` lib and copy it to the desired
 The config used is in `android/react-native-passport-reader/android/build.gradle`.
 You can go there to change the profile (`debug` or `release`)
 
-
-You'll potentially need to set the rust-toolchain rust version as global default. Example:
+You might need to set the rust-toolchain rust version as global default. Example:
 ```
 rustup default 1.67.0
 ```
