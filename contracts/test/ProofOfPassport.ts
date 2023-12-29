@@ -9,7 +9,6 @@ import { groth16 } from 'snarkjs'
 import { countryCodes } from "../../common/src/constants/constants";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
-
 const fs = require('fs');
 
 describe("Proof of Passport", function () {
@@ -93,7 +92,6 @@ describe("Proof of Passport", function () {
     console.log('proof done');
 
     const revealChars = publicSignals.slice(0, 88).map((byte: string) => String.fromCharCode(parseInt(byte, 10))).join('');
-    // console.log('reveal chars', revealChars);
 
     const vKey = JSON.parse(fs.readFileSync("../circuits/build/verification_key.json"));
     const verified = await groth16.verify(
@@ -116,7 +114,7 @@ describe("Proof of Passport", function () {
       const { verifier, callData } = await loadFixture(deployFixture);
 
       expect(
-        await verifier.verifyProof(...callData)
+        await verifier.verifyProof(callData[0], callData[1], callData[2], callData[3])
       ).to.be.true;
     });
 
@@ -222,7 +220,7 @@ describe("Proof of Passport", function () {
     })
   });
 
-  describe.only("Minting using lambda function", function () {
+  describe("Minting using lambda function", function () {
     it.skip("Should allow minting using lambda function", async function () {
       const { callData } = await loadFixture(
         deployFixture

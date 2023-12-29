@@ -59,7 +59,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[6] memory inputs
+        uint256[16] memory inputs
     ) public {
         // check that the nullifier has not been used before
         require(!nullifiers[inputs[3]], "Signature already nullified");
@@ -79,7 +79,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
         // Effects: Mint token
-        address addr = address(uint160(inputs[5]));
+        address addr = address(uint160(inputs[inputs.length - 1])); // generally the last one
         uint256 newTokenId = totalSupply();
         _mint(addr, newTokenId);
         nullifiers[inputs[3]] = true;
@@ -120,7 +120,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         return bytesArray;
     }
 
-    function sliceFirstThree(uint256[6] memory input) public pure returns (uint256[3] memory) {
+    function sliceFirstThree(uint256[16] memory input) public pure returns (uint256[3] memory) {
         uint256[3] memory sliced;
 
         for (uint256 i = 0; i < 3; i++) {
