@@ -62,7 +62,7 @@ import { samplePassportData } from '../common/src/utils/passportDataStatic';
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 console.log('LOCAL_IP', LOCAL_IP);
 
-const SKIP_SCAN = true;
+const SKIP_SCAN = false;
 
 const attributeToPosition = {
   issuing_state: [2, 5],
@@ -126,7 +126,7 @@ function App(): JSX.Element {
 
   useEffect(() => {
     if (SKIP_SCAN && passportData === null) {
-      setPassportData(samplePassportData);
+      setPassportData(samplePassportData as PassportData);
       setStep('scanCompleted');
     }
   }, []);
