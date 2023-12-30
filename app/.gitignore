@@ -67,9 +67,4 @@ yarn-error.log
 
 .env
 
-# Contains personal information
-/scripts/env.ts
-/scripts/retd.ts
-/server/passportData.json
-
 .expo/

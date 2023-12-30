@@ -57,12 +57,12 @@ import {
   formatMrz,
   splitToWords
 } from '../common/src/utils/utils';
+import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 console.log('LOCAL_IP', LOCAL_IP);
 
-const CACHE_DATA_IN_LOCAL_SERVER = false;
-const SKIP_SCAN = false;
+const SKIP_SCAN = true;
 
 const attributeToPosition = {
   issuing_state: [2, 5],
@@ -124,20 +124,12 @@ function App(): JSX.Element {
     };
   }, []);
 
-  if (SKIP_SCAN && passportData === null) {
-    console.log('skipping scan step...');
-    try {
-      fetch(`${LOCAL_IP}/passportData`)
-        .then(response => response.json())
-        .then(data => {
-          console.log('passport data fetched');
-          setPassportData(data);
-          setStep('scanCompleted');
-        });
-    } catch (err) {
-      console.log('error fetching passport data', err);
+  useEffect(() => {
+    if (SKIP_SCAN && passportData === null) {
+      setPassportData(samplePassportData);
+      setStep('scanCompleted');
     }
-  }
+  }, []);
 
   async function handleResponse(response: any) {
     const {
@@ -172,24 +164,6 @@ function App(): JSX.Element {
     console.log('encryptedDigest', passportData.encryptedDigest);
 
     setPassportData(passportData);
-
-    if (CACHE_DATA_IN_LOCAL_SERVER) {
-      // Caches data in local server to avoid having to scan the passport each time
-      // For development purposes only
-      fetch(`${LOCAL_IP}/post`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(passportData),
-      })
-        .then(response => response.json())
-        .then(data => console.log(data.message))
-        .catch(error => {
-          console.log('error caching data in local server', error);
-        });
-    }
-
     setStep('scanCompleted');
   }
 
