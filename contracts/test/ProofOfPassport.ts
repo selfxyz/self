@@ -14,28 +14,7 @@ const fs = require('fs');
 describe("Proof of Passport", function () {
   this.timeout(0);
 
-  async function deployFixture() {
-    const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
-
-    const Verifier = await ethers.getContractFactory("Groth16Verifier");
-    const verifier = await Verifier.deploy();
-    await verifier.waitForDeployment();
-  
-    console.log(`Verifier deployed to ${verifier.target}`);
-
-    const Formatter = await ethers.getContractFactory("Formatter");
-    const formatter = await Formatter.deploy();
-    await formatter.waitForDeployment();
-    await formatter.addCountryCodes(Object.entries(countryCodes));
-
-    console.log(`Formatter deployed to ${formatter.target}`);
-
-    const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-    const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
-    await proofOfPassport.waitForDeployment();
-  
-    console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
-
+  async function deployProofFixture() {
     const passportData = getPassportData();
   
     const formattedMrz = formatMrz(passportData.mrz);
@@ -106,12 +85,39 @@ describe("Proof of Passport", function () {
     const callData = JSON.parse(`[${cd}]`);
     console.log('callData', callData);
 
-    return { verifier, proofOfPassport, formatter, owner, otherAccount, thirdAccount, passportData, inputs, proof, publicSignals, revealChars, callData };
+    return { passportData, inputs, proof, publicSignals, revealChars, callData };
   }
 
   describe("Proof of Passport SBT", function () {
+    async function deployHardhatFixture() {
+      const proofFixtureOutput = await deployProofFixture();
+
+      const [owner, otherAccount, thirdAccount] = await ethers.getSigners();
+
+      const Verifier = await ethers.getContractFactory("Groth16Verifier");
+      const verifier = await Verifier.deploy();
+      await verifier.waitForDeployment();
+    
+      console.log(`Verifier deployed to ${verifier.target}`);
+
+      const Formatter = await ethers.getContractFactory("Formatter");
+      const formatter = await Formatter.deploy();
+      await formatter.waitForDeployment();
+      await formatter.addCountryCodes(Object.entries(countryCodes));
+
+      console.log(`Formatter deployed to ${formatter.target}`);
+
+      const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
+      const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
+      await proofOfPassport.waitForDeployment();
+    
+      console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
+
+      return {verifier, proofOfPassport, formatter, owner, otherAccount, thirdAccount, ...proofFixtureOutput}
+    }
+
     it("Verifier verifies a correct proof", async () => {
-      const { verifier, callData } = await loadFixture(deployFixture);
+      const { verifier, callData } = await loadFixture(deployHardhatFixture);
 
       expect(
         await verifier.verifyProof(callData[0], callData[1], callData[2], callData[3])
@@ -120,7 +126,7 @@ describe("Proof of Passport", function () {
 
     it("Should allow SBT minting", async function () {
       const { proofOfPassport, otherAccount, thirdAccount, callData } = await loadFixture(
-        deployFixture
+        deployHardhatFixture
       );
 
       await proofOfPassport
@@ -132,7 +138,7 @@ describe("Proof of Passport", function () {
 
     it("Shouldn't allow minting with an invalid proof", async function () {
       const { proofOfPassport, otherAccount, callData } = await loadFixture(
-        deployFixture
+        deployHardhatFixture
       );
 
       const badCallData = JSON.parse(JSON.stringify(callData));
@@ -148,7 +154,7 @@ describe("Proof of Passport", function () {
 
     it("Should have a correct tokenURI a user to mint a SBT", async function () {
       const { proofOfPassport, otherAccount, callData } = await loadFixture(
-        deployFixture
+        deployHardhatFixture
       );
 
       console.log('callData', callData)
@@ -176,7 +182,7 @@ describe("Proof of Passport", function () {
 
     it("Should convert ISO dates to unix timestamps correctly", async function () {
       const { formatter } = await loadFixture(
-        deployFixture
+        deployHardhatFixture
       );
 
       const unix_timestamp = await formatter.dateToUnixTimestamp("230512") // 2023 05 12
@@ -192,7 +198,7 @@ describe("Proof of Passport", function () {
 
     it("Should support expiry", async function () {
       const { proofOfPassport, otherAccount, callData } = await loadFixture(
-        deployFixture
+        deployHardhatFixture
       );
 
       const tx = await proofOfPassport
@@ -220,22 +226,38 @@ describe("Proof of Passport", function () {
     })
   });
 
-  describe("Minting using lambda function", function () {
+  describe("Minting on mumbai", function () {
+    it.only("Should allow minting using a proof generated by ark-circom", async function () {
+      const callDataFromArkCircom = [["0x247c20c5b5fb7f346341254abc22cb4677fb75537699646301aa0753b497638e", "0x08a06011dc0f82bdff18a17e1e65d37f4857bbe1b06c8cd63dc331682b43609f"], [["0x0619582dab21f8aa49a2eb81214f4d8d47ae724a1f6d9ea4fac1903e20646ba2", "0x20276fc851f2ecf7ec0944802cc1783f277797bed71cc92aea852587a5f67980"], ["0x0dc7d6e1501602fdf29eae0bbdc30d839b21f91a0f36f4b45fdcf93f70e55fce", "0x18eec3364fb37ba95b4a01c7c89d7c1408311809d06aa531dd2e7e8a1205f29e"]], ["0x0d861d4efb8bc2c8e0768ae6de070964ef0f1102d0157e32ede629ddfe188d77", "0x16afd1673e9434b985adaaacb7c4009260a4733c08144ae85ba4fdbaa24ee678"], ["0x0000000000000000000000000000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000000000000000000000000000", "0x0000000000000000000000000000000000000000000000000000000000000000", "0x000000000000000000000000000000006df9dd0914f215fafa1513e51ac9f1e2", "0x00000000000000000000000000000000000000000000093e703cd030e286890e", "0x0000000000000000000000000000000000000000000004770a914f3ae4e1288b", "0x000000000000000000000000000000000000000000000bf7e8ecb4e9609a489d", "0x00000000000000000000000000000000000000000000035762de41038bc2dcf1", "0x00000000000000000000000000000000000000000000050442c4055d62e9c4af", "0x0000000000000000000000000000000000000000000004db2bdc79a477a0fce0", "0x000000000000000000000000000000000000000000000acdbf649c76ec3df9ad", "0x000000000000000000000000000000000000000000000aaa0e6798ee3694f5ca", "0x000000000000000000000000000000000000000000000a1eaac37f80dd5e2879", "0x00000000000000000000000000000000000000000000033e063fba83c27efbce", "0x00000000000000000000000000000000000000000000045b9b05cab95025b000", "0x000000000000000000000000e6e4b6a802f2e0aee5676f6010e0af5c9cdd0a50"]];
+
+      const proofOfPassportOnMumbaiAddress = '0x81Ed3aB113C3169B4F1709c2F184Cb9B45Ea81E9';
+      const proofOfPassportOnMumbai = await ethers.getContractAt('ProofOfPassport', proofOfPassportOnMumbaiAddress);
+      try {
+        const tx = await proofOfPassportOnMumbai.mint(...callDataFromArkCircom as any);
+        console.log('txHash', tx.hash);
+        const receipt = await tx.wait();
+        console.log('receipt', receipt)
+        expect(receipt?.status).to.equal(1);
+      } catch (error) {
+        console.error(error);
+      }
+    });
+
     it.skip("Should allow minting using lambda function", async function () {
       const { callData } = await loadFixture(
-        deployFixture
+        deployProofFixture
       );
 
-      const proofOfPassportOnMumbaiAddress = '0xaf0f1669385182829d0DEa233E83299DED28954A';
+      const proofOfPassportOnMumbaiAddress = '0x0AAd39A080129763c8E1e2E9DC44E777DB0362a3';
       const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
       const proofOfPassportOnMumbai = await ethers.getContractAt('ProofOfPassport', proofOfPassportOnMumbaiAddress);
 
-      const transactionRequest = await proofOfPassportOnMumbai
-        .mint.populateTransaction(...callData);
-
-      console.log('transactionRequest', transactionRequest);
-
       try {
+        const transactionRequest = await proofOfPassportOnMumbai
+          .mint.populateTransaction(...callData);
+
+        console.log('transactionRequest', transactionRequest);
+
         const apiEndpoint = process.env.AWS_ENDPOINT;
         if (!apiEndpoint) {
           throw new Error('AWS_ENDPOINT env variable is not set');
