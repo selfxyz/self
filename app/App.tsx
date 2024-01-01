@@ -290,25 +290,6 @@ function App(): JSX.Element {
     // 6. Call the verifier contract with the calldata
 
   };
-
-  const proveRust = async () => {
-    const start = Date.now();
-    NativeModules.RNPassportReader.proveRust((err: any, res: any) => {
-      const end = Date.now();
-      if (err) {
-        console.error(err);
-        setProofResult(
-          "res:" + err.toString() + ' time elapsed: ' + (end - start) + 'ms',
-        );
-      } else {
-        console.log(res);
-        setProofResult(
-          "res:" + res.toString() + ' time elapsed: ' + (end - start) + 'ms',
-        );
-      }
-    });
-  };
-
   return (
     <GluestackUIProvider config={config}>
       <SafeAreaView style={backgroundStyle}>
@@ -524,15 +505,6 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
-
-            <Button
-              onPress={proveRust}
-              marginTop={10}
-            >
-              <ButtonText>Generate sample proof with arkworks</ButtonText>
-            </Button>
-            {proofResult && <Text>{proofResult}</Text>}
-            {error && <Text>{error}</Text>}
 
           </View>
         </ScrollView>

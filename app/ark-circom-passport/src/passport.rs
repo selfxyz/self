@@ -56,24 +56,6 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
 }
 
 #[no_mangle]
-pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_proveRSAInRust(
-    _: JNIEnv,
-    _: JClass,
-) -> c_int {
-    fn run() -> Result<u128, Box<dyn std::error::Error>> {
-        log::error!("log before imports");
-        Ok(10)
-    }
-    match run() {
-        Ok(elapsed_millis) => elapsed_millis as i32, // Assuming the elapsed time will fit in an i32
-        Err(_) => -1, // return -1 or some other error code when there's an error
-    }
-}
-
-
-
-
-#[no_mangle]
 pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     env: JNIEnv,
     _: JClass,
