@@ -1,3 +1,5 @@
+export const AWS_ENDPOINT = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
+
 export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],

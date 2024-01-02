@@ -45,9 +45,9 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
-  LOCAL_IP,
 } from '@env';
 import {DataHash, PassportData} from '../common/src/utils/types';
+import {AWS_ENDPOINT} from '../common/src/constants/constants';
 import {
   hash,
   toUnsignedByte,
@@ -59,8 +59,14 @@ import {
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
+import "@ethersproject/shims"
+import { ethers } from "ethers";
+import axios from 'axios';
+import groth16ExportSolidityCallData from './utils/snarkjs';
+import contractAddresses from "./deployments/addresses.json"
+import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
-console.log('LOCAL_IP', LOCAL_IP);
 
 const SKIP_SCAN = false;
 
@@ -89,8 +95,7 @@ function App(): JSX.Element {
 
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const [proofResult, setProofResult] = useState<string>('');
-
+  const [proof, setProof] = useState<{proof: string, inputs: string} | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
 
   const [disclosure, setDisclosure] = useState({
@@ -258,8 +263,6 @@ function App(): JSX.Element {
     const start = Date.now();
     NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
       const end = Date.now();
-      setGeneratingProof(false)
-      setStep('proofGenerated');
 
       if (err) {
         console.error(err);
@@ -275,21 +278,67 @@ function App(): JSX.Element {
 
       const deserializedProof = JSON.parse(parsedResponse.serialized_proof);
       console.log('deserializedProof', deserializedProof);
+
+      const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
+      console.log('deserializedInputs', deserializedInputs);
       
       setProofTime(parsedResponse.duration);
       setTotalTime(end - start);
 
-      setProofResult(JSON.stringify(deserializedProof));
+      setProof({
+        proof: JSON.stringify(deserializedProof),
+        inputs: JSON.stringify(deserializedInputs),
+      });
+      setGeneratingProof(false)
+      setStep('proofGenerated');
     });
   };
 
-  const handleMint = () => {
+  const handleMint = async () => {
     setMinting(true)
+    if (!proof?.proof || !proof?.inputs) {
+      console.log('proof or inputs is null');
+      return;
+    }
+    if (!contractAddresses.ProofOfPassport || !proofOfPassportArtefact.abi) {
+      console.log('contracts addresses or abi not found');
+      return;
+    }
 
-    // 5. Format the proof and publicInputs as calldata for the verifier contract
-    // 6. Call the verifier contract with the calldata
+    // Format the proof and publicInputs as calldata for the verifier contract
+    const p = JSON.parse(proof.proof);
+    const i = JSON.parse(proof.inputs);
+    // const p = {"a": ["16502577771187684977980616374304236605057905196561863637384296592370445017998", "3901861368174142739149849352179287633574688417834634300291202761562972709023"], "b": [["14543689684654938043989715590415160645004827219804187355799512446208262437248", "2758656853017552407340621959452084149765188239766723663849017782705599048610"], ["11277365272183899064677884160333958573750879878546952615484891009952508146334", "6233152645613613236466445508816847016425532566954931368157994995587995754446"]], "c": ["6117026818273543012196632774531089444191538074414171872462281003025766583671", "10261526153619394223629018490329697233150978685332753612996629076672112420472"]}
+    // const i = ["0", "0", "0", "146183216590389235917737925524385821154", "43653084046336027166990", "21085389953176386480267", "56519161086598100699293", "15779090386165698845937", "23690430366843652392111", "22932463418406768540896", "51019038683800409078189", "50360649287615093470666", "47789371969706091489401", "15311247864741754764238", "20579290199534174842880", "1318168358802144844680228651107716082931624381008"]
+    console.log('p', p);
+    console.log('i', i);
+    const cd = groth16ExportSolidityCallData(p, i);
+    const callData = JSON.parse(`[${cd}]`);
+    console.log('callData', callData);
 
+    // format transaction
+    // for now, we do it all on mumbai
+    try {
+      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
+      const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
+
+      const transactionRequest = await proofOfPassportOnMumbai
+        .mint.populateTransaction(...callData);
+      console.log('transactionRequest', transactionRequest);
+
+      const response = await axios.post(AWS_ENDPOINT, {
+        chain: "mumbai",
+        tx_data: transactionRequest
+      });
+      console.log('response status', response.status)
+      console.log('response data', response.data)
+      const receipt = await provider.waitForTransaction(response.data.hash);
+      console.log('receipt', receipt)
+    } catch (err) {
+      console.log('err', err);
+    }
   };
+
   return (
     <GluestackUIProvider config={config}>
       <SafeAreaView style={backgroundStyle}>
@@ -456,7 +505,7 @@ function App(): JSX.Element {
                   Proof:
                 </Text>
                 <Text>
-                  {proofResult}
+                  {JSON.stringify(proof)}
                 </Text>
 
                 <Text>
@@ -466,22 +515,12 @@ function App(): JSX.Element {
                   <Text style={{ fontWeight: 'bold' }}>Total Duration:</Text> {formatDuration(totalTime)}
                 </Text>
 
-
-                {generatingProof ?
-                  <Button
-                    onPress={handleMint}
-                    marginTop={10}
-                  >
-                    <ButtonSpinner mr="$1" />
-                    <ButtonText>Minting Proof of Passport</ButtonText>
-                  </Button>
-                  : <Button
-                      onPress={handleMint}
-                      marginTop={10}
-                    >
-                      <ButtonText>Mint Proof of Passport</ButtonText>
-                    </Button>
-                }
+                <Button
+                  onPress={handleMint}
+                  marginTop={10}
+                >
+                  <ButtonText>Mint Proof of Passport</ButtonText>
+                </Button>
               </View>
             ) : null}
           </View>
