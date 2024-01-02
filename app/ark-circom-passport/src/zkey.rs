@@ -39,6 +39,7 @@ use std::{
 use ark_bn254::{Bn254, Fq, Fq2, Fr, G1Affine, G2Affine};
 use ark_groth16::{ProvingKey, VerifyingKey};
 use num_traits::Zero;
+use std::io::Cursor;
 
 type IoResult<T> = Result<T, SerializationError>;
 
@@ -54,6 +55,16 @@ pub fn read_zkey<R: Read + Seek>(
     reader: &mut R,
 ) -> IoResult<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> {
     let mut binfile = BinFile::new(reader)?;
+    let proving_key = binfile.proving_key()?;
+    let matrices = binfile.matrices()?;
+    Ok((proving_key, matrices))
+}
+
+pub fn read_zkey_from_include_bytes(
+    data: &[u8],
+) -> IoResult<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> {
+    let mut cursor = Cursor::new(data);
+    let mut binfile = BinFile::new(&mut cursor)?;
     let proving_key = binfile.proving_key()?;
     let matrices = binfile.matrices()?;
     Ok((proving_key, matrices))

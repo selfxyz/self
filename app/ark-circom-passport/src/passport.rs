@@ -1,4 +1,4 @@
-use ark_circom::{ethereum, CircomBuilder, CircomConfig};
+use ark_circom::{ethereum, CircomBuilder, CircomConfig, circom::CircomReduction, WitnessCalculator};
 use ark_std::rand::thread_rng;
 use color_eyre::Result;
 use std::os::raw::c_int;
@@ -8,12 +8,9 @@ use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::{Groth16, Proof};
 use ark_ec::AffineRepr;
 
-use num_bigint::{BigInt, Sign};
+use num_bigint::{BigInt, Sign, ToBigInt};
 extern crate hex;
 use hex::decode;
-
-use std::time::Instant;
-use std::convert::TryInto;
 
 type GrothBn = Groth16<Bn254>;
 
@@ -31,8 +28,18 @@ use serde_json::json;
 #[macro_use]
 extern crate serde_derive;
 
-mod zkey; // This assumes the function is in a module named `zkey_reader`.
-pub use zkey::read_zkey;
+use std::{
+    collections::HashMap,
+    time::Instant,
+    convert::TryInto,
+    sync::Mutex
+};
+
+use wasmer::{Module, Store};
+use once_cell::sync::{Lazy, OnceCell};
+
+mod zkey;
+pub use zkey::{read_zkey, read_zkey_from_include_bytes};
 
 
 #[no_mangle]
@@ -41,7 +48,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
     _: JClass,
 ) -> jstring {
     android_logger::init_once(Config::default().with_min_level(Level::Trace));
-    log::error!("log before imports");
+    log::error!("PROOF OF PASSPORT ---- log before imports");
 
     let my_int: c_int = -1;
     let my_str: String = "no_proof".to_string();
@@ -57,6 +64,21 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
     output.into_inner()
 }
 
+const WASM: &'static [u8] = include_bytes!("../passport/proof_of_passport.wasm");
+static WITNESS_CALCULATOR: OnceCell<Mutex<WitnessCalculator>> = OnceCell::new();
+
+#[cfg(not(feature = "dylib"))]
+#[must_use]
+pub fn witness_calculator() -> &'static Mutex<WitnessCalculator> {
+    WITNESS_CALCULATOR.get_or_init(|| {
+        let store = Store::default();
+        let module = Module::from_binary(&store, WASM).expect("WASM should be valid");
+        let result =
+            WitnessCalculator::from_module(module).expect("Failed to create WitnessCalculator");
+        Mutex::new(result)
+    })
+}
+
 #[no_mangle]
 pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     env: JNIEnv,
@@ -70,7 +92,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     address: JString,
 ) -> jstring {
     
-    log::error!("formatting inputsaaaa...");
+    log::error!("PROOF OF PASSPORT ---- formatting inputsaaaa...");
     fn run_proof(
         mrz: JObject,
         reveal_bitmap: JObject,
@@ -83,8 +105,18 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     ) -> Result<jstring, Box<dyn std::error::Error>> {
         android_logger::init_once(Config::default().with_min_level(Level::Trace));
 
-        log::error!("formatting inputs...");
-        log::error!("mrz_veccccccc");
+
+        log::error!("PROOF OF PASSPORT ---- loading zkey...");
+        let start = Instant::now();
+        let now = Instant::now();
+        let file_bytes: &'static [u8] = include_bytes!("../passport/proof_of_passport_final.zkey");
+        log::error!("PROOF OF PASSPORT ---- zkey size: {}", file_bytes.len());
+        let (params, matrices) = read_zkey_from_include_bytes(file_bytes).unwrap();
+        log::error!("PROOF OF PASSPORT ---- zkey loaded. Took: {:?}", now.elapsed());
+        let now = Instant::now();
+
+        log::error!("PROOF OF PASSPORT ---- formatting inputs...");
+        log::error!("PROOF OF PASSPORT ---- mrz_veccccccc");
         
         let mrz_vec: Vec<String> = java_arraylist_to_rust_vec(&env, mrz)?;
         let reveal_bitmap_vec: Vec<String> = java_arraylist_to_rust_vec(&env, reveal_bitmap)?;
@@ -94,84 +126,83 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         let pubkey_vec: Vec<String> = java_arraylist_to_rust_vec(&env, pubkey)?;
         let address_str: String = env.get_string(address)?.into();
 
-        log::error!("mrz_vec {:?}", mrz_vec);
-        log::error!("reveal_bitmap_vec {:?}", reveal_bitmap_vec);
-        log::error!("data_hashes_vec {:?}", data_hashes_vec);
-        log::error!("e_content_bytes_vec {:?}", e_content_bytes_vec);
-        log::error!("signature_vec {:?}", signature_vec);
-        log::error!("pubkey_vec {:?}", pubkey_vec);
-        log::error!("address_str {:?}", address_str);
-        
-        log::error!("loading circuit...");
-        const MAIN_WASM: &'static [u8] = include_bytes!("../passport/proof_of_passport.wasm");
-        const MAIN_R1CS: &'static [u8] = include_bytes!("../passport/proof_of_passport.r1cs");
-        log::error!("circuit loaded");
-        
-        let cfg = CircomConfig::<Bn254>::from_bytes(MAIN_WASM, MAIN_R1CS)?;
+        log::error!("PROOF OF PASSPORT ---- mrz_vec {:?}", mrz_vec);
+        log::error!("PROOF OF PASSPORT ---- reveal_bitmap_vec {:?}", reveal_bitmap_vec);
+        log::error!("PROOF OF PASSPORT ---- data_hashes_vec {:?}", data_hashes_vec);
+        log::error!("PROOF OF PASSPORT ---- e_content_bytes_vec {:?}", e_content_bytes_vec);
+        log::error!("PROOF OF PASSPORT ---- signature_vec {:?}", signature_vec);
+        log::error!("PROOF OF PASSPORT ---- pubkey_vec {:?}", pubkey_vec);
+        log::error!("PROOF OF PASSPORT ---- address_str {:?}", address_str);
 
-        let mut builder = CircomBuilder::new(cfg);
+        fn parse_and_insert(hash_map: &mut HashMap<String, Vec<BigInt>>, key: &str, data: Vec<&str>) {
+            let parsed_data: Vec<BigInt> = data.into_iter()
+                .filter_map(|s| s.parse::<u128>().ok().and_then(|num| num.to_bigint()))
+                .collect();
+            hash_map.insert(key.to_string(), parsed_data);
+        }
 
-        mrz_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("mrz", n));
-        reveal_bitmap_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("reveal_bitmap", n));
-        data_hashes_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("dataHashes", n));
-        e_content_bytes_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("eContentBytes", n));
-        signature_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("signature", n));
-        pubkey_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("pubkey", n));
-
+        let mut inputs: HashMap<String, Vec<num_bigint::BigInt>> = HashMap::new();
+        parse_and_insert(&mut inputs, "mrz", mrz_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "reveal_bitmap", reveal_bitmap_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "dataHashes", data_hashes_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "eContentBytes", e_content_bytes_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "signature", signature_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "pubkey", pubkey_vec.iter().map(AsRef::as_ref).collect());
         let address_bigint = BigInt::from_bytes_be(Sign::Plus, &decode(&address_str[2..])?);
-        builder.push_input("address", address_bigint);
+        inputs.insert("address".to_string(), vec![address_bigint]);
 
-        // create an empty instance for setting it up
-        let circom = builder.setup();
-        
         let mut rng = thread_rng();
-        let params = GrothBn::generate_random_parameters_with_reduction(circom, &mut rng)?;
-        
-        let circom = builder.build()?;
-        log::error!("circuit built");
-        
-        let inputs = circom.get_public_inputs().unwrap();
-        log::error!("inputs: {:?}", inputs);
+        use ark_std::UniformRand;
+        let num_inputs = matrices.num_instance_variables;
+        let num_constraints = matrices.num_constraints;
+        let rng = &mut rng;
 
-        let converted_inputs: ethereum::Inputs = inputs.as_slice().into();
-        let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
-        let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
-        log::error!("Serialized inputs: {:?}", serialized_inputs);
+        let r = ark_bn254::Fr::rand(rng);
+        let s = ark_bn254::Fr::rand(rng);
 
-        let start1 = Instant::now();
-        
-        let proof = GrothBn::prove(&params, circom, &mut rng)?;
-        
-        let proof_str = proof_to_proof_str(&proof);
-        let serialized_proof = serde_json::to_string(&proof_str).unwrap();
+        let full_assignment = witness_calculator()
+        .lock()
+        .expect("Failed to lock witness calculator")
+        .calculate_witness_element::<Bn254, _>(inputs, false)
+        .unwrap();
+        log::error!("PROOF OF PASSPORT ---- witness calculated. Took: {:?}", now.elapsed());
+        let now = Instant::now();
 
-        let duration1 = start1.elapsed();
-        log::error!("proof generated. Took: {:?}", duration1);
-        
-        let start2 = Instant::now();
+        let proof = Groth16::<Bn254, CircomReduction>::create_proof_with_reduction_and_matrices(
+            &params,
+            r,
+            s,
+            &matrices,
+            num_inputs,
+            num_constraints,
+            full_assignment.as_slice(),
+        )
+        .unwrap();
+        log::error!("PROOF OF PASSPORT ---- proof done. Took: {:?}", now.elapsed());
+        let now = Instant::now();
 
-        let pvk = GrothBn::process_vk(&params.vk).unwrap();
-        
-        let verified = GrothBn::verify_with_processed_vk(&pvk, &inputs, &proof)?;
-        let duration2 = start2.elapsed();
-        log::error!("proof verified. Took: {:?}", duration2);
+        let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
+        let inputs = &full_assignment[1..num_inputs];
+        let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, inputs, &proof).unwrap();
 
         assert!(verified);
 
+        log::error!("PROOF OF PASSPORT ---- proof verified. Took: {:?}", now.elapsed());
+
+        log::error!("PROOF OF PASSPORT ---- inputs: {:?}", inputs);
+
+        let converted_inputs: ethereum::Inputs = inputs.into();
+        let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
+        let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
+        log::error!("PROOF OF PASSPORT ---- Serialized inputs: {:?}", serialized_inputs);
+
+        let proof_str = proof_to_proof_str(&proof);
+        let serialized_proof = serde_json::to_string(&proof_str).unwrap();
+
+        log::error!("PROOF OF PASSPORT ---- Serialized proof: {:?}", serialized_proof);
+
         let combined = json!({
-            "duration": duration1.as_millis(),
+            "duration": start.elapsed().as_millis(),
             "serialized_proof": serialized_proof,
             "serialized_inputs": serialized_inputs
         });
@@ -350,7 +381,6 @@ mod tests {
             hash_map.insert(key.to_string(), parsed_data);
         }
 
-        let mut wtns = WitnessCalculator::new("./passport/proof_of_passport.wasm").unwrap();
         let mut inputs: HashMap<String, Vec<num_bigint::BigInt>> = HashMap::new();
         parse_and_insert(&mut inputs, "mrz", mrz_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "reveal_bitmap", reveal_bitmap_vec.iter().map(AsRef::as_ref).collect());
@@ -370,6 +400,7 @@ mod tests {
         let r = ark_bn254::Fr::rand(rng);
         let s = ark_bn254::Fr::rand(rng);
 
+        let mut wtns = WitnessCalculator::new("./passport/proof_of_passport.wasm").unwrap();
         let full_assignment = wtns
             .calculate_witness_element::<Bn254, _>(inputs, false)
             .unwrap();
@@ -389,13 +420,34 @@ mod tests {
         println!("proof done. Took: {:?}", now.elapsed());
         let now = Instant::now();
 
-
         let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
         let inputs = &full_assignment[1..num_inputs];
         let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, inputs, &proof).unwrap();
         println!("proof verified. Took: {:?}", now.elapsed());
 
         assert!(verified);
+
+        println!("inputs: {:?}", inputs);
+
+        let converted_inputs: ethereum::Inputs = inputs.into();
+        let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
+        let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
+        println!("Serialized inputs: {:?}", serialized_inputs);
+
+        let proof_str = proof_to_proof_str(&proof);
+        let serialized_proof = serde_json::to_string(&proof_str).unwrap();
+
+        println!("Serialized proof: {:?}", serialized_proof);
+
+        let combined = json!({
+            "duration": now.elapsed().as_millis(),
+            "serialized_proof": serialized_proof,
+            "serialized_inputs": serialized_inputs
+        });
+        
+        let combined_str = combined.to_string();
+        println!("proof and inputs: {:?}", combined_str);
+
     
         // // launch the network & compile the verifier
         // println!("launching network");
