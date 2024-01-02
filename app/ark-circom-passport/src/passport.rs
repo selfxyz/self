@@ -31,6 +31,9 @@ use serde_json::json;
 #[macro_use]
 extern crate serde_derive;
 
+mod zkey; // This assumes the function is in a module named `zkey_reader`.
+pub use zkey::read_zkey;
+
 
 #[no_mangle]
 pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
@@ -242,14 +245,19 @@ mod tests {
         providers::{Http, Middleware, Provider},
         utils::Anvil,
     };
-    use std::{error::Error, sync::Arc};
+    use std::{
+        error::Error,
+        fs::File,
+        sync::Arc,
+    };
+    use ark_circom::circom::CircomReduction;
 
-
+    
     // We need to implement the conversion from the Ark-Circom's internal Ethereum types to
     // the ones expected by the abigen'd types. Could we maybe provide a convenience
     // macro for these, given that there's room for implementation error?
     abigen!(Groth16Verifier, "./artifacts/verifier_artifact.json");
-    use groth_16_verifier::{G1Point, G2Point, Proof as EthProof, VerifyingKey};
+    use groth_16_verifier::{G1Point, G2Point, Proof as EthProof, VerifyingKey as Groth16VerifyingKey};
 
     impl From<ethereum::G1> for G1Point {
         fn from(src: ethereum::G1) -> Self {
@@ -274,7 +282,7 @@ mod tests {
             }
         }
     }
-    impl From<ethereum::VerifyingKey> for VerifyingKey {
+    impl From<ethereum::VerifyingKey> for Groth16VerifyingKey {
         fn from(src: ethereum::VerifyingKey) -> Self {
             Self {
                 alfa_1: src.alpha1.into(),
@@ -313,8 +321,12 @@ mod tests {
     #[tokio::test]
     async fn test_proof() -> Result<(), Box<dyn Error>> {
         let mut start = Instant::now();
-
+        
         println!("loading circuit...");
+        let path = "./passport/proof_of_passport_final.zkey";
+        let mut file = File::open(path).unwrap();
+        let (params, matrices) = read_zkey(&mut file).unwrap();
+
         const MAIN_WASM: &'static [u8] = include_bytes!("../passport/proof_of_passport.wasm");
         const MAIN_R1CS: &'static [u8] = include_bytes!("../passport/proof_of_passport.r1cs");
         let cfg = CircomConfig::<Bn254>::from_bytes(MAIN_WASM, MAIN_R1CS)?;
@@ -326,7 +338,7 @@ mod tests {
         let duration = start.elapsed();
         println!("Circuit loaded. Took: {:?}", duration);
 
-        start = Instant::now();    
+        start = Instant::now();
         let mut builder = CircomBuilder::new(cfg,);
         let mrz_vec: Vec<String> = vec!["97", "91", "95", "31", "88", "80", "60", "70", "82", "65", "84", "65", "86", "69", "82", "78", "73", "69", "82", "60", "60", "70", "76", "79", "82", "69", "78", "84", "60", "72", "85", "71", "85", "69", "83", "60", "74", "69", "65", "78", "60", "60", "60", "60", "60", "60", "60", "60", "60", "49", "57", "72", "65", "51", "52", "56", "50", "56", "52", "70", "82", "65", "48", "48", "48", "55", "49", "57", "49", "77", "50", "57", "49", "50", "48", "57", "53", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "48", "50"].iter().map(|&s| s.to_string()).collect();
         let reveal_bitmap_vec: Vec<String> = vec!["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1", "1", "1", "1", "1", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"].iter().map(|&s| s.to_string()).collect();
@@ -359,12 +371,7 @@ mod tests {
         builder.push_input("address", address_bigint);
     
         // create an empty instance for setting it up
-        let circom = builder.setup();
-        
-        let mut rng = thread_rng();
-        let params = GrothBn::generate_random_parameters_with_reduction(circom, &mut rng)?;
-        
-        let circom = builder.build()?;
+        let circom = builder.build().unwrap();
         log::error!("circuit built");
 
         let duration = start.elapsed();
@@ -379,7 +386,8 @@ mod tests {
         log::error!("Serialized inputs: {:?}", serialized_inputs);
         
         start = Instant::now();
-        let proof = GrothBn::prove(&params, circom, &mut rng)?;
+        let mut rng = thread_rng();
+        let proof = Groth16::<Bn254, CircomReduction>::prove(&params, circom, &mut rng).unwrap();
         println!("proof: {:?}", proof);
     
         let proof_str = proof_to_proof_str(&proof);
@@ -389,8 +397,8 @@ mod tests {
         println!("Proof done. Took: {:?}", duration);
         start = Instant::now();
         
-        let pvk = GrothBn::process_vk(&params.vk).unwrap();
-        let verified = GrothBn::verify_with_processed_vk(&pvk, &inputs, &proof)?;
+        let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
+        let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, &inputs, &proof).unwrap();
         let duration = start.elapsed();
         println!("Proof verified. Took: {:?}", duration);
     
