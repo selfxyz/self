@@ -97,6 +97,7 @@ function App(): JSX.Element {
   const [totalTime, setTotalTime] = useState<number>(0);
   const [proof, setProof] = useState<{proof: string, inputs: string} | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
+  const [mintText, setMintText] = useState<string | null>(null);
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -332,8 +333,22 @@ function App(): JSX.Element {
       });
       console.log('response status', response.status)
       console.log('response data', response.data)
+      setMintText(`Network: Mumbai. Transaction hash: ${response.data.hash}`)
       const receipt = await provider.waitForTransaction(response.data.hash);
       console.log('receipt', receipt)
+      if (receipt?.status === 1) {
+        Toast.show({
+          type: 'success',
+          text1: 'Proof of passport minted',
+        })
+        setMintText(`SBT minted. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+      } else {
+        Toast.show({
+          type: 'error',
+          text1: 'Proof of passport minting failed',
+        })
+        setMintText(`Error minting SBT. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+      }
     } catch (err) {
       console.log('err', err);
     }
@@ -521,6 +536,9 @@ function App(): JSX.Element {
                 >
                   <ButtonText>Mint Proof of Passport</ButtonText>
                 </Button>
+                {mintText && <Text>
+                  {mintText}
+                </Text>}
               </View>
             ) : null}
           </View>
