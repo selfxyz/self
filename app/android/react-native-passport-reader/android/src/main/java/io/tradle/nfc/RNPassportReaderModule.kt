@@ -604,17 +604,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         callback.invoke(null, resultFromRust)
     }
 
-    external fun proveRSAInRust(): Int
-
-    @ReactMethod
-    fun proveRust(callback: Callback) {
-        // Call the Rust function
-        val resultFromProof = proveRSAInRust()
-        
-        // Return the result to JavaScript through the callback
-        callback.invoke(null, resultFromProof)
-    }
-    
     external fun provePassport(
         mrz: List<String>,
         reveal_bitmap: List<String>,

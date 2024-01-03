@@ -44,4 +44,5 @@ yarn snarkjs zkey export verificationkey build/proof_of_passport_final.zkey buil
 
 yarn snarkjs zkey export solidityverifier build/proof_of_passport_final.zkey build/Verifier.sol
 cp build/Verifier.sol ../contracts/contracts/Verifier.sol
-echo "copied Verifier.sol to contracts"
+cp build/proof_of_passport_final.zkey ../app/ark-circom-passport/passport/
+echo "copied Verifier.sol to contracts and proof_of_passport_final.zkey to ark-circom-passport"
