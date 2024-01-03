@@ -20,7 +20,7 @@ fi
 cd ..
 
 echo "compiling circuit"
-circom circuits/proof_of_passport.circom --r1cs --sym --wasm --output build
+circom circuits/proof_of_passport.circom --r1cs --wasm --output build
 
 mkdir -p ../app/ark-circom-passport/passport/
 cp build/proof_of_passport.r1cs ../app/ark-circom-passport/passport/
