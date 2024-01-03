@@ -56,7 +56,8 @@ cargo {
     // module  = "/Users/turboblitz/code/my-code/passport-sbt/app/halo2-passport"
     libname = "ark_circom_passport"          // Or whatever matches Cargo.toml's [package] name.
     // targets = ["arm", "x86"]  // failing
-    targets = ["arm64", "darwin-aarch64"]  // Those work
+    // targets = ["arm64", "darwin-aarch64"]  // add this one for apple later 
+    targets = ["arm64"]  // Those work
     apiLevel = 29
     profile = 'release'
 }

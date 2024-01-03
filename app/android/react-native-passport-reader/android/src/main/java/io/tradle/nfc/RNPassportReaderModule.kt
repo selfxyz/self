@@ -305,7 +305,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     }
                 }
 
-                val gson = Gson()
                 
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
                 dg1File = DG1File(dg1In)   
@@ -314,6 +313,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
                 
+                // val gson = Gson()
                 // Log.d(TAG, "============FIRST CONSOLE LOG=============")
                 // Log.d(TAG, "dg1File: " + gson.toJson(dg1File))
                 // Log.d(TAG, "dg2File: " + gson.toJson(dg2File))
@@ -398,7 +398,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 val digest = MessageDigest.getInstance(sodFile.digestAlgorithm)
                 Log.d(TAG, "Using digest algorithm: ${sodFile.digestAlgorithm}")
 
-                val gson = Gson()
                 
                 val dataHashes = sodFile.dataGroupHashes
                 
@@ -406,6 +405,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 val dg1Hash = digest.digest(dg1File.encoded)
                 val dg2Hash = digest.digest(dg2File.encoded)
                 
+                // val gson = Gson()
                 // Log.d(TAG, "dataHashes " + gson.toJson(dataHashes))
                 // val hexMap = sodFile.dataGroupHashes.mapValues { (_, value) ->
                 //     value.joinToString("") { "%02x".format(it) }
@@ -511,19 +511,19 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
           val mrzInfo = dg1File.mrzInfo
 
-          var quality = 100
-          if (opts?.hasKey("quality") == true) {
-              quality = (opts?.getDouble("quality") ?: 1.0 * 100).toInt()
-          }
+        //   var quality = 100
+        //   if (opts?.hasKey("quality") == true) {
+        //       quality = (opts?.getDouble("quality") ?: 1.0 * 100).toInt()
+        //   }
           val gson = Gson()
 
           val signedDataField = SODFile::class.java.getDeclaredField("signedData")
           signedDataField.isAccessible = true
           
-          val signedData = signedDataField.get(sodFile) as SignedData
+        //   val signedData = signedDataField.get(sodFile) as SignedData
           
           val eContentAsn1InputStream = ASN1InputStream(sodFile.eContent.inputStream())
-          val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
+        //   val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
 
           val passport = Arguments.createMap()
           passport.putString("mrz", mrzInfo.toString())
@@ -548,7 +548,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             // }
 
             // Old one, probably wrong:
-              passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
+            //   passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
             //   passport.putString("curveName", (publicKey.parameters.algorithm)) or maybe this
               passport.putString("publicKeyQ", publicKey.q.toString())
           }
@@ -604,17 +604,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         callback.invoke(null, resultFromRust)
     }
 
-    external fun proveRSAInRust(): Int
-
-    @ReactMethod
-    fun proveRust(callback: Callback) {
-        // Call the Rust function
-        val resultFromProof = proveRSAInRust()
-        
-        // Return the result to JavaScript through the callback
-        callback.invoke(null, resultFromProof)
-    }
-    
     external fun provePassport(
         mrz: List<String>,
         reveal_bitmap: List<String>,

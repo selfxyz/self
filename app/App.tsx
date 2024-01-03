@@ -45,9 +45,9 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
-  LOCAL_IP,
 } from '@env';
 import {DataHash, PassportData} from '../common/src/utils/types';
+import {AWS_ENDPOINT} from '../common/src/constants/constants';
 import {
   hash,
   toUnsignedByte,
@@ -57,11 +57,17 @@ import {
   formatMrz,
   splitToWords
 } from '../common/src/utils/utils';
+import { samplePassportData } from '../common/src/utils/passportDataStatic';
+
+import "@ethersproject/shims"
+import { ethers } from "ethers";
+import axios from 'axios';
+import groth16ExportSolidityCallData from './utils/snarkjs';
+import contractAddresses from "./deployments/addresses.json"
+import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
-console.log('LOCAL_IP', LOCAL_IP);
 
-const CACHE_DATA_IN_LOCAL_SERVER = false;
 const SKIP_SCAN = false;
 
 const attributeToPosition = {
@@ -89,9 +95,9 @@ function App(): JSX.Element {
 
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const [proofResult, setProofResult] = useState<string>('');
-
+  const [proof, setProof] = useState<{proof: string, inputs: string} | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
+  const [mintText, setMintText] = useState<string | null>(null);
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -124,20 +130,12 @@ function App(): JSX.Element {
     };
   }, []);
 
-  if (SKIP_SCAN && passportData === null) {
-    console.log('skipping scan step...');
-    try {
-      fetch(`${LOCAL_IP}/passportData`)
-        .then(response => response.json())
-        .then(data => {
-          console.log('passport data fetched');
-          setPassportData(data);
-          setStep('scanCompleted');
-        });
-    } catch (err) {
-      console.log('error fetching passport data', err);
+  useEffect(() => {
+    if (SKIP_SCAN && passportData === null) {
+      setPassportData(samplePassportData as PassportData);
+      setStep('scanCompleted');
     }
-  }
+  }, []);
 
   async function handleResponse(response: any) {
     const {
@@ -172,24 +170,6 @@ function App(): JSX.Element {
     console.log('encryptedDigest', passportData.encryptedDigest);
 
     setPassportData(passportData);
-
-    if (CACHE_DATA_IN_LOCAL_SERVER) {
-      // Caches data in local server to avoid having to scan the passport each time
-      // For development purposes only
-      fetch(`${LOCAL_IP}/post`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(passportData),
-      })
-        .then(response => response.json())
-        .then(data => console.log(data.message))
-        .catch(error => {
-          console.log('error caching data in local server', error);
-        });
-    }
-
     setStep('scanCompleted');
   }
 
@@ -284,8 +264,6 @@ function App(): JSX.Element {
     const start = Date.now();
     NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
       const end = Date.now();
-      setGeneratingProof(false)
-      setStep('proofGenerated');
 
       if (err) {
         console.error(err);
@@ -301,38 +279,79 @@ function App(): JSX.Element {
 
       const deserializedProof = JSON.parse(parsedResponse.serialized_proof);
       console.log('deserializedProof', deserializedProof);
+
+      const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
+      console.log('deserializedInputs', deserializedInputs);
       
       setProofTime(parsedResponse.duration);
       setTotalTime(end - start);
 
-      setProofResult(JSON.stringify(deserializedProof));
+      setProof({
+        proof: JSON.stringify(deserializedProof),
+        inputs: JSON.stringify(deserializedInputs),
+      });
+      setGeneratingProof(false)
+      setStep('proofGenerated');
     });
   };
 
-  const handleMint = () => {
+  const handleMint = async () => {
     setMinting(true)
+    if (!proof?.proof || !proof?.inputs) {
+      console.log('proof or inputs is null');
+      return;
+    }
+    if (!contractAddresses.ProofOfPassport || !proofOfPassportArtefact.abi) {
+      console.log('contracts addresses or abi not found');
+      return;
+    }
 
-    // 5. Format the proof and publicInputs as calldata for the verifier contract
-    // 6. Call the verifier contract with the calldata
+    // Format the proof and publicInputs as calldata for the verifier contract
+    const p = JSON.parse(proof.proof);
+    const i = JSON.parse(proof.inputs);
+    // const p = {"a": ["16502577771187684977980616374304236605057905196561863637384296592370445017998", "3901861368174142739149849352179287633574688417834634300291202761562972709023"], "b": [["14543689684654938043989715590415160645004827219804187355799512446208262437248", "2758656853017552407340621959452084149765188239766723663849017782705599048610"], ["11277365272183899064677884160333958573750879878546952615484891009952508146334", "6233152645613613236466445508816847016425532566954931368157994995587995754446"]], "c": ["6117026818273543012196632774531089444191538074414171872462281003025766583671", "10261526153619394223629018490329697233150978685332753612996629076672112420472"]}
+    // const i = ["0", "0", "0", "146183216590389235917737925524385821154", "43653084046336027166990", "21085389953176386480267", "56519161086598100699293", "15779090386165698845937", "23690430366843652392111", "22932463418406768540896", "51019038683800409078189", "50360649287615093470666", "47789371969706091489401", "15311247864741754764238", "20579290199534174842880", "1318168358802144844680228651107716082931624381008"]
+    console.log('p', p);
+    console.log('i', i);
+    const cd = groth16ExportSolidityCallData(p, i);
+    const callData = JSON.parse(`[${cd}]`);
+    console.log('callData', callData);
 
-  };
+    // format transaction
+    // for now, we do it all on mumbai
+    try {
+      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
+      const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
 
-  const proveRust = async () => {
-    const start = Date.now();
-    NativeModules.RNPassportReader.proveRust((err: any, res: any) => {
-      const end = Date.now();
-      if (err) {
-        console.error(err);
-        setProofResult(
-          "res:" + err.toString() + ' time elapsed: ' + (end - start) + 'ms',
-        );
+      const transactionRequest = await proofOfPassportOnMumbai
+        .mint.populateTransaction(...callData);
+      console.log('transactionRequest', transactionRequest);
+
+      const response = await axios.post(AWS_ENDPOINT, {
+        chain: "mumbai",
+        tx_data: transactionRequest
+      });
+      console.log('response status', response.status)
+      console.log('response data', response.data)
+      setMintText(`Network: Mumbai. Transaction hash: ${response.data.hash}`)
+      const receipt = await provider.waitForTransaction(response.data.hash);
+      console.log('receipt', receipt)
+      if (receipt?.status === 1) {
+        Toast.show({
+          type: 'success',
+          text1: 'Proof of passport minted',
+        })
+        setMintText(`SBT minted. Network: Mumbai. Transaction hash: ${response.data.hash}`)
       } else {
-        console.log(res);
-        setProofResult(
-          "res:" + res.toString() + ' time elapsed: ' + (end - start) + 'ms',
-        );
+        Toast.show({
+          type: 'error',
+          text1: 'Proof of passport minting failed',
+        })
+        setMintText(`Error minting SBT. Network: Mumbai. Transaction hash: ${response.data.hash}`)
       }
-    });
+    } catch (err) {
+      console.log('err', err);
+    }
   };
 
   return (
@@ -501,7 +520,7 @@ function App(): JSX.Element {
                   Proof:
                 </Text>
                 <Text>
-                  {proofResult}
+                  {JSON.stringify(proof)}
                 </Text>
 
                 <Text>
@@ -511,22 +530,15 @@ function App(): JSX.Element {
                   <Text style={{ fontWeight: 'bold' }}>Total Duration:</Text> {formatDuration(totalTime)}
                 </Text>
 
-
-                {generatingProof ?
-                  <Button
-                    onPress={handleMint}
-                    marginTop={10}
-                  >
-                    <ButtonSpinner mr="$1" />
-                    <ButtonText>Minting Proof of Passport</ButtonText>
-                  </Button>
-                  : <Button
-                      onPress={handleMint}
-                      marginTop={10}
-                    >
-                      <ButtonText>Mint Proof of Passport</ButtonText>
-                    </Button>
-                }
+                <Button
+                  onPress={handleMint}
+                  marginTop={10}
+                >
+                  <ButtonText>Mint Proof of Passport</ButtonText>
+                </Button>
+                {mintText && <Text>
+                  {mintText}
+                </Text>}
               </View>
             ) : null}
           </View>
@@ -550,15 +562,6 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
-
-            <Button
-              onPress={proveRust}
-              marginTop={10}
-            >
-              <ButtonText>Generate sample proof with arkworks</ButtonText>
-            </Button>
-            {proofResult && <Text>{proofResult}</Text>}
-            {error && <Text>{error}</Text>}
 
           </View>
         </ScrollView>
