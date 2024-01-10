@@ -354,6 +354,15 @@ function App(): JSX.Element {
     }
   };
 
+  const handleNative = async () => {
+    const value = await NativeModules.PassportReader.scanPassport(
+      passportNumber,
+      dateOfBirth,
+      dateOfExpiry
+    );
+    console.log(`native tells us ${value}`);
+  };
+
   return (
     <GluestackUIProvider config={config}>
       <SafeAreaView style={backgroundStyle}>
@@ -562,6 +571,13 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
+
+            <Button
+              onPress={handleNative}
+              marginTop={10}
+            >
+              <ButtonText>Call ios native lib</ButtonText>
+            </Button>
 
           </View>
         </ScrollView>
