@@ -177,3 +177,12 @@ export function hexToSignedBytes(hexString: string): number[] {
 export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
 }
+
+export function hexStringToSignedIntArray(hexString: string) {
+  let result = [];
+  for (let i = 0; i < hexString.length; i += 2) {
+    let byte = parseInt(hexString.substr(i, 2), 16);
+    result.push(byte > 127 ? byte - 256 : byte);
+  }
+  return result;
+};

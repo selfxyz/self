@@ -8,6 +8,7 @@ import {
   NativeModules,
   DeviceEventEmitter,
   TextInput,
+  Platform,
 } from 'react-native';
 
 import {
@@ -55,7 +56,8 @@ import {
   dataHashesObjToArray,
   formatAndConcatenateDataHashes,
   formatMrz,
-  splitToWords
+  splitToWords,
+  hexStringToSignedIntArray
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
@@ -65,6 +67,9 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+import forge from 'node-forge';
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
@@ -137,7 +142,64 @@ function App(): JSX.Element {
     }
   }, []);
 
-  async function handleResponse(response: any) {
+  async function handleResponseIOS(response: any) {
+    const parsed = JSON.parse(response);
+
+    const eContentBase64 = parsed.eContentBase64;
+    const signatureAlgorithm = parsed.signatureAlgorithm;
+    const mrz = parsed.passportMRZ;
+    const dataGroupHashes = parsed.dataGroupHashes;
+    const signatureBase64 = parsed.signatureBase64;
+    
+    console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
+    const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
+    console.log('pem', pem)
+    
+    const cert = forge.pki.certificateFromPem(pem);
+    const publicKey = cert.publicKey;
+    console.log('publicKey', publicKey)
+    
+    const modulus = (publicKey as any).n.toString(10);
+    
+    const eContentArray = Array.from(Buffer.from(eContentBase64, 'base64'));
+    const signedEContentArray = eContentArray.map(byte => byte > 127 ? byte - 256 : byte);
+    
+    const dgHashes = JSON.parse(dataGroupHashes);
+    console.log('dgHashes', dgHashes)
+    
+    const dataGroupHashesArray = Object.keys(dgHashes)
+      .map(key => {
+        const dgNumber = parseInt(key.replace('DG', ''));
+        const hashArray = hexStringToSignedIntArray(dgHashes[key].computedHash);
+        return [dgNumber, hashArray];
+      })
+      .sort((a, b) => (a[0] as number) - (b[0] as number));
+    
+    const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
+    
+    const passportData = {
+      mrz,
+      signatureAlgorithm,
+      pubKey: {
+        modulus: modulus,
+      },
+      dataGroupHashes: dataGroupHashesArray as DataHash[],
+      eContent: signedEContentArray,
+      encryptedDigest: encryptedDigestArray,
+    };
+    
+    console.log('mrz', passportData.mrz);
+    console.log('signatureAlgorithm', passportData.signatureAlgorithm);
+    console.log('pubKey', passportData.pubKey);
+    console.log('dataGroupHashes', passportData.dataGroupHashes);
+    console.log('eContent', passportData.eContent);
+    console.log('encryptedDigest', passportData.encryptedDigest);
+
+    setPassportData(passportData);
+    setStep('scanCompleted');
+  }
+
+  async function handleResponseAndroid(response: any) {
     const {
       mrz,
       signatureAlgorithm,
@@ -182,11 +244,18 @@ function App(): JSX.Element {
       })
       return
     }
-    // 1. start a scan
-    // 2. press the back of your android phone against the passport
-    // 3. wait for the scan(...) Promise to get resolved/rejected
+
     console.log('scanning...');
     setStep('scanning');
+
+    if (Platform.OS === 'android') {
+      scanAndroid();
+    } else {
+      scanIOS();
+    }
+  }
+
+  async function scanAndroid() {
     try {
       const response = await PassportReader.scan({
         documentNumber: passportNumber,
@@ -195,7 +264,26 @@ function App(): JSX.Element {
       });
       console.log('response', response);
       console.log('scanned');
-      handleResponse(response);
+      handleResponseAndroid(response);
+    } catch (e: any) {
+      console.log('error during scan :', e);
+      Toast.show({
+        type: 'error',
+        text1: e.message,
+      })
+    }
+  }
+
+  async function scanIOS() {
+    try {
+      const response = await NativeModules.PassportReader.scanPassport(
+        passportNumber,
+        dateOfBirth,
+        dateOfExpiry
+      );
+      console.log('response', response);
+      console.log('scanned');
+      handleResponseIOS(response);
     } catch (e: any) {
       console.log('error during scan :', e);
       Toast.show({
@@ -352,15 +440,6 @@ function App(): JSX.Element {
     } catch (err) {
       console.log('err', err);
     }
-  };
-
-  const handleNative = async () => {
-    const value = await NativeModules.PassportReader.scanPassport(
-      passportNumber,
-      dateOfBirth,
-      dateOfExpiry
-    );
-    console.log(`native tells us ${value}`);
   };
 
   return (
@@ -571,14 +650,6 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
-
-            <Button
-              onPress={handleNative}
-              marginTop={10}
-            >
-              <ButtonText>Call ios native lib</ButtonText>
-            </Button>
-
           </View>
         </ScrollView>
       </SafeAreaView>
