@@ -11,7 +11,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.72.3)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - NFCPassportReader (2.0.2):
+  - NFCPassportReader (2.0.3):
     - OpenSSL-Universal (= 1.1.1100)
   - OpenSSL-Universal (1.1.1100)
   - RCT-Folly (2021.07.22.00):
@@ -401,7 +401,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
-  - NFCPassportReader (from `https://github.com/yssf-io/NFCPassportReader.git`)
+  - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `07b3662702834676b547718998fa377fe5f00776`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -456,7 +456,8 @@ EXTERNAL SOURCES:
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   NFCPassportReader:
-    :git: https://github.com/yssf-io/NFCPassportReader.git
+    :commit: 07b3662702834676b547718998fa377fe5f00776
+    :git: https://github.com/0xturboblitz/NFCPassportReader.git
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTRequired:
@@ -528,8 +529,8 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: 08f9874f1e3287c9a726225e1e9193ef2b194d93
-    :git: https://github.com/yssf-io/NFCPassportReader.git
+    :commit: 07b3662702834676b547718998fa377fe5f00776
+    :git: https://github.com/0xturboblitz/NFCPassportReader.git
 
 SPEC CHECKSUMS:
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
@@ -538,7 +539,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: c6bd9e179757b3c0ecf815864fae8032377903ef
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
-  NFCPassportReader: 09906a0f1940f09eea79c141cb5b53a19aa74bab
+  NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: a2faf4bad4e438ca37b2040cb8f7799baa065c18
@@ -576,6 +577,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: 01adb875acbe0723d9add3614dad1f523f47f467
+PODFILE CHECKSUM: acc6adf64ac3a7e8523f30353c4753716d98ea06
 
 COCOAPODS: 1.14.3
