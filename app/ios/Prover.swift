@@ -165,7 +165,7 @@ class Prover: NSObject {
 
       print("Proof verification succeeded.")
     } catch let error as MoproError {
-      print("MoproError: \(error)")
+      print("MoproError: \(error)")  
     } catch {
       print("Unexpected error: \(error)")
     }

@@ -37,10 +37,6 @@ target 'ProofOfPassport' do
   pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '07b3662702834676b547718998fa377fe5f00776'
   pod 'MoproKit', :path => './mopro/mopro-ios/MoproKit'
 
-  # pod 'MoproKit', :podspec => 'https://raw.githubusercontent.com/0xturboblitz/mopro/main/MoproKit.podspec'
-  # pod 'MoproKit', git: 'https://github.com/0xturboblitz/MoproKit.git'
-  
-
   use_react_native!(
     :path => config[:reactNativePath],
     # Hermes is now enabled by default. Disable by setting this flag to false.
