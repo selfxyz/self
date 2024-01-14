@@ -17,6 +17,7 @@ xcuserdata/
 DerivedData
 *.hmap
 *.ipa
+*.xcuserstate
 
 # Bundler
 .bundle
@@ -34,3 +35,18 @@ Carthage/Build
 # `pod install` in .travis.yml
 #
 # Pods/
+
+# Xcode
+#
+/.build
+/Packages
+/*.xcodeproj
+.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
+
+# CocoaPods
+Podfile.lock
+Pods
+*.xcworkspace
+
+# Ignore static libs
+*.a
