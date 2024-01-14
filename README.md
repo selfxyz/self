@@ -107,6 +107,3 @@ We are actively looking for contributors. Please check the [open issues](https:/
 Contact me @FlorentTavernier on telegram for any feedback.
 
 Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/viv_boop), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!
-
-
-//check

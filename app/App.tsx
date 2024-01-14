@@ -65,8 +65,12 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+<<<<<<< HEAD
 import CustomTextInput from './src/components/CustomTextInput';
 import EnterDetailsScreen from './src/screens/EnterDetailsScreen';
+=======
+
+>>>>>>> upstream/main
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
 const SKIP_SCAN = false;
@@ -109,6 +113,7 @@ function App(): JSX.Element {
     gender: false,
     expiry_date: false,
   });
+<<<<<<< HEAD
 
   const startCameraScan = () => {
     NativeModules.CameraActivityModule.startCameraActivity()
@@ -131,6 +136,8 @@ function App(): JSX.Element {
       });
   };
 
+=======
+>>>>>>> upstream/main
   
   const handleDisclosureChange = (field: keyof typeof disclosure) => {
     setDisclosure(
@@ -140,6 +147,7 @@ function App(): JSX.Element {
   };
 
   const backgroundStyle = {
+<<<<<<< HEAD
     backgroundColor:  Colors.white,
     flex:1
   };
@@ -152,6 +160,11 @@ function App(): JSX.Element {
     // Include any other styles you want to apply to the input component
   });
 
+=======
+    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+  };
+
+>>>>>>> upstream/main
   useEffect(() => {
     const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
       console.log(e);
@@ -391,11 +404,16 @@ function App(): JSX.Element {
       <SafeAreaView style={backgroundStyle}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+<<<<<<< HEAD
           backgroundColor={Colors.red}
+=======
+          backgroundColor={backgroundStyle.backgroundColor}
+>>>>>>> upstream/main
         />
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={{
+<<<<<<< HEAD
             backgroundColor: isDarkMode ? Colors.black : Colors.black,
           }}
           contentContainerStyle={{ flexGrow: 1 }}
@@ -412,6 +430,64 @@ function App(): JSX.Element {
                       onScanPress={scan}
                       onStartCameraScan={startCameraScan}
                     />
+=======
+            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+          }}
+        >
+          <View>
+            {step === 'enterDetails' ? (
+              <View style={styles.sectionContainer}>
+                <Text style={styles.header}>Welcome to Proof of Passport</Text>
+                <Text style={{textAlign: "center", fontSize: 20, marginTop: 20, marginBottom: 20}}>Enter Your Passport Details</Text>
+                <Text>Passport Number</Text>
+                <Input
+                  variant="outline"
+                  size="md"
+                  marginBottom={10}
+                  marginTop={4}
+                >
+                  <InputField
+                    value={passportNumber}
+                    onChangeText={setPassportNumber}
+                    placeholder={"Passport Number"}
+                  />
+                </Input>
+                <Text>Date of Birth</Text>
+                <Input
+                  variant="outline"
+                  size="md"
+                  marginBottom={10}
+                  marginTop={4}
+                >
+                  <InputField
+                    value={dateOfBirth}
+                    onChangeText={setDateOfBirth}
+                    placeholder={"YYMMDD"}
+                  />
+                </Input>
+                <Text>Date of Expiry</Text>
+                <Input
+                  variant="outline"
+                  size="md"
+                  marginBottom={10}
+                  marginTop={4}
+                >
+                  <InputField
+                    value={dateOfExpiry}
+                    onChangeText={setDateOfExpiry}
+                    placeholder={"YYMMDD"}
+                  />
+                </Input>
+
+                <Button
+                  onPress={scan}
+                  marginTop={10}
+                >
+                  <ButtonText>Scan Passport with NFC</ButtonText>
+                  {/* <ButtonIcon as={AddIcon} /> */}
+                </Button>
+              </View>
+>>>>>>> upstream/main
             ) : null}
             {step === 'scanning' ? (
               <View style={styles.sectionContainer}>
@@ -534,7 +610,11 @@ function App(): JSX.Element {
               </View>
             ) : null}
           </View>
+<<<<<<< HEAD
           <View style={{...styles.sectionContainer, ...styles.testSection, marginTop: 20}}>
+=======
+          <View style={{...styles.sectionContainer, ...styles.testSection, marginTop: 80}}>
+>>>>>>> upstream/main
             <Text style={{...styles.sectionDescription, textAlign: "center"}}>Test functions</Text>
 
             <Button
@@ -564,9 +644,12 @@ function App(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+<<<<<<< HEAD
   view: {
     flex: 1,
   },
+=======
+>>>>>>> upstream/main
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
