@@ -24,7 +24,7 @@ Go to the `circuit` folder of the monorepo and build the circuit.
 #### Add google-services.json
 
 You need to download mlkit from firebase when building the app for text recognition.
-This require to download from firebase google-services.json file and save it at app/android/android-passport-reader/app/google-services.json
+This requires to download from firebase google-services.json file and save it at app/android/android-passport-reader/app/google-services.json
 You have to follow Steps 1 to 3 from firebase documentation :https://firebase.google.com/docs/android/setup
 
 # Step 1: Create a Firebase project
