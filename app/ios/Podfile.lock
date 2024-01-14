@@ -11,6 +11,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.72.3)
   - fmt (6.2.1)
   - glog (0.3.5)
+  - MoproKit (0.1.0)
   - NFCPassportReader (2.0.3):
     - OpenSSL-Universal (= 1.1.1100)
   - OpenSSL-Universal (1.1.1100)
@@ -401,6 +402,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - MoproKit (from `./mopro/mopro-ios/MoproKit`)
   - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `07b3662702834676b547718998fa377fe5f00776`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -455,6 +457,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/React/FBReactNativeSpec"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
+  MoproKit:
+    :path: "./mopro/mopro-ios/MoproKit"
   NFCPassportReader:
     :commit: 07b3662702834676b547718998fa377fe5f00776
     :git: https://github.com/0xturboblitz/NFCPassportReader.git
@@ -539,6 +543,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: c6bd9e179757b3c0ecf815864fae8032377903ef
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  MoproKit: d1faf8f9495e8e84d085f6c4e57e36f951e6f07e
   NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
@@ -577,6 +582,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: acc6adf64ac3a7e8523f30353c4753716d98ea06
+PODFILE CHECKSUM: 26d95ec475f9d1b46c82166c123fd279bf69045f
 
 COCOAPODS: 1.14.3

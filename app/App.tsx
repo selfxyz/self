@@ -650,6 +650,36 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
+
+            <Button
+              onPress={async () => {
+                const res = await NativeModules.Prover.runInitAction()
+                console.log('res', res)
+              }}
+              marginTop={10}
+            >
+              <ButtonText>runInitAction</ButtonText>
+            </Button>
+
+            <Button
+              onPress={async () => {
+                const res = await NativeModules.Prover.runProveAction()
+                console.log('res', res)
+              }}
+              marginTop={10}
+            >
+              <ButtonText>runProveAction</ButtonText>
+            </Button>
+
+            <Button
+              onPress={async () => {
+                const res = await NativeModules.Prover.runVerifyAction()
+                console.log('res', res)
+              }}
+              marginTop={10}
+            >
+              <ButtonText>runVerifyAction</ButtonText>
+            </Button>
           </View>
         </ScrollView>
       </SafeAreaView>

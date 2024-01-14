@@ -1,3 +1,5 @@
+use_frameworks!
+
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
   'require.resolve(
@@ -5,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
+platform :ios, '13.0'
 prepare_react_native_project!
 
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
@@ -33,6 +35,11 @@ target 'ProofOfPassport' do
   
   use_frameworks!
   pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '07b3662702834676b547718998fa377fe5f00776'
+  pod 'MoproKit', :path => './mopro/mopro-ios/MoproKit'
+
+  # pod 'MoproKit', :podspec => 'https://raw.githubusercontent.com/0xturboblitz/mopro/main/MoproKit.podspec'
+  # pod 'MoproKit', git: 'https://github.com/0xturboblitz/MoproKit.git'
+  
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -54,6 +61,14 @@ target 'ProofOfPassport' do
   end
 
   post_install do |installer|
+    installer.generated_projects.each do |project|
+      project.targets.each do |target|
+          target.build_configurations.each do |config|
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+           end
+      end
+    end
+
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
     react_native_post_install(
       installer,
