@@ -20,12 +20,6 @@ yarn
 ./scripts/build_circuit.sh
 ```
 
-#### Build only to use the app, not for running tests (dev only, not secure)
-
-```bash
-./scripts/build_circuit.sh app-only
-```
-
 #### Run tests
 
 ```bash

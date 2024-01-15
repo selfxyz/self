@@ -18,14 +18,14 @@ As a first application, users who can prove they indeed hold a valid passport ca
 ## Roadmap
 
 - ✅ Basic passport verifier circuit
-- 🚧 Optimization
-- 🚧 Selective disclosure
+- ✅ Selective disclosure
 - ✅ Basic react native frontend
 - ✅ Passport verification pipeline, android
-- 🚧 Passport verification pipeline, iOS
+- ✅ Passport verification pipeline, iOS
+- ✅ Contracts
+- ✅ On-chain registry of CSCA pubkeys based on the official ICAO masterlist
+- 🚧 Optimizations
 - 🚧 Reimplementation of the passport NFC specs in javascript
-- 🚧 Contracts
-- 🚧 On-chain registry of CSCA pubkeys based on the official ICAO masterlist
 
 ## FAQ
 
