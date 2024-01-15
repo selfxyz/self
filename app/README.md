@@ -21,7 +21,7 @@ yarn
 
 Go to the `circuit` folder of the monorepo and build the circuit.
 
-#### Build native lib
+#### Build on Android
 
 In `/script`, run:
 ```
@@ -52,3 +52,21 @@ cd android
 ./gradlew assembleRelease
 ```
 The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
+
+#### Build on iOS
+
+The iOS app uses [mopro](https://github.com/oskarth/mopro), which is under development.
+It does not provide a pod/cli right now, so we will pull it and build it. Make sure you have space on your disk.
+
+Go to [our fork](https://github.com/0xturboblitz/mopro) of mopro and follow the build instructions.
+Once you have built `mopro/mopro-ffi/target/${ARCHITECTURE}/${LIB_DIR}/libmopro_ffi.a` copy it here to `app/ios/MoproKit/Libs`
+
+Now:
+```
+cd ios
+pod install
+./post_install.sh
+```
+
+
+
