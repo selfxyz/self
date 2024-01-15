@@ -49,6 +49,21 @@
   resolved "https://registry.yarnpkg.com/@types/node/-/node-20.6.3.tgz#5b763b321cd3b80f6b8dde7a37e1a77ff9358dd9"
   integrity sha512-HksnYH4Ljr4VQgEy2lTStbCKv/P590tmPe5HqOnv9Gprffgv5WXAY+Y5Gqniu0GGqeTCUdBnzC3QSrzPkBkAMA==
 
+"@zk-email/circuits@^3.2.2":
+  version "3.2.2"
+  resolved "https://registry.yarnpkg.com/@zk-email/circuits/-/circuits-3.2.2.tgz#019d10e644ba1a3ad73bd8d73a66f53149c530dd"
+  integrity sha512-3R2y64IeNq7cnfJabAlmQflhGlNAhcR4vq9n55fAIbgpYQ8P2d4k5Aa52HK8mqaVDCnNjLlAWMni557TUqQuGg==
+  dependencies:
+    "@zk-email/zk-regex-circom" "^1.1.1"
+
+"@zk-email/zk-regex-circom@^1.1.1":
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/@zk-email/zk-regex-circom/-/zk-regex-circom-1.2.1.tgz#ea1adc832e8d855c9568abc438567a524a0ac962"
+  integrity sha512-+AoH5PdKZxatTWfwYWGkpuQ0xGaax6FwBHvdYXugkPDdgtJQYyxhItQtM79bo0djCmuwEK2X1rnYlFHBDClQeA==
+  dependencies:
+    commander "^11.0.0"
+    snarkjs "^0.7.0"
+
 ansi-colors@4.1.1:
   version "4.1.1"
   resolved "https://registry.yarnpkg.com/ansi-colors/-/ansi-colors-4.1.1.tgz#cbb9ae256bf750af1eab344f229aa27fe94ba348"
@@ -256,6 +271,11 @@ color-name@~1.1.4:
   resolved "https://registry.yarnpkg.com/color-name/-/color-name-1.1.4.tgz#c2a09a87acbde69543de6f63fa3995c826c536a2"
   integrity sha512-dOy+3AuW3a2wNbZHIuMZpTcgjGuLU/uBL/ubcZF9OXbDo8ff4O8yVp5Bf0efS8uEoYo5q4Fx7dY9OgQGXgAsQA==
 
+commander@^11.0.0:
+  version "11.1.0"
+  resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
+  integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
+
 concat-map@0.0.1:
   version "0.0.1"
   resolved "https://registry.yarnpkg.com/concat-map/-/concat-map-0.0.1.tgz#d8a96bd77fd68df7793a73036a3ba0d5405d477b"
@@ -367,6 +387,15 @@ ffjavascript@0.2.60, ffjavascript@^0.2.48:
     wasmbuilder "0.0.16"
     wasmcurves "0.2.2"
     web-worker "^1.2.0"
+
+ffjavascript@0.2.63:
+  version "0.2.63"
+  resolved "https://registry.yarnpkg.com/ffjavascript/-/ffjavascript-0.2.63.tgz#0c1216a1f123dc9181df69e144473704d2f115eb"
+  integrity sha512-dBgdsfGks58b66JnUZeZpGxdMIDQ4QsD3VYlRJyFVrKQHb2kJy4R2gufx5oetrTxXPT+aEjg0dOvOLg1N0on4A==
+  dependencies:
+    wasmbuilder "0.0.16"
+    wasmcurves "0.2.2"
+    web-worker "1.2.0"
 
 filelist@^1.0.4:
   version "1.0.4"
@@ -773,6 +802,22 @@ serialize-javascript@6.0.0:
   dependencies:
     randombytes "^2.1.0"
 
+snarkjs@^0.7.0:
+  version "0.7.3"
+  resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.7.3.tgz#7f703d05b810235255f2d0a70d8a9b8b3ea916e5"
+  integrity sha512-cDLpWqdqEJSCQNc+cXYX1XTKdUZBtYEisuOsgmXf/HUsN5WmGN+FO7HfCS+cMQT1Nzbm1a9gAEpKH6KRtDtS1Q==
+  dependencies:
+    "@iden3/binfileutils" "0.0.11"
+    bfj "^7.0.2"
+    blake2b-wasm "^2.4.0"
+    circom_runtime "0.1.24"
+    ejs "^3.1.6"
+    fastfile "0.0.20"
+    ffjavascript "0.2.63"
+    js-sha3 "^0.8.0"
+    logplease "^1.2.15"
+    r1csfile "0.0.47"
+
 snarkjs@^0.7.1:
   version "0.7.1"
   resolved "https://registry.yarnpkg.com/snarkjs/-/snarkjs-0.7.1.tgz#c96ecaf4db8c2eb44d60b17ee02f37ed39c821bb"
@@ -928,7 +973,7 @@ wasmcurves@0.2.2:
   dependencies:
     wasmbuilder "0.0.16"
 
-web-worker@^1.2.0:
+web-worker@1.2.0, web-worker@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/web-worker/-/web-worker-1.2.0.tgz#5d85a04a7fbc1e7db58f66595d7a3ac7c9c180da"
   integrity sha512-PgF341avzqyx60neE9DD+XS26MMNMoUQRz9NOZwW32nPQrF6p77f1htcnjBSEV8BGMKZ16choqUG4hyI0Hx7mA==
