@@ -35,7 +35,7 @@ fi
 
 # generate ark-zkey
 cd ../circuits/build
-# arkzkey-util proof_of_passport_final.zkey
+arkzkey-util proof_of_passport_final.zkey
 echo "arkzkey file generation done, arkzkey file is in $(pwd)/proof_of_passport_final.arkzkey"
 
 cd ../../app/mopro-core
