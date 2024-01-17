@@ -408,7 +408,7 @@ function App(): JSX.Element {
     // format transaction
     // for now, we do it all on mumbai
     try {
-      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
+      const provider = new ethers.JsonRpcProvider('https://gateway.tenderly.co/public/sepolia');
       const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
 
       const transactionRequest = await proofOfPassportOnMumbai
@@ -416,7 +416,7 @@ function App(): JSX.Element {
       console.log('transactionRequest', transactionRequest);
 
       const response = await axios.post(AWS_ENDPOINT, {
-        chain: "mumbai",
+        chain: "sepolia",
         tx_data: transactionRequest
       });
       console.log('response status', response.status)
