@@ -34,7 +34,7 @@ target 'ProofOfPassport' do
   flags = get_default_flags()
   
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '07b3662702834676b547718998fa377fe5f00776'
+  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: 'd36952eeaa2025ff1a9c9abbc244bd5ff53eb0f9'
   pod 'MoproKit', :path => './MoproKit'
 
   use_react_native!(

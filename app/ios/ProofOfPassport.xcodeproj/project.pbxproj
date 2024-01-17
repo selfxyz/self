@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* ProofOfPassportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ProofOfPassportTests.m */; };
+		057DFC5F2B56DC0D003D24A3 /* libmopro_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */; };
 		05BD9DCC2B548AA900823023 /* MoproKit in Resources */ = {isa = PBXBuildFile; fileRef = 05BD9DCB2B548AA900823023 /* MoproKit */; };
 		05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05BD9DCD2B554FA300823023 /* libmopro_ffi.a */; };
 		05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC42B52D25D00AA51AD /* Prover.m */; };
@@ -37,6 +38,7 @@
 		00E356EE1AD99517003FC87E /* ProofOfPassportTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProofOfPassportTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* ProofOfPassportTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProofOfPassportTests.m; sourceTree = "<group>"; };
+		057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmopro_ffi.a; path = MoproKit/Libs/libmopro_ffi.a; sourceTree = "<group>"; };
 		05A0773D2B5333CE0037E489 /* MoproKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MoproKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		05BD9DCB2B548AA900823023 /* MoproKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MoproKit; sourceTree = "<group>"; };
 		05BD9DCD2B554FA300823023 /* libmopro_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmopro_ffi.a; path = MoproKit/Libs/libmopro_ffi.a; sourceTree = "<group>"; };
@@ -78,6 +80,7 @@
 			files = (
 				0651723A94C70A2B31E3E4F8 /* Pods_ProofOfPassport.framework in Frameworks */,
 				05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */,
+				057DFC5F2B56DC0D003D24A3 /* libmopro_ffi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -108,6 +111,7 @@
 				05EDEDC52B52D25D00AA51AD /* Prover.swift */,
 				905B700A2A72A5E900AFA232 /* masterList.pem */,
 				905B70082A729CD400AFA232 /* ProofOfPassport.entitlements */,
+				057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
 				05BD9DCB2B548AA900823023 /* MoproKit */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,

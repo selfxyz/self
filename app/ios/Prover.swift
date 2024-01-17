@@ -36,9 +36,11 @@ class Prover: NSObject {
 
         // Log the time taken for initialization
         print("Initializing arkzkey took \(timeTaken) seconds.")
+        resolve("Done")
       } catch {
         // Log any errors that occurred during initialization
         print("An error occurred during initialization: \(error)")
+        reject("PROVER", "An error occurred during initialization", error)
       }
     }
   }
@@ -47,8 +49,9 @@ class Prover: NSObject {
   func runProveAction(_ inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
     // Logic for prove (generate_proof2)
     do {
-
       // format of inputs, if you want to manage it manually:
+
+      // WORKING, SAMPLE DATA:
       // let mrz: [String] = ["97","91","95","31","88","80","60","70","82","65","68","85","80","79","78","84","60","60","65","76","80","72","79","78","83","69","60","72","85","71","85","69","83","60","65","76","66","69","82","84","60","60","60","60","60","60","60","60","60","50","52","72","66","56","49","56","51","50","52","70","82","65","48","52","48","50","49","49","49","77","51","49","49","49","49","49","53","60","60","60","60","60","60","60","60","60","60","60","60","60","60","48","50"]
       // let reveal_bitmap: [String] = ["0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"]
       // let dataHashes: [String] = ["48","130","1","37","2","1","0","48","11","6","9","96","134","72","1","101","3","4","2","1","48","130","1","17","48","37","2","1","1","4","32","176","223","31","133","108","84","158","102","70","11","165","175","196","12","201","130","25","131","46","125","156","194","28","23","55","133","157","164","135","136","220","78","48","37","2","1","2","4","32","190","82","180","235","222","33","79","50","152","136","142","35","116","224","6","242","156","141","128","248","10","61","98","86","248","45","207","210","90","232","175","38","48","37","2","1","3","4","32","0","194","104","108","237","246","97","230","116","198","69","110","26","87","17","89","110","199","108","250","36","21","39","87","110","102","250","213","174","131","171","174","48","37","2","1","11","4","32","136","155","87","144","111","15","152","127","85","25","154","81","20","58","51","75","193","116","234","0","60","30","29","30","183","141","72","247","255","203","100","124","48","37","2","1","12","4","32","41","234","106","78","31","11","114","137","237","17","92","71","134","47","62","78","189","233","201","214","53","4","47","189","201","133","6","121","34","131","64","142","48","37","2","1","13","4","32","91","222","210","193","62","222","104","82","36","41","138","253","70","15","148","208","156","45","105","171","241","195","185","43","217","162","146","201","222","89","238","38","48","37","2","1","14","4","32","76","123","216","13","51","227","72","245","59","193","238","166","103","49","23","164","171","188","194","197","156","187","249","28","198","95","69","15","182","56","54","38"]
@@ -77,17 +80,37 @@ class Prover: NSObject {
       // Record end time and compute duration
       let end = CFAbsoluteTimeGetCurrent()
       let timeTaken = end - start
+      print("Proof generation took \(timeTaken) seconds.")
 
       // Store the generated proof and public inputs for later verification
+      print("generateProofResult", generateProofResult)
       generatedProof = generateProofResult.proof
       publicInputs = generateProofResult.inputs
 
-      print("Proof generation took \(timeTaken) seconds.")
-      resolve(generateProofResult)
+      // Convert Data to array of bytes
+      let proofBytes = [UInt8](generateProofResult.proof)
+      let inputsBytes = [UInt8](generateProofResult.inputs)
+
+      print("proofBytes", proofBytes)
+      print("inputsBytes", inputsBytes)
+
+      // Create a dictionary with byte arrays
+      let resultDict: [String: [UInt8]] = [
+          "proof": proofBytes,
+          "inputs": inputsBytes
+      ]
+
+      // Serialize dictionary to JSON
+      let jsonData = try JSONSerialization.data(withJSONObject: resultDict, options: [])
+      let jsonString = String(data: jsonData, encoding: .utf8)!
+
+      resolve(jsonString)
     } catch let error as MoproError {
       print("MoproError: \(error)")
+      reject("PROVER", "An error occurred during proof generation", error)
     } catch {
       print("Unexpected error: \(error)")
+      reject("PROVER", "An error occurred during proof generation", error)
     }
   }
 
@@ -105,10 +128,13 @@ class Prover: NSObject {
       assert(isValid, "Proof verification should succeed")
 
       print("Proof verification succeeded.")
+      resolve(isValid)
     } catch let error as MoproError {
-      print("MoproError: \(error)")  
+      print("MoproError: \(error)")
+      reject("PROVER", "An error occurred during proof verification", error)
     } catch {
       print("Unexpected error: \(error)")
+      reject("PROVER", "An error occurred during proof verification", error)
     }
   }
 }

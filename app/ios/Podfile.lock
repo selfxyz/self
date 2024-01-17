@@ -403,7 +403,7 @@ DEPENDENCIES:
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - MoproKit (from `./MoproKit`)
-  - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `07b3662702834676b547718998fa377fe5f00776`)
+  - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `d36952eeaa2025ff1a9c9abbc244bd5ff53eb0f9`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -460,7 +460,7 @@ EXTERNAL SOURCES:
   MoproKit:
     :path: "./MoproKit"
   NFCPassportReader:
-    :commit: 07b3662702834676b547718998fa377fe5f00776
+    :commit: d36952eeaa2025ff1a9c9abbc244bd5ff53eb0f9
     :git: https://github.com/0xturboblitz/NFCPassportReader.git
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
@@ -533,7 +533,7 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: 07b3662702834676b547718998fa377fe5f00776
+    :commit: d36952eeaa2025ff1a9c9abbc244bd5ff53eb0f9
     :git: https://github.com/0xturboblitz/NFCPassportReader.git
 
 SPEC CHECKSUMS:
@@ -582,6 +582,6 @@ SPEC CHECKSUMS:
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: 52f9302a4d936d9bacb79ef5417142b1e96c5f0e
+PODFILE CHECKSUM: d401e6efe0c933985349c8c115c7edca8fef3182
 
 COCOAPODS: 1.14.3

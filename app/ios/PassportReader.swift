@@ -194,10 +194,16 @@ class PassportReader: NSObject{
         do {
           let sod = passport.getDataGroup(DataGroupId.SOD) as! SOD
 
-          ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString()
+          // ret["concatenatedDataHashes"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
+          ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
 
           ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
+          
+          let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
+          let signedAttributes = try sod.getSignedAttributes()
+          print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
 
+          ret["signedAttributes"] = signedAttributes.base64EncodedString()
           // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
           //   let serializedPublicKey = serializePublicKey(pubKey) {
           //     ret["publicKeyBase64"] = serializedPublicKey

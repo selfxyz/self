@@ -186,3 +186,45 @@ export function hexStringToSignedIntArray(hexString: string) {
   }
   return result;
 };
+
+function bytesToBigInt(bytes: number[]) {
+  let hex = bytes.reverse().map(byte => byte.toString(16).padStart(2, '0')).join('');
+  // console.log('hex', hex)
+  return BigInt(`0x${hex}`).toString();
+}
+
+function splitInto(arr: number[], size: number) {
+  const res = [];
+  for(let i = 0; i < arr.length; i += size) {
+    res.push(arr.slice(i, i + size));
+  }
+  return res;
+}
+
+function setFirstBitOfLastByteToZero(bytes: number[]) {
+  bytes[bytes.length - 1] &= 0x7F; // AND with 01111111 to set the first bit of the last byte to 0
+  return bytes;
+}
+
+// from reverse engineering ark-serialize.
+export function formatProofIOS(proof: number[]) {
+  const splittedProof = splitInto(proof, 32);
+  splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
+  splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
+  splittedProof[7] = setFirstBitOfLastByteToZero(splittedProof[7]);
+  const proooof = splittedProof.map(bytesToBigInt);
+
+  return {
+    "a": [proooof[0], proooof[1]],
+    "b": [
+      [proooof[2], proooof[3]],
+      [proooof[4], proooof[5]]
+    ],
+    "c": [proooof[6], proooof[7]]
+  }
+}
+
+export function formatInputsIOS(inputs: number[]) {
+  const splitted = splitInto(inputs.slice(8), 32);
+  return splitted.map(bytesToBigInt);
+}
