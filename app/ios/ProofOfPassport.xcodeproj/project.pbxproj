@@ -8,15 +8,20 @@
 
 /* Begin PBXBuildFile section */
 		00E356F31AD99517003FC87E /* ProofOfPassportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ProofOfPassportTests.m */; };
+		057DFC5F2B56DC0D003D24A3 /* libmopro_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */; };
+		05BD9DCC2B548AA900823023 /* MoproKit in Resources */ = {isa = PBXBuildFile; fileRef = 05BD9DCB2B548AA900823023 /* MoproKit */; };
+		05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05BD9DCD2B554FA300823023 /* libmopro_ffi.a */; };
+		05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC42B52D25D00AA51AD /* Prover.m */; };
+		05EDEDC72B52D25D00AA51AD /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC52B52D25D00AA51AD /* Prover.swift */; };
+		0651723A94C70A2B31E3E4F8 /* Pods_ProofOfPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3DAAF621B99F62C9ED35AA07 /* Pods_ProofOfPassport.framework */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		1ADA5CBFFFB043C12B3C4011 /* Pods_ProofOfPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9F81894AE401F61E2393104D /* Pods_ProofOfPassport.framework */; };
+		75E785E6A486EA107852C8A6 /* Pods_ProofOfPassport_ProofOfPassportTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = CFAE0EE7E1942128592D0CC4 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
 		905B700B2A72A5E900AFA232 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 905B700A2A72A5E900AFA232 /* masterList.pem */; };
-		D5B4CD952178B51C14F77614 /* Pods_ProofOfPassport_ProofOfPassportTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 455B3F561C1D3D833AB15B26 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -33,24 +38,30 @@
 		00E356EE1AD99517003FC87E /* ProofOfPassportTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ProofOfPassportTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		00E356F11AD99517003FC87E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		00E356F21AD99517003FC87E /* ProofOfPassportTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ProofOfPassportTests.m; sourceTree = "<group>"; };
-		0D05C085F8CBAC104F72E160 /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; sourceTree = "<group>"; };
+		057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmopro_ffi.a; path = MoproKit/Libs/libmopro_ffi.a; sourceTree = "<group>"; };
+		05A0773D2B5333CE0037E489 /* MoproKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MoproKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		05BD9DCB2B548AA900823023 /* MoproKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MoproKit; sourceTree = "<group>"; };
+		05BD9DCD2B554FA300823023 /* libmopro_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmopro_ffi.a; path = MoproKit/Libs/libmopro_ffi.a; sourceTree = "<group>"; };
+		05EDEDC42B52D25D00AA51AD /* Prover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Prover.m; sourceTree = "<group>"; };
+		05EDEDC52B52D25D00AA51AD /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* ProofOfPassport.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ProofOfPassport.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = ProofOfPassport/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = ProofOfPassport/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = ProofOfPassport/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = ProofOfPassport/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = ProofOfPassport/main.m; sourceTree = "<group>"; };
-		26A432E0434B89485C7E3765 /* Pods-ProofOfPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport.debug.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport/Pods-ProofOfPassport.debug.xcconfig"; sourceTree = "<group>"; };
-		455B3F561C1D3D833AB15B26 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProofOfPassport_ProofOfPassportTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		22FDF2ADA5789E09558ADB4E /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; sourceTree = "<group>"; };
+		2B01EC4981C171CA304E6D2B /* Pods-ProofOfPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport.release.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport/Pods-ProofOfPassport.release.xcconfig"; sourceTree = "<group>"; };
+		3DAAF621B99F62C9ED35AA07 /* Pods_ProofOfPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProofOfPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = ProofOfPassport/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		905B70032A72767800AFA232 /* ProofOfPassport-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "ProofOfPassport-Bridging-Header.h"; sourceTree = "<group>"; };
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* ProofOfPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = ProofOfPassport.entitlements; path = ProofOfPassport/ProofOfPassport.entitlements; sourceTree = "<group>"; };
 		905B700A2A72A5E900AFA232 /* masterList.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = masterList.pem; path = ProofOfPassport/masterList.pem; sourceTree = "<group>"; };
-		9F81894AE401F61E2393104D /* Pods_ProofOfPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProofOfPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		A1B7A34F7E4C3F2D19C5D973 /* Pods-ProofOfPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport.release.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport/Pods-ProofOfPassport.release.xcconfig"; sourceTree = "<group>"; };
-		BCC787E0FDFB928F9DA23E3F /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig"; sourceTree = "<group>"; };
+		918081ECA23C8F232594E334 /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig"; sourceTree = "<group>"; };
+		CE0B085EC65BAFEB61DD9C49 /* Pods-ProofOfPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport.debug.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport/Pods-ProofOfPassport.debug.xcconfig"; sourceTree = "<group>"; };
+		CFAE0EE7E1942128592D0CC4 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_ProofOfPassport_ProofOfPassportTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
@@ -59,7 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				D5B4CD952178B51C14F77614 /* Pods_ProofOfPassport_ProofOfPassportTests.framework in Frameworks */,
+				75E785E6A486EA107852C8A6 /* Pods_ProofOfPassport_ProofOfPassportTests.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -67,7 +78,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				1ADA5CBFFFB043C12B3C4011 /* Pods_ProofOfPassport.framework in Frameworks */,
+				0651723A94C70A2B31E3E4F8 /* Pods_ProofOfPassport.framework in Frameworks */,
+				05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */,
+				057DFC5F2B56DC0D003D24A3 /* libmopro_ffi.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,12 +107,17 @@
 		13B07FAE1A68108700A75B9A /* ProofOfPassport */ = {
 			isa = PBXGroup;
 			children = (
+				05EDEDC42B52D25D00AA51AD /* Prover.m */,
+				05EDEDC52B52D25D00AA51AD /* Prover.swift */,
 				905B700A2A72A5E900AFA232 /* masterList.pem */,
 				905B70082A729CD400AFA232 /* ProofOfPassport.entitlements */,
+				057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */,
 				13B07FAF1A68108700A75B9A /* AppDelegate.h */,
+				05BD9DCB2B548AA900823023 /* MoproKit */,
 				13B07FB01A68108700A75B9A /* AppDelegate.mm */,
 				13B07FB51A68108700A75B9A /* Images.xcassets */,
 				13B07FB61A68108700A75B9A /* Info.plist */,
+				05BD9DCD2B554FA300823023 /* libmopro_ffi.a */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
 				905B70042A72767900AFA232 /* PassportReader.swift */,
@@ -112,9 +130,10 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				05A0773D2B5333CE0037E489 /* MoproKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				9F81894AE401F61E2393104D /* Pods_ProofOfPassport.framework */,
-				455B3F561C1D3D833AB15B26 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */,
+				3DAAF621B99F62C9ED35AA07 /* Pods_ProofOfPassport.framework */,
+				CFAE0EE7E1942128592D0CC4 /* Pods_ProofOfPassport_ProofOfPassportTests.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -153,10 +172,10 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				26A432E0434B89485C7E3765 /* Pods-ProofOfPassport.debug.xcconfig */,
-				A1B7A34F7E4C3F2D19C5D973 /* Pods-ProofOfPassport.release.xcconfig */,
-				BCC787E0FDFB928F9DA23E3F /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */,
-				0D05C085F8CBAC104F72E160 /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */,
+				CE0B085EC65BAFEB61DD9C49 /* Pods-ProofOfPassport.debug.xcconfig */,
+				2B01EC4981C171CA304E6D2B /* Pods-ProofOfPassport.release.xcconfig */,
+				918081ECA23C8F232594E334 /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */,
+				22FDF2ADA5789E09558ADB4E /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -168,11 +187,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "ProofOfPassportTests" */;
 			buildPhases = (
-				2CEEDB4F696405D4E4B0CA04 /* [CP] Check Pods Manifest.lock */,
+				30EF76FEB71F2239D12E988C /* [CP] Check Pods Manifest.lock */,
 				00E356EA1AD99517003FC87E /* Sources */,
 				00E356EB1AD99517003FC87E /* Frameworks */,
 				00E356EC1AD99517003FC87E /* Resources */,
-				4786C99960C198CBC0841652 /* [CP] Embed Pods Frameworks */,
+				3407A7677F910117EC6ADA91 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -188,13 +207,13 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "ProofOfPassport" */;
 			buildPhases = (
-				141C3B9CB8F4134662795CF4 /* [CP] Check Pods Manifest.lock */,
+				CC47E87AFD57D7866D1463AC /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				FAF2988CBB80C1B370711DF7 /* [CP] Embed Pods Frameworks */,
+				A8CC45FE941CED993895A21C /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -254,6 +273,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				905B700B2A72A5E900AFA232 /* masterList.pem in Resources */,
+				05BD9DCC2B548AA900823023 /* MoproKit in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 			);
@@ -278,29 +298,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		141C3B9CB8F4134662795CF4 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-ProofOfPassport-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		2CEEDB4F696405D4E4B0CA04 /* [CP] Check Pods Manifest.lock */ = {
+		30EF76FEB71F2239D12E988C /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -322,7 +320,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		4786C99960C198CBC0841652 /* [CP] Embed Pods Frameworks */ = {
+		3407A7677F910117EC6ADA91 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -339,7 +337,7 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		FAF2988CBB80C1B370711DF7 /* [CP] Embed Pods Frameworks */ = {
+		A8CC45FE941CED993895A21C /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -354,6 +352,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-ProofOfPassport/Pods-ProofOfPassport-frameworks.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		CC47E87AFD57D7866D1463AC /* [CP] Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
+				"${PODS_ROOT}/Manifest.lock",
+			);
+			name = "[CP] Check Pods Manifest.lock";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(DERIVED_FILE_DIR)/Pods-ProofOfPassport-checkManifestLockResult.txt",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -391,9 +411,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				05EDEDC72B52D25D00AA51AD /* Prover.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
+				05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -410,7 +432,7 @@
 /* Begin XCBuildConfiguration section */
 		00E356F61AD99517003FC87E /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = BCC787E0FDFB928F9DA23E3F /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */;
+			baseConfigurationReference = 918081ECA23C8F232594E334 /* Pods-ProofOfPassport-ProofOfPassportTests.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -438,7 +460,7 @@
 		};
 		00E356F71AD99517003FC87E /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0D05C085F8CBAC104F72E160 /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */;
+			baseConfigurationReference = 22FDF2ADA5789E09558ADB4E /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
@@ -463,7 +485,7 @@
 		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 26A432E0434B89485C7E3765 /* Pods-ProofOfPassport.debug.xcconfig */;
+			baseConfigurationReference = CE0B085EC65BAFEB61DD9C49 /* Pods-ProofOfPassport.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -476,6 +498,13 @@
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
+					"$(PROJECT_DIR)/../../cargo/target/universal/release",
+				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
@@ -485,7 +514,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
 				PRODUCT_NAME = ProofOfPassport;
-				SWIFT_OBJC_BRIDGING_HEADER = "ProofOfPassport-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -494,7 +522,7 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = A1B7A34F7E4C3F2D19C5D973 /* Pods-ProofOfPassport.release.xcconfig */;
+			baseConfigurationReference = 2B01EC4981C171CA304E6D2B /* Pods-ProofOfPassport.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
@@ -507,6 +535,12 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(SDKROOT)/usr/lib/swift",
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+					"$(PROJECT_DIR)/MoproKit/Libs",
+				);
 				MARKETING_VERSION = 1.0;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
@@ -515,7 +549,6 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
 				PRODUCT_NAME = ProofOfPassport;
-				SWIFT_OBJC_BRIDGING_HEADER = "ProofOfPassport-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

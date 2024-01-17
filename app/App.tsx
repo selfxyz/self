@@ -57,7 +57,9 @@ import {
   formatAndConcatenateDataHashes,
   formatMrz,
   splitToWords,
-  hexStringToSignedIntArray
+  hexStringToSignedIntArray,
+  formatProofIOS,
+  formatInputsIOS
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
@@ -136,6 +138,7 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    NativeModules.Prover.runInitAction()
     if (SKIP_SCAN && passportData === null) {
       setPassportData(samplePassportData as PassportData);
       setStep('scanCompleted');
@@ -145,7 +148,8 @@ function App(): JSX.Element {
   async function handleResponseIOS(response: any) {
     const parsed = JSON.parse(response);
 
-    const eContentBase64 = parsed.eContentBase64;
+    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in our world
+    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in our world
     const signatureAlgorithm = parsed.signatureAlgorithm;
     const mrz = parsed.passportMRZ;
     const dataGroupHashes = parsed.dataGroupHashes;
@@ -160,9 +164,12 @@ function App(): JSX.Element {
     console.log('publicKey', publicKey)
     
     const modulus = (publicKey as any).n.toString(10);
-    
-    const eContentArray = Array.from(Buffer.from(eContentBase64, 'base64'));
+
+    const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
     const signedEContentArray = eContentArray.map(byte => byte > 127 ? byte - 256 : byte);
+
+    const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
+    const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
     
     const dgHashes = JSON.parse(dataGroupHashes);
     console.log('dgHashes', dgHashes)
@@ -183,7 +190,7 @@ function App(): JSX.Element {
       pubKey: {
         modulus: modulus,
       },
-      dataGroupHashes: dataGroupHashesArray as DataHash[],
+      dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
     };
@@ -307,10 +314,14 @@ function App(): JSX.Element {
     // 2. Format all the data as inputs for the circuit
     const formattedMrz = formatMrz(passportData.mrz);
     const mrzHash = hash(formatMrz(passportData.mrz));
-    const concatenatedDataHashes = formatAndConcatenateDataHashes(
-      mrzHash,
-      passportData.dataGroupHashes as DataHash[],
-    );
+
+    const concatenatedDataHashes =
+      Array.isArray(passportData.dataGroupHashes[0])
+      ? formatAndConcatenateDataHashes(
+        mrzHash,
+        passportData.dataGroupHashes as DataHash[],
+      )
+      : passportData.dataGroupHashes
     
     
     const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
@@ -324,7 +335,7 @@ function App(): JSX.Element {
       }
     }
 
-    if (passportData.signatureAlgorithm !== "SHA256withRSA") {
+    if (!["SHA256withRSA", "sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
       console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
       setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
       return;
@@ -333,7 +344,7 @@ function App(): JSX.Element {
     const inputs = {
       mrz: Array.from(formattedMrz).map(byte => String(byte)),
       reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from(concatenatedDataHashes.map(toUnsignedByte)).map(byte => String(byte)),
+      dataHashes: Array.from((concatenatedDataHashes as number[]).map(toUnsignedByte)).map(byte => String(byte)),
       eContentBytes: Array.from(passportData.eContent.map(toUnsignedByte)).map(byte => String(byte)),
       signature: splitToWords(
         BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
@@ -348,11 +359,21 @@ function App(): JSX.Element {
       address,
     }
 
-    // 3. Generate a proof of passport
-    const start = Date.now();
-    NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
-      const end = Date.now();
+    console.log('inputs', inputs)
 
+    const start = Date.now();
+    if (Platform.OS === 'android') {
+      await proveAndroid(inputs);
+    } else {
+      await proveIOS(inputs);
+    }
+    const end = Date.now();
+    console.log('Total proof time from frontend:', end - start);
+    setTotalTime(end - start);
+  };
+
+  async function proveAndroid(inputs: any) {
+    NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
       if (err) {
         console.error(err);
         setError(
@@ -372,7 +393,6 @@ function App(): JSX.Element {
       console.log('deserializedInputs', deserializedInputs);
       
       setProofTime(parsedResponse.duration);
-      setTotalTime(end - start);
 
       setProof({
         proof: JSON.stringify(deserializedProof),
@@ -381,7 +401,41 @@ function App(): JSX.Element {
       setGeneratingProof(false)
       setStep('proofGenerated');
     });
-  };
+  }
+
+  async function proveIOS(inputs: any) {
+    try {
+      console.log('running mopro init action')
+      await NativeModules.Prover.runInitAction()
+
+      console.log('running mopro prove action')
+      const response = await NativeModules.Prover.runProveAction({
+        ...inputs,
+        address: [BigInt(address).toString()]
+      })
+      console.log('proof response:', response)
+      const parsedResponse = JSON.parse(response)
+
+      console.log('running mopro verify action')
+      const res = await NativeModules.Prover.runVerifyAction()
+      console.log('verify response:', res)
+      
+      setProof({
+        proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
+        inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
+      });
+
+      // setProofTime(response.duration);
+      setGeneratingProof(false)
+      setStep('proofGenerated');
+    } catch (err: any) {
+      console.log('err', err);
+      setError(
+        "err: " + err.toString(),
+      );
+    }
+  }
+
 
   const handleMint = async () => {
     setMinting(true)
@@ -408,7 +462,7 @@ function App(): JSX.Element {
     // format transaction
     // for now, we do it all on mumbai
     try {
-      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
+      const provider = new ethers.JsonRpcProvider('https://gateway.tenderly.co/public/sepolia');
       const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
 
       const transactionRequest = await proofOfPassportOnMumbai
@@ -416,7 +470,7 @@ function App(): JSX.Element {
       console.log('transactionRequest', transactionRequest);
 
       const response = await axios.post(AWS_ENDPOINT, {
-        chain: "mumbai",
+        chain: "sepolia",
         tx_data: transactionRequest
       });
       console.log('response status', response.status)
@@ -650,6 +704,7 @@ function App(): JSX.Element {
               <ButtonText>Call arkworks lib</ButtonText>
             </Button>
             {testResult && <Text>{testResult}</Text>}
+
           </View>
         </ScrollView>
       </SafeAreaView>
