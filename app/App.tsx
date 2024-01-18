@@ -65,7 +65,8 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
-
+import CustomTextInput from './src/components/CustomTextInput';
+import EnterDetailsScreen from './src/screens/EnterDetailsScreen';
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
 const SKIP_SCAN = false;
@@ -108,6 +109,28 @@ function App(): JSX.Element {
     gender: false,
     expiry_date: false,
   });
+
+  const startCameraScan = () => {
+    NativeModules.CameraActivityModule.startCameraActivity()
+      .then((mrzInfo: string) => {
+        const lines = mrzInfo.split('\n');
+          if (lines.length >= 2) {
+            const secondLine = lines[1];
+            const passportNumber = secondLine.substring(0, 9).replace(/</g, '').trim(); 
+            const dateOfBirth = secondLine.substring(13, 19); 
+            const dateOfExpiry = secondLine.substring(21, 27); 
+            setPassportNumber(passportNumber);
+            setDateOfBirth(dateOfBirth);
+            setDateOfExpiry(dateOfExpiry);
+      } else {
+        console.error('Invalid MRZ format');
+      }
+      })
+      .catch((error: any) => {
+        console.error('Camera Activity Error:', error);
+      });
+  };
+
   
   const handleDisclosureChange = (field: keyof typeof disclosure) => {
     setDisclosure(
@@ -117,8 +140,17 @@ function App(): JSX.Element {
   };
 
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor:  Colors.white,
+    flex:1
   };
+
+  const inputStyle = StyleSheet.create({
+    inputField: {
+      minHeight: 45, // Set a minimum height that fits the text
+      // Add other styles as needed to match your design
+    },
+    // Include any other styles you want to apply to the input component
+  });
 
   useEffect(() => {
     const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
@@ -359,67 +391,27 @@ function App(): JSX.Element {
       <SafeAreaView style={backgroundStyle}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={backgroundStyle.backgroundColor}
+          backgroundColor={Colors.red}
         />
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
           style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
+            backgroundColor: isDarkMode ? Colors.black : Colors.black,
           }}
+          contentContainerStyle={{ flexGrow: 1 }}
         >
-          <View>
+          <View style={styles.view}>
             {step === 'enterDetails' ? (
-              <View style={styles.sectionContainer}>
-                <Text style={styles.header}>Welcome to Proof of Passport</Text>
-                <Text style={{textAlign: "center", fontSize: 20, marginTop: 20, marginBottom: 20}}>Enter Your Passport Details</Text>
-                <Text>Passport Number</Text>
-                <Input
-                  variant="outline"
-                  size="md"
-                  marginBottom={10}
-                  marginTop={4}
-                >
-                  <InputField
-                    value={passportNumber}
-                    onChangeText={setPassportNumber}
-                    placeholder={"Passport Number"}
-                  />
-                </Input>
-                <Text>Date of Birth</Text>
-                <Input
-                  variant="outline"
-                  size="md"
-                  marginBottom={10}
-                  marginTop={4}
-                >
-                  <InputField
-                    value={dateOfBirth}
-                    onChangeText={setDateOfBirth}
-                    placeholder={"YYMMDD"}
-                  />
-                </Input>
-                <Text>Date of Expiry</Text>
-                <Input
-                  variant="outline"
-                  size="md"
-                  marginBottom={10}
-                  marginTop={4}
-                >
-                  <InputField
-                    value={dateOfExpiry}
-                    onChangeText={setDateOfExpiry}
-                    placeholder={"YYMMDD"}
-                  />
-                </Input>
-
-                <Button
-                  onPress={scan}
-                  marginTop={10}
-                >
-                  <ButtonText>Scan Passport with NFC</ButtonText>
-                  {/* <ButtonIcon as={AddIcon} /> */}
-                </Button>
-              </View>
+                      <EnterDetailsScreen
+                      passportNumber={passportNumber}
+                      setPassportNumber={setPassportNumber}
+                      dateOfBirth={dateOfBirth}
+                      setDateOfBirth={setDateOfBirth}
+                      dateOfExpiry={dateOfExpiry}
+                      setDateOfExpiry={setDateOfExpiry}
+                      onScanPress={scan}
+                      onStartCameraScan={startCameraScan}
+                    />
             ) : null}
             {step === 'scanning' ? (
               <View style={styles.sectionContainer}>
@@ -542,7 +534,7 @@ function App(): JSX.Element {
               </View>
             ) : null}
           </View>
-          <View style={{...styles.sectionContainer, ...styles.testSection, marginTop: 80}}>
+          <View style={{...styles.sectionContainer, ...styles.testSection, marginTop: 20}}>
             <Text style={{...styles.sectionDescription, textAlign: "center"}}>Test functions</Text>
 
             <Button
@@ -572,6 +564,9 @@ function App(): JSX.Element {
 }
 
 const styles = StyleSheet.create({
+  view: {
+    flex: 1,
+  },
   sectionContainer: {
     marginTop: 32,
     paddingHorizontal: 24,
