@@ -17,7 +17,6 @@ import android.graphics.Bitmap
 import android.media.Image
 
 import com.google.android.gms.tasks.Task
-import com.google.firebase.ml.common.FirebaseMLException
 import com.google.mlkit.vision.common.InputImage
 import example.jllarraz.com.passportreader.utils.ImageUtil
 import io.fotoapparat.preview.Frame
@@ -270,7 +269,6 @@ abstract class VisionProcessorBase<T> : VisionImageProcessor<T> {
 
     override fun stop() {}
 
-    @Throws(FirebaseMLException::class)
     protected abstract fun detectInImage(image: InputImage): Task<T>
 
 
