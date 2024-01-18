@@ -1,8 +1,8 @@
 pragma circom 2.1.5;
 
-include "./rsa/rsa.circom";
+include "@zk-email/circuits/helpers/rsa.circom";
+include "@zk-email/circuits/helpers/extract.circom";
 include "./sha256Bytes.circom";
-include "../node_modules/circomlib/circuits/sha256/sha256.circom";
 
 template PassportVerifier(n, k) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars

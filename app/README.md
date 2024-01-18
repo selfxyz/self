@@ -50,7 +50,7 @@ pod install
 cd ..
 ```
 
-#### Run the app
+#### Run the server
 
 To run the server, first connect your phone to your computer, allow access, then:
 ```
