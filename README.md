@@ -98,6 +98,10 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 
 Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
+## Contributing
+
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start!
+
 ## Contact us
 
 Contact me @FlorentTavernier on telegram for any feedback.

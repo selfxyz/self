@@ -40,6 +40,8 @@ And install the targets like this:
 rustup target add aarch64-linux-android
 ```
 
+#### Run the server
+
 To run the server, first connect your phone to your computer, allow access, then:
 ```
 yarn start
