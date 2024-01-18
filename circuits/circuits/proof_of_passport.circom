@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "./helpers/extract.circom";
+include "circomlib/circuits/poseidon.circom";
+include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
 
 template ProofOfPassport(n, k) {
