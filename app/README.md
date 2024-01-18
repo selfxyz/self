@@ -69,7 +69,7 @@ cd android
 The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
 
 #### Download zkey
-If you want to mint a proof of passport SBT, run:
+If you want to mint a proof of passport SBT, instead of building the circuit yourself, run:
 ```
 ./scripts/download_current_zkey.sh
 ```
