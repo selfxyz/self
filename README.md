@@ -18,14 +18,14 @@ As a first application, users who can prove they indeed hold a valid passport ca
 ## Roadmap
 
 - ✅ Basic passport verifier circuit
-- 🚧 Optimization
-- 🚧 Selective disclosure
+- ✅ Selective disclosure
 - ✅ Basic react native frontend
 - ✅ Passport verification pipeline, android
-- 🚧 Passport verification pipeline, iOS
+- ✅ Passport verification pipeline, iOS
+- ✅ Contracts
+- ✅ On-chain registry of CSCA pubkeys based on the official ICAO masterlist
+- 🚧 Optimizations
 - 🚧 Reimplementation of the passport NFC specs in javascript
-- 🚧 Contracts
-- 🚧 On-chain registry of CSCA pubkeys based on the official ICAO masterlist
 
 ## FAQ
 
@@ -106,4 +106,4 @@ We are actively looking for contributors. Please check the [open issues](https:/
 
 Contact me @FlorentTavernier on telegram for any feedback.
 
-Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/viv_boop), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!
+Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/AndyGuzmanEth), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!

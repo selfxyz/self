@@ -8,6 +8,7 @@ import {
   NativeModules,
   DeviceEventEmitter,
   TextInput,
+  Platform,
 } from 'react-native';
 
 import {
@@ -55,7 +56,10 @@ import {
   dataHashesObjToArray,
   formatAndConcatenateDataHashes,
   formatMrz,
-  splitToWords
+  splitToWords,
+  hexStringToSignedIntArray,
+  formatProofIOS,
+  formatInputsIOS
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
@@ -65,8 +69,13 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+import forge from 'node-forge';
+import { Buffer } from 'buffer';
+global.Buffer = Buffer;
+
 import CustomTextInput from './src/components/CustomTextInput';
 import EnterDetailsScreen from './src/screens/EnterDetailsScreen';
+
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
 const SKIP_SCAN = false;
@@ -111,6 +120,13 @@ function App(): JSX.Element {
   });
 
   const startCameraScan = () => {
+    if (Platform.OS !== 'android') {
+      Toast.show({
+        type: 'info',
+        text1: "Camera scan supported soon on iOS",
+      })
+      return
+    }
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
         const lines = mrzInfo.split('\n');
@@ -163,13 +179,77 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    if (Platform.OS !== 'android') {
+      NativeModules.Prover.runInitAction() // for mopro, ios only rn
+    }
     if (SKIP_SCAN && passportData === null) {
       setPassportData(samplePassportData as PassportData);
       setStep('scanCompleted');
     }
   }, []);
 
-  async function handleResponse(response: any) {
+  async function handleResponseIOS(response: any) {
+    const parsed = JSON.parse(response);
+
+    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in our world
+    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in our world
+    const signatureAlgorithm = parsed.signatureAlgorithm;
+    const mrz = parsed.passportMRZ;
+    const dataGroupHashes = parsed.dataGroupHashes;
+    const signatureBase64 = parsed.signatureBase64;
+    
+    console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
+    const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
+    console.log('pem', pem)
+    
+    const cert = forge.pki.certificateFromPem(pem);
+    const publicKey = cert.publicKey;
+    console.log('publicKey', publicKey)
+    
+    const modulus = (publicKey as any).n.toString(10);
+
+    const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
+    const signedEContentArray = eContentArray.map(byte => byte > 127 ? byte - 256 : byte);
+
+    const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
+    const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
+    
+    const dgHashes = JSON.parse(dataGroupHashes);
+    console.log('dgHashes', dgHashes)
+    
+    const dataGroupHashesArray = Object.keys(dgHashes)
+      .map(key => {
+        const dgNumber = parseInt(key.replace('DG', ''));
+        const hashArray = hexStringToSignedIntArray(dgHashes[key].computedHash);
+        return [dgNumber, hashArray];
+      })
+      .sort((a, b) => (a[0] as number) - (b[0] as number));
+    
+    const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
+    
+    const passportData = {
+      mrz,
+      signatureAlgorithm,
+      pubKey: {
+        modulus: modulus,
+      },
+      dataGroupHashes: concatenatedDataHashesArraySigned,
+      eContent: signedEContentArray,
+      encryptedDigest: encryptedDigestArray,
+    };
+    
+    console.log('mrz', passportData.mrz);
+    console.log('signatureAlgorithm', passportData.signatureAlgorithm);
+    console.log('pubKey', passportData.pubKey);
+    console.log('dataGroupHashes', passportData.dataGroupHashes);
+    console.log('eContent', passportData.eContent);
+    console.log('encryptedDigest', passportData.encryptedDigest);
+
+    setPassportData(passportData);
+    setStep('scanCompleted');
+  }
+
+  async function handleResponseAndroid(response: any) {
     const {
       mrz,
       signatureAlgorithm,
@@ -214,11 +294,18 @@ function App(): JSX.Element {
       })
       return
     }
-    // 1. start a scan
-    // 2. press the back of your android phone against the passport
-    // 3. wait for the scan(...) Promise to get resolved/rejected
+
     console.log('scanning...');
     setStep('scanning');
+
+    if (Platform.OS === 'android') {
+      scanAndroid();
+    } else {
+      scanIOS();
+    }
+  }
+
+  async function scanAndroid() {
     try {
       const response = await PassportReader.scan({
         documentNumber: passportNumber,
@@ -227,7 +314,26 @@ function App(): JSX.Element {
       });
       console.log('response', response);
       console.log('scanned');
-      handleResponse(response);
+      handleResponseAndroid(response);
+    } catch (e: any) {
+      console.log('error during scan :', e);
+      Toast.show({
+        type: 'error',
+        text1: e.message,
+      })
+    }
+  }
+
+  async function scanIOS() {
+    try {
+      const response = await NativeModules.PassportReader.scanPassport(
+        passportNumber,
+        dateOfBirth,
+        dateOfExpiry
+      );
+      console.log('response', response);
+      console.log('scanned');
+      handleResponseIOS(response);
     } catch (e: any) {
       console.log('error during scan :', e);
       Toast.show({
@@ -251,10 +357,14 @@ function App(): JSX.Element {
     // 2. Format all the data as inputs for the circuit
     const formattedMrz = formatMrz(passportData.mrz);
     const mrzHash = hash(formatMrz(passportData.mrz));
-    const concatenatedDataHashes = formatAndConcatenateDataHashes(
-      mrzHash,
-      passportData.dataGroupHashes as DataHash[],
-    );
+
+    const concatenatedDataHashes =
+      Array.isArray(passportData.dataGroupHashes[0])
+      ? formatAndConcatenateDataHashes(
+        mrzHash,
+        passportData.dataGroupHashes as DataHash[],
+      )
+      : passportData.dataGroupHashes
     
     
     const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
@@ -268,7 +378,7 @@ function App(): JSX.Element {
       }
     }
 
-    if (passportData.signatureAlgorithm !== "SHA256withRSA") {
+    if (!["SHA256withRSA", "sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
       console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
       setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
       return;
@@ -277,7 +387,7 @@ function App(): JSX.Element {
     const inputs = {
       mrz: Array.from(formattedMrz).map(byte => String(byte)),
       reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from(concatenatedDataHashes.map(toUnsignedByte)).map(byte => String(byte)),
+      dataHashes: Array.from((concatenatedDataHashes as number[]).map(toUnsignedByte)).map(byte => String(byte)),
       eContentBytes: Array.from(passportData.eContent.map(toUnsignedByte)).map(byte => String(byte)),
       signature: splitToWords(
         BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
@@ -292,11 +402,21 @@ function App(): JSX.Element {
       address,
     }
 
-    // 3. Generate a proof of passport
-    const start = Date.now();
-    NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
-      const end = Date.now();
+    console.log('inputs', inputs)
 
+    const start = Date.now();
+    if (Platform.OS === 'android') {
+      await proveAndroid(inputs);
+    } else {
+      await proveIOS(inputs);
+    }
+    const end = Date.now();
+    console.log('Total proof time from frontend:', end - start);
+    setTotalTime(end - start);
+  };
+
+  async function proveAndroid(inputs: any) {
+    NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
       if (err) {
         console.error(err);
         setError(
@@ -316,7 +436,6 @@ function App(): JSX.Element {
       console.log('deserializedInputs', deserializedInputs);
       
       setProofTime(parsedResponse.duration);
-      setTotalTime(end - start);
 
       setProof({
         proof: JSON.stringify(deserializedProof),
@@ -325,7 +444,41 @@ function App(): JSX.Element {
       setGeneratingProof(false)
       setStep('proofGenerated');
     });
-  };
+  }
+
+  async function proveIOS(inputs: any) {
+    try {
+      console.log('running mopro init action')
+      await NativeModules.Prover.runInitAction()
+
+      console.log('running mopro prove action')
+      const response = await NativeModules.Prover.runProveAction({
+        ...inputs,
+        address: [BigInt(address).toString()]
+      })
+      console.log('proof response:', response)
+      const parsedResponse = JSON.parse(response)
+
+      console.log('running mopro verify action')
+      const res = await NativeModules.Prover.runVerifyAction()
+      console.log('verify response:', res)
+      
+      setProof({
+        proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
+        inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
+      });
+
+      // setProofTime(response.duration);
+      setGeneratingProof(false)
+      setStep('proofGenerated');
+    } catch (err: any) {
+      console.log('err', err);
+      setError(
+        "err: " + err.toString(),
+      );
+    }
+  }
+
 
   const handleMint = async () => {
     setMinting(true)
@@ -350,22 +503,22 @@ function App(): JSX.Element {
     console.log('callData', callData);
 
     // format transaction
-    // for now, we do it all on mumbai
+    // for now, we do it all on sepolia
     try {
-      const provider = new ethers.JsonRpcProvider('https://polygon-mumbai-bor.publicnode.com');
-      const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
+      const provider = new ethers.JsonRpcProvider('https://gateway.tenderly.co/public/sepolia');
+      const proofOfPassportOnSepolia = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
 
-      const transactionRequest = await proofOfPassportOnMumbai
+      const transactionRequest = await proofOfPassportOnSepolia
         .mint.populateTransaction(...callData);
       console.log('transactionRequest', transactionRequest);
 
       const response = await axios.post(AWS_ENDPOINT, {
-        chain: "mumbai",
+        chain: "sepolia",
         tx_data: transactionRequest
       });
       console.log('response status', response.status)
       console.log('response data', response.data)
-      setMintText(`Network: Mumbai. Transaction hash: ${response.data.hash}`)
+      setMintText(`Network: Sepolia. Transaction hash: ${response.data.hash}`)
       const receipt = await provider.waitForTransaction(response.data.hash);
       console.log('receipt', receipt)
       if (receipt?.status === 1) {
@@ -373,16 +526,37 @@ function App(): JSX.Element {
           type: 'success',
           text1: 'Proof of passport minted',
         })
-        setMintText(`SBT minted. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+        setMintText(`SBT minted. Network: Sepolia. Transaction hash: ${response.data.hash}`)
       } else {
         Toast.show({
           type: 'error',
           text1: 'Proof of passport minting failed',
         })
-        setMintText(`Error minting SBT. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+        setMintText(`Error minting SBT. Network: Sepolia. Transaction hash: ${response.data.hash}`)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('err', err);
+      if (err.isAxiosError && err.response) {
+        const errorMessage = err.response.data.error
+        console.log('Server error message:', errorMessage);
+
+        // parse blockchain error and show it
+        const match = errorMessage.match(/execution reverted: "([^"]*)"/);
+        if (match && match[1]) {
+          console.log('Parsed blockchain error:', match[1]);
+          Toast.show({
+            type: 'error',
+            text1: `Error: ${match[1]}`,
+          })
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: `Error: mint failed`,
+          })
+          console.log('Failed to parse blockchain error');
+        }
+      }
+      setMintText(`Error minting SBT. Network: Sepolia.`)
     }
   };
 

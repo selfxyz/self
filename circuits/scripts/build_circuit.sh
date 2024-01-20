@@ -30,11 +30,6 @@ echo "file sizes:"
 echo "Size of proof_of_passport.r1cs: $(wc -c <../app/ark-circom-passport/passport/proof_of_passport.r1cs) bytes"
 echo "Size of proof_of_passport.wasm: $(wc -c <../app/ark-circom-passport/passport/proof_of_passport.wasm) bytes"
 
-# If APP_ONLY is 1, exit the script here
-if [ $APP_ONLY -eq 1 ]; then
-    exit 0
-fi
-
 echo "building zkey"
 yarn snarkjs groth16 setup build/proof_of_passport.r1cs build/powersOfTau28_hez_final_20.ptau build/proof_of_passport.zkey
 
@@ -44,5 +39,4 @@ yarn snarkjs zkey export verificationkey build/proof_of_passport_final.zkey buil
 
 yarn snarkjs zkey export solidityverifier build/proof_of_passport_final.zkey build/Verifier.sol
 cp build/Verifier.sol ../contracts/contracts/Verifier.sol
-cp build/proof_of_passport_final.zkey ../app/ark-circom-passport/passport/
-echo "copied Verifier.sol to contracts and proof_of_passport_final.zkey to ark-circom-passport"
+echo "copied Verifier.sol to contracts"
