@@ -120,6 +120,13 @@ function App(): JSX.Element {
   });
 
   const startCameraScan = () => {
+    if (Platform.OS !== 'android') {
+      Toast.show({
+        type: 'info',
+        text1: "Camera scan supported soon on iOS",
+      })
+      return
+    }
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
         const lines = mrzInfo.split('\n');
@@ -172,7 +179,9 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    NativeModules.Prover.runInitAction()
+    if (Platform.OS !== 'android') {
+      NativeModules.Prover.runInitAction() // for mopro, ios only rn
+    }
     if (SKIP_SCAN && passportData === null) {
       setPassportData(samplePassportData as PassportData);
       setStep('scanCompleted');
@@ -494,12 +503,12 @@ function App(): JSX.Element {
     console.log('callData', callData);
 
     // format transaction
-    // for now, we do it all on mumbai
+    // for now, we do it all on sepolia
     try {
       const provider = new ethers.JsonRpcProvider('https://gateway.tenderly.co/public/sepolia');
-      const proofOfPassportOnMumbai = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
+      const proofOfPassportOnSepolia = new ethers.Contract(contractAddresses.ProofOfPassport, proofOfPassportArtefact.abi, provider);
 
-      const transactionRequest = await proofOfPassportOnMumbai
+      const transactionRequest = await proofOfPassportOnSepolia
         .mint.populateTransaction(...callData);
       console.log('transactionRequest', transactionRequest);
 
@@ -509,7 +518,7 @@ function App(): JSX.Element {
       });
       console.log('response status', response.status)
       console.log('response data', response.data)
-      setMintText(`Network: Mumbai. Transaction hash: ${response.data.hash}`)
+      setMintText(`Network: Sepolia. Transaction hash: ${response.data.hash}`)
       const receipt = await provider.waitForTransaction(response.data.hash);
       console.log('receipt', receipt)
       if (receipt?.status === 1) {
@@ -517,16 +526,37 @@ function App(): JSX.Element {
           type: 'success',
           text1: 'Proof of passport minted',
         })
-        setMintText(`SBT minted. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+        setMintText(`SBT minted. Network: Sepolia. Transaction hash: ${response.data.hash}`)
       } else {
         Toast.show({
           type: 'error',
           text1: 'Proof of passport minting failed',
         })
-        setMintText(`Error minting SBT. Network: Mumbai. Transaction hash: ${response.data.hash}`)
+        setMintText(`Error minting SBT. Network: Sepolia. Transaction hash: ${response.data.hash}`)
       }
-    } catch (err) {
+    } catch (err: any) {
       console.log('err', err);
+      if (err.isAxiosError && err.response) {
+        const errorMessage = err.response.data.error
+        console.log('Server error message:', errorMessage);
+
+        // parse blockchain error and show it
+        const match = errorMessage.match(/execution reverted: "([^"]*)"/);
+        if (match && match[1]) {
+          console.log('Parsed blockchain error:', match[1]);
+          Toast.show({
+            type: 'error',
+            text1: `Error: ${match[1]}`,
+          })
+        } else {
+          Toast.show({
+            type: 'error',
+            text1: `Error: mint failed`,
+          })
+          console.log('Failed to parse blockchain error');
+        }
+      }
+      setMintText(`Error minting SBT. Network: Sepolia.`)
     }
   };
 
