@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/scroll_view"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/margin_medium"
+    android:clipChildren="false"
+    android:scrollbars="none"
+
+    >
+
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        >
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/titleRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="22dp"
+        android:text="@string/selection_title"
+        style="@style/InputLabel" />
+
+    <RadioGroup
+        android:checkedButton="@+id/radioButtonManual"
+        android:id="@+id/radioButtonDataEntry"
+        style="@style/ToogleGroup"
+        android:orientation="horizontal">
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:layout_marginLeft="1dp"
+            android:id="@+id/radioButtonManual"
+            android:text="@string/selection_manual"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            />
+
+        <androidx.appcompat.widget.AppCompatRadioButton
+            android:layout_marginRight="1dp"
+            android:id="@+id/radioButtonOcr"
+            android:text="@string/selection_automatic"
+            android:layout_width="wrap_content"
+             android:layout_height="wrap_content"/>
+    </RadioGroup>
+
+
+
+    <LinearLayout
+        android:id="@+id/layoutManual"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginTop="22dp"
+        >
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDocumentNumber"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/documentNumber"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_document_number"
+                    android:imeOptions="actionDone"
+                    android:inputType="textCapCharacters"
+                    android:maxLength="9"
+                    android:maxLines="3" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/textInputLayoutDocumentExpiration"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                >
+
+                <androidx.appcompat.widget.AppCompatEditText
+                    android:id="@+id/documentExpiration"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="@string/prompt_document_expiration"
+                    android:imeOptions="actionDone"
+                    android:inputType="number"
+                    android:maxLength="6"
+                    android:maxLines="3" />
+
+            </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/textInputLayoutDateOfBirth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <androidx.appcompat.widget.AppCompatEditText
+                android:id="@+id/documentDateOfBirth"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/prompt_document_date_of_birth"
+                android:imeOptions="actionDone"
+                android:inputType="number"
+                android:maxLength="6"
+                android:maxLines="3" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/buttonReadNfc"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/read_nfc"/>
+
+        <Button
+            android:id="@+id/buttonDownloadCSCA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/download_csca"/>
+
+        <Button
+            android:id="@+id/buttonDeleteCSCA"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/delete_csca"/>
+        </LinearLayout>
+
+
+        <LinearLayout
+            android:id="@+id/layoutAutomatic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="22dp"
+            android:visibility="gone"
+            >
+        </LinearLayout>
+
+
+    </LinearLayout>
+
+</androidx.core.widget.NestedScrollView>

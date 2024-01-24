@@ -1,12 +1,14 @@
 # Proof of Passport App
 
-Only Android right now, under heavy development
+### Requirements
 
-#### Requirements
+Install `nodejs v18`, [circom](https://docs.circom.io/) and [snarkjs](https://github.com/iden3/snarkjs)
 
-Install `nodejs v18`
+For android, install java, android studio and the android sdk
 
-#### Installation
+For ios, install Xcode and [cocoapods](https://cocoapods.org/)
+
+### Installation
 
 ```bash
 yarn
@@ -17,28 +19,40 @@ In `/common`, also run:
 yarn
 ```
 
-#### Add circuit build
+### Build the app
 
 Go to the `circuit` folder of the monorepo and build the circuit.
 
-#### Build native lib
+#### Build the android native module
 
-In `/script`, run:
+Run:
 ```
-./build_rust.sh
+./scripts/build_android_module.sh
 ```
-This will build the `libhalo2_circom_passport.so` lib and copy it to the desired place to be used by the app.
-The config used is in `android/react-native-passport-reader/android/build.gradle`.
-You can go there to change the profile (`debug` or `release`)
 
 You might need to set the rust-toolchain rust version as global default. Example:
 ```
 rustup default 1.67.0
 ```
-And install the targets like this:
+
+This you modify the circuits, you might have to modify `ark-circom-passport/src/passport.rs` too.
+
+#### Build the iOS native module
+
+Run:
 ```
-rustup target add aarch64-linux-android
+./scripts/build_ios_module.sh
 ```
+
+Now:
+```
+cd ios
+pod install
+./post_install.sh
+cd ..
+```
+
+#### Run the server
 
 To run the server, first connect your phone to your computer, allow access, then:
 ```
@@ -46,9 +60,23 @@ yarn start
 ```
 Then press `a` for android or `i` for iOS
 
+If you want to see the logs and have a better ios developer experience, open `/ios` in Xcode and launch the app from there instead.
+Currently, proof generation seems to fail sometimes with the react native server, so prefer using Xcode instead.
+
+To see the android logs you'll have to use the Android Studio Logcat.
+
 To export an apk:
 ```
 cd android
 ./gradlew assembleRelease
 ```
 The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
+
+#### Download zkey
+If you want to mint a proof of passport SBT, instead of building the circuit yourself, run:
+```
+./scripts/download_current_zkey.sh
+```
+
+This will download the zkey currently deployed onchain in the proof of passport contract and place it in `circuits/build``
+Then, build the android or iOS native module and run the app.

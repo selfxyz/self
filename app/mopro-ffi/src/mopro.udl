@@ -1,0 +1,43 @@
+namespace mopro {
+  u32 add(u32 a, u32 b);
+  string hello();
+
+  [Throws=MoproError]
+  void initialize_mopro();
+
+  [Throws=MoproError]
+  void initialize_mopro_dylib(string dylib_path);
+
+  [Throws=MoproError]
+  GenerateProofResult generate_proof2(record<string, sequence<string>> circuit_inputs);
+
+  [Throws=MoproError]
+  boolean verify_proof2(bytes proof, bytes public_input);
+};
+
+dictionary SetupResult {
+  bytes provingKey;
+};
+
+dictionary GenerateProofResult {
+  bytes proof;
+  bytes inputs;
+};
+
+[Error]
+enum MoproError {
+  "CircomError",
+};
+
+interface MoproCircom {
+  constructor();
+
+  [Throws=MoproError]
+  SetupResult setup(string wasm_path, string r1cs_path);
+
+  [Throws=MoproError]
+  GenerateProofResult generate_proof(record<string, sequence<string>> circuit_inputs);
+
+  [Throws=MoproError]
+  boolean verify_proof(bytes proof, bytes public_input);
+};
