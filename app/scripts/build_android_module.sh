@@ -1,5 +1,6 @@
+mkdir -p ark-circom-passport/passport
 cp ../circuits/build/proof_of_passport_final.zkey ark-circom-passport/passport/
-echo "proof_of_passport_final.zkey to ark-circom-passport"
+echo "copied proof_of_passport_final.zkey to ark-circom-passport"
 
 ARCHITECTURE="aarch64-linux-android"
 

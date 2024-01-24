@@ -3,8 +3,10 @@
 ### Requirements
 
 Install `nodejs v18`, [circom](https://docs.circom.io/) and [snarkjs](https://github.com/iden3/snarkjs)
-For android, install java and the android sdk
-For ios, install [cocoapods](https://cocoapods.org/)
+
+For android, install java, android studio and the android sdk
+
+For ios, install Xcode and [cocoapods](https://cocoapods.org/)
 
 ### Installation
 
@@ -58,8 +60,10 @@ yarn start
 ```
 Then press `a` for android or `i` for iOS
 
-If you want to see the logs and have a better ios developer exprience, open `/ios` in Xcode and launch the app from there instead
-To see the android logs you'll have to use the Android Studio Logcat
+If you want to see the logs and have a better ios developer experience, open `/ios` in Xcode and launch the app from there instead.
+Currently, proof generation seems to fail sometimes with the react native server, so prefer using Xcode instead.
+
+To see the android logs you'll have to use the Android Studio Logcat.
 
 To export an apk:
 ```
