@@ -14,6 +14,7 @@ As a first application, users who can prove they indeed hold a valid passport ca
 - `app`: Mobile app
 - `circuits`: Circom circuits
 - `contracts`: Solidity contracts
+- `common`: Common utils
 
 ## Roadmap
 
@@ -28,6 +29,12 @@ As a first application, users who can prove they indeed hold a valid passport ca
 - 🚧 Reimplementation of the passport NFC specs in javascript
 
 ## FAQ
+
+#### Does my passport support Proof of Passport ?
+
+![EPassport_logo_grey](https://github.com/zk-passport/proof-of-passport/assets/62038140/c3263600-19b6-45f9-9b5f-63f352992c88)
+
+If it has this symbol on the front cover, yes.
 
 #### What exactly is being signed ?
 
@@ -91,6 +98,7 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 - Build a social network/anonymous message board for people from one specific country
 - Create a sybil-resistance tool to protect social networks against spambots
 - Do an airdrop farming protection tool
+- Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states
 - Gate an adult content website to a specific age
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
