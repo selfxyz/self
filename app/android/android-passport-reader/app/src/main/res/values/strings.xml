@@ -16,9 +16,6 @@
     <string name="warning_ocr_install_progress">Installation OCR: %1d%%</string>
 
 
-    <string name="status_bar_ocr">Document Number: %1s Date of Birth: %2s Expiration Date: %3s</string>
-    <string name="status_bar_success">OCR Detected - Time required: %2dms</string>
-    <string name="status_bar_failure">OCR Read failure - Time required: %1d ms</string>
 
     <string name="nfc_title">Put your phone over your passport and don\'t move it</string>
 

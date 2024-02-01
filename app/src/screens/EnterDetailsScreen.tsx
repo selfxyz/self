@@ -3,11 +3,11 @@
 import React, {useState} from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import CustomTextInput from '../components/CustomTextInput';
-import Button from '../components/CustomButton'; 
+import CustomButton from '../components/CustomButton'; 
 import { ToggleGroup } from 'tamagui'
 import { AlignCenter, AlignLeft, AlignRight, Camera } from '@tamagui/lucide-icons'
-import { XStack, YStack } from 'tamagui'
 import { SizableText, Tabs, H5 } from 'tamagui'
+import { XStack, YStack, Button } from 'tamagui'
 
 const EnterDetailsScreen = ({
   passportNumber,
@@ -82,6 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
+    paddingBottom:20,
   },
   header: {
     fontSize: 22,

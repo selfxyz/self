@@ -250,8 +250,6 @@ class CameraMLKitFragment : CameraFragment() {
             mHandler.post {
                 try {
 
-                    binding?.statusViewTop?.text = getString(R.string.status_bar_ocr, mrzInfo.documentNumber, mrzInfo.dateOfBirth, mrzInfo.dateOfExpiry)
-                    binding?.statusViewBottom?.text = getString(R.string.status_bar_success, timeRequired)
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
                     if (cameraMLKitCallback != null) {
                         cameraMLKitCallback!!.onPassportRead(mrzInfo)
@@ -270,7 +268,6 @@ class CameraMLKitFragment : CameraFragment() {
             }
             mHandler.post {
                 try {
-                    binding?.statusViewBottom?.text = getString(R.string.status_bar_failure, timeRequired)
                     binding?.statusViewBottom?.setTextColor(Color.RED)
                     binding?.statusViewTop?.text = ""
                 } catch (e: IllegalStateException) {

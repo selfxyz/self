@@ -18,6 +18,10 @@ const config: HardhatUserConfig = {
     mumbai: {
       url: "https://polygon-mumbai-bor.publicnode.com",
       accounts: [process.env.PKEY as string],
+    },
+    sepolia: {
+      url: "https://rpc.notadegen.com/eth/sepolia",
+      accounts: [process.env.PKEY as string],
     }
   },
 };

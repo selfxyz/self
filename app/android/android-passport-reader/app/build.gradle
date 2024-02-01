@@ -53,8 +53,6 @@ dependencies {
     androidTestImplementation 'androidx.test:runner:1.5.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
     // ML Kit dependencies
-    implementation 'com.google.firebase:firebase-core:21.1.1'
-    implementation 'com.google.firebase:firebase-ml-common:22.1.2'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
 
     //NFC Passport
@@ -100,5 +98,4 @@ dependencies {
     implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
 }
 
-apply plugin: 'com.google.gms.google-services'
 

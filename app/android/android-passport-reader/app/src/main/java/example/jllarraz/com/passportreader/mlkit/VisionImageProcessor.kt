@@ -16,7 +16,6 @@ package example.jllarraz.com.passportreader.mlkit
 import android.graphics.Bitmap
 import android.media.Image
 
-import com.google.firebase.ml.common.FirebaseMLException
 import com.google.mlkit.vision.common.InputImage
 import io.fotoapparat.preview.Frame
 
@@ -26,7 +25,6 @@ import java.nio.ByteBuffer
 interface VisionImageProcessor<T> {
 
     /** Processes the images with the underlying machine learning models.  */
-    @Throws(FirebaseMLException::class)
     fun process(data: ByteBuffer, frameMetadata: FrameMetadata, graphicOverlay: GraphicOverlay?=null, isOriginalImageReturned:Boolean = true, listener: VisionProcessorBase.Listener<T>):Boolean
 
     /** Processes the bitmap images.  */
