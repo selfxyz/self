@@ -1,9 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { YStack, Text, Spinner, Circle, ZStack, XStack, SizableText } from 'tamagui'; // Ensure correct import paths based on your project setup
 import { Steps } from '../utils/utils';
 const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
-
-
 
   return (
     <YStack >

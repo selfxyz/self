@@ -1,9 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import ZUPASS from '../images/zupass.png';
 import GITCOIN from '../images/gitcoin.png';
-import { Text, YStack, Card, H2, H3, Paragraph, Image, Button, XStack, CardFooter } from 'tamagui';
-import { ChevronRight, X } from '@tamagui/lucide-icons';
-import MyCard from '../components/MyCard';
+import { YStack } from 'tamagui';
+import AppCard from '../components/AppCard';
 import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
 const AppScreen = ({ selectedApp, setSelectedApp }) => {
 
@@ -38,7 +37,7 @@ const AppScreen = ({ selectedApp, setSelectedApp }) => {
     <YStack gap="$5" w="100%" p="$5">
 
       {cardsData.map(card => (
-        <MyCard
+        <AppCard
           key={card.app.id}
           title={card.title}
           description={card.description}

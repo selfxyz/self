@@ -18,28 +18,10 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {
-  Text,
-  GluestackUIProvider,
-  Checkbox,
-  CheckboxIndicator,
-  CheckboxIcon,
-  CheckIcon,
-  CheckboxLabel,
-  Input,
-  InputField,
-  ButtonText,
-  ButtonIcon,
-  Button,
-  Spinner,
-  View,
-  ButtonSpinner,
-} from "@gluestack-ui/themed"
-import { config } from "@gluestack-ui/config" // Optional if you want to use default theme
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import { getFirstName, formatDuration, checkInputs } from './utils/utils';
+import { checkInputs } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -72,10 +54,8 @@ import MainScreen from './src/screens/MainScreen';
 import { extractMRZInfo, Steps } from './src/utils/utils';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import { YStack } from 'tamagui';
 global.Buffer = Buffer;
-
-import CustomTextInput from './src/components/CustomTextInput';
-import EnterDetailsScreen from './src/screens/EnterDetailsScreen';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
@@ -103,17 +83,12 @@ function App(): JSX.Element {
   const [step, setStep] = useState(Steps.MRZ_SCAN);
   const [testResult, setTestResult] = useState<any>(null);
   const [error, setError] = useState<any>(null);
-
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
-
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
   const [mintText, setMintText] = useState<string | null>(null);
-
-
-
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
     name: false,
@@ -565,7 +540,7 @@ function App(): JSX.Element {
   };
 
   return (
-    <GluestackUIProvider config={config}>
+    <YStack f={1}>
       <SafeAreaView style={backgroundStyle}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
@@ -578,7 +553,7 @@ function App(): JSX.Element {
           }}
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          <View style={styles.view}>
+          <YStack style={styles.view}>
             <MainScreen
               onStartCameraScan={startCameraScan}
               nfcScan={scan}
@@ -603,11 +578,11 @@ function App(): JSX.Element {
               dateOfExpiry={dateOfExpiry}
               setDateOfExpiry={setDateOfExpiry}
             />
-          </View>
+          </YStack>
         </ScrollView>
       </SafeAreaView>
       <Toast config={toastConfig} />
-    </GluestackUIProvider>
+    </YStack>
   );
 }
 

@@ -5,7 +5,7 @@ import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
-import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
+import { App } from '../utils/AppClass';
 const MainScreen = (
   { onStartCameraScan,
     nfcScan,
@@ -35,7 +35,7 @@ const MainScreen = (
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [brokenCamera, setBrokenCamera] = useState(false);
   const [open, setOpen] = useState(false)
-  const MyCard = styled(ThemeableStack, {
+  const AppCard = styled(ThemeableStack, {
     hoverTheme: true,
     pressTheme: true,
     focusTheme: true,
@@ -193,8 +193,8 @@ const MainScreen = (
 
 
       <Tabs f={1} defaultValue="scan" orientation='horizontal' dir='ltr' shadowColor="black" onValueChange={(newValue) => setSelectedTab(newValue)}>
-        <YStack f={1} ai="center" jc="space-between" >
-          <XStack />
+        <YStack ai="center" jc="space-between" bc="" >
+          <XStack flexGrow={0} ai="center" />
 
           <Tabs.Content value="scan">
             <ScanScreen
@@ -275,8 +275,8 @@ const MainScreen = (
             </Tabs.List>
           </YStack>
         </YStack>
-      </Tabs>
-    </YStack>
+      </Tabs >
+    </YStack >
   );
 };
 

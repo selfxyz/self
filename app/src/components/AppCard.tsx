@@ -2,7 +2,7 @@ import React from 'react';
 import { Text, YStack, XStack, Card, H3, Image } from 'tamagui';
 import { ChevronRight } from '@tamagui/lucide-icons';
 
-const MyCard = ({ title, description, colorOfTheText, background, id, onTouchStart, eleva }) => {
+const AppCard = ({ title, description, colorOfTheText, background, id, onTouchStart, eleva }) => {
     return (
         <Card
             key={id}
@@ -38,4 +38,4 @@ const MyCard = ({ title, description, colorOfTheText, background, id, onTouchSta
     );
 }
 
-export default MyCard;
+export default AppCard;
