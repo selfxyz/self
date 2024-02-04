@@ -79,7 +79,7 @@ const ProveScreen = ({
               onChangeText={setAddress}
             />
 
-            <Button borderRadius={100} onPress={handleProve} mt="$6" backgroundColor="#cececece" >
+            <Button borderRadius={100} onPress={handleProve} mt="$6" backgroundColor="#3185FC" >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
