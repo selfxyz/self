@@ -23,7 +23,7 @@ const ProveScreen = ({
   totalTime
 }) => {
   return (
-    <YStack space="$4" p="$4" bg="blue" pad>
+    <YStack space="$4" p="$4" >
       {step < Steps.PROOF_GENERATED ? (
         <YStack>
           <YStack my="$4">

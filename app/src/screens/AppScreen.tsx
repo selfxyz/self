@@ -46,7 +46,7 @@ const AppScreen = ({ selectedApp, setSelectedApp }) => {
           background={card.background}
           id={card.app.id}
           onTouchStart={() => handleCardSelect(card.app)}
-          eleva={selectedApp === card.app ? "$0" : "$6"}
+          eleva={selectedApp && selectedApp.id === card.app.id ? "$0" : "$12"}
         />
       ))}
 
