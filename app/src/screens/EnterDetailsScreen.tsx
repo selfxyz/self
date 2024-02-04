@@ -1,9 +1,9 @@
 // src/screens/EnterDetailsScreen.tsx
 
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import CustomTextInput from '../components/CustomTextInput';
-import CustomButton from '../components/CustomButton'; 
+import CustomButton from '../components/CustomButton';
 import { ToggleGroup } from 'tamagui'
 import { AlignCenter, AlignLeft, AlignRight, Camera } from '@tamagui/lucide-icons'
 import { SizableText, Tabs, H5 } from 'tamagui'
@@ -21,7 +21,7 @@ const EnterDetailsScreen = ({
 }) => {
   const [selectedToggle, setSelectedToggle] = useState('camera');
   const handleCameraPress = () => {
-      onStartCameraScan(); 
+    onStartCameraScan();
   };
 
   return (
@@ -63,7 +63,7 @@ const EnterDetailsScreen = ({
         </View>
       ) : (
         <View style={styles.inputContainer}>
-        <Text style={styles.header2}>Work in progress</Text>
+          <Text style={styles.header2}>Work in progress</Text>
         </View>
       )}
 
@@ -82,7 +82,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'white',
-    paddingBottom:20,
+    paddingBottom: 20,
   },
   header: {
     fontSize: 22,
@@ -100,8 +100,8 @@ const styles = StyleSheet.create({
     color: 'gray',
   },
   inputContainer: {
-    width: '100%', 
-    alignSelf: 'center', 
+    width: '100%',
+    alignSelf: 'center',
     flex: 1,
   },
 });

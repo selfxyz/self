@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -39,15 +39,15 @@ import { config } from "@gluestack-ui/config" // Optional if you want to use def
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import {getFirstName, formatDuration, checkInputs } from './utils/utils';
+import { getFirstName, formatDuration, checkInputs } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
 } from '@env';
-import {DataHash, PassportData , mockPassportData} from '../common/src/utils/types';
-import {AWS_ENDPOINT} from '../common/src/constants/constants';
+import { DataHash, PassportData, mockPassportData } from '../common/src/utils/types';
+import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
   hash,
   toUnsignedByte,
@@ -69,7 +69,7 @@ import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
 import MainScreen from './src/screens/MainScreen';
-import { extractMRZInfo , Steps} from './src/utils/utils';
+import { extractMRZInfo, Steps } from './src/utils/utils';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 global.Buffer = Buffer;
@@ -92,7 +92,7 @@ const attributeToPosition = {
 }
 
 function App(): JSX.Element {
-  
+
 
   const isDarkMode = useColorScheme() === 'dark';
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -108,7 +108,7 @@ function App(): JSX.Element {
 
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const [proof, setProof] = useState<{proof: string, inputs: string} | null>(null);
+  const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
   const [mintText, setMintText] = useState<string | null>(null);
 
@@ -133,7 +133,7 @@ function App(): JSX.Element {
       return
     }
     NativeModules.CameraActivityModule.startCameraActivity()
-      .then((mrzInfo : string) => {
+      .then((mrzInfo: string) => {
         try {
           const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
           setPassportNumber(documentNumber);
@@ -149,17 +149,18 @@ function App(): JSX.Element {
       });
   };
 
-  
+
   const handleDisclosureChange = (field: keyof typeof disclosure) => {
     setDisclosure(
-      {...disclosure,
+      {
+        ...disclosure,
         [field]: !disclosure[field]
       });
   };
 
   const backgroundStyle = {
-    backgroundColor:  Colors.white,
-    flex:1
+    backgroundColor: Colors.white,
+    flex: 1
   };
 
   const inputStyle = StyleSheet.create({
@@ -199,15 +200,15 @@ function App(): JSX.Element {
     const mrz = parsed.passportMRZ;
     const dataGroupHashes = parsed.dataGroupHashes;
     const signatureBase64 = parsed.signatureBase64;
-    
+
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
     console.log('pem', pem)
-    
+
     const cert = forge.pki.certificateFromPem(pem);
     const publicKey = cert.publicKey;
     console.log('publicKey', publicKey)
-    
+
     const modulus = (publicKey as any).n.toString(10);
 
     const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
@@ -215,10 +216,10 @@ function App(): JSX.Element {
 
     const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
     const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
-    
+
     const dgHashes = JSON.parse(dataGroupHashes);
     console.log('dgHashes', dgHashes)
-    
+
     const dataGroupHashesArray = Object.keys(dgHashes)
       .map(key => {
         const dgNumber = parseInt(key.replace('DG', ''));
@@ -226,9 +227,9 @@ function App(): JSX.Element {
         return [dgNumber, hashArray];
       })
       .sort((a, b) => (a[0] as number) - (b[0] as number));
-    
+
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
-    
+
     const passportData = {
       mrz,
       signatureAlgorithm,
@@ -239,7 +240,7 @@ function App(): JSX.Element {
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
     };
-    
+
     console.log('mrz', passportData.mrz);
     console.log('signatureAlgorithm', passportData.signatureAlgorithm);
     console.log('pubKey', passportData.pubKey);
@@ -363,19 +364,19 @@ function App(): JSX.Element {
 
     const concatenatedDataHashes =
       Array.isArray(passportData.dataGroupHashes[0])
-      ? formatAndConcatenateDataHashes(
-        mrzHash,
-        passportData.dataGroupHashes as DataHash[],
-      )
-      : passportData.dataGroupHashes
-    
-    
+        ? formatAndConcatenateDataHashes(
+          mrzHash,
+          passportData.dataGroupHashes as DataHash[],
+        )
+        : passportData.dataGroupHashes
+
+
     const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
 
-    for(const attribute in disclosure) {
+    for (const attribute in disclosure) {
       if (disclosure[attribute as keyof typeof disclosure]) {
         const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        for(let i = start; i <= end; i++) {
+        for (let i = start; i <= end; i++) {
           reveal_bitmap[i] = '1';
         }
       }
@@ -437,7 +438,7 @@ function App(): JSX.Element {
 
       const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
       console.log('deserializedInputs', deserializedInputs);
-      
+
       setProofTime(parsedResponse.duration);
 
       setProof({
@@ -465,7 +466,7 @@ function App(): JSX.Element {
       console.log('running mopro verify action')
       const res = await NativeModules.Prover.runVerifyAction()
       console.log('verify response:', res)
-      
+
       setProof({
         proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
         inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
@@ -578,30 +579,30 @@ function App(): JSX.Element {
           contentContainerStyle={{ flexGrow: 1 }}
         >
           <View style={styles.view}>
-                      <MainScreen
-                      onStartCameraScan={startCameraScan}
-                      nfcScan = {scan}
-                      passportData={passportData}
-                      disclosure={disclosure}
-                      handleDisclosureChange={handleDisclosureChange}
-                      address={address}
-                      setAddress={setAddress}
-                      generatingProof={generatingProof}
-                      handleProve={handleProve}
-                      step={step}
-                      mintText={mintText}
-                      proof={proof}
-                      proofTime={proofTime}
-                      handleMint={handleMint}
-                      totalTime={totalTime}
-                      setStep={setStep}
-                      passportNumber={passportNumber}
-                      setPassportNumber={setPassportNumber}
-                      dateOfBirth={dateOfBirth}
-                      setDateOfBirth={setDateOfBirth}
-                      dateOfExpiry={dateOfExpiry}
-                      setDateOfExpiry={setDateOfExpiry}
-                      />
+            <MainScreen
+              onStartCameraScan={startCameraScan}
+              nfcScan={scan}
+              passportData={passportData}
+              disclosure={disclosure}
+              handleDisclosureChange={handleDisclosureChange}
+              address={address}
+              setAddress={setAddress}
+              generatingProof={generatingProof}
+              handleProve={handleProve}
+              step={step}
+              mintText={mintText}
+              proof={proof}
+              proofTime={proofTime}
+              handleMint={handleMint}
+              totalTime={totalTime}
+              setStep={setStep}
+              passportNumber={passportNumber}
+              setPassportNumber={setPassportNumber}
+              dateOfBirth={dateOfBirth}
+              setDateOfBirth={setDateOfBirth}
+              dateOfExpiry={dateOfExpiry}
+              setDateOfExpiry={setDateOfExpiry}
+            />
           </View>
         </ScrollView>
       </SafeAreaView>
@@ -666,7 +667,7 @@ export const toastConfig = {
   error: (props: ToastProps) => (
     <ErrorToast
       {...props}
-      contentContainerStyle={{ paddingHorizontal: 15}}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
       text1Style={{
         fontSize: 15,
         fontWeight: "600",
