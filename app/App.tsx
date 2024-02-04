@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   SafeAreaView,
   ScrollView,
@@ -18,37 +18,18 @@ import {
   LearnMoreLinks,
   ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
-import {
-  Text,
-  GluestackUIProvider,
-  Checkbox,
-  CheckboxIndicator,
-  CheckboxIcon,
-  CheckIcon,
-  CheckboxLabel,
-  Input,
-  InputField,
-  ButtonText,
-  ButtonIcon,
-  Button,
-  Spinner,
-  View,
-  ButtonSpinner,
-} from "@gluestack-ui/themed"
-import { config } from "@gluestack-ui/config" // Optional if you want to use default theme
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
-
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import {getFirstName, formatDuration, checkInputs } from './utils/utils';
+import { checkInputs } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
 } from '@env';
-import {DataHash, PassportData} from '../common/src/utils/types';
-import {AWS_ENDPOINT} from '../common/src/constants/constants';
+import { DataHash, PassportData, mockPassportData } from '../common/src/utils/types';
+import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
   hash,
   toUnsignedByte,
@@ -69,12 +50,12 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+import MainScreen from './src/screens/MainScreen';
+import { extractMRZInfo, Steps } from './src/utils/utils';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import { YStack } from 'tamagui';
 global.Buffer = Buffer;
-
-import CustomTextInput from './src/components/CustomTextInput';
-import EnterDetailsScreen from './src/screens/EnterDetailsScreen';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
@@ -91,24 +72,23 @@ const attributeToPosition = {
 }
 
 function App(): JSX.Element {
+
+
   const isDarkMode = useColorScheme() === 'dark';
-  const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? '');
+  const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
-  const [passportData, setPassportData] = useState<PassportData | null>(null);
-  const [step, setStep] = useState('enterDetails');
+  const [passportData, setPassportData] = useState(samplePassportData);
+  const [step, setStep] = useState(Steps.MRZ_SCAN);
   const [testResult, setTestResult] = useState<any>(null);
   const [error, setError] = useState<any>(null);
-
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
-
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
-  const [proof, setProof] = useState<{proof: string, inputs: string} | null>(null);
+  const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
   const [mintText, setMintText] = useState<string | null>(null);
-
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
     name: false,
@@ -129,35 +109,33 @@ function App(): JSX.Element {
     }
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
-        const lines = mrzInfo.split('\n');
-          if (lines.length >= 2) {
-            const secondLine = lines[1];
-            const passportNumber = secondLine.substring(0, 9).replace(/</g, '').trim(); 
-            const dateOfBirth = secondLine.substring(13, 19); 
-            const dateOfExpiry = secondLine.substring(21, 27); 
-            setPassportNumber(passportNumber);
-            setDateOfBirth(dateOfBirth);
-            setDateOfExpiry(dateOfExpiry);
-      } else {
-        console.error('Invalid MRZ format');
-      }
+        try {
+          const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
+          setPassportNumber(documentNumber);
+          setDateOfBirth(birthDate);
+          setDateOfExpiry(expiryDate);
+          setStep(Steps.MRZ_SCAN_COMPLETED);
+        } catch (error) {
+          console.error('Invalid MRZ format:', error.message);
+        }
       })
       .catch((error: any) => {
         console.error('Camera Activity Error:', error);
       });
   };
 
-  
+
   const handleDisclosureChange = (field: keyof typeof disclosure) => {
     setDisclosure(
-      {...disclosure,
+      {
+        ...disclosure,
         [field]: !disclosure[field]
       });
   };
 
   const backgroundStyle = {
-    backgroundColor:  Colors.white,
-    flex:1
+    backgroundColor: Colors.white,
+    flex: 1
   };
 
   const inputStyle = StyleSheet.create({
@@ -184,7 +162,7 @@ function App(): JSX.Element {
     }
     if (SKIP_SCAN && passportData === null) {
       setPassportData(samplePassportData as PassportData);
-      setStep('scanCompleted');
+      setStep(Steps.NFC_SCAN_COMPLETED);
     }
   }, []);
 
@@ -197,15 +175,15 @@ function App(): JSX.Element {
     const mrz = parsed.passportMRZ;
     const dataGroupHashes = parsed.dataGroupHashes;
     const signatureBase64 = parsed.signatureBase64;
-    
+
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
     console.log('pem', pem)
-    
+
     const cert = forge.pki.certificateFromPem(pem);
     const publicKey = cert.publicKey;
     console.log('publicKey', publicKey)
-    
+
     const modulus = (publicKey as any).n.toString(10);
 
     const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
@@ -213,10 +191,10 @@ function App(): JSX.Element {
 
     const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
     const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
-    
+
     const dgHashes = JSON.parse(dataGroupHashes);
     console.log('dgHashes', dgHashes)
-    
+
     const dataGroupHashesArray = Object.keys(dgHashes)
       .map(key => {
         const dgNumber = parseInt(key.replace('DG', ''));
@@ -224,9 +202,9 @@ function App(): JSX.Element {
         return [dgNumber, hashArray];
       })
       .sort((a, b) => (a[0] as number) - (b[0] as number));
-    
+
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
-    
+
     const passportData = {
       mrz,
       signatureAlgorithm,
@@ -237,7 +215,7 @@ function App(): JSX.Element {
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
     };
-    
+
     console.log('mrz', passportData.mrz);
     console.log('signatureAlgorithm', passportData.signatureAlgorithm);
     console.log('pubKey', passportData.pubKey);
@@ -282,7 +260,7 @@ function App(): JSX.Element {
     console.log('encryptedDigest', passportData.encryptedDigest);
 
     setPassportData(passportData);
-    setStep('scanCompleted');
+    setStep(Steps.NFC_SCAN_COMPLETED);
   }
 
   async function scan() {
@@ -296,7 +274,7 @@ function App(): JSX.Element {
     }
 
     console.log('scanning...');
-    setStep('scanning');
+    setStep(Steps.NFC_SCANNING);
 
     if (Platform.OS === 'android') {
       scanAndroid();
@@ -344,6 +322,7 @@ function App(): JSX.Element {
   }
 
   const handleProve = async () => {
+    setStep(Steps.GENERATING_PROOF);
     if (passportData === null) {
       console.log('passport data is null');
       return;
@@ -360,19 +339,19 @@ function App(): JSX.Element {
 
     const concatenatedDataHashes =
       Array.isArray(passportData.dataGroupHashes[0])
-      ? formatAndConcatenateDataHashes(
-        mrzHash,
-        passportData.dataGroupHashes as DataHash[],
-      )
-      : passportData.dataGroupHashes
-    
-    
+        ? formatAndConcatenateDataHashes(
+          mrzHash,
+          passportData.dataGroupHashes as DataHash[],
+        )
+        : passportData.dataGroupHashes
+
+
     const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
 
-    for(const attribute in disclosure) {
+    for (const attribute in disclosure) {
       if (disclosure[attribute as keyof typeof disclosure]) {
         const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        for(let i = start; i <= end; i++) {
+        for (let i = start; i <= end; i++) {
           reveal_bitmap[i] = '1';
         }
       }
@@ -434,15 +413,15 @@ function App(): JSX.Element {
 
       const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
       console.log('deserializedInputs', deserializedInputs);
-      
+
       setProofTime(parsedResponse.duration);
 
       setProof({
         proof: JSON.stringify(deserializedProof),
         inputs: JSON.stringify(deserializedInputs),
       });
-      setGeneratingProof(false)
-      setStep('proofGenerated');
+      setGeneratingProof(false);
+      setStep(Steps.PROOF_GENERATED);
     });
   }
 
@@ -462,7 +441,7 @@ function App(): JSX.Element {
       console.log('running mopro verify action')
       const res = await NativeModules.Prover.runVerifyAction()
       console.log('verify response:', res)
-      
+
       setProof({
         proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
         inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
@@ -561,7 +540,7 @@ function App(): JSX.Element {
   };
 
   return (
-    <GluestackUIProvider config={config}>
+    <YStack f={1}>
       <SafeAreaView style={backgroundStyle}>
         <StatusBar
           barStyle={isDarkMode ? 'light-content' : 'dark-content'}
@@ -574,166 +553,36 @@ function App(): JSX.Element {
           }}
           contentContainerStyle={{ flexGrow: 1 }}
         >
-          <View style={styles.view}>
-            {step === 'enterDetails' ? (
-                      <EnterDetailsScreen
-                      passportNumber={passportNumber}
-                      setPassportNumber={setPassportNumber}
-                      dateOfBirth={dateOfBirth}
-                      setDateOfBirth={setDateOfBirth}
-                      dateOfExpiry={dateOfExpiry}
-                      setDateOfExpiry={setDateOfExpiry}
-                      onScanPress={scan}
-                      onStartCameraScan={startCameraScan}
-                    />
-            ) : null}
-            {step === 'scanning' ? (
-              <View style={styles.sectionContainer}>
-                <Text style={styles.header}>Put your phone on your passport</Text>
-                <Spinner
-                  size={60}
-                  style={{marginTop: 70}}
-                />
-              </View>
-            ) : null}
-            {step === 'scanCompleted' && passportData ? (
-              <View style={styles.sectionContainer}>
-                <Text style={styles.header}>
-                  Hi {getFirstName(passportData.mrz)}
-                </Text>
-                <View
-                  marginTop={20}
-                  marginBottom={20}
-                >
-                  <Text
-                    marginBottom={5}
-                  >
-                    Signature algorithm: {passportData.signatureAlgorithm}
-                  </Text>
-                  <Text
-                    marginBottom={10}
-                  >
-                    What do you want to disclose ?
-                  </Text>
-                  {Object.keys(disclosure).map((key) => {
-                    const keyy = key as keyof typeof disclosure;
-                    const indexes = attributeToPosition[keyy];
-                    const keyFormatted = keyy.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                    const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1])
-                    const mrzAttributeFormatted = mrzAttribute.replace(/</g, ' ')
-                    
-                    return (
-                      <View key={key} margin={2} width={"$full"} flexDirection="row" justifyContent="space-between">
-                        <View maxWidth={"$5/6"}>
-                          <Text
-                            style={{fontWeight: "bold"}}
-                          >
-                            {keyFormatted}:{" "}
-                          </Text>
-                          <Text>
-                            {mrzAttributeFormatted}
-                          </Text>
-                        </View>
-                        <Checkbox
-                          value={key}
-                          isChecked={disclosure[keyy]}
-                          onChange={() => handleDisclosureChange(keyy)}
-                          size="lg"
-                          aria-label={key}
-                        >
-                          <CheckboxIndicator mr="$2">
-                            <CheckboxIcon as={CheckIcon} />
-                          </CheckboxIndicator>
-                        </Checkbox>
-                      </View>
-                    )
-                  })}
-                </View>
-                <Text>Enter your address or ens</Text>
-                <Input
-                  variant="outline"
-                  size="md"
-                  marginBottom={10}
-                  marginTop={4}
-                >
-                  <InputField
-                    value={address}
-                    onChangeText={setAddress}
-                    placeholder="Your Address or ens name"
-                  />
-                </Input>
-
-                {generatingProof ?
-                  <Button
-                    onPress={handleProve}
-                  >
-                    <ButtonSpinner mr="$1" />
-                    <ButtonText>Generating zk proof</ButtonText>
-                  </Button>
-                  : <Button
-                      onPress={handleProve}
-                    >
-                      <ButtonText>Generate zk proof</ButtonText>
-                    </Button>
-                }
-              </View>
-            ) : null}
-            {step === 'proofGenerated' ? (
-              <View style={styles.sectionContainer}>
-                <Text style={styles.header}>Zero-knowledge proof generated</Text>
-
-                <Text style={{fontWeight: "bold"}}>
-                  Proof:
-                </Text>
-                <Text>
-                  {JSON.stringify(proof)}
-                </Text>
-
-                <Text>
-                  <Text style={{ fontWeight: 'bold' }}>Proof Duration:</Text> {formatDuration(proofTime)}
-                </Text>     
-                <Text>
-                  <Text style={{ fontWeight: 'bold' }}>Total Duration:</Text> {formatDuration(totalTime)}
-                </Text>
-
-                <Button
-                  onPress={handleMint}
-                  marginTop={10}
-                >
-                  <ButtonText>Mint Proof of Passport</ButtonText>
-                </Button>
-                {mintText && <Text>
-                  {mintText}
-                </Text>}
-              </View>
-            ) : null}
-          </View>
-          <View style={{...styles.sectionContainer, ...styles.testSection, marginTop: 20}}>
-            <Text style={{...styles.sectionDescription, textAlign: "center"}}>Test functions</Text>
-
-            <Button
-              onPress={async () => {
-                NativeModules.RNPassportReader.callRustLib((err: any, res: any) => {
-                  if (err) {
-                    console.error(err);
-                    setTestResult(err);
-                  } else {
-                    console.log(res); // Should log "5"
-                    setTestResult(res);
-                  }
-                });
-              }}
-              marginTop={10}
-            >
-              <ButtonText>Call arkworks lib</ButtonText>
-            </Button>
-            {testResult && <Text>{testResult}</Text>}
-
-          </View>
+          <YStack style={styles.view}>
+            <MainScreen
+              onStartCameraScan={startCameraScan}
+              nfcScan={scan}
+              passportData={passportData}
+              disclosure={disclosure}
+              handleDisclosureChange={handleDisclosureChange}
+              address={address}
+              setAddress={setAddress}
+              generatingProof={generatingProof}
+              handleProve={handleProve}
+              step={step}
+              mintText={mintText}
+              proof={proof}
+              proofTime={proofTime}
+              handleMint={handleMint}
+              totalTime={totalTime}
+              setStep={setStep}
+              passportNumber={passportNumber}
+              setPassportNumber={setPassportNumber}
+              dateOfBirth={dateOfBirth}
+              setDateOfBirth={setDateOfBirth}
+              dateOfExpiry={dateOfExpiry}
+              setDateOfExpiry={setDateOfExpiry}
+            />
+          </YStack>
         </ScrollView>
       </SafeAreaView>
       <Toast config={toastConfig} />
-    </GluestackUIProvider>
+    </YStack>
   );
 }
 
@@ -793,7 +642,7 @@ export const toastConfig = {
   error: (props: ToastProps) => (
     <ErrorToast
       {...props}
-      contentContainerStyle={{ paddingHorizontal: 15}}
+      contentContainerStyle={{ paddingHorizontal: 15 }}
       text1Style={{
         fontSize: 15,
         fontWeight: "600",

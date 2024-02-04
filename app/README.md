@@ -61,7 +61,8 @@ yarn start
 Then press `a` for android or `i` for iOS
 
 If you want to see the logs and have a better ios developer experience, open `/ios` in Xcode and launch the app from there instead.
-Currently, proof generation seems to fail sometimes with the react native server, so prefer using Xcode instead.
+
+> :warning: Due to the current limitations of mopro, see [#51](https://github.com/zk-passport/proof-of-passport/issues/51), the proving on iOS only works when the app is run on Xcode. It will not work with the react native server or in a .ipa build. We are working on fixing that.
 
 To see the android logs you'll have to use the Android Studio Logcat.
 

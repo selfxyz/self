@@ -12,9 +12,6 @@
   "dependencies": {
     "@babel/plugin-transform-private-methods": "^7.23.3",
     "@ethersproject/shims": "^5.7.0",
-    "@gluestack-style/react": "^1.0.12",
-    "@gluestack-ui/config": "^1.0.3",
-    "@gluestack-ui/themed": "^1.0.11",
     "@tamagui/config": "^1.84.0",
     "@tamagui/lucide-icons": "^1.84.0",
     "axios": "^1.6.3",
