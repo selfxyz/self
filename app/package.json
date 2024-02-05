@@ -12,8 +12,9 @@
   "dependencies": {
     "@babel/plugin-transform-private-methods": "^7.23.3",
     "@ethersproject/shims": "^5.7.0",
-    "@tamagui/config": "^1.84.0",
-    "@tamagui/lucide-icons": "^1.84.0",
+    "@tamagui/config": "^1.89.3",
+    "@tamagui/core": "^1.89.3",
+    "@tamagui/lucide-icons": "^1.89.3",
     "axios": "^1.6.3",
     "body-parser": "^1.20.2",
     "buffer": "^6.0.3",
@@ -29,7 +30,7 @@
     "react-native-passport-reader": "^1.0.3",
     "react-native-svg": "13.4.0",
     "react-native-toast-message": "^2.2.0",
-    "tamagui": "^1.84.0"
+    "tamagui": "^1.89.3"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

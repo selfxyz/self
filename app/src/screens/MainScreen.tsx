@@ -102,11 +102,8 @@ const MainScreen: React.FC<MainScreenProps> = ({
 
           <Dialog
             modal
-            onOpenChange={(open) => {
-              setOpen(open)
-            }}
           >
-            <Dialog.Trigger asChild p="$2">
+            <Dialog.Trigger p="$2">
               <HelpCircle />
             </Dialog.Trigger>
 
@@ -149,22 +146,24 @@ const MainScreen: React.FC<MainScreenProps> = ({
                 exitStyle={{ x: 0, y: 10, opacity: 0, scale: 0.95 }}
                 gap="$4"
               >
-                <XStack space >
+                <XStack  >
                   <Dialog.Title>Settings</Dialog.Title>
 
                 </XStack>
 
                 <Fieldset gap="$4" mt="$2" horizontal>
-                  <Label width={160} justifyContent="flex-end" htmlFor="name" fow="bold">
+                  <Label width={160} justifyContent="flex-end" htmlFor="restart" fow="bold">
                     Restart to step 1
                   </Label>
                   <Button size="$4" m="$2" onPress={handleRestart}>
                     <IterationCw />
                   </Button>
                 </Fieldset>
+
+
                 <Fieldset gap="$4" mt="$2" horizontal>
-                  <Label width={160} justifyContent="flex-end" htmlFor="name" fow="bold">
-                    Skip to App selection
+                  <Label width={160} justifyContent="flex-end" htmlFor="skip" fow="bold">
+                    Enter mock passport data
                   </Label>
                   <Button size="$4" m="$2" onPress={handleSkip}>
                     <Sparkles />
@@ -204,7 +203,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                 }
                 <YStack flex={1}>
                   <YStack flex={1}></YStack>
-                  <Dialog.Close mb="$4" displayWhenAdapted asChild alignSelf='center'>
+                  <Dialog.Close mb="$4" displayWhenAdapted alignSelf='center'>
                     <XCircle size="$3" />
                   </Dialog.Close>
 

@@ -9,7 +9,7 @@ import { TamaguiProvider } from 'tamagui';
 import { createTamagui, createTokens } from 'tamagui';
 import { config } from '@tamagui/config/v2-native'
 const tamaguiConfig = createTamagui(config)
-  
+
 
 const Root = () => (
   <TamaguiProvider config={tamaguiConfig}>
