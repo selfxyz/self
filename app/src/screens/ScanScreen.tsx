@@ -1,11 +1,17 @@
 import React from 'react';
-import { YStack, Text, Spinner, Circle, ZStack, XStack, SizableText } from 'tamagui'; // Ensure correct import paths based on your project setup
+import { YStack, Text, Spinner, Circle, ZStack, XStack } from 'tamagui'; // Ensure correct import paths based on your project setup
 import { Steps } from '../utils/utils';
-const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
 
+interface ScanScreenProps {
+  onStartCameraScan: () => void;
+  nfcScan: () => void;
+  step: number;
+}
+
+const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, step }) => {
   return (
-    <YStack >
-      <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
+    <YStack gap="$1" >
+      <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
         <Circle
           alignSelf='center'
           h={22}
@@ -13,20 +19,20 @@ const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
           borderWidth={1.6}
           p={0}
         />
-        <SizableText
+        <Text
           alignSelf='center'
           h={22}
           w={22}
-          y={-1}
+          y={1}
           x={7}
           color="black"
           fow="bold"
-        >1</SizableText>
+        >1</Text>
       </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
+      <Text textAlign='center' mt="$5" px="$4" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
 
 
-      <ZStack alignSelf='center' mt="$8" maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
+      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
         <Circle
           alignSelf='center'
           h={22}
@@ -34,19 +40,19 @@ const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
           borderWidth={1.6}
           p={0}
         />
-        <SizableText
+        <Text
           alignSelf='center'
           h={22}
           w={22}
-          y={-1}
+          y={1}
           x={7}
           color="black"
           fow="bold"
-        >2</SizableText>
+        >2</Text>
       </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
+      <Text textAlign='center' mt="$5" px="$4" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
 
-      <ZStack alignSelf='center' mt="$8" maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
+      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
         <Circle
           alignSelf='center'
           h={22}
@@ -54,17 +60,17 @@ const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
           borderWidth={1.6}
           p={0}
         />
-        <SizableText
+        <Text
           alignSelf='center'
           h={22}
           w={22}
-          y={-1}
+          y={1}
           x={7}
           color="black"
           fow="bold"
-        >3</SizableText>
+        >3</Text>
       </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={step >= Steps.NFC_SCAN_COMPLETED ? "bold" : "normal"}>Select App</Text>
+      <Text textAlign='center' mt="$5" px="$4" fow={step >= Steps.NFC_SCAN_COMPLETED ? "bold" : "normal"}>Select App</Text>
 
       <YStack w="100%" ai="center">
         {

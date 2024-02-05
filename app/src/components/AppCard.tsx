@@ -2,13 +2,32 @@ import React from 'react';
 import { Text, YStack, XStack, Card, H3, Image } from 'tamagui';
 import { ChevronRight } from '@tamagui/lucide-icons';
 
-const AppCard = ({ title, description, colorOfTheText, background, id, onTouchStart, eleva }) => {
+interface AppCardProps {
+    title: string;
+    description: string;
+    colorOfTheText: string;
+    background: string | undefined;
+    id: string | number;
+    onTouchStart?: () => void;
+    eleva?: string;
+}
+
+const AppCard: React.FC<AppCardProps> = ({
+    title,
+    description,
+    colorOfTheText,
+    background,
+    id,
+    onTouchStart,
+    eleva
+}) => {
     return (
         <Card
             key={id}
             borderRadius="$10"
             elevation={eleva}
             onTouchStart={onTouchStart}
+            shadowColor="black"
         >
             <XStack
             >

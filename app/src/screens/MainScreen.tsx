@@ -1,36 +1,63 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Button, SizableText, Tabs, styled, Dialog, Adapt, Sheet, Label, Fieldset, Input, Switch, ThemeableStack } from 'tamagui'
+import { YStack, XStack, Text, Button, Tabs, styled, Dialog, Adapt, Sheet, Label, Fieldset, Input, Switch, ThemeableStack } from 'tamagui'
 import { Scan, UserCheck, HelpCircle, XCircle, IterationCw, LayoutGrid, Sparkles } from '@tamagui/lucide-icons';
 import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
 import { App } from '../utils/AppClass';
-const MainScreen = (
-  { onStartCameraScan,
-    nfcScan,
-    passportData,
-    disclosure,
-    handleDisclosureChange,
-    address,
-    setAddress,
-    generatingProof,
-    handleProve,
-    step,
-    mintText,
-    proof,
-    proofTime,
-    handleMint,
-    totalTime,
-    setStep,
-    passportNumber,
-    setPassportNumber,
-    dateOfBirth,
-    setDateOfBirth,
-    dateOfExpiry,
-    setDateOfExpiry
-  }
-) => {
+
+
+interface MainScreenProps {
+  onStartCameraScan: () => void;
+  nfcScan: () => void;
+  passportData: any;
+  disclosure: boolean;
+  handleDisclosureChange: (disclosure: boolean) => void;
+  address: string;
+  setAddress: (address: string) => void;
+  generatingProof: boolean;
+  handleProve: () => void;
+  step: number;
+  mintText: string;
+  proof: any;
+  proofTime: number;
+  handleMint: () => void;
+  totalTime: number;
+  setStep: (step: number) => void;
+  passportNumber: string;
+  setPassportNumber: (number: string) => void;
+  dateOfBirth: string;
+  setDateOfBirth: (date: string) => void;
+  dateOfExpiry: string;
+  setDateOfExpiry: (date: string) => void;
+}
+
+const MainScreen: React.FC<MainScreenProps> = ({
+  onStartCameraScan,
+  nfcScan,
+  passportData,
+  disclosure,
+  handleDisclosureChange,
+  address,
+  setAddress,
+  generatingProof,
+  handleProve,
+  step,
+  mintText,
+  proof,
+  proofTime,
+  handleMint,
+  totalTime,
+  setStep,
+  passportNumber,
+  setPassportNumber,
+  dateOfBirth,
+  setDateOfBirth,
+  dateOfExpiry,
+  setDateOfExpiry
+}) => {
+
   const [selectedTab, setSelectedTab] = useState("scan");
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [brokenCamera, setBrokenCamera] = useState(false);
@@ -70,7 +97,7 @@ const MainScreen = (
         <XStack w="100%" jc="space-between" ai="center" ph="$4" pv="$2" bc="#fff" p="$3">
           <XStack></XStack>
           <Text>
-            {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "App" : "Prove")}
+            {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
           </Text>
 
           <Dialog
@@ -224,7 +251,6 @@ const MainScreen = (
               proofTime={proofTime}
               handleMint={handleMint}
               totalTime={totalTime}
-              setStep={setStep}
             />
           </Tabs.Content>
 
@@ -235,7 +261,7 @@ const MainScreen = (
               <Tabs.Tab unstyled value="scan" w="33%" backgroundColor="transparent" >
                 <YStack ai="center">
                   <Scan color={selectedTab === "scan" ? '#3185FC' : 'black'} />
-                  <SizableText color={selectedTab === "scan" ? '#3185FC' : 'black'}>Scan</SizableText>
+                  <Text color={selectedTab === "scan" ? '#3185FC' : 'black'}>Scan</Text>
                 </YStack>
               </Tabs.Tab>
 
@@ -243,14 +269,14 @@ const MainScreen = (
                 <Tabs.Tab unstyled value="scan" w="33%" backgroundColor="transparent" >
                   <YStack ai="center">
                     <LayoutGrid color="#eeeeee" />
-                    <SizableText color="#eeeeee">App</SizableText>
+                    <Text color="#eeeeee">Apps</Text>
                   </YStack>
                 </Tabs.Tab>
                 :
                 <Tabs.Tab unstyled value="app" w="33%" backgroundColor="transparent" >
                   <YStack ai="center">
                     <LayoutGrid color={selectedTab === "app" ? '#3185FC' : 'black'} />
-                    <SizableText color={selectedTab === "app" ? '#3185FC' : 'black'}>App</SizableText>
+                    <Text color={selectedTab === "app" ? '#3185FC' : 'black'}>Apps</Text>
                   </YStack>
                 </Tabs.Tab>
               }
@@ -261,14 +287,14 @@ const MainScreen = (
                 <Tabs.Tab unstyled value={step < Steps.NFC_SCAN_COMPLETED ? "scan" : "app"} w="33%" backgroundColor="transparent">
                   <YStack ai="center">
                     <UserCheck color="#eeeeee" />
-                    <SizableText color="#eeeeee">Prove</SizableText>
+                    <Text color="#eeeeee">Prove</Text>
                   </YStack>
                 </Tabs.Tab>
                 :
                 <Tabs.Tab unstyled value="generate" w="33%" backgroundColor="transparent">
                   <YStack ai="center">
                     <UserCheck color={selectedTab === "generate" ? '#3185FC' : 'black'} />
-                    <SizableText color={selectedTab === "generate" ? '#3185FC' : 'black'}>Prove</SizableText>
+                    <Text color={selectedTab === "generate" ? '#3185FC' : 'black'}>Prove</Text>
                   </YStack>
                 </Tabs.Tab>
               }

@@ -80,7 +80,7 @@ function App(): JSX.Element {
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
   const [passportData, setPassportData] = useState(samplePassportData);
-  const [step, setStep] = useState(Steps.MRZ_SCAN);
+  const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [testResult, setTestResult] = useState<any>(null);
   const [error, setError] = useState<any>(null);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
@@ -224,7 +224,7 @@ function App(): JSX.Element {
     console.log('encryptedDigest', passportData.encryptedDigest);
 
     setPassportData(passportData);
-    setStep('scanCompleted');
+    setStep(Steps.NFC_SCAN_COMPLETED);
   }
 
   async function handleResponseAndroid(response: any) {

@@ -4,7 +4,13 @@ import GITCOIN from '../images/gitcoin.png';
 import { YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
 import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
-const AppScreen = ({ selectedApp, setSelectedApp }) => {
+
+interface AppScreenProps {
+  selectedApp: App | null;
+  setSelectedApp: (app: App | null) => void;
+}
+
+const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp }) => {
 
   const handleCardSelect = (app: App) => {
     setSelectedApp(app);
