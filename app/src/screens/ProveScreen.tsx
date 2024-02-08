@@ -110,13 +110,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               )}
             </Button>
 
-            <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take about 2 mn</Text>
+            <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take up to 2 mn</Text>
             <Text fontSize={9} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>The application may freeze during this time (hard work)</Text>
 
 
           </YStack>
         ) : (
           <YStack flex={1} m="$2" justifyContent='center' alignItems='center' gap="$5">
+            <XStack flex={1} />
             <ProofGrid proof={proof} />
 
             <YStack>

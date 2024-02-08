@@ -40,7 +40,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp }) =>
   ];
 
   return (
-    <YStack gap="$5" px="$5" pt="$12">
+    <YStack flex={1} gap="$5" px="$5" jc="center" alignItems='center' >
 
       {cardsData.map(card => (
         <AppCard

@@ -45,7 +45,7 @@ const AppCard: React.FC<AppCardProps> = ({
                     <Card.Background
                         animation="quick"
                         borderColor={(selected) ? "#E0E0E0" : "transparent"}
-                        borderWidth={(selected) ? 4 : 0}
+                        borderWidth={(selected) ? 3 : 0}
                         borderRadius="$10"
                         bg="#F0F0F0"
 
