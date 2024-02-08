@@ -1,20 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import {
-  StatusBar,
   StyleSheet,
   useColorScheme,
   NativeModules,
   DeviceEventEmitter,
-  TextInput,
   Platform,
 } from 'react-native';
 
 import {
   Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
