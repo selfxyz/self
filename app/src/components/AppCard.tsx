@@ -37,10 +37,11 @@ const AppCard: React.FC<AppCardProps> = ({
                 <XStack w="100%"
                 >
                     <Card.Header w="100%">
-                        <XStack ai="center" py="$1" >
-                            <YStack width={235}>
+
+                        <XStack ai="center" py="$1">
+                            <YStack width={250}>
                                 <H3 color={colorOfTheText} selectable={false} >{title}</H3>
-                                <Text theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
+                                <Text mt="$1" theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
                             </YStack>
                             <XStack flex={1} />
                             <ChevronRight size="$4" color={colorOfTheText} minWidth="$4" />
