@@ -144,8 +144,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
         ) :
         (
           <YStack flex={1} justifyContent='center' alignItems='center'>
-            <Text fontSize={18} textAlign='center' fow="bold">Please scan your passport and select an app to generate ZK proof</Text>
-            <XStack mt="$10" gap="$6">
+            <Text fontSize={17} textAlign='center' fow="bold">Please scan your passport and select an app to generate ZK proof</Text>
+            <XStack mt="$8" gap="$7">
               <Scan size="$4" color={step < Steps.NFC_SCAN_COMPLETED ? "black" : "#3185FC"} />
               <LayoutGrid size="$4" color={selectedApp == null ? "black" : "#3185FC"} />
             </XStack>
