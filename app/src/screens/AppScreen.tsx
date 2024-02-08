@@ -4,16 +4,24 @@ import GITCOIN from '../images/gitcoin.png';
 import { YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
 import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
+import { Steps } from '../utils/utils';
 
 interface AppScreenProps {
   selectedApp: App | null;
   setSelectedApp: (app: App | null) => void;
+  step: number;
+  setStep: (step: number) => void;
 }
 
-const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp }) => {
+const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step, setStep }) => {
 
   const handleCardSelect = (app: App) => {
-    setSelectedApp(app);
+    if (selectedApp != app) {
+      setSelectedApp(app);
+      if (step >= Steps.NFC_SCAN_COMPLETED) {
+        setStep(Steps.NFC_SCAN_COMPLETED);
+      }
+    }
   };
 
   const cardsData = [

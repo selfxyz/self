@@ -247,7 +247,10 @@ const MainScreen: React.FC<MainScreenProps> = ({
         <Tabs.Content value="app" f={1}>
           <AppScreen
             selectedApp={selectedApp}
-            setSelectedApp={setSelectedApp} />
+            setSelectedApp={setSelectedApp}
+            step={step}
+            setStep={setStep}
+          />
         </Tabs.Content>
 
         <Tabs.Content value="generate" f={1}>

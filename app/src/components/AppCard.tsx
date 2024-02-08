@@ -33,7 +33,6 @@ const AppCard: React.FC<AppCardProps> = ({
                 key={id}
                 elevation={0}
                 onTouchStart={onTouchStart}
-
             >
                 <XStack w="100%"
                 >
