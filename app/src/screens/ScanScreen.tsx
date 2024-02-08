@@ -10,7 +10,7 @@ interface ScanScreenProps {
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, step }) => {
   return (
-    <YStack f={1} p="$5" gap="$1" px="$5" pt="$12">
+    <YStack f={1} p="$5" gap="$1" px="$5" pt="$14">
       <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={0} >
         <Circle
           alignSelf='center'

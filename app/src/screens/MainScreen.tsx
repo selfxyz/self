@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Tabs, styled, Dialog, Adapt, Sheet, Label, Fieldset, Input, Switch, ThemeableStack, Separator } from 'tamagui'
-import { Scan, UserCheck, HelpCircle, XCircle, IterationCw, LayoutGrid, Sparkles } from '@tamagui/lucide-icons';
+import { Scan, UserCheck, HelpCircle, XCircle, IterationCw, LayoutGrid, VenetianMask } from '@tamagui/lucide-icons';
 import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
@@ -184,7 +184,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     Use mock passport data
                   </Label>
                   <Button size="$4" m="$2" onPress={handleSkip}>
-                    <Sparkles />
+                    <VenetianMask />
                   </Button>
                 </Fieldset>
 
