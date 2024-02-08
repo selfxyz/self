@@ -10,8 +10,8 @@ interface ScanScreenProps {
 
 const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, step }) => {
   return (
-    <YStack gap="$1" >
-      <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
+    <YStack f={1} p="$5" gap="$1" px="$5" pt="$12">
+      <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={0} >
         <Circle
           alignSelf='center'
           h={22}
@@ -29,10 +29,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, ste
           fow="bold"
         >1</Text>
       </ZStack>
-      <Text textAlign='center' mt="$5" px="$4" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
-
-
-      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
+      <Text textAlign='center' mt="$5" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
+      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} >
         <Circle
           alignSelf='center'
           h={22}
@@ -50,9 +48,9 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, ste
           fow="bold"
         >2</Text>
       </ZStack>
-      <Text textAlign='center' mt="$5" px="$4" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
+      <Text textAlign='center' mt="$5" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
 
-      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} space="$0">
+      <ZStack alignSelf='center' mt="$5" maxWidth={50} maxHeight={50} width={50} flex={0} >
         <Circle
           alignSelf='center'
           h={22}
@@ -70,9 +68,9 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, nfcScan, ste
           fow="bold"
         >3</Text>
       </ZStack>
-      <Text textAlign='center' mt="$5" px="$4" fow={step >= Steps.NFC_SCAN_COMPLETED ? "bold" : "normal"}>Select App</Text>
+      <Text textAlign='center' mt="$5" fow={step >= Steps.NFC_SCAN_COMPLETED ? "bold" : "normal"}>Select App</Text>
 
-      <YStack w="100%" ai="center">
+      <YStack ai="center">
         {
           step < Steps.NFC_SCAN_COMPLETED
             ? (

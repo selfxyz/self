@@ -1,22 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
   useColorScheme,
   NativeModules,
   DeviceEventEmitter,
-  TextInput,
   Platform,
 } from 'react-native';
 
 import {
   Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
 } from 'react-native/Libraries/NewAppScreen';
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
@@ -449,7 +440,7 @@ function App(): JSX.Element {
 
       // setProofTime(response.duration);
       setGeneratingProof(false)
-      setStep('proofGenerated');
+      setStep(Steps.PROOF_GENERATED);
     } catch (err: any) {
       console.log('err', err);
       setError(
@@ -540,47 +531,33 @@ function App(): JSX.Element {
   };
 
   return (
-    <YStack f={1}>
-      <SafeAreaView style={backgroundStyle}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={Colors.red}
+    <YStack h="100%" w="100%">
+      <YStack h="100%" w="100%">
+        <MainScreen
+          onStartCameraScan={startCameraScan}
+          nfcScan={scan}
+          passportData={passportData}
+          disclosure={disclosure}
+          handleDisclosureChange={handleDisclosureChange}
+          address={address}
+          setAddress={setAddress}
+          generatingProof={generatingProof}
+          handleProve={handleProve}
+          step={step}
+          mintText={mintText}
+          proof={proof}
+          proofTime={proofTime}
+          handleMint={handleMint}
+          totalTime={totalTime}
+          setStep={setStep}
+          passportNumber={passportNumber}
+          setPassportNumber={setPassportNumber}
+          dateOfBirth={dateOfBirth}
+          setDateOfBirth={setDateOfBirth}
+          dateOfExpiry={dateOfExpiry}
+          setDateOfExpiry={setDateOfExpiry}
         />
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.black,
-          }}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          <YStack style={styles.view}>
-            <MainScreen
-              onStartCameraScan={startCameraScan}
-              nfcScan={scan}
-              passportData={passportData}
-              disclosure={disclosure}
-              handleDisclosureChange={handleDisclosureChange}
-              address={address}
-              setAddress={setAddress}
-              generatingProof={generatingProof}
-              handleProve={handleProve}
-              step={step}
-              mintText={mintText}
-              proof={proof}
-              proofTime={proofTime}
-              handleMint={handleMint}
-              totalTime={totalTime}
-              setStep={setStep}
-              passportNumber={passportNumber}
-              setPassportNumber={setPassportNumber}
-              dateOfBirth={dateOfBirth}
-              setDateOfBirth={setDateOfBirth}
-              dateOfExpiry={dateOfExpiry}
-              setDateOfExpiry={setDateOfExpiry}
-            />
-          </YStack>
-        </ScrollView>
-      </SafeAreaView>
+      </YStack>
       <Toast config={toastConfig} />
     </YStack>
   );

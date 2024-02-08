@@ -40,7 +40,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp }) =>
   ];
 
   return (
-    <YStack gap="$5" w="100%" p="$5">
+    <YStack gap="$5" px="$5" pt="$12">
 
       {cardsData.map(card => (
         <AppCard
@@ -51,7 +51,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp }) =>
           background={card.background}
           id={card.app.id}
           onTouchStart={() => handleCardSelect(card.app)}
-          eleva={selectedApp && selectedApp.id === card.app.id ? "$0" : "$12"}
+          selected={selectedApp && selectedApp.id === card.app.id ? true : false}
         />
       ))}
 

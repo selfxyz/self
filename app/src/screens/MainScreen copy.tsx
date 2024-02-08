@@ -6,7 +6,6 @@ import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
 import { App } from '../utils/AppClass';
-import { Keyboard } from 'react-native';
 
 
 interface MainScreenProps {
@@ -91,22 +90,6 @@ const MainScreen: React.FC<MainScreenProps> = ({
     }
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
   return (
     <YStack f={1} bc="white">
 
@@ -169,7 +152,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
 
                 </XStack>
 
-                <Fieldset gap="$4" mt="$6" horizontal>
+                <Fieldset gap="$4" mt="$2" horizontal>
                   <Label width={200} justifyContent="flex-end" htmlFor="restart" fow="bold">
                     Restart to step 1
                   </Label>
@@ -231,7 +214,8 @@ const MainScreen: React.FC<MainScreenProps> = ({
             </Dialog.Portal>
           </Dialog>
         </XStack>
-        <Separator />
+
+        <YStack w="100%" h={2} backgroundColor="#DCDCDC" opacity={0.16}></YStack>
       </YStack>
 
 
@@ -268,36 +252,35 @@ const MainScreen: React.FC<MainScreenProps> = ({
         </Tabs.Content>
 
         <Separator />
+        <Tabs.List separator={<Separator vertical />}
 
-        {!keyboardVisible ? <Tabs.List separator={<Separator vertical />} pt="$4" pb="$3">
+          pt="$4" pb="$3">
 
           <Tabs.Tab value="scan" unstyled w="33%">
             <YStack ai="center">
-              <Scan color={selectedTab === "scan" ? '#3185FC' : 'black'} />
-              <Text color={selectedTab === "scan" ? '#3185FC' : 'black'}>Scan</Text>
+              <Scan color='black' />
+              <Text color='black'>Scan</Text>
             </YStack>
           </Tabs.Tab>
 
           <Tabs.Tab value="app" unstyled w="33%">
-            <YStack ai="center">
-              <LayoutGrid color={selectedTab === "app" ? '#3185FC' : 'black'} />
-              <Text color={selectedTab === "app" ? '#3185FC' : 'black'}>Apps</Text>
+            <YStack ai="center" >
+              <LayoutGrid color="black" />
+              <Text color="black">Apps</Text>
             </YStack>
           </Tabs.Tab>
 
           <Tabs.Tab value="generate" unstyled w="33%">
             <YStack ai="center">
-              <UserCheck color={selectedTab === "generate" ? '#3185FC' : 'black'} />
-              <Text color={selectedTab === "generate" ? '#3185FC' : 'black'}>Prove</Text>
+              <UserCheck color='black' />
+              <Text color='black'>Prove</Text>
             </YStack>
           </Tabs.Tab>
 
-        </Tabs.List> : (<XStack />)}
+        </Tabs.List>
       </Tabs>
 
       {/*
-
-      // This component is WIP in case tamagui can't afford to deliver Tabs component without error on time
 
       <XStack justifyContent='space-between'>
 

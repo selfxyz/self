@@ -9,7 +9,7 @@ interface AppCardProps {
     background: string | undefined;
     id: string | number;
     onTouchStart?: () => void;
-    eleva?: string;
+    selected?: boolean;
 }
 
 const AppCard: React.FC<AppCardProps> = ({
@@ -19,20 +19,20 @@ const AppCard: React.FC<AppCardProps> = ({
     background,
     id,
     onTouchStart,
-    eleva
+    selected
 }) => {
     return (
         <Card
             key={id}
-            borderRadius="$10"
-            elevation={eleva}
+            elevation={0}
             onTouchStart={onTouchStart}
-            shadowColor="black"
+            bg="transparent"
+
         >
-            <XStack
+            <XStack w="100%"
             >
                 <Card.Header w="100%">
-                    <XStack w="100%" ai="center" py="$1" >
+                    <XStack ai="center" py="$1" >
                         <YStack>
                             <H3 color={colorOfTheText} selectable={false} >{title}</H3>
                             <Text theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
@@ -41,15 +41,21 @@ const AppCard: React.FC<AppCardProps> = ({
                         <ChevronRight size="$4" color={colorOfTheText} />
                     </XStack>
                 </Card.Header>
-                {background && (
-                    <Card.Background>
-                        <Image
+                {(
+                    <Card.Background
+                        animation="quick"
+                        borderColor={(selected) ? "#E0E0E0" : "transparent"}
+                        borderWidth={(selected) ? 4 : 0}
+                        borderRadius="$10"
+                        bg="#F0F0F0"
+
+                    >
+                        {background && <Image
                             flex={1}
-                            borderRadius="$10"
                             source={{
                                 uri: background
                             }}
-                        />
+                        />}
                     </Card.Background>
                 )}
             </XStack>
