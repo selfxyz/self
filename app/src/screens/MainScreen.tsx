@@ -194,7 +194,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     Broken camera
                   </Label>
                   <Switch size="$4" checked={brokenCamera} onCheckedChange={setBrokenCamera}>
-                    <Switch.Thumb animation="bouncy" backgroundColor="white" color />
+                    <Switch.Thumb animation="bouncy" backgroundColor="white"/>
                   </Switch>
                 </Fieldset>
                 {

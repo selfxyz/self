@@ -6,8 +6,9 @@ import { AppRegistry } from 'react-native';
 import App from './App';
 import { name as appName } from './app.json';
 import { TamaguiProvider } from 'tamagui';
-import { createTamagui, createTokens } from 'tamagui';
-import { config } from '@tamagui/config/v2-native'
+import { createTamagui } from 'tamagui';
+import { config } from '@tamagui/config/v3'
+
 const tamaguiConfig = createTamagui(config)
 
 
