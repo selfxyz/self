@@ -3,7 +3,7 @@ import ZUPASS from '../images/zupass.png';
 import GITCOIN from '../images/gitcoin.png';
 import { YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
-import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
+import { App, gitcoin, soulbound, zuzalu } from '../utils/AppClass';
 import { Steps } from '../utils/utils';
 
 interface AppScreenProps {
@@ -28,7 +28,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
     {
       app: zuzalu,
       title: 'Add to Zupasss',
-      description: 'And prove your identity at in person',
+      description: 'And prove your identity at in person events',
       background: ZUPASS,
       colorOfTheText: 'white',
     },
@@ -40,9 +40,9 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       colorOfTheText: 'white',
     },
     {
-      app: soulbond,
+      app: soulbound,
       title: 'Mint SBT',
-      description: 'And prove your identity at in person events',
+      description: 'And prove you\'re a human',
       colorOfTheText: 'black',
     },
   ];

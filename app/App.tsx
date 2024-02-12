@@ -1,15 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  StyleSheet,
-  useColorScheme,
   NativeModules,
   DeviceEventEmitter,
   Platform,
 } from 'react-native';
-
-import {
-  Colors,
-} from 'react-native/Libraries/NewAppScreen';
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
@@ -20,7 +14,7 @@ import {
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
 } from '@env';
-import { DataHash, PassportData, mockPassportData } from '../common/src/utils/types';
+import { DataHash, PassportData } from '../common/src/utils/types';
 import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
   hash,
@@ -64,23 +58,19 @@ const attributeToPosition = {
 }
 
 function App(): JSX.Element {
-
-
-  const isDarkMode = useColorScheme() === 'dark';
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
   const [passportData, setPassportData] = useState(samplePassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
-  const [testResult, setTestResult] = useState<any>(null);
   const [error, setError] = useState<any>(null);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
   const [totalTime, setTotalTime] = useState<number>(0);
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
-  const [mintText, setMintText] = useState<string | null>(null);
+  const [mintText, setMintText] = useState<string>("");
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
     name: false,
@@ -107,7 +97,7 @@ function App(): JSX.Element {
           setDateOfBirth(birthDate);
           setDateOfExpiry(expiryDate);
           setStep(Steps.MRZ_SCAN_COMPLETED);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Invalid MRZ format:', error.message);
         }
       })
@@ -124,19 +114,6 @@ function App(): JSX.Element {
         [field]: !disclosure[field]
       });
   };
-
-  const backgroundStyle = {
-    backgroundColor: Colors.white,
-    flex: 1
-  };
-
-  const inputStyle = StyleSheet.create({
-    inputField: {
-      minHeight: 45, // Set a minimum height that fits the text
-      // Add other styles as needed to match your design
-    },
-    // Include any other styles you want to apply to the input component
-  });
 
   useEffect(() => {
     const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
@@ -557,41 +534,6 @@ function App(): JSX.Element {
     </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  view: {
-    flex: 1,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  testSection: {
-    backgroundColor: '#f2f2f2', // different background color
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#dcdcdc', // adding a border top with a light color
-    marginTop: 15,
-  },
-});
 
 export default App;
 

@@ -14,7 +14,7 @@ interface MainScreenProps {
   onStartCameraScan: () => void;
   nfcScan: () => void;
   passportData: any;
-  disclosure: boolean;
+  disclosure: {[key: string]: boolean};
   handleDisclosureChange: (disclosure: boolean) => void;
   address: string;
   setAddress: (address: string) => void;
