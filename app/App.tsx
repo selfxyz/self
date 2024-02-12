@@ -161,12 +161,17 @@ function App(): JSX.Element {
   async function handleResponseIOS(response: any) {
     const parsed = JSON.parse(response);
 
-    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in our world
-    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in our world
+    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in android world
+    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in android world
     const signatureAlgorithm = parsed.signatureAlgorithm;
     const mrz = parsed.passportMRZ;
-    const dataGroupHashes = parsed.dataGroupHashes;
     const signatureBase64 = parsed.signatureBase64;
+    console.log('dataGroupsPresent', parsed.dataGroupsPresent)
+    console.log('placeOfBirth', parsed.placeOfBirth)
+    console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
+    console.log('isPACESupported', parsed.isPACESupported)
+    console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
+    console.log('residenceAddress', parsed.residenceAddress)
 
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
@@ -183,17 +188,6 @@ function App(): JSX.Element {
 
     const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
     const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
-
-    const dgHashes = JSON.parse(dataGroupHashes);
-    console.log('dgHashes', dgHashes)
-
-    const dataGroupHashesArray = Object.keys(dgHashes)
-      .map(key => {
-        const dgNumber = parseInt(key.replace('DG', ''));
-        const hashArray = hexStringToSignedIntArray(dgHashes[key].computedHash);
-        return [dgNumber, hashArray];
-      })
-      .sort((a, b) => (a[0] as number) - (b[0] as number));
 
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
@@ -532,8 +526,8 @@ function App(): JSX.Element {
   };
 
   return (
-    <YStack f={1} bg="white" h="100%" w="100%">
-      <YStack h="100%" w="100%">
+    <YStack>
+      <YStack>
         <MainScreen
           onStartCameraScan={startCameraScan}
           nfcScan={scan}
