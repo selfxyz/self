@@ -503,8 +503,8 @@ function App(): JSX.Element {
   };
 
   return (
-    <YStack>
-      <YStack>
+    <YStack f={1} bg="white" h="100%" w="100%">
+      <YStack h="100%" w="100%">
         <MainScreen
           onStartCameraScan={startCameraScan}
           nfcScan={scan}
