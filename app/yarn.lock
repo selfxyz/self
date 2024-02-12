@@ -2922,10 +2922,10 @@
     "@tamagui/text" "1.89.20"
     "@tamagui/use-controllable-state" "1.89.20"
 
-"@tamagui/types@1.89.20":
-  version "1.89.20"
-  resolved "https://registry.yarnpkg.com/@tamagui/types/-/types-1.89.20.tgz#ed47b45410ecd35ae6113d101746580856eeeb99"
-  integrity sha512-uSz+zwcUmqtzRaNoH5YdrxF6zZi0s45rUGjCOZgN5es3sN05iOA2+oCIAEw7VXJdUI83OuEJzSZVKjoT1NXR+w==
+"@tamagui/types@1.89.11":
+  version "1.89.11"
+  resolved "https://registry.yarnpkg.com/@tamagui/types/-/types-1.89.11.tgz#baa334ea522a69fc063e2d578edfea63674f7ccd"
+  integrity sha512-MQ5AAh1NX+8HJ0QzdjEipl4XN5lht5ylT1sl4s/kwGdSsdNgmGL5iqsb06RQuO4fjLKj0C04Q2MWdcqLBCWgFQ==
 
 "@tamagui/use-callback-ref@1.89.20":
   version "1.89.20"

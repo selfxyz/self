@@ -15,6 +15,7 @@
     "@tamagui/config": "^1.89.20",
     "@tamagui/core": "^1.89.20",
     "@tamagui/lucide-icons": "^1.89.20",
+    "@tamagui/types": "^1.89.20",
     "axios": "^1.6.3",
     "body-parser": "^1.20.2",
     "buffer": "^6.0.3",

@@ -12,7 +12,7 @@ import { App } from '../utils/AppClass';
 interface ProveScreenProps {
   selectedApp: App | null;
   passportData: any;
-  disclosure: any;
+  disclosure: {[key: string]: boolean};
   handleDisclosureChange: (disclosure: boolean) => void;
   address: string;
   setAddress: (address: string) => void;
