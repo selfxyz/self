@@ -28,7 +28,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
     {
       app: zuzalu,
       title: 'Add to Zupasss',
-      description: 'And prove your identity at in person events',
+      description: 'Prove your identity at in person events',
       background: ZUPASS,
       colorOfTheText: 'white',
     },

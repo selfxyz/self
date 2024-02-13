@@ -45,8 +45,6 @@ global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
-const SKIP_SCAN = false;
-
 const attributeToPosition = {
   issuing_state: [2, 5],
   name: [5, 44],
@@ -62,15 +60,15 @@ function App(): JSX.Element {
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
-  const [passportData, setPassportData] = useState(samplePassportData);
+  const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [error, setError] = useState<any>(null);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
-  const [totalTime, setTotalTime] = useState<number>(0);
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
   const [mintText, setMintText] = useState<string>("");
+
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
     name: false,
@@ -128,10 +126,6 @@ function App(): JSX.Element {
   useEffect(() => {
     if (Platform.OS !== 'android') {
       NativeModules.Prover.runInitAction() // for mopro, ios only rn
-    }
-    if (SKIP_SCAN && passportData === null) {
-      setPassportData(samplePassportData as PassportData);
-      setStep(Steps.NFC_SCAN_COMPLETED);
     }
   }, []);
 
@@ -354,7 +348,6 @@ function App(): JSX.Element {
     }
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
-    setTotalTime(end - start);
   };
 
   async function proveAndroid(inputs: any) {
@@ -520,7 +513,6 @@ function App(): JSX.Element {
           proof={proof}
           proofTime={proofTime}
           handleMint={handleMint}
-          totalTime={totalTime}
           setStep={setStep}
           passportNumber={passportNumber}
           setPassportNumber={setPassportNumber}

@@ -19,5 +19,5 @@ export class App {
 }
 
 export const gitcoin = new App("gitcoin", "Gitcoin", {}, "Add to Gitcoin passport", "Gitcoin passport doesn't require disclosure of any data.");
-export const soulbound = new App("soulbound", "Soulbound token", { nationality: false, expiry_date: false }, "Mint Soulbound token", "Choose the information you want to disclose and mint your SBT.");
+export const soulbound = new App("soulbound", "Soulbound token", { nationality: true, expiry_date: false }, "Mint Soulbound token", "Choose the information you want to disclose and mint your SBT.");
 export const zuzalu = new App("zuzalu", "Zupass", { date_of_birth: false }, "Add to Zupass", "Zupass requires the following information:");

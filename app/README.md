@@ -36,7 +36,7 @@ rustup default 1.67.0
 ```
 
 For macOs users you might also need to set-up the path to sdk:
-in /app/android create local.properties file.
+in /app/android create local.properties
 
 Add the following line:
 sdk.dir=/Users/<user>/Library/Android/sdk or any relevant path to your sdk

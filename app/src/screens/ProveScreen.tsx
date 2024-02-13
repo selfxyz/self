@@ -1,19 +1,19 @@
-import React from 'react';
-import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, TextArea } from 'tamagui';
-import { Check, LayoutGrid, Scan, Sparkles } from '@tamagui/lucide-icons';
+import React, { useState, useEffect } from 'react';
+import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image } from 'tamagui';
+import { Check, LayoutGrid, Scan } from '@tamagui/lucide-icons';
 import { getFirstName, formatDuration } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import { Steps } from '../utils/utils';
 import USER from '../images/user.png'
 import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
-
+import { Keyboard } from 'react-native';
 
 interface ProveScreenProps {
   selectedApp: App | null;
   passportData: any;
-  disclosure: {[key: string]: boolean};
-  handleDisclosureChange: (disclosure: boolean) => void;
+  disclosure: { [key: string]: boolean };
+  handleDisclosureChange: (field: string) => void;
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
@@ -23,7 +23,7 @@ interface ProveScreenProps {
   mintText: string;
   proof: { proof: string, inputs: string } | null;
   proofTime: number;
-  totalTime: number;
+  hideData: boolean;
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({
@@ -40,11 +40,32 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   proof,
   proofTime,
   handleMint,
-  totalTime
+  hideData
 }) => {
+  const maskString = (input: string): string => {
+    return '*'.repeat(input.length);
+  }
+
+
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
+
 
   return (
-    <YStack px="$4" f={1} >
+    <YStack px="$4" f={1}>
       {(step >= Steps.NFC_SCAN_COMPLETED && selectedApp != null) ?
         (step < Steps.PROOF_GENERATED ? (
           <YStack flex={1} m="$2" gap="$2">
@@ -59,38 +80,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 }}
               />
             </YStack>
-            <XStack flex={1} />
-            <YStack mt="$8">
-              <Text mb="$1" fontWeight="bold">Hi {getFirstName(passportData.mrz)},</Text>
-              <Text mb="$2">{selectedApp?.disclosurephrase}</Text>
-              {selectedApp && Object.keys(selectedApp.disclosure).map((key) => {
-                const key_ = key as keyof typeof disclosure;
-                const indexes = attributeToPosition[key_];
-                const keyFormatted = key_.replace(/_/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1]);
-                const mrzAttributeFormatted = mrzAttribute.replace(/</g, ' ');
+            <XStack f={1} />
 
-                return (
-                  <XStack key={key} m="$2" gap="$4">
-                    <Checkbox
-                      value={key}
-                      checked={disclosure[key_]}
-                      onCheckedChange={() => handleDisclosureChange(key_)}
-                      aria-label={keyFormatted}
-                      size="$5"
-                    >
-                      <Checkbox.Indicator >
-                        <Check />
-                      </Checkbox.Indicator>
-                    </Checkbox>
-                    <Text fontWeight="bold">{keyFormatted}: </Text>
-                    <Text>{mrzAttributeFormatted}</Text>
-                  </XStack>
-                );
-              })}
-            </YStack>
-
-            <Text mt="$8">Enter your address or ens:</Text>
+            <Text mt="$8" fontWeight="bold">Hi {hideData ? maskString(getFirstName(passportData.mrz)) : getFirstName(passportData.mrz)},</Text>
+            <Text mt="$2">Enter your address or ens:</Text>
             <Input
               fontSize={13}
               mt="$3"
@@ -98,8 +91,40 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               value={address}
               onChangeText={setAddress}
             />
+            <YStack mt="$6" f={1}>
+              <Text h="$3">{selectedApp?.disclosurephrase}</Text>
+              <YStack mt="$1">
+                {selectedApp && Object.keys(selectedApp.disclosure).map((key) => {
+                  const key_ = key as string;
+                  const indexes = attributeToPosition[key_];
+                  const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                  const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1]);
+                  const mrzAttributeFormatted = mrzAttribute.replace(/</g, ' ');
 
-            <Button borderRadius={100} onPress={handleProve} mt="$5" mb="$3" backgroundColor="#3185FC" alignSelf='center' >
+                  return (
+                    <XStack key={key} m="$2" gap="$4">
+                      <Checkbox
+                        value={key}
+                        checked={disclosure[key_]}
+                        onCheckedChange={() => handleDisclosureChange(key_)}
+                        aria-label={keyFormatted}
+                        size="$5"
+                      >
+                        <Checkbox.Indicator >
+                          <Check />
+                        </Checkbox.Indicator>
+                      </Checkbox>
+                      <Text fontWeight="bold">{keyFormatted}: </Text>
+                      <Text>{hideData ? maskString(mrzAttributeFormatted) : mrzAttributeFormatted}</Text>
+                    </XStack>
+                  );
+                })}
+              </YStack>
+            </YStack>
+            <XStack f={1} />
+            <XStack f={1} />
+            <XStack f={1} />
+            <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
@@ -109,11 +134,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 <Text color="white" fow="bold">Generate ZK proof</Text>
               )}
             </Button>
-
             <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take up to 2 mn</Text>
             <Text fontSize={9} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>The application may freeze during this time (hard work)</Text>
-
-
           </YStack>
         ) : (
           <YStack flex={1} m="$2" justifyContent='center' alignItems='center' gap="$5">
@@ -149,7 +171,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               <Scan size="$4" color={step < Steps.NFC_SCAN_COMPLETED ? "black" : "#3185FC"} />
               <LayoutGrid size="$4" color={selectedApp == null ? "black" : "#3185FC"} />
             </XStack>
-
           </YStack>
 
         )
