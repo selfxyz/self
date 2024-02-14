@@ -194,6 +194,7 @@ function App(): JSX.Element {
       dataGroupHashes,
       eContent,
       encryptedDigest,
+      photo
     } = response;
 
     const passportData: PassportData = {
@@ -207,6 +208,7 @@ function App(): JSX.Element {
       dataGroupHashes: dataHashesObjToArray(JSON.parse(dataGroupHashes)),
       eContent: JSON.parse(eContent),
       encryptedDigest: JSON.parse(encryptedDigest),
+      photo: photo,
     };
 
     console.log('mrz', passportData.mrz);
@@ -215,6 +217,10 @@ function App(): JSX.Element {
     console.log('dataGroupHashes', passportData.dataGroupHashes);
     console.log('eContent', passportData.eContent);
     console.log('encryptedDigest', passportData.encryptedDigest);
+    console.log("photo", {
+      ...passportData.photo,
+      base64: passportData.photo.base64.substring(0, 100) + '...'
+    })
 
     setPassportData(passportData);
     setStep(Steps.NFC_SCAN_COMPLETED);
@@ -247,7 +253,7 @@ function App(): JSX.Element {
         dateOfBirth: dateOfBirth,
         dateOfExpiry: dateOfExpiry,
       });
-      console.log('response', response);
+      // console.log('response', response);
       console.log('scanned');
       handleResponseAndroid(response);
     } catch (e: any) {

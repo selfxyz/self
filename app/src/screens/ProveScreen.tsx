@@ -143,7 +143,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 h="$12"
                 borderRadius="$10"
                 source={{
-                  uri: USER
+                  uri: passportData.photo.base64 ?? USER
                 }}
               />
             </YStack>
