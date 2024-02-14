@@ -444,8 +444,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
             setEns={setEns} />
         </Tabs.Content>
         <Separator />
-        {keyboardVisible == false &&
-
+        {(!keyboardVisible || Platform.OS == "ios") &&
           <Tabs.List separator={<Separator vertical />} pt="$4" pb="$3">
             <Tabs.Tab value="scan" unstyled w="33%">
               <YStack ai="center">

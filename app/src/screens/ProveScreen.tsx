@@ -7,12 +7,8 @@ import { Steps } from '../utils/utils';
 import USER from '../images/user.png'
 import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
-import { Keyboard } from 'react-native';
+import { Keyboard, Platform } from 'react-native';
 const { ethers } = require('ethers');
-
-/// j'input un string, si c'est .eth ça la converti en address et la diplay si c'ets la longueur, ça la set
-/// 
-
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -59,18 +55,15 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     }
   }
 
-
-
   const [inputValue, setInputValue] = useState('');
   const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
 
-
   useEffect(() => {
-    if (ens != '') {
+    if (ens != '' && inputValue == '') {
       setInputValue(ens);
 
     }
-    else if (address != ethers.ZeroAddress) {
+    else if (address != ethers.ZeroAddress && inputValue == '') {
       setInputValue(address);
     }
 
@@ -79,17 +72,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   useEffect(() => {
 
     const resolveENS = async () => {
-
-      if (inputValue)
-
+      if (inputValue != ens) {
         if (inputValue.endsWith('.eth')) {
           try {
             const resolvedAddress = await provider.resolveName(inputValue);
-            console.log(resolvedAddress);
             if (resolvedAddress) {
+              console.log("new address settled:" + resolvedAddress);
               setAddress(resolvedAddress);
               setEns(inputValue);
-              console.log("new address settled:" + address);
               if (hideData) {
                 console.log(maskString(address));
                 //  setInputValue(maskString(address));
@@ -103,13 +93,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
           } catch (error) {
             console.error("Error resolving ENS name:", error);
           }
-        } else if (inputValue.length === 42 && inputValue.startsWith('0x')) {
+        }
+        else if (inputValue.length === 42 && inputValue.startsWith('0x')) {
           setAddress(inputValue);
         }
+      };
     };
 
     resolveENS();
   }, [inputValue]);
+
 
 
 
@@ -162,7 +155,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               borderColor={address != ethers.ZeroAddress ? "#3185FC" : "unset"}
             />
 
-            {!keyboardVisible && <YStack mt="$6" f={1}>
+            {(!keyboardVisible || Platform.OS == "ios") && <YStack mt="$6" f={1}>
               <Text h="$3">{selectedApp?.disclosurephrase}</Text>
               <YStack mt="$1">
                 {selectedApp && Object.keys(selectedApp.disclosure).map((key) => {
@@ -195,7 +188,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            {!keyboardVisible && <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
+            {(!keyboardVisible || Platform.OS == "ios") && <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />

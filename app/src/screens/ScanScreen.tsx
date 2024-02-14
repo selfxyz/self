@@ -2,10 +2,6 @@ import React from 'react';
 import { YStack, Text, Spinner, XStack } from 'tamagui';
 import { Steps } from '../utils/utils';
 
-
-
-
-
 interface ScanScreenProps {
   onStartCameraScan: () => void;
   handleNFCScan: () => void;
