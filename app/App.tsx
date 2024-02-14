@@ -143,6 +143,7 @@ function App(): JSX.Element {
     console.log('isPACESupported', parsed.isPACESupported)
     console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
     console.log('residenceAddress', parsed.residenceAddress)
+    console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
 
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
@@ -171,6 +172,7 @@ function App(): JSX.Element {
       dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
+      photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
 
     console.log('mrz', passportData.mrz);
@@ -194,6 +196,7 @@ function App(): JSX.Element {
       dataGroupHashes,
       eContent,
       encryptedDigest,
+      photo
     } = response;
 
     const passportData: PassportData = {
@@ -207,6 +210,7 @@ function App(): JSX.Element {
       dataGroupHashes: dataHashesObjToArray(JSON.parse(dataGroupHashes)),
       eContent: JSON.parse(eContent),
       encryptedDigest: JSON.parse(encryptedDigest),
+      photoBase64: photo.base64,
     };
 
     console.log('mrz', passportData.mrz);
@@ -215,6 +219,7 @@ function App(): JSX.Element {
     console.log('dataGroupHashes', passportData.dataGroupHashes);
     console.log('eContent', passportData.eContent);
     console.log('encryptedDigest', passportData.encryptedDigest);
+    console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     setPassportData(passportData);
     setStep(Steps.NFC_SCAN_COMPLETED);
@@ -247,7 +252,7 @@ function App(): JSX.Element {
         dateOfBirth: dateOfBirth,
         dateOfExpiry: dateOfExpiry,
       });
-      console.log('response', response);
+      // console.log('response', response);
       console.log('scanned');
       handleResponseAndroid(response);
     } catch (e: any) {
