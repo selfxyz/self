@@ -48,9 +48,9 @@ template ProofOfPassport(n, k) {
 component main { public [ address ] } = ProofOfPassport(64, 32);
 
 // Us:
+// 11 + 1 + 3 + 1
+// pubkey + nullifier + reveal_packed + address
+
+// Goal:
 // 1 + 1 + 3 + 1
 // pubkey_hash + nullifier + reveal_packed + address
-
-// Them:
-// 1 + 3 + 1
-// pubkey_hash + reveal_twitter_packed + address

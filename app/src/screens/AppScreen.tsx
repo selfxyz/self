@@ -3,18 +3,32 @@ import ZUPASS from '../images/zupass.png';
 import GITCOIN from '../images/gitcoin.png';
 import { YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
-import { App, gitcoin, soulbond, zuzalu } from '../utils/AppClass';
-const AppScreen = ({ selectedApp, setSelectedApp }) => {
+import { App, gitcoin, soulbound, zuzalu } from '../utils/AppClass';
+import { Steps } from '../utils/utils';
+
+interface AppScreenProps {
+  selectedApp: App | null;
+  setSelectedApp: (app: App | null) => void;
+  step: number;
+  setStep: (step: number) => void;
+}
+
+const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step, setStep }) => {
 
   const handleCardSelect = (app: App) => {
-    setSelectedApp(app);
+    if (selectedApp != app) {
+      setSelectedApp(app);
+      if (step >= Steps.NFC_SCAN_COMPLETED) {
+        setStep(Steps.NFC_SCAN_COMPLETED);
+      }
+    }
   };
 
   const cardsData = [
     {
       app: zuzalu,
       title: 'Add to Zupasss',
-      description: 'And prove your identity at in person',
+      description: 'Prove your identity at in person events',
       background: ZUPASS,
       colorOfTheText: 'white',
     },
@@ -26,15 +40,15 @@ const AppScreen = ({ selectedApp, setSelectedApp }) => {
       colorOfTheText: 'white',
     },
     {
-      app: soulbond,
+      app: soulbound,
       title: 'Mint SBT',
-      description: 'And prove your identity at in person events',
+      description: 'And prove you\'re a human',
       colorOfTheText: 'black',
     },
   ];
 
   return (
-    <YStack gap="$5" w="100%" p="$5">
+    <YStack flex={1} gap="$5" px="$5" jc="center" alignItems='center' >
 
       {cardsData.map(card => (
         <AppCard
@@ -45,7 +59,7 @@ const AppScreen = ({ selectedApp, setSelectedApp }) => {
           background={card.background}
           id={card.app.id}
           onTouchStart={() => handleCardSelect(card.app)}
-          eleva={selectedApp && selectedApp.id === card.app.id ? "$0" : "$12"}
+          selected={selectedApp && selectedApp.id === card.app.id ? true : false}
         />
       ))}
 

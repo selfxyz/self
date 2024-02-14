@@ -1,40 +1,70 @@
 import React from 'react';
 import { Text, YStack, XStack, Card, H3, Image } from 'tamagui';
 import { ChevronRight } from '@tamagui/lucide-icons';
+import { Platform } from 'react-native';
 
-const AppCard = ({ title, description, colorOfTheText, background, id, onTouchStart, eleva }) => {
+
+interface AppCardProps {
+    title: string;
+    description: string;
+    colorOfTheText: string;
+    background: string | undefined;
+    id: string | number;
+    onTouchStart?: () => void;
+    selected?: boolean;
+}
+
+const AppCard: React.FC<AppCardProps> = ({
+    title,
+    description,
+    colorOfTheText,
+    background,
+    id,
+    onTouchStart,
+    selected
+}) => {
     return (
-        <Card
-            key={id}
+        <XStack
+            overflow="hidden"
+            elevation={selected ? "$3" : "$3"}
             borderRadius="$10"
-            elevation={eleva}
-            onTouchStart={onTouchStart}
+            borderColor={(selected) ? "#3185FC" : ((Platform.OS === 'ios') ? "white" : "transparent")}
+            borderWidth={(selected) ? 3 : 3}
+            shadowColor={selected ? "#3185FC" : "black"}
         >
-            <XStack
+            <Card
+                key={id}
+                elevation={0}
+                onTouchStart={onTouchStart}
             >
-                <Card.Header w="100%">
-                    <XStack w="100%" ai="center" py="$1" >
-                        <YStack>
-                            <H3 color={colorOfTheText} selectable={false} >{title}</H3>
-                            <Text theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
-                        </YStack>
-                        <XStack flex={1} />
-                        <ChevronRight size="$4" color={colorOfTheText} />
-                    </XStack>
-                </Card.Header>
-                {background && (
-                    <Card.Background>
-                        <Image
-                            flex={1}
-                            borderRadius="$10"
-                            source={{
-                                uri: background
-                            }}
-                        />
-                    </Card.Background>
-                )}
-            </XStack>
-        </Card >
+                <XStack w="100%"
+                >
+                    <Card.Header w="100%">
+
+                        <XStack ai="center" py="$1">
+                            <YStack width={250}>
+                                <H3 color={colorOfTheText} selectable={false} >{title}</H3>
+                                <Text mt="$1" theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
+                            </YStack>
+                            <XStack flex={1} />
+                            <ChevronRight size="$4" color={selected ? "#3185FC" : colorOfTheText} minWidth="$4" />
+                        </XStack>
+                    </Card.Header>
+                    {(
+                        <Card.Background
+                        >
+                            {background &&
+                                <Image
+                                    flex={1}
+                                    source={{
+                                        uri: background
+                                    }}
+                                />}
+                        </Card.Background>
+                    )}
+                </XStack>
+            </Card >
+        </XStack>
     );
 }
 

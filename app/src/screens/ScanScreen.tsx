@@ -1,72 +1,45 @@
 import React from 'react';
-import { YStack, Text, Spinner, Circle, ZStack, XStack, SizableText } from 'tamagui'; // Ensure correct import paths based on your project setup
+import { YStack, Text, Spinner, XStack } from 'tamagui';
 import { Steps } from '../utils/utils';
-const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
+
+interface ScanScreenProps {
+  onStartCameraScan: () => void;
+  handleNFCScan: () => void;
+  step: number;
+}
+
+const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
 
   return (
-    <YStack >
-      <ZStack alignSelf='center' maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
-        <Circle
-          alignSelf='center'
-          h={22}
-          w={22}
-          borderWidth={1.6}
-          p={0}
-        />
-        <SizableText
-          alignSelf='center'
-          h={22}
-          w={22}
-          y={-1}
-          x={7}
-          color="black"
-          fow="bold"
-        >1</SizableText>
-      </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
+    <YStack f={1} p="$5" gap="$1" px="$5" justifyContent='center'>
+      <XStack
+        jc="center"
+        borderColor="black"
+        borderWidth={1.5}
+        borderRadius="$10"
+        f={0}
+        w="$1"
+        h="$1"
+        alignSelf='center'>
+        <Text fontSize={12} alignSelf='center' fow="bold">1</Text>
+      </XStack>
+      <Text textAlign='center' mt="$2" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
 
+      <XStack
+        mt="$9"
+        jc="center"
+        borderColor="black"
+        borderWidth={1.5}
+        borderRadius={10}
+        f={0}
+        w="$1"
+        h="$1"
+        alignSelf='center'>
+        <Text fontSize={12} alignSelf='center' fow="bold">2</Text>
+      </XStack>
+      <Text textAlign='center' mt="$2" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
 
-      <ZStack alignSelf='center' mt="$8" maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
-        <Circle
-          alignSelf='center'
-          h={22}
-          w={22}
-          borderWidth={1.6}
-          p={0}
-        />
-        <SizableText
-          alignSelf='center'
-          h={22}
-          w={22}
-          y={-1}
-          x={7}
-          color="black"
-          fow="bold"
-        >2</SizableText>
-      </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
-
-      <ZStack alignSelf='center' mt="$8" maxWidth={50} maxHeight={50} width={50} flex={1} space="$0">
-        <Circle
-          alignSelf='center'
-          h={22}
-          w={22}
-          borderWidth={1.6}
-          p={0}
-        />
-        <SizableText
-          alignSelf='center'
-          h={22}
-          w={22}
-          y={-1}
-          x={7}
-          color="black"
-          fow="bold"
-        >3</SizableText>
-      </ZStack>
-      <Text textAlign='center' mt="$-3" px="$4" fow={step >= Steps.NFC_SCAN_COMPLETED ? "bold" : "normal"}>Select App</Text>
-
-      <YStack w="100%" ai="center">
+      <YStack ai="center">
         {
           step < Steps.NFC_SCAN_COMPLETED
             ? (
@@ -79,18 +52,18 @@ const ScanScreen = ({ onStartCameraScan, nfcScan, step }) => {
                 </YStack>
                 : (
                   <YStack mt="$10">
-                    <Text size="$4" br="$2" color="#3185FC" onPress={nfcScan}>
+                    <Text size="$4" br="$2" color="#3185FC" onPress={handleNFCScan}>
                       {step === Steps.NFC_SCANNING ? "Scanning" : "Scan passport with NFC"}
                     </Text>
                     <Spinner mt="$4" color={step === Steps.NFC_SCANNING ? "#3185FC" : "transparent"} />
                   </YStack>
                 )
             )
-            : <XStack />
+            :
+            <XStack />
         }
       </YStack>
-
-    </YStack>
+    </YStack >
   );
 };
 

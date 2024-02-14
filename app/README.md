@@ -35,6 +35,12 @@ You might need to set the rust-toolchain rust version as global default. Example
 rustup default 1.67.0
 ```
 
+For macOs users you might also need to set-up the path to sdk:
+in /app/android create local.properties
+
+Add the following line:
+sdk.dir=/Users/<user>/Library/Android/sdk or any relevant path to your sdk
+
 This you modify the circuits, you might have to modify `ark-circom-passport/src/passport.rs` too.
 
 #### Build the iOS native module
