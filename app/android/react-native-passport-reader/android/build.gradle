@@ -33,7 +33,7 @@ dependencies {
     implementation 'com.google.android.material:material:1.7.0'
     implementation 'androidx.core:core-ktx:1.9.0'
     implementation 'com.wdullaer:materialdatetimepicker:3.5.2'
-    implementation 'org.jmrtd:jmrtd:0.7.18' // getting different errors whether it's 18 or 40 // 23 <== this works
+    implementation 'org.jmrtd:jmrtd:0.7.40' // getting different errors whether it's 18 or 40 // 23 <== this works
     // implementation files('../../../../../jmrtd-0.7.18-sources/target/jmrtd-0.7.18.jar')
     // implementation files('../../app/libs/jmrtd-0.7.18.jar')
     implementation 'net.sf.scuba:scuba-sc-android:0.0.18'
