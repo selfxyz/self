@@ -332,7 +332,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     <Dialog.Title>Help</Dialog.Title>
                     <HelpCircle mt="$1" alignSelf='center' size="$2" />
                   </XStack>
-                  <H3 mt="$3">How to scan your passport ?</H3>
+                  <H3 fontFamily="Luciole" mt="$3">How to scan your passport ?</H3>
                   <YStack>
                     <Text>1. Find the location of the NFC chip of your passport.</Text>
                     <Text>If you are struggling <Text color="#3185FC">this post</Text> will help you to find it.</Text>

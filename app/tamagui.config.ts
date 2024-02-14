@@ -1,5 +1,5 @@
-import { config } from '@tamagui/config/v3'
-import { createTamagui, createFont } from 'tamagui' // or '@tamagui/core'
+import { config } from '@tamagui/config/v2-native'
+import { createTamagui, createFont } from 'tamagui'
 
 
 export type AppConfig = typeof appConfig
@@ -41,15 +41,20 @@ const Luciole = createFont({
   },
 })
 
-// Extend the existing config with your fonts
-const extendedConfig = {
+
+const extendedConfig = createTamagui({
   ...config,
   fonts: {
     ...config.fonts,
-    Luciole, // Add the Luciole font to your configuration
+    // Replace or add the 'Luciole' font as needed. Assuming 'body' is a key you want to replace/add.
+    body: Luciole,
+    heading: Luciole,
+    // If you have other font roles (e.g., 'heading'), you might want to add or replace them here as well.
   },
-}
-const appConfig = createTamagui(extendedConfig)
+  // Include any other customizations to the config here
+});
+
+const myAppConfig = createTamagui(extendedConfig)
 
 
-export default appConfig
+export default myAppConfig
