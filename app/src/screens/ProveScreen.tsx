@@ -7,7 +7,8 @@ import { attributeToPosition } from '../../../common/src/constants/constants';
 import { Steps } from '../utils/utils';
 import USER from '../images/user.png'
 
-const path = "/data/user/0/com.proofofpassport/files/passport.zkey"
+const fileName = "passport.arkzkey"
+const path = "/data/user/0/com.proofofpassport/files/" + fileName
 
 const ProveScreen = ({
   passportData,
@@ -35,7 +36,10 @@ const ProveScreen = ({
     setDownloadingFile(true);
     try {
       console.log('Downloading file...')
-      const result = await NativeModules.RNPassportReader.downloadFile('https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.zkey', 'passport.zkey');
+      const result = await NativeModules.RNPassportReader.downloadFile(
+        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.arkzkey',
+        fileName
+      );
       console.log("Download successful");
       console.log(result);
       setDownloadingFile(false);
