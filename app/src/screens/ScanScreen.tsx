@@ -8,7 +8,6 @@ interface ScanScreenProps {
   step: number;
 }
 
-
 const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
 
   return (

@@ -24,7 +24,6 @@ const AppCard: React.FC<AppCardProps> = ({
     selected
 }) => {
     return (
-
         <XStack
             overflow="hidden"
             elevation={selected ? "$3" : "$3"}

@@ -130,15 +130,25 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
         (step < Steps.PROOF_GENERATED ? (
           <YStack flex={1} m="$2" gap="$2">
             <XStack flex={1} />
-            <YStack alignSelf='center'>
-              <Image
-                w="$12"
-                h="$12"
+            <YStack alignSelf='center' mt="$1">
+              {hideData ? <Image
+                w="$13"
+                h="$15"
                 borderRadius="$10"
                 source={{
-                  uri: passportData.photoBase64 ?? USER
+                  uri: USER,
                 }}
-              />
+              /> :
+                <Image
+                  w="$13"
+                  h="$15"
+                  borderRadius="$10"
+                  source={{
+                    uri: passportData.photoBase64 ?? USER,
+                  }}
+                />
+
+              }
             </YStack>
             <XStack f={1} />
 
@@ -188,7 +198,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            {(!keyboardVisible || Platform.OS == "ios") && <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
+            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={handleProve} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
