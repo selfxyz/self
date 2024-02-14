@@ -7,6 +7,7 @@ import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
 import { App } from '../utils/AppClass';
 import { Platform } from 'react-native';
+import { Keyboard } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
 
 
@@ -58,6 +59,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
   setDateOfExpiry
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [ens, setEns] = useState<string>('');
   const [selectedTab, setSelectedTab] = useState("scan");
   const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [brokenCamera, setBrokenCamera] = useState(false);
@@ -118,6 +120,24 @@ const MainScreen: React.FC<MainScreenProps> = ({
       }
     };
   }, [step]);
+
+  // Keyboard management
+
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
+
+  useEffect(() => {
+    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardVisible(true);
+    });
+    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardVisible(false);
+    });
+
+    return () => {
+      showSubscription.remove();
+      hideSubscription.remove();
+    };
+  }, []);
 
 
   return (
@@ -419,50 +439,55 @@ const MainScreen: React.FC<MainScreenProps> = ({
             proof={proof}
             proofTime={proofTime}
             handleMint={handleMint}
-            hideData={hideData} />
+            hideData={hideData}
+            ens={ens}
+            setEns={setEns} />
         </Tabs.Content>
         <Separator />
+        {keyboardVisible == false &&
 
-        <Tabs.List separator={<Separator vertical />} pt="$4" pb="$3">
-          <Tabs.Tab value="scan" unstyled w="33%">
-            <YStack ai="center">
-              <Scan color={selectedTab === "scan" ? '#3185FC' : 'black'} />
-              <Text color={selectedTab === "scan" ? '#3185FC' : 'black'}>Scan</Text>
-            </YStack>
-          </Tabs.Tab>
-          {step >= Steps.NFC_SCAN_COMPLETED ?
-            <Tabs.Tab value="app" unstyled w="33%">
-              <YStack ai="center">
-                <LayoutGrid color={selectedTab === "app" ? '#3185FC' : 'black'} />
-                <Text color={selectedTab === "app" ? '#3185FC' : 'black'}>Apps</Text>
-              </YStack>
-            </Tabs.Tab>
-            :
+          <Tabs.List separator={<Separator vertical />} pt="$4" pb="$3">
             <Tabs.Tab value="scan" unstyled w="33%">
               <YStack ai="center">
-                <LayoutGrid color="#bcbcbc" />
-                <Text color="#bcbcbc">Apps</Text>
+                <Scan color={selectedTab === "scan" ? '#3185FC' : 'black'} />
+                <Text color={selectedTab === "scan" ? '#3185FC' : 'black'}>Scan</Text>
               </YStack>
             </Tabs.Tab>
-
-          }
-          {
-            (step >= Steps.NFC_SCAN_COMPLETED) && (selectedApp != null) ?
-              <Tabs.Tab value="generate" unstyled w="33%">
+            {step >= Steps.NFC_SCAN_COMPLETED ?
+              <Tabs.Tab value="app" unstyled w="33%">
                 <YStack ai="center">
-                  <UserCheck color={selectedTab === "generate" ? '#3185FC' : 'black'} />
-                  <Text color={selectedTab === "generate" ? '#3185FC' : 'black'}>Prove</Text>
+                  <LayoutGrid color={selectedTab === "app" ? '#3185FC' : 'black'} />
+                  <Text color={selectedTab === "app" ? '#3185FC' : 'black'}>Apps</Text>
                 </YStack>
               </Tabs.Tab>
               :
-              <Tabs.Tab value={step >= Steps.NFC_SCAN_COMPLETED ? "app" : "scan"} unstyled w="33%">
+              <Tabs.Tab value="scan" unstyled w="33%">
                 <YStack ai="center">
-                  <UserCheck color="#bcbcbc" />
-                  <Text color="#bcbcbc">Prove</Text>
+                  <LayoutGrid color="#bcbcbc" />
+                  <Text color="#bcbcbc">Apps</Text>
                 </YStack>
               </Tabs.Tab>
-          }
-        </Tabs.List>
+
+            }
+            {
+              (step >= Steps.NFC_SCAN_COMPLETED) && (selectedApp != null) ?
+                <Tabs.Tab value="generate" unstyled w="33%">
+                  <YStack ai="center">
+                    <UserCheck color={selectedTab === "generate" ? '#3185FC' : 'black'} />
+                    <Text color={selectedTab === "generate" ? '#3185FC' : 'black'}>Prove</Text>
+                  </YStack>
+                </Tabs.Tab>
+                :
+                <Tabs.Tab value={step >= Steps.NFC_SCAN_COMPLETED ? "app" : "scan"} unstyled w="33%">
+                  <YStack ai="center">
+                    <UserCheck color="#bcbcbc" />
+                    <Text color="#bcbcbc">Prove</Text>
+                  </YStack>
+                </Tabs.Tab>
+            }
+          </Tabs.List>
+
+        }
       </Tabs>
     </YStack >
   );

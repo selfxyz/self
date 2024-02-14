@@ -32,7 +32,6 @@ const AppCard: React.FC<AppCardProps> = ({
             borderColor={(selected) ? "#3185FC" : ((Platform.OS === 'ios') ? "white" : "transparent")}
             borderWidth={(selected) ? 3 : 3}
             shadowColor={selected ? "#3185FC" : "black"}
-            animation="quick"
         >
             <Card
                 key={id}

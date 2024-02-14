@@ -2,13 +2,19 @@ import React from 'react';
 import { YStack, Text, Spinner, XStack } from 'tamagui';
 import { Steps } from '../utils/utils';
 
+
+
+
+
 interface ScanScreenProps {
   onStartCameraScan: () => void;
   handleNFCScan: () => void;
   step: number;
 }
 
+
 const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
+
   return (
     <YStack f={1} p="$5" gap="$1" px="$5" justifyContent='center'>
       <XStack

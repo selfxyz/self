@@ -8,6 +8,11 @@ import USER from '../images/user.png'
 import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
 import { Keyboard } from 'react-native';
+const { ethers } = require('ethers');
+
+/// j'input un string, si c'est .eth ça la converti en address et la diplay si c'ets la longueur, ça la set
+/// 
+
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -24,6 +29,8 @@ interface ProveScreenProps {
   proof: { proof: string, inputs: string } | null;
   proofTime: number;
   hideData: boolean;
+  ens: string;
+  setEns: (ens: string) => void;
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({
@@ -40,12 +47,73 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   proof,
   proofTime,
   handleMint,
-  hideData
+  hideData,
+  ens,
+  setEns
 }) => {
   const maskString = (input: string): string => {
-    return '*'.repeat(input.length);
+    if (input.length <= 5) {
+      return input.charAt(0) + '*'.repeat(input.length - 1);
+    } else {
+      return input.charAt(0) + input.charAt(1) + '*'.repeat(input.length - 2);
+    }
   }
 
+
+
+  const [inputValue, setInputValue] = useState('');
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
+
+
+  useEffect(() => {
+    if (ens != '') {
+      setInputValue(ens);
+
+    }
+    else if (address != ethers.ZeroAddress) {
+      setInputValue(address);
+    }
+
+  }, [])
+
+  useEffect(() => {
+
+    const resolveENS = async () => {
+
+      if (inputValue)
+
+        if (inputValue.endsWith('.eth')) {
+          try {
+            const resolvedAddress = await provider.resolveName(inputValue);
+            console.log(resolvedAddress);
+            if (resolvedAddress) {
+              setAddress(resolvedAddress);
+              setEns(inputValue);
+              console.log("new address settled:" + address);
+              if (hideData) {
+                console.log(maskString(address));
+                //  setInputValue(maskString(address));
+              }
+              else {
+                // setInputValue(address);
+              }
+            } else {
+              console.error("Could not resolve ENS name.");
+            }
+          } catch (error) {
+            console.error("Error resolving ENS name:", error);
+          }
+        } else if (inputValue.length === 42 && inputValue.startsWith('0x')) {
+          setAddress(inputValue);
+        }
+    };
+
+    resolveENS();
+  }, [inputValue]);
+
+
+
+  // Keyboard management
 
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
@@ -62,7 +130,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
       hideSubscription.remove();
     };
   }, []);
-
 
   return (
     <YStack px="$4" f={1}>
@@ -88,18 +155,22 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               fontSize={13}
               mt="$3"
               placeholder="Your Address or ens name"
-              value={address}
-              onChangeText={setAddress}
+              value={inputValue}
+              onChangeText={setInputValue}
+              autoCorrect={false}
+              autoCapitalize='none'
+              borderColor={address != ethers.ZeroAddress ? "#3185FC" : "unset"}
             />
-            <YStack mt="$6" f={1}>
+
+            {!keyboardVisible && <YStack mt="$6" f={1}>
               <Text h="$3">{selectedApp?.disclosurephrase}</Text>
               <YStack mt="$1">
                 {selectedApp && Object.keys(selectedApp.disclosure).map((key) => {
                   const key_ = key as string;
                   const indexes = attributeToPosition[key_];
                   const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                  const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1]);
-                  const mrzAttributeFormatted = mrzAttribute.replace(/</g, ' ');
+                  const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1] + 1);
+                  const mrzAttributeFormatted = mrzAttribute;
 
                   return (
                     <XStack key={key} m="$2" gap="$4">
@@ -120,11 +191,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                   );
                 })}
               </YStack>
-            </YStack>
+            </YStack>}
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
+            {!keyboardVisible && <Button borderRadius={100} onPress={handleProve} mt="$8" backgroundColor="#3185FC" alignSelf='center' >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
@@ -133,10 +204,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               ) : (
                 <Text color="white" fow="bold">Generate ZK proof</Text>
               )}
-            </Button>
+            </Button>}
             <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take up to 2 mn</Text>
             <Text fontSize={9} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>The application may freeze during this time (hard work)</Text>
           </YStack>
+
         ) : (
           <YStack flex={1} m="$2" justifyContent='center' alignItems='center' gap="$5">
             <XStack flex={1} />

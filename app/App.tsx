@@ -31,7 +31,7 @@ import {
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
 import "@ethersproject/shims"
-import { ethers } from "ethers";
+import { ethers, ZeroAddress } from "ethers";
 import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
@@ -59,7 +59,7 @@ function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
-  const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
+  const [address, setAddress] = useState<string>(ethers.ZeroAddress);
   const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [error, setError] = useState<any>(null);
