@@ -7,9 +7,5 @@ export type PassportData = {
   dataGroupHashes: DataHash[] | number[];
   eContent: number[];
   encryptedDigest: number[];
-  photo: {
-    base64: string;
-    height: number;
-    width: number;
-  }
+  photoBase64: string;
 };
