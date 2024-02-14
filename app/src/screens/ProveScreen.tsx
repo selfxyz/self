@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
+import { NativeModules } from 'react-native';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, SizableText, Image } from 'tamagui';
 import { Check } from '@tamagui/lucide-icons';
 import { getFirstName, formatDuration } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import { Steps } from '../utils/utils';
 import USER from '../images/user.png'
+
+const path = "/data/user/0/com.proofofpassport/files/passport.zkey"
 
 const ProveScreen = ({
   passportData,
@@ -23,6 +26,28 @@ const ProveScreen = ({
   handleMint,
   totalTime
 }) => {
+  const [downloadingFile, setDownloadingFile] = useState(false);
+  const [zkeyLoaded, setZkeyLoaded] = useState(false);
+  
+  const downloadZkey = async () => {
+    // TODO: don't redownload if already in the file system at path, if downloaded from previous session
+
+    setDownloadingFile(true);
+    try {
+      console.log('Downloading file...')
+      const result = await NativeModules.RNPassportReader.downloadFile('https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.zkey', 'passport.zkey');
+      console.log("Download successful");
+      console.log(result);
+      setDownloadingFile(false);
+      setZkeyLoaded(true);
+    } catch (e: any) {
+      console.log("Download not successful");
+      console.error(e.message);
+      setDownloadingFile(false);
+    }
+  };
+  
+
   return (
     <YStack space="$4" p="$4" >
       {
@@ -79,7 +104,24 @@ const ProveScreen = ({
               onChangeText={setAddress}
             />
 
-            <Button borderRadius={100} onPress={handleProve} mt="$6" backgroundColor="#3185FC" >
+            {downloadingFile ? (
+              <Button borderRadius={100} mt="$6" backgroundColor="#3185FC" >
+                <XStack ai="center">
+                  <Spinner />
+                  <Text color="white" marginLeft="$2" fow="bold">Downloading zkey...</Text>
+                </XStack>
+              </Button>
+              ) : zkeyLoaded ? (
+              <Button borderRadius={100} mt="$6" backgroundColor="#3185FC" >
+                <Text color="white" fow="bold">Zkey downloaded!</Text>
+              </Button>
+            ) : (
+              <Button borderRadius={100} onPress={downloadZkey} mt="$6" backgroundColor="#3185FC" >
+                <Text color="white" fow="bold">Download zkey</Text>
+              </Button>
+            )}
+
+            <Button borderRadius={100} onPress={() => {handleProve(path)}} mt="$6" backgroundColor="#3185FC" >
               {generatingProof ? (
                 <XStack ai="center">
                   <Spinner />

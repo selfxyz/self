@@ -32,6 +32,7 @@ import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
 import android.widget.EditText
+import android.content.Context
 
 import androidx.appcompat.app.AppCompatActivity
 import io.tradle.nfc.ImageUtil.decodeImage
@@ -68,7 +69,9 @@ import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.InputStream
 import java.io.IOException
+import java.io.FileOutputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.Signature
@@ -611,12 +614,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         eContentBytes: List<String>,
         signature: List<String>,
         pubkey: List<String>,
-        address: String
+        address: String,
+        zkeypath: String
     ): String
 
     @ReactMethod
-    fun provePassport(inputs: ReadableMap, callback: Callback) {
-        Log.d(TAG, "inputsaaa: " + inputs.toString())
+    fun provePassport(inputs: ReadableMap, zkeypath: String, callback: Callback) {
+        Log.d(TAG, "inputs in provePassport kotlin: " + inputs.toString())
         
         val mrz = inputs.getArray("mrz")?.toArrayList()?.map { it as String } ?: listOf()
         val reveal_bitmap = inputs.getArray("reveal_bitmap")?.toArrayList()?.map { it as String } ?: listOf()
@@ -626,13 +630,52 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         val pubkey = inputs.getArray("pubkey")?.toArrayList()?.map { it as String } ?: listOf()
         val address = inputs.getString("address") ?: ""
         
-        val resultFromProof = provePassport(mrz, reveal_bitmap, data_hashes, e_content_bytes, signature, pubkey, address)
+        val resultFromProof = provePassport(
+            mrz,
+            reveal_bitmap,
+            data_hashes,
+            e_content_bytes,
+            signature,
+            pubkey,
+            address,
+            zkeypath
+        )
 
         Log.d(TAG, "resultFromProof: " + resultFromProof.toString())
 
         // Return the result to JavaScript through the callback
         callback.invoke(null, resultFromProof)
     }
+
+    @ReactMethod
+    fun downloadFile(url: String, fileName: String, promise: Promise) {
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+    
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Failed to download file: $response")
+    
+                // Use the app's internal files directory
+                val fileOutputStream = reactContext.openFileOutput(fileName, Context.MODE_PRIVATE)
+    
+                val inputStream = response.body?.byteStream()
+                inputStream.use { input ->
+                    fileOutputStream.use { output ->
+                        input?.copyTo(output)
+                    }
+                }
+    
+                // Resolve the promise with the file path
+                val file = File(reactContext.filesDir, fileName)
+                promise.resolve(file.absolutePath)
+            }
+        } catch (e: Exception) {
+            // Reject the promise if an exception occurs
+            promise.reject(e)
+        }
+    }
+
 
     companion object {
         private val TAG = RNPassportReaderModule::class.java.simpleName

@@ -1,7 +1,7 @@
 use ark_circom::{ethereum, CircomBuilder, CircomConfig, circom::CircomReduction, WitnessCalculator};
 use ark_std::rand::thread_rng;
 use color_eyre::Result;
-use std::os::raw::c_int;
+use std::{os::raw::c_int, io::BufReader};
 
 use ark_bn254::Bn254;
 use ark_crypto_primitives::snark::SNARK;
@@ -75,9 +75,10 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     signature: JObject,
     pubkey: JObject,
     address: JString,
+    zkeypath: JString,
 ) -> jstring {
-    
-    log::error!("PROOF OF PASSPORT ---- formatting inputsaaaa...");
+    log::error!("PROOF OF PASSPORT ---- formatting inputs...");
+
     fn run_proof(
         mrz: JObject,
         reveal_bitmap: JObject,
@@ -86,18 +87,20 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         signature: JObject,
         pubkey: JObject,
         address: JString,
+        zkeypath: JString,
         env: JNIEnv
     ) -> Result<jstring, Box<dyn std::error::Error>> {
         android_logger::init_once(Config::default().with_min_level(Level::Trace));
 
-
         log::error!("PROOF OF PASSPORT ---- loading zkey...");
         let start = Instant::now();
-        let now = Instant::now();
-        let file_bytes: &'static [u8] = include_bytes!("../passport/proof_of_passport_final.zkey");
-        log::error!("PROOF OF PASSPORT ---- zkey size: {}", file_bytes.len());
-        let (params, matrices) = read_zkey_from_include_bytes(file_bytes).unwrap();
-        log::error!("PROOF OF PASSPORT ---- zkey loaded. Took: {:?}", now.elapsed());
+        let zkey_path_jstring = env.get_string(zkeypath).expect("Couldn't get zkey path string");
+        let zkey_path_str = zkey_path_jstring.to_str().unwrap();
+
+        let file = std::fs::File::open(zkey_path_str).expect("Failed to open zkey file");
+        let (params, matrices) = read_zkey(&mut BufReader::new(file)).expect("Failed to read zkey from file");
+
+        log::error!("PROOF OF PASSPORT ---- zkey loaded from path. Took: {:?}", start.elapsed());
         let now = Instant::now();
 
         println!("loading circuit...");
@@ -201,6 +204,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         signature,
         pubkey,
         address,
+        zkeypath,
         env
     ) {
         Ok(output) => output,
