@@ -61,6 +61,8 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         uint256[2] memory c,
         uint256[16] memory inputs
     ) public {
+        require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
+
         // check that the nullifier has not been used before
         require(!nullifiers[inputs[3]], "Signature already nullified");
 
@@ -75,8 +77,6 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         // Verify that the public key for RSA matches the hardcoded one
         // commented out for now, since hard to keep up with all
         // require(cscaPubkey == inputs[], "Invalid pubkey in inputs");
-
-        require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
         // Effects: Mint token
         address addr = address(uint160(inputs[inputs.length - 1])); // generally the last one

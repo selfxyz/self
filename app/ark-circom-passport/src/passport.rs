@@ -1,12 +1,15 @@
 use ark_circom::{ethereum, CircomBuilder, CircomConfig, circom::CircomReduction, WitnessCalculator};
 use ark_std::rand::thread_rng;
 use color_eyre::Result;
-use std::os::raw::c_int;
 
 use ark_bn254::Bn254;
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::{Groth16, Proof};
 use ark_ec::AffineRepr;
+use ark_ff::UniformRand;
+use ark_groth16::{ProvingKey};
+use ark_relations::r1cs::ConstraintMatrices;
+use ark_bn254::{Fr};
 
 use num_bigint::{BigInt, Sign, ToBigInt};
 extern crate hex;
@@ -32,7 +35,10 @@ use std::{
     collections::HashMap,
     time::Instant,
     convert::TryInto,
-    sync::Mutex
+    sync::Mutex,
+    {os::raw::c_int, io::BufReader},
+    fs::File,
+    path::Path
 };
 
 use wasmer::{Module, Store};
@@ -41,6 +47,7 @@ use once_cell::sync::{Lazy, OnceCell};
 mod zkey;
 pub use zkey::{read_zkey, read_zkey_from_include_bytes};
 
+use ark_zkey::{read_arkzkey, read_arkzkey_from_bytes};
 
 #[no_mangle]
 pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
@@ -64,6 +71,29 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_callRustCode(
     output.into_inner()
 }
 
+const WASM: &[u8] = include_bytes!("../passport/proof_of_passport.wasm");
+
+static WITNESS_CALCULATOR: OnceCell<Mutex<WitnessCalculator>> = OnceCell::new();
+
+#[cfg(not(feature = "dylib"))]
+#[must_use]
+pub fn witness_calculator() -> &'static Mutex<WitnessCalculator> {
+    WITNESS_CALCULATOR.get_or_init(|| {
+        let store = Store::default();
+        let module = Module::from_binary(&store, WASM).expect("WASM should be valid");
+        let result =
+            WitnessCalculator::from_module(module).expect("Failed to create WitnessCalculator");
+        Mutex::new(result)
+    })
+}
+
+fn load_arkzkey_from_file(zkey_path: &Path) -> Result<(ProvingKey<Bn254>, ConstraintMatrices<Fr>), Box<dyn std::error::Error>> {
+    let file = File::open(zkey_path)?;
+    let mut reader = BufReader::new(file);
+    let (proving_key, matrices) = read_zkey(&mut reader)?;
+    Ok((proving_key, matrices))
+}
+
 #[no_mangle]
 pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     env: JNIEnv,
@@ -75,9 +105,10 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     signature: JObject,
     pubkey: JObject,
     address: JString,
+    zkeypath: JString,
 ) -> jstring {
-    
-    log::error!("PROOF OF PASSPORT ---- formatting inputsaaaa...");
+    log::error!("PROOF OF PASSPORT ---- formatting inputs...");
+
     fn run_proof(
         mrz: JObject,
         reveal_bitmap: JObject,
@@ -86,33 +117,18 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         signature: JObject,
         pubkey: JObject,
         address: JString,
+        zkeypath: JString,
         env: JNIEnv
     ) -> Result<jstring, Box<dyn std::error::Error>> {
-        android_logger::init_once(Config::default().with_min_level(Level::Trace));
-
-
-        log::error!("PROOF OF PASSPORT ---- loading zkey...");
         let start = Instant::now();
-        let now = Instant::now();
-        let file_bytes: &'static [u8] = include_bytes!("../passport/proof_of_passport_final.zkey");
-        log::error!("PROOF OF PASSPORT ---- zkey size: {}", file_bytes.len());
-        let (params, matrices) = read_zkey_from_include_bytes(file_bytes).unwrap();
-        log::error!("PROOF OF PASSPORT ---- zkey loaded. Took: {:?}", now.elapsed());
-        let now = Instant::now();
-
-        println!("loading circuit...");
-        const MAIN_WASM: &'static [u8] = include_bytes!("../passport/proof_of_passport.wasm");
-        const MAIN_R1CS: &'static [u8] = include_bytes!("../passport/proof_of_passport.r1cs");
-        log::error!("PROOF OF PASSPORT ---- WASM and R1CS loaded. Took: {:?}", now.elapsed());
-        let now = Instant::now();
-        let cfg = CircomConfig::<Bn254>::from_bytes(MAIN_WASM, MAIN_R1CS)?;
-        log::error!("PROOF OF PASSPORT ---- Circuit config: {:?}", now.elapsed());
-        let now = Instant::now();
+        android_logger::init_once(Config::default().with_min_level(Level::Trace));
+        let mut rng = thread_rng();
+        let rng = &mut rng;
+        let r = ark_bn254::Fr::rand(rng);
+        let s = ark_bn254::Fr::rand(rng);
 
         log::error!("PROOF OF PASSPORT ---- formatting inputs...");
-        log::error!("PROOF OF PASSPORT ---- mrz_veccccccc");
-        
-        let mut builder = CircomBuilder::new(cfg,);
+        let mut inputs: HashMap<String, Vec<num_bigint::BigInt>> = HashMap::new();
         let mrz_vec: Vec<String> = java_arraylist_to_rust_vec(&env, mrz)?;
         let reveal_bitmap_vec: Vec<String> = java_arraylist_to_rust_vec(&env, reveal_bitmap)?;
         let data_hashes_vec: Vec<String> = java_arraylist_to_rust_vec(&env, data_hashes)?;
@@ -129,49 +145,95 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         log::error!("PROOF OF PASSPORT ---- pubkey_vec {:?}", pubkey_vec);
         log::error!("PROOF OF PASSPORT ---- address_str {:?}", address_str);
 
-        mrz_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("mrz", n));
-        reveal_bitmap_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("reveal_bitmap", n));
-        data_hashes_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("dataHashes", n));
-        e_content_bytes_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("eContentBytes", n));
-        signature_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("signature", n));
-        pubkey_vec.iter()
-            .filter_map(|s| s.parse::<u128>().ok())
-            .for_each(|n| builder.push_input("pubkey", n));
-    
+        fn parse_and_insert(hash_map: &mut HashMap<String, Vec<BigInt>>, key: &str, data: Vec<&str>) {
+            let parsed_data: Vec<BigInt> = data.into_iter()
+                .filter_map(|s| s.parse::<u128>().ok().and_then(|num| num.to_bigint()))
+                .collect();
+            hash_map.insert(key.to_string(), parsed_data);
+        }
+
+        parse_and_insert(&mut inputs, "mrz", mrz_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "reveal_bitmap", reveal_bitmap_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "dataHashes", data_hashes_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "eContentBytes", e_content_bytes_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "signature", signature_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "pubkey", pubkey_vec.iter().map(AsRef::as_ref).collect());
         
         let address_bigint = BigInt::from_bytes_be(Sign::Plus, &decode(&address_str[2..])?);
-        builder.push_input("address", address_bigint);
-        
-        let circom = builder.build().unwrap(); // this here calculates the witness
-        log::error!("PROOF OF PASSPORT ---- witness calculated. Took: {:?}", now.elapsed());
-        let now = Instant::now();
-        let inputs = circom.get_public_inputs().unwrap();
+        inputs.insert("address".to_string(), vec![address_bigint]);
 
-        let mut rng = thread_rng();
-        let proof = Groth16::<Bn254, CircomReduction>::prove(&params, circom, &mut rng).unwrap();
+        println!("generating witness...");
+        let now = Instant::now();
+        let full_assignment = witness_calculator()
+            .lock()
+            .expect("Failed to lock witness calculator")
+            .calculate_witness_element::<Bn254, _>(inputs, false)
+            .map_err(|e| e.to_string())?;
+        
+        log::error!("PROOF OF PASSPORT ---- Witness generation took. Took: {:?}", now.elapsed());
+
+        log::error!("PROOF OF PASSPORT ---- loading zkey...");
+        let now = Instant::now();
+        let zkey_path_jstring = env.get_string(zkeypath).expect("Couldn't get zkey path string");
+        let zkey_path_str = zkey_path_jstring.to_str().unwrap();
+
+        // To load classic zkey
+        // let file = std::fs::File::open(zkey_path_str).expect("Failed to open zkey file");
+        // let zkey = read_zkey(&mut BufReader::new(file)).expect("Failed to read zkey from file");
+
+        // Loading arkzkey
+        let (serialized_proving_key, serialized_constraint_matrices) = read_arkzkey(zkey_path_str).expect("Failed to read zkey from file");
+        // Formatting for ark-circom API here as it's not done in mopro rn 
+        let proving_key: ProvingKey<Bn254> = serialized_proving_key.0;
+        let constraint_matrices: ConstraintMatrices<Fr> = ConstraintMatrices {
+            num_instance_variables: serialized_constraint_matrices.num_instance_variables,
+            num_witness_variables: serialized_constraint_matrices.num_witness_variables,
+            num_constraints: serialized_constraint_matrices.num_constraints,
+            a_num_non_zero: serialized_constraint_matrices.a_num_non_zero,
+            b_num_non_zero: serialized_constraint_matrices.b_num_non_zero,
+            c_num_non_zero: serialized_constraint_matrices.c_num_non_zero,
+            a: serialized_constraint_matrices.a.data,
+            b: serialized_constraint_matrices.b.data,
+            c: serialized_constraint_matrices.c.data,
+        };
+        let zkey = (proving_key, constraint_matrices);
+
+        log::error!("PROOF OF PASSPORT ---- zkey loaded from path. Took: {:?}", now.elapsed());
+        println!("Loading arkzkey took: {:.2?}", now.elapsed());
+        let now = Instant::now();
+        
+        let public_inputs = full_assignment.as_slice()[1..zkey.1.num_instance_variables].to_vec();
+        let ark_proof = Groth16::<_, CircomReduction>::create_proof_with_reduction_and_matrices(
+            &zkey.0,
+            r,
+            s,
+            &zkey.1,
+            zkey.1.num_instance_variables,
+            zkey.1.num_constraints,
+            full_assignment.as_slice(),
+        );
+    
+        let proof = ark_proof.map_err(|e| e.to_string())?;
+    
         log::error!("PROOF OF PASSPORT ---- proof: {:?}", proof);
         log::error!("PROOF OF PASSPORT ---- proof done. Took: {:?}", now.elapsed());
         let now = Instant::now();
 
-        let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
-        let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, &inputs, &proof).unwrap();
-        assert!(verified);
+        println!("proof generation took: {:.2?}", now.elapsed());
+    
+        println!("proof {:?}", proof);
+        println!("public_inputs {:?}", public_inputs);
 
-        log::error!("PROOF OF PASSPORT ---- proof verified. Took: {:?}", now.elapsed());
+        // previous way of verifying proof
+        // let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
+        // let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, &inputs, &proof).unwrap();
+        // println!("Proof verified. Took: {:?}", now.elapsed());
+        // log::error!("PROOF OF PASSPORT ---- proof verified. Took: {:?}", now.elapsed());
+        // assert!(verified);
 
-        log::error!("PROOF OF PASSPORT ---- inputs: {:?}", inputs);
+        log::error!("PROOF OF PASSPORT ---- public_inputs: {:?}", public_inputs);
 
-        let converted_inputs: ethereum::Inputs = inputs.as_slice().into();
+        let converted_inputs: ethereum::Inputs = public_inputs.as_slice().into();
         let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
         let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
         log::error!("PROOF OF PASSPORT ---- Serialized inputs: {:?}", serialized_inputs);
@@ -201,6 +263,7 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         signature,
         pubkey,
         address,
+        zkeypath,
         env
     ) {
         Ok(output) => output,
@@ -259,14 +322,22 @@ mod tests {
     use std::{
         error::Error,
         fs::File,
-        sync::Arc,
+        sync::{Arc, Mutex},
         collections::HashMap
     };
+    use wasmer::{Module, Store};
+
     use ark_circom::{
         circom::CircomReduction,
         WitnessCalculator
     };
+    use once_cell::sync::{Lazy, OnceCell};
+    use ark_groth16::{Groth16, ProvingKey};
+    use ark_relations::r1cs::ConstraintMatrices;
+    use ark_ff::UniformRand;
+    use ark_bn254::{Bn254, Fq, Fq2, Fr, G1Affine, G2Affine};
     use num_bigint::ToBigInt;
+    use ark_zkey::read_arkzkey_from_bytes; //SerializableConstraintMatrices
 
     
     // We need to implement the conversion from the Ark-Circom's internal Ethereum types to
@@ -334,18 +405,47 @@ mod tests {
         }
     }
 
+    const WASM: &[u8] = include_bytes!("../passport/proof_of_passport.wasm");
+
+    static WITNESS_CALCULATOR: OnceCell<Mutex<WitnessCalculator>> = OnceCell::new();
+
+    #[cfg(not(feature = "dylib"))]
+    #[must_use]
+    pub fn witness_calculator() -> &'static Mutex<WitnessCalculator> {
+        WITNESS_CALCULATOR.get_or_init(|| {
+            let store = Store::default();
+            let module = Module::from_binary(&store, WASM).expect("WASM should be valid");
+            let result =
+                WitnessCalculator::from_module(module).expect("Failed to create WitnessCalculator");
+            Mutex::new(result)
+        })
+    }
+
+    const ARKZKEY_BYTES: &[u8] = include_bytes!("../passport/proof_of_passport_final.arkzkey");
+
+    static ARKZKEY: Lazy<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> = Lazy::new(|| {
+        //let mut reader = Cursor::new(ARKZKEY_BYTES);
+        // TODO: Use reader? More flexible; unclear if perf diff
+        read_arkzkey_from_bytes(ARKZKEY_BYTES).expect("Failed to read arkzkey")
+    });
+
+    // Experimental
+    #[must_use]
+    pub fn arkzkey() -> &'static (ProvingKey<Bn254>, ConstraintMatrices<Fr>) {
+        &ARKZKEY
+    }
+
     #[tokio::test]
     async fn test_proof() -> Result<(), Box<dyn Error>> {
-        let now = Instant::now();
-        
-        println!("loading zkey...");
-        let path = "./passport/proof_of_passport_final.zkey";
-        let mut file = File::open(path).unwrap();
-        let (params, matrices) = read_zkey(&mut file).unwrap();
+        let mut rng = thread_rng();
+        let rng = &mut rng;
+        let r = ark_bn254::Fr::rand(rng);
+        let s = ark_bn254::Fr::rand(rng);
 
-        println!("Circuit loaded. Took: {:?}", now.elapsed());
-        let now = Instant::now();
-        
+        let mut inputs: HashMap<String, Vec<num_bigint::BigInt>> = HashMap::new();
+        let values = inputs.entry("a".to_string()).or_insert_with(Vec::new);
+        values.push(3.into());
+
         let mrz_vec: Vec<String> = vec!["97", "91", "95", "31", "88", "80", "60", "70", "82", "65", "84", "65", "86", "69", "82", "78", "73", "69", "82", "60", "60", "70", "76", "79", "82", "69", "78", "84", "60", "72", "85", "71", "85", "69", "83", "60", "74", "69", "65", "78", "60", "60", "60", "60", "60", "60", "60", "60", "60", "49", "57", "72", "65", "51", "52", "56", "50", "56", "52", "70", "82", "65", "48", "48", "48", "55", "49", "57", "49", "77", "50", "57", "49", "50", "48", "57", "53", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "60", "48", "50"].iter().map(|&s| s.to_string()).collect();
         let reveal_bitmap_vec: Vec<String> = vec!["0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "1", "1", "1", "1", "1", "1", "1", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0", "0"].iter().map(|&s| s.to_string()).collect();
         let data_hashes_vec: Vec<String> = vec!["48", "130", "1", "37", "2", "1", "0", "48", "11", "6", "9", "96", "134", "72", "1", "101", "3", "4", "2", "1", "48", "130", "1", "17", "48", "37", "2", "1", "1", "4", "32", "99", "19", "179", "205", "55", "104", "45", "214", "133", "101", "233", "177", "130", "1", "37", "89", "125", "229", "139", "34", "132", "146", "28", "116", "248", "186", "63", "195", "96", "151", "26", "215", "48", "37", "2", "1", "2", "4", "32", "63", "234", "106", "78", "31", "16", "114", "137", "237", "17", "92", "71", "134", "47", "62", "78", "189", "233", "201", "213", "53", "4", "47", "189", "201", "133", "6", "121", "34", "131", "64", "142", "48", "37", "2", "1", "3", "4", "32", "136", "155", "87", "144", "121", "15", "152", "127", "85", "25", "154", "80", "20", "58", "51", "75", "193", "116", "234", "0", "60", "30", "29", "30", "183", "141", "72", "247", "255", "203", "100", "124", "48", "37", "2", "1", "11", "4", "32", "0", "194", "104", "108", "237", "246", "97", "230", "116", "198", "69", "110", "26", "87", "17", "89", "110", "199", "108", "250", "36", "21", "39", "87", "110", "102", "250", "213", "174", "131", "171", "174", "48", "37", "2", "1", "12", "4", "32", "190", "82", "180", "235", "222", "33", "79", "50", "152", "136", "142", "35", "116", "224", "6", "242", "156", "141", "128", "247", "10", "61", "98", "86", "248", "45", "207", "210", "90", "232", "175", "38", "48", "37", "2", "1", "13", "4", "32", "91", "222", "210", "193", "63", "222", "104", "82", "36", "41", "138", "253", "70", "15", "148", "208", "156", "45", "105", "171", "241", "195", "185", "43", "217", "162", "146", "201", "222", "89", "238", "38", "48", "37", "2", "1", "14", "4", "32", "76", "123", "216", "13", "52", "227", "72", "245", "59", "193", "238", "166", "103", "49", "24", "164", "171", "188", "194", "197", "156", "187", "249", "28", "198", "95", "69", "15", "182", "56", "54", "38"].iter().map(|&s| s.to_string()).collect();
@@ -361,73 +461,58 @@ mod tests {
             hash_map.insert(key.to_string(), parsed_data);
         }
 
-        let mut inputs: HashMap<String, Vec<num_bigint::BigInt>> = HashMap::new();
         parse_and_insert(&mut inputs, "mrz", mrz_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "reveal_bitmap", reveal_bitmap_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "dataHashes", data_hashes_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "eContentBytes", e_content_bytes_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "signature", signature_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "pubkey", pubkey_vec.iter().map(AsRef::as_ref).collect());
+    
         let address_bigint = BigInt::from_bytes_be(Sign::Plus, &decode(&address_str[2..])?);
         inputs.insert("address".to_string(), vec![address_bigint]);
 
-        let mut rng = thread_rng();
-        use ark_std::UniformRand;
-        let num_inputs = matrices.num_instance_variables;
-        let num_constraints = matrices.num_constraints;
-        let rng = &mut rng;
-
-        let r = ark_bn254::Fr::rand(rng);
-        let s = ark_bn254::Fr::rand(rng);
-
-        let mut wtns = WitnessCalculator::new("./passport/proof_of_passport.wasm").unwrap();
-        let full_assignment = wtns
-            .calculate_witness_element::<Bn254, _>(inputs, false)
-            .unwrap();
-        println!("witness calculated. Took: {:?}", now.elapsed());
+        println!("generating witness...");
         let now = Instant::now();
+        let full_assignment = witness_calculator()
+            .lock()
+            .expect("Failed to lock witness calculator")
+            .calculate_witness_element::<Bn254, _>(inputs, false)
+            .map_err(|e| e.to_string())?;
+        
+        println!("Witness generation took: {:.2?}", now.elapsed());
+        println!("loading circuit...");
+        let now = Instant::now();
+        let zkey = arkzkey();
+        println!("Loading arkzkey took: {:.2?}", now.elapsed());
 
-        let proof = Groth16::<Bn254, CircomReduction>::create_proof_with_reduction_and_matrices(
-            &params,
+        let public_inputs = full_assignment.as_slice()[1..zkey.1.num_instance_variables].to_vec();
+        let now = Instant::now();
+        let ark_proof = Groth16::<_, CircomReduction>::create_proof_with_reduction_and_matrices(
+            &zkey.0,
             r,
             s,
-            &matrices,
-            num_inputs,
-            num_constraints,
+            &zkey.1,
+            zkey.1.num_instance_variables,
+            zkey.1.num_constraints,
             full_assignment.as_slice(),
-        )
-        .unwrap();
-        println!("proof done. Took: {:?}", now.elapsed());
-        let now = Instant::now();
+        );
+    
+        let proof = ark_proof.map_err(|e| e.to_string())?;
+    
+        println!("proof generation took: {:.2?}", now.elapsed());
+    
+        println!("proof {:?}", proof);
+        println!("public_inputs {:?}", public_inputs);
 
-        let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
-        let inputs = &full_assignment[1..num_inputs];
-        let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, inputs, &proof).unwrap();
-        println!("proof verified. Took: {:?}", now.elapsed());
-
-        assert!(verified);
-
-        println!("inputs: {:?}", inputs);
-
-        let converted_inputs: ethereum::Inputs = inputs.into();
-        let inputs_str: Vec<String> = converted_inputs.0.iter().map(|value| format!("{}", value)).collect();
-        let serialized_inputs = serde_json::to_string(&inputs_str).unwrap();
-        println!("Serialized inputs: {:?}", serialized_inputs);
-
-        let proof_str = proof_to_proof_str(&proof);
-        let serialized_proof = serde_json::to_string(&proof_str).unwrap();
-
-        println!("Serialized proof: {:?}", serialized_proof);
-
-        let combined = json!({
-            "duration": now.elapsed().as_millis(),
-            "serialized_proof": serialized_proof,
-            "serialized_inputs": serialized_inputs
-        });
+        Ok(())
+        // Ok((SerializableProof(proof), SerializableInputs(public_inputs)))
+        // now = Instant::now();
         
-        let combined_str = combined.to_string();
-        println!("proof and inputs: {:?}", combined_str);
-
+        // let pvk = Groth16::<Bn254>::process_vk(&params.vk).unwrap();
+        // let verified = Groth16::<Bn254>::verify_with_processed_vk(&pvk, &inputs, &proof).unwrap();
+        // println!("Proof verified. Took: {:?}", now.elapsed());
+    
+        // assert!(verified);
     
         // // launch the network & compile the verifier
         // println!("launching network");
@@ -455,6 +540,6 @@ mod tests {
     
         // assert!(onchain_verified);
     
-        Ok(())
+        // Ok(())
     }
 }

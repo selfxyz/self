@@ -20,7 +20,7 @@ interface MainScreenProps {
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
-  handleProve: () => void;
+  handleProve: (path: string) => void;
   step: number;
   mintText: string;
   proof: any;

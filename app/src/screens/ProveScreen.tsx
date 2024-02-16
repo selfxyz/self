@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { NativeModules } from 'react-native';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image } from 'tamagui';
 import { Check, LayoutGrid, Scan } from '@tamagui/lucide-icons';
 import { getFirstName, formatDuration } from '../../utils/utils';
@@ -10,6 +11,9 @@ import { App } from '../utils/AppClass';
 import { Keyboard, Platform } from 'react-native';
 const { ethers } = require('ethers');
 
+const fileName = "passport.arkzkey"
+const path = "/data/user/0/com.proofofpassport/files/" + fileName
+
 interface ProveScreenProps {
   selectedApp: App | null;
   passportData: any;
@@ -18,7 +22,7 @@ interface ProveScreenProps {
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
-  handleProve: () => void;
+  handleProve: (path: string) => void;
   handleMint: () => void;
   step: number;
   mintText: string;
@@ -47,6 +51,26 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   ens,
   setEns
 }) => {
+  const [zkeyLoaded, setZkeyLoaded] = useState(false);
+  
+  const downloadZkey = async () => {
+    // TODO: don't redownload if already in the file system at path, if downloaded from previous session
+
+    try {
+      console.log('Downloading file...')
+      const result = await NativeModules.RNPassportReader.downloadFile(
+        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.arkzkey',
+        fileName
+      );
+      console.log("Download successful");
+      console.log(result);
+      setZkeyLoaded(true);
+    } catch (e: any) {
+      console.log("Download not successful");
+      console.error(e.message);
+    }
+  };
+  
   const maskString = (input: string): string => {
     if (input.length <= 5) {
       return input.charAt(0) + '*'.repeat(input.length - 1);
@@ -70,7 +94,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   }, [])
 
   useEffect(() => {
-
     const resolveENS = async () => {
       if (inputValue != ens) {
         if (inputValue.endsWith('.eth')) {
@@ -198,8 +221,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={handleProve} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
-              {generatingProof ? (
+            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={() => {!zkeyLoaded ? downloadZkey() : handleProve(path)}} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
+
+              {!zkeyLoaded && Platform.OS != "ios" ? (
+                  <Text color="white" fow="bold">Download zkey</Text>
+              ) : generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
                   <Text color="white" marginLeft="$2" fow="bold" >Generating ZK proof</Text>
@@ -207,6 +233,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               ) : (
                 <Text color="white" fow="bold">Generate ZK proof</Text>
               )}
+
             </Button>}
             <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take up to 2 mn</Text>
             <Text fontSize={9} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>The application may freeze during this time (hard work)</Text>

@@ -283,7 +283,7 @@ function App(): JSX.Element {
     }
   }
 
-  const handleProve = async () => {
+  const handleProve = async (path: string) => {
     setStep(Steps.GENERATING_PROOF);
     if (passportData === null) {
       console.log('passport data is null');
@@ -347,7 +347,7 @@ function App(): JSX.Element {
 
     const start = Date.now();
     if (Platform.OS === 'android') {
-      await proveAndroid(inputs);
+      await proveAndroid(inputs, path);
     } else {
       await proveIOS(inputs);
     }
@@ -355,8 +355,8 @@ function App(): JSX.Element {
     console.log('Total proof time from frontend:', end - start);
   };
 
-  async function proveAndroid(inputs: any) {
-    NativeModules.RNPassportReader.provePassport(inputs, (err: any, res: any) => {
+  async function proveAndroid(inputs: any, path: string) {
+    NativeModules.RNPassportReader.provePassport(inputs, path, (err: any, res: any) => {
       if (err) {
         console.error(err);
         setError(

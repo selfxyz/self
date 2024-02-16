@@ -87,3 +87,17 @@ If you want to mint a proof of passport SBT, instead of building the circuit you
 
 This will download the zkey currently deployed onchain in the proof of passport contract and place it in `circuits/build``
 Then, build the android or iOS native module and run the app.
+
+
+#### Releases
+
+##### Play Store
+As explained [here](https://reactnative.dev/docs/signed-apk-android), first setup `android/app/my-upload-key.keystore` and the private vars in `~/.gradle/gradle.properties`, then run:
+```
+npx react-native build-android --mode=release
+```
+This builds `android/app/build/outputs/bundle/release/app-release.aab`.
+Then to test the release on an android phone, delete the previous version of the app and run:
+```
+yarn android --mode release
+```
