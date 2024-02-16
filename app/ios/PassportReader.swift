@@ -118,6 +118,14 @@ class PassportReader: NSObject{
         ret["phoneNumber"] = passport.phoneNumber
         ret["personalNumber"] = passport.personalNumber
 
+        let passportPhotoData = passport.passportPhoto // [UInt8]
+        if let passportPhotoData = passport.passportPhoto {
+          let data = Data(passportPhotoData)
+          let base64String = data.base64EncodedString()
+          
+          ret["passportPhoto"] = base64String 
+        }
+
         // documentSigningCertificate
         // countrySigningCertificate
 

@@ -1,23 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  useColorScheme,
   NativeModules,
   DeviceEventEmitter,
-  TextInput,
   Platform,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 import Toast, { BaseToast, ErrorToast, SuccessToast, ToastProps } from 'react-native-toast-message';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
@@ -28,7 +14,7 @@ import {
   DEFAULT_DOE,
   DEFAULT_ADDRESS,
 } from '@env';
-import { DataHash, PassportData, mockPassportData } from '../common/src/utils/types';
+import { DataHash, PassportData } from '../common/src/utils/types';
 import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
   hash,
@@ -45,7 +31,7 @@ import {
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 
 import "@ethersproject/shims"
-import { ethers } from "ethers";
+import { ethers, ZeroAddress } from "ethers";
 import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
@@ -59,8 +45,6 @@ global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
-const SKIP_SCAN = false;
-
 const attributeToPosition = {
   issuing_state: [2, 5],
   name: [5, 44],
@@ -72,23 +56,19 @@ const attributeToPosition = {
 }
 
 function App(): JSX.Element {
-
-
-  const isDarkMode = useColorScheme() === 'dark';
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
-  const [address, setAddress] = useState(DEFAULT_ADDRESS ?? '');
-  const [passportData, setPassportData] = useState(samplePassportData);
-  const [step, setStep] = useState(Steps.MRZ_SCAN);
-  const [testResult, setTestResult] = useState<any>(null);
+  const [address, setAddress] = useState<string>(ethers.ZeroAddress);
+  const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
+  const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [error, setError] = useState<any>(null);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
-  const [totalTime, setTotalTime] = useState<number>(0);
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [minting, setMinting] = useState<boolean>(false);
-  const [mintText, setMintText] = useState<string | null>(null);
+  const [mintText, setMintText] = useState<string>("");
+
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
     name: false,
@@ -115,7 +95,7 @@ function App(): JSX.Element {
           setDateOfBirth(birthDate);
           setDateOfExpiry(expiryDate);
           setStep(Steps.MRZ_SCAN_COMPLETED);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Invalid MRZ format:', error.message);
         }
       })
@@ -133,19 +113,6 @@ function App(): JSX.Element {
       });
   };
 
-  const backgroundStyle = {
-    backgroundColor: Colors.white,
-    flex: 1
-  };
-
-  const inputStyle = StyleSheet.create({
-    inputField: {
-      minHeight: 45, // Set a minimum height that fits the text
-      // Add other styles as needed to match your design
-    },
-    // Include any other styles you want to apply to the input component
-  });
-
   useEffect(() => {
     const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
       console.log(e);
@@ -160,21 +127,23 @@ function App(): JSX.Element {
     if (Platform.OS !== 'android') {
       NativeModules.Prover.runInitAction() // for mopro, ios only rn
     }
-    if (SKIP_SCAN && passportData === null) {
-      setPassportData(samplePassportData as PassportData);
-      setStep(Steps.NFC_SCAN_COMPLETED);
-    }
   }, []);
 
   async function handleResponseIOS(response: any) {
     const parsed = JSON.parse(response);
 
-    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in our world
-    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in our world
+    const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in android world
+    const signedAttributes = parsed.signedAttributes; // this is what we call eContent in android world
     const signatureAlgorithm = parsed.signatureAlgorithm;
     const mrz = parsed.passportMRZ;
-    const dataGroupHashes = parsed.dataGroupHashes;
     const signatureBase64 = parsed.signatureBase64;
+    console.log('dataGroupsPresent', parsed.dataGroupsPresent)
+    console.log('placeOfBirth', parsed.placeOfBirth)
+    console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
+    console.log('isPACESupported', parsed.isPACESupported)
+    console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
+    console.log('residenceAddress', parsed.residenceAddress)
+    console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
 
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
@@ -192,17 +161,6 @@ function App(): JSX.Element {
     const concatenatedDataHashesArray = Array.from(Buffer.from(eContentBase64, 'base64'));
     const concatenatedDataHashesArraySigned = concatenatedDataHashesArray.map(byte => byte > 127 ? byte - 256 : byte);
 
-    const dgHashes = JSON.parse(dataGroupHashes);
-    console.log('dgHashes', dgHashes)
-
-    const dataGroupHashesArray = Object.keys(dgHashes)
-      .map(key => {
-        const dgNumber = parseInt(key.replace('DG', ''));
-        const hashArray = hexStringToSignedIntArray(dgHashes[key].computedHash);
-        return [dgNumber, hashArray];
-      })
-      .sort((a, b) => (a[0] as number) - (b[0] as number));
-
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
     const passportData = {
@@ -214,6 +172,7 @@ function App(): JSX.Element {
       dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
+      photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
 
     console.log('mrz', passportData.mrz);
@@ -224,7 +183,7 @@ function App(): JSX.Element {
     console.log('encryptedDigest', passportData.encryptedDigest);
 
     setPassportData(passportData);
-    setStep('scanCompleted');
+    setStep(Steps.NFC_SCAN_COMPLETED);
   }
 
   async function handleResponseAndroid(response: any) {
@@ -237,6 +196,7 @@ function App(): JSX.Element {
       dataGroupHashes,
       eContent,
       encryptedDigest,
+      photo
     } = response;
 
     const passportData: PassportData = {
@@ -250,6 +210,7 @@ function App(): JSX.Element {
       dataGroupHashes: dataHashesObjToArray(JSON.parse(dataGroupHashes)),
       eContent: JSON.parse(eContent),
       encryptedDigest: JSON.parse(encryptedDigest),
+      photoBase64: photo.base64,
     };
 
     console.log('mrz', passportData.mrz);
@@ -258,6 +219,7 @@ function App(): JSX.Element {
     console.log('dataGroupHashes', passportData.dataGroupHashes);
     console.log('eContent', passportData.eContent);
     console.log('encryptedDigest', passportData.encryptedDigest);
+    console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     setPassportData(passportData);
     setStep(Steps.NFC_SCAN_COMPLETED);
@@ -290,7 +252,7 @@ function App(): JSX.Element {
         dateOfBirth: dateOfBirth,
         dateOfExpiry: dateOfExpiry,
       });
-      console.log('response', response);
+      // console.log('response', response);
       console.log('scanned');
       handleResponseAndroid(response);
     } catch (e: any) {
@@ -391,7 +353,6 @@ function App(): JSX.Element {
     }
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
-    setTotalTime(end - start);
   };
 
   async function proveAndroid(inputs: any, path: string) {
@@ -449,7 +410,7 @@ function App(): JSX.Element {
 
       // setProofTime(response.duration);
       setGeneratingProof(false)
-      setStep('proofGenerated');
+      setStep(Steps.PROOF_GENERATED);
     } catch (err: any) {
       console.log('err', err);
       setError(
@@ -540,86 +501,36 @@ function App(): JSX.Element {
   };
 
   return (
-    <YStack f={1}>
-      <SafeAreaView style={backgroundStyle}>
-        <StatusBar
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-          backgroundColor={Colors.red}
+    <YStack f={1} bg="white" h="100%" w="100%">
+      <YStack h="100%" w="100%">
+        <MainScreen
+          onStartCameraScan={startCameraScan}
+          nfcScan={scan}
+          passportData={passportData}
+          disclosure={disclosure}
+          handleDisclosureChange={handleDisclosureChange}
+          address={address}
+          setAddress={setAddress}
+          generatingProof={generatingProof}
+          handleProve={handleProve}
+          step={step}
+          mintText={mintText}
+          proof={proof}
+          proofTime={proofTime}
+          handleMint={handleMint}
+          setStep={setStep}
+          passportNumber={passportNumber}
+          setPassportNumber={setPassportNumber}
+          dateOfBirth={dateOfBirth}
+          setDateOfBirth={setDateOfBirth}
+          dateOfExpiry={dateOfExpiry}
+          setDateOfExpiry={setDateOfExpiry}
         />
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.black,
-          }}
-          contentContainerStyle={{ flexGrow: 1 }}
-        >
-          <YStack style={styles.view}>
-            <MainScreen
-              onStartCameraScan={startCameraScan}
-              nfcScan={scan}
-              passportData={passportData}
-              disclosure={disclosure}
-              handleDisclosureChange={handleDisclosureChange}
-              address={address}
-              setAddress={setAddress}
-              generatingProof={generatingProof}
-              handleProve={handleProve}
-              step={step}
-              mintText={mintText}
-              proof={proof}
-              proofTime={proofTime}
-              handleMint={handleMint}
-              totalTime={totalTime}
-              setStep={setStep}
-              passportNumber={passportNumber}
-              setPassportNumber={setPassportNumber}
-              dateOfBirth={dateOfBirth}
-              setDateOfBirth={setDateOfBirth}
-              dateOfExpiry={dateOfExpiry}
-              setDateOfExpiry={setDateOfExpiry}
-            />
-          </YStack>
-        </ScrollView>
-      </SafeAreaView>
+      </YStack>
       <Toast config={toastConfig} />
     </YStack>
   );
 }
-
-const styles = StyleSheet.create({
-  view: {
-    flex: 1,
-  },
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
-  },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
-  },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
-  },
-  header: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    textAlign: 'center',
-    marginTop: 20,
-  },
-  testSection: {
-    backgroundColor: '#f2f2f2', // different background color
-    padding: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#dcdcdc', // adding a border top with a light color
-    marginTop: 15,
-  },
-});
 
 export default App;
 
