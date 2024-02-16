@@ -22,7 +22,7 @@ interface ProveScreenProps {
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
-  handleProve: () => void;
+  handleProve: (path: string) => void;
   handleMint: () => void;
   step: number;
   mintText: string;
@@ -51,13 +51,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   ens,
   setEns
 }) => {
-  const [downloadingFile, setDownloadingFile] = useState(false);
   const [zkeyLoaded, setZkeyLoaded] = useState(false);
   
   const downloadZkey = async () => {
     // TODO: don't redownload if already in the file system at path, if downloaded from previous session
 
-    setDownloadingFile(true);
     try {
       console.log('Downloading file...')
       const result = await NativeModules.RNPassportReader.downloadFile(
@@ -66,12 +64,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
       );
       console.log("Download successful");
       console.log(result);
-      setDownloadingFile(false);
       setZkeyLoaded(true);
     } catch (e: any) {
       console.log("Download not successful");
       console.error(e.message);
-      setDownloadingFile(false);
     }
   };
   
@@ -192,23 +188,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               borderColor={address != ethers.ZeroAddress ? "#3185FC" : "unset"}
             />
 
-            {downloadingFile ? (
-              <Button borderRadius={100} mt="$6" backgroundColor="#3185FC" >
-                <XStack ai="center">
-                  <Spinner />
-                  <Text color="white" marginLeft="$2" fow="bold">Downloading zkey...</Text>
-                </XStack>
-              </Button>
-              ) : zkeyLoaded ? (
-              <Button borderRadius={100} mt="$6" backgroundColor="#3185FC" >
-                <Text color="white" fow="bold">Zkey downloaded!</Text>
-              </Button>
-            ) : (
-              <Button borderRadius={100} onPress={downloadZkey} mt="$6" backgroundColor="#3185FC" >
-                <Text color="white" fow="bold">Download zkey</Text>
-              </Button>
-            )}
-
             {(!keyboardVisible || Platform.OS == "ios") && <YStack mt="$6" f={1}>
               <Text h="$3">{selectedApp?.disclosurephrase}</Text>
               <YStack mt="$1">
@@ -242,8 +221,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={handleProve} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
-              {generatingProof ? (
+            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={() => {!zkeyLoaded ? downloadZkey() : handleProve(path)}} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
+
+              {!zkeyLoaded && Platform.OS != "ios" ? (
+                  <Text color="white" fow="bold">Download zkey</Text>
+              ) : generatingProof ? (
                 <XStack ai="center">
                   <Spinner />
                   <Text color="white" marginLeft="$2" fow="bold" >Generating ZK proof</Text>
@@ -251,6 +233,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               ) : (
                 <Text color="white" fow="bold">Generate ZK proof</Text>
               )}
+
             </Button>}
             <Text fontSize={10} color={generatingProof ? "gray" : "white"} alignSelf='center'>This operation can take up to 2 mn</Text>
             <Text fontSize={9} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>The application may freeze during this time (hard work)</Text>
