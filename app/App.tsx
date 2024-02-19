@@ -104,11 +104,11 @@ function App(): JSX.Element {
   };
 
 
-  const handleDisclosureChange = (field: keyof typeof disclosure) => {
+  const handleDisclosureChange = (field: string) => {
     setDisclosure(
       {
         ...disclosure,
-        [field]: !disclosure[field]
+        [field]: !disclosure[field as keyof typeof disclosure]
       });
   };
 
