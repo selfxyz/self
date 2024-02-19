@@ -11,8 +11,7 @@ import { checkInputs } from './utils/utils';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
-  DEFAULT_DOE,
-  DEFAULT_ADDRESS,
+  DEFAULT_DOE
 } from '@env';
 import { DataHash, PassportData } from '../common/src/utils/types';
 import { AWS_ENDPOINT } from '../common/src/constants/constants';
@@ -356,7 +355,11 @@ function App(): JSX.Element {
   };
 
   async function proveAndroid(inputs: any, path: string) {
+    const startTime = Date.now();
     NativeModules.RNPassportReader.provePassport(inputs, path, (err: any, res: any) => {
+      const endTime = Date.now();
+      setProofTime(endTime - startTime);
+
       if (err) {
         console.error(err);
         setError(
@@ -375,8 +378,6 @@ function App(): JSX.Element {
       const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
       console.log('deserializedInputs', deserializedInputs);
 
-      setProofTime(parsedResponse.duration);
-
       setProof({
         proof: JSON.stringify(deserializedProof),
         inputs: JSON.stringify(deserializedInputs),
@@ -388,6 +389,7 @@ function App(): JSX.Element {
 
   async function proveIOS(inputs: any) {
     try {
+      const startTime = Date.now();
       console.log('running mopro init action')
       await NativeModules.Prover.runInitAction()
 
@@ -399,16 +401,14 @@ function App(): JSX.Element {
       console.log('proof response:', response)
       const parsedResponse = JSON.parse(response)
 
-      console.log('running mopro verify action')
-      const res = await NativeModules.Prover.runVerifyAction()
-      console.log('verify response:', res)
+      const endTime = Date.now();
+      setProofTime(endTime - startTime);
 
       setProof({
         proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
         inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
       });
 
-      // setProofTime(response.duration);
       setGeneratingProof(false)
       setStep(Steps.PROOF_GENERATED);
     } catch (err: any) {

@@ -9,6 +9,7 @@ import USER from '../images/user.png'
 import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
 import { Keyboard, Platform } from 'react-native';
+import { DEFAULT_ADDRESS } from '@env';
 const { ethers } = require('ethers');
 
 const fileName = "passport.arkzkey"
@@ -79,7 +80,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     }
   }
 
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState(DEFAULT_ADDRESS ?? '');
   const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
 
   useEffect(() => {
