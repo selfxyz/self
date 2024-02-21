@@ -3,9 +3,9 @@ pragma circom 2.1.5;
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/sha256/sha256.circom";
 
-template Sha256Bytes(max_num_bytes) {
+// Static length sha256 bytes, adapted from zk-email
+template Sha256BytesStatic(max_num_bytes) {
     signal input in_padded[max_num_bytes];
-    // signal input in_len_padded_bytes;
     signal output out[256];
 
     var num_bits = max_num_bytes * 8;
@@ -19,7 +19,6 @@ template Sha256Bytes(max_num_bytes) {
             sha.in[i*8+j] <== bytes[i].out[7-j];
         }
     }
-    // sha.in_len_padded_bits <== in_len_padded_bytes * 8;
 
     for (var i = 0; i < 256; i++) {
         out[i] <== sha.out[i];

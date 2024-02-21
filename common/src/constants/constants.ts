@@ -10,6 +10,7 @@ export const attributeToPosition: { [key: string]: number[] } = {
   expiry_date: [65, 70],
 };
 
+export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 
 export const countryCodes = {
   "AFG": "Afghanistan",

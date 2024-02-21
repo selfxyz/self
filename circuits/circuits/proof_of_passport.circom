@@ -4,9 +4,10 @@ include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
 
-template ProofOfPassport(n, k) {
+template ProofOfPassport(n, k, max_datahashes_bytes) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
-    signal input dataHashes[297];
+    signal input dataHashes[max_datahashes_bytes];
+    signal input datahashes_padded_length;
     signal input eContentBytes[104];
     signal input pubkey[k];
     signal input signature[k];
@@ -15,9 +16,10 @@ template ProofOfPassport(n, k) {
     signal input address;
 
     // Verify passport
-    component PV = PassportVerifier(n, k);
+    component PV = PassportVerifier(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dataHashes <== dataHashes;
+    PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== eContentBytes;
     PV.pubkey <== pubkey;
     PV.signature <== signature;
@@ -45,7 +47,7 @@ template ProofOfPassport(n, k) {
     }
 }
 
-component main { public [ address ] } = ProofOfPassport(64, 32);
+component main { public [ address ] } = ProofOfPassport(64, 32, 320);
 
 // Us:
 // 11 + 1 + 3 + 1
