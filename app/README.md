@@ -35,7 +35,13 @@ You might need to set the rust-toolchain rust version as global default. Example
 rustup default 1.67.0
 ```
 
-For macOs users you might also need to set-up the path to sdk:
+Then, to generate the arkzkey, install arkzkey-util globally from the [mopro](https://github.com/oskarth/mopro) repo, then run:
+```
+cd ark-circom-passport/passport
+arkzkey-util proof_of_passport_final.zkey
+```
+
+For macOS users you might also need to set-up the path to sdk:
 in /app/android create local.properties
 
 Add the following line:
