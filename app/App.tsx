@@ -13,14 +13,12 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE
 } from '@env';
-import { DataHash, PassportData } from '../common/src/utils/types';
-import { AWS_ENDPOINT } from '../common/src/constants/constants';
+import { PassportData } from '../common/src/utils/types';
+import { AWS_ENDPOINT, MAX_DATAHASHES_LEN } from '../common/src/constants/constants';
 import {
   hash,
   toUnsignedByte,
   bytesToBigDecimal,
-  dataHashesObjToArray,
-  formatAndConcatenateDataHashes,
   formatMrz,
   splitToWords,
   hexStringToSignedIntArray,
@@ -28,6 +26,7 @@ import {
   formatInputsIOS
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
+import { sha256Pad } from '../common/src/utils/sha256Pad';
 
 import "@ethersproject/shims"
 import { ethers, ZeroAddress } from "ethers";
@@ -143,7 +142,6 @@ function App(): JSX.Element {
     console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
     console.log('residenceAddress', parsed.residenceAddress)
     console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
-
     console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
     const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
     console.log('pem', pem)
@@ -180,6 +178,7 @@ function App(): JSX.Element {
     console.log('dataGroupHashes', passportData.dataGroupHashes);
     console.log('eContent', passportData.eContent);
     console.log('encryptedDigest', passportData.encryptedDigest);
+    console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     setPassportData(passportData);
     setStep(Steps.NFC_SCAN_COMPLETED);
@@ -192,10 +191,15 @@ function App(): JSX.Element {
       modulus,
       curveName,
       publicKeyQ,
-      dataGroupHashes,
       eContent,
       encryptedDigest,
-      photo
+      photo,
+      digestAlgorithm,
+      signerInfoDigestAlgorithm,
+      digestEncryptionAlgorithm,
+      LDSVersion,
+      unicodeVersion,
+      encapContent
     } = response;
 
     const passportData: PassportData = {
@@ -206,7 +210,7 @@ function App(): JSX.Element {
         curveName: curveName,
         publicKeyQ: publicKeyQ,
       },
-      dataGroupHashes: dataHashesObjToArray(JSON.parse(dataGroupHashes)),
+      dataGroupHashes: JSON.parse(encapContent),
       eContent: JSON.parse(eContent),
       encryptedDigest: JSON.parse(encryptedDigest),
       photoBase64: photo.base64,
@@ -219,6 +223,12 @@ function App(): JSX.Element {
     console.log('eContent', passportData.eContent);
     console.log('encryptedDigest', passportData.encryptedDigest);
     console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
+    console.log("digestAlgorithm", digestAlgorithm)
+    console.log("signerInfoDigestAlgorithm", signerInfoDigestAlgorithm)
+    console.log("digestEncryptionAlgorithm", digestEncryptionAlgorithm)
+    console.log("LDSVersion", LDSVersion)
+    console.log("unicodeVersion", unicodeVersion)
+    console.log("encapContent", encapContent)
 
     setPassportData(passportData);
     setStep(Steps.NFC_SCAN_COMPLETED);
@@ -296,16 +306,6 @@ function App(): JSX.Element {
 
     // 2. Format all the data as inputs for the circuit
     const formattedMrz = formatMrz(passportData.mrz);
-    const mrzHash = hash(formatMrz(passportData.mrz));
-
-    const concatenatedDataHashes =
-      Array.isArray(passportData.dataGroupHashes[0])
-        ? formatAndConcatenateDataHashes(
-          mrzHash,
-          passportData.dataGroupHashes as DataHash[],
-        )
-        : passportData.dataGroupHashes
-
 
     const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
 
@@ -318,16 +318,29 @@ function App(): JSX.Element {
       }
     }
 
-    if (!["SHA256withRSA", "sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
-      console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-      setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-      return;
-    }
+    // if (!["SHA256withRSA", "sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
+    //   console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    //   setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    //   return;
+    // }
+
+    console.log('passportData.dataGroupHashes', passportData.dataGroupHashes);
+
+    const dataGroupHashesUint8Array = new Uint8Array(passportData.dataGroupHashes);
+    
+    console.log('dataGroupHashesUint8Array', dataGroupHashesUint8Array);
+
+    const [messagePadded, messagePaddedLen] = sha256Pad(
+      dataGroupHashesUint8Array,
+      MAX_DATAHASHES_LEN
+    );
+    console.log('messagePadded', messagePadded);
 
     const inputs = {
       mrz: Array.from(formattedMrz).map(byte => String(byte)),
       reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from((concatenatedDataHashes as number[]).map(toUnsignedByte)).map(byte => String(byte)),
+      dataHashes: Array.from(messagePadded).map((x) => (x as number).toString()),
+      datahashes_padded_length: messagePaddedLen.toString(),
       eContentBytes: Array.from(passportData.eContent.map(toUnsignedByte)).map(byte => String(byte)),
       signature: splitToWords(
         BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
@@ -396,6 +409,7 @@ function App(): JSX.Element {
       console.log('running mopro prove action')
       const response = await NativeModules.Prover.runProveAction({
         ...inputs,
+        datahashes_padded_length: [inputs.datahashes_padded_length.toString()], // wrap everything in arrays for bindings 
         address: [BigInt(address).toString()]
       })
       console.log('proof response:', response)
@@ -403,6 +417,10 @@ function App(): JSX.Element {
 
       const endTime = Date.now();
       setProofTime(endTime - startTime);
+
+      // console.log('running mopro verify action')
+      // const res = await NativeModules.Prover.runVerifyAction()
+      // console.log('verify response:', res)
 
       setProof({
         proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),

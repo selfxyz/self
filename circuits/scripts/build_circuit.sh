@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Record the start time
+START_TIME=$(date +%s)
+
 # Check if the first argument is "app-only"
 if [ "$1" == "app-only" ]; then
     echo "Building only for the app"
@@ -40,3 +43,8 @@ yarn snarkjs zkey export verificationkey build/proof_of_passport_final.zkey buil
 yarn snarkjs zkey export solidityverifier build/proof_of_passport_final.zkey build/Verifier.sol
 cp build/Verifier.sol ../contracts/contracts/Verifier.sol
 echo "copied Verifier.sol to contracts"
+
+# Calculate and print the time taken by the whole script
+END_TIME=$(date +%s)
+ELAPSED_TIME=$(($END_TIME - $START_TIME))
+echo "Build completed in $ELAPSED_TIME seconds"

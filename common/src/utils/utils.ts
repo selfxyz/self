@@ -1,16 +1,4 @@
-import { DataHash } from './types';
 import {sha256} from 'js-sha256';
-
-export function dataHashesObjToArray(dataHashes: {
-  [key: string]: number[];
-}): DataHash[] {
-  return Object.keys(dataHashes)
-    .map(key => {
-      const dataHash = dataHashes[key as keyof typeof dataHashes];
-      return [Number(key), dataHash];
-    })
-    .sort((a, b) => (a[0] as number) - (b[0] as number)) as DataHash[];
-}
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -49,7 +37,7 @@ export function parsePubKeyString(pubKeyString: string) {
 
 export function formatAndConcatenateDataHashes(
   mrzHash: number[],
-  dataHashes: DataHash[],
+  dataHashes: [number, number[]][],
 ) {
   // Let's replace the first array with the MRZ hash
   dataHashes.shift();
@@ -58,13 +46,19 @@ export function formatAndConcatenateDataHashes(
 
   let concat: number[] = []
 
-  // Starting sequence. Should be the same for everybody, but not sure
-  concat.push(...[
+  const startingSequence = [
     48, -126, 1, 37, 2, 1, 0, 48, 11, 6, 9, 96, -122, 72, 1, 101, 3, 4, 2, 1,
     48, -126, 1, 17,
-  ])
+  ]
+
+  // console.log(`startingSequence`, startingSequence.map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
+  // Starting sequence. Should be the same for everybody, but not sure
+  concat.push(...startingSequence)
 
   for(const dataHash of dataHashes) {
+    // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
     concat.push(...[48, 37, 2, 1, dataHash[0], 4, 32, ...dataHash[1]])
   }
 

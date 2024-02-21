@@ -60,7 +60,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     try {
       console.log('Downloading file...')
       const result = await NativeModules.RNPassportReader.downloadFile(
-        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.arkzkey',
+        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final_dynamic_dg_support.arkzkey',
         fileName
       );
       console.log("Download successful");
@@ -222,7 +222,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             <XStack f={1} />
             <XStack f={1} />
             <XStack f={1} />
-            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={() => {!zkeyLoaded ? downloadZkey() : handleProve(path)}} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
+            {(!keyboardVisible || Platform.OS == "ios") && <Button disabled={address == ethers.ZeroAddress} borderRadius={100} onPress={() => {(!zkeyLoaded && Platform.OS != "ios") ? downloadZkey() : handleProve(path)}} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
 
               {!zkeyLoaded && Platform.OS != "ios" ? (
                   <Text color="white" fow="bold">Download zkey</Text>
