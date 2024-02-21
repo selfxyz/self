@@ -103,7 +103,7 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 - Use for proof of location using place of birth and/or address
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
-We will provide bounties for all those applications. Those are not fixed right now, so please contact us if you're interested. Same thing for all issues on this repo.
+We will provide bounties for all those applications. Those are not fixed right now, so please contact us if you're interested.
 
 ## Licensing
 
@@ -111,7 +111,7 @@ Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start!
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start! We will provide bounties starting from $100 for any significant progress on these. Please contact us for more details.
 
 ## Contact us
 
