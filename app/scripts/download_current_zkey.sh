@@ -5,5 +5,6 @@ if [ -f "proof_of_passport_final.zkey" ]; then
     rm "proof_of_passport_final.zkey"
 fi
 echo "downloading proof_of_passport_final.zkey to /circuits/build/"
-wget https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final.zkey # ios
+wget https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final_dynamic_dg_support.arkzkey # ios
+mv proof_of_passport_final_dynamic_dg_support.arkzkey proof_of_passport_final.zkey
 cd ../../app
