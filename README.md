@@ -14,20 +14,27 @@ As a first application, users who can prove they indeed hold a valid passport ca
 - `app`: Mobile app
 - `circuits`: Circom circuits
 - `contracts`: Solidity contracts
+- `common`: Common utils
 
 ## Roadmap
 
 - ✅ Basic passport verifier circuit
-- 🚧 Optimization
-- 🚧 Selective disclosure
+- ✅ Selective disclosure
 - ✅ Basic react native frontend
 - ✅ Passport verification pipeline, android
-- 🚧 Passport verification pipeline, iOS
+- ✅ Passport verification pipeline, iOS
+- ✅ Contracts
+- ✅ On-chain registry of CSCA pubkeys based on the official ICAO masterlist
+- 🚧 Optimizations
 - 🚧 Reimplementation of the passport NFC specs in javascript
-- 🚧 Contracts
-- 🚧 On-chain registry of CSCA pubkeys based on the official ICAO masterlist
 
 ## FAQ
+
+#### Does my passport support Proof of Passport ?
+
+![EPassport_logo_grey](https://github.com/zk-passport/proof-of-passport/assets/62038140/c3263600-19b6-45f9-9b5f-63f352992c88)
+
+If it has this symbol on the front cover, yes.
 
 #### What exactly is being signed ?
 
@@ -91,6 +98,7 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 - Build a social network/anonymous message board for people from one specific country
 - Create a sybil-resistance tool to protect social networks against spambots
 - Do an airdrop farming protection tool
+- Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states
 - Gate an adult content website to a specific age
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
 
@@ -98,8 +106,12 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 
 Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
+## Contributing
+
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start!
+
 ## Contact us
 
 Contact me @FlorentTavernier on telegram for any feedback.
 
-Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/viv_boop), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!
+Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/AndyGuzmanEth), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!

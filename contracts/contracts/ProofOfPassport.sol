@@ -59,12 +59,12 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         uint256[2] memory c,
         uint256[6] memory inputs
     ) public {
+        require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
+
         // check that the nullifier has not been used before
         require(!nullifiers[inputs[3]], "Signature already nullified");
 
         require(registry.checkRoot(bytes32(inputs[4])), "Invalid merkle root");
-
-        require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
         // Effects: Mint token
         address addr = address(uint160(inputs[inputs.length - 1])); // generally the last one

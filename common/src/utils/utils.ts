@@ -1,16 +1,4 @@
-import { DataHash } from './types';
 import {sha256} from 'js-sha256';
-
-export function dataHashesObjToArray(dataHashes: {
-  [key: string]: number[];
-}): DataHash[] {
-  return Object.keys(dataHashes)
-    .map(key => {
-      const dataHash = dataHashes[key as keyof typeof dataHashes];
-      return [Number(key), dataHash];
-    })
-    .sort((a, b) => (a[0] as number) - (b[0] as number)) as DataHash[];
-}
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -49,7 +37,7 @@ export function parsePubKeyString(pubKeyString: string) {
 
 export function formatAndConcatenateDataHashes(
   mrzHash: number[],
-  dataHashes: DataHash[],
+  dataHashes: [number, number[]][],
 ) {
   // Let's replace the first array with the MRZ hash
   dataHashes.shift();
@@ -58,13 +46,19 @@ export function formatAndConcatenateDataHashes(
 
   let concat: number[] = []
 
-  // Starting sequence. Should be the same for everybody, but not sure
-  concat.push(...[
+  const startingSequence = [
     48, -126, 1, 37, 2, 1, 0, 48, 11, 6, 9, 96, -122, 72, 1, 101, 3, 4, 2, 1,
     48, -126, 1, 17,
-  ])
+  ]
+
+  // console.log(`startingSequence`, startingSequence.map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
+  // Starting sequence. Should be the same for everybody, but not sure
+  concat.push(...startingSequence)
 
   for(const dataHash of dataHashes) {
+    // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
     concat.push(...[48, 37, 2, 1, dataHash[0], 4, 32, ...dataHash[1]])
   }
 
@@ -193,7 +187,59 @@ export function bigIntToChunkedBytes(num: BigInt | bigint, bytesPerChunk: number
   return res;
 }
 
+
+export function hexStringToSignedIntArray(hexString: string) {
+  let result = [];
+  for (let i = 0; i < hexString.length; i += 2) {
+    let byte = parseInt(hexString.substr(i, 2), 16);
+    result.push(byte > 127 ? byte - 256 : byte);
+  }
+  return result;
+};
+
+function bytesToBigInt(bytes: number[]) {
+  let hex = bytes.reverse().map(byte => byte.toString(16).padStart(2, '0')).join('');
+  // console.log('hex', hex)
+  return BigInt(`0x${hex}`).toString();
+}
+
+function splitInto(arr: number[], size: number) {
+  const res = [];
+  for(let i = 0; i < arr.length; i += size) {
+    res.push(arr.slice(i, i + size));
+  }
+  return res;
+}
+
 export function formatRoot(root: string): string {
   let rootHex = BigInt(root).toString(16);
   return rootHex.length % 2 === 0 ? "0x" + rootHex : "0x0" + rootHex;
+}
+
+function setFirstBitOfLastByteToZero(bytes: number[]) {
+  bytes[bytes.length - 1] &= 0x7F; // AND with 01111111 to set the first bit of the last byte to 0
+  return bytes;
+}
+
+// from reverse engineering ark-serialize.
+export function formatProofIOS(proof: number[]) {
+  const splittedProof = splitInto(proof, 32);
+  splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
+  splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
+  splittedProof[7] = setFirstBitOfLastByteToZero(splittedProof[7]);
+  const proooof = splittedProof.map(bytesToBigInt);
+
+  return {
+    "a": [proooof[0], proooof[1]],
+    "b": [
+      [proooof[2], proooof[3]],
+      [proooof[4], proooof[5]]
+    ],
+    "c": [proooof[6], proooof[7]]
+  }
+}
+
+export function formatInputsIOS(inputs: number[]) {
+  const splitted = splitInto(inputs.slice(8), 32);
+  return splitted.map(bytesToBigInt);
 }

@@ -1,4 +1,4 @@
-import { DataHash, PassportData } from "./types";
+import { PassportData } from "./types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "./utils";
 import * as forge from 'node-forge';
 const fs = require('fs');
@@ -40,7 +40,7 @@ export function genSampleData(): PassportData {
   sampleDataHashesCopy.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     mrzHash,
-    sampleDataHashesCopy as DataHash[],
+    sampleDataHashes as [number, number[]][],
   );
   const eContent = assembleEContent(
     hash(concatenatedDataHashes),
@@ -57,15 +57,6 @@ export function genSampleData(): PassportData {
   const signature = privKey.sign(md)
   const signatureBytes = Array.from(signature, (c: string) => c.charCodeAt(0));
   
-  // Signature verification
-  // const hashOfEContent = md.digest().getBytes();
-  // const publicKey = rsa.setPublicKey(
-  //   new forge.jsbn.BigInteger(modulus, 16),
-  //   new forge.jsbn.BigInteger("10001", 16),
-  // );
-  // const valid = publicKey.verify(hashOfEContent, signature);
-  // console.log('valid ?', valid)
-
   return {
     mrz: sampleMRZ,
     signatureAlgorithm: 'sha256WithRSAEncryption',
@@ -73,9 +64,10 @@ export function genSampleData(): PassportData {
       modulus: hexToDecimal(modulus),
       exponent: '65537',
     },
-    dataGroupHashes: sampleDataHashesCopy as DataHash[],
+    dataGroupHashes: concatenatedDataHashes,
     eContent: eContent,
     encryptedDigest: signatureBytes,
+    photoBase64: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIw3" // meaningless for now
   }
 }
 

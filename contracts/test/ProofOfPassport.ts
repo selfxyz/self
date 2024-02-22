@@ -1,18 +1,16 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
-import { DataHash } from "../../common/src/utils/types";
-import { genSampleData } from "../../common/src/utils/passportData";
+import { getPassportData } from "../../common/src/utils/passportData";
 import { buildPubkeyTree } from "../../common/src/utils/pubkeyTree";
-import { attributeToPosition, SignatureAlgorithm } from "../../common/src/constants/constants";
-import { formatMrz, splitToWords, formatAndConcatenateDataHashes, toUnsignedByte, hash, bytesToBigDecimal, formatSigAlg, bigIntToChunkedBytes, formatRoot } from "../../common/src/utils/utils";
+import { MAX_DATAHASHES_LEN, attributeToPosition, SignatureAlgorithm, countryCodes } from "../../common/src/constants/constants";
+import { formatMrz, splitToWords, toUnsignedByte, hash, bytesToBigDecimal, formatSigAlg, bigIntToChunkedBytes, formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
-import { countryCodes } from "../../common/src/constants/constants";
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { poseidon12 } from "poseidon-lite"
-
 import axios from 'axios';
 import { DataHexString } from "ethers/lib.commonjs/utils/data";
+import { sha256Pad } from "../../common/src/utils/sha256Pad";
 const fs = require('fs');
 
 
@@ -23,7 +21,7 @@ describe("Proof of Passport", function () {
 
   before(async function generateProof() {
     pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
-    passportData = genSampleData();
+    passportData = getPassportData();
 
     // for testing purposes
     pubkeys = pubkeys.slice(0, 100);
@@ -37,11 +35,6 @@ describe("Proof of Passport", function () {
     tree = buildPubkeyTree(pubkeys);
     
     const formattedMrz = formatMrz(passportData.mrz);
-    const mrzHash = hash(formatMrz(passportData.mrz));
-    const concatenatedDataHashes = formatAndConcatenateDataHashes(
-      mrzHash,
-      passportData.dataGroupHashes as DataHash[],
-    );
 
     const attributeToReveal = {
       issuing_state: true,
@@ -53,7 +46,7 @@ describe("Proof of Passport", function () {
       expiry_date: true,
     }
 
-    const bitmap = Array(88).fill('1');
+    const reveal_bitmap = Array(88).fill('0');
 
     const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
     const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
@@ -66,14 +59,20 @@ describe("Proof of Passport", function () {
     Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
       if (reveal) {
         const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        bitmap.fill('1', start, end + 1);
+        reveal_bitmap.fill('1', start, end + 1);
       }
     });
 
+    const [messagePadded, messagePaddedLen] = sha256Pad(
+      new Uint8Array(passportData.dataGroupHashes),
+      MAX_DATAHASHES_LEN
+    );
+
     inputs = {
       mrz: formattedMrz.map(byte => String(byte)),
-      reveal_bitmap: bitmap.map(byte => String(byte)),
-      dataHashes: concatenatedDataHashes.map(toUnsignedByte).map(byte => String(byte)),
+      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
+      dataHashes: Array.from(messagePadded).map((x) => x.toString()),
+      datahashes_padded_length: messagePaddedLen.toString(),
       eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
       pubkey: splitToWords(
         BigInt(passportData.pubKey.modulus as string),
@@ -141,7 +140,7 @@ describe("Proof of Passport", function () {
       console.log(`Registry deployed to ${registry.target}`);
 
       const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-      const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, registry.target);
+      const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, (registry as any).target);
       await proofOfPassport.waitForDeployment();
     
       console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);

@@ -32,6 +32,7 @@ import android.text.TextWatcher
 import android.util.Base64
 import android.util.Log
 import android.widget.EditText
+import android.content.Context
 
 import androidx.appcompat.app.AppCompatActivity
 import io.tradle.nfc.ImageUtil.decodeImage
@@ -44,6 +45,9 @@ import org.bouncycastle.asn1.cms.SignedData
 import org.bouncycastle.asn1.ASN1Primitive
 import org.bouncycastle.asn1.ASN1Sequence
 import org.bouncycastle.asn1.ASN1Set
+import org.bouncycastle.asn1.ASN1TaggedObject;
+import org.bouncycastle.asn1.icao.DataGroupHash;
+import org.bouncycastle.asn1.icao.LDSSecurityObject;
 import org.bouncycastle.asn1.x509.Certificate
 import org.bouncycastle.jce.spec.ECNamedCurveSpec
 import org.bouncycastle.jce.interfaces.ECPublicKey
@@ -68,7 +72,9 @@ import java.io.ByteArrayInputStream
 import java.io.DataInputStream
 import java.io.InputStream
 import java.io.IOException
+import java.io.FileOutputStream
 import java.io.ByteArrayOutputStream
+import java.io.File
 import java.security.KeyStore
 import java.security.MessageDigest
 import java.security.Signature
@@ -82,6 +88,8 @@ import java.text.ParseException
 import java.security.interfaces.RSAPublicKey
 import java.text.SimpleDateFormat
 import java.util.*
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.security.PublicKey
 import java.security.spec.X509EncodedKeySpec
 import javax.crypto.Cipher
@@ -495,87 +503,107 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
 
         override fun onPostExecute(result: Exception?) {
-          if (scanPromise == null) return
+            if (scanPromise == null) return
 
-          if (result != null) {
-              // Log.w(TAG, exceptionStack(result))
-              if (result is IOException) {
-                  scanPromise?.reject("E_SCAN_FAILED_DISCONNECT", "Lost connection to chip on card")
-              } else {
-                  scanPromise?.reject("E_SCAN_FAILED", result)
-              }
+            if (result != null) {
+                // Log.w(TAG, exceptionStack(result))
+                if (result is IOException) {
+                    scanPromise?.reject("E_SCAN_FAILED_DISCONNECT", "Lost connection to chip on card")
+                } else {
+                    scanPromise?.reject("E_SCAN_FAILED", result)
+                }
 
-              resetState()
-              return
-          }
+                resetState()
+                return
+            }
 
-          val mrzInfo = dg1File.mrzInfo
+            val mrzInfo = dg1File.mrzInfo
 
-        //   var quality = 100
-        //   if (opts?.hasKey("quality") == true) {
-        //       quality = (opts?.getDouble("quality") ?: 1.0 * 100).toInt()
-        //   }
-          val gson = Gson()
+            val gson = Gson()
 
-          val signedDataField = SODFile::class.java.getDeclaredField("signedData")
-          signedDataField.isAccessible = true
-          
-        //   val signedData = signedDataField.get(sodFile) as SignedData
-          
-          val eContentAsn1InputStream = ASN1InputStream(sodFile.eContent.inputStream())
-        //   val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
-
-          val passport = Arguments.createMap()
-          passport.putString("mrz", mrzInfo.toString())
-          passport.putString("signatureAlgorithm", sodFile.docSigningCertificate.sigAlgName) // this one is new
-
-          val publicKey = sodFile.docSigningCertificate.publicKey
-          if (publicKey is RSAPublicKey) {
-              passport.putString("modulus", publicKey.modulus.toString())
-          } else if (publicKey is ECPublicKey) {
-            // Handle the elliptic curve public key case
+            // val signedDataField = SODFile::class.java.getDeclaredField("signedData")
+            // signedDataField.isAccessible = true
             
-            // val w = publicKey.getW()
-            // passport.putString("publicKeyW", w.toString())
+          //   val signedData = signedDataField.get(sodFile) as SignedData
             
-            // val ecParams = publicKey.getParams()
-            // passport.putInt("cofactor", ecParams.getCofactor())
-            // passport.putString("curve", ecParams.getCurve().toString())
-            // passport.putString("generator", ecParams.getGenerator().toString())
-            // passport.putString("order", ecParams.getOrder().toString())
-            // if (ecParams is ECNamedCurveSpec) {
-            //     passport.putString("curveName", ecParams.getName())
-            // }
+            val eContentAsn1InputStream = ASN1InputStream(sodFile.eContent.inputStream())
+          //   val eContentDecomposed: ASN1Primitive = eContentAsn1InputStream.readObject()
+  
+            val passport = Arguments.createMap()
+            passport.putString("mrz", mrzInfo.toString())
+            passport.putString("signatureAlgorithm", sodFile.docSigningCertificate.sigAlgName) // this one is new
+  
+            val publicKey = sodFile.docSigningCertificate.publicKey
+            if (publicKey is RSAPublicKey) {
+                passport.putString("modulus", publicKey.modulus.toString())
+            } else if (publicKey is ECPublicKey) {
+              // Handle the elliptic curve public key case
+              
+              // val w = publicKey.getW()
+              // passport.putString("publicKeyW", w.toString())
+              
+              // val ecParams = publicKey.getParams()
+              // passport.putInt("cofactor", ecParams.getCofactor())
+              // passport.putString("curve", ecParams.getCurve().toString())
+              // passport.putString("generator", ecParams.getGenerator().toString())
+              // passport.putString("order", ecParams.getOrder().toString())
+              // if (ecParams is ECNamedCurveSpec) {
+              //     passport.putString("curveName", ecParams.getName())
+              // }
+  
+            //   Old one, probably wrong:
+            //     passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
+            //     passport.putString("curveName", (publicKey.parameters.algorithm)) or maybe this
+                passport.putString("publicKeyQ", publicKey.q.toString())
+            }
 
-            // Old one, probably wrong:
-            //   passport.putString("curveName", (publicKey.parameters as ECNamedCurveSpec).name)
-            //   passport.putString("curveName", (publicKey.parameters.algorithm)) or maybe this
-              passport.putString("publicKeyQ", publicKey.q.toString())
-          }
+            passport.putString("dataGroupHashes", gson.toJson(sodFile.dataGroupHashes))
+            passport.putString("eContent", gson.toJson(sodFile.eContent))
+            passport.putString("encryptedDigest", gson.toJson(sodFile.encryptedDigest))
 
-          passport.putString("dataGroupHashes", gson.toJson(sodFile.dataGroupHashes))
-          passport.putString("eContent", gson.toJson(sodFile.eContent))
-          passport.putString("encryptedDigest", gson.toJson(sodFile.encryptedDigest))
+            // passport.putString("encapContentInfo", gson.toJson(sodFile.encapContentInfo))
+            // passport.putString("contentInfo", gson.toJson(sodFile.contentInfo))
+            passport.putString("digestAlgorithm", gson.toJson(sodFile.digestAlgorithm))
+            passport.putString("signerInfoDigestAlgorithm", gson.toJson(sodFile.signerInfoDigestAlgorithm))
+            passport.putString("digestEncryptionAlgorithm", gson.toJson(sodFile.digestEncryptionAlgorithm))
+            passport.putString("LDSVersion", gson.toJson(sodFile.getLDSVersion()))
+            passport.putString("unicodeVersion", gson.toJson(sodFile.unicodeVersion))
 
 
-          // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5 
-          // passport.putString("signerInfos", gson.toJson(signedData.signerInfos))
-          
-          //   Log.d(TAG, "signedData.digestAlgorithms: ${gson.toJson(signedData.digestAlgorithms)}")
-          //   Log.d(TAG, "signedData.signerInfos: ${gson.toJson(signedData.signerInfos)}")
-          //   Log.d(TAG, "signedData.certificates: ${gson.toJson(signedData.certificates)}")
-          
-          //   val base64 = bitmap?.let { toBase64(it, quality) }
-          //   val photo = Arguments.createMap()
-          //   photo.putString("base64", base64 ?: "")
-          //   photo.putInt("width", bitmap?.width ?: 0)
-          //   photo.putInt("height", bitmap?.height ?: 0)
-          //   passport.putMap("photo", photo)
-            //   passport.putString("dg2File", gson.toJson(dg2File))
-          
-          scanPromise?.resolve(passport)
-          resetState()
-      }
+            // Get EncapContent (data group hashes) using reflection in Kotlin
+            val getENC: Method = SODFile::class.java.getDeclaredMethod("getLDSSecurityObject", SignedData::class.java)
+            getENC.isAccessible = true
+            val signedDataField: Field = sodFile::class.java.getDeclaredField("signedData")
+            signedDataField.isAccessible = true
+            val signedData: SignedData = signedDataField.get(sodFile) as SignedData
+            val ldsso: LDSSecurityObject = getENC.invoke(sodFile, signedData) as LDSSecurityObject
+
+            passport.putString("encapContent", gson.toJson(ldsso.encoded))
+
+            // passport.putString("getDocSigningCertificate", gson.toJson(sodFile.getDocSigningCertificate))
+            // passport.putString("getIssuerX500Principal", gson.toJson(sodFile.getIssuerX500Principal))
+            // passport.putString("getSerialNumber", gson.toJson(sodFile.getSerialNumber))
+  
+  
+            // Another way to get signing time is to get into signedData.signerInfos, then search for the ICO identifier 1.2.840.113549.1.9.5 
+            // passport.putString("signerInfos", gson.toJson(signedData.signerInfos))
+            
+            //   Log.d(TAG, "signedData.digestAlgorithms: ${gson.toJson(signedData.digestAlgorithms)}")
+            //   Log.d(TAG, "signedData.signerInfos: ${gson.toJson(signedData.signerInfos)}")
+            //   Log.d(TAG, "signedData.certificates: ${gson.toJson(signedData.certificates)}")
+            
+            var quality = 100
+            val base64 = bitmap?.let { toBase64(it, quality) }
+            val photo = Arguments.createMap()
+            photo.putString("base64", base64 ?: "")
+            photo.putInt("width", bitmap?.width ?: 0)
+            photo.putInt("height", bitmap?.height ?: 0)
+            passport.putMap("photo", photo)
+            // passport.putString("dg2File", gson.toJson(dg2File))
+            
+            scanPromise?.resolve(passport)
+            resetState()
+        }
     }
 
     private fun convertDate(input: String?): String? {
@@ -608,31 +636,74 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         mrz: List<String>,
         reveal_bitmap: List<String>,
         dataHashes: List<String>,
+        datahashes_padded_length: String,
         eContentBytes: List<String>,
         signature: List<String>,
         pubkey: List<String>,
-        address: String
+        address: String,
+        zkeypath: String
     ): String
 
     @ReactMethod
-    fun provePassport(inputs: ReadableMap, callback: Callback) {
-        Log.d(TAG, "inputsaaa: " + inputs.toString())
+    fun provePassport(inputs: ReadableMap, zkeypath: String, callback: Callback) {
+        Log.d(TAG, "inputs in provePassport kotlin: " + inputs.toString())
         
         val mrz = inputs.getArray("mrz")?.toArrayList()?.map { it as String } ?: listOf()
         val reveal_bitmap = inputs.getArray("reveal_bitmap")?.toArrayList()?.map { it as String } ?: listOf()
         val data_hashes = inputs.getArray("dataHashes")?.toArrayList()?.map { it as String } ?: listOf()
+        val datahashes_padded_length = inputs.getString("datahashes_padded_length") ?: ""
         val e_content_bytes = inputs.getArray("eContentBytes")?.toArrayList()?.map { it as String } ?: listOf()
         val signature = inputs.getArray("signature")?.toArrayList()?.map { it as String } ?: listOf()
         val pubkey = inputs.getArray("pubkey")?.toArrayList()?.map { it as String } ?: listOf()
         val address = inputs.getString("address") ?: ""
         
-        val resultFromProof = provePassport(mrz, reveal_bitmap, data_hashes, e_content_bytes, signature, pubkey, address)
+        val resultFromProof = provePassport(
+            mrz,
+            reveal_bitmap,
+            data_hashes,
+            datahashes_padded_length,
+            e_content_bytes,
+            signature,
+            pubkey,
+            address,
+            zkeypath
+        )
 
         Log.d(TAG, "resultFromProof: " + resultFromProof.toString())
 
         // Return the result to JavaScript through the callback
         callback.invoke(null, resultFromProof)
     }
+
+    @ReactMethod
+    fun downloadFile(url: String, fileName: String, promise: Promise) {
+        val client = OkHttpClient()
+        val request = Request.Builder().url(url).build()
+    
+        try {
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) throw IOException("Failed to download file: $response")
+    
+                // Use the app's internal files directory
+                val fileOutputStream = reactContext.openFileOutput(fileName, Context.MODE_PRIVATE)
+    
+                val inputStream = response.body?.byteStream()
+                inputStream.use { input ->
+                    fileOutputStream.use { output ->
+                        input?.copyTo(output)
+                    }
+                }
+    
+                // Resolve the promise with the file path
+                val file = File(reactContext.filesDir, fileName)
+                promise.resolve(file.absolutePath)
+            }
+        } catch (e: Exception) {
+            // Reject the promise if an exception occurs
+            promise.reject(e)
+        }
+    }
+
 
     companion object {
         private val TAG = RNPassportReaderModule::class.java.simpleName

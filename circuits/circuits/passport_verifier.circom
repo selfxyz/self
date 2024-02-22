@@ -1,19 +1,21 @@
 pragma circom 2.1.5;
 
-include "./rsa/rsa.circom";
-include "./sha256Bytes.circom";
-include "../node_modules/circomlib/circuits/sha256/sha256.circom";
+include "@zk-email/circuits/helpers/rsa.circom";
+include "@zk-email/circuits/helpers/extract.circom";
+include "@zk-email/circuits/helpers/sha.circom";
+include "./Sha256BytesStatic.circom";
 
-template PassportVerifier(n, k) {
+template PassportVerifier(n, k, max_datahashes_bytes) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
-    signal input dataHashes[297];
+    signal input dataHashes[max_datahashes_bytes];
+    signal input datahashes_padded_length;
     signal input eContentBytes[104];
 
     signal input pubkey[k];
     signal input signature[k];
 
     // compute sha256 of formatted mrz
-    signal mrzSha[256] <== Sha256Bytes(93)(mrz);
+    signal mrzSha[256] <== Sha256BytesStatic(93)(mrz);
 
     // get output of sha256 into bytes to check against dataHashes
     component sha256_bytes[32];
@@ -29,8 +31,8 @@ template PassportVerifier(n, k) {
         dataHashes[31 + i] === sha256_bytes[i].out;
     }
 
-    // hash dataHashes
-    signal dataHashesSha[256] <== Sha256Bytes(297)(dataHashes);
+    // hash dataHashes dynamically
+    signal dataHashesSha[256] <== Sha256Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
 
     // get output of dataHashes sha256 into bytes to check against eContent
     component dataHashes_sha256_bytes[32];
@@ -47,7 +49,7 @@ template PassportVerifier(n, k) {
     }
 
     // hash eContentBytes
-    signal eContentSha[256] <== Sha256Bytes(104)(eContentBytes);
+    signal eContentSha[256] <== Sha256BytesStatic(104)(eContentBytes);
 
     // get output of eContentBytes sha256 into k chunks of n bits each
     var msg_len = (256 + n) \ n;

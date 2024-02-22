@@ -15,7 +15,7 @@ export enum SignatureAlgorithm {
   sha512WithRSAEncryption_65537 = 10
 }
 
-export const attributeToPosition = {
+export const attributeToPosition: { [key: string]: number[] } = {
   issuing_state: [2, 4],
   name: [5, 43],
   passport_number: [44, 52],
@@ -23,7 +23,9 @@ export const attributeToPosition = {
   date_of_birth: [57, 62],
   gender: [64, 64],
   expiry_date: [65, 70],
-}
+};
+
+export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 
 export const countryCodes = {
   "AFG": "Afghanistan",

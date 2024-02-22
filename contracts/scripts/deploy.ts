@@ -13,9 +13,12 @@ async function main() {
   const Formatter = await ethers.getContractFactory("Formatter");
   const formatter = await Formatter.deploy();
   await formatter.waitForDeployment();
-  await formatter.addCountryCodes(Object.entries(countryCodes));
-
   console.log(`Formatter deployed to ${formatter.target}`);
+  
+  const tx = await formatter.addCountryCodes(Object.entries(countryCodes));
+  await tx.wait();
+  console.log(`Country codes added`);
+
 
   const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
   const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);

@@ -1,0 +1,101 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        minSdkVersion 23
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        multiDexEnabled true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+
+
+
+    packagingOptions {
+        exclude 'META-INF/proguard/androidx-annotations.pro'
+        exclude 'META-INF/androidx.exifinterface_exifinterface.version'
+    }
+
+    buildFeatures {
+        viewBinding true
+    }
+    namespace 'example.jllarraz.com.passportreader'
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'com.google.android.material:material:1.8.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.5.2'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    // ML Kit dependencies
+    implementation 'com.google.android.gms:play-services-mlkit-text-recognition:18.0.2'
+
+    //NFC Passport
+    implementation 'org.jmrtd:jmrtd:0.7.35'
+    implementation 'com.madgag.spongycastle:prov:1.58.0.0'
+    implementation 'net.sf.scuba:scuba-sc-android:0.0.23'
+    implementation ('org.ejbca.cvc:cert-cvc:1.4.13'){
+        exclude group: 'org.bouncycastle', module: 'bcprov-jdk15on'
+    }
+
+    //WSQ
+    implementation 'com.github.mhshams:jnbis:2.0.2'
+
+    //Input data Validator
+    implementation 'com.mobsandgeeks:android-saripaar:2.0.3'
+
+    //DatatypeConverter
+    implementation 'commons-codec:commons-codec:1.13'
+
+    //Camera
+    implementation 'io.fotoapparat:fotoapparat:2.7.0'
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+
+    //RX
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.19'
+
+    //Annotations
+    implementation "org.androidannotations:androidannotations-api:4.4.0"
+
+    //OpenLDAP
+    //implementation 'com.unboundid:unboundid-ldapsdk:5.0.1@jar'
+
+    //OKHttp
+    implementation 'com.squareup.okhttp3:okhttp:4.4.0'
+    implementation "com.squareup.okhttp3:okhttp-urlconnection:4.4.0"
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.4.0'
+
+    //Retrofit
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-gson:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+}
+
+

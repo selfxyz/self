@@ -1,17 +1,18 @@
 import { describe } from 'mocha'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { hash, toUnsignedByte, bytesToBigDecimal, formatAndConcatenateDataHashes, formatMrz, splitToWords, formatSigAlg, bigIntToChunkedBytes } from '../../common/src/utils/utils'
+import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatMrz, splitToWords, formatSigAlg } from '../../common/src/utils/utils'
 import { groth16 } from 'snarkjs'
-import { DataHash, PassportData } from '../../common/src/utils/types'
-import { genSampleData } from '../../common/src/utils/passportData'
 import { buildPubkeyTree } from '../../common/src/utils/pubkeyTree'
-import { attributeToPosition, SignatureAlgorithm } from '../../common/src/constants/constants'
+import { MAX_DATAHASHES_LEN, attributeToPosition, SignatureAlgorithm } from '../../common/src/constants/constants'
 import { poseidon12 } from "poseidon-lite"
 import { IMT } from '@zk-kit/imt'
-import fs from 'fs'
+import { genSampleData } from '../../common/src/utils/passportData'
+import { bigIntToChunkedBytes, sha256Pad } from '@zk-email/helpers'
 import path from 'path'
-const wasm_tester = require("../node_modules/circom_tester").wasm;
+import fs from 'fs'
+import { PassportData } from '../../common/src/utils/types'
+const wasm_tester = require("circom_tester").wasm;
 
 chai.use(chaiAsPromised)
 
@@ -41,12 +42,15 @@ describe('Circuit tests', function () {
     tree = buildPubkeyTree(pubkeys);
 
     const formattedMrz = formatMrz(passportData.mrz);
-    const mrzHash = hash(formatMrz(passportData.mrz));
-    const concatenatedDataHashes = formatAndConcatenateDataHashes(
-      mrzHash,
-      passportData.dataGroupHashes as DataHash[],
-    );
-    
+
+    const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
+    console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
+
+    assert(
+      arraysAreEqual(passportData.eContent.slice(72, 72 + 32), concatenatedDataHashesHashDigest),
+      'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
+    )
+
     const reveal_bitmap = Array(88).fill('1');
 
     const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
@@ -63,9 +67,16 @@ describe('Circuit tests', function () {
     // console.log("proof", proof)
     // console.log("verifyProof", tree.verifyProof(proof))
 
+    const [messagePadded, messagePaddedLen] = sha256Pad(
+      new Uint8Array(passportData.dataGroupHashes),
+      MAX_DATAHASHES_LEN
+    );
+
     inputs = {
       mrz: formattedMrz.map(byte => String(byte)),
-      dataHashes: concatenatedDataHashes.map(toUnsignedByte).map(byte => String(byte)),
+      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
+      dataHashes: Array.from(messagePadded).map((x) => x.toString()),
+      datahashes_padded_length: messagePaddedLen.toString(),
       eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
       signature: splitToWords(
         BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
@@ -81,9 +92,9 @@ describe('Circuit tests', function () {
       pathIndices: proof.pathIndices,
       siblings: proof.siblings.flat(),
       root: tree.root,
-      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
       address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
     }
+    
     console.log('inputs', inputs)
   })
   
@@ -256,4 +267,19 @@ describe('Circuit tests', function () {
       });
     });
   })
+
+  // use these tests with .only to check changes without rebuilding the zkey
+  describe('Circom tester tests', function() {
+    it('should prove and verify with valid inputs', async function () {
+      const circuit = await wasm_tester(
+        path.join(__dirname, `../circuits/proof_of_passport.circom`),
+        { include: ["node_modules"] },
+      );
+      const w = await circuit.calculateWitness(inputs);
+      await circuit.checkConstraints(w);
+    })
+  })
+
 })
+
+

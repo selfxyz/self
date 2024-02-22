@@ -1,13 +1,14 @@
 pragma circom 2.1.5;
 
-include "../node_modules/circomlib/circuits/poseidon.circom";
-include "./helpers/extract.circom";
+include "circomlib/circuits/poseidon.circom";
+include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
 include "./merkle_tree/tree.circom";
 
-template ProofOfPassport(n, k, nLevels, pubkeySize) {
+template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
-    signal input dataHashes[297];
+    signal input dataHashes[max_datahashes_bytes];
+    signal input datahashes_padded_length;
     signal input eContentBytes[104];
     signal input signature[k];
 
@@ -58,9 +59,10 @@ template ProofOfPassport(n, k, nLevels, pubkeySize) {
 
 
     // Verify passport
-    component PV = PassportVerifier(n, k);
+    component PV = PassportVerifier(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dataHashes <== dataHashes;
+    PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== eContentBytes;
     PV.pubkey <== pubkey;
     PV.signature <== signature;
@@ -77,16 +79,12 @@ template ProofOfPassport(n, k, nLevels, pubkeySize) {
     signal output nullifier <== signature[0] * 2**64 + signature[1];
 }
 
-component main { public [ address, root ] } = ProofOfPassport(64, 32, 16, 32);
+component main { public [ address, root ] } = ProofOfPassport(64, 32, 320, 16, 32);
 
 // Us:
-// 1 + 3 + 1 + 1
-// nullifier + reveal_packed + address + root
+// 11 + 1 + 3 + 1
+// pubkey + nullifier + reveal_packed + address
 
-// Them:
-// 1 + 3 + 1
-// pubkey_hash + reveal_twitter_packed + address
-
-
-
-
+// Goal:
+// 1 + 1 + 3 + 1
+// pubkey_hash + nullifier + reveal_packed + address
