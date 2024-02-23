@@ -15,7 +15,7 @@ import {
 } from '@env';
 import { PassportData } from '../common/src/utils/types';
 import { revealBitmapFromMapping } from '../common/src/utils/revealBitmap';
-import { jmrtdToStandardName } from '../common/src/utils/formatNames';
+import { toStandardName } from '../common/src/utils/formatNames';
 import { generateCircuitInputs } from '../common/src/utils/generateInputs';
 import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
@@ -147,7 +147,7 @@ function App(): JSX.Element {
 
     const passportData = {
       mrz,
-      signatureAlgorithm,
+      signatureAlgorithm: toStandardName(signatureAlgorithm),
       pubKey: {
         modulus: modulus,
       },
@@ -189,7 +189,7 @@ function App(): JSX.Element {
 
     const passportData: PassportData = {
       mrz: mrz.replace(/\n/g, ''),
-      signatureAlgorithm: jmrtdToStandardName(signatureAlgorithm),
+      signatureAlgorithm: toStandardName(signatureAlgorithm),
       pubKey: {
         modulus: modulus,
         curveName: curveName,

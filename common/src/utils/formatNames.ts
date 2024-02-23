@@ -1,9 +1,10 @@
-// we use the sig alg / hash function names returned in modulus extractor, the iOS module and the OID reference
+// we use the sig alg / hash function names returned in modulus extractor and the OID reference
 // Example for https://oidref.com/1.2.840.113549.1.1.11: sha256WithRSAEncryption
 // the jmrtd lib returns other names (ex: SHA256withRSA), see this page: https://github.com/E3V3A/JMRTD/blob/master/jmrtd/src/org/jmrtd/lds/SODFile.java
+// Sometimesm, iOS module too (ex rsaEncryption instead of sha256WithRSAEncryption) 
 // So we translate here
 
-export function jmrtdToStandardName(jmrtdName: string): string {
+export function toStandardName(jmrtdName: string): string {
   switch (jmrtdName) {
     // hash functions
     case "SHA-1":
@@ -52,6 +53,8 @@ export function jmrtdToStandardName(jmrtdName: string): string {
       return "rsassa-pss";
     case "SHA256withRSAandMGF1":
       return "id-mgf1"
+    case "rsaEncryption":
+      return "sha256WithRSAEncryption"; // added this one for iOS
     default:
       console.log(`JMRTD sig alg or hash function ${jmrtdName} not found in mapping, returning it as it is`);
       return jmrtdName;
