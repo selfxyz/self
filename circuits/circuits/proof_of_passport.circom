@@ -22,7 +22,7 @@ template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input reveal_bitmap[88];
     signal input address;
 
-    // Converting pub_key (modulus) into 11 chunks of 192 bits, assuming original n, k are 64 and 32.
+    // Converting pubkey (modulus) into 11 chunks of 192 bits, assuming original n, k are 64 and 32.
     // This is because Poseidon circuit only supports an array of 16 elements.
     var k3_chunked_size = 11;  // Since ceil(32 / 3) in integer division is 11
     signal pubkey_hash_input[k3_chunked_size];

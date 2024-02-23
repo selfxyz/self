@@ -3,26 +3,26 @@ import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 import { getPassportData } from "../../common/src/utils/passportData";
 import { buildPubkeyTree } from "../../common/src/utils/pubkeyTree";
-import { MAX_DATAHASHES_LEN, attributeToPosition, SignatureAlgorithm, countryCodes } from "../../common/src/constants/constants";
-import { formatMrz, splitToWords, toUnsignedByte, hash, bytesToBigDecimal, formatSigAlg, bigIntToChunkedBytes, formatRoot } from "../../common/src/utils/utils";
+import { countryCodes } from "../../common/src/constants/constants";
+import { formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
-import { poseidon12 } from "poseidon-lite"
 import axios from 'axios';
 import { DataHexString } from "ethers/lib.commonjs/utils/data";
-import { sha256Pad } from "../../common/src/utils/sha256Pad";
-const fs = require('fs');
-
+import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
+import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
+import fs from 'fs';
 
 describe("Proof of Passport", function () {
   this.timeout(0);
 
-  let passportData, pubkeys, proof, tree, inputs, publicSignals, revealChars, root: DataHexString, callData: any;
+  let passportData, pubkeys, proof, inputs, publicSignals, revealChars, root: DataHexString, callData: any;
 
   before(async function generateProof() {
-    pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
     passportData = getPassportData();
 
+    pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
+  
     // for testing purposes
     pubkeys = pubkeys.slice(0, 100);
     pubkeys.push({
@@ -31,10 +31,8 @@ describe("Proof of Passport", function () {
       modulus: passportData.pubKey.modulus,
       exponent: passportData.pubKey.exponent
     })
-    
-    tree = buildPubkeyTree(pubkeys);
-    
-    const formattedMrz = formatMrz(passportData.mrz);
+
+    root = buildPubkeyTree(pubkeys).root
 
     const attributeToReveal = {
       issuing_state: true,
@@ -46,50 +44,16 @@ describe("Proof of Passport", function () {
       expiry_date: true,
     }
 
-    const reveal_bitmap = Array(88).fill('0');
+    const reveal_bitmap = revealBitmapFromMapping(attributeToReveal)
 
-    const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
-    const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
-    const leaf = poseidon12([SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm], ...pubkeyChunked])
+    const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"; // hardhat account 1
 
-    const index = tree.indexOf(leaf)
-    const mkProof = tree.createProof(index)
-    root = tree.root
-
-    Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-      if (reveal) {
-        const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        reveal_bitmap.fill('1', start, end + 1);
-      }
-    });
-
-    const [messagePadded, messagePaddedLen] = sha256Pad(
-      new Uint8Array(passportData.dataGroupHashes),
-      MAX_DATAHASHES_LEN
+    inputs = generateCircuitInputs(
+      passportData,
+      pubkeys,
+      reveal_bitmap,
+      address
     );
-
-    inputs = {
-      mrz: formattedMrz.map(byte => String(byte)),
-      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from(messagePadded).map((x) => x.toString()),
-      datahashes_padded_length: messagePaddedLen.toString(),
-      eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
-      pubkey: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
-        BigInt(64),
-        BigInt(32)
-      ),
-      signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-        BigInt(64),
-        BigInt(32)
-      ),
-      signatureAlgorithm: SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm],
-      pathIndices: mkProof.pathIndices,
-      siblings: mkProof.siblings.flat(),
-      root: root,
-      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8", // hardhat account 1
-    }
 
     console.log('generating proof...');
     ({ proof, publicSignals } = await groth16.fullProve(
@@ -102,7 +66,7 @@ describe("Proof of Passport", function () {
 
     revealChars = publicSignals.slice(0, 88).map((byte: string) => String.fromCharCode(parseInt(byte, 10))).join('');
 
-    const vKey = JSON.parse(fs.readFileSync("../circuits/build/proof_of_passport_vkey.json"));
+    const vKey = JSON.parse(fs.readFileSync("../circuits/build/proof_of_passport_vkey.json") as unknown as string);
     const verified = await groth16.verify(
       vKey,
       publicSignals,

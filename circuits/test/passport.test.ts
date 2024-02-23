@@ -1,14 +1,10 @@
 import { describe } from 'mocha'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
-import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatMrz, splitToWords, formatSigAlg } from '../../common/src/utils/utils'
 import { groth16 } from 'snarkjs'
-import { buildPubkeyTree } from '../../common/src/utils/pubkeyTree'
-import { MAX_DATAHASHES_LEN, attributeToPosition, SignatureAlgorithm } from '../../common/src/constants/constants'
-import { poseidon12 } from "poseidon-lite"
-import { IMT } from '@zk-kit/imt'
+import { attributeToPosition } from '../../common/src/constants/constants'
 import { genSampleData } from '../../common/src/utils/passportData'
-import { bigIntToChunkedBytes, sha256Pad } from '@zk-email/helpers'
+import { generateCircuitInputs } from '../../common/src/utils/generateInputs'
 import path from 'path'
 import fs from 'fs'
 import { PassportData } from '../../common/src/utils/types'
@@ -22,14 +18,14 @@ describe('Circuit tests', function () {
   this.timeout(0)
 
   let inputs: any;
-  let tree: IMT;
   let pubkeys: any[];
   let passportData: PassportData;
 
   this.beforeAll(async () => {
-    pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
     passportData = genSampleData();
 
+    pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
+  
     // for testing purposes
     pubkeys = pubkeys.slice(0, 100);
     pubkeys.push({
@@ -39,78 +35,21 @@ describe('Circuit tests', function () {
       exponent: passportData.pubKey.exponent
     })
 
-    tree = buildPubkeyTree(pubkeys);
-
-    const formattedMrz = formatMrz(passportData.mrz);
-
-    const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
-    console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
-
-    assert(
-      arraysAreEqual(passportData.eContent.slice(72, 72 + 32), concatenatedDataHashesHashDigest),
-      'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
-    )
-
     const reveal_bitmap = Array(88).fill('1');
+    const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
 
-    const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
-    const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
-    const leaf = poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
-
-    // console.log('leaf', leaf)
-
-    const index = tree.indexOf(leaf)
-
-    // console.log('index', index)
-
-    const proof = tree.createProof(index)
-    // console.log("proof", proof)
-    // console.log("verifyProof", tree.verifyProof(proof))
-
-    const [messagePadded, messagePaddedLen] = sha256Pad(
-      new Uint8Array(passportData.dataGroupHashes),
-      MAX_DATAHASHES_LEN
+    inputs = generateCircuitInputs(
+      passportData,
+      pubkeys,
+      reveal_bitmap,
+      address
     );
 
-    inputs = {
-      mrz: formattedMrz.map(byte => String(byte)),
-      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from(messagePadded).map((x) => x.toString()),
-      datahashes_padded_length: messagePaddedLen.toString(),
-      eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
-      signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-        BigInt(64),
-        BigInt(32)
-      ),
-      signatureAlgorithm: SignatureAlgorithm[sigAlgFormatted],
-      pubkey: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
-        BigInt(64),
-        BigInt(32)
-      ),
-      pathIndices: proof.pathIndices,
-      siblings: proof.siblings.flat(),
-      root: tree.root,
-      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8",
-    }
-    
     console.log('inputs', inputs)
   })
   
   describe('Proof', function() {
     it('should prove and verify with valid inputs', async function () {
-      // testing with wasm_tester
-      const circuit = await wasm_tester(
-        path.join(__dirname, "../circuits/proof_of_passport.circom"),
-        { include: ["node_modules"] },
-      );
-      const w = await circuit.calculateWitness(inputs);
-      console.log("witness calculated");
-      await circuit.checkConstraints(w);
-      console.log("finished checking constraints");
-  
-      // proving
       const { proof: zk_proof, publicSignals } = await groth16.fullProve(
         inputs,
         "build/proof_of_passport_js/proof_of_passport.wasm",
