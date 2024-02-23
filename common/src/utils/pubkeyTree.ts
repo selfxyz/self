@@ -45,9 +45,8 @@ export function buildPubkeyTree(pubkeys: any[]) {
       } catch(err) {
         console.log('err', err, i, sigAlgFormatted, pubkey)
       }
-
     } else {
-      console.log('no leaf for this weird signature:', i, sigAlgFormatted)
+      // console.log('no leaf for this weird signature:', i, sigAlgFormatted)
       continue
     }
 

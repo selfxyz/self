@@ -21,14 +21,13 @@ export function generateCircuitInputs(passportData: PassportData, pubkeys: any[]
   const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
   const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
   const leaf = poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
-  // console.log('leaf', leaf)
 
-  const index = tree.indexOf(leaf)
-  // console.log('index', index)
+  const index = tree.indexOf(leaf) // this index is not the index in publicKeysParsed.json, but the index in the tree
+  console.log(`pubkey found in the registry.`)
+  console.log(`leaf: ${leaf}`)
 
   const proof = tree.createProof(index)
-  // console.log("proof", proof)
-  // console.log("verifyProof", tree.verifyProof(proof))
+  console.log("verifyProof", tree.verifyProof(proof))
 
   const [messagePadded, messagePaddedLen] = sha256Pad(
     new Uint8Array(passportData.dataGroupHashes),

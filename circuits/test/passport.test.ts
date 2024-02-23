@@ -3,7 +3,7 @@ import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { groth16 } from 'snarkjs'
 import { attributeToPosition } from '../../common/src/constants/constants'
-import { genSampleData } from '../../common/src/utils/passportData'
+import { getPassportData } from '../../common/src/utils/passportData'
 import { generateCircuitInputs } from '../../common/src/utils/generateInputs'
 import path from 'path'
 import fs from 'fs'
@@ -22,18 +22,18 @@ describe('Circuit tests', function () {
   let passportData: PassportData;
 
   this.beforeAll(async () => {
-    passportData = genSampleData();
+    passportData = getPassportData();
 
     pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
-  
-    // for testing purposes
-    pubkeys = pubkeys.slice(0, 100);
-    pubkeys.push({
-      signatureAlgorithm: passportData.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: passportData.pubKey.modulus,
-      exponent: passportData.pubKey.exponent
-    })
+
+    // Uncomment to add the pubkey of the passportData to the registry even if it's not there. For testing purposes.
+    // pubkeys = pubkeys.slice(0, 100);
+    // pubkeys.push({
+    //   signatureAlgorithm: passportData.signatureAlgorithm,
+    //   issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+    //   modulus: passportData.pubKey.modulus,
+    //   exponent: passportData.pubKey.exponent
+    // })
 
     const reveal_bitmap = Array(88).fill('1');
     const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
