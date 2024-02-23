@@ -1,9 +1,14 @@
 import { ethers } from "hardhat";
 import { countryCodes } from "../../common/src/constants/constants";
+import { buildPubkeyTree } from "../../common/src/utils/pubkeyTree";
+import { formatRoot } from "../../common/src/utils/utils";
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
+  const pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
+  const root = formatRoot(buildPubkeyTree(pubkeys).root)
+
   const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
   await verifier.waitForDeployment();
@@ -19,9 +24,13 @@ async function main() {
   await tx.wait();
   console.log(`Country codes added`);
 
+  const Registry = await ethers.getContractFactory("Registry");
+  const registry = await Registry.deploy(root);
+  await registry.waitForDeployment();
+  console.log(`Registry deployed to ${registry.target}`);
 
   const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
+  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, registry.target);
   await proofOfPassport.waitForDeployment();
 
   console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);

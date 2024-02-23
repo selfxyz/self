@@ -60,7 +60,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     try {
       console.log('Downloading file...')
       const result = await NativeModules.RNPassportReader.downloadFile(
-        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final_dynamic_dg_support.arkzkey',
+        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final_merkle_proof.arkzkey',
         fileName
       );
       console.log("Download successful");

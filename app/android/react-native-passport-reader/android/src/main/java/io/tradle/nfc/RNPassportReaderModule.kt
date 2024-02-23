@@ -639,7 +639,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         datahashes_padded_length: String,
         eContentBytes: List<String>,
         signature: List<String>,
+        signature_algorithm: String,
         pubkey: List<String>,
+        path_indices: List<String>,
+        siblings: List<String>,
+        root: String,
         address: String,
         zkeypath: String
     ): String
@@ -654,7 +658,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         val datahashes_padded_length = inputs.getString("datahashes_padded_length") ?: ""
         val e_content_bytes = inputs.getArray("eContentBytes")?.toArrayList()?.map { it as String } ?: listOf()
         val signature = inputs.getArray("signature")?.toArrayList()?.map { it as String } ?: listOf()
+        val signature_algorithm = inputs.getString("signatureAlgorithm") ?: ""
         val pubkey = inputs.getArray("pubkey")?.toArrayList()?.map { it as String } ?: listOf()
+        val path_indices = inputs.getArray("pathIndices")?.toArrayList()?.map { it as String } ?: listOf()
+        val siblings = inputs.getArray("siblings")?.toArrayList()?.map { it as String } ?: listOf()
+        val root = inputs.getString("root") ?: ""
         val address = inputs.getString("address") ?: ""
         
         val resultFromProof = provePassport(
@@ -664,7 +672,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             datahashes_padded_length,
             e_content_bytes,
             signature,
+            signature_algorithm,
             pubkey,
+            path_indices,
+            siblings,
+            root,
             address,
             zkeypath
         )

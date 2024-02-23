@@ -4,7 +4,8 @@ import { IMT } from '@zk-kit/imt'
 import { bigIntToChunkedBytes, formatSigAlg } from "./utils";
 
 export function buildPubkeyTree(pubkeys: any[]) {
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0) // 0 as zerovalue
+  let leaves: bigint[] = []
+  let startTime = performance.now();
 
   for(let i = 0; i < pubkeys.length; i++) {
     const pubkey = pubkeys[i]
@@ -50,7 +51,11 @@ export function buildPubkeyTree(pubkeys: any[]) {
       continue
     }
 
-    tree.insert(leaf)
+    leaves.push(leaf)
   }
+
+  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2, leaves)
+  console.log('pubkey tree built in', performance.now() - startTime, 'ms')
+
   return tree
 }

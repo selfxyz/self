@@ -14,22 +14,17 @@ import {
   DEFAULT_DOE
 } from '@env';
 import { PassportData } from '../common/src/utils/types';
-import { AWS_ENDPOINT, MAX_DATAHASHES_LEN } from '../common/src/constants/constants';
+import { revealBitmapFromMapping } from '../common/src/utils/revealBitmap';
+import { jmrtdToStandardName } from '../common/src/utils/formatNames';
+import { generateCircuitInputs } from '../common/src/utils/generateInputs';
+import { AWS_ENDPOINT } from '../common/src/constants/constants';
 import {
-  hash,
-  toUnsignedByte,
-  bytesToBigDecimal,
-  formatMrz,
-  splitToWords,
-  hexStringToSignedIntArray,
   formatProofIOS,
   formatInputsIOS
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
-import { sha256Pad } from '../common/src/utils/sha256Pad';
-
 import "@ethersproject/shims"
-import { ethers, ZeroAddress } from "ethers";
+import { ethers } from "ethers";
 import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
@@ -40,18 +35,9 @@ import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 global.Buffer = Buffer;
+import pubkeys from '../common/pubkeys/publicKeysParsed.json';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
-
-const attributeToPosition = {
-  issuing_state: [2, 5],
-  name: [5, 44],
-  passport_number: [44, 52],
-  nationality: [54, 57],
-  date_of_birth: [57, 63],
-  gender: [64, 65],
-  expiry_date: [65, 71],
-}
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -148,7 +134,6 @@ function App(): JSX.Element {
 
     const cert = forge.pki.certificateFromPem(pem);
     const publicKey = cert.publicKey;
-    console.log('publicKey', publicKey)
 
     const modulus = (publicKey as any).n.toString(10);
 
@@ -175,9 +160,9 @@ function App(): JSX.Element {
     console.log('mrz', passportData.mrz);
     console.log('signatureAlgorithm', passportData.signatureAlgorithm);
     console.log('pubKey', passportData.pubKey);
-    console.log('dataGroupHashes', passportData.dataGroupHashes);
-    console.log('eContent', passportData.eContent);
-    console.log('encryptedDigest', passportData.encryptedDigest);
+    console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
+    console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
+    console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
     console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     setPassportData(passportData);
@@ -204,7 +189,7 @@ function App(): JSX.Element {
 
     const passportData: PassportData = {
       mrz: mrz.replace(/\n/g, ''),
-      signatureAlgorithm: signatureAlgorithm,
+      signatureAlgorithm: jmrtdToStandardName(signatureAlgorithm),
       pubKey: {
         modulus: modulus,
         curveName: curveName,
@@ -293,69 +278,38 @@ function App(): JSX.Element {
   }
 
   const handleProve = async (path: string) => {
-    setStep(Steps.GENERATING_PROOF);
     if (passportData === null) {
       console.log('passport data is null');
       return;
     }
-
+    setStep(Steps.GENERATING_PROOF);
     setGeneratingProof(true)
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    // 1. TODO check signature to make sure the proof will work
+    // TODO check circuit to make sure the proof will work
 
-    // 2. Format all the data as inputs for the circuit
-    const formattedMrz = formatMrz(passportData.mrz);
+    const reveal_bitmap = revealBitmapFromMapping(disclosure);
 
-    const reveal_bitmap = Array.from({ length: 88 }, (_) => '0');
-
-    for (const attribute in disclosure) {
-      if (disclosure[attribute as keyof typeof disclosure]) {
-        const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        for (let i = start; i <= end; i++) {
-          reveal_bitmap[i] = '1';
-        }
-      }
-    }
-
-    // if (!["SHA256withRSA", "sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
+    // if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
     //   console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
     //   setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
     //   return;
     // }
 
-    console.log('passportData.dataGroupHashes', passportData.dataGroupHashes);
-
-    const dataGroupHashesUint8Array = new Uint8Array(passportData.dataGroupHashes);
-    
-    console.log('dataGroupHashesUint8Array', dataGroupHashesUint8Array);
-
-    const [messagePadded, messagePaddedLen] = sha256Pad(
-      dataGroupHashesUint8Array,
-      MAX_DATAHASHES_LEN
+    const inputs = generateCircuitInputs(
+      passportData,
+      pubkeys as string[],
+      reveal_bitmap,
+      address
     );
-    console.log('messagePadded', messagePadded);
 
-    const inputs = {
-      mrz: Array.from(formattedMrz).map(byte => String(byte)),
-      reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-      dataHashes: Array.from(messagePadded).map((x) => (x as number).toString()),
-      datahashes_padded_length: messagePaddedLen.toString(),
-      eContentBytes: Array.from(passportData.eContent.map(toUnsignedByte)).map(byte => String(byte)),
-      signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-        BigInt(64),
-        BigInt(32)
-      ),
-      pubkey: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
-        BigInt(64),
-        BigInt(32)
-      ),
-      address,
-    }
-
-    console.log('inputs', inputs)
+    Object.keys(inputs).forEach((key) => {
+      if (Array.isArray(inputs[key as keyof typeof inputs])) {
+        console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
+      } else {
+        console.log(key, inputs[key as keyof typeof inputs]);
+      }
+    });
 
     const start = Date.now();
     if (Platform.OS === 'android') {
@@ -410,7 +364,9 @@ function App(): JSX.Element {
       const response = await NativeModules.Prover.runProveAction({
         ...inputs,
         datahashes_padded_length: [inputs.datahashes_padded_length.toString()], // wrap everything in arrays for bindings 
-        address: [BigInt(address).toString()]
+        signatureAlgorithm: [inputs.signatureAlgorithm],
+        root: [inputs.root],
+        address: [BigInt(address).toString()],
       })
       console.log('proof response:', response)
       const parsedResponse = JSON.parse(response)

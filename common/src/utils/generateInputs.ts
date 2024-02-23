@@ -18,7 +18,7 @@ export function generateCircuitInputs(passportData: PassportData, pubkeys: any[]
     'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
   )
 
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent)
+  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent ?? "65537")
   const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
   const leaf = poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
 
@@ -45,15 +45,15 @@ export function generateCircuitInputs(passportData: PassportData, pubkeys: any[]
       BigInt(64),
       BigInt(32)
     ),
-    signatureAlgorithm: SignatureAlgorithm[sigAlgFormatted],
+    signatureAlgorithm: SignatureAlgorithm[sigAlgFormatted].toString(),
     pubkey: splitToWords(
       BigInt(passportData.pubKey.modulus as string),
       BigInt(64),
       BigInt(32)
     ),
-    pathIndices: proof.pathIndices,
-    siblings: proof.siblings.flat(),
-    root: tree.root,
+    pathIndices: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(index => index.toString()),
+    root: tree.root.toString(),
     address,
   }
 }

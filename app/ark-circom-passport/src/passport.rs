@@ -104,7 +104,11 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
     datahashes_padded_length: JString,
     e_content_bytes: JObject,
     signature: JObject,
+    signature_algorithm: JString,
     pubkey: JObject,
+    path_indices: JObject,
+    siblings: JObject,
+    root: JString,
     address: JString,
     zkeypath: JString,
 ) -> jstring {
@@ -117,7 +121,11 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         datahashes_padded_length: JString,
         e_content_bytes: JObject,
         signature: JObject,
+        signature_algorithm: JString,
         pubkey: JObject,
+        path_indices: JObject,
+        siblings: JObject,
+        root: JString,
         address: JString,
         zkeypath: JString,
         env: JNIEnv
@@ -137,6 +145,11 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         let e_content_bytes_vec: Vec<String> = java_arraylist_to_rust_vec(&env, e_content_bytes)?;
         let signature_vec: Vec<String> = java_arraylist_to_rust_vec(&env, signature)?;
         let pubkey_vec: Vec<String> = java_arraylist_to_rust_vec(&env, pubkey)?;
+        let path_indices_vec: Vec<String> = java_arraylist_to_rust_vec(&env, path_indices)?;
+        let siblings_vec: Vec<String> = java_arraylist_to_rust_vec(&env, siblings)?;
+
+        let signature_algorithm_str: String = env.get_string(signature_algorithm)?.into();
+        let root_str: String = env.get_string(root)?.into();
         let address_str: String = env.get_string(address)?.into();
         let datahashes_padded_length_str: String = env.get_string(datahashes_padded_length)?.into();
 
@@ -145,7 +158,11 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         log::error!("PROOF OF PASSPORT ---- data_hashes_vec {:?}", data_hashes_vec);
         log::error!("PROOF OF PASSPORT ---- e_content_bytes_vec {:?}", e_content_bytes_vec);
         log::error!("PROOF OF PASSPORT ---- signature_vec {:?}", signature_vec);
+        log::error!("PROOF OF PASSPORT ---- signature_algorithm_str {:?}", signature_algorithm_str);
         log::error!("PROOF OF PASSPORT ---- pubkey_vec {:?}", pubkey_vec);
+        log::error!("PROOF OF PASSPORT ---- path_indices_vec {:?}", path_indices_vec);
+        log::error!("PROOF OF PASSPORT ---- siblings_vec {:?}", siblings_vec);
+        log::error!("PROOF OF PASSPORT ---- root_str {:?}", root_str);
         log::error!("PROOF OF PASSPORT ---- address_str {:?}", address_str);
         log::error!("PROOF OF PASSPORT ---- datahashes_padded_length_str {:?}", datahashes_padded_length_str);
 
@@ -162,12 +179,21 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         parse_and_insert(&mut inputs, "eContentBytes", e_content_bytes_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "signature", signature_vec.iter().map(AsRef::as_ref).collect());
         parse_and_insert(&mut inputs, "pubkey", pubkey_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "pathIndices", path_indices_vec.iter().map(AsRef::as_ref).collect());
+        parse_and_insert(&mut inputs, "siblings", siblings_vec.iter().map(AsRef::as_ref).collect());
         
         let address_bigint = BigInt::from_bytes_be(Sign::Plus, &decode(&address_str[2..])?);
         inputs.insert("address".to_string(), vec![address_bigint]);
+
         let datahashes_padded_length_i32 = datahashes_padded_length_str.parse::<i32>().expect("Failed to parse datahashes_padded_length to i32");
         let datahashes_padded_length_bigint = BigInt::from(datahashes_padded_length_i32);
         inputs.insert("datahashes_padded_length".to_string(), vec![datahashes_padded_length_bigint]);
+
+        let signature_algorithm_i32 = signature_algorithm_str.parse::<i32>().expect("Failed to parse signature_algorithm_str to i32");
+        let signature_algorithm_bigint = BigInt::from(signature_algorithm_i32);
+        inputs.insert("signature_algorithm".to_string(), vec![signature_algorithm_bigint]);
+        let root_bigint = BigInt::parse_bytes(root_str.as_bytes(), 10).unwrap();
+        inputs.insert("root".to_string(), vec![root_bigint]);
 
         println!("generating witness...");
         let now = Instant::now();
@@ -269,7 +295,11 @@ pub extern "C" fn Java_io_tradle_nfc_RNPassportReaderModule_provePassport(
         datahashes_padded_length,
         e_content_bytes,
         signature,
+        signature_algorithm,
         pubkey,
+        path_indices,
+        siblings,
+        root,
         address,
         zkeypath,
         env
