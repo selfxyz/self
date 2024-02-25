@@ -6,7 +6,7 @@ const fs = require('fs');
 const path = require('path');
 
 async function main() {
-  const pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
+  const pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/public_keys_parsed.json") as unknown as string)
   const root = formatRoot(buildPubkeyTree(pubkeys).root)
 
   const Verifier = await ethers.getContractFactory("Groth16Verifier");

@@ -2,37 +2,38 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 import { getPassportData } from "../../common/src/utils/passportData";
-import { buildPubkeyTree } from "../../common/src/utils/pubkeyTree";
-import { countryCodes } from "../../common/src/constants/constants";
+import { getLeaf } from "../../common/src/utils/pubkeyTree";
+import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
-import { DataHexString } from "ethers/lib.commonjs/utils/data";
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
+import { IMT } from "@zk-kit/imt";
+import { poseidon2 } from "poseidon-lite";
 
 describe("Proof of Passport", function () {
   this.timeout(0);
 
-  let passportData, pubkeys, proof, inputs, publicSignals, revealChars, root: DataHexString, callData: any;
+  let passportData, tree: IMT, proof, inputs, publicSignals, revealChars, callData: any;
 
   before(async function generateProof() {
     passportData = getPassportData();
 
-    pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
-  
-    // for testing purposes
-    pubkeys = pubkeys.slice(0, 100);
-    pubkeys.push({
+    const serializedTree = JSON.parse(fs.readFileSync("../common/pubkeys/serialized_tree.json") as unknown as string)
+    tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+    tree.setNodes(serializedTree)
+
+    // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
+    // Comment when testing with real passport data
+    tree.insert(getLeaf({
       signatureAlgorithm: passportData.signatureAlgorithm,
       issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
       modulus: passportData.pubKey.modulus,
       exponent: passportData.pubKey.exponent
-    })
-
-    root = buildPubkeyTree(pubkeys).root
+    }))
 
     const attributeToReveal = {
       issuing_state: true,
@@ -50,7 +51,7 @@ describe("Proof of Passport", function () {
 
     inputs = generateCircuitInputs(
       passportData,
-      pubkeys,
+      tree,
       reveal_bitmap,
       address
     );
@@ -98,7 +99,7 @@ describe("Proof of Passport", function () {
       console.log(`Formatter deployed to ${formatter.target}`);
 
       const Registry = await ethers.getContractFactory("Registry");
-      const registry = await Registry.deploy(formatRoot(root));
+      const registry = await Registry.deploy(formatRoot(tree.root));
       await registry.waitForDeployment();
 
       console.log(`Registry deployed to ${registry.target}`);

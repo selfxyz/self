@@ -17,7 +17,7 @@ import { PassportData } from '../common/src/utils/types';
 import { revealBitmapFromMapping } from '../common/src/utils/revealBitmap';
 import { toStandardName } from '../common/src/utils/formatNames';
 import { generateCircuitInputs } from '../common/src/utils/generateInputs';
-import { AWS_ENDPOINT } from '../common/src/constants/constants';
+import { AWS_ENDPOINT, TREE_DEPTH } from '../common/src/constants/constants';
 import {
   formatProofIOS,
   formatInputsIOS
@@ -29,13 +29,15 @@ import axios from 'axios';
 import groth16ExportSolidityCallData from './utils/snarkjs';
 import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
+import serializedTree from "./deployments/serialized_tree.json";
 import MainScreen from './src/screens/MainScreen';
 import { extractMRZInfo, Steps } from './src/utils/utils';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
+import { poseidon2 } from 'poseidon-lite';
+import { IMT } from '@zk-kit/imt';
 global.Buffer = Buffer;
-import pubkeys from '../common/pubkeys/publicKeysParsed.json';
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
@@ -296,9 +298,12 @@ function App(): JSX.Element {
     //   return;
     // }
 
+    const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+    tree.setNodes(serializedTree)
+
     const inputs = generateCircuitInputs(
       passportData,
-      pubkeys as string[],
+      tree,
       reveal_bitmap,
       address
     );

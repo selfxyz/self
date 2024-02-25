@@ -1,13 +1,11 @@
-import { poseidon12 } from "poseidon-lite";
 import { MAX_DATAHASHES_LEN, SignatureAlgorithm } from "../constants/constants";
-import { buildPubkeyTree } from "./pubkeyTree";
 import { assert, sha256Pad } from "./sha256Pad";
 import { PassportData } from "./types";
-import { arraysAreEqual, bigIntToChunkedBytes, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte } from "./utils";
+import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte } from "./utils";
+import { IMT } from "@zk-kit/imt";
+import { getLeaf } from "./pubkeyTree";
 
-export function generateCircuitInputs(passportData: PassportData, pubkeys: any[], reveal_bitmap: string[], address: string) {
-  const tree = buildPubkeyTree(pubkeys);
-
+export function generateCircuitInputs(passportData: PassportData, tree: IMT, reveal_bitmap: string[], address: string) {
   const formattedMrz = formatMrz(passportData.mrz);
 
   const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
@@ -18,13 +16,20 @@ export function generateCircuitInputs(passportData: PassportData, pubkeys: any[]
     'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
   )
 
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent ?? "65537")
-  const pubkeyChunked = bigIntToChunkedBytes(BigInt(passportData.pubKey.modulus as string), 192, 11);
-  const leaf = poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
+  console.log('passportData.pubKey.exponent', passportData.pubKey.exponent)
+  const sigAlgFormatted = formatSigAlg(
+    passportData.signatureAlgorithm,
+    passportData.pubKey.exponent
+  )
 
-  const index = tree.indexOf(leaf) // this index is not the index in publicKeysParsed.json, but the index in the tree
-  console.log(`pubkey found in the registry.`)
-  console.log(`leaf: ${leaf}`)
+  const leaf = getLeaf({
+    signatureAlgorithm: passportData.signatureAlgorithm,
+    ...passportData.pubKey,
+  }).toString()
+  console.log('leaf', leaf)
+  
+  const index = tree.indexOf(leaf) // this index is not the index in public_keys_parsed.json, but the index in the tree
+  console.log(`Index of pubkey in the registry: ${index}`)
 
   const proof = tree.createProof(index)
   console.log("verifyProof", tree.verifyProof(proof))

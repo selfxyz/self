@@ -3205,6 +3205,10 @@
   resolved "https://registry.yarnpkg.com/@ungap/structured-clone/-/structured-clone-1.2.0.tgz#756641adb587851b5ccb3e095daf27ae581c8406"
   integrity sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==
 
+"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
+  version "2.0.0-beta.1"
+  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
+
 abort-controller@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/abort-controller/-/abort-controller-3.0.0.tgz#eaf54d53b62bae4138e809ca225c8439a6efb392"
@@ -7249,6 +7253,11 @@ popmotion@11.0.3:
     hey-listen "^1.0.8"
     style-value-types "5.0.0"
     tslib "^2.1.0"
+
+poseidon-lite@^0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/poseidon-lite/-/poseidon-lite-0.2.0.tgz#dbc242ebd9c10c32d507a533fa497231d168fd72"
+  integrity sha512-vivDZnGmz8W4G/GzVA72PXkfYStjilu83rjjUfpL4PueKcC8nfX6hCPh2XhoC5FBgC6y0TA3YuUeUo5YCcNoig==
 
 prelude-ls@^1.2.1:
   version "1.2.1"

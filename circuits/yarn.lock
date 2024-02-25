@@ -451,10 +451,13 @@
     commander "^11.0.0"
     snarkjs "^0.7.0"
 
-"@zk-kit/imt@^2.0.0-beta":
-  version "2.0.0-beta"
-  resolved "https://registry.yarnpkg.com/@zk-kit/imt/-/imt-2.0.0-beta.tgz#7bafd6c2d211dd6f153f97378c2993b2248c76a9"
-  integrity sha512-Nu0eomkc+EkjSouna/b80B2wlvq1Ng+ydfFZUjJZ7swJdwV3bmq/katrSYA4cOohtornl1CDQMhZwAH7yo5U+Q==
+"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
+  version "2.0.0-beta.1"
+  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
+
+"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542":
+  version "2.0.0-beta.1"
+  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542#ade4ca8ba82e2a4d54889bcda143c81f82d61580"
 
 addressparser@^1.0.1:
   version "1.0.1"

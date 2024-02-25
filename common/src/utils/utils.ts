@@ -172,7 +172,12 @@ export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
 }
 
-export function formatSigAlg(sigAlg: string, exponent: string | undefined) {
+export function formatSigAlg(
+  sigAlg: string,
+  exponent: string = "65537"
+  // remove the default 65537 once NFC reading always returns exponent
+  // and when ecdsa parameters are managed
+) {  
   sigAlg = sigAlg.replace(/-/g, '_')
   return exponent ? `${sigAlg}_${exponent}` : sigAlg
 }

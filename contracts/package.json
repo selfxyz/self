@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@openzeppelin/contracts": "^4.9.2",
-    "@zk-kit/imt": "^2.0.0-beta",
+    "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
     "axios": "^1.6.2",
     "dotenv": "^16.3.1",
     "hardhat-contract-sizer": "^2.10.0",

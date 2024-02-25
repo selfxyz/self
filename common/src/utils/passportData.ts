@@ -72,7 +72,7 @@ export function genSampleData(): PassportData {
 }
 
 export function getPassportData(): PassportData {
-  const passportDataPath = path.join(__dirname, '../../inputs/passportData.json');
+  const passportDataPath = path.join(__dirname, '../../inputs/passportData_flo.json');
 
   if (fs.existsSync(passportDataPath)) {
     return require(passportDataPath);

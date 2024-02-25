@@ -4,10 +4,11 @@ import chaiAsPromised from 'chai-as-promised'
 import { groth16 } from 'snarkjs'
 import fs from 'fs'
 import { IMT } from "@zk-kit/imt"
-import { poseidon12, poseidon2, poseidon8 } from "poseidon-lite"
+import { poseidon12, poseidon2 } from "poseidon-lite"
 import { genSampleData } from '../../common/src/utils/passportData'
 import { bigIntToChunkedBytes, formatSigAlg } from '../../common/src/utils/utils'
-import { buildPubkeyTree } from '../../common/src/utils/pubkeyTree'
+import { getLeaf } from '../../common/src/utils/pubkeyTree'
+import { TREE_DEPTH } from '../../common/src/constants/constants'
 
 chai.use(chaiAsPromised)
 
@@ -32,7 +33,6 @@ describe('Merkle tree tests', function () {
   this.timeout(0)
 
   let tree: IMT;
-  let pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/publicKeysParsed.json") as unknown as string)
   const passportData = genSampleData();
 
   this.beforeAll(async () => {
@@ -52,18 +52,18 @@ describe('Merkle tree tests', function () {
 
     console.log('passportData.pubKey', passportData.pubKey)
 
-    if (DEV) {
-      pubkeys = pubkeys.slice(0, 100);
+    const serializedTree = JSON.parse(fs.readFileSync("../common/pubkeys/serialized_tree.json") as unknown as string)
+    tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+    tree.setNodes(serializedTree)
 
-      pubkeys.push({
+    if (DEV) {
+      tree.insert(getLeaf({
         signatureAlgorithm: passportData.signatureAlgorithm,
         issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
         modulus: passportData.pubKey.modulus,
         exponent: passportData.pubKey.exponent
-      })
+      }))
     }
-
-    tree = buildPubkeyTree(pubkeys)
   })
   
   describe.skip('Tree only', function() {
