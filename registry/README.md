@@ -7,16 +7,15 @@ As it does not contain all the DSCs used by all countries, we are working on ver
 Here is the certificate chain flow. Basically, CSCA certificates are used to sign DSC certificates which sign the SOD files contained in passport chips.
 
 <p align="center">
-  <img src="https://i.imgur.com/5h0S9Eh.jpeg" width="70%" height="70%">
+  <img src="https://i.imgur.com/5h0S9Eh.jpeg" width="50%" height="50%">
 </p>
 
-
-Install
+Install:
 ```
 yarn
 ```
 
-# DSCs
+### DSCs
 
 Extract pem certificates from ldif file:
 ```
@@ -38,7 +37,7 @@ Visualize the signature algorithms of each countries, run:
 ts-node src/dsc/extract_sig_algs.ts
 ```
 
-# CSCAs (WIP)
+### CSCAs (WIP)
 
 Extract pem certificates from ldif file:
 ```
