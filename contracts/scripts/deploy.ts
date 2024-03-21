@@ -1,13 +1,20 @@
 import { ethers } from "hardhat";
-import { countryCodes } from "../../common/src/constants/constants";
-import { buildPubkeyTree } from "../../common/src/utils/pubkeyTree";
+import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
+import { poseidon2 } from 'poseidon-lite';
+import { IMT } from '@zk-kit/imt';
+
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
-  const pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/public_keys_parsed.json") as unknown as string)
-  const root = formatRoot(buildPubkeyTree(pubkeys).root)
+  const serializedTree = JSON.parse(fs.readFileSync("../app/deployments/serialized_tree.json") as unknown as string)
+  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+  tree.setNodes(serializedTree)
+
+  const root = formatRoot(tree.root)
+  console.log('tree.root', tree.root)
+
 
   const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
