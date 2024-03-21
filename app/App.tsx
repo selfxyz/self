@@ -110,10 +110,16 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS !== 'android') {
-      NativeModules.Prover.runInitAction() // for mopro, ios only rn
-    }
+    init()
   }, []);
+
+  async function init() {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log('launching init')
+    const res = await NativeModules.Prover.runInitAction()
+    console.log('init done')
+    console.log('init res', res)
+  }
 
   async function handleResponseIOS(response: any) {
     const parsed = JSON.parse(response);
@@ -327,36 +333,43 @@ function App(): JSX.Element {
   };
 
   async function proveAndroid(inputs: any, path: string) {
+    console.log('inputs in App.tsx', inputs)
+    console.log('launching proveAndroid')
+
     const startTime = Date.now();
-    NativeModules.RNPassportReader.provePassport(inputs, path, (err: any, res: any) => {
-      const endTime = Date.now();
-      setProofTime(endTime - startTime);
 
-      if (err) {
-        console.error(err);
-        setError(
-          "err: " + err.toString(),
-        );
-        return
-      }
-      console.log("res", res);
-      const parsedResponse = JSON.parse(res);
-      console.log('parsedResponse', parsedResponse);
-      console.log('parsedResponse.duration', parsedResponse.duration);
+    await NativeModules.Prover.runInitAction()
 
-      const deserializedProof = JSON.parse(parsedResponse.serialized_proof);
-      console.log('deserializedProof', deserializedProof);
+    const response = await NativeModules.Prover.runProveAction(inputs)
 
-      const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
-      console.log('deserializedInputs', deserializedInputs);
+    console.log('proof response:', response)
+    const match = response.match(/GenerateProofResult\(proof=\[(.*?)\], inputs=\[(.*?)\]\)/);
+    if (!match) throw new Error('Invalid input format');
+  
+    const parsedProof = match[1].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256);
+    const parsedInputs = match[2].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256);
+  
+    console.log('parsedProof', parsedProof)
+    console.log('parsedInputs', parsedInputs)
 
-      setProof({
-        proof: JSON.stringify(deserializedProof),
-        inputs: JSON.stringify(deserializedInputs),
-      });
-      setGeneratingProof(false);
-      setStep(Steps.PROOF_GENERATED);
-    });
+    const endTime = Date.now();
+    setProofTime(endTime - startTime);
+
+    console.log('running mopro verify action')
+    const res = await NativeModules.Prover.runVerifyAction()
+    console.log('verify response:', res)
+    
+    const finalProof = {
+      proof: JSON.stringify(formatProofIOS(parsedProof)),
+      inputs: JSON.stringify(formatInputsIOS(parsedInputs)),
+    }
+    
+    console.log('finalProof:', finalProof)
+
+    setProof(finalProof);
+
+    setGeneratingProof(false)
+    setStep(Steps.PROOF_GENERATED);
   }
 
   async function proveIOS(inputs: any) {
@@ -366,22 +379,16 @@ function App(): JSX.Element {
       await NativeModules.Prover.runInitAction()
 
       console.log('running mopro prove action')
-      const response = await NativeModules.Prover.runProveAction({
-        ...inputs,
-        datahashes_padded_length: [inputs.datahashes_padded_length.toString()], // wrap everything in arrays for bindings 
-        signatureAlgorithm: [inputs.signatureAlgorithm],
-        root: [inputs.root],
-        address: [BigInt(address).toString()],
-      })
+      const response = await NativeModules.Prover.runProveAction(inputs)
       console.log('proof response:', response)
       const parsedResponse = JSON.parse(response)
 
       const endTime = Date.now();
       setProofTime(endTime - startTime);
 
-      // console.log('running mopro verify action')
-      // const res = await NativeModules.Prover.runVerifyAction()
-      // console.log('verify response:', res)
+      console.log('running mopro verify action')
+      const res = await NativeModules.Prover.runVerifyAction()
+      console.log('verify response:', res)
 
       setProof({
         proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),

@@ -455,10 +455,6 @@
   version "2.0.0-beta.1"
   resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
 
-"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542":
-  version "2.0.0-beta.1"
-  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542#ade4ca8ba82e2a4d54889bcda143c81f82d61580"
-
 addressparser@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/addressparser/-/addressparser-1.0.1.tgz#47afbe1a2a9262191db6838e4fd1d39b40821746"

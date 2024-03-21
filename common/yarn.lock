@@ -27,10 +27,6 @@
   version "2.0.0-beta.1"
   resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
 
-"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542":
-  version "2.0.0-beta.1"
-  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542#ade4ca8ba82e2a4d54889bcda143c81f82d61580"
-
 js-sha256@^0.10.1:
   version "0.10.1"
   resolved "https://registry.npmjs.org/js-sha256/-/js-sha256-0.10.1.tgz"
