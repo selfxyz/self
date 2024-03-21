@@ -6,10 +6,14 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 
 import android.util.Log
-
 import com.facebook.react.bridge.ReadableMap
-
 import uniffi.mopro.GenerateProofResult
+
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
   lateinit var res: GenerateProofResult
@@ -21,11 +25,24 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
 
   @ReactMethod
   fun runInitAction(promise: Promise) {
-    val startTime = System.currentTimeMillis()
-    uniffi.mopro.initializeMopro()
-    val endTime = System.currentTimeMillis()
-    val initTime = "init time: " + (endTime - startTime).toString() + " ms"
-    promise.resolve(initTime)
+      // Launch a coroutine in the IO dispatcher for background tasks
+      CoroutineScope(Dispatchers.IO).launch {
+          try {
+              val startTime = System.currentTimeMillis()
+              uniffi.mopro.initializeMopro()
+              val endTime = System.currentTimeMillis()
+              val initTime = "init time: " + (endTime - startTime).toString() + " ms"
+              
+              // Since the promise needs to be resolved in the main thread
+              withContext(Dispatchers.Main) {
+                  promise.resolve(initTime)
+              }
+          } catch (e: Exception) {
+              withContext(Dispatchers.Main) {
+                  promise.reject(e)
+              }
+          }
+      }
   }
 
   // @ReactMethod
