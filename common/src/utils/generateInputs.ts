@@ -1,7 +1,7 @@
 import { MAX_DATAHASHES_LEN, SignatureAlgorithm } from "../constants/constants";
 import { assert, sha256Pad } from "./sha256Pad";
 import { PassportData } from "./types";
-import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte } from "./utils";
+import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte, getCurrentDateYYMMDD } from "./utils";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 
@@ -17,6 +17,7 @@ export function generateCircuitInputs(passportData: PassportData, tree: IMT, rev
   )
 
   console.log('passportData.pubKey.exponent', passportData.pubKey.exponent)
+  
   const sigAlgFormatted = formatSigAlg(
     passportData.signatureAlgorithm,
     passportData.pubKey.exponent
@@ -61,5 +62,9 @@ export function generateCircuitInputs(passportData: PassportData, tree: IMT, rev
     siblings: proof.siblings.flat().map(index => index.toString()),
     root: [tree.root.toString()],
     address: [BigInt(address).toString()],
+    // current_date: current_date,
+    // majority: majority.map(byte => String(byte)),
+    majority: [BigInt(49).toString(), BigInt(56).toString()],
+    current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
   }
 }

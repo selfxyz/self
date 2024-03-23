@@ -32,14 +32,15 @@ describe('Circuit tests', function () {
 
     // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
     // Comment when testing with real passport data
+
     tree.insert(getLeaf({
       signatureAlgorithm: passportData.signatureAlgorithm,
       issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
       modulus: passportData.pubKey.modulus,
       exponent: passportData.pubKey.exponent
-    }))
+    }).toString())
     
-    const reveal_bitmap = Array(88).fill('0');
+    const reveal_bitmap = Array(90).fill('0');
     const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
 
     inputs = generateCircuitInputs(
@@ -51,8 +52,8 @@ describe('Circuit tests', function () {
 
     console.log('inputs', inputs)
   })
-  
-  describe('Proof', function() {
+
+  describe('Proof', function () {
     it('should prove and verify with valid inputs', async function () {
       const { proof: zk_proof, publicSignals } = await groth16.fullProve(
         inputs,
@@ -101,7 +102,7 @@ describe('Circuit tests', function () {
         "build/proof_of_passport_final.zkey"
       )).to.be.rejected;
     })
-    
+
     it('should fail to prove with invalid signature', async function () {
       const invalidInputs = {
         ...inputs,
@@ -133,7 +134,7 @@ describe('Circuit tests', function () {
     })
   })
 
-  describe('Selective disclosure', function() {
+  describe('Selective disclosure', function () {
     const attributeCombinations = [
       ['issuing_state', 'name'],
       ['passport_number', 'nationality', 'date_of_birth'],
@@ -146,8 +147,8 @@ describe('Circuit tests', function () {
           acc[attribute] = combination.includes(attribute);
           return acc;
         }, {});
-  
-        const bitmap = Array(88).fill('0');
+
+        const bitmap = Array(90).fill('0');
 
         Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
           if (reveal) {
@@ -155,18 +156,18 @@ describe('Circuit tests', function () {
             bitmap.fill('1', start, end + 1);
           }
         });
-  
+
         inputs = {
           ...inputs,
           reveal_bitmap: bitmap.map(String),
         }
-  
+
         const { proof, publicSignals } = await groth16.fullProve(
           inputs,
           "build/proof_of_passport_js/proof_of_passport.wasm",
           "build/proof_of_passport_final.zkey"
         )
-  
+
         console.log('proof done');
   
         const vKey = JSON.parse(fs.readFileSync("build/proof_of_passport_vkey.json").toString());
@@ -175,31 +176,31 @@ describe('Circuit tests', function () {
           publicSignals,
           proof
         )
-  
+
         assert(verified == true, 'Should verifiable')
-  
+
         console.log('proof verified');
-  
+
         const firstThreeElements = publicSignals.slice(0, 3);
         const bytesCount = [31, 31, 26]; // nb of bytes in each of the first three field elements
-  
+
         const bytesArray = firstThreeElements.flatMap((element: string, index: number) => {
           const bytes = bytesCount[index];
           const elementBigInt = BigInt(element);
           const byteMask = BigInt(255); // 0xFF
-        
+
           const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
             return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
           });
-        
+
           return bytesOfElement;
         });
-        
+
         const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-  
+
         console.log(result);
-  
-        for(let i = 0; i < result.length; i++) {
+
+        for (let i = 0; i < result.length; i++) {
           if (bitmap[i] == '1') {
             const char = String.fromCharCode(Number(inputs.mrz[i + 5]));
             assert(result[i] == char, 'Should reveal the right one');
@@ -212,7 +213,7 @@ describe('Circuit tests', function () {
   })
 
   // use these tests with .only to check changes without rebuilding the zkey
-  describe('Circom tester tests', function() {
+  describe('Circom tester tests', function () {
     it('should prove and verify with valid inputs', async function () {
       const circuit = await wasm_tester(
         path.join(__dirname, `../circuits/proof_of_passport.circom`),
@@ -224,5 +225,3 @@ describe('Circuit tests', function () {
   })
 
 })
-
-

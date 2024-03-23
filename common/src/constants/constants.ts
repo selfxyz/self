@@ -23,6 +23,7 @@ export const attributeToPosition: { [key: string]: number[] } = {
   date_of_birth: [57, 62],
   gender: [64, 64],
   expiry_date: [65, 70],
+  older_than: [88, 89]
 };
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes

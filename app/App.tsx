@@ -31,7 +31,7 @@ import contractAddresses from "./deployments/addresses.json"
 import proofOfPassportArtefact from "./deployments/ProofOfPassport.json";
 import serializedTree from "./deployments/serialized_tree.json";
 import MainScreen from './src/screens/MainScreen';
-import { extractMRZInfo, Steps } from './src/utils/utils';
+import { extractMRZInfo, formatDateToYYMMDD, Steps } from './src/utils/utils';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
@@ -48,12 +48,11 @@ function App(): JSX.Element {
   const [address, setAddress] = useState<string>(ethers.ZeroAddress);
   const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
-  const [error, setError] = useState<any>(null);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
-  const [minting, setMinting] = useState<boolean>(false);
   const [mintText, setMintText] = useState<string>("");
+  const [majority, setMajority] = useState<number>(18);
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -63,31 +62,39 @@ function App(): JSX.Element {
     date_of_birth: false,
     gender: false,
     expiry_date: false,
+    older_than: false,
   });
 
-  const startCameraScan = () => {
-    if (Platform.OS !== 'android') {
-      Toast.show({
-        type: 'info',
-        text1: "Camera scan supported soon on iOS",
-      })
-      return
+  const startCameraScan = async () => {
+    if (Platform.OS === 'ios') {
+      try {
+        const result = await NativeModules.MRZScannerModule.startScanning();
+        console.log("Scan result:", result);
+        console.log(`Document Number: ${result.documentNumber}, Expiry Date: ${result.expiryDate}, Birth Date: ${result.birthDate}`);
+        setPassportNumber(result.documentNumber);
+        setDateOfBirth(formatDateToYYMMDD(result.birthDate));
+        setDateOfExpiry(formatDateToYYMMDD(result.expiryDate));
+      } catch (e) {
+        console.error(e);
+      }
     }
-    NativeModules.CameraActivityModule.startCameraActivity()
-      .then((mrzInfo: string) => {
-        try {
-          const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
-          setPassportNumber(documentNumber);
-          setDateOfBirth(birthDate);
-          setDateOfExpiry(expiryDate);
-          setStep(Steps.MRZ_SCAN_COMPLETED);
-        } catch (error: any) {
-          console.error('Invalid MRZ format:', error.message);
-        }
-      })
-      .catch((error: any) => {
-        console.error('Camera Activity Error:', error);
-      });
+    else {
+      NativeModules.CameraActivityModule.startCameraActivity()
+        .then((mrzInfo: string) => {
+          try {
+            const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
+            setPassportNumber(documentNumber);
+            setDateOfBirth(birthDate);
+            setDateOfExpiry(expiryDate);
+            setStep(Steps.MRZ_SCAN_COMPLETED);
+          } catch (error: any) {
+            console.error('Invalid MRZ format:', error.message);
+          }
+        })
+        .catch((error: any) => {
+          console.error('Camera Activity Error:', error);
+        });
+    }
   };
 
 
@@ -279,6 +286,7 @@ function App(): JSX.Element {
       handleResponseIOS(response);
     } catch (e: any) {
       console.log('error during scan :', e);
+      setStep(Steps.MRZ_SCAN_COMPLETED);
       Toast.show({
         type: 'error',
         text1: e.message,
@@ -299,7 +307,6 @@ function App(): JSX.Element {
 
     // if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
     //   console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-    //   setError(`${passportData.signatureAlgorithm} not supported for proof right now.`);
     //   return;
     // }
 
@@ -377,14 +384,11 @@ function App(): JSX.Element {
     setStep(Steps.PROOF_GENERATED);
     } catch (err: any) {
       console.log('err', err);
-      setError(
-        "err: " + err.toString(),
-      );
     }
   }
 
   const handleMint = async () => {
-    setMinting(true)
+    setStep(Steps.TX_MINTING);
     if (!proof?.proof || !proof?.inputs) {
       console.log('proof or inputs is null');
       return;
@@ -421,19 +425,25 @@ function App(): JSX.Element {
       console.log('response data', response.data)
       setMintText(`Network: Sepolia. Transaction hash: ${response.data.hash}`)
       const receipt = await provider.waitForTransaction(response.data.hash);
-      console.log('receipt', receipt)
+      console.log('receipt status:', receipt?.status)
       if (receipt?.status === 1) {
         Toast.show({
           type: 'success',
-          text1: 'Proof of passport minted',
+          text1: 'SBT minted 🎊',
+          position: 'top',
+          bottomOffset: 80,
         })
         setMintText(`SBT minted. Network: Sepolia. Transaction hash: ${response.data.hash}`)
+        setStep(Steps.TX_MINTED);
       } else {
         Toast.show({
           type: 'error',
           text1: 'Proof of passport minting failed',
+          position: 'top',
+          bottomOffset: 80,
         })
         setMintText(`Error minting SBT. Network: Sepolia. Transaction hash: ${response.data.hash}`)
+        setStep(Steps.PROOF_GENERATED);
       }
     } catch (err: any) {
       console.log('err', err);
@@ -448,11 +458,15 @@ function App(): JSX.Element {
           Toast.show({
             type: 'error',
             text1: `Error: ${match[1]}`,
+            position: 'top',
+            bottomOffset: 80,
           })
         } else {
           Toast.show({
             type: 'error',
             text1: `Error: mint failed`,
+            position: 'top',
+            bottomOffset: 80,
           })
           console.log('Failed to parse blockchain error');
         }
@@ -486,6 +500,8 @@ function App(): JSX.Element {
           setDateOfBirth={setDateOfBirth}
           dateOfExpiry={dateOfExpiry}
           setDateOfExpiry={setDateOfExpiry}
+          majority={majority}
+          setMajority={setMajority}
         />
       </YStack>
       <Toast config={toastConfig} />

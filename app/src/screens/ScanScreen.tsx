@@ -15,29 +15,29 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
       <XStack
         jc="center"
         borderColor="black"
-        borderWidth={1.5}
+        borderWidth={2}
         borderRadius="$10"
         f={0}
-        w="$1"
-        h="$1"
+        w="$1.5"
+        h="$1.5"
         alignSelf='center'>
-        <Text fontSize={12} alignSelf='center' fow="bold">1</Text>
+        <Text fontSize="$4" y={0} x={-0.2} alignSelf='center' fow="bold">1</Text>
       </XStack>
-      <Text textAlign='center' mt="$2" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
+      <Text fontSize="$6" textAlign='center' mt="$3" fow={step === Steps.MRZ_SCAN ? "bold" : "normal"} >Scan the machine readable zone on the main page of your passport</Text>
 
       <XStack
-        mt="$9"
+        mt="$10"
         jc="center"
         borderColor="black"
-        borderWidth={1.5}
-        borderRadius={10}
+        borderWidth={2}
+        borderRadius="$10"
         f={0}
-        w="$1"
-        h="$1"
+        w="$1.5"
+        h="$1.5"
         alignSelf='center'>
-        <Text fontSize={12} alignSelf='center' fow="bold">2</Text>
+        <Text fontSize="$4" y={0} x={-0.2} alignSelf='center' fow="bold">2</Text>
       </XStack>
-      <Text textAlign='center' mt="$2" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
+      <Text fontSize="$6" textAlign='center' mt="$3" fow={(step === Steps.MRZ_SCAN_COMPLETED) || (step === Steps.NFC_SCANNING) ? "bold" : "normal"}>Hold your passport against your device to read the biometric chip</Text>
 
       <YStack ai="center">
         {
@@ -45,14 +45,14 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
             ? (
               step < Steps.MRZ_SCAN_COMPLETED
                 ?
-                <YStack mt="$10">
-                  <Text onPress={onStartCameraScan} size="$4" br="$2" color="#3185FC">Open camera</Text>
+                <YStack mt="$6">
+                  <Text p="$6" fontSize="$6" onPress={onStartCameraScan} color="#3185FC">Open camera</Text>
                   <Spinner mt="$4" color={step === Steps.NFC_SCANNING ? "#3185FC" : "transparent"} />
 
                 </YStack>
                 : (
-                  <YStack mt="$10">
-                    <Text size="$4" br="$2" color="#3185FC" onPress={handleNFCScan}>
+                  <YStack mt="$6">
+                    <Text p="$6" fontSize="$6" color="#3185FC" onPress={handleNFCScan}>
                       {step === Steps.NFC_SCANNING ? "Scanning" : "Scan passport with NFC"}
                     </Text>
                     <Spinner mt="$4" color={step === Steps.NFC_SCANNING ? "#3185FC" : "transparent"} />

@@ -31,7 +31,7 @@ async function main() {
     expiry_date: true,
   }
 
-  const bitmap = Array(88).fill('0');
+  const bitmap = Array(90).fill('0');
 
   Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
     if (reveal) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, YStack, XStack, Card, H3, Image } from 'tamagui';
 import { ChevronRight } from '@tamagui/lucide-icons';
 import { Platform } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 
 interface AppCardProps {
@@ -12,6 +13,7 @@ interface AppCardProps {
     id: string | number;
     onTouchStart?: () => void;
     selected?: boolean;
+    selectable?: boolean;
 }
 
 const AppCard: React.FC<AppCardProps> = ({
@@ -21,13 +23,21 @@ const AppCard: React.FC<AppCardProps> = ({
     background,
     id,
     onTouchStart,
-    selected
+    selected,
+    selectable
 }) => {
+    const showtoast = () => {
+        Toast.show({
+            type: 'info',
+            text1: '🚧 App not available yet '
+        })
+    }
+
     return (
         <XStack
             overflow="hidden"
             elevation={selected ? "$3" : "$3"}
-            borderRadius="$10"
+            borderRadius="$11"
             borderColor={(selected) ? "#3185FC" : ((Platform.OS === 'ios') ? "white" : "transparent")}
             borderWidth={(selected) ? 3 : 3}
             shadowColor={selected ? "#3185FC" : "black"}
@@ -35,19 +45,18 @@ const AppCard: React.FC<AppCardProps> = ({
             <Card
                 key={id}
                 elevation={0}
-                onTouchStart={onTouchStart}
+                onTouchStart={selectable ? onTouchStart : showtoast}
             >
                 <XStack w="100%"
                 >
                     <Card.Header w="100%">
-
                         <XStack ai="center" py="$1">
                             <YStack width={250}>
                                 <H3 color={colorOfTheText} selectable={false} >{title}</H3>
                                 <Text mt="$1" theme="alt2" color={colorOfTheText} selectable={false}>{description}</Text>
                             </YStack>
                             <XStack flex={1} />
-                            <ChevronRight size="$4" color={selected ? "#3185FC" : colorOfTheText} minWidth="$4" />
+                            <ChevronRight size="$4" color={selected ? "#3185FC" : "transparent"} minWidth="$4" />
                         </XStack>
                     </Card.Header>
                     {(

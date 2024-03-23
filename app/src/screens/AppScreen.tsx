@@ -31,6 +31,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       description: 'Prove your identity at in person events',
       background: ZUPASS,
       colorOfTheText: 'white',
+      selectable: false
     },
     {
       app: gitcoin,
@@ -38,12 +39,15 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       description: 'And donate to your favorite projects',
       background: GITCOIN,
       colorOfTheText: 'white',
+      selectable: false,
     },
     {
       app: soulbound,
-      title: 'Mint SBT',
+      title: 'Mint SBT 🔥',
       description: 'And prove you\'re a human',
       colorOfTheText: 'black',
+      selectable: true
+
     },
   ];
 
@@ -60,6 +64,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
           id={card.app.id}
           onTouchStart={() => handleCardSelect(card.app)}
           selected={selectedApp && selectedApp.id === card.app.id ? true : false}
+          selectable={card.selectable}
         />
       ))}
 

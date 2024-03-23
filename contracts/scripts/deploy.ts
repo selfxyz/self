@@ -15,7 +15,6 @@ async function main() {
   const root = formatRoot(tree.root)
   console.log('tree.root', tree.root)
 
-
   const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
   await verifier.waitForDeployment();

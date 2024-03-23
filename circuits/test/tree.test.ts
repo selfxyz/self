@@ -62,7 +62,7 @@ describe('Merkle tree tests', function () {
         issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
         modulus: passportData.pubKey.modulus,
         exponent: passportData.pubKey.exponent
-      }))
+      }).toString())
     }
   })
   

@@ -15,6 +15,10 @@ PODS:
   - NFCPassportReader (2.0.3):
     - OpenSSL-Universal (= 1.1.1100)
   - OpenSSL-Universal (1.1.1100)
+  - QKMRZParser (2.0.0)
+  - QKMRZScanner (3.0.0):
+    - QKMRZParser (~> 2.0.0)
+    - SwiftyTesseract (~> 3.1.3)
   - RCT-Folly (2021.07.22.00):
     - boost
     - DoubleConversion
@@ -391,9 +395,12 @@ PODS:
     - React-jsi (= 0.72.3)
     - React-logger (= 0.72.3)
     - React-perflogger (= 0.72.3)
+  - RNCClipboard (1.5.1):
+    - React-Core
   - RNSVG (13.4.0):
     - React-Core
   - SocketRocket (0.6.1)
+  - SwiftyTesseract (3.1.3)
   - Yoga (1.14.0)
 
 DEPENDENCIES:
@@ -404,6 +411,7 @@ DEPENDENCIES:
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - MoproKit (from `./MoproKit`)
   - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `310ecb519655d9ed8b1afc5eb490b2f51a4d3595`)
+  - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
   - RCTTypeSafety (from `../node_modules/react-native/Libraries/TypeSafety`)
@@ -437,6 +445,7 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - RNSVG (from `../node_modules/react-native-svg`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
@@ -444,7 +453,10 @@ SPEC REPOS:
   trunk:
     - fmt
     - OpenSSL-Universal
+    - QKMRZParser
+    - QKMRZScanner
     - SocketRocket
+    - SwiftyTesseract
 
 EXTERNAL SOURCES:
   boost:
@@ -526,6 +538,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-community/clipboard"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   Yoga:
@@ -546,6 +560,8 @@ SPEC CHECKSUMS:
   MoproKit: d1faf8f9495e8e84d085f6c4e57e36f951e6f07e
   NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
+  QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
   RCT-Folly: 424b8c9a7a0b9ab2886ffe9c3b041ef628fd4fb1
   RCTRequired: a2faf4bad4e438ca37b2040cb8f7799baa065c18
   RCTTypeSafety: cb09f3e4747b6d18331a15eb05271de7441ca0b3
@@ -578,10 +594,12 @@ SPEC CHECKSUMS:
   React-runtimescheduler: ec1066a4f2d1152eb1bc3fb61d69376b3bc0dde0
   React-utils: d55ba834beb39f01b0b470ae43478c0a3a024abe
   ReactCommon: 68e3a815fbb69af3bb4196e04c6ae7abb306e7a8
+  RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNSVG: 07dbd870b0dcdecc99b3a202fa37c8ca163caec2
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
+  SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: 7568291077da8ee6387464cd1a7e01559a46ab1f
+PODFILE CHECKSUM: bfa6f6f947d05938da674ddbd61afd65fc7ece34
 
 COCOAPODS: 1.14.3

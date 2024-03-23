@@ -1,4 +1,4 @@
-import {sha256} from 'js-sha256';
+import { sha256 } from 'js-sha256';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -56,7 +56,7 @@ export function formatAndConcatenateDataHashes(
   // Starting sequence. Should be the same for everybody, but not sure
   concat.push(...startingSequence)
 
-  for(const dataHash of dataHashes) {
+  for (const dataHash of dataHashes) {
     // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
 
     concat.push(...[48, 37, 2, 1, dataHash[0], 4, 32, ...dataHash[1]])
@@ -210,7 +210,7 @@ function bytesToBigInt(bytes: number[]) {
 
 function splitInto(arr: number[], size: number) {
   const res = [];
-  for(let i = 0; i < arr.length; i += size) {
+  for (let i = 0; i < arr.length; i += size) {
     res.push(arr.slice(i, i + size));
   }
   return res;
@@ -248,3 +248,18 @@ export function formatInputs(inputs: number[]) {
   const splitted = splitInto(inputs.slice(8), 32);
   return splitted.map(bytesToBigInt);
 }
+
+export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
+  const date = new Date();
+  date.setDate(date.getDate() + dayDiff); // Adjust the date by the dayDiff
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const YY = (`0${year % 100}`).slice(-2);
+  const MM = (`0${month}`).slice(-2);
+  const DD = (`0${day}`).slice(-2);
+
+  const yymmdd = `${YY}${MM}${DD}`;
+  return Array.from(yymmdd).map(char => parseInt(char));
+}
+

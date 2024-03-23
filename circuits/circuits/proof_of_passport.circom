@@ -4,6 +4,7 @@ include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
 include "./merkle_tree/tree.circom";
+include "./isOlderThan.circom";
 
 template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
@@ -19,8 +20,12 @@ template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input siblings[nLevels];
     signal input root;
 
-    signal input reveal_bitmap[88];
+    signal input reveal_bitmap[90];
     signal input address;
+
+    signal input current_date[6]; // YYMMDD - num
+    signal input majority[2]; // YY - ASCII
+
 
     // Converting pubkey (modulus) into 11 chunks of 192 bits, assuming original n, k are 64 and 32.
     // This is because Poseidon circuit only supports an array of 16 elements.
@@ -67,19 +72,35 @@ template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     PV.pubkey <== pubkey;
     PV.signature <== signature;
 
+    // Age range check
+    component isOlderThan = IsOlderThan();
+    isOlderThan.majorityASCII <== majority;
+
+    for (var i = 0; i < 6; i++) {
+        isOlderThan.currDate[i] <== current_date[i];
+        isOlderThan.birthDateASCII[i] <== mrz[62 + i];
+    }
+    signal older_than[2];
+    older_than[0] <== isOlderThan.out * majority[0];
+    older_than[1] <== isOlderThan.out * majority[1];
     // reveal reveal_bitmap bits of MRZ
-    signal reveal[88];
+    signal reveal[90];
     for (var i = 0; i < 88; i++) {
         reveal[i] <== mrz[5+i] * reveal_bitmap[i];
     }
-    signal output reveal_packed[3] <== PackBytes(88, 3, 31)(reveal);
+
+    // Add the majority as last bytes
+    reveal[88] <== older_than[0] * reveal_bitmap[88];
+    reveal[89] <== older_than[1] * reveal_bitmap[89];
+
+    signal output reveal_packed[3] <== PackBytes(90, 3, 31)(reveal);
 
     // make nullifier public;
     // we take nullifier = signature[0, 1] which it 64 + 64 bits long, so chance of collision is 2^128
     signal output nullifier <== signature[0] * 2**64 + signature[1];
 }
 
-component main { public [ address, root ] } = ProofOfPassport(64, 32, 320, 16, 32);
+component main { public [ address, root, current_date ] } = ProofOfPassport(64, 32, 320, 16, 32);
 
 // Us:
 // 11 + 1 + 3 + 1

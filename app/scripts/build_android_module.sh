@@ -54,7 +54,7 @@ cargo install cargo-ndk
 
 # Print appropriate message based on device type
 echo "Using $ARCHITECTURE libmopro_ffi.a ($LIB_DIR) static library..."
-print_warning "This only works on $FOLDER devices!"
+echo "This only works on $FOLDER devices!"
 
 echo "[android] Build target in $BUILD_MODE mode"
 cargo ndk -t ${ARCHITECTURE} build --lib ${COMMAND} 
