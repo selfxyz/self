@@ -4,6 +4,7 @@ import { generateCircuitInputs } from '../../../common/src/utils/generateInputs'
 import { formatProof, formatInputs } from '../../../common/src/utils/utils';
 import { Steps } from './utils';
 import { PassportData } from '../../../common/src/utils/types';
+import Toast from 'react-native-toast-message';
 
 interface ProverProps {
   passportData: PassportData | null;
@@ -39,25 +40,35 @@ export const prove = async ({
   //   return;
   // }
 
-  const inputs = generateCircuitInputs(
-    passportData,
-    reveal_bitmap,
-    address,
-    { developmentMode: false }
-  );
+  try {
+    const inputs = generateCircuitInputs(
+      passportData,
+      reveal_bitmap,
+      address,
+      { developmentMode: false }
+    );
 
-  Object.keys(inputs).forEach((key) => {
-    if (Array.isArray(inputs[key as keyof typeof inputs])) {
-      console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
-    } else {
-      console.log(key, inputs[key as keyof typeof inputs]);
-    }
-  });
+    Object.keys(inputs).forEach((key) => {
+      if (Array.isArray(inputs[key as keyof typeof inputs])) {
+        console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
+      } else {
+        console.log(key, inputs[key as keyof typeof inputs]);
+      }
+    });
 
-  const start = Date.now();
-  await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep, path);
-  const end = Date.now();
-  console.log('Total proof time from frontend:', end - start);
+    const start = Date.now();
+    await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep, path);
+    const end = Date.now();
+    console.log('Total proof time from frontend:', end - start);
+  } catch (error) {
+    console.error(error);
+    Toast.show({
+      type: 'error',
+      text1: "Pubkey not found in the registry",
+    });
+    setStep(Steps.NFC_SCAN_COMPLETED);
+    setGeneratingProof(false);
+  }
 };
 
 const generateProof = async (

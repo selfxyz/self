@@ -51,6 +51,9 @@ export function generateCircuitInputs(
   
   const index = tree.indexOf(leaf) // this index is not the index in public_keys_parsed.json, but the index in the tree
   console.log(`Index of pubkey in the registry: ${index}`)
+  if (index === -1) {
+    throw new Error("Pubkey not found in the registry");
+  }
 
   const proof = tree.createProof(index)
   console.log("verifyProof", tree.verifyProof(proof))
