@@ -32,7 +32,6 @@ describe('Circuit tests', function () {
 
     // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
     // Comment when testing with real passport data
-
     tree.insert(getLeaf({
       signatureAlgorithm: passportData.signatureAlgorithm,
       issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',

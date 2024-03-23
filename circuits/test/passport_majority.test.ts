@@ -2,10 +2,12 @@
 import chai, { assert, expect } from 'chai'
 import path from "path";
 import { getPassportData } from "../../common/src/utils/passportData";
-import { hash, toUnsignedByte, arraysAreEqual, bytesToBigDecimal, formatMrz, splitToWords } from '../../common/src/utils/utils'
-import { MAX_DATAHASHES_LEN, attributeToPosition } from '../../common/src/constants/constants'
-import { getCurrentDateYYMMDD } from '../../common/src/utils/utils';
-import { sha256Pad } from '@zk-email/helpers'; // Ensure this import is added
+import { TREE_DEPTH } from '../../common/src/constants/constants'
+import { generateCircuitInputs } from '../../common/src/utils/generateInputs';
+import { getLeaf } from '../../common/src/utils/pubkeyTree';
+import { IMT } from '@zk-kit/imt';
+import { poseidon2 } from 'poseidon-lite';
+import fs from 'fs';
 const wasm_tester = require("circom_tester").wasm;
 
 describe.only("start testing of proof_of_passport_majority.circom", function () {
@@ -13,7 +15,6 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
     let inputs: any;
     let circuit: any;
     let w: any;
-    let current_date: any;
     let majority: any = [49, 56];
 
     before(async () => {
@@ -23,41 +24,29 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
         );
         const passportData = getPassportData();
 
-        const formattedMrz = formatMrz(passportData.mrz);
-
-        const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
-        assert(
-            arraysAreEqual(passportData.eContent.slice(72, 72 + 33), concatenatedDataHashesHashDigest),
-            'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
-        )
-
+        const serializedTree = JSON.parse(fs.readFileSync("../common/pubkeys/serialized_tree.json") as unknown as string)
+        const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+        tree.setNodes(serializedTree)
+    
+        // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
+        // Comment when testing with real passport data
+        tree.insert(getLeaf({
+          signatureAlgorithm: passportData.signatureAlgorithm,
+          issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+          modulus: passportData.pubKey.modulus,
+          exponent: passportData.pubKey.exponent
+        }).toString())
+        
         const reveal_bitmap = Array(90).fill('1');
-        const [messagePadded, messagePaddedLen] = sha256Pad(
-            new Uint8Array(passportData.dataGroupHashes),
-            MAX_DATAHASHES_LEN
+        const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
+    
+        inputs = generateCircuitInputs(
+          passportData,
+          tree,
+          reveal_bitmap,
+          address
         );
-
-        current_date = getCurrentDateYYMMDD();
-        inputs = {
-            mrz: formattedMrz.map(byte => String(byte)),
-            reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
-            dataHashes: Array.from(messagePadded).map((x) => x.toString()), // Use the padded data hashes
-            datahashes_padded_length: messagePaddedLen.toString(), // Include the padded length if needed
-            eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
-            pubkey: splitToWords(
-                BigInt(passportData.pubKey.modulus),
-                BigInt(64),
-                BigInt(32)
-            ),
-            signature: splitToWords(
-                BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-                BigInt(64),
-                BigInt(32)
-            ),
-            address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8", // sample address
-            current_date: current_date,
-            majority: majority.map(byte => String(byte))
-        }
+    
         w = await circuit.calculateWitness(inputs);
 
     });
@@ -70,7 +59,7 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
         await circuit.checkConstraints(w);
     });
 
-    it("verify reveal_packed outputs for major", async function () {
+    it("verify reveal_packed outputs for majority", async function () {
         const outputs = await circuit.getOutput(w, ["reveal_packed[3]"]);
         const unpackedReveals = unpackRevealPacked(outputs);
         const expectedReveals = generateExpectedReveals(inputs, majority);
