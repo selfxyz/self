@@ -19,8 +19,8 @@ import { toStandardName } from '../common/src/utils/formatNames';
 import { generateCircuitInputs } from '../common/src/utils/generateInputs';
 import { AWS_ENDPOINT, TREE_DEPTH } from '../common/src/constants/constants';
 import {
-  formatProofIOS,
-  formatInputsIOS
+  formatProof,
+  formatInputs
 } from '../common/src/utils/utils';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 import "@ethersproject/shims"
@@ -110,10 +110,16 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    if (Platform.OS !== 'android') {
-      NativeModules.Prover.runInitAction() // for mopro, ios only rn
-    }
+    init()
   }, []);
+
+  async function init() {
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    console.log('launching init')
+    const res = await NativeModules.Prover.runInitAction()
+    console.log('init done')
+    console.log('init res', res)
+  }
 
   async function handleResponseIOS(response: any) {
     const parsed = JSON.parse(response);
@@ -253,6 +259,7 @@ function App(): JSX.Element {
       handleResponseAndroid(response);
     } catch (e: any) {
       console.log('error during scan :', e);
+      setStep(Steps.MRZ_SCAN_COMPLETED);
       Toast.show({
         type: 'error',
         text1: e.message,
@@ -288,8 +295,6 @@ function App(): JSX.Element {
     setGeneratingProof(true)
     await new Promise(resolve => setTimeout(resolve, 10));
 
-    // TODO check circuit to make sure the proof will work
-
     const reveal_bitmap = revealBitmapFromMapping(disclosure);
 
     // if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
@@ -317,79 +322,59 @@ function App(): JSX.Element {
     });
 
     const start = Date.now();
-    if (Platform.OS === 'android') {
-      await proveAndroid(inputs, path);
-    } else {
-      await proveIOS(inputs);
-    }
+    await prove(inputs, path);
+
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
   };
 
-  async function proveAndroid(inputs: any, path: string) {
-    const startTime = Date.now();
-    NativeModules.RNPassportReader.provePassport(inputs, path, (err: any, res: any) => {
-      const endTime = Date.now();
-      setProofTime(endTime - startTime);
-
-      if (err) {
-        console.error(err);
-        setError(
-          "err: " + err.toString(),
-        );
-        return
-      }
-      console.log("res", res);
-      const parsedResponse = JSON.parse(res);
-      console.log('parsedResponse', parsedResponse);
-      console.log('parsedResponse.duration', parsedResponse.duration);
-
-      const deserializedProof = JSON.parse(parsedResponse.serialized_proof);
-      console.log('deserializedProof', deserializedProof);
-
-      const deserializedInputs = JSON.parse(parsedResponse.serialized_inputs);
-      console.log('deserializedInputs', deserializedInputs);
-
-      setProof({
-        proof: JSON.stringify(deserializedProof),
-        inputs: JSON.stringify(deserializedInputs),
-      });
-      setGeneratingProof(false);
-      setStep(Steps.PROOF_GENERATED);
-    });
-  }
-
-  async function proveIOS(inputs: any) {
+  async function prove(inputs: any, path?: string) {
     try {
-      const startTime = Date.now();
-      console.log('running mopro init action')
+      console.log('launching prove function')
+      console.log('inputs in App.tsx', inputs)
+
       await NativeModules.Prover.runInitAction()
 
+      const startTime = Date.now();
+
       console.log('running mopro prove action')
-      const response = await NativeModules.Prover.runProveAction({
-        ...inputs,
-        datahashes_padded_length: [inputs.datahashes_padded_length.toString()], // wrap everything in arrays for bindings 
-        signatureAlgorithm: [inputs.signatureAlgorithm],
-        root: [inputs.root],
-        address: [BigInt(address).toString()],
-      })
+      const response = await NativeModules.Prover.runProveAction(inputs)
       console.log('proof response:', response)
-      const parsedResponse = JSON.parse(response)
+
+      function parseProofAndroid(response: any) {
+        const match = response.match(/GenerateProofResult\(proof=\[(.*?)\], inputs=\[(.*?)\]\)/);
+        if (!match) throw new Error('Invalid input format');
+      
+        return {
+          proof: match[1].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256),
+          inputs: match[2].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256)
+        }
+      }
+
+      const parsedResponse = Platform.OS == 'android'
+        ? parseProofAndroid(response)
+        : JSON.parse(response)
+
+      console.log('parsedResponse', parsedResponse)
 
       const endTime = Date.now();
       setProofTime(endTime - startTime);
 
-      // console.log('running mopro verify action')
-      // const res = await NativeModules.Prover.runVerifyAction()
-      // console.log('verify response:', res)
+      console.log('running mopro verify action')
+      const res = await NativeModules.Prover.runVerifyAction()
+      console.log('verify response:', res)
+      
+      const finalProof = {
+        proof: JSON.stringify(formatProof(parsedResponse.proof)),
+        inputs: JSON.stringify(formatInputs(parsedResponse.inputs)),
+      }
+      
+      console.log('finalProof:', finalProof)
 
-      setProof({
-        proof: JSON.stringify(formatProofIOS(parsedResponse.proof)),
-        inputs: JSON.stringify(formatInputsIOS(parsedResponse.inputs)),
-      });
+      setProof(finalProof);
 
       setGeneratingProof(false)
-      setStep(Steps.PROOF_GENERATED);
+    setStep(Steps.PROOF_GENERATED);
     } catch (err: any) {
       console.log('err', err);
       setError(
@@ -397,7 +382,6 @@ function App(): JSX.Element {
       );
     }
   }
-
 
   const handleMint = async () => {
     setMinting(true)
@@ -413,8 +397,6 @@ function App(): JSX.Element {
     // Format the proof and publicInputs as calldata for the verifier contract
     const p = JSON.parse(proof.proof);
     const i = JSON.parse(proof.inputs);
-    // const p = {"a": ["16502577771187684977980616374304236605057905196561863637384296592370445017998", "3901861368174142739149849352179287633574688417834634300291202761562972709023"], "b": [["14543689684654938043989715590415160645004827219804187355799512446208262437248", "2758656853017552407340621959452084149765188239766723663849017782705599048610"], ["11277365272183899064677884160333958573750879878546952615484891009952508146334", "6233152645613613236466445508816847016425532566954931368157994995587995754446"]], "c": ["6117026818273543012196632774531089444191538074414171872462281003025766583671", "10261526153619394223629018490329697233150978685332753612996629076672112420472"]}
-    // const i = ["0", "0", "0", "146183216590389235917737925524385821154", "43653084046336027166990", "21085389953176386480267", "56519161086598100699293", "15779090386165698845937", "23690430366843652392111", "22932463418406768540896", "51019038683800409078189", "50360649287615093470666", "47789371969706091489401", "15311247864741754764238", "20579290199534174842880", "1318168358802144844680228651107716082931624381008"]
     console.log('p', p);
     console.log('i', i);
     const cd = groth16ExportSolidityCallData(p, i);

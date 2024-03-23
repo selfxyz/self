@@ -1,3 +1,5 @@
+#!/bin/bash
+
 mkdir -p ../circuits/build
 cd ../circuits/build
 if [ -f "proof_of_passport_final.zkey" ]; then

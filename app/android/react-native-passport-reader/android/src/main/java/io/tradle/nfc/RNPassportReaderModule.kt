@@ -618,105 +618,6 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         }
     }
 
-    //-------------functions related to calling rust lib----------------//
-
-    // Declare native method
-    external fun callRustCode(): String
-
-    @ReactMethod
-    fun callRustLib(callback: Callback) {
-        // Call the Rust function
-        val resultFromRust = callRustCode()
-        
-        // Return the result to JavaScript through the callback
-        callback.invoke(null, resultFromRust)
-    }
-
-    external fun provePassport(
-        mrz: List<String>,
-        reveal_bitmap: List<String>,
-        dataHashes: List<String>,
-        datahashes_padded_length: String,
-        eContentBytes: List<String>,
-        signature: List<String>,
-        signature_algorithm: String,
-        pubkey: List<String>,
-        path_indices: List<String>,
-        siblings: List<String>,
-        root: String,
-        address: String,
-        zkeypath: String
-    ): String
-
-    @ReactMethod
-    fun provePassport(inputs: ReadableMap, zkeypath: String, callback: Callback) {
-        Log.d(TAG, "inputs in provePassport kotlin: " + inputs.toString())
-        
-        val mrz = inputs.getArray("mrz")?.toArrayList()?.map { it as String } ?: listOf()
-        val reveal_bitmap = inputs.getArray("reveal_bitmap")?.toArrayList()?.map { it as String } ?: listOf()
-        val data_hashes = inputs.getArray("dataHashes")?.toArrayList()?.map { it as String } ?: listOf()
-        val datahashes_padded_length = inputs.getString("datahashes_padded_length") ?: ""
-        val e_content_bytes = inputs.getArray("eContentBytes")?.toArrayList()?.map { it as String } ?: listOf()
-        val signature = inputs.getArray("signature")?.toArrayList()?.map { it as String } ?: listOf()
-        val signature_algorithm = inputs.getString("signatureAlgorithm") ?: ""
-        val pubkey = inputs.getArray("pubkey")?.toArrayList()?.map { it as String } ?: listOf()
-        val path_indices = inputs.getArray("pathIndices")?.toArrayList()?.map { it as String } ?: listOf()
-        val siblings = inputs.getArray("siblings")?.toArrayList()?.map { it as String } ?: listOf()
-        val root = inputs.getString("root") ?: ""
-        val address = inputs.getString("address") ?: ""
-        
-        val resultFromProof = provePassport(
-            mrz,
-            reveal_bitmap,
-            data_hashes,
-            datahashes_padded_length,
-            e_content_bytes,
-            signature,
-            signature_algorithm,
-            pubkey,
-            path_indices,
-            siblings,
-            root,
-            address,
-            zkeypath
-        )
-
-        Log.d(TAG, "resultFromProof: " + resultFromProof.toString())
-
-        // Return the result to JavaScript through the callback
-        callback.invoke(null, resultFromProof)
-    }
-
-    @ReactMethod
-    fun downloadFile(url: String, fileName: String, promise: Promise) {
-        val client = OkHttpClient()
-        val request = Request.Builder().url(url).build()
-    
-        try {
-            client.newCall(request).execute().use { response ->
-                if (!response.isSuccessful) throw IOException("Failed to download file: $response")
-    
-                // Use the app's internal files directory
-                val fileOutputStream = reactContext.openFileOutput(fileName, Context.MODE_PRIVATE)
-    
-                val inputStream = response.body?.byteStream()
-                inputStream.use { input ->
-                    fileOutputStream.use { output ->
-                        input?.copyTo(output)
-                    }
-                }
-    
-                // Resolve the promise with the file path
-                val file = File(reactContext.filesDir, fileName)
-                promise.resolve(file.absolutePath)
-            }
-        } catch (e: Exception) {
-            // Reject the promise if an exception occurs
-            promise.reject(e)
-        }
-    }
-
-
     companion object {
         private val TAG = RNPassportReaderModule::class.java.simpleName
         private const val PARAM_DOC_NUM = "documentNumber";
@@ -725,8 +626,5 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         const val JPEG_DATA_URI_PREFIX = "data:image/jpeg;base64,"
         private const val KEY_IS_SUPPORTED = "isSupported"
         var instance: RNPassportReaderModule? = null
-        init {
-            System.loadLibrary("ark_circom_passport")
-        }
     }
 }

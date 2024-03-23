@@ -32,8 +32,8 @@ export function buildPubkeyTree(pubkeys: any[]) {
 export function getLeaf(pubkey: any, i?: number): bigint {
   const sigAlgFormatted = formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent)
 
-  console.log('pubkey', pubkey)
-  console.log('sigAlgFormatted', sigAlgFormatted)
+  // console.log('pubkey', pubkey)
+  // console.log('sigAlgFormatted', sigAlgFormatted)
   if (
     sigAlgFormatted === "sha256WithRSAEncryption_65537"
     || sigAlgFormatted === "sha256WithRSAEncryption_3"
@@ -46,7 +46,7 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     // This is because Poseidon circuit only supports an array of 16 elements, and field size is 254.
     const pubkeyChunked = bigIntToChunkedBytes(BigInt(pubkey.modulus), 192, 11);
 
-    console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
+    // console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
     try {
       // leaf is poseidon(signatureAlgorithm, ...pubkey)
       return poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])

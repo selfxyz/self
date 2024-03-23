@@ -1,5 +1,7 @@
 apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
+apply plugin: 'kotlin-android'
+
 
 /**
  * This is the configuration block to customize your React Native Android app.
@@ -122,9 +124,6 @@ dependencies {
 }    
     implementation project(':passportreader')
     implementation 'org.jmrtd:jmrtd:0.7.18'
-    // implementation files('libs/jmrtd-0.5.5.jar')
-    //implementation 'org.jmrtd:jmrtd:0.7.35'
-
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {
@@ -137,6 +136,10 @@ dependencies {
     } else {
         implementation jscFlavor
     }
+    implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+    implementation("net.java.dev.jna:jna:5.13.0@aar")
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
+
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

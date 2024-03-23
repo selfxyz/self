@@ -52,7 +52,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   ens,
   setEns
 }) => {
-  const [zkeyLoaded, setZkeyLoaded] = useState(false);
+  const [zkeyLoaded, setZkeyLoaded] = useState(true);
   
   const downloadZkey = async () => {
     // TODO: don't redownload if already in the file system at path, if downloaded from previous session

@@ -20,7 +20,7 @@ const config: HardhatUserConfig = {
       accounts: [process.env.PKEY as string],
     },
     sepolia: {
-      url: "https://rpc.notadegen.com/eth/sepolia",
+      url: "https://eth-sepolia.public.blastapi.io",
       accounts: [process.env.PKEY as string],
     }
   },

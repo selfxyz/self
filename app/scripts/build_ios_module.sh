@@ -1,3 +1,6 @@
+#!/bin/bash
+
+# This is adapted from mopro
 
 ARCHITECTURE="aarch64-apple-ios" # or "x86_64-apple-ios" for "x86_64", "aarch64-apple-ios-sim" for simulator
 LIB_DIR="release" # or "debug"

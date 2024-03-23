@@ -227,7 +227,7 @@ function setFirstBitOfLastByteToZero(bytes: number[]) {
 }
 
 // from reverse engineering ark-serialize.
-export function formatProofIOS(proof: number[]) {
+export function formatProof(proof: number[]) {
   const splittedProof = splitInto(proof, 32);
   splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
   splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
@@ -244,7 +244,7 @@ export function formatProofIOS(proof: number[]) {
   }
 }
 
-export function formatInputsIOS(inputs: number[]) {
+export function formatInputs(inputs: number[]) {
   const splitted = splitInto(inputs.slice(8), 32);
   return splitted.map(bytesToBigInt);
 }

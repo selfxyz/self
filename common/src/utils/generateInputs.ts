@@ -39,18 +39,19 @@ export function generateCircuitInputs(passportData: PassportData, tree: IMT, rev
     MAX_DATAHASHES_LEN
   );
 
+  // don't forget to wrap everything in arrays for mopro bindings
   return {
     mrz: formattedMrz.map(byte => String(byte)),
     reveal_bitmap: reveal_bitmap.map(byte => String(byte)),
     dataHashes: Array.from(messagePadded).map((x) => x.toString()),
-    datahashes_padded_length: messagePaddedLen.toString(),
+    datahashes_padded_length: [messagePaddedLen.toString()],
     eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
     signature: splitToWords(
       BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
       BigInt(64),
       BigInt(32)
     ),
-    signatureAlgorithm: SignatureAlgorithm[sigAlgFormatted].toString(),
+    signatureAlgorithm: [SignatureAlgorithm[sigAlgFormatted].toString()],
     pubkey: splitToWords(
       BigInt(passportData.pubKey.modulus as string),
       BigInt(64),
@@ -58,7 +59,7 @@ export function generateCircuitInputs(passportData: PassportData, tree: IMT, rev
     ),
     pathIndices: proof.pathIndices.map(index => index.toString()),
     siblings: proof.siblings.flat().map(index => index.toString()),
-    root: tree.root.toString(),
-    address,
+    root: [tree.root.toString()],
+    address: [BigInt(address).toString()],
   }
 }
