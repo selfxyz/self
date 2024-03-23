@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# This is adapted from mopro
+
 DEVICE_TYPE="arm64"
 BUILD_MODE="release"
 
