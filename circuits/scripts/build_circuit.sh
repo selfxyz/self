@@ -45,9 +45,8 @@ then
 else
     echo "arkzkey-util already installed, skipping."
 fi
-cd ../circuits
 
-cd build
+cd ../../circuits/build
 arkzkey-util proof_of_passport_final.zkey
 echo "Arkzkey generated"
 cd ..
