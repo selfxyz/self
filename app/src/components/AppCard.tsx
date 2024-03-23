@@ -40,6 +40,7 @@ const AppCard: React.FC<AppCardProps> = ({
             borderRadius="$11"
             borderColor={(selected) ? "#3185FC" : ((Platform.OS === 'ios') ? "white" : "transparent")}
             borderWidth={(selected) ? 3 : 3}
+            backgroundColor='white'
             shadowColor={selected ? "#3185FC" : "black"}
         >
             <Card
@@ -47,8 +48,7 @@ const AppCard: React.FC<AppCardProps> = ({
                 elevation={0}
                 onTouchStart={selectable ? onTouchStart : showtoast}
             >
-                <XStack w="100%"
-                >
+                <XStack w="100%">
                     <Card.Header w="100%">
                         <XStack ai="center" py="$1">
                             <YStack width={250}>
