@@ -1,11 +1,31 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
 import { assert, sha256Pad } from "./sha256Pad";
 import { PassportData } from "./types";
 import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte, getCurrentDateYYMMDD } from "./utils";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
+import serializedTree from "../../pubkeys/serialized_tree.json";
+import { poseidon2 } from "poseidon-lite";
 
-export function generateCircuitInputs(passportData: PassportData, tree: IMT, reveal_bitmap: string[], address: string) {
+export function generateCircuitInputs(
+  passportData: PassportData,
+  reveal_bitmap: string[],
+  address: string,
+  options: {developmentMode?: boolean} = {developmentMode: false}
+) {
+  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+  tree.setNodes(serializedTree)
+
+  if (options.developmentMode) {
+    // This adds the pubkey of the passportData to the registry so that it's always found for testing purposes.
+    tree.insert(getLeaf({
+      signatureAlgorithm: passportData.signatureAlgorithm,
+      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+      modulus: passportData.pubKey.modulus,
+      exponent: passportData.pubKey.exponent
+    }).toString())
+  }
+
   const formattedMrz = formatMrz(passportData.mrz);
 
   const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);

@@ -2,15 +2,12 @@ import { describe } from 'mocha'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { groth16 } from 'snarkjs'
-import { TREE_DEPTH, attributeToPosition } from '../../common/src/constants/constants'
+import { attributeToPosition } from '../../common/src/constants/constants'
 import { getPassportData } from '../../common/src/utils/passportData'
 import { generateCircuitInputs } from '../../common/src/utils/generateInputs'
 import path from 'path'
 import fs from 'fs'
 import { PassportData } from '../../common/src/utils/types'
-import { getLeaf } from '../../common/src/utils/pubkeyTree'
-import { IMT } from '@zk-kit/imt'
-import { poseidon2 } from 'poseidon-lite'
 const wasm_tester = require("circom_tester").wasm;
 
 chai.use(chaiAsPromised)
@@ -26,27 +23,14 @@ describe('Circuit tests', function () {
   this.beforeAll(async () => {
     passportData = getPassportData();
     
-    const serializedTree = JSON.parse(fs.readFileSync("../common/pubkeys/serialized_tree.json") as unknown as string)
-    const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
-    tree.setNodes(serializedTree)
-
-    // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
-    // Comment when testing with real passport data
-    tree.insert(getLeaf({
-      signatureAlgorithm: passportData.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: passportData.pubKey.modulus,
-      exponent: passportData.pubKey.exponent
-    }).toString())
-    
     const reveal_bitmap = Array(90).fill('0');
     const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
 
     inputs = generateCircuitInputs(
       passportData,
-      tree,
       reveal_bitmap,
-      address
+      address,
+      { developmentMode: true }
     );
 
     console.log('inputs', inputs)

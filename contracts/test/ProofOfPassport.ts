@@ -2,8 +2,7 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 import { getPassportData } from "../../common/src/utils/passportData";
-import { getLeaf } from "../../common/src/utils/pubkeyTree";
-import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
+import { countryCodes } from "../../common/src/constants/constants";
 import { formatRoot, getCurrentDateYYMMDD } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
@@ -12,7 +11,6 @@ import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
 import { IMT } from "@zk-kit/imt";
-import { poseidon2 } from "poseidon-lite";
 
 describe("Proof of Passport", function () {
   this.timeout(0);
@@ -35,19 +33,6 @@ describe("Proof of Passport", function () {
 
     passportData = getPassportData();
 
-    const serializedTree = JSON.parse(fs.readFileSync("../common/pubkeys/serialized_tree.json") as unknown as string)
-    tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
-    tree.setNodes(serializedTree)
-
-    // This adds the pubkey of the passportData to the registry even if it's not there for testing purposes.
-    // Comment when testing with real passport data
-    tree.insert(getLeaf({
-      signatureAlgorithm: passportData.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: passportData.pubKey.modulus,
-      exponent: passportData.pubKey.exponent
-    }).toString())
-
     const attributeToReveal = {
       issuing_state: true,
       name: true,
@@ -65,9 +50,9 @@ describe("Proof of Passport", function () {
 
     inputs = generateCircuitInputs(
       passportData,
-      tree,
       reveal_bitmap,
-      address
+      address,
+      { developmentMode: true }
     );
 
     console.log('generating proof...');

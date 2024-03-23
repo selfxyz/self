@@ -9,11 +9,6 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?81d031a":
-  version "2.0.0-beta.1"
-  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?81d031a"
-  integrity sha512-8UfycSzQ5KHBMOxqCXCSzNuUcUNzc3cF+W+7utE+ZYscjgM/G2VZVQZTjDFLPd01irrx3FFCL1EVQ3X2GA1j7w==
-
 "@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542":
   version "2.0.0-beta.1"
   resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?b6e7d542#ade4ca8ba82e2a4d54889bcda143c81f82d61580"
