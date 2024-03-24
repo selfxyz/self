@@ -163,4 +163,13 @@ contract Formatter is Ownable {
             return true;
         }
     }
+
+    function formatAge(string memory age) public pure returns (string memory) {
+        // if it's an empty two bytes string, just show N/A
+        return bytes(age).length == 2
+            && bytes(age)[0] == 0x00
+            && bytes(age)[1] == 0x00
+            ? "N/A"
+            : age;
+    }
 }

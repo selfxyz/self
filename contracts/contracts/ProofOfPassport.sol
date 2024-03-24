@@ -196,7 +196,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
                     '"},{"trait_type": "Expired", "value": "',
                     isExpired(_tokenId) ? "Yes" : "No",
                     '"},{"trait_type": "Older Than", "value": "',
-                    attributes.values[7],
+                    formatter.formatAge(attributes.values[7]),
                     '"}',
                 "],",
                 '"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://github.com/zk-passport/proof-of-passport","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
