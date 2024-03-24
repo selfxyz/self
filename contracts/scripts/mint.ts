@@ -20,6 +20,7 @@ async function main() {
     date_of_birth: true,
     gender: true,
     expiry_date: true,
+    older_than: true,
   }
 
   const reveal_bitmap = revealBitmapFromMapping(attributeToReveal)

@@ -85,8 +85,6 @@ export function generateCircuitInputs(
     siblings: proof.siblings.flat().map(index => index.toString()),
     root: [tree.root.toString()],
     address: [BigInt(address).toString()],
-    // current_date: current_date,
-    // majority: majority.map(byte => String(byte)),
     majority: [BigInt(49).toString(), BigInt(56).toString()],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
   }

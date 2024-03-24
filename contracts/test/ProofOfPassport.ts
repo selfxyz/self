@@ -126,7 +126,6 @@ describe("Proof of Passport", function () {
         .connect(thirdAccount) // fine that it's not the same account as address is taken from the proof
         .mint(...callData)).not.to.be.reverted;
 
-
       expect(await proofOfPassport.balanceOf(otherAccount.address)).to.equal(1);
     });
 
@@ -146,7 +145,7 @@ describe("Proof of Passport", function () {
       ).to.be.revertedWith("Invalid proof");
     });
 
-    it("Should have a correct tokenURI a user to mint a SBT", async function () {
+    it("Should have a valid tokenURI", async function () {
       const { proofOfPassport, otherAccount } = await loadFixture(
         deployHardhatFixture
       );

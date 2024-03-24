@@ -3,12 +3,11 @@ import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@zk-kit/imt';
-
+import serializedTree from "../../common/pubkeys/serialized_tree.json";
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
-  const serializedTree = JSON.parse(fs.readFileSync("../app/deployments/serialized_tree.json") as unknown as string)
   const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
   tree.setNodes(serializedTree)
 
