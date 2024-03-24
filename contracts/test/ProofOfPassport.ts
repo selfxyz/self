@@ -96,7 +96,7 @@ describe("Proof of Passport", function () {
       console.log(`Formatter deployed to ${formatter.target}`);
 
       const Registry = await ethers.getContractFactory("Registry");
-      const registry = await Registry.deploy(formatRoot(inputs.root));
+      const registry = await Registry.deploy(formatRoot(inputs.root[0]));
       await registry.waitForDeployment();
 
       console.log(`Registry deployed to ${registry.target}`);
