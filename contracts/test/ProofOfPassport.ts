@@ -10,12 +10,11 @@ import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
-import { IMT } from "@zk-kit/imt";
 
 describe("Proof of Passport", function () {
   this.timeout(0);
 
-  let passportData, tree: IMT, proof, inputs: any, publicSignals, revealChars, callData: any;
+  let passportData, proof, inputs: any, publicSignals, revealChars, callData: any;
 
   before(async function generateProof() {
     // Log the current block timestamp
@@ -97,7 +96,7 @@ describe("Proof of Passport", function () {
       console.log(`Formatter deployed to ${formatter.target}`);
 
       const Registry = await ethers.getContractFactory("Registry");
-      const registry = await Registry.deploy(formatRoot(tree.root));
+      const registry = await Registry.deploy(formatRoot(inputs.root));
       await registry.waitForDeployment();
 
       console.log(`Registry deployed to ${registry.target}`);
