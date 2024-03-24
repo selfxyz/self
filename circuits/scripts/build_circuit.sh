@@ -28,8 +28,15 @@ circom circuits/proof_of_passport.circom -l node_modules --r1cs --wasm --output 
 echo "building zkey"
 yarn snarkjs groth16 setup build/proof_of_passport.r1cs build/powersOfTau28_hez_final_20.ptau build/proof_of_passport.zkey
 
+if command -v openssl &> /dev/null
+then
+    RAND_STR=$(openssl rand -hex 64)
+else
+    RAND_STR="random text"
+fi
+
 echo "building vkey"
-echo "test random" | yarn snarkjs zkey contribute build/proof_of_passport.zkey build/proof_of_passport_final.zkey
+echo $RAND_STR | yarn snarkjs zkey contribute build/proof_of_passport.zkey build/proof_of_passport_final.zkey
 yarn snarkjs zkey export verificationkey build/proof_of_passport_final.zkey build/proof_of_passport_vkey.json
 
 yarn snarkjs zkey export solidityverifier build/proof_of_passport_final.zkey build/Verifier.sol
