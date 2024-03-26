@@ -34,6 +34,9 @@ describe('Circuit tests', function () {
     );
 
     console.log('inputs', inputs)
+    const inputsFilePath = path.join(__dirname, './inputs.json');
+    fs.writeFileSync(inputsFilePath, JSON.stringify(inputs, null, 2));
+    console.log(`Inputs written to file: ${inputsFilePath}`);
   })
 
   describe('Proof', function () {

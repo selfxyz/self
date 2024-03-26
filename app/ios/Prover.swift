@@ -10,6 +10,10 @@ import React
 import Security
 import MoproKit
 
+#if canImport(witnesscalc_authV2)
+import witnesscalc_authV2
+#endif
+
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
@@ -69,42 +73,49 @@ class Prover: NSObject {
       // inputs["pubkey"] = pubkey;
       // inputs["address"] = address;
 
-      print(inputs)
+      let inputsDict = ["a": "2", "b": "4"]
+      let inputsMul = try! JSONEncoder().encode(inputsDict)
+      print("inputsMul size: \(inputsMul.count) bytes")
+      print("inputsMul data: \(String(data: inputsMul, encoding: .utf8) ?? "")")
       
       let start = CFAbsoluteTimeGetCurrent()
 
-      // Generate Proof
-      let generateProofResult = try generateProof2(circuitInputs: inputs)
-      assert(!generateProofResult.proof.isEmpty, "Proof should not be empty")
+      let wtns = try! calcWtnsAuthV2(inputsJson: inputsMul)
+      print("wtns size: \(wtns.count) bytes")
+      print("wtns data (hex): \(wtns.map { String(format: "%02hhx", $0) }.joined())")
 
-      // Record end time and compute duration
-      let end = CFAbsoluteTimeGetCurrent()
-      let timeTaken = end - start
-      print("Proof generation took \(timeTaken) seconds.")
+    //   // Generate Proof
+    //   let generateProofResult = try generateProof2(circuitInputs: inputs)
+    //   assert(!generateProofResult.proof.isEmpty, "Proof should not be empty")
 
-      // Store the generated proof and public inputs for later verification
-      print("generateProofResult", generateProofResult)
-      generatedProof = generateProofResult.proof
-      publicInputs = generateProofResult.inputs
+    //   // Record end time and compute duration
+    //   let end = CFAbsoluteTimeGetCurrent()
+    //   let timeTaken = end - start
+    //   print("Proof generation took \(timeTaken) seconds.")
 
-      // Convert Data to array of bytes
-      let proofBytes = [UInt8](generateProofResult.proof)
-      let inputsBytes = [UInt8](generateProofResult.inputs)
+    //   // Store the generated proof and public inputs for later verification
+    //   print("generateProofResult", generateProofResult)
+    //   generatedProof = generateProofResult.proof
+    //   publicInputs = generateProofResult.inputs
 
-      print("proofBytes", proofBytes)
-      print("inputsBytes", inputsBytes)
+    //   // Convert Data to array of bytes
+    //   let proofBytes = [UInt8](generateProofResult.proof)
+    //   let inputsBytes = [UInt8](generateProofResult.inputs)
 
-      // Create a dictionary with byte arrays
-      let resultDict: [String: [UInt8]] = [
-          "proof": proofBytes,
-          "inputs": inputsBytes
-      ]
+    //   print("proofBytes", proofBytes)
+    //   print("inputsBytes", inputsBytes)
 
-      // Serialize dictionary to JSON
-      let jsonData = try JSONSerialization.data(withJSONObject: resultDict, options: [])
-      let jsonString = String(data: jsonData, encoding: .utf8)!
+    //   // Create a dictionary with byte arrays
+    //   let resultDict: [String: [UInt8]] = [
+    //       "proof": proofBytes,
+    //       "inputs": inputsBytes
+    //   ]
 
-      resolve(jsonString)
+    //   // Serialize dictionary to JSON
+    //   let jsonData = try JSONSerialization.data(withJSONObject: resultDict, options: [])
+    //   let jsonString = String(data: jsonData, encoding: .utf8)!
+
+    //   resolve(jsonString)
     } catch let error as MoproError {
       print("MoproError: \(error)")
       reject("PROVER", "An error occurred during proof generation", error)
@@ -138,3 +149,47 @@ class Prover: NSObject {
     }
   }
 }
+
+
+public func calcWtnsAuthV2(inputsJson: Data) throws -> Data {
+    let dat = NSDataAsset(name: "authV2.dat")!.data
+    return try _calcWtnsAuthV2(dat: dat, jsonData: inputsJson)
+}
+
+enum WitnessCalculationError: Error {
+    case error(String)
+    case shortBuffer(requiredSize: UInt)
+}
+
+private func _calcWtnsAuthV2(dat: Data, jsonData: Data) throws -> Data {
+    let datSize = UInt(dat.count)
+    let jsonDataSize = UInt(jsonData.count)
+
+    let errorSize = UInt(256);
+    
+    let wtnsSize = UnsafeMutablePointer<UInt>.allocate(capacity: Int(1));
+    wtnsSize.initialize(to: UInt(100 * 1024 * 1024 ))
+    
+    let wtnsBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: (100 * 1024 * 1024))
+    let errorBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(errorSize))
+    
+    let result = witnesscalc_authV2(
+        (dat as NSData).bytes, datSize,
+        (jsonData as NSData).bytes, jsonDataSize,
+        wtnsBuffer, wtnsSize,
+        errorBuffer, errorSize
+    )
+    
+    if result == WITNESSCALC_ERROR {
+        let errorMessage = String(bytes: Data(bytes: errorBuffer, count: Int(errorSize)), encoding: .utf8)!
+            .replacingOccurrences(of: "\0", with: "")
+        throw WitnessCalculationError.error(errorMessage)
+    }
+
+    if result == WITNESSCALC_ERROR_SHORT_BUFFER {
+        throw WitnessCalculationError.shortBuffer(requiredSize: wtnsSize.pointee)
+    }
+    
+    return Data(bytes: wtnsBuffer, count: Int(wtnsSize.pointee))
+}
+
