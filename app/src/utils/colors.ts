@@ -5,3 +5,5 @@ export const componentBgColor2 = "#232323";
 export const blueColor = "#3185FC";
 export const textColor1 = "#ededed";
 export const textColor2 = "#a0a0a0";
+export const blueColorDark = "#11233e"
+export const blueColorLight = "#0090ff"

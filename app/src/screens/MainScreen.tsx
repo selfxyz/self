@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Profiler } from 'react';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4 } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ExternalLink } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
@@ -13,6 +13,7 @@ import { Linking, Platform, Pressable } from 'react-native';
 import { Keyboard } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
 import { bgColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
+import MintScreen from './MintScreen';
 
 interface MainScreenProps {
   onStartCameraScan: () => void;
@@ -117,11 +118,14 @@ const MainScreen: React.FC<MainScreenProps> = ({
         setNFCScanIsOpen(false);
       }, 0);
     }
-    else if (step >= Steps.NFC_SCAN_COMPLETED) {
+    else if (step == Steps.NFC_SCAN_COMPLETED) {
       // Set the timeout and store its ID
       timeoutId = setTimeout(() => {
         setNFCScanIsOpen(false);
       }, 700);
+    }
+    else if (step == Steps.PROOF_GENERATED) {
+      setSelectedTab("mint");
     }
     if (step == Steps.NFC_SCAN_COMPLETED) {
       setSelectedTab("app");
@@ -368,62 +372,22 @@ const MainScreen: React.FC<MainScreenProps> = ({
             setAddress={setAddress}
             generatingProof={generatingProof}
             handleProve={handleProve}
-            step={step}
-            mintText={mintText}
-            proof={proof}
-            proofTime={proofTime}
-            handleMint={handleMint}
             hideData={hideData}
             ens={ens}
             setEns={setEns}
             majority={majority}
             setMajority={setMajority} />
         </Tabs.Content>
-        <XStack bc="#343434" h={1.2} />
-
-        {/* {(!keyboardVisible || Platform.OS == "ios") &&
-          <Tabs.List pt="$2" pb="$2">
-            <Tabs.Tab value="scan" unstyled w="33%">
-              <YStack ai="center">
-                <Scan color={selectedTab === "scan" ? '#369eff' : '#a0a0a0'} />
-                <Text fontSize="$2" color={selectedTab === "scan" ? '#369eff' : '#a0a0a0'}>Scan</Text>
-              </YStack>
-            </Tabs.Tab>
-            {step >= Steps.NFC_SCAN_COMPLETED ?
-              <Tabs.Tab value="app" unstyled w="33%">
-                <YStack ai="center">
-                  <LayoutGrid color={selectedTab === "app" ? '#369eff' : '#a0a0a0'} />
-                  <Text fontSize="$2" color={selectedTab === "app" ? '#3185FC' : '#a0a0a0'}>Apps</Text>
-                </YStack>
-              </Tabs.Tab>
-              :
-              <Tabs.Tab value="scan" unstyled w="33%">
-                <YStack ai="center">
-                  <LayoutGrid color="#bcbcbc" />
-                  <Text fontSize="$2" color="#bcbcbc">Apps</Text>
-                </YStack>
-              </Tabs.Tab>
-
-            }
-            {
-              (step >= Steps.NFC_SCAN_COMPLETED) && (selectedApp != null) ?
-                <Tabs.Tab value="prove" unstyled w="33%">
-                  <YStack ai="center">
-                    <UserCheck color={selectedTab === "generate" ? '#369eff' : '#a0a0a0'} />
-                    <Text fontSize="$2" color={selectedTab === "generate" ? '#369eff' : '#a0a0a0'}>Prove</Text>
-                  </YStack>
-                </Tabs.Tab>
-                :
-                <Tabs.Tab value={step >= Steps.NFC_SCAN_COMPLETED ? "app" : "scan"} unstyled w="33%">
-                  <YStack ai="center">
-                    <UserCheck color="#a0a0a0" />
-                    <Text fontSize="$2" color="#a0a0a0">Prove</Text>
-                  </YStack>
-                </Tabs.Tab>
-            }
-          </Tabs.List>
-
-        } */}
+        <Tabs.Content value="mint" f={1}>
+          <MintScreen
+            selectedApp={selectedApp}
+            step={step}
+            mintText={mintText}
+            proof={proof}
+            proofTime={proofTime}
+            handleMint={handleMint}
+          />
+        </Tabs.Content>
       </Tabs>
     </YStack >
   );

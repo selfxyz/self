@@ -38,7 +38,6 @@ const AppCard: React.FC<AppCardProps> = ({
     return (
         <YStack
             overflow="hidden"
-            elevation={selected ? "$3" : "$3"}
             borderRadius="$7"
             borderWidth={1.2}
             borderColor={borderColor}

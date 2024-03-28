@@ -2,6 +2,7 @@ import React from 'react';
 import { YStack, Text, XStack, Button } from 'tamagui';
 import { Steps } from '../utils/utils';
 import { Camera, ExternalLink, Nfc } from '@tamagui/lucide-icons';
+import { blueColorDark, blueColorLight } from '../utils/colors';
 
 interface ScanScreenProps {
   onStartCameraScan: () => void;
@@ -37,8 +38,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
                 <Text color="#3bb178" fow="bold">Done</Text>
               </XStack>
             ) : (
-              <XStack ml="$2" p="$2" px="$3" bc="#2b1400" borderRadius="$10">
-                <Text color="#f7670a" fow="bold">To-do</Text>
+              <XStack ml="$2" p="$2" px="$3" bc={blueColorDark} borderRadius="$10">
+                <Text color={blueColorLight} fow="bold">To-do</Text>
               </XStack>
             )}
             <XStack f={1} />
@@ -75,8 +76,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
                 <Text color="#a0a0a0" fontWeight="bold">To-do</Text>
               </YStack>
             ) : step < Steps.NFC_SCAN_COMPLETED ? (
-              <XStack ml="$2" p="$2" px="$3" bc="#2b1400" borderRadius="$10">
-                <Text color="#f7670a" fow="bold">To-do</Text>
+              <XStack ml="$2" p="$2" px="$3" bc={blueColorDark} borderRadius="$10">
+                <Text color={blueColorLight} fow="bold">To-do</Text>
               </XStack>
             ) : (
               <XStack ml="$2" p="$2" px="$3" bc="#0d1e18" borderRadius="$10">
