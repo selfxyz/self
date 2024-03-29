@@ -61,7 +61,7 @@ Most countries use RSA with sha256 but some of them use other signature algorith
 
 #### I just read my passport but it says my signature algorithm is not implemented. What do I do ?
 
-Currently we only support the most common one `SHA256withRSA`. We will support the others shortly. Feel free to try your hand at implementing one!
+Currently we only support the most common one `sha256WithRSAEncryption`. We will support the others shortly. Feel free to try your hand at implementing one!
 
 #### What's the ICAO ?
 

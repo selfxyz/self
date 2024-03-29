@@ -6,7 +6,8 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import {Groth16Verifier} from "./Verifier.sol";
 import {Base64} from "./libraries/Base64.sol";
-import {Formatter} from "./libraries/Formatter.sol";
+import {Formatter} from "./Formatter.sol";
+import {Registry} from "./Registry.sol";
 import "hardhat/console.sol";
 
 contract ProofOfPassport is ERC721Enumerable, Ownable {
@@ -15,7 +16,7 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
 
     Groth16Verifier public immutable verifier;
     Formatter public formatter;
-    address public cscaPubkey = 0x0000000000000000000000000000000000000000;
+    Registry public registry;
 
     mapping(uint256 => bool) public nullifiers;
 
@@ -27,16 +28,21 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
     }
 
     struct Attributes {
-        string[7] values;
+        string[8] values;
     }
 
     AttributePosition[] public attributePositions;
 
     mapping(uint256 => Attributes) private tokenAttributes;
 
-    constructor(Groth16Verifier v, Formatter f) ERC721("ProofOfPassport", "ProofOfPassport") {
+    constructor(
+        Groth16Verifier v,
+        Formatter f,
+        Registry r
+    ) ERC721("ProofOfPassport", "ProofOfPassport") {
         verifier = v;
         formatter = f;
+        registry = r;
         setupAttributes();
         transferOwnership(msg.sender);
     }
@@ -44,46 +50,49 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
     function setupAttributes() internal {
         attributePositions.push(AttributePosition("issuing_state", 2, 4, 0));
         attributePositions.push(AttributePosition("name", 5, 43, 1));
-        attributePositions.push(AttributePosition("passport_number", 44, 52, 2));
+        attributePositions.push(
+            AttributePosition("passport_number", 44, 52, 2)
+        );
         attributePositions.push(AttributePosition("nationality", 54, 56, 3));
         attributePositions.push(AttributePosition("date_of_birth", 57, 62, 4));
         attributePositions.push(AttributePosition("gender", 64, 64, 5));
         attributePositions.push(AttributePosition("expiry_date", 65, 70, 6));
-    }
-
-    function setCSCApubKey(address _CSCApubKey) public onlyOwner {
-        cscaPubkey = _CSCApubKey;
+        attributePositions.push(AttributePosition("older_than", 88, 89, 7));
     }
 
     function mint(
         uint256[2] memory a,
         uint256[2][2] memory b,
         uint256[2] memory c,
-        uint256[16] memory inputs
+        uint256[12] memory inputs
     ) public {
-        // check that the nullifier has not been used before
-        require(!nullifiers[inputs[3]], "Signature already nullified");
-
-
-
-        // Verify that the public key for RSA matches the hardcoded one
-        // for (uint256 i = body_len; i < msg_len - 1; i++) {
-        //     require(mailServer.isVerified(domain, i - body_len, inputs[i]), "Invalid: RSA modulus not matched");
-        // }
-        // inputs[4]
-
-        // Verify that the public key for RSA matches the hardcoded one
-        // commented out for now, since hard to keep up with all
-        // require(cscaPubkey == inputs[], "Invalid pubkey in inputs");
-
         require(verifier.verifyProof(a, b, c, inputs), "Invalid Proof");
 
+        // check that the nullifier has not been used before
+        // require(!nullifiers[inputs[3]], "Signature already nullified");
+
+        require(registry.checkRoot(bytes32(inputs[4])), "Invalid merkle root");
+
+        // require that the current date is valid
+        // Convert the last four parameters into a valid timestamp, adding 30 years to adjust for block.timestamp starting in 1970
+        uint[6] memory dateNum;
+        for (uint i = 0; i < 6; i++) {
+            dateNum[i] = inputs[6 + i];
+        }
+        uint currentTimestamp = getCurrentTimestamp(dateNum);
+
+        // Check that the current date is within a +/- 1 day range
+        require(
+            currentTimestamp >= block.timestamp - 1 days  && currentTimestamp <= block.timestamp + 1 days,
+            "Current date is not within the valid range"
+        );
+
+
         // Effects: Mint token
-        address addr = address(uint160(inputs[inputs.length - 1])); // generally the last one
+        address addr = address(uint160(inputs[5])); // address is the 5th input
         uint256 newTokenId = totalSupply();
         _mint(addr, newTokenId);
         nullifiers[inputs[3]] = true;
-
 
         // Set attributes
         uint256[3] memory firstThree = sliceFirstThree(inputs);
@@ -94,7 +103,9 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
 
         for (uint i = 0; i < attributePositions.length; i++) {
             AttributePosition memory attribute = attributePositions[i];
-            bytes memory attributeBytes = new bytes(attribute.end - attribute.start + 1);
+            bytes memory attributeBytes = new bytes(
+                attribute.end - attribute.start + 1
+            );
             for (uint j = attribute.start; j <= attribute.end; j++) {
                 attributeBytes[j - attribute.start] = charcodes[j];
             }
@@ -104,9 +115,11 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         }
     }
 
-    function fieldElementsToBytes(uint256[3] memory publicSignals) public pure returns (bytes memory) {
-        uint8[3] memory bytesCount = [31, 31, 26];
-        bytes memory bytesArray = new bytes(88); // 31 + 31 + 26
+    function fieldElementsToBytes(
+        uint256[3] memory publicSignals
+    ) public pure returns (bytes memory) {
+        uint8[3] memory bytesCount = [31, 31, 28];
+        bytes memory bytesArray = new bytes(90); // 31 + 31 + 28
 
         uint256 index = 0;
         for (uint256 i = 0; i < 3; i++) {
@@ -120,7 +133,9 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         return bytesArray;
     }
 
-    function sliceFirstThree(uint256[16] memory input) public pure returns (uint256[3] memory) {
+    function sliceFirstThree(
+        uint256[12] memory input
+    ) public pure returns (uint256[3] memory) {
         uint256[3] memory sliced;
 
         for (uint256 i = 0; i < 3; i++) {
@@ -137,7 +152,10 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
-        require(from == address(0), "Cannot transfer - Proof of Passport is soulbound");
+        require(
+            from == address(0),
+            "Cannot transfer - Proof of Passport is soulbound"
+        );
     }
 
     function tokenURI(
@@ -177,6 +195,8 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
                     formatter.formatDate(attributes.values[6]),
                     '"},{"trait_type": "Expired", "value": "',
                     isExpired(_tokenId) ? "Yes" : "No",
+                    '"},{"trait_type": "Older Than", "value": "',
+                    formatter.formatAge(attributes.values[7]),
                     '"}',
                 "],",
                 '"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://github.com/zk-passport/proof-of-passport","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
@@ -196,8 +216,64 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
 
     function isExpired(uint256 _tokenId) public view returns (bool) {
         Attributes memory attributes = tokenAttributes[_tokenId];
-        uint256 expiryDate = formatter.dateToUnixTimestamp(attributes.values[6]);
+        uint256 expiryDate = formatter.dateToUnixTimestamp(
+            attributes.values[6]
+        );
 
         return block.timestamp > expiryDate;
     }
+
+    function getIssuingStateOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[0];
+    }
+
+    function getNameOf(uint256 _tokenId) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[1];
+    }
+
+    function getPassportNumberOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[2];
+    }
+
+    function getNationalityOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[3];
+    }
+
+    function getDateOfBirthOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[4];
+    }
+
+    function getGenderOf(uint256 _tokenId) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[5];
+    }
+
+    function getExpiryDateOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[6];
+    }
+
+    function getOlderThanOf(
+        uint256 _tokenId
+    ) public view returns (string memory) {
+        return tokenAttributes[_tokenId].values[7];
+    }
+
+    function getCurrentTimestamp(uint256[6] memory dateNum) public view returns (uint256) {
+        string memory date = "";
+        for (uint i = 0; i < 6; i++) {
+            date = string(abi.encodePacked(date, bytes1(uint8(48 + dateNum[i] % 10))));
+        }
+        uint256 currentTimestamp = formatter.dateToUnixTimestamp(date);
+        return currentTimestamp;
+    }
+
 }

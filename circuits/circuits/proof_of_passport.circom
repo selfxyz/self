@@ -3,54 +3,109 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
+include "./merkle_tree/tree.circom";
+include "./isOlderThan.circom";
 
-template ProofOfPassport(n, k) {
+template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
-    signal input dataHashes[297];
+    signal input dataHashes[max_datahashes_bytes];
+    signal input datahashes_padded_length;
     signal input eContentBytes[104];
-    signal input pubkey[k];
     signal input signature[k];
 
-    signal input reveal_bitmap[88];
+    signal input signatureAlgorithm;
+    signal input pubkey[pubkeySize];
+
+    signal input pathIndices[nLevels];
+    signal input siblings[nLevels];
+    signal input root;
+
+    signal input reveal_bitmap[90];
     signal input address;
 
+    signal input current_date[6]; // YYMMDD - num
+    signal input majority[2]; // YY - ASCII
+
+
+    // Converting pubkey (modulus) into 11 chunks of 192 bits, assuming original n, k are 64 and 32.
+    // This is because Poseidon circuit only supports an array of 16 elements.
+    var k3_chunked_size = 11;  // Since ceil(32 / 3) in integer division is 11
+    signal pubkey_hash_input[k3_chunked_size];
+    for(var i = 0; i < k3_chunked_size; i++) {
+        if(i == k3_chunked_size - 1) {
+            if(k % 3 == 1) {
+                pubkey_hash_input[i] <== pubkey[3*i];
+            } else if(k % 3 == 2) {
+                pubkey_hash_input[i] <== pubkey[3*i] + (1<<n) * pubkey[3*i + 1];
+            } else {
+                pubkey_hash_input[i] <== pubkey[3*i] + (1<<n) * pubkey[3*i + 1] + (1<<(2*n)) * pubkey[3*i + 2];
+            }
+        } else {
+            pubkey_hash_input[i] <== pubkey[3*i] + (1<<n) * pubkey[3*i + 1] + (1<<(2*n)) * pubkey[3*i + 2];
+        }
+    }
+
+    // leaf is poseidon(signatureAlgorithm, pubkey[pubkeySize])
+    signal leaf_hash_input[1 + k3_chunked_size];
+    leaf_hash_input[0] <== signatureAlgorithm;
+    for (var i = 0; i < k3_chunked_size; i++) {
+        leaf_hash_input[i+1] <== pubkey_hash_input[i];
+    }
+    signal leaf <== Poseidon(1 + k3_chunked_size)(leaf_hash_input);
+    // log("Leaf in circuit:", leaf);
+
+    // Verify inclusion in merkle tree
+    signal computedRoot <== MerkleTreeInclusionProof(nLevels)(leaf, pathIndices, siblings);
+    root === computedRoot;
+
+    // sha256WithRSAEncryption_65537 is the only sigAlg supported right now
+    signatureAlgorithm === 1;
+    pubkeySize === k;
+
+
     // Verify passport
-    component PV = PassportVerifier(n, k);
+    component PV = PassportVerifier(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dataHashes <== dataHashes;
+    PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== eContentBytes;
     PV.pubkey <== pubkey;
     PV.signature <== signature;
 
+    // Age range check
+    component isOlderThan = IsOlderThan();
+    isOlderThan.majorityASCII <== majority;
+
+    for (var i = 0; i < 6; i++) {
+        isOlderThan.currDate[i] <== current_date[i];
+        isOlderThan.birthDateASCII[i] <== mrz[62 + i];
+    }
+    signal older_than[2];
+    older_than[0] <== isOlderThan.out * majority[0];
+    older_than[1] <== isOlderThan.out * majority[1];
     // reveal reveal_bitmap bits of MRZ
-    signal reveal[88];
+    signal reveal[90];
     for (var i = 0; i < 88; i++) {
         reveal[i] <== mrz[5+i] * reveal_bitmap[i];
     }
-    signal output reveal_packed[3] <== PackBytes(88, 3, 31)(reveal);
+
+    // Add the majority as last bytes
+    reveal[88] <== older_than[0] * reveal_bitmap[88];
+    reveal[89] <== older_than[1] * reveal_bitmap[89];
+
+    signal output reveal_packed[3] <== PackBytes(90, 3, 31)(reveal);
 
     // make nullifier public;
     // we take nullifier = signature[0, 1] which it 64 + 64 bits long, so chance of collision is 2^128
     signal output nullifier <== signature[0] * 2**64 + signature[1];
-
-    // we don't do Poseidon hash cuz it makes arkworks crash for obscure reasons
-    // we output the pubkey as 11 field elements. 9 is doable also cuz ceil(254/31) = 9
-    signal output pubkey_packed[11];
-    for (var i = 0; i < 11; i++) {
-        if (i < 10) {
-            pubkey_packed[i] <== pubkey[3*i] * 64 * 64 + pubkey[3*i + 1] * 64 + pubkey[3*i + 2];
-        } else {
-            pubkey_packed[i] <== pubkey[3*i] * 64 * 64;
-        }
-    }
 }
 
-component main { public [ address ] } = ProofOfPassport(64, 32);
+component main { public [ address, root, current_date ] } = ProofOfPassport(64, 32, 320, 16, 32);
 
 // Us:
+// 11 + 1 + 3 + 1
+// pubkey + nullifier + reveal_packed + address
+
+// Goal:
 // 1 + 1 + 3 + 1
 // pubkey_hash + nullifier + reveal_packed + address
-
-// Them:
-// 1 + 3 + 1
-// pubkey_hash + reveal_twitter_packed + address

@@ -1,16 +1,4 @@
-import { DataHash } from './types';
-import {sha256} from 'js-sha256';
-
-export function dataHashesObjToArray(dataHashes: {
-  [key: string]: number[];
-}): DataHash[] {
-  return Object.keys(dataHashes)
-    .map(key => {
-      const dataHash = dataHashes[key as keyof typeof dataHashes];
-      return [Number(key), dataHash];
-    })
-    .sort((a, b) => (a[0] as number) - (b[0] as number)) as DataHash[];
-}
+import { sha256 } from 'js-sha256';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -49,7 +37,7 @@ export function parsePubKeyString(pubKeyString: string) {
 
 export function formatAndConcatenateDataHashes(
   mrzHash: number[],
-  dataHashes: DataHash[],
+  dataHashes: [number, number[]][],
 ) {
   // Let's replace the first array with the MRZ hash
   dataHashes.shift();
@@ -58,13 +46,19 @@ export function formatAndConcatenateDataHashes(
 
   let concat: number[] = []
 
-  // Starting sequence. Should be the same for everybody, but not sure
-  concat.push(...[
+  const startingSequence = [
     48, -126, 1, 37, 2, 1, 0, 48, 11, 6, 9, 96, -122, 72, 1, 101, 3, 4, 2, 1,
     48, -126, 1, 17,
-  ])
+  ]
 
-  for(const dataHash of dataHashes) {
+  // console.log(`startingSequence`, startingSequence.map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
+  // Starting sequence. Should be the same for everybody, but not sure
+  concat.push(...startingSequence)
+
+  for (const dataHash of dataHashes) {
+    // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
+
     concat.push(...[48, 37, 2, 1, dataHash[0], 4, 32, ...dataHash[1]])
   }
 
@@ -178,6 +172,27 @@ export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
 }
 
+export function formatSigAlg(
+  sigAlg: string,
+  exponent: string = "65537"
+  // remove the default 65537 once NFC reading always returns exponent
+  // and when ecdsa parameters are managed
+) {  
+  sigAlg = sigAlg.replace(/-/g, '_')
+  return exponent ? `${sigAlg}_${exponent}` : sigAlg
+}
+
+export function bigIntToChunkedBytes(num: BigInt | bigint, bytesPerChunk: number, numChunks: number) {
+  const res: string[] = [];
+  const bigintNum: bigint = typeof num == "bigint" ? num : num.valueOf();
+  const msk = (1n << BigInt(bytesPerChunk)) - 1n;
+  for (let i = 0; i < numChunks; ++i) {
+    res.push(((bigintNum >> BigInt(i * bytesPerChunk)) & msk).toString());
+  }
+  return res;
+}
+
+
 export function hexStringToSignedIntArray(hexString: string) {
   let result = [];
   for (let i = 0; i < hexString.length; i += 2) {
@@ -195,10 +210,15 @@ function bytesToBigInt(bytes: number[]) {
 
 function splitInto(arr: number[], size: number) {
   const res = [];
-  for(let i = 0; i < arr.length; i += size) {
+  for (let i = 0; i < arr.length; i += size) {
     res.push(arr.slice(i, i + size));
   }
   return res;
+}
+
+export function formatRoot(root: string): string {
+  let rootHex = BigInt(root).toString(16);
+  return rootHex.length % 2 === 0 ? "0x" + rootHex : "0x0" + rootHex;
 }
 
 function setFirstBitOfLastByteToZero(bytes: number[]) {
@@ -207,7 +227,7 @@ function setFirstBitOfLastByteToZero(bytes: number[]) {
 }
 
 // from reverse engineering ark-serialize.
-export function formatProofIOS(proof: number[]) {
+export function formatProof(proof: number[]) {
   const splittedProof = splitInto(proof, 32);
   splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
   splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
@@ -224,7 +244,22 @@ export function formatProofIOS(proof: number[]) {
   }
 }
 
-export function formatInputsIOS(inputs: number[]) {
+export function formatInputs(inputs: number[]) {
   const splitted = splitInto(inputs.slice(8), 32);
   return splitted.map(bytesToBigInt);
 }
+
+export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
+  const date = new Date();
+  date.setDate(date.getDate() + dayDiff); // Adjust the date by the dayDiff
+  const year = date.getUTCFullYear();
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+  const YY = (`0${year % 100}`).slice(-2);
+  const MM = (`0${month}`).slice(-2);
+  const DD = (`0${day}`).slice(-2);
+
+  const yymmdd = `${YY}${MM}${DD}`;
+  return Array.from(yymmdd).map(char => parseInt(char));
+}
+

@@ -1,0 +1,105 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "assets/fonts/Luciole-Bold-Italic.ttf",
+      "sha1": "396612686b6185a0306f9596832db9e157ffbf5a"
+    },
+    {
+      "path": "assets/fonts/Luciole-Bold.ttf",
+      "sha1": "f2571cbc903e799684f746ad4b7fee36e5b89173"
+    },
+    {
+      "path": "assets/fonts/Luciole-Regular-Italic.ttf",
+      "sha1": "416d30f6e22b4c84b9fd79d9f85634cb01fbde00"
+    },
+    {
+      "path": "assets/fonts/Luciole-Regular.ttf",
+      "sha1": "ad5b0769d43092dff86ba99d95d97581ee0983ab"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Black.otf",
+      "sha1": "5df89a5ca8b710fac50ccde5539bc2aececb184c"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-BlackItalic.otf",
+      "sha1": "a2988d597f61e19ee05a4b7404086b8ca43d0731"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Bold.otf",
+      "sha1": "892e9a770a5340e46c9c7d9f25fa2699d9275923"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-BoldItalic.otf",
+      "sha1": "8774206d7703bfe27f6d5302e5385983c26e13a1"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-ExtraBold.otf",
+      "sha1": "d458dab978fd1894de0eed6adacacb4853596473"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-ExtraBoldItalic.otf",
+      "sha1": "e63778737330052f9015dbd76ba904fcf05b87d7"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-ExtraLight.otf",
+      "sha1": "2c396705e77547af57076584bdd5895c2c81141a"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-ExtraLightItalic.otf",
+      "sha1": "d367b8910d04480c7cf0be5bb87126170e676c2b"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Italic.otf",
+      "sha1": "1d8db12a427db7418be418b77bafb9a916ac0534"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Light.otf",
+      "sha1": "c89f3036b53490be4b25d15e9a3cd4caf3e67d0c"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-LightItalic.otf",
+      "sha1": "6716c0590ef33f9ca0155cd5c5d99f8ca90b5834"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Medium.otf",
+      "sha1": "279fa3c60d682531d549d0ec9ed91f1b83402d40"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-MediumItalic.otf",
+      "sha1": "89d0a6cca45c1ac1cb30c1957b9520b703c42933"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Regular.otf",
+      "sha1": "4786a0feb4c853189782709a5ac5b5dfb696942b"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-SemiBold.otf",
+      "sha1": "ce2ccd0b91ffb1f8c894b6d60f21443e0769217c"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-SemiBoldItalic.otf",
+      "sha1": "8cf127ce6e16f95dccdae0eb553493d625bd0756"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-Thin.otf",
+      "sha1": "b9a1ad08b8f1724544ae075d66c98b7fb507b80d"
+    },
+    {
+      "path": "node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf",
+      "sha1": "cf2dcfd6aa812f641e3d2c81af69a6c553539083"
+    },
+    {
+      "path": "node_modules/@tamagui/font-silkscreen/files/slkscr.ttf",
+      "sha1": "417bc8219cf9d819c538c052397f3352dda426a7"
+    },
+    {
+      "path": "node_modules/@tamagui/font-silkscreen/files/slkscr.woff",
+      "sha1": "30d9b6f1b318c955d613dcf18d572f9aee9a35c8"
+    },
+    {
+      "path": "node_modules/@tamagui/font-silkscreen/files/slkscrb.ttf",
+      "sha1": "a960fd4e201077cda027756743c344ffcb8285fb"
+    }
+  ]
+}

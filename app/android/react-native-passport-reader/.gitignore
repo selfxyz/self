@@ -1,2 +1,2 @@
 node_modules/
-android/src/main/jniLibs/arm64/libark_circom_passport.so
+android/src/main/jniLibs/arm64-v8a/libark_circom_passport.so

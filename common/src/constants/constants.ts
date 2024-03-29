@@ -1,6 +1,21 @@
 export const AWS_ENDPOINT = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 
-export const attributeToPosition = {
+export const TREE_DEPTH = 16
+
+export enum SignatureAlgorithm {
+  sha256WithRSAEncryption_65537 = 1,
+  sha256WithRSAEncryption_3 = 2,
+  sha1WithRSAEncryption_65537 = 3,
+  rsassaPss_65537 = 4,
+  rsassaPss_3 = 5,
+  ecdsa_with_SHA384 = 6,
+  ecdsa_with_SHA1 = 7,
+  ecdsa_with_SHA256 = 8,
+  ecdsa_with_SHA512 = 9,
+  sha512WithRSAEncryption_65537 = 10
+}
+
+export const attributeToPosition: { [key: string]: number[] } = {
   issuing_state: [2, 4],
   name: [5, 43],
   passport_number: [44, 52],
@@ -8,7 +23,10 @@ export const attributeToPosition = {
   date_of_birth: [57, 62],
   gender: [64, 64],
   expiry_date: [65, 70],
-}
+  older_than: [88, 89]
+};
+
+export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 
 export const countryCodes = {
   "AFG": "Afghanistan",

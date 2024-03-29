@@ -7,8 +7,11 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
+
+
 platform :ios, '13.0'
 prepare_react_native_project!
+
 
 # If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
 # because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
@@ -28,14 +31,16 @@ if linkage != nil
 end
 
 target 'ProofOfPassport' do
+
   config = use_native_modules!
 
   # Flags change depending on the env values.
   flags = get_default_flags()
   
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: 'd36952eeaa2025ff1a9c9abbc244bd5ff53eb0f9'
+  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '310ecb519655d9ed8b1afc5eb490b2f51a4d3595'
   pod 'MoproKit', :path => './MoproKit'
+  pod 'QKMRZScanner'
 
   use_react_native!(
     :path => config[:reactNativePath],

@@ -1,30 +1,36 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
-import { DataHash } from "../../common/src/utils/types";
 import { getPassportData } from "../../common/src/utils/passportData";
-import { attributeToPosition } from "../../common/src/constants/constants";
-import { formatMrz, splitToWords, formatAndConcatenateDataHashes, toUnsignedByte, hash, bytesToBigDecimal } from "../../common/src/utils/utils";
-import { groth16 } from 'snarkjs'
 import { countryCodes } from "../../common/src/constants/constants";
+import { formatRoot, getCurrentDateYYMMDD } from "../../common/src/utils/utils";
+import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
-const fs = require('fs');
+import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
+import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
+import fs from 'fs';
 
 describe("Proof of Passport", function () {
   this.timeout(0);
 
-  let passportData, inputs, proof, publicSignals, revealChars, callData: any;
+  let passportData, proof, inputs: any, publicSignals, revealChars, callData: any;
 
   before(async function generateProof() {
+    // Log the current block timestamp
+    const latestBlock = await ethers.provider.getBlock('latest');
+    console.log(`Current block timestamp: ${latestBlock?.timestamp}`);
+
+    // Set the next block timestamp to the current computer's timestamp
+    const currentTimestamp = Math.floor(Date.now() / 1000) + 10;
+    await ethers.provider.send('evm_setNextBlockTimestamp', [currentTimestamp]);
+    await ethers.provider.send('evm_mine', []); // Mine a new block for the timestamp to take effect
+
+    // Log the new block's timestamp to confirm
+    const newBlock = await ethers.provider.getBlock('latest');
+    console.log(`New block timestamp set to: ${newBlock?.timestamp}`);
+
     passportData = getPassportData();
-  
-    const formattedMrz = formatMrz(passportData.mrz);
-    const mrzHash = hash(formatMrz(passportData.mrz));
-    const concatenatedDataHashes = formatAndConcatenateDataHashes(
-      mrzHash,
-      passportData.dataGroupHashes as DataHash[],
-    );
 
     const attributeToReveal = {
       issuing_state: true,
@@ -34,34 +40,19 @@ describe("Proof of Passport", function () {
       date_of_birth: true,
       gender: true,
       expiry_date: true,
+      older_than: true
     }
 
-    const bitmap = Array(88).fill('0');
+    const reveal_bitmap = revealBitmapFromMapping(attributeToReveal)
 
-    Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-      if (reveal) {
-        const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
-        bitmap.fill('1', start, end + 1);
-      }
-    });
+    const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8"; // hardhat account 1
 
-    inputs = {
-      mrz: formattedMrz.map(byte => String(byte)),
-      reveal_bitmap: bitmap.map(byte => String(byte)),
-      dataHashes: concatenatedDataHashes.map(toUnsignedByte).map(byte => String(byte)),
-      eContentBytes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
-      pubkey: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
-        BigInt(64),
-        BigInt(32)
-      ),
-      signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-        BigInt(64),
-        BigInt(32)
-      ),
-      address: "0x70997970c51812dc3a010c7d01b50e0d17dc79c8", // hardhat account 1
-    }
+    inputs = generateCircuitInputs(
+      passportData,
+      reveal_bitmap,
+      address,
+      { developmentMode: true }
+    );
 
     console.log('generating proof...');
     ({ proof, publicSignals } = await groth16.fullProve(
@@ -71,17 +62,16 @@ describe("Proof of Passport", function () {
     ))
 
     console.log('proof done');
+    revealChars = publicSignals.slice(0, 89).map((byte: string) => String.fromCharCode(parseInt(byte, 10))).join('');
 
-    revealChars = publicSignals.slice(0, 88).map((byte: string) => String.fromCharCode(parseInt(byte, 10))).join('');
-
-    const vKey = JSON.parse(fs.readFileSync("../circuits/build/verification_key.json"));
+    const vKey = JSON.parse(fs.readFileSync("../circuits/build/proof_of_passport_vkey.json") as unknown as string);
     const verified = await groth16.verify(
       vKey,
       publicSignals,
       proof
     )
 
-    assert(verified == true, 'Should verifiable')
+    assert(verified == true, 'Should verify')
 
     const cd = await groth16.exportSolidityCallData(proof, publicSignals);
     callData = JSON.parse(`[${cd}]`);
@@ -95,7 +85,7 @@ describe("Proof of Passport", function () {
       const Verifier = await ethers.getContractFactory("Groth16Verifier");
       const verifier = await Verifier.deploy();
       await verifier.waitForDeployment();
-    
+
       console.log(`Verifier deployed to ${verifier.target}`);
 
       const Formatter = await ethers.getContractFactory("Formatter");
@@ -105,18 +95,23 @@ describe("Proof of Passport", function () {
 
       console.log(`Formatter deployed to ${formatter.target}`);
 
+      const Registry = await ethers.getContractFactory("Registry");
+      const registry = await Registry.deploy(formatRoot(inputs.root[0]));
+      await registry.waitForDeployment();
+
+      console.log(`Registry deployed to ${registry.target}`);
+
       const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-      const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
+      const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, registry.target);
       await proofOfPassport.waitForDeployment();
-    
+
       console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
 
-      return {verifier, proofOfPassport, formatter, owner, otherAccount, thirdAccount}
+      return { verifier, proofOfPassport, formatter, owner, otherAccount, thirdAccount }
     }
 
     it("Verifier verifies a correct proof", async () => {
       const { verifier } = await loadFixture(deployHardhatFixture);
-
       expect(
         await verifier.verifyProof(callData[0], callData[1], callData[2], callData[3])
       ).to.be.true;
@@ -127,9 +122,9 @@ describe("Proof of Passport", function () {
         deployHardhatFixture
       );
 
-      await proofOfPassport
+      expect(await proofOfPassport
         .connect(thirdAccount) // fine that it's not the same account as address is taken from the proof
-        .mint(...callData);
+        .mint(...callData)).not.to.be.reverted;
 
       expect(await proofOfPassport.balanceOf(otherAccount.address)).to.equal(1);
     });
@@ -150,7 +145,7 @@ describe("Proof of Passport", function () {
       ).to.be.revertedWith("Invalid proof");
     });
 
-    it("Should have a correct tokenURI a user to mint a SBT", async function () {
+    it("Should have a valid tokenURI", async function () {
       const { proofOfPassport, otherAccount } = await loadFixture(
         deployHardhatFixture
       );
@@ -200,8 +195,8 @@ describe("Proof of Passport", function () {
       );
 
       const tx = await proofOfPassport
-      .connect(otherAccount)
-      .mint(...callData);
+        .connect(otherAccount)
+        .mint(...callData);
 
       await tx.wait();
 
@@ -222,6 +217,36 @@ describe("Proof of Passport", function () {
 
       expect(expiredAfter.value).to.equal('Yes');
     })
+
+    it("Should revert minting if the current date is set in the past", async function () {
+      const { proofOfPassport, otherAccount } = await loadFixture(deployHardhatFixture);
+
+      // Adjust inputs to set a current date 3 days in the past
+      const pastDateYYMMDD = getCurrentDateYYMMDD(-3);
+
+      inputs = { ...inputs, current_date: pastDateYYMMDD.map(datePart => BigInt(datePart).toString()) };
+
+      console.log('pastDateYYMMDD', pastDateYYMMDD);
+      console.log('inputs', inputs);
+
+      // Generate proof with modified inputs
+      console.log('generating proof with past date...');
+      const { proof: invalidProof, publicSignals: invalidPublicSignals } = await groth16.fullProve(
+        inputs,
+        "../circuits/build/proof_of_passport_js/proof_of_passport.wasm",
+        "../circuits/build/proof_of_passport_final.zkey"
+      );
+
+      const invalidCd = await groth16.exportSolidityCallData(invalidProof, invalidPublicSignals);
+      const invalidCallData = JSON.parse(`[${invalidCd}]`);
+
+      // Attempt to mint with the proof generated with a past date
+      await expect(
+        proofOfPassport
+          .connect(otherAccount)
+          .mint(...invalidCallData)
+      ).to.be.revertedWith("Current date is not within the valid range");
+    });
   });
 
   describe("Minting on mumbai", function () {
@@ -271,4 +296,5 @@ describe("Proof of Passport", function () {
       }
     });
   })
+
 });

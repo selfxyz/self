@@ -1,9 +1,19 @@
 import { ethers } from "hardhat";
-import { countryCodes } from "../../common/src/constants/constants";
+import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
+import { formatRoot } from "../../common/src/utils/utils";
+import { poseidon2 } from 'poseidon-lite';
+import { IMT } from '@zk-kit/imt';
+import serializedTree from "../../common/pubkeys/serialized_tree.json";
 const fs = require('fs');
 const path = require('path');
 
 async function main() {
+  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+  tree.setNodes(serializedTree)
+
+  const root = formatRoot(tree.root)
+  console.log('tree.root', tree.root)
+
   const Verifier = await ethers.getContractFactory("Groth16Verifier");
   const verifier = await Verifier.deploy();
   await verifier.waitForDeployment();
@@ -19,9 +29,13 @@ async function main() {
   await tx.wait();
   console.log(`Country codes added`);
 
+  const Registry = await ethers.getContractFactory("Registry");
+  const registry = await Registry.deploy(root);
+  await registry.waitForDeployment();
+  console.log(`Registry deployed to ${registry.target}`);
 
   const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target);
+  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, registry.target);
   await proofOfPassport.waitForDeployment();
 
   console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);

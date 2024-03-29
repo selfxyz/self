@@ -68,3 +68,5 @@ yarn-error.log
 .env
 
 .expo/
+
+libuniffi_mopro.so

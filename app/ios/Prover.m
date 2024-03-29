@@ -20,4 +20,8 @@ RCT_EXTERN_METHOD(runProveAction:(NSDictionary *)inputs
 RCT_EXTERN_METHOD(runVerifyAction:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
++ (BOOL) requiresMainQueueSetup {
+    return YES;
+}
+
 @end
