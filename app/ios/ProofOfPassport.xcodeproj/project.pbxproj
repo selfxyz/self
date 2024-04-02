@@ -10,6 +10,8 @@
 		00E356F31AD99517003FC87E /* ProofOfPassportTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 00E356F21AD99517003FC87E /* ProofOfPassportTests.m */; };
 		056247BA2BB26D4400FFBD3B /* Contents.json in Resources */ = {isa = PBXBuildFile; fileRef = 056247B82BB26D4400FFBD3B /* Contents.json */; };
 		056247BB2BB26D4400FFBD3B /* authV2.dat in Resources */ = {isa = PBXBuildFile; fileRef = 056247B92BB26D4400FFBD3B /* authV2.dat */; };
+		0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
+		0569F35D2BBC921F006670BD /* authV2.zkey in Resources */ = {isa = PBXBuildFile; fileRef = 0569F35C2BBC921F006670BD /* authV2.zkey */; };
 		05BD9DCC2B548AA900823023 /* MoproKit in Resources */ = {isa = PBXBuildFile; fileRef = 05BD9DCB2B548AA900823023 /* MoproKit */; };
 		05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05BD9DCD2B554FA300823023 /* libmopro_ffi.a */; };
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
@@ -77,6 +79,8 @@
 		056247B82BB26D4400FFBD3B /* Contents.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = Contents.json; sourceTree = "<group>"; };
 		056247B92BB26D4400FFBD3B /* authV2.dat */ = {isa = PBXFileReference; lastKnownFileType = file; path = authV2.dat; sourceTree = "<group>"; };
 		056247BD2BB328C800FFBD3B /* libwitnesscalc_authV2.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_authV2.a; sourceTree = "<group>"; };
+		0569F35A2BBC900D006670BD /* librapidsnark.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = librapidsnark.a; sourceTree = "<group>"; };
+		0569F35C2BBC921F006670BD /* authV2.zkey */ = {isa = PBXFileReference; lastKnownFileType = file; name = authV2.zkey; path = ProofOfPassport/Assets.xcassets/authV2.zkey.dataset/authV2.zkey; sourceTree = "<group>"; };
 		057DFC5E2B56DC0D003D24A3 /* libmopro_ffi.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libmopro_ffi.a; path = MoproKit/Libs/libmopro_ffi.a; sourceTree = "<group>"; };
 		05A0773D2B5333CE0037E489 /* MoproKit.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = MoproKit.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		05BD9DCB2B548AA900823023 /* MoproKit */ = {isa = PBXFileReference; lastKnownFileType = folder; path = MoproKit; sourceTree = "<group>"; };
@@ -155,6 +159,7 @@
 				05E439192BB32D5800E57227 /* libwitnesscalc_authV2.a in Frameworks */,
 				0651723A94C70A2B31E3E4F8 /* Pods_ProofOfPassport.framework in Frameworks */,
 				05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */,
+				0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */,
 				05BD9DCE2B554FA300823023 /* libmopro_ffi.a in Frameworks */,
 				05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */,
 			);
@@ -227,6 +232,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0569F35A2BBC900D006670BD /* librapidsnark.a */,
 				05A0773D2B5333CE0037E489 /* MoproKit.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				3DAAF621B99F62C9ED35AA07 /* Pods_ProofOfPassport.framework */,
@@ -277,6 +283,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				0569F35C2BBC921F006670BD /* authV2.zkey */,
 				13B07FAE1A68108700A75B9A /* ProofOfPassport */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* ProofOfPassportTests */,
@@ -413,6 +420,7 @@
 				15AAF7651FCF40EB993543A3 /* Inter-BoldItalic.otf in Resources */,
 				1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */,
 				E4BC7CC193684992A11E3135 /* Inter-ExtraBoldItalic.otf in Resources */,
+				0569F35D2BBC921F006670BD /* authV2.zkey in Resources */,
 				05D985F92BB3335B00F58EEA /* authV2.dat in Resources */,
 				1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */,
 				05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */,

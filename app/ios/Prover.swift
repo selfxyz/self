@@ -14,6 +14,34 @@ import MoproKit
 import witnesscalc_authV2
 #endif
 
+#if canImport(groth16_prover)
+import groth16_prover
+#endif
+
+struct Proof: Codable {
+    let piA: [String]
+    let piB: [[String]]
+    let piC: [String]
+    let proofProtocol: String
+
+    enum CodingKeys: String, CodingKey {
+        case piA = "pi_a"
+        case piB = "pi_b"
+        case piC = "pi_c"
+        case proofProtocol = "protocol"
+    }
+}
+
+struct Zkproof: Codable {
+    let proof: Proof
+    let pubSignals: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case proof
+        case pubSignals = "pub_signals"
+    }
+}
+
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
@@ -73,6 +101,10 @@ class Prover: NSObject {
       // inputs["pubkey"] = pubkey;
       // inputs["address"] = address;
 
+      // guard let inputs = inputs else {
+      //     throw "inputs is not valid"
+      // }
+      
       let inputsDict = ["a": "2", "b": "4"]
       let inputsMul = try! JSONEncoder().encode(inputsDict)
       print("inputsMul size: \(inputsMul.count) bytes")
@@ -83,6 +115,22 @@ class Prover: NSObject {
       let wtns = try! calcWtnsAuthV2(inputsJson: inputsMul)
       print("wtns size: \(wtns.count) bytes")
       print("wtns data (hex): \(wtns.map { String(format: "%02hhx", $0) }.joined())")
+
+      let (proofRaw, pubSignalsRaw) = try groth16AuthV2(wtns: wtns)
+      
+      let proof = try JSONDecoder().decode(Proof.self, from: proofRaw)
+
+      print("Proof: \(proof)")
+
+      let pubSignals = try JSONDecoder().decode([String].self, from: pubSignalsRaw)
+
+      print("PubSignals: \(pubSignals)")
+      
+      let zkproof = Zkproof(proof: proof, pubSignals: pubSignals)
+
+      print("Zkproof: \(zkproof)")
+      
+      // return try JSONEncoder().encode(zkproof)
 
     //   // Generate Proof
     //   let generateProofResult = try generateProof2(circuitInputs: inputs)
@@ -150,7 +198,6 @@ class Prover: NSObject {
   }
 }
 
-
 public func calcWtnsAuthV2(inputsJson: Data) throws -> Data {
     let dat = NSDataAsset(name: "authV2.dat")!.data
     return try _calcWtnsAuthV2(dat: dat, jsonData: inputsJson)
@@ -193,3 +240,50 @@ private func _calcWtnsAuthV2(dat: Data, jsonData: Data) throws -> Data {
     return Data(bytes: wtnsBuffer, count: Int(wtnsSize.pointee))
 }
 
+
+public func groth16AuthV2(wtns: Data) throws -> (proof: Data, publicInputs: Data) {
+    return try _groth16Prover(zkey: NSDataAsset(name: "authV2.zkey")!.data, wtns: wtns)
+}
+
+public func _groth16Prover(zkey: Data, wtns: Data) throws -> (proof: Data, publicInputs: Data) {
+    let zkeySize = zkey.count
+    let wtnsSize = wtns.count
+    
+    var proofSize: UInt = 4 * 1024 * 1024
+    var publicSize: UInt = 4 * 1024 * 1024
+    
+    let proofBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(proofSize))
+    let publicBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(publicSize))
+    
+    let errorBuffer = UnsafeMutablePointer<Int8>.allocate(capacity: 256)
+    let errorMaxSize: UInt = 256
+    
+    let result = groth16_prover(
+        (zkey as NSData).bytes, UInt(zkeySize),
+        (wtns as NSData).bytes, UInt(wtnsSize),
+        proofBuffer, &proofSize,
+        publicBuffer, &publicSize,
+        errorBuffer, errorMaxSize
+    )
+    if result == PROVER_ERROR {
+        let errorMessage = String(bytes: Data(bytes: errorBuffer, count: Int(errorMaxSize)), encoding: .utf8)!
+            .replacingOccurrences(of: "\0", with: "")
+        throw NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey: errorMessage])
+    }
+    
+    if result == PROVER_ERROR_SHORT_BUFFER {
+        let shortBufferMessage = "Proof or public inputs buffer is too short"
+        throw NSError(domain: "", code: Int(result), userInfo: [NSLocalizedDescriptionKey: shortBufferMessage])
+    }
+    var proof = Data(bytes: proofBuffer, count: Int(proofSize))
+    var publicInputs = Data(bytes: publicBuffer, count: Int(publicSize))
+    
+    let proofNullIndex = proof.firstIndex(of: 0x00)!
+    let publicInputsNullIndex = publicInputs.firstIndex(of: 0x00)!
+    
+    proof = proof[0..<proofNullIndex]
+    publicInputs = publicInputs[0..<publicInputsNullIndex]
+    
+    
+    return (proof: proof, publicInputs: publicInputs)
+}

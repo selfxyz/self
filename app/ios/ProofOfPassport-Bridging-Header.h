@@ -3,3 +3,4 @@
 //
 
 #include "witnesscalc_authV2.h"
+#include "groth16_prover.h"
