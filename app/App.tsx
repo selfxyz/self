@@ -69,33 +69,24 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    init()
+    // init()
   }, []);
 
   async function init() {
     await new Promise(resolve => setTimeout(resolve, 2000));
     console.log('launching init')
-    // const res = await NativeModules.Prover.runInitAction()
+    const res = await NativeModules.Prover.runInitAction()
     console.log('init done')
-    // console.log('init res', res)
+    console.log('init res', res)
   }
 
   const handleStartCameraScan = async () => {
-    // await NativeModules.Prover.runInitAction();
-
-    const startTime = Date.now();
-    console.log('running mopro prove action');
-    const response = await NativeModules.Prover.runProveAction({});
-    console.log('proof response:', response);
-    const endTime = Date.now();
-    console.log('Total proof time from frontend:', endTime - startTime);
-
-    // startCameraScan({
-    //   setPassportNumber,
-    //   setDateOfBirth,
-    //   setDateOfExpiry,
-    //   setStep,
-    // });
+    startCameraScan({
+      setPassportNumber,
+      setDateOfBirth,
+      setDateOfExpiry,
+      setStep,
+    });
   };
 
 

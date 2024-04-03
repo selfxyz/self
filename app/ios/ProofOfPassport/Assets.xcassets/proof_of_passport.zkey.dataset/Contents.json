@@ -1,0 +1,13 @@
+{
+  "data" : [
+    {
+      "filename" : "proof_of_passport.zkey",
+      "idiom" : "universal",
+      "universal-type-identifier" : "dyn.ah62d4rv4ge81y45fte"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

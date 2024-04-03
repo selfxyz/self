@@ -10,8 +10,8 @@ import React
 import Security
 import MoproKit
 
-#if canImport(witnesscalc_authV2)
-import witnesscalc_authV2
+#if canImport(witnesscalc_proof_of_passport)
+import witnesscalc_proof_of_passport
 #endif
 
 #if canImport(groth16_prover)
@@ -101,12 +101,8 @@ class Prover: NSObject {
       // inputs["pubkey"] = pubkey;
       // inputs["address"] = address;
 
-      // guard let inputs = inputs else {
-      //     throw "inputs is not valid"
-      // }
       
-      let inputsDict = ["a": "2", "b": "4"]
-      let inputsMul = try! JSONEncoder().encode(inputsDict)
+      let inputsMul = try! JSONEncoder().encode(inputs)
       print("inputsMul size: \(inputsMul.count) bytes")
       print("inputsMul data: \(String(data: inputsMul, encoding: .utf8) ?? "")")
       
@@ -114,92 +110,35 @@ class Prover: NSObject {
 
       let wtns = try! calcWtnsAuthV2(inputsJson: inputsMul)
       print("wtns size: \(wtns.count) bytes")
-      print("wtns data (hex): \(wtns.map { String(format: "%02hhx", $0) }.joined())")
+      // print("wtns data (hex): \(wtns.map { String(format: "%02hhx", $0) }.joined())")
 
       let (proofRaw, pubSignalsRaw) = try groth16AuthV2(wtns: wtns)
-      
       let proof = try JSONDecoder().decode(Proof.self, from: proofRaw)
-
-      print("Proof: \(proof)")
-
       let pubSignals = try JSONDecoder().decode([String].self, from: pubSignalsRaw)
 
-      print("PubSignals: \(pubSignals)")
-      
-      let zkproof = Zkproof(proof: proof, pubSignals: pubSignals)
+      let proofObject: [String: Any] = [
+          "proof": [
+              "a": proof.piA,
+              "b": proof.piB,
+              "c": proof.piC,
+          ],
+          "inputs": pubSignals
+      ]
 
-      print("Zkproof: \(zkproof)")
-      
-      // return try JSONEncoder().encode(zkproof)
-
-    //   // Generate Proof
-    //   let generateProofResult = try generateProof2(circuitInputs: inputs)
-    //   assert(!generateProofResult.proof.isEmpty, "Proof should not be empty")
-
-    //   // Record end time and compute duration
-    //   let end = CFAbsoluteTimeGetCurrent()
-    //   let timeTaken = end - start
-    //   print("Proof generation took \(timeTaken) seconds.")
-
-    //   // Store the generated proof and public inputs for later verification
-    //   print("generateProofResult", generateProofResult)
-    //   generatedProof = generateProofResult.proof
-    //   publicInputs = generateProofResult.inputs
-
-    //   // Convert Data to array of bytes
-    //   let proofBytes = [UInt8](generateProofResult.proof)
-    //   let inputsBytes = [UInt8](generateProofResult.inputs)
-
-    //   print("proofBytes", proofBytes)
-    //   print("inputsBytes", inputsBytes)
-
-    //   // Create a dictionary with byte arrays
-    //   let resultDict: [String: [UInt8]] = [
-    //       "proof": proofBytes,
-    //       "inputs": inputsBytes
-    //   ]
-
-    //   // Serialize dictionary to JSON
-    //   let jsonData = try JSONSerialization.data(withJSONObject: resultDict, options: [])
-    //   let jsonString = String(data: jsonData, encoding: .utf8)!
-
-    //   resolve(jsonString)
-    } catch let error as MoproError {
-      print("MoproError: \(error)")
-      reject("PROVER", "An error occurred during proof generation", error)
+      let proofData = try JSONSerialization.data(withJSONObject: proofObject, options: [])
+      let proofObjectString = String(data: proofData, encoding: .utf8) ?? ""
+      print("Proof Object: \(proofObjectString)")
+      resolve(proofObjectString)
     } catch {
       print("Unexpected error: \(error)")
       reject("PROVER", "An error occurred during proof generation", error)
     }
   }
 
-  @objc(runVerifyAction:reject:)
-  func runVerifyAction(resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-    // Logic for verify
-    guard let proof = generatedProof,
-      let publicInputs = publicInputs else {
-      print("Proof has not been generated yet.")
-      return
-    }
-    do {
-      // Verify Proof
-      let isValid = try verifyProof2(proof: proof, publicInput: publicInputs)
-      assert(isValid, "Proof verification should succeed")
-
-      print("Proof verification succeeded.")
-      resolve(isValid)
-    } catch let error as MoproError {
-      print("MoproError: \(error)")
-      reject("PROVER", "An error occurred during proof verification", error)
-    } catch {
-      print("Unexpected error: \(error)")
-      reject("PROVER", "An error occurred during proof verification", error)
-    }
-  }
 }
 
 public func calcWtnsAuthV2(inputsJson: Data) throws -> Data {
-    let dat = NSDataAsset(name: "authV2.dat")!.data
+    let dat = NSDataAsset(name: "proof_of_passport.dat")!.data
     return try _calcWtnsAuthV2(dat: dat, jsonData: inputsJson)
 }
 
@@ -220,7 +159,7 @@ private func _calcWtnsAuthV2(dat: Data, jsonData: Data) throws -> Data {
     let wtnsBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: (100 * 1024 * 1024))
     let errorBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(errorSize))
     
-    let result = witnesscalc_authV2(
+    let result = witnesscalc_proof_of_passport(
         (dat as NSData).bytes, datSize,
         (jsonData as NSData).bytes, jsonDataSize,
         wtnsBuffer, wtnsSize,
@@ -242,7 +181,7 @@ private func _calcWtnsAuthV2(dat: Data, jsonData: Data) throws -> Data {
 
 
 public func groth16AuthV2(wtns: Data) throws -> (proof: Data, publicInputs: Data) {
-    return try _groth16Prover(zkey: NSDataAsset(name: "authV2.zkey")!.data, wtns: wtns)
+    return try _groth16Prover(zkey: NSDataAsset(name: "proof_of_passport.zkey")!.data, wtns: wtns)
 }
 
 public func _groth16Prover(zkey: Data, wtns: Data) throws -> (proof: Data, publicInputs: Data) {

@@ -83,34 +83,45 @@ const generateProof = async (
     console.log('launching generateProof function');
     console.log('inputs in App.tsx', inputs);
 
-    await NativeModules.Prover.runInitAction();
+    // await NativeModules.Prover.runInitAction();
 
-    const startTime = Date.now();
     console.log('running mopro prove action');
+    const startTime = Date.now();
     const response = await NativeModules.Prover.runProveAction(inputs);
-    console.log('proof response:', response);
-
-    const parsedResponse = Platform.OS === 'android'
-      ? parseProofAndroid(response)
-      : JSON.parse(response);
-    console.log('parsedResponse', parsedResponse);
-
     const endTime = Date.now();
+    console.log('time spent:', endTime - startTime);
+    console.log('proof response:', response);
+    console.log('typeof proof response:', typeof response);
     setProofTime(endTime - startTime);
 
-    console.log('running mopro verify action');
-    const res = await NativeModules.Prover.runVerifyAction();
-    console.log('verify response:', res);
+    if (Platform.OS === 'android') {
+      const parsedResponse = parseProofAndroid(response);
+      const finalProof = {
+        proof: JSON.stringify(formatProof(parsedResponse.proof)),
+        inputs: JSON.stringify(formatInputs(parsedResponse.inputs)),
+      };
+      console.log('finalProof:', finalProof);
 
-    const finalProof = {
-      proof: JSON.stringify(formatProof(parsedResponse.proof)),
-      inputs: JSON.stringify(formatInputs(parsedResponse.inputs)),
-    };
-    console.log('finalProof:', finalProof);
+      setProof(finalProof);
+      setGeneratingProof(false);
+      setStep(Steps.PROOF_GENERATED);
+    } else {
+      const parsedResponse = JSON.parse(response);
+      console.log('parsedResponse', parsedResponse);
+  
+      console.log('parsedResponse.proof:', parsedResponse.proof);
+      console.log('parsedResponse.inputs:', parsedResponse.inputs);
 
-    setProof(finalProof);
-    setGeneratingProof(false);
-    setStep(Steps.PROOF_GENERATED);
+      const finalProof = {
+        proof: JSON.stringify(parsedResponse.proof),
+        inputs: JSON.stringify(parsedResponse.inputs),
+      };
+      console.log('finalProof:', finalProof);
+
+      setProof(finalProof);
+      setGeneratingProof(false);
+      setStep(Steps.PROOF_GENERATED);
+    }
   } catch (err: any) {
     console.log('err', err);
   }

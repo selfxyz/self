@@ -23,7 +23,7 @@ fi
 cd ..
 
 echo "compiling circuit"
-circom circuits/proof_of_passport.circom -l node_modules --r1cs --wasm --output build
+circom circuits/proof_of_passport.circom -l node_modules --r1cs --wasm -c --output build
 
 echo "building zkey"
 yarn snarkjs groth16 setup build/proof_of_passport.r1cs build/powersOfTau28_hez_final_20.ptau build/proof_of_passport.zkey
