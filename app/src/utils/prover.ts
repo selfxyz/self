@@ -85,7 +85,7 @@ const generateProof = async (
 
     // await NativeModules.Prover.runInitAction();
 
-    console.log('running mopro prove action');
+    console.log('running prove action');
     const startTime = Date.now();
     const response = await NativeModules.Prover.runProveAction(inputs);
     const endTime = Date.now();

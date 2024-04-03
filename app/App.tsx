@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   NativeModules,
   DeviceEventEmitter,
+  Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -69,15 +70,18 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    // init()
+    downloadZkey()
   }, []);
 
-  async function init() {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('launching init')
-    const res = await NativeModules.Prover.runInitAction()
-    console.log('init done')
-    console.log('init res', res)
+  async function downloadZkey() {
+    console.log('launching zkey download')
+    if (Platform.OS === 'android') {
+      const res = await NativeModules.Prover.runInitAction()
+      console.log('init done')
+      console.log('init res', res)
+    } else {
+      // const res = await NativeModules.Prover.downloadZkey("url")
+    }
   }
 
   const handleStartCameraScan = async () => {

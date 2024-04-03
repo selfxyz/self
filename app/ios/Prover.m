@@ -10,14 +10,12 @@
 
 @interface RCT_EXTERN_MODULE(Prover, NSObject)
 
-RCT_EXTERN_METHOD(runInitAction:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(runProveAction:(NSDictionary *)inputs
+RCT_EXTERN_METHOD(downloadZkey:(NSString *)urlString
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(runVerifyAction:(RCTPromiseResolveBlock)resolve
+                  
+RCT_EXTERN_METHOD(runProveAction:(NSDictionary *)inputs
+                  resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
 
 + (BOOL) requiresMainQueueSetup {
