@@ -15,18 +15,18 @@ As a first application, users who can prove they indeed hold a valid passport ca
 - `circuits`: Circom circuits
 - `contracts`: Solidity contracts
 - `common`: Common utils
+- `registry`: Public key registry
 
 ## Roadmap
 
-- ✅ Basic passport verifier circuit
+- ✅ Passport verification circuit
 - ✅ Selective disclosure
-- ✅ Basic react native frontend
-- ✅ Passport verification pipeline, android
-- ✅ Passport verification pipeline, iOS
-- ✅ Contracts
-- ✅ On-chain registry of CSCA pubkeys based on the official ICAO masterlist
-- 🚧 Optimizations
-- 🚧 Reimplementation of the passport NFC specs in javascript
+- ✅ Mobile app
+- ✅ SBT smart contract
+- ✅ On-chain public key registry
+- 🚧 Support additional signature algorithms
+- 🚧 Support Active Authentication
+- 🚧 SDK
 
 ## FAQ
 
@@ -61,7 +61,7 @@ Most countries use RSA with sha256 but some of them use other signature algorith
 
 #### I just read my passport but it says my signature algorithm is not implemented. What do I do ?
 
-Currently we only support the most common one `sha256WithRSAEncryption`. We will support the others shortly. Feel free to try your hand at implementing one!
+Currently we support the most common one, RSA with sha256. We're planning to add support for others shortly. Feel free to try your hand at implementing one!
 
 #### What's the ICAO ?
 
@@ -111,7 +111,7 @@ Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start! We will provide bounties starting from $100 for any significant progress on these. Please contact us for more details.
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start! We will offer bounties from $100 to $1000 for any significant progress on these, depending on difficulty. Please contact us for more details.
 
 ## Contact us
 
