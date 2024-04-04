@@ -263,7 +263,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
 
             <YStack gap="$1">
               <Text fontWeight="bold" fontSize="$6" mt="$5">Congrats 🎉x2</Text>
-              <Text fontWeight="bold" fontSize="$5" >You just have minted a Soulbond token !</Text>
+              <Text fontWeight="bold" fontSize="$5" >You just have minted a Soulbound token !</Text>
               <Text color="gray" fontSize="$4" fow="bold" textAlign='left'>You can now share this proof with the selected app.</Text>
 
               <Text color="gray" fontSize="$4" fow="bold" mt="$5">Network: Sepolia</Text>

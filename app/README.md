@@ -43,6 +43,8 @@ sdk.dir=/Users/<user>/Library/Android/sdk or any relevant path to your sdk
 
 #### Build the iOS native module
 
+To run the app on iOS, you will need an Apple Developer account. Free accounts can't run apps that have NFC reading.
+
 Run:
 ```
 export DEVELOPMENT_TEAM="<your-development-team-id>"
@@ -90,4 +92,17 @@ This builds `android/app/build/outputs/bundle/release/app-release.aab`.
 Then to test the release on an android phone, delete the previous version of the app and run:
 ```
 yarn android --mode release
+```
+
+
+### FAQ
+
+If you get something like this:
+```
+'std::__1::system_error: open: /proof-of-passport/app: Operation not permitted'
+```
+You might want to try [this](https://stackoverflow.com/questions/49443341/watchman-crawl-failed-retrying-once-with-node-crawler):
+```
+watchman watch-del-all
+watchman shutdown-server
 ```
