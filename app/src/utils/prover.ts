@@ -24,7 +24,7 @@ export const prove = async ({
   setGeneratingProof,
   setProofTime,
   setProof,
-}: ProverProps, path?: string) => {
+}: ProverProps) => {
   if (passportData === null) {
     console.log('passport data is null');
     return;
@@ -57,7 +57,7 @@ export const prove = async ({
     });
 
     const start = Date.now();
-    await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep, path);
+    await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep);
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
   } catch (error: any) {
@@ -77,13 +77,14 @@ const generateProof = async (
   setProof: (value: { proof: string; inputs: string } | null) => void,
   setGeneratingProof: (value: boolean) => void,
   setStep: (value: number) => void,
-  path?: string,
 ) => {
   try {
     console.log('launching generateProof function');
     console.log('inputs in App.tsx', inputs);
 
-    // await NativeModules.Prover.runInitAction();
+    if (Platform.OS == "android") {
+      await NativeModules.Prover.runInitAction();
+    }
 
     console.log('running prove action');
     const startTime = Date.now();

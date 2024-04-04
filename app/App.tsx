@@ -23,9 +23,13 @@ import { toastConfig } from './src/utils/toastConfig';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
+import RNFS from 'react-native-fs';
+import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
+
+const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -39,6 +43,7 @@ function App(): JSX.Element {
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
+  const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -70,17 +75,57 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
+    initMopro()
     downloadZkey()
   }, []);
 
-  async function downloadZkey() {
-    console.log('launching zkey download')
+  async function initMopro() {
     if (Platform.OS === 'android') {
       const res = await NativeModules.Prover.runInitAction()
-      console.log('init done')
-      console.log('init res', res)
+      console.log('Mopro init res:', res)
+    }
+  }
+
+  async function downloadZkey() {
+    console.log('launching zkey download')
+
+    // temporarily, as arkzkey is still bundled in mopro
+    if (Platform.OS === 'android') {
+      setDownloadStatus('completed');
+      return;
+    }
+
+    const fileExists = await RNFS.exists(localZkeyPath);
+    if (!fileExists) {
+      setDownloadStatus('downloading');
+
+      const options = {
+        // @ts-ignore
+        fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
+        toFile: localZkeyPath,
+        background: true,
+        begin: () => {
+          console.log('Download has begun');
+        },
+        progress: (res: any) => {
+          console.log((res.bytesWritten / res.contentLength * 100).toFixed(2) + '%');
+        },
+      };
+      
+      RNFS.downloadFile(options).promise
+        .then(() => setDownloadStatus('completed'))
+        .catch((error) => {
+          console.error(error);
+          setDownloadStatus('error');
+          Toast.show({
+            type: 'error',
+            text1: `Error: ${error.message}`,
+            position: 'top',
+            bottomOffset: 80,
+          })
+        });
     } else {
-      // const res = await NativeModules.Prover.downloadZkey("url")
+      setDownloadStatus('completed');
     }
   }
 
@@ -104,7 +149,7 @@ function App(): JSX.Element {
     });
   };
 
-  const handleProve = (path: string) => {
+  const handleProve = () => {
     prove({
       passportData,
       disclosure,
@@ -113,7 +158,7 @@ function App(): JSX.Element {
       setGeneratingProof,
       setProofTime,
       setProof,
-    }, path);
+    });
   };
 
   const handleMint = () => {
@@ -151,6 +196,7 @@ function App(): JSX.Element {
           setDateOfExpiry={setDateOfExpiry}
           majority={majority}
           setMajority={setMajority}
+          zkeydownloadStatus={zkeydownloadStatus}
         />
       </YStack>
       <Toast config={toastConfig} />

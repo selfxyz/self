@@ -1,21 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { NativeModules } from 'react-native';
-import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ButtonText, } from 'tamagui';
+import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions } from 'tamagui';
 import { Check, LayoutGrid, Scan, Copy, Plus, Minus } from '@tamagui/lucide-icons';
-import { getFirstName, formatDuration } from '../../utils/utils';
+import { getFirstName, formatDuration, maskString, shortenInput, getTx } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import { Steps } from '../utils/utils';
 import USER from '../images/user.png'
 import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
-import { Keyboard, Platform } from 'react-native';
 import { DEFAULT_ADDRESS } from '@env';
 import Clipboard from '@react-native-community/clipboard';
 import Toast from 'react-native-toast-message';
-
-const { ethers } = require('ethers');
-const fileName = "passport.arkzkey"
-const path = "/data/user/0/com.proofofpassport/files/" + fileName
+import { ethers } from 'ethers';
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -25,7 +20,7 @@ interface ProveScreenProps {
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
-  handleProve: (path: string) => void;
+  handleProve: () => void;
   handleMint: () => void;
   step: number;
   mintText: string;
@@ -36,6 +31,7 @@ interface ProveScreenProps {
   setEns: (ens: string) => void;
   majority: number;
   setMajority: (age: number) => void;
+  zkeydownloadStatus: string;
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({
@@ -56,28 +52,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   ens,
   setEns,
   majority,
-  setMajority
+  setMajority,
+  zkeydownloadStatus
 }) => {
-  const [zkeyLoading, setZkeyLoading] = useState(false);
-  const [zkeyLoaded, setZkeyLoaded] = useState(true);
-  const [age, setAge] = useState(18);
-
-  const incrementAge = () => setAge(prevAge => prevAge + 1);
-  const decrementAge = () => setAge(prevAge => prevAge > 0 ? prevAge - 1 : 0);
-
-  const getTx = (input: string | null): string => {
-    if (!input) return '';
-    const transaction = input.split(' ').filter(word => word.startsWith('0x')).join(' ');
-    return transaction;
-  }
-  const shortenInput = (input: string | null): string => {
-    if (!input) return '';
-    if (input.length > 9) {
-      return input.substring(0, 25) + '\u2026';
-    } else {
-      return input;
-    }
-  }
+  const { height } = useWindowDimensions();
+  const [inputValue, setInputValue] = useState(DEFAULT_ADDRESS ?? '');
+  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
 
   const copyToClipboard = (input: string) => {
     Clipboard.setString(input);
@@ -89,46 +69,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     })
   };
 
-  const downloadZkey = async () => {
-    // TODO: don't redownload if already in the file system at path, if downloaded from previous session
-    setZkeyLoading(true);
-    // Allow the spinner to show up before app freeze on android
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    try {
-      console.log('Downloading file...')
-      const result = await NativeModules.RNPassportReader.downloadFile(
-        'https://current-pop-zkey.s3.eu-north-1.amazonaws.com/proof_of_passport_final_merkle_and_age.arkzkey',
-        fileName
-      );
-      console.log("Download successful");
-      console.log(result);
-      setZkeyLoaded(true);
-      setZkeyLoading(false);
-    } catch (e: any) {
-      console.log("Download not successful");
-      Toast.show({
-        type: 'error',
-        text1: `Error: ${e.message}`,
-        position: 'top',
-        bottomOffset: 80,
-      })
-      setZkeyLoading(false);
-    }
-  };
-
-  const maskString = (input: string): string => {
-    if (input.length <= 5) {
-      return input.charAt(0) + '*'.repeat(input.length - 1);
-    } else {
-      return input.charAt(0) + input.charAt(1) + '*'.repeat(input.length - 2);
-    }
-  }
-
-
-
-  const [inputValue, setInputValue] = useState(DEFAULT_ADDRESS ?? '');
-  const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
-
   useEffect(() => {
     if (ens != '' && inputValue == '') {
       setInputValue(ens);
@@ -137,7 +77,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     else if (address != ethers.ZeroAddress && inputValue == '') {
       setInputValue(address);
     }
-
   }, [])
 
   useEffect(() => {
@@ -164,10 +103,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               })
               if (hideData) {
                 console.log(maskString(address));
-                //  setInputValue(maskString(address));
-              }
-              else {
-                // setInputValue(address);
               }
             } else {
               Toast.show({
@@ -196,26 +131,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     resolveENS();
   }, [inputValue]);
 
-
-
-
-  // Keyboard management
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const { height, width } = useWindowDimensions();
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
   return (
     <YStack px="$4" f={1} >
       {(step >= Steps.NFC_SCAN_COMPLETED && selectedApp != null) ?
@@ -239,7 +154,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                     uri: passportData.photoBase64 ?? USER,
                   }}
                 />
-
               }
             </YStack>
             <Text fontSize="$5" fontWeight="bold">Hi {hideData ? maskString(getFirstName(passportData.mrz)) : getFirstName(passportData.mrz)} 👋</Text>
@@ -296,25 +210,52 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 })}
               </YStack>
             </YStack>
-            <Button disabled={zkeyLoading || (address == ethers.ZeroAddress)} borderRadius={100} onPress={() => { (!zkeyLoaded && Platform.OS != "ios") ? downloadZkey() : handleProve(path) }} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
-              {!zkeyLoaded && Platform.OS != "ios" ? (
-
-                <XStack ai="center" gap="$2">
-                  {zkeyLoading && <Spinner />}
-                  <Text color="white" fow="bold">{zkeyLoading ? "Downloading ZK circuit" : "Download ZK circuit"}</Text>
+            <Button
+              disabled={zkeydownloadStatus != "completed" || (address == ethers.ZeroAddress)}
+              borderRadius={100}
+              onPress={handleProve}
+              mt="$8"
+              backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"}
+              alignSelf='center'
+            >
+              {zkeydownloadStatus === "downloading" ? (
+                <XStack ai="center" gap="$1">
+                  <Spinner />
+                  <Text color="white" fow="bold">
+                    Downloading ZK proving key
+                  </Text>
+                </XStack>
+              ) : zkeydownloadStatus === "error" ? (
+                <XStack ai="center" gap="$1">
+                  <Spinner />
+                  <Text color="white" fow="bold">
+                    Error downloading ZK proving key
+                  </Text>
                 </XStack>
               ) : generatingProof ? (
                 <XStack ai="center" gap="$1">
                   <Spinner />
-                  <Text color="white" marginLeft="$2" fow="bold" >Generating ZK proof</Text>
+                  <Text color="white" marginLeft="$2" fow="bold">
+                    Generating ZK proof
+                  </Text>
                 </XStack>
               ) : (
-                <Text color="white" fow="bold">Generate ZK proof</Text>
+                <Text color="white" fow="bold">
+                  Generate ZK proof
+                </Text>
               )}
             </Button>
-            {(height > 750) && <Text fontSize={10} color={generatingProof ? "gray" : "white"} pb="$2" alignSelf='center'>This operation can take up to 2 mn, phone may freeze during this time</Text>}
-          </YStack >
-
+            {
+              (height > 750) && <Text
+                fontSize={10}
+                color={generatingProof ? "gray" : "white"}
+                pb="$2"
+                alignSelf='center'
+              >
+                This operation can take up to 2 mn, phone may freeze during this time
+              </Text>
+            }
+          </YStack>
         ) : step === Steps.TX_MINTED ? (
           <YStack flex={1} justifyContent='center' alignItems='center' gap="$5">
             <XStack flex={1} />
@@ -357,23 +298,19 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 </XStack>
                 : <Text color="white" fow="bold" >{selectedApp?.mintphrase}</Text>}
             </Button>
-
           </YStack>
         )
-
-        ) :
-        (
-          <YStack flex={1} justifyContent='center' alignItems='center'>
-            <Text fontSize={17} textAlign='center' fow="bold">Please scan your passport and select an app to generate ZK proof</Text>
-            <XStack mt="$8" gap="$7">
-              <Scan size="$4" color={step < Steps.NFC_SCAN_COMPLETED ? "black" : "#3185FC"} />
-              <LayoutGrid size="$4" color={selectedApp == null ? "black" : "#3185FC"} />
-            </XStack>
-          </YStack>
-
-        )
-      }
+      ) : (
+        <YStack flex={1} justifyContent='center' alignItems='center'>
+          <Text fontSize={17} textAlign='center' fow="bold">Please scan your passport and select an app to generate ZK proof</Text>
+          <XStack mt="$8" gap="$7">
+            <Scan size="$4" color={step < Steps.NFC_SCAN_COMPLETED ? "black" : "#3185FC"} />
+            <LayoutGrid size="$4" color={selectedApp == null ? "black" : "#3185FC"} />
+          </XStack>
+        </YStack>
+      )}
     </YStack >
   );
 };
-export default ProveScreen;     
+
+export default ProveScreen;
