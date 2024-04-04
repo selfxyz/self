@@ -45,6 +45,7 @@ sdk.dir=/Users/<user>/Library/Android/sdk or any relevant path to your sdk
 
 Run:
 ```
+export DEVELOPMENT_TEAM="<your-development-team-id>"
 ./scripts/build_ios_module.sh
 ```
 

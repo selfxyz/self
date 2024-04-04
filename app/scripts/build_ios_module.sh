@@ -37,7 +37,7 @@ xcodebuild -project witnesscalc.xcodeproj \
            PRODUCT_BUNDLE_IDENTIFIER=com.warrom.witnesscalc \
            build
 cd ../..
-cp witnesscalc/build_witnesscalc_ios/src/Debug-iphoneos/libwitnesscalc_proof_of_passport.a ios
+cp witnesscalc/build_witnesscalc_ios/src/Release-iphoneos/libwitnesscalc_proof_of_passport.a ios
 mkdir -p ios/ProofOfPassport/Assets.xcassets/proof_of_passport.dat.dataset
 mkdir -p ios/ProofOfPassport/Assets.xcassets/proof_of_passport.zkey.dataset
 cp witnesscalc/src/proof_of_passport.dat ios/ProofOfPassport/Assets.xcassets/proof_of_passport.dat.dataset/proof_of_passport.dat

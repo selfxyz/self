@@ -72,7 +72,7 @@ CMakeLists.txt.user
 depends/gmp*
 
 build/*.o
-build_*
+build_witnesscalc_ios
 package*
 
 .idea/
