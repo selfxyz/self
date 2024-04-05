@@ -23,7 +23,7 @@ export function checkInputs(
   if (dateOfBirth.length !== 6) {
     return {
       success: false,
-      message: 'Scan your passport with your camera first'
+      message: 'Complete Step 1 first'
     };
   }
   if (dateOfExpiry.length !== 6) {

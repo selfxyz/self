@@ -14,6 +14,8 @@ import { Keyboard } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
 import { bgColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 import MintScreen from './MintScreen';
+import { ToastViewport } from '@tamagui/toast';
+import { ToastMessage } from '../components/ToastMessage';
 
 interface MainScreenProps {
   onStartCameraScan: () => void;
@@ -345,6 +347,8 @@ const MainScreen: React.FC<MainScreenProps> = ({
         <XStack bc="#343434" h={1.2} />
       </YStack>
       <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan" value={selectedTab} onValueChange={setSelectedTab}>
+        <ToastViewport flexDirection="column-reverse" top={15} right={0} left={0} />
+        <ToastMessage />
         <Tabs.Content value="scan" f={1}>
           <ScanScreen
             onStartCameraScan={onStartCameraScan}

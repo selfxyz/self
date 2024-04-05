@@ -4,7 +4,6 @@ import { generateCircuitInputs } from '../../../common/src/utils/generateInputs'
 import { formatProof, formatInputs } from '../../../common/src/utils/utils';
 import { Steps } from './utils';
 import { PassportData } from '../../../common/src/utils/types';
-import Toast from 'react-native-toast-message';
 
 interface ProverProps {
   passportData: PassportData | null;
@@ -14,6 +13,7 @@ interface ProverProps {
   setGeneratingProof: (value: boolean) => void;
   setProofTime: (value: number) => void;
   setProof: (value: { proof: string; inputs: string } | null) => void;
+  toast: any
 }
 
 export const prove = async ({
@@ -24,6 +24,7 @@ export const prove = async ({
   setGeneratingProof,
   setProofTime,
   setProof,
+  toast
 }: ProverProps, path?: string) => {
   if (passportData === null) {
     console.log('passport data is null');
@@ -62,10 +63,13 @@ export const prove = async ({
     console.log('Total proof time from frontend:', end - start);
   } catch (error) {
     console.error(error);
-    Toast.show({
-      type: 'error',
-      text1: "Pubkey not found in the registry",
-    });
+    toast.show('Error', {
+      message: "Pubkey not found in the registry",
+      customData: {
+        type: "error",
+      },
+    })
+
     setStep(Steps.NFC_SCAN_COMPLETED);
     setGeneratingProof(false);
   }

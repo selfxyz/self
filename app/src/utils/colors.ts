@@ -7,3 +7,8 @@ export const textColor1 = "#ededed";
 export const textColor2 = "#a0a0a0";
 export const blueColorDark = "#11233e"
 export const blueColorLight = "#0090ff"
+export const greenColorDark = "#10291e"
+export const greenColorLight = "#30a46b"
+export const redColorDark = "#3c181a"
+export const redColorLight = "#e5484d"
+

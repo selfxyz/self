@@ -8,9 +8,9 @@ import USER from '../images/user.png'
 import { App } from '../utils/AppClass';
 import { Keyboard, Platform } from 'react-native';
 import { DEFAULT_ADDRESS } from '@env';
-import Toast from 'react-native-toast-message';
 import { blueColor, borderColor, componentBgColor, componentBgColor2, textColor1, textColor2 } from '../utils/colors';
 import ENS from "../images/ens_mark_dao.png"
+import { useToastController } from '@tamagui/toast'
 
 const { ethers } = require('ethers');
 const fileName = "passport.arkzkey"
@@ -49,7 +49,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
 }) => {
   const [zkeyLoading, setZkeyLoading] = useState(false);
   const [zkeyLoaded, setZkeyLoaded] = useState(true);
-
+  const toast = useToastController()
 
 
   const downloadZkey = async () => {
@@ -69,11 +69,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
       setZkeyLoading(false);
     } catch (e: any) {
       console.log("Download not successful");
-      Toast.show({
-        type: 'error',
-        text1: `Error: ${e.message}`,
-        position: 'top',
-        bottomOffset: 80,
+      toast.show('Error', {
+        message: `${e.message}`,
+        customData: {
+          type: "error",
+        },
       })
       setZkeyLoading(false);
     }
@@ -108,22 +108,23 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
       if (inputValue != ens) {
         if (inputValue.endsWith('.eth')) {
           try {
-            Toast.show({
-              type: 'info',
-              text1: '🔭 Looking for ' + inputValue,
-              position: 'top',
-              bottomOffset: 80,
+            toast.show('🔭 Looking onchain', {
+              message: 'Looking for ' + inputValue,
+              customData: {
+                type: "info",
+              },
             })
+
             const resolvedAddress = await provider.resolveName(inputValue);
             if (resolvedAddress) {
               console.log("new address settled:" + resolvedAddress);
               setAddress(resolvedAddress);
               setEns(inputValue);
-              Toast.show({
-                type: 'success',
-                text1: '🎊 welcome ' + inputValue,
-                position: 'top',
-                bottomOffset: 90,
+              toast.show('welcome', {
+                message: 'Hi ' + inputValue,
+                customData: {
+                  type: "success",
+                },
               })
               if (hideData) {
                 console.log(maskString(address));
@@ -133,20 +134,19 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 // setInputValue(address);
               }
             } else {
-              Toast.show({
-                type: 'error',
-                text1: '❌  ' + inputValue + ' not found ',
-                position: 'top',
-                bottomOffset: 90,
+              toast.show('Error', {
+                message: inputValue + ' not found ',
+                customData: {
+                  type: "error",
+                },
               })
             }
           } catch (error) {
-            Toast.show({
-              type: 'error',
-              text1: 'Error resolving ENS name',
-              text2: 'Check input format or RPC provider',
-              position: 'top',
-              bottomOffset: 80,
+            toast.show('Error', {
+              message: 'Check input format or RPC provider or internet connection',
+              customData: {
+                type: "error",
+              },
             })
           }
         }

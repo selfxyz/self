@@ -7,8 +7,8 @@ import ProofGrid from '../components/ProofGrid';
 import { App } from '../utils/AppClass';
 import { Platform } from 'react-native';
 import Clipboard from '@react-native-community/clipboard';
-import Toast from 'react-native-toast-message';
 import { blueColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
+import { useToastController } from '@tamagui/toast';
 
 const { ethers } = require('ethers');
 const fileName = "passport.arkzkey"
@@ -32,6 +32,7 @@ const MintScreen: React.FC<MintScreenProps> = ({
     proofTime,
     handleMint,
 }) => {
+    const toast = useToastController();
 
     const getTx = (input: string | null): string => {
         if (!input) return '';
@@ -49,12 +50,13 @@ const MintScreen: React.FC<MintScreenProps> = ({
 
     const copyToClipboard = (input: string) => {
         Clipboard.setString(input);
-        Toast.show({
-            type: 'success',
-            text1: '🖨️ Tx copied to clipboard',
-            position: 'top',
-            bottomOffset: 80,
+        toast.show('🖨️ Tx copied to clipboard', {
+            message: "",
+            customData: {
+                type: "success",
+            },
         })
+
     };
 
 
@@ -82,17 +84,19 @@ const MintScreen: React.FC<MintScreenProps> = ({
 
                 </YStack>
             ) : (
-                <YStack flex={1} justifyContent='center' alignItems='center' gap="$5">
-                    <XStack flex={1} />
+                <YStack flex={1} justifyContent='center' alignItems='center' gap="$5" pt="$8">
                     <ProofGrid proof={proof} />
 
-                    <YStack >
-                        <Text color={textColor1} fontWeight="bold" fontSize="$5" mt="$3">You just generated this Zero Knowledge proof  🎉</Text>
-                        <Text color={textColor2} fontSize="$5" mt="$2" textAlign='left'>You can now share this proof with the selected app.</Text>
-                        <Text color={textColor2} mt="$3">Proof generation duration: {formatDuration(proofTime)}</Text>
+                    <YStack mt="$6" >
+                        <Text color={textColor1} fontWeight="bold" fontSize="$5" mt="$3">ZK proof generated  🎉</Text>
+                        <Text color={textColor2} mt="$1">Proof generation duration: {formatDuration(proofTime)}</Text>
+
+                        <Text color={textColor2} fontSize="$5" mt="$4" textAlign='left'>You can now use this proof to mint a Soulbond token.</Text>
+                        <Text color={textColor2} fontSize="$4" mt="$2" textAlign='left'>Disclosed information will be displayed on SBT.</Text>
                     </YStack>
                     <XStack flex={1} />
-                    <Button borderColor={borderColor} borderWidth={1.3} disabled={step === Steps.TX_MINTING} borderRadius={100} onPress={handleMint} marginTop="$4" mb="$8" backgroundColor="#0090ff">
+
+                    <Button borderColor={borderColor} borderWidth={1.3} disabled={step === Steps.TX_MINTING} borderRadius={100} onPress={handleMint} marginTop="$4" mb="$4" backgroundColor="#0090ff">
                         {step === Steps.TX_MINTING ?
                             <XStack gap="$2">
                                 <Spinner />

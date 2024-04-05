@@ -1,7 +1,7 @@
 import React from 'react';
 import { Text, YStack, XStack, H4, Button } from 'tamagui';
 import { ChevronRight } from '@tamagui/lucide-icons';
-import Toast from 'react-native-toast-message';
+import { useToastController } from '@tamagui/toast';
 import { borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 
 
@@ -26,13 +26,15 @@ const AppCard: React.FC<AppCardProps> = ({
     icon,
     tags
 }) => {
+    const toast = useToastController();
+
     const showtoast = () => {
-        Toast.show({
-            type: 'info',
-            text1: '🚧 Coming soon ',
-            position: 'top',
-            topOffset: 80,
-        })
+        toast.show('🚧 Coming soon', {
+            message: 'This feature is under development.',
+            customData: {
+                type: 'info',
+            },
+        });
     }
 
     return (

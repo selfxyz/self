@@ -2,7 +2,8 @@ import React from 'react';
 import { YStack, Text, XStack, Button } from 'tamagui';
 import { Steps } from '../utils/utils';
 import { Camera, ExternalLink, Nfc } from '@tamagui/lucide-icons';
-import { blueColorDark, blueColorLight } from '../utils/colors';
+import { blueColorDark, blueColorLight, borderColor, componentBgColor2, greenColorDark, greenColorLight, redColorDark, redColorLight, textColor1, textColor2 } from '../utils/colors';
+import { useToastController } from '@tamagui/toast'
 
 interface ScanScreenProps {
   onStartCameraScan: () => void;
@@ -10,10 +11,12 @@ interface ScanScreenProps {
   step: number;
 }
 
-const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
 
+const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
+  const toast = useToastController();
   return (
     <YStack f={1} p="$5" gap="$5" px="$5" justifyContent='center'>
+
 
       <YStack bc="#1c1c1c" borderWidth={1.2} borderColor="#343434" borderRadius="$6">
         <YStack p="$3">
@@ -87,8 +90,8 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
             <XStack f={1} />
             <Button h="$3" onPress={handleNFCScan} p="$2" borderRadius="$4" borderWidth={1} backgroundColor="#282828" borderColor="#343434">
               <XStack gap="$2">
-                <Text color={step < Steps.MRZ_SCAN_COMPLETED ? "#343434" : "#ededed"} fontSize="$5"  >Scan with NFC</Text>
-                <ExternalLink size="$1" color={step < Steps.MRZ_SCAN_COMPLETED ? "#343434" : "#ededed"} />
+                <Text color={step < Steps.MRZ_SCAN_COMPLETED ? "#a0a0a0" : "#ededed"} fontSize="$5"  >Scan with NFC</Text>
+                <ExternalLink size="$1" color={step < Steps.MRZ_SCAN_COMPLETED ? "#a0a0a0" : "#ededed"} />
               </XStack>
             </Button>
           </XStack>

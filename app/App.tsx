@@ -3,7 +3,6 @@ import {
   NativeModules,
   DeviceEventEmitter,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -18,10 +17,10 @@ import { Steps } from './src/utils/utils';
 import { startCameraScan } from './src/utils/cameraScanner';
 import { scan } from './src/utils/nfcScanner';
 import { mint } from './src/utils/minter';
-import { toastConfig } from './src/utils/toastConfig';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
+import { useToastController } from '@tamagui/toast';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
@@ -49,6 +48,7 @@ function App(): JSX.Element {
     expiry_date: false,
     older_than: false,
   });
+  const toast = useToastController();
 
   const handleDisclosureChange = (field: string) => {
     setDisclosure(
@@ -86,6 +86,7 @@ function App(): JSX.Element {
       setDateOfBirth,
       setDateOfExpiry,
       setStep,
+      toast
     });
   };
 
@@ -97,6 +98,7 @@ function App(): JSX.Element {
       dateOfExpiry,
       setPassportData,
       setStep,
+      toast
     });
   };
 
@@ -109,6 +111,7 @@ function App(): JSX.Element {
       setGeneratingProof,
       setProofTime,
       setProof,
+      toast
     }, path);
   };
 
@@ -117,6 +120,7 @@ function App(): JSX.Element {
       proof,
       setStep,
       setMintText,
+      toast
     });
   };
 
@@ -149,7 +153,6 @@ function App(): JSX.Element {
           setMajority={setMajority}
         />
       </YStack>
-      <Toast config={toastConfig} />
     </YStack>
   );
 }
