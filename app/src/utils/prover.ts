@@ -61,15 +61,14 @@ export const prove = async ({
     await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep, path);
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
-  } catch (error) {
+  } catch (error: any) {
     console.error(error);
     toast.show('Error', {
-      message: "Pubkey not found in the registry",
+      message: error.message,
       customData: {
         type: "error",
       },
     })
-
     setStep(Steps.NFC_SCAN_COMPLETED);
     setGeneratingProof(false);
   }

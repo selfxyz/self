@@ -52,11 +52,16 @@ export function generateCircuitInputs(
   const index = tree.indexOf(leaf) // this index is not the index in public_keys_parsed.json, but the index in the tree
   console.log(`Index of pubkey in the registry: ${index}`)
   if (index === -1) {
-    throw new Error("Pubkey not found in the registry");
+    throw new Error("Your public key was not found in the registry");
   }
 
   const proof = tree.createProof(index)
   console.log("verifyProof", tree.verifyProof(proof))
+
+  if (passportData.dataGroupHashes.length > MAX_DATAHASHES_LEN) {
+    console.log(`Data hashes too long. Max length is ${MAX_DATAHASHES_LEN} bytes.`);
+    throw new Error(`This number of datagroups is currently unsupported. Please contact us so we add support!`);
+  }
 
   const [messagePadded, messagePaddedLen] = sha256Pad(
     new Uint8Array(passportData.dataGroupHashes),
