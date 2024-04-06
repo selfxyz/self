@@ -82,11 +82,6 @@ const generateProof = async (
     console.log('launching generateProof function');
     console.log('inputs in App.tsx', inputs);
 
-    if (Platform.OS == "android") {
-      await NativeModules.Prover.runInitAction();
-    }
-
-    console.log('running prove action');
     const startTime = Date.now();
     const response = await NativeModules.Prover.runProveAction(inputs);
     const endTime = Date.now();

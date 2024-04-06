@@ -1,8 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  NativeModules,
   DeviceEventEmitter,
-  Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -24,7 +22,7 @@ import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
 import RNFS from 'react-native-fs';
-import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
+import { ZKEY_URL } from '../common/src/constants/constants';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
@@ -75,24 +73,10 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    initMopro()
     downloadZkey()
   }, []);
 
-  async function initMopro() {
-    if (Platform.OS === 'android') {
-      const res = await NativeModules.Prover.runInitAction()
-      console.log('Mopro init res:', res)
-    }
-  }
-
   async function downloadZkey() {
-    // temporarily, as arkzkey is still bundled in mopro
-    if (Platform.OS === 'android') {
-      setDownloadStatus('completed');
-      return;
-    }
-
     const fileExists = await RNFS.exists(localZkeyPath);
     if (!fileExists) {
       console.log('launching zkey download')
@@ -101,8 +85,7 @@ function App(): JSX.Element {
       let previousPercentComplete = -1;
 
       const options = {
-        // @ts-ignore
-        fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
+        fromUrl: ZKEY_URL,
         toFile: localZkeyPath,
         background: true,
         begin: () => {
