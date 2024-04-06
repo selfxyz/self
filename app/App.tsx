@@ -98,6 +98,8 @@ function App(): JSX.Element {
       console.log('launching zkey download')
       setDownloadStatus('downloading');
 
+      let previousPercentComplete = -1;
+
       const options = {
         // @ts-ignore
         fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
@@ -107,12 +109,19 @@ function App(): JSX.Element {
           console.log('Download has begun');
         },
         progress: (res: any) => {
-          console.log((res.bytesWritten / res.contentLength * 100).toFixed(2) + '%');
+          const percentComplete = Math.floor((res.bytesWritten / res.contentLength) * 100);
+          if (percentComplete !== previousPercentComplete) {
+            console.log(`${percentComplete}%`);
+            previousPercentComplete = percentComplete;
+          }
         },
       };
       
       RNFS.downloadFile(options).promise
-        .then(() => setDownloadStatus('completed'))
+        .then(() => {
+          setDownloadStatus('completed')
+          console.log('Download complete');
+        })
         .catch((error) => {
           console.error(error);
           setDownloadStatus('error');
