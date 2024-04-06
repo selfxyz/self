@@ -80,7 +80,7 @@ Add the following line:
 
 ### iOS
 
-Run:
+Find your [development team id](https://chat.openai.com/share/9d52c37f-d9da-4a62-acb9-9e4ee8179f95) and run:
 ```
 export DEVELOPMENT_TEAM="<your-development-team-id>"
 ./scripts/build_ios_module.sh
