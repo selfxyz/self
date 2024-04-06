@@ -52,7 +52,7 @@ First, go to the `circuit` folder of the monorepo, modify the circuits and build
 
 Then, upload the zkey and the arkzkey built at a publicly available url and replace the two urls in `common/src/constants/constants.ts`
 
-Adapt the inputs you pass in `app/src/utils/prover.ts`.
+Adapt the inputs you pass in `app/src/utils/prover.ts` and if you want to mint SBTs, adapt and redeploy the contracts.
 
 ### Android
 

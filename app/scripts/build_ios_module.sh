@@ -1,7 +1,5 @@
 #!/bin/bash
 
-DEVELOPMENT_TEAM="<add-yours-here>"
-
 cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.cpp witnesscalc/src
 cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.dat witnesscalc/src
 
@@ -38,7 +36,4 @@ xcodebuild -project witnesscalc.xcodeproj \
            build
 cd ../..
 cp witnesscalc/build_witnesscalc_ios/src/Release-iphoneos/libwitnesscalc_proof_of_passport.a ios
-mkdir -p ios/ProofOfPassport/Assets.xcassets/proof_of_passport.dat.dataset
-mkdir -p ios/ProofOfPassport/Assets.xcassets/proof_of_passport.zkey.dataset
 cp witnesscalc/src/proof_of_passport.dat ios/ProofOfPassport/Assets.xcassets/proof_of_passport.dat.dataset/proof_of_passport.dat
-cp ../circuits/build/proof_of_passport.zkey ios/ProofOfPassport/Assets.xcassets/proof_of_passport.zkey.dataset/proof_of_passport.zkey
