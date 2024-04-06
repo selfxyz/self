@@ -10,10 +10,6 @@
 
 @interface RCT_EXTERN_MODULE(Prover, NSObject)
 
-RCT_EXTERN_METHOD(downloadZkey:(NSString *)urlString
-                  resolve:(RCTPromiseResolveBlock)resolve
-                  reject:(RCTPromiseRejectBlock)reject)
-                  
 RCT_EXTERN_METHOD(runProveAction:(NSDictionary *)inputs
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

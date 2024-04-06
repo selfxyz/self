@@ -34,48 +34,6 @@ struct Proof: Codable {
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
-    @objc(downloadZkey:resolve:reject:)
-    func downloadZkey(urlString: String, resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
-        print("Downloading file...")
-
-        guard let url = URL(string: urlString) else {
-            reject("URL_ERROR", "Invalid URL", NSError(domain: "", code: 0, userInfo: nil))
-            return
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async {
-            let session = URLSession(configuration: .default)
-            let downloadTask = session.downloadTask(with: url) { (tempLocalUrl, response, error) in
-                if let tempLocalUrl = tempLocalUrl, error == nil {
-                    do {
-                        let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-                        let destinationURL = documentsPath.appendingPathComponent(url.lastPathComponent)
-
-                        if FileManager.default.fileExists(atPath: destinationURL.path) {
-                            try FileManager.default.removeItem(at: destinationURL)
-                        }
-
-                        try FileManager.default.moveItem(at: tempLocalUrl, to: destinationURL)
-                        print("File downloaded to: \(destinationURL)")
-
-                        DispatchQueue.main.async {
-                            resolve(destinationURL.path)
-                        }
-                    } catch (let writeError) {
-                        DispatchQueue.main.async {
-                            reject("FILE_ERROR", "Error saving file", writeError)
-                        }
-                    }
-                } else {
-                    DispatchQueue.main.async {
-                        reject("DOWNLOAD_ERROR", "Error downloading file: \(error?.localizedDescription ?? "Unknown error")", error as NSError?)
-                    }
-                }
-            }
-            downloadTask.resume()
-        }
-    }
-
     @objc(runProveAction:resolve:reject:)
     func runProveAction(_ inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         do {
