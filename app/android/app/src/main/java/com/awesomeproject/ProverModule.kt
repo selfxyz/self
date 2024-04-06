@@ -6,6 +6,8 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 
 import android.util.Log
+import android.content.Context
+import java.io.ByteArrayOutputStream
 import com.facebook.react.bridge.ReadableMap
 import uniffi.mopro.GenerateProofResult
 
@@ -14,41 +16,40 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+
+import com.proofofpassport.R
+
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
   lateinit var res: GenerateProofResult
-
 
   override fun getName(): String {
     return "Prover"
   }
 
   @ReactMethod
-  fun runInitAction(promise: Promise) {
-      // Launch a coroutine in the IO dispatcher for background tasks
-      CoroutineScope(Dispatchers.IO).launch {
-          try {
-              val startTime = System.currentTimeMillis()
-              uniffi.mopro.initializeMopro()
-              val endTime = System.currentTimeMillis()
-              val initTime = "init time: " + (endTime - startTime).toString() + " ms"
-              
-              // Since the promise needs to be resolved in the main thread
-              withContext(Dispatchers.Main) {
-                  promise.resolve(initTime)
-              }
-          } catch (e: Exception) {
-              withContext(Dispatchers.Main) {
-                  promise.reject(e)
-              }
-          }
-      }
-  }
-
-  @ReactMethod
-  // fun runProveAction(inputs: ReadableMap, zkeypath: String, promise: Promise) {
   fun runProveAction(inputs: ReadableMap, promise: Promise) {
     Log.e(TAG, "inputs in provePassport kotlin: " + inputs.toString())
+
+    val formattedInputs = mutableMapOf<String, Any?>(
+      "mrz" to inputs.getArray("mrz")?.toArrayList()?.map { it.toString() },
+      "reveal_bitmap" to inputs.getArray("reveal_bitmap")?.toArrayList()?.map { it.toString() },
+      "dataHashes" to inputs.getArray("dataHashes")?.toArrayList()?.map { it.toString() },
+      "datahashes_padded_length" to inputs.getArray("datahashes_padded_length")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
+      "eContentBytes" to inputs.getArray("eContentBytes")?.toArrayList()?.map { it.toString() },
+      "signature" to inputs.getArray("signature")?.toArrayList()?.map { it.toString() },
+      "signatureAlgorithm" to inputs.getArray("signatureAlgorithm")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
+      "pubkey" to inputs.getArray("pubkey")?.toArrayList()?.map { it.toString() },
+      "pathIndices" to inputs.getArray("pathIndices")?.toArrayList()?.map { it.toString() },
+      "siblings" to inputs.getArray("siblings")?.toArrayList()?.map { it.toString() },
+      "root" to inputs.getArray("root")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
+      "address" to inputs.getArray("address")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
+    )
+
+    val gson = GsonBuilder().setPrettyPrinting().create()
+    Log.e(TAG, gson.toJson(formattedInputs))
 
     // working example
     // val inputs = mutableMapOf<String, List<String>>(
@@ -66,35 +67,258 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     //   "address" to listOf("642829559307850963015472508762062935916233390536")
     // )
 
-    val convertedInputs = mutableMapOf<String, List<String>>()
+    // data class InputsPassport(
+    //     val `in`: List<Int>,
+    //     val currDateYear: Int,
+    //     val currDateMonth: Int,
+    //     val currDateDay: Int,
+    //     val credValidYear: Int,
+    //     val credValidMonth: Int,
+    //     val credValidDay: Int,
+    //     val ageLowerbound: Int
+    // )
 
-    for ((key, value) in inputs.toHashMap()) {
-        val parsedArray = inputs.getArray(key)?.toArrayList()?.map { item ->
-            item.toString()
-        } ?: emptyList()
-        convertedInputs[key] = parsedArray
+    // val formattedInputs = InputsPassport(
+    //   `in` = (dg1!!).toBitArray().toCharArray().map { it1 -> it1.digitToInt() },
+    //   currDateDay = current.dayOfMonth,
+    //   credValidDay = nextDate.dayOfMonth,
+    //   credValidMonth = nextDate.month.value,
+    //   credValidYear = nextDate.year.toString().takeLast(2).toInt(),
+    //   currDateMonth = current.month.value,
+    //   currDateYear = current.year.toString().takeLast(2).toInt(),
+    //   ageLowerbound = 18
+    // )
+
+    val jsonInputs = gson.toJson(formattedInputs).toByteArray()
+    val zkpTools = ZKPTools(reactApplicationContext) // <== same thing here
+    
+    // reactContext or context???
+    val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
+      R.raw.proof_of_passport_zkey, //zkeyID as Int
+      R.raw.proof_of_passport_dat, // datID as Int
+      jsonInputs,
+      zkpTools::witnesscalc_proof_of_passport
+    )
+
+    Log.e("ZKP", gson.toJson(zkp))
+
+    promise.resolve(zkp.toString())
+
+
+    // val convertedInputs = mutableMapOf<String, List<String>>()
+
+    // for ((key, value) in inputs.toHashMap()) {
+    //     val parsedArray = inputs.getArray(key)?.toArrayList()?.map { item ->
+    //         item.toString()
+    //     } ?: emptyList()
+    //     convertedInputs[key] = parsedArray
+    // }
+
+    // Log.e(TAG, "convertedInputs: $convertedInputs")
+
+    // val startTime = System.currentTimeMillis()
+    // res = uniffi.mopro.generateProof2(convertedInputs)
+    // val endTime = System.currentTimeMillis()
+    // val provingTime = "proving time: " + (endTime - startTime).toString() + " ms"
+    // Log.e(TAG, provingTime)
+      
+    // Log.e(TAG, "res: " + res.toString())
+
+    // promise.resolve(res.toString())
+  }
+}
+
+
+data class Proof(
+    val pi_a: List<String>,
+    val pi_b: List<List<String>>,
+    val pi_c: List<String>,
+    val protocol: String,
+    var curve: String = "bn128"
+) {
+    companion object {
+        fun fromJson(jsonString: String): Proof {
+            val json = Gson().fromJson(jsonString, Proof::class.java)
+            json.curve = getDefaultCurve()
+            return json
+        }
+
+        private fun getDefaultCurve(): String {
+            return "bn128"
+        }
+    }
+}
+
+data class ZkProof(
+    val proof: Proof,
+    val pub_signals: List<String>
+)
+
+class ZKPTools(val context: Context) {
+  external fun witnesscalc_proof_of_passport(circuitBuffer: ByteArray,
+    circuitSize: Long,
+    jsonBuffer: ByteArray,
+    jsonSize: Long,
+    wtnsBuffer: ByteArray,
+    wtnsSize: LongArray,
+    errorMsg: ByteArray,
+    errorMsgMaxSize: Long): Int
+  external fun CalcPublicBufferSize(zkeyBuffer: ByteArray, zkeySize: Long): Long
+  external fun groth16_prover(
+      zkeyBuffer: ByteArray, zkeySize: Long,
+      wtnsBuffer: ByteArray, wtnsSize: Long,
+      proofBuffer: ByteArray, proofSize: LongArray,
+      publicBuffer: ByteArray, publicSize: LongArray,
+      errorMsg: ByteArray, errorMsgMaxSize: Long
+  ): Int
+
+  init {
+      System.loadLibrary("rapidsnark");
+      System.loadLibrary("witnesscalc_proof_of_passport") // moonshot to avoid CMakeLists.txt and proofofpassport.cpp
+    //   System.loadLibrary("proofofpassport")
+  }
+
+  fun openRawResourceAsByteArray(resourceName: Int): ByteArray {
+      val inputStream = context.resources.openRawResource(resourceName)
+      val byteArrayOutputStream = ByteArrayOutputStream()
+
+      try {
+          val buffer = ByteArray(1024)
+          var length: Int
+
+          while (inputStream.read(buffer).also { length = it } != -1) {
+              byteArrayOutputStream.write(buffer, 0, length)
+          }
+
+          return byteArrayOutputStream.toByteArray()
+      } finally {
+          byteArrayOutputStream.close()
+          inputStream.close()
+      }
+  }
+}
+
+class ZKPUseCase(val context: Context) {
+
+    fun generateZKP(
+        zkpId: Int, datFile: Int, inputs: ByteArray, proofFunction: (
+            circuitBuffer: ByteArray,
+            circuitSize: Long,
+            jsonBuffer: ByteArray,
+            jsonSize: Long,
+            wtnsBuffer: ByteArray,
+            wtnsSize: LongArray,
+            errorMsg: ByteArray,
+            errorMsgMaxSize: Long
+        ) -> Int
+    ): ZkProof {
+        val zkpTool = ZKPTools(context)
+        val zkp = zkpTool.openRawResourceAsByteArray(zkpId)
+        val datFile = zkpTool.openRawResourceAsByteArray(datFile)
+
+        val msg = ByteArray(256)
+
+        val witnessLen = LongArray(1)
+        witnessLen[0] = 100 * 1024 * 1024
+
+        val byteArr = ByteArray(100 * 1024 * 1024)
+
+        val res = proofFunction(
+            datFile,
+            datFile.size.toLong(),
+            inputs,
+            inputs.size.toLong(),
+            byteArr,
+            witnessLen,
+            msg,
+            256
+        )
+
+        Log.e("ZKPUseCase", "Witness gen res: $res")
+        Log.e("ZKPUseCase", "Witness gen return length: ${byteArr.size}")
+        Log.e("ZKPUseCase", "witnessLen: $witnessLen")
+
+        if (res == 2) {
+            throw Exception("Not enough memory for zkp")
+        }
+
+        if (res == 1) {
+            throw Exception("Error during zkp ${msg.decodeToString()}")
+        }
+
+        // val pubData = ByteArray(4 *1024 *1024)
+
+
+        // val pubLen = LongArray(1)
+        // pubLen[0] = pubData.size.toLong()
+
+        // val proofData = ByteArray(4*1024*1024)
+        // val proofLen = LongArray(1)
+        // proofLen[0] = proofData.size.toLong()
+
+        // val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
+
+        // val verification = zkpTool.groth16_prover(
+        //     zkp,
+        //     zkp.size.toLong(),
+        //     witnessData,
+        //     witnessLen[0],
+        //     proofData,
+        //     proofLen,
+        //     pubData,
+        //     pubLen,
+        //     msg,
+        //     256
+        // )
+
+        // if (verification == 2) {
+        //     throw Exception("Not enough memory for verification ${msg.decodeToString()}")
+        // }
+
+        // if (verification == 1) {
+        //     throw Exception("Error during verification ${msg.decodeToString()}")
+        // }
+
+        // val proofDataZip = proofData.copyOfRange(0, proofLen[0].toInt())
+
+        // val index = findLastIndexOfSubstring(
+        //     proofDataZip.toString(Charsets.UTF_8),
+        //     "\"protocol\":\"groth16\"}"
+        // )
+        // val indexPubData = findLastIndexOfSubstring(
+        //     pubData.decodeToString(),
+        //     "]"
+        // )
+
+        // val formatedPubData = pubData.decodeToString().slice(0..indexPubData)
+
+        // val foramtedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
+        // val proof = Proof.fromJson(foramtedProof)
+
+        // return ZkProof(
+        //     proof = proof,
+        //     pub_signals = getPubSignals(formatedPubData).toList()
+        // )
+        return ZkProof(
+            proof = Proof.fromJson(""),
+            pub_signals = emptyList()
+        )
     }
 
-    Log.e(TAG, "convertedInputs: $convertedInputs")
+    private fun findLastIndexOfSubstring(mainString: String, searchString: String): Int {
+        val index = mainString.lastIndexOf(searchString)
 
-    val startTime = System.currentTimeMillis()
-    res = uniffi.mopro.generateProof2(convertedInputs)
-    val endTime = System.currentTimeMillis()
-    val provingTime = "proving time: " + (endTime - startTime).toString() + " ms"
-    Log.e(TAG, provingTime)
-      
-    Log.e(TAG, "res: " + res.toString())
+        if (index != -1) {
+            // If substring is found, calculate the last index of the substring
+            return index + searchString.length - 1
+        }
 
-    promise.resolve(res.toString())
-  }
+        return -1
+    }
 
-  @ReactMethod
-  fun runVerifyAction(promise: Promise) {
-    val startTime = System.currentTimeMillis()
-    val valid = "valid: " + uniffi.mopro.verifyProof2(res.proof, res.inputs).toString()
-    val endTime = System.currentTimeMillis()
-    val verifyingTime = "verifying time: " + (endTime - startTime).toString() + " ms"
-    Log.e(TAG, verifyingTime)
-    promise.resolve(valid)
-  }
+    private fun getPubSignals(jsonString: String): List<String> {
+        val gson = Gson()
+        val stringArray = gson.fromJson(jsonString, Array<String>::class.java)
+        return stringArray.toList()
+    }
 }
