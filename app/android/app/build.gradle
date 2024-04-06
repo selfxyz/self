@@ -140,6 +140,8 @@ dependencies {
     implementation("net.java.dev.jna:jna:5.13.0@aar")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
     implementation project(':react-native-fs')
+
+    implementation 'com.google.code.gson:gson:2.8.9'
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)
