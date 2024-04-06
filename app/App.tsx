@@ -75,7 +75,6 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    initMopro()
     downloadZkey()
   }, []);
 
@@ -87,12 +86,7 @@ function App(): JSX.Element {
   }
 
   async function downloadZkey() {
-    // temporarily, as arkzkey is still bundled in mopro
-    if (Platform.OS === 'android') {
-      setDownloadStatus('completed');
-      return;
-    }
-
+    console.log('localZkeyPath:', localZkeyPath)
     const fileExists = await RNFS.exists(localZkeyPath);
     if (!fileExists) {
       console.log('launching zkey download')
@@ -121,6 +115,7 @@ function App(): JSX.Element {
         .then(() => {
           setDownloadStatus('completed')
           console.log('Download complete');
+          initMopro()
         })
         .catch((error) => {
           console.error(error);
@@ -135,6 +130,7 @@ function App(): JSX.Element {
     } else {
       console.log('zkey already downloaded')
       setDownloadStatus('completed');
+      initMopro()
     }
   }
 
