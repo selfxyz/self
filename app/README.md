@@ -42,7 +42,13 @@ To run the app on iOS, you will need an Apple Developer account. Free accounts c
 
 Open the ios project on Xcode and add your provisionning profile in Targets > ProofOfPassport > Signing and Capabilities
 
-Then, run the app in Xcode.
+Then, install pods:
+```
+cd ios
+pod install
+```
+
+And run the app in Xcode.
 
 ## Modify the circuits
 
