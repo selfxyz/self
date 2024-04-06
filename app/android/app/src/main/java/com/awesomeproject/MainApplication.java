@@ -8,11 +8,11 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
-import com.proofofpassport.CameraActivityPackage; // import new package for mrz reading
+import com.proofofpassport.CameraActivityPackage;
 import io.tradle.nfc.RNPassportReaderPackage;
 import java.util.List;
 import com.proofofpassport.prover.ProverPackage;
-
+import com.rnfs.RNFSPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 

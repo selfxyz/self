@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import {
   NativeModules,
   DeviceEventEmitter,
+  Platform,
 } from 'react-native';
 import Toast from 'react-native-toast-message';
 import {
@@ -22,9 +23,13 @@ import { toastConfig } from './src/utils/toastConfig';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
+import RNFS from 'react-native-fs';
+import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
+
+const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -38,6 +43,7 @@ function App(): JSX.Element {
   const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
+  const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -69,18 +75,66 @@ function App(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    init()
+    downloadZkey()
   }, []);
 
-  async function init() {
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    console.log('launching init')
-    const res = await NativeModules.Prover.runInitAction()
-    console.log('init done')
-    console.log('init res', res)
+  async function initMopro() {
+    if (Platform.OS === 'android') {
+      const res = await NativeModules.Prover.runInitAction()
+      console.log('Mopro init res:', res)
+    }
   }
 
-  const handleStartCameraScan = () => {
+  async function downloadZkey() {
+    console.log('localZkeyPath:', localZkeyPath)
+    const fileExists = await RNFS.exists(localZkeyPath);
+    if (!fileExists) {
+      console.log('launching zkey download')
+      setDownloadStatus('downloading');
+
+      let previousPercentComplete = -1;
+
+      const options = {
+        // @ts-ignore
+        fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
+        toFile: localZkeyPath,
+        background: true,
+        begin: () => {
+          console.log('Download has begun');
+        },
+        progress: (res: any) => {
+          const percentComplete = Math.floor((res.bytesWritten / res.contentLength) * 100);
+          if (percentComplete !== previousPercentComplete) {
+            console.log(`${percentComplete}%`);
+            previousPercentComplete = percentComplete;
+          }
+        },
+      };
+      
+      RNFS.downloadFile(options).promise
+        .then(() => {
+          setDownloadStatus('completed')
+          console.log('Download complete');
+          initMopro()
+        })
+        .catch((error) => {
+          console.error(error);
+          setDownloadStatus('error');
+          Toast.show({
+            type: 'error',
+            text1: `Error: ${error.message}`,
+            position: 'top',
+            bottomOffset: 80,
+          })
+        });
+    } else {
+      console.log('zkey already downloaded')
+      setDownloadStatus('completed');
+      initMopro()
+    }
+  }
+
+  const handleStartCameraScan = async () => {
     startCameraScan({
       setPassportNumber,
       setDateOfBirth,
@@ -100,7 +154,7 @@ function App(): JSX.Element {
     });
   };
 
-  const handleProve = (path: string) => {
+  const handleProve = () => {
     prove({
       passportData,
       disclosure,
@@ -109,7 +163,7 @@ function App(): JSX.Element {
       setGeneratingProof,
       setProofTime,
       setProof,
-    }, path);
+    });
   };
 
   const handleMint = () => {
@@ -147,6 +201,7 @@ function App(): JSX.Element {
           setDateOfExpiry={setDateOfExpiry}
           majority={majority}
           setMajority={setMajority}
+          zkeydownloadStatus={zkeydownloadStatus}
         />
       </YStack>
       <Toast config={toastConfig} />

@@ -5,9 +5,9 @@ use self::{
 use crate::MoproError;
 
 use std::collections::HashMap;
-//use std::io::Cursor;
 use std::sync::Mutex;
 use std::time::Instant;
+use std::fs;
 
 use ark_bn254::{Bn254, Fr};
 use ark_circom::{
@@ -15,7 +15,7 @@ use ark_circom::{
     CircomCircuit,
     CircomConfig,
     CircomReduction,
-    WitnessCalculator, //read_zkey,
+    WitnessCalculator,
 };
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::{prepare_verifying_key, Groth16, ProvingKey};
@@ -30,13 +30,7 @@ use once_cell::sync::{Lazy, OnceCell};
 
 use wasmer::{Module, Store};
 
-use ark_zkey::read_arkzkey_from_bytes; //SerializableConstraintMatrices
-
-#[cfg(feature = "dylib")]
-use {
-    std::{env, path::Path},
-    wasmer::Dylib,
-};
+use ark_zkey::{read_arkzkey_from_bytes};
 
 pub mod serialization;
 pub mod utils;
@@ -61,22 +55,11 @@ impl Default for CircomState {
 
 // NOTE: A lot of the contents of this file is inspired by github.com/worldcoin/semaphore-rs
 
-// TODO: Replace printlns with logging
 
-//const ZKEY_BYTES: &[u8] = include_bytes!(env!("BUILD_RS_ZKEY_FILE"));
-
-const ARKZKEY_BYTES: &[u8] = include_bytes!(env!("BUILD_RS_ARKZKEY_FILE"));
-
-// static ZKEY: Lazy<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> = Lazy::new(|| {
-//     let mut reader = Cursor::new(ZKEY_BYTES);
-//     read_zkey(&mut reader).expect("Failed to read zkey")
-// });
-
-static ARKZKEY: Lazy<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> = Lazy::new(|| {
-    //let mut reader = Cursor::new(ARKZKEY_BYTES);
-    // TODO: Use reader? More flexible; unclear if perf diff
-    read_arkzkey_from_bytes(ARKZKEY_BYTES).expect("Failed to read arkzkey")
-});
+// const fileName = "passport.arkzkey"
+// const path = "/data/user/0/com.proofofpassport/files/" + fileName
+// const ZKEY_PATH_STR: &str = "proof_of_passport.arkzkey";
+const ZKEY_PATH_STR: &str = "/data/user/0/com.proofofpassport/files/proof_of_passport.zkey";
 
 const WASM: &[u8] = include_bytes!(env!("BUILD_RS_WASM_FILE"));
 
@@ -85,79 +68,31 @@ const WASM: &[u8] = include_bytes!(env!("BUILD_RS_WASM_FILE"));
 /// access from multiple threads.
 static WITNESS_CALCULATOR: OnceCell<Mutex<WitnessCalculator>> = OnceCell::new();
 
-/// Initializes the `WITNESS_CALCULATOR` singleton with a `WitnessCalculator` instance created from
-/// a specified dylib file (WASM circuit). Also initialize `ZKEY`.
-#[cfg(feature = "dylib")]
-pub fn initialize(dylib_path: &Path) {
-    println!("Initializing dylib: {:?}", dylib_path);
+static ARKZKEY: Lazy<(ProvingKey<Bn254>, ConstraintMatrices<Fr>)> = Lazy::new(|| {
+    let bytes = fs::read(ZKEY_PATH_STR).map_err(|e| MoproError::CircomError(e.to_string())).unwrap();
+    read_arkzkey_from_bytes(&bytes).map_err(|e| MoproError::CircomError(e.to_string())).unwrap()
+});
 
-    WITNESS_CALCULATOR
-        .set(from_dylib(dylib_path))
-        .expect("Failed to set WITNESS_CALCULATOR");
-
-    // Initialize ARKZKEY
-    // TODO: Speed this up even more
-    let now = std::time::Instant::now();
-    Lazy::force(&ARKZKEY);
-    println!("Initializing arkzkey took: {:.2?}", now.elapsed());
-}
-
-#[cfg(not(feature = "dylib"))]
 pub fn initialize() {
     println!("Initializing library with arkzkey");
 
-    // Initialize ARKZKEY
-    // TODO: Speed this up even more!
     let now = std::time::Instant::now();
     Lazy::force(&ARKZKEY);
     println!("Initializing arkzkey took: {:.2?}", now.elapsed());
 }
 
-/// Creates a `WitnessCalculator` instance from a dylib file.
-#[cfg(feature = "dylib")]
-fn from_dylib(path: &Path) -> Mutex<WitnessCalculator> {
-    let store = Store::new(&Dylib::headless().engine());
-    let module = unsafe {
-        Module::deserialize_from_file(&store, path).expect("Failed to load dylib module")
-    };
-    let result =
-        WitnessCalculator::from_module(module).expect("Failed to create WitnessCalculator");
-
-    Mutex::new(result)
-}
-
-// #[must_use]
-// pub fn zkey() -> &'static (ProvingKey<Bn254>, ConstraintMatrices<Fr>) {
-//     &ZKEY
+// fn load_arkzkey_from_file(
+//     zkey_path: &str,
+// ) -> Result<(ProvingKey<Bn254>, ConstraintMatrices<Fr>), MoproError> {
+//     let bytes = fs::read(zkey_path).map_err(|e| MoproError::CircomError(e.to_string()))?;
+//     read_arkzkey_from_bytes(&bytes).map_err(|e| MoproError::CircomError(e.to_string()))
 // }
 
-// Experimental
-#[must_use]
-pub fn arkzkey() -> &'static (ProvingKey<Bn254>, ConstraintMatrices<Fr>) {
-    &ARKZKEY
+pub fn arkzkey() -> (ProvingKey<Bn254>, ConstraintMatrices<Fr>) {
+    // load_arkzkey_from_file(zkey_path).unwrap()
+    ARKZKEY.clone()
 }
 
-/// Provides access to the `WITNESS_CALCULATOR` singleton, initializing it if necessary.
-/// It expects the path to the dylib file to be set in the `CIRCUIT_WASM_DYLIB` environment variable.
-#[cfg(feature = "dylib")]
-#[must_use]
-pub fn witness_calculator() -> &'static Mutex<WitnessCalculator> {
-    let var_name = "CIRCUIT_WASM_DYLIB";
-
-    WITNESS_CALCULATOR.get_or_init(|| {
-        let path = env::var(var_name).unwrap_or_else(|_| {
-            panic!(
-                "Mopro circuit WASM Dylib not initialized. \
-            Please set {} environment variable to the path of the dylib file",
-                var_name
-            )
-        });
-        from_dylib(Path::new(&path))
-    })
-}
-
-#[cfg(not(feature = "dylib"))]
-#[must_use]
 pub fn witness_calculator() -> &'static Mutex<WitnessCalculator> {
     WITNESS_CALCULATOR.get_or_init(|| {
         let store = Store::default();
@@ -189,7 +124,7 @@ pub fn generate_proof2(
     println!("Witness generation took: {:.2?}", now.elapsed());
 
     let now = std::time::Instant::now();
-    //let zkey = zkey();
+
     let zkey = arkzkey();
     println!("Loading arkzkey took: {:.2?}", now.elapsed());
 
@@ -210,7 +145,6 @@ pub fn generate_proof2(
 
     println!("proof generation took: {:.2?}", now.elapsed());
 
-    // TODO: Add SerializableInputs(inputs)))
     Ok((SerializableProof(proof), SerializableInputs(public_inputs)))
 }
 

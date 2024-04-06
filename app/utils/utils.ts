@@ -38,3 +38,26 @@ export function checkInputs(
     message: ''
   };
 }
+
+export const maskString = (input: string): string => {
+  if (input.length <= 5) {
+    return input.charAt(0) + '*'.repeat(input.length - 1);
+  } else {
+    return input.charAt(0) + input.charAt(1) + '*'.repeat(input.length - 2);
+  }
+}
+
+export const getTx = (input: string | null): string => {
+  if (!input) return '';
+  const transaction = input.split(' ').filter(word => word.startsWith('0x')).join(' ');
+  return transaction;
+}
+
+export const shortenInput = (input: string | null): string => {
+  if (!input) return '';
+  if (input.length > 9) {
+    return input.substring(0, 25) + '\u2026';
+  } else {
+    return input;
+  }
+}

@@ -45,36 +45,6 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
       }
   }
 
-  // @ReactMethod
-  // fun downloadFile(url: String, fileName: String, promise: Promise) {
-  //     val client = OkHttpClient()
-  //     val request = Request.Builder().url(url).build()
-  
-  //     try {
-  //         client.newCall(request).execute().use { response ->
-  //             if (!response.isSuccessful) throw IOException("Failed to download file: $response")
-  
-  //             // Use the app's internal files directory
-  //             val fileOutputStream = reactContext.openFileOutput(fileName, Context.MODE_PRIVATE)
-  
-  //             val inputStream = response.body?.byteStream()
-  //             inputStream.use { input ->
-  //                 fileOutputStream.use { output ->
-  //                     input?.copyTo(output)
-  //                 }
-  //             }
-  
-  //             // Resolve the promise with the file path
-  //             val file = File(reactContext.filesDir, fileName)
-  //             promise.resolve(file.absolutePath)
-  //         }
-  //     } catch (e: Exception) {
-  //         // Reject the promise if an exception occurs
-  //         promise.reject(e)
-  //     }
-  // }
-
-
   @ReactMethod
   // fun runProveAction(inputs: ReadableMap, zkeypath: String, promise: Promise) {
   fun runProveAction(inputs: ReadableMap, promise: Promise) {

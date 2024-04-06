@@ -2,4 +2,5 @@
 //  Use this file to import your target's public headers that you would like to expose to Swift.
 //
 
-#import "React/RCTBridgeModule.h"
+#include "witnesscalc_proof_of_passport.h"
+#include "groth16_prover.h"

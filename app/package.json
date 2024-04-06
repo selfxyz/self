@@ -33,6 +33,7 @@
     "react": "18.2.0",
     "react-native": "0.72.3",
     "react-native-canvas": "^0.1.39",
+    "react-native-fs": "^2.20.0",
     "react-native-passport-reader": "^1.0.3",
     "react-native-svg": "13.4.0",
     "react-native-toast-message": "^2.2.0",
