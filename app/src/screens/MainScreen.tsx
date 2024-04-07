@@ -1,9 +1,10 @@
 import React, { useState, useEffect, Profiler } from 'react';
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4 } from 'tamagui'
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, ScrollView } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ExternalLink } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
+import Internet from "../images/internet.png"
 import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
@@ -12,7 +13,7 @@ import { App } from '../utils/AppClass';
 import { Linking, Platform, Pressable } from 'react-native';
 import { Keyboard } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
-import { bgColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
+import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 import MintScreen from './MintScreen';
 import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
@@ -284,13 +285,63 @@ const MainScreen: React.FC<MainScreenProps> = ({
         <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} modal animation="medium" snapPoints={[88]}>
           <Sheet.Overlay />
           <Sheet.Frame bg={bgColor} borderRadius="$9">
-
             <YStack bg={bgColor} px="$3" pb="$5" flex={1} >
               <XStack ml="$2" mt="$3" gap="$2">
-                <H2 color={textColor1}>Info</H2>
+                <H2 color={textColor1}>Help</H2>
                 <HelpCircle color={textColor1} mt="$1" alignSelf='center' size="$2" />
+                <XStack justifyContent="flex-end" f={1} mt="$2" mr="$2" gap="$5">
+                  <Pressable onPress={() => Linking.openURL('https://proofofpassport.com')}>
+                    <Image
+                      source={{ uri: Internet, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
+                    <Image
+                      source={{ uri: Telegram, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
+                    <Image
+                      source={{ uri: X, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
+                    <Image
+                      tintColor={textColor1}
+                      source={{ uri: Github, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                </XStack>
               </XStack>
-              <YStack flex={1} jc="space-evenly">
+              <YStack flex={1} mt="$3" jc="space-evenly">
+                <YStack >
+                  <H3 color={textColor1}>Security and Privacy</H3>
+                  <Text color={textColor2} ml="$2" mt="$1">Proof of Passport uses Zero-Knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
+                </YStack>
+                <YStack >
+                  <H3 color={textColor1}>About ZK Proofs</H3>
+                  <Text color={textColor2} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the correctness of some computation while hiding some inputs of its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
+                </YStack>
+                <YStack gap="$1">
+                  <H3 color={textColor1}>FAQ</H3>
+                  <YStack ml="$1">
+                    <H4 color={textColor1}>Troubleshoot NFC scanning</H4>
+                    <Text color={textColor2} ml="$2" >Refer to <Text onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>this tutorial</Text> on how to scan your passport using NFC.</Text>
+                  </YStack>
+                  <YStack ml="$1">
+                    <H4 color={textColor1}>My camera is down</H4>
+                    <Text color={textColor2} ml="$2">Go to settings and turn on the broken camera option.</Text>
+                  </YStack>
+                  <YStack ml="$1">
+                    <H4 color={textColor1}>My passport is not supported</H4>
+                    <Text color={textColor2} ml="$2">Please contact us on telegram, or if you know how to develop, you can easily <Text onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-contribute/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your region.</Text>
+
+
+                  </YStack>
+                </YStack>
+
+              </YStack>
+              {/* <YStack flex={1} jc="space-evenly">
 
                 <YStack >
                   <H4 color={textColor1}>How do I scan my passport ?</H4>
@@ -336,7 +387,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     </Pressable>
                   </XStack>
                 </YStack>
-              </YStack>
+              </YStack> */}
               <Button mt="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" alignSelf='center' w="80%" onPress={() => setHelpIsOpen(false)}>
                 <Text color={textColor1} w="80%" textAlign='center' fow="bold">Close</Text>
               </Button>

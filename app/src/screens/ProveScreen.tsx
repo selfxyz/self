@@ -120,8 +120,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
               console.log("new address settled:" + resolvedAddress);
               setAddress(resolvedAddress);
               setEns(inputValue);
-              toast.show('welcome', {
-                message: 'Hi ' + inputValue,
+              toast.show('✨ Welcome ✨', {
+                message: 'Nice to meet you ' + inputValue,
                 customData: {
                   type: "success",
                 },
@@ -246,15 +246,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                 <YStack gap="$1">
                   <XStack gap="$2">
                     <Text fontSize={16} fow="bold" color="#ededed">Disclose</Text>
-                    <Info size="$1" color={textColor2} />
+                    {/* <Info size="$1" color={textColor2} /> */}
                   </XStack>
                   <SizableText color="#a0a0a0">Select optionnal data </SizableText>
                 </YStack>
               </XStack>
             </YStack>
             <YStack gap="$2" p="$3" bc="#232323" borderWidth={1.2} borderLeftWidth={0} borderRightWidth={0} borderBottomWidth={0} borderColor="#343434" borderBottomLeftRadius="$6" borderBottomRightRadius="$6">
-              <ScrollView >
-
+              <ScrollView h={height < 750 ? "$6" : ""} >
                 {selectedApp && Object.keys(selectedApp.disclosure).map((key) => {
                   const key_ = key as string;
                   const indexes = attributeToPosition[key_];
@@ -263,7 +262,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                   const mrzAttributeFormatted = mrzAttribute;
 
                   return (
-                    <XStack key={key} mx="$2" gap="$4" alignItems='center' >
+                    <XStack key={key} mx="$2" gap="$3" alignItems='center' >
                       <XStack p="$2" onPress={() => handleDisclosureChange(key_)} >
                         <Checkbox
                           bg={componentBgColor}

@@ -38,6 +38,11 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       <Text color="#3bb178" fow="bold">nationality</Text>
     </YStack>
   );
+  const sepolia = () => (
+    <YStack ml="$2" p="$2" px="$3" bc="#0d1e18" borderRadius="$10">
+      <Text color="#3bb178" fow="bold">Sepolia</Text>
+    </YStack>
+  );
 
 
 
@@ -69,13 +74,13 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       colorOfTheText: 'black',
       selectable: true,
       icon: Flame,
-      tags: [age(), nationality()]
+      tags: [sepolia()]
     }
   ];
 
   return (
-    <ScrollView >
-      < YStack my="$4" gap="$5" px="$5" jc="center" alignItems='center' >
+    <ScrollView f={1} >
+      < YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center' >
         {
           cardsData.map(card => (
             <AppCard
