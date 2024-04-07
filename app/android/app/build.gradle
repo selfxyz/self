@@ -120,8 +120,8 @@ dependencies {
     // The version of react-native is set by the React Native Gradle Plugin
     implementation("com.facebook.react:react-android")
     implementation(project(":react-native-passport-reader")) {
-    exclude group: 'edu.ucar', module: 'jj2000'
-}    
+        exclude group: 'edu.ucar', module: 'jj2000'
+    }    
     implementation project(':passportreader')
     implementation 'org.jmrtd:jmrtd:0.7.18'
 
@@ -139,7 +139,7 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
     implementation("net.java.dev.jna:jna:5.13.0@aar")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
-
+    implementation project(':react-native-fs')
 }
 
 apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle"); applyNativeModulesAppBuildGradle(project)

@@ -27,7 +27,7 @@ interface MainScreenProps {
   address: string;
   setAddress: (address: string) => void;
   generatingProof: boolean;
-  handleProve: (path: string) => void;
+  handleProve: () => void;
   step: number;
   mintText: string;
   proof: any;
@@ -42,6 +42,7 @@ interface MainScreenProps {
   setDateOfExpiry: (date: string) => void;
   majority: number;
   setMajority: (age: number) => void;
+  zkeydownloadStatus: string;
 }
 
 const MainScreen: React.FC<MainScreenProps> = ({
@@ -67,7 +68,8 @@ const MainScreen: React.FC<MainScreenProps> = ({
   dateOfExpiry,
   setDateOfExpiry,
   majority,
-  setMajority
+  setMajority,
+  zkeydownloadStatus
 }) => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
@@ -431,7 +433,9 @@ const MainScreen: React.FC<MainScreenProps> = ({
             ens={ens}
             setEns={setEns}
             majority={majority}
-            setMajority={setMajority} />
+            setMajority={setMajority}
+            zkeydownloadStatus={zkeydownloadStatus}
+          />  
         </Tabs.Content>
         <Tabs.Content value="mint" f={1}>
           <MintScreen

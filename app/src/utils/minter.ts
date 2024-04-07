@@ -76,6 +76,8 @@ export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) 
     }
   } catch (err: any) {
     console.log('err', err);
+    setStep(Steps.PROOF_GENERATED);
+    setMintText(`Error minting SBT. Network: Sepolia.`);
     if (err.isAxiosError && err.response) {
       const errorMessage = err.response.data.error;
       console.log('Server error message:', errorMessage);
@@ -100,6 +102,5 @@ export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) 
         console.log('Failed to parse blockchain error');
       }
     }
-    setMintText(`Error minting SBT. Network: Sepolia.`);
   }
 };

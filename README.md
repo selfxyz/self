@@ -15,18 +15,18 @@ As a first application, users who can prove they indeed hold a valid passport ca
 - `circuits`: Circom circuits
 - `contracts`: Solidity contracts
 - `common`: Common utils
+- `registry`: Public key registry
 
 ## Roadmap
 
-- ✅ Basic passport verifier circuit
+- ✅ Passport verification circuit
 - ✅ Selective disclosure
-- ✅ Basic react native frontend
-- ✅ Passport verification pipeline, android
-- ✅ Passport verification pipeline, iOS
-- ✅ Contracts
-- ✅ On-chain registry of CSCA pubkeys based on the official ICAO masterlist
-- 🚧 Optimizations
-- 🚧 Reimplementation of the passport NFC specs in javascript
+- ✅ Mobile app
+- ✅ SBT smart contract
+- ✅ On-chain public key registry
+- 🚧 Support additional signature algorithms
+- 🚧 Support Active Authentication
+- 🚧 SDK
 
 ## FAQ
 
@@ -61,7 +61,7 @@ Most countries use RSA with sha256 but some of them use other signature algorith
 
 #### I just read my passport but it says my signature algorithm is not implemented. What do I do ?
 
-Currently we only support the most common one `sha256WithRSAEncryption`. We will support the others shortly. Feel free to try your hand at implementing one!
+Currently we support the most common one, RSA with sha256. We're planning to add support for others shortly. Feel free to try your hand at implementing one!
 
 #### What's the ICAO ?
 
@@ -93,14 +93,17 @@ The SBT circuit includes a commitment to your address. If someone else tries to 
 
 - Integrate Proof of Passport to Gitcoin passport or a similar system to allow better sybil resistance in quadratic funding
 - Combine with other sources of identity to provide quantified levels of uniqueness, [totem](https://github.com/0xturboblitz/totem)-style. Examples can be [anon aadhaar](https://github.com/privacy-scaling-explorations/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/)
-
 - Add Proof of Passport as a [Zupass](https://github.com/proofcarryingdata/zupass) PCD
 - Build a social network/anonymous message board for people from one specific country
 - Create a sybil-resistance tool to protect social networks against spambots
 - Do an airdrop farming protection tool
 - Allow DeFi protocols to check if the nationality of a user is included in a set of forbidden states
 - Gate an adult content website to a specific age
+- Create a petition system or a survey portal
+- Use for proof of location using place of birth and/or address
 - Passport Wallet: use [active authentication](https://en.wikipedia.org/wiki/Biometric_passport#:~:text=Active%20Authentication%20(AA),Using%20AA%20is%20optional.) to build a wallet, a multisig or a recovery module using passport signatures
+
+We will provide bounties for all those applications. Those are not fixed right now, so please contact us if you're interested.
 
 ## Licensing
 
@@ -108,10 +111,10 @@ Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start!
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start! We will offer bounties from $100 to $1000 for any significant progress on these, depending on difficulty. Please contact us for more details.
 
 ## Contact us
 
 Contact me @FlorentTavernier on telegram for any feedback.
 
-Thanks to [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/AndyGuzmanEth), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!
+Thanks to [Rémi](https://github.com/remicolin), [Youssef](https://github.com/yssf-io), [Aayush](https://twitter.com/yush_g), [Andy](https://twitter.com/AndyGuzmanEth), [Vivek](https://twitter.com/viv_boop), [Marcus](https://github.com/base0010) and [Andrew](https://github.com/AndrewCLu) for contributing ideas and helping build this technology, and to [EF PSE](https://pse.dev/) for supporting this work through grants!
