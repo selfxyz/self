@@ -4,7 +4,6 @@ import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../../utils/utils';
 import { Steps } from './utils';
-import Toast from 'react-native-toast-message';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
@@ -15,6 +14,7 @@ interface NFCScannerProps {
   dateOfExpiry: string;
   setPassportData: (data: PassportData) => void;
   setStep: (value: number) => void;
+  toast: any;
 }
 
 export const scan = async ({
@@ -23,13 +23,16 @@ export const scan = async ({
   dateOfExpiry,
   setPassportData,
   setStep,
+  toast
 }: NFCScannerProps) => {
   const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
   if (!check.success) {
-    Toast.show({
-      type: 'error',
-      text1: check.message,
-    });
+    toast.show("Unvailable", {
+      message: check.message,
+      customData: {
+        type: "info",
+      },
+    })
     return;
   }
 
@@ -37,9 +40,9 @@ export const scan = async ({
   setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
-    scanAndroid(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep);
+    scanAndroid(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
   } else {
-    scanIOS(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep);
+    scanIOS(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
   }
 };
 
@@ -49,22 +52,26 @@ const scanAndroid = async (
   dateOfExpiry: string,
   setPassportData: (data: PassportData) => void,
   setStep: (value: number) => void,
+  toast: any
 ) => {
   try {
     const response = await PassportReader.scan({
       documentNumber: passportNumber,
       dateOfBirth: dateOfBirth,
-      dateOfExpiry: dateOfExpiry,
+      dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
     handleResponseAndroid(response, setPassportData, setStep);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    Toast.show({
-      type: 'error',
-      text1: e.message,
-    });
+    toast.show('Error', {
+      message: e.message,
+      customData: {
+        type: "error",
+      },
+    })
+
   }
 };
 
@@ -74,22 +81,25 @@ const scanIOS = async (
   dateOfExpiry: string,
   setPassportData: (data: PassportData) => void,
   setStep: (value: number) => void,
+  toast: any
 ) => {
   try {
     const response = await NativeModules.PassportReader.scanPassport(
       passportNumber,
       dateOfBirth,
-      dateOfExpiry,
+      dateOfExpiry
     );
     console.log('scanned');
     handleResponseIOS(response, setPassportData, setStep);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    Toast.show({
-      type: 'error',
-      text1: e.message,
-    });
+    toast.show('Error', {
+      message: e.message,
+      customData: {
+        type: "error",
+      },
+    })
   }
 };
 

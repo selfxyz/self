@@ -6,6 +6,7 @@ interface CameraScannerProps {
   setDateOfBirth: (value: string) => void;
   setDateOfExpiry: (value: string) => void;
   setStep: (value: number) => void;
+  toast: any
 }
 
 export const startCameraScan = async ({
@@ -13,6 +14,7 @@ export const startCameraScan = async ({
   setDateOfBirth,
   setDateOfExpiry,
   setStep,
+  toast
 }: CameraScannerProps) => {
   if (Platform.OS === 'ios') {
     try {

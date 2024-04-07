@@ -21,14 +21,14 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
 
         const reveal_bitmap = Array(90).fill('1');
         const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
-    
+
         inputs = generateCircuitInputs(
-          passportData,
-          reveal_bitmap,
-          address,
-          { developmentMode: true }
+            passportData,
+            reveal_bitmap,
+            address,
+            { developmentMode: true }
         );
-    
+        console.log(JSON.stringify(inputs, null, 2));
         w = await circuit.calculateWitness(inputs);
 
     });

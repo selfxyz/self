@@ -4,7 +4,6 @@ import {
   DeviceEventEmitter,
   Platform,
 } from 'react-native';
-import Toast from 'react-native-toast-message';
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
@@ -19,10 +18,10 @@ import { Steps } from './src/utils/utils';
 import { startCameraScan } from './src/utils/cameraScanner';
 import { scan } from './src/utils/nfcScanner';
 import { mint } from './src/utils/minter';
-import { toastConfig } from './src/utils/toastConfig';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
+import { useToastController } from '@tamagui/toast';
 import RNFS from 'react-native-fs';
 import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
 global.Buffer = Buffer;
@@ -55,6 +54,7 @@ function App(): JSX.Element {
     expiry_date: false,
     older_than: false,
   });
+  const toast = useToastController();
 
   const handleDisclosureChange = (field: string) => {
     setDisclosure(
@@ -110,7 +110,7 @@ function App(): JSX.Element {
           }
         },
       };
-      
+
       RNFS.downloadFile(options).promise
         .then(() => {
           setDownloadStatus('completed')
@@ -120,12 +120,12 @@ function App(): JSX.Element {
         .catch((error) => {
           console.error(error);
           setDownloadStatus('error');
-          Toast.show({
-            type: 'error',
-            text1: `Error: ${error.message}`,
-            position: 'top',
-            bottomOffset: 80,
-          })
+          toast.show('Error', {
+            message: `Error: ${error.message}`,
+            customData: {
+              type: "error",
+            },
+          });
         });
     } else {
       console.log('zkey already downloaded')
@@ -140,6 +140,7 @@ function App(): JSX.Element {
       setDateOfBirth,
       setDateOfExpiry,
       setStep,
+      toast
     });
   };
 
@@ -151,6 +152,7 @@ function App(): JSX.Element {
       dateOfExpiry,
       setPassportData,
       setStep,
+      toast
     });
   };
 
@@ -163,6 +165,7 @@ function App(): JSX.Element {
       setGeneratingProof,
       setProofTime,
       setProof,
+      toast
     });
   };
 
@@ -171,11 +174,12 @@ function App(): JSX.Element {
       proof,
       setStep,
       setMintText,
+      toast
     });
   };
 
   return (
-    <YStack f={1} bg="white" h="100%" w="100%">
+    <YStack f={1} bc="#161616" h="100%" w="100%">
       <YStack h="100%" w="100%">
         <MainScreen
           onStartCameraScan={handleStartCameraScan}
@@ -204,7 +208,6 @@ function App(): JSX.Element {
           zkeydownloadStatus={zkeydownloadStatus}
         />
       </YStack>
-      <Toast config={toastConfig} />
     </YStack>
   );
 }
