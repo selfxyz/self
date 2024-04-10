@@ -336,9 +336,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                   </YStack>
                   <YStack ml="$1">
                     <H4 color={textColor1}>My passport is not supported</H4>
-                    <Text color={textColor2} ml="$2">Please contact us on telegram, or if you know how to develop, you can easily <Text onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-contribute/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your region.</Text>
-
-
+                    <Text color={textColor2} ml="$2">Please contact us on Telegram, or if you have development skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your region.</Text>
                   </YStack>
                 </YStack>
 
@@ -435,7 +433,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
             majority={majority}
             setMajority={setMajority}
             zkeydownloadStatus={zkeydownloadStatus}
-          />  
+          />
         </Tabs.Content>
         <Tabs.Content value="mint" f={1}>
           <MintScreen

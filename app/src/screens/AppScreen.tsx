@@ -69,8 +69,8 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
     },
     {
       app: soulbound,
-      title: 'Soul Bond Token',
-      description: 'Mint a Soul Bond Token and prove you\'re a human',
+      title: 'Soulbound Token',
+      description: 'Mint a Soulbound Token and prove you\'re a human',
       colorOfTheText: 'black',
       selectable: true,
       icon: Flame,

@@ -68,7 +68,7 @@ const MintScreen: React.FC<MintScreenProps> = ({
                     <ProofGrid proof={proof} />
 
                     <YStack gap="$1">
-                        <Text color={textColor1} fontWeight="bold" fontSize="$5" >You just have minted a Soulbond token 🎉</Text>
+                        <Text color={textColor1} fontWeight="bold" fontSize="$5" >You just have minted a Soulbound token 🎉</Text>
                         <Text color={textColor1} fontSize="$4" fow="bold" textAlign='left'>You can now share this proof with the selected app.</Text>
 
                         <Text color={textColor1} fontSize="$4" fow="bold" mt="$5">Network: Sepolia</Text>

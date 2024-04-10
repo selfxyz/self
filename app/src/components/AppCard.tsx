@@ -61,7 +61,7 @@ const AppCard: React.FC<AppCardProps> = ({
                 <XStack ai="center">
                     <YStack gap="$1" >
                         <Text color={textColor2} mt="$1" theme="alt2" selectable={false}>{description}.</Text>
-                        <Text color={textColor2} mt="$1" theme="alt2" selectable={false}>No other data that the ones selected in the next step will be shared with the app.</Text>
+                        <Text color={textColor2} mt="$1" theme="alt2" selectable={false}>No other data than the ones selected in the next step will be shared with the app.</Text>
                     </YStack>
                     <XStack flex={1} />
                 </XStack>
