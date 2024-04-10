@@ -11,4 +11,5 @@ export const greenColorDark = "#10291e"
 export const greenColorLight = "#30a46b"
 export const redColorDark = "#3c181a"
 export const redColorLight = "#e5484d"
-
+export const yellowColorDark = "#2d2200"
+export const yellowColorLight = "#f5d90a"

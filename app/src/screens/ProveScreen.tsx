@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ScrollView } from 'tamagui';
-import { Check, LayoutGrid, Scan, Copy, Plus, Minus, PenTool } from '@tamagui/lucide-icons';
-import { getFirstName, formatDuration, maskString, shortenInput, getTx } from '../../utils/utils';
+import { Check, Plus, Minus, PenTool } from '@tamagui/lucide-icons';
+import { getFirstName, maskString } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { App } from '../utils/AppClass';
@@ -197,7 +197,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                     <Text fontSize={16} fow="bold" color="#ededed">Disclose</Text>
                     {/* <Info size="$1" color={textColor2} /> */}
                   </XStack>
-                  <Text color="#a0a0a0">Select optionnal data </Text>
+                  <Text color="#a0a0a0">Select optional data </Text>
                 </YStack>
               </XStack>
             </YStack>

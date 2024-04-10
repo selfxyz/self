@@ -30,7 +30,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
               </XStack>
               <YStack gap="$1">
                 <Text fontSize={16} fow="bold" color="#ededed">Step 1</Text>
-                <Text color="#a0a0a0">Scan you passport </Text>
+                <Text color="#a0a0a0">Scan your passport </Text>
               </YStack>
             </XStack>
           </YStack>
@@ -41,7 +41,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
               source={{ uri: SCANHelp }}
             />
             <Text mt="$1" color={textColor1}>Use the camera to scan main page of your passport.</Text>
-            <Text fontSize="$2" style={{ fontStyle: 'italic' }} color={textColor2}>No personnal data will be stored or shared with external apps.</Text>
+            <Text fontSize="$2" style={{ fontStyle: 'italic' }} color={textColor2}>No personal data will be stored or shared with external apps.</Text>
 
           </YStack>
           <YStack p="$2">
