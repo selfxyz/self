@@ -48,6 +48,15 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
 
   const cardsData = [
     {
+      app: soulbound,
+      title: 'Soulbound Token',
+      description: 'Mint a Soulbound Token and prove you\'re a human',
+      colorOfTheText: 'black',
+      selectable: true,
+      icon: Flame,
+      tags: [sepolia()]
+    },
+    {
       app: zuzalu,
       title: 'Zupass',
       description: 'Connect to prove your identity at in person events',
@@ -66,15 +75,6 @@ const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step
       selectable: false,
       icon: Coins,
       tags: [comingSoon()]
-    },
-    {
-      app: soulbound,
-      title: 'Soulbound Token',
-      description: 'Mint a Soulbound Token and prove you\'re a human',
-      colorOfTheText: 'black',
-      selectable: true,
-      icon: Flame,
-      tags: [sepolia()]
     }
   ];
 
