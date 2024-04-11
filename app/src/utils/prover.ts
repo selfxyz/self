@@ -9,6 +9,7 @@ interface ProverProps {
   passportData: PassportData | null;
   disclosure: any;
   address: string;
+  majority: number;
   setStep: (value: number) => void;
   setGeneratingProof: (value: boolean) => void;
   setProofTime: (value: number) => void;
@@ -20,6 +21,7 @@ export const prove = async ({
   passportData,
   disclosure,
   address,
+  majority,
   setStep,
   setGeneratingProof,
   setProofTime,
@@ -54,6 +56,7 @@ export const prove = async ({
       passportData,
       reveal_bitmap,
       address,
+      majority,
       { developmentMode: false }
     );
 

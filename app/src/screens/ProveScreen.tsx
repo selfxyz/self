@@ -56,15 +56,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
   const toast = useToastController()
 
-  const copyToClipboard = (input: string) => {
-    Clipboard.setString(input);
-    toast.show('Info', {
-      message: `🖨️ Tx copied to clipboard`,
-      customData: {
-        type: "info",
-      },
-    });
-  };
 
   useEffect(() => {
     if (ens != '' && inputValue == '') {

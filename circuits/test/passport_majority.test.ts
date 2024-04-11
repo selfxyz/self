@@ -26,6 +26,7 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
             passportData,
             reveal_bitmap,
             address,
+            18,
             { developmentMode: true }
         );
         console.log(JSON.stringify(inputs, null, 2));
