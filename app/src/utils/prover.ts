@@ -38,6 +38,14 @@ export const prove = async ({
 
   if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
     console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    toast.show('Error', {
+      message: `${passportData.signatureAlgorithm} not supported for proof right now.`,
+      customData: {
+        type: "error",
+      },
+    })
+    setStep(Steps.NFC_SCAN_COMPLETED);
+    setGeneratingProof(false);
     return;
   }
 
