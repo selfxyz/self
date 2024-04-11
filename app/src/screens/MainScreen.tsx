@@ -318,11 +318,11 @@ const MainScreen: React.FC<MainScreenProps> = ({
               <YStack flex={1} mt="$3" jc="space-evenly">
                 <YStack >
                   <H3 color={textColor1}>Security and Privacy</H3>
-                  <Text color={textColor2} ml="$2" mt="$1">Proof of Passport uses Zero-Knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
+                  <Text color={textColor2} ml="$2" mt="$1">Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
                 </YStack>
                 <YStack >
                   <H3 color={textColor1}>About ZK Proofs</H3>
-                  <Text color={textColor2} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the correctness of some computation while hiding some inputs of its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
+                  <Text color={textColor2} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
                 </YStack>
                 <YStack gap="$1">
                   <H3 color={textColor1}>FAQ</H3>
@@ -336,7 +336,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                   </YStack>
                   <YStack ml="$1">
                     <H4 color={textColor1}>My passport is not supported</H4>
-                    <Text color={textColor2} ml="$2">Please contact us on Telegram, or if you have development skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your region.</Text>
+                    <Text color={textColor2} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
                   </YStack>
                 </YStack>
 
