@@ -50,8 +50,8 @@ const MintScreen: React.FC<MintScreenProps> = ({
 
     const copyToClipboard = (input: string) => {
         Clipboard.setString(input);
-        toast.show('🖨️ Tx copied to clipboard', {
-            message: "",
+        toast.show('🖨️', {
+            message: "Tx copied to clipboard",
             customData: {
                 type: "success",
             },

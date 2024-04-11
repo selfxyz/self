@@ -51,6 +51,7 @@ describe("Proof of Passport", function () {
       passportData,
       reveal_bitmap,
       address,
+      18,
       { developmentMode: true }
     );
 

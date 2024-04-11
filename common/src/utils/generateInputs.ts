@@ -11,7 +11,8 @@ export function generateCircuitInputs(
   passportData: PassportData,
   reveal_bitmap: string[],
   address: string,
-  options: {developmentMode?: boolean} = {developmentMode: false}
+  majority: number,
+  options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
   const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
   tree.setNodes(serializedTree)
@@ -37,7 +38,7 @@ export function generateCircuitInputs(
   )
 
   console.log('passportData.pubKey.exponent', passportData.pubKey.exponent)
-  
+
   const sigAlgFormatted = formatSigAlg(
     passportData.signatureAlgorithm,
     passportData.pubKey.exponent
@@ -48,7 +49,7 @@ export function generateCircuitInputs(
     ...passportData.pubKey,
   }).toString()
   console.log('leaf', leaf)
-  
+
   const index = tree.indexOf(leaf) // this index is not the index in public_keys_parsed.json, but the index in the tree
   console.log(`Index of pubkey in the registry: ${index}`)
   if (index === -1) {
@@ -90,7 +91,7 @@ export function generateCircuitInputs(
     siblings: proof.siblings.flat().map(index => index.toString()),
     root: [tree.root.toString()],
     address: [BigInt(address).toString()],
-    majority: [BigInt(49).toString(), BigInt(56).toString()],
+    majority: [BigInt(Math.floor(majority / 10) + 48).toString(), BigInt(majority % 10 + 48).toString()],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
   }
 }

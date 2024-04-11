@@ -22,7 +22,7 @@ describe('Circuit tests', function () {
 
   this.beforeAll(async () => {
     passportData = getPassportData();
-    
+
     const reveal_bitmap = Array(90).fill('0');
     const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";
 
@@ -30,6 +30,7 @@ describe('Circuit tests', function () {
       passportData,
       reveal_bitmap,
       address,
+      18,
       { developmentMode: true }
     );
 
@@ -43,11 +44,11 @@ describe('Circuit tests', function () {
         "build/proof_of_passport_js/proof_of_passport.wasm",
         "build/proof_of_passport_final.zkey"
       )
-    
+
       // console.log('proof done');
       console.log('zk_proof', zk_proof);
       console.log('publicSignals', publicSignals);
-    
+
       const vKey = JSON.parse(fs.readFileSync("build/proof_of_passport_vkey.json") as unknown as string);
       const verified = await groth16.verify(
         vKey,
@@ -56,7 +57,7 @@ describe('Circuit tests', function () {
       )
 
       assert(verified == true, 'Should verify')
-    
+
       console.log('verified', verified)
     })
 
@@ -152,7 +153,7 @@ describe('Circuit tests', function () {
         )
 
         console.log('proof done');
-  
+
         const vKey = JSON.parse(fs.readFileSync("build/proof_of_passport_vkey.json").toString());
         const verified = await groth16.verify(
           vKey,

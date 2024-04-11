@@ -31,6 +31,7 @@ async function main() {
     passportData,
     reveal_bitmap,
     address,
+    18,
     { developmentMode: true }
   );
 

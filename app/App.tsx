@@ -159,6 +159,7 @@ function App(): JSX.Element {
   const handleProve = () => {
     prove({
       passportData,
+      majority,
       disclosure,
       address,
       setStep,

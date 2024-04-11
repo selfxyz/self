@@ -33,6 +33,7 @@ async function main() {
     passportData,
     reveal_bitmap,
     address,
+    18,
     { developmentMode: true }
   );
 
@@ -46,7 +47,7 @@ async function main() {
   const formatter = await Formatter.deploy();
   await formatter.waitForDeployment();
   console.log(`Formatter deployed to ${formatter.target}`);
-  
+
   const tx = await formatter.addCountryCodes(Object.entries(countryCodes));
   await tx.wait();
   console.log(`Country codes added`);

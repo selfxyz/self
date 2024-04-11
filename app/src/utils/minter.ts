@@ -56,8 +56,8 @@ export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) 
     console.log('receipt status:', receipt?.status);
 
     if (receipt?.status === 1) {
-      toast.show('SBT minted 🎊', {
-        message: "Sample description",
+      toast.show('🎊', {
+        message: "SBT minted",
         customData: {
           type: "success",
         },
