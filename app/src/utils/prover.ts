@@ -36,10 +36,10 @@ export const prove = async ({
 
   const reveal_bitmap = revealBitmapFromMapping(disclosure);
 
-  // if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
-  //   console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-  //   return;
-  // }
+  if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
+    console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    return;
+  }
 
   try {
     const inputs = generateCircuitInputs(
