@@ -7,7 +7,8 @@ import {
 import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
-  DEFAULT_DOE
+  DEFAULT_DOE,
+  AMPLITUDE_KEY
 } from '@env';
 import { PassportData } from '../common/src/utils/types';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
@@ -24,6 +25,7 @@ import { prove } from './src/utils/prover';
 import { useToastController } from '@tamagui/toast';
 import RNFS from 'react-native-fs';
 import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
+import * as amplitude from '@amplitude/analytics-react-native';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
@@ -76,6 +78,7 @@ function App(): JSX.Element {
 
   useEffect(() => {
     downloadZkey()
+    amplitude.init(AMPLITUDE_KEY);
   }, []);
 
   async function initMopro() {
@@ -91,6 +94,7 @@ function App(): JSX.Element {
     if (!fileExists) {
       console.log('launching zkey download')
       setDownloadStatus('downloading');
+      amplitude.track('Downloading zkey...');
 
       let previousPercentComplete = -1;
 
@@ -115,11 +119,13 @@ function App(): JSX.Element {
         .then(() => {
           setDownloadStatus('completed')
           console.log('Download complete');
+          amplitude.track('zkey download succeeded');
           initMopro()
         })
         .catch((error) => {
           console.error(error);
           setDownloadStatus('error');
+          amplitude.track('zkey download failed: ' + error.message);
           toast.show('Error', {
             message: `Error: ${error.message}`,
             customData: {
@@ -129,6 +135,7 @@ function App(): JSX.Element {
         });
     } else {
       console.log('zkey already downloaded')
+      amplitude.track('zkey already downloaded');
       setDownloadStatus('completed');
       initMopro()
     }

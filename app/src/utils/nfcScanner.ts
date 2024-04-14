@@ -7,6 +7,7 @@ import { Steps } from './utils';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import * as amplitude from '@amplitude/analytics-react-native';
 
 interface NFCScannerProps {
   passportNumber: string;
@@ -61,10 +62,12 @@ const scanAndroid = async (
       dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
+    amplitude.track('NFC scan successful');
     handleResponseAndroid(response, setPassportData, setStep);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
+    amplitude.track('NFC scan unsuccessful');
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -91,9 +94,11 @@ const scanIOS = async (
     );
     console.log('scanned');
     handleResponseIOS(response, setPassportData, setStep);
+    amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
+    amplitude.track('NFC scan unsuccessful');
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -139,6 +144,7 @@ const handleResponseIOS = async (
 
   const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
+  amplitude.track('Signature algorithm name before conversion: ' + signatureAlgorithm);
   const passportData = {
     mrz,
     signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -185,6 +191,7 @@ const handleResponseAndroid = async (
     encapContent
   } = response;
 
+  amplitude.track('Signature algorithm name before conversion: ' + signatureAlgorithm);
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
