@@ -1,4 +1,6 @@
 PODS:
+  - amplitude-react-native (1.4.7):
+    - React-Core
   - boost (1.76.0)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.72.3)
@@ -394,6 +396,8 @@ PODS:
     - React-jsi (= 0.72.3)
     - React-logger (= 0.72.3)
     - React-perflogger (= 0.72.3)
+  - RNCAsyncStorage (1.23.1):
+    - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
   - RNFS (2.20.0):
@@ -405,6 +409,7 @@ PODS:
   - Yoga (1.14.0)
 
 DEPENDENCIES:
+  - "amplitude-react-native (from `../node_modules/@amplitude/analytics-react-native`)"
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
   - DoubleConversion (from `../node_modules/react-native/third-party-podspecs/DoubleConversion.podspec`)
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
@@ -445,6 +450,7 @@ DEPENDENCIES:
   - React-runtimescheduler (from `../node_modules/react-native/ReactCommon/react/renderer/runtimescheduler`)
   - React-utils (from `../node_modules/react-native/ReactCommon/react/utils`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
+  - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNSVG (from `../node_modules/react-native-svg`)
@@ -460,6 +466,8 @@ SPEC REPOS:
     - SwiftyTesseract
 
 EXTERNAL SOURCES:
+  amplitude-react-native:
+    :path: "../node_modules/@amplitude/analytics-react-native"
   boost:
     :podspec: "../node_modules/react-native/third-party-podspecs/boost.podspec"
   DoubleConversion:
@@ -537,6 +545,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/utils"
   ReactCommon:
     :path: "../node_modules/react-native/ReactCommon"
+  RNCAsyncStorage:
+    :path: "../node_modules/@react-native-async-storage/async-storage"
   RNCClipboard:
     :path: "../node_modules/@react-native-community/clipboard"
   RNFS:
@@ -552,6 +562,7 @@ CHECKOUT OPTIONS:
     :git: https://github.com/0xturboblitz/NFCPassportReader.git
 
 SPEC CHECKSUMS:
+  amplitude-react-native: 43098dfcfe1dcd6f0e9426017258ba79289d7a21
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: 4cce221dd782d3ff7c4172167bba09d58af67ccb
@@ -594,6 +605,7 @@ SPEC CHECKSUMS:
   React-runtimescheduler: ec1066a4f2d1152eb1bc3fb61d69376b3bc0dde0
   React-utils: d55ba834beb39f01b0b470ae43478c0a3a024abe
   ReactCommon: 68e3a815fbb69af3bb4196e04c6ae7abb306e7a8
+  RNCAsyncStorage: 826b603ae9c0f88b5ac4e956801f755109fa4d5c
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNSVG: 07dbd870b0dcdecc99b3a202fa37c8ca163caec2
