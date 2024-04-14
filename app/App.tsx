@@ -21,7 +21,6 @@ import { useToastController } from '@tamagui/toast';
 import * as amplitude from '@amplitude/analytics-react-native';
 import { checkForZkey } from './src/utils/zkeyDownload';
 global.Buffer = Buffer;
-console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");

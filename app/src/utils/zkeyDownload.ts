@@ -6,6 +6,7 @@ import RNFS from 'react-native-fs';
 import { ARKZKEY_URL, ZKEY_URL } from '../../../common/src/constants/constants';
 import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
+import axios from 'axios';
 
 const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
 
@@ -74,10 +75,20 @@ export async function checkForZkey({
   setShowWarning,
   toast
 }: CheckForZkeyProps) {
-  console.log('localZkeyPath:', localZkeyPath)
+  console.log('local zkey path:', localZkeyPath)
   
   const fileExists = await RNFS.exists(localZkeyPath);
-  if (!fileExists) {
+  const fileInfo = fileExists ? await RNFS.stat(localZkeyPath) : null;
+
+  const response = await axios.head(Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL);
+  const expectedSize = parseInt(response.headers['content-length'], 10);
+  const isFileComplete = fileInfo && fileInfo.size === expectedSize;
+
+  console.log('expectedSize:', expectedSize)
+  console.log('fileInfo.size:', fileInfo?.size)
+  console.log('isFileComplete:', isFileComplete)
+
+  if (!isFileComplete) {
     const state = await NetInfo.fetch();
     console.log('Network start type:', state.type)
     if (state.type === 'wifi') {
