@@ -9,6 +9,7 @@ import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 
 const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
+const localUrlPath = RNFS.DocumentDirectoryPath + '/zkey_url.txt';
 
 async function initMopro() {
   if (Platform.OS === 'android') {
@@ -25,11 +26,13 @@ export async function downloadZkey(
   setDownloadStatus('downloading');
   amplitude.track('Downloading zkey...');
 
+  const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
+
   let previousPercentComplete = -1;
 
   const options = {
     // @ts-ignore
-    fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
+    fromUrl: url,
     toFile: localZkeyPath,
     background: true,
     begin: () => {
@@ -49,6 +52,7 @@ export async function downloadZkey(
       setDownloadStatus('completed')
       console.log('Download complete');
       amplitude.track('zkey download succeeded');
+      RNFS.writeFile(localUrlPath, url, 'utf8');
       initMopro()
     })
     .catch((error) => {
@@ -76,11 +80,19 @@ export async function checkForZkey({
   toast
 }: CheckForZkeyProps) {
   console.log('local zkey path:', localZkeyPath)
-  
+  const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
+
+  let storedUrl = '';
+  try {
+    storedUrl = await RNFS.readFile(localUrlPath, 'utf8');
+  } catch (error) {
+    console.log('zkey_url.txt file not found, so assuming zkey is outdated.');
+  }
+
   const fileExists = await RNFS.exists(localZkeyPath);
   const fileInfo = fileExists ? await RNFS.stat(localZkeyPath) : null;
 
-  const response = await axios.head(Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL);
+  const response = await axios.head(url);
   const expectedSize = parseInt(response.headers['content-length'], 10);
   const isFileComplete = fileInfo && fileInfo.size === expectedSize;
 
@@ -88,7 +100,7 @@ export async function checkForZkey({
   console.log('fileInfo.size:', fileInfo?.size)
   console.log('isFileComplete:', isFileComplete)
 
-  if (!isFileComplete) {
+  if (!isFileComplete || url !== storedUrl) {
     const state = await NetInfo.fetch();
     console.log('Network start type:', state.type)
     if (state.type === 'wifi') {
