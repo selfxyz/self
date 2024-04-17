@@ -25,13 +25,13 @@ export async function downloadZkey(
   console.log('launching zkey download')
   setDownloadStatus('downloading');
   amplitude.track('Downloading zkey...');
+  const startTime = Date.now();
 
   const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
 
   let previousPercentComplete = -1;
 
   const options = {
-    // @ts-ignore
     fromUrl: url,
     toFile: localZkeyPath,
     background: true,
@@ -51,7 +51,8 @@ export async function downloadZkey(
     .then(() => {
       setDownloadStatus('completed')
       console.log('Download complete');
-      amplitude.track('zkey download succeeded');
+      const endTime = Date.now();
+      amplitude.track('zkey download succeeded, took ' + ((endTime - startTime) / 1000) + ' seconds');
       RNFS.writeFile(localUrlPath, url, 'utf8');
       initMopro()
     })

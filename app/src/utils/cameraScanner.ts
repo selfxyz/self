@@ -25,6 +25,7 @@ export const startCameraScan = async ({
       setPassportNumber(result.documentNumber);
       setDateOfBirth(formatDateToYYMMDD(result.birthDate));
       setDateOfExpiry(formatDateToYYMMDD(result.expiryDate));
+      setStep(Steps.MRZ_SCAN_COMPLETED);
       amplitude.track('Camera scan successful');
     } catch (e) {
       console.error(e);
