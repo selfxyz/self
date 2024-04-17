@@ -239,7 +239,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
             </YStack >
           </YStack >
         </YStack >
-        <Button disabled={zkeydownloadStatus != "completed" || (address == ethers.ZeroAddress)} borderWidth={1.3} borderColor={borderColor} borderRadius={100} onPress={handleProve} mt="$8" backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"} alignSelf='center' >
+        <Button
+          disabled={zkeydownloadStatus != "completed" || (address == ethers.ZeroAddress)}
+          borderWidth={1.3}
+          borderColor={borderColor}
+          borderRadius={100}
+          onPress={handleProve}
+          mt="$8"
+          backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"}
+          alignSelf='center'
+        >
           {zkeydownloadStatus === "downloading" ? (
             <XStack ai="center" gap="$1">
               <Spinner />
@@ -257,7 +266,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
           ) : generatingProof ? (
             <XStack ai="center" gap="$1">
               <Spinner />
-              <Text color={textColor1} marginLeft="$2" fow="bold">
+              <Text color={componentBgColor} marginLeft="$2" fow="bold">
                 Generating ZK proof
               </Text>
             </XStack>
