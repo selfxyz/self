@@ -49,10 +49,10 @@ export const prove = async ({
     })
     setStep(Steps.NFC_SCAN_COMPLETED);
     setGeneratingProof(false);
-    amplitude.track('Signature algorithm not supported for proof right now: ' + passportData.signatureAlgorithm);
+    amplitude.track('Sig alg not supported for proof: ' + passportData.signatureAlgorithm);
     return;
   }
-  amplitude.track('Signature algorithm is supported: ' + passportData.signatureAlgorithm);
+  amplitude.track('Sig alg supported: ' + passportData.signatureAlgorithm);
 
   try {
     const inputs = generateCircuitInputs(
@@ -75,7 +75,7 @@ export const prove = async ({
     await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep);
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
-    amplitude.track('Proof generation successful');
+    amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
   } catch (error: any) {
     console.error(error);
     toast.show('Error', {

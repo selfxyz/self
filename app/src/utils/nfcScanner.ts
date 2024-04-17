@@ -144,7 +144,7 @@ const handleResponseIOS = async (
 
   const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
-  amplitude.track('Signature algorithm name before conversion: ' + signatureAlgorithm);
+  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
   const passportData = {
     mrz,
     signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -156,14 +156,17 @@ const handleResponseIOS = async (
     encryptedDigest: encryptedDigestArray,
     photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
   };
+  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);
   console.log('pubKey', passportData.pubKey);
-  console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
-  console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
-  console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
+  console.log('dataGroupHashes', [...passportData.dataGroupHashes]);
+  console.log('eContent', [...passportData.eContent]);
+  console.log('encryptedDigest', [...passportData.encryptedDigest]);
   console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
+
+  // console.log('passportData', JSON.stringify(passportData, null, 2));
 
   setPassportData(passportData);
   setStep(Steps.NFC_SCAN_COMPLETED);
@@ -191,7 +194,7 @@ const handleResponseAndroid = async (
     encapContent
   } = response;
 
-  amplitude.track('Signature algorithm name before conversion: ' + signatureAlgorithm);
+  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -205,6 +208,7 @@ const handleResponseAndroid = async (
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
   };
+  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);

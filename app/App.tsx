@@ -1,10 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import {
-  NativeModules,
-  DeviceEventEmitter,
-  Platform,
-} from 'react-native';
-import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
   DEFAULT_DOE,
@@ -23,14 +18,9 @@ import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
 import { useToastController } from '@tamagui/toast';
-import RNFS from 'react-native-fs';
-import { ARKZKEY_URL, ZKEY_URL } from '../common/src/constants/constants';
 import * as amplitude from '@amplitude/analytics-react-native';
+import { checkForZkey } from './src/utils/zkeyDownload';
 global.Buffer = Buffer;
-
-console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
-
-const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -45,6 +35,7 @@ function App(): JSX.Element {
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
   const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
+  const [showWarning, setShowWarning] = useState(false);
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -56,6 +47,7 @@ function App(): JSX.Element {
     expiry_date: false,
     older_than: false,
   });
+
   const toast = useToastController();
 
   const handleDisclosureChange = (field: string) => {
@@ -67,79 +59,13 @@ function App(): JSX.Element {
   };
 
   useEffect(() => {
-    const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
-      console.log(e);
-    });
-
-    return () => {
-      logEventListener.remove();
-    };
-  }, []);
-
-  useEffect(() => {
-    downloadZkey()
+    checkForZkey({
+      setDownloadStatus,
+      setShowWarning,
+      toast
+    })
     amplitude.init(AMPLITUDE_KEY);
   }, []);
-
-  async function initMopro() {
-    if (Platform.OS === 'android') {
-      const res = await NativeModules.Prover.runInitAction()
-      console.log('Mopro init res:', res)
-    }
-  }
-
-  async function downloadZkey() {
-    console.log('localZkeyPath:', localZkeyPath)
-    const fileExists = await RNFS.exists(localZkeyPath);
-    if (!fileExists) {
-      console.log('launching zkey download')
-      setDownloadStatus('downloading');
-      amplitude.track('Downloading zkey...');
-
-      let previousPercentComplete = -1;
-
-      const options = {
-        // @ts-ignore
-        fromUrl: Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL,
-        toFile: localZkeyPath,
-        background: true,
-        begin: () => {
-          console.log('Download has begun');
-        },
-        progress: (res: any) => {
-          const percentComplete = Math.floor((res.bytesWritten / res.contentLength) * 100);
-          if (percentComplete !== previousPercentComplete) {
-            console.log(`${percentComplete}%`);
-            previousPercentComplete = percentComplete;
-          }
-        },
-      };
-
-      RNFS.downloadFile(options).promise
-        .then(() => {
-          setDownloadStatus('completed')
-          console.log('Download complete');
-          amplitude.track('zkey download succeeded');
-          initMopro()
-        })
-        .catch((error) => {
-          console.error(error);
-          setDownloadStatus('error');
-          amplitude.track('zkey download failed: ' + error.message);
-          toast.show('Error', {
-            message: `Error: ${error.message}`,
-            customData: {
-              type: "error",
-            },
-          });
-        });
-    } else {
-      console.log('zkey already downloaded')
-      amplitude.track('zkey already downloaded');
-      setDownloadStatus('completed');
-      initMopro()
-    }
-  }
 
   const handleStartCameraScan = async () => {
     startCameraScan({
@@ -150,7 +76,6 @@ function App(): JSX.Element {
       toast
     });
   };
-
 
   const handleNFCScan = () => {
     scan({
@@ -214,6 +139,9 @@ function App(): JSX.Element {
           majority={majority}
           setMajority={setMajority}
           zkeydownloadStatus={zkeydownloadStatus}
+          showWarning={showWarning}
+          setShowWarning={setShowWarning}
+          setDownloadStatus={setDownloadStatus}
         />
       </YStack>
     </YStack>
