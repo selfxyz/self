@@ -110,9 +110,13 @@ Then to test the release on an android phone, delete the previous version of the
 yarn android --mode release
 ```
 
+Don't forget to bump `versionCode` in `android/app/build.gradle`.
+
 ### iOS
 
 In Xcode, go to `Product>Archive` then follow the flow.
+
+Don't forget to bump the build number.
 
 ## FAQ
 
