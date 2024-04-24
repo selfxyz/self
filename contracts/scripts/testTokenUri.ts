@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { ethers } from "hardhat";
-import { getPassportData } from "../../common/src/utils/passportData";
+import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { groth16 } from 'snarkjs'
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
@@ -10,7 +10,7 @@ import fs from 'fs';
 
 // Useful script to test formatting of tokenURI
 async function main() {
-  const passportData = getPassportData();
+  const passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
   const attributeToReveal = {
     issuing_state: true,

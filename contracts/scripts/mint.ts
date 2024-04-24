@@ -1,6 +1,6 @@
 import { assert } from "chai";
 import { ethers } from "hardhat";
-import { getPassportData } from "../../common/src/utils/passportData";
+import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { groth16 } from 'snarkjs'
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputs } from "../../common/src/utils/generateInputs";
@@ -10,7 +10,7 @@ async function main() {
   const proofOfPassportAddress = "0xF3F619aB057E3978204Be68549f9D4a503EAa535"
   const proofOfPassport = await ethers.getContractAt("ProofOfPassport", proofOfPassportAddress);
 
-  const passportData = getPassportData();
+  const passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
   const attributeToReveal = {
     issuing_state: true,

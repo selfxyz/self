@@ -1,7 +1,7 @@
 // Import necessary libraries
 import { assert, expect } from 'chai'
 import path from "path";
-import { getPassportData } from "../../common/src/utils/passportData";
+import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputs } from '../../common/src/utils/generateInputs';
 const wasm_tester = require("circom_tester").wasm;
 
@@ -17,7 +17,7 @@ describe.only("start testing of proof_of_passport_majority.circom", function () 
         circuit = await wasm_tester(path.join(__dirname, "../circuits/proof_of_passport.circom"),
             { include: ["node_modules"] },
         );
-        const passportData = getPassportData();
+        const passportData = mockPassportData_sha256WithRSAEncryption_65537
 
         const reveal_bitmap = Array(90).fill('1');
         const address = "0x70997970c51812dc3a010c7d01b50e0d17dc79c8";

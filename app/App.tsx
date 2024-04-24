@@ -6,7 +6,7 @@ import {
   AMPLITUDE_KEY
 } from '@env';
 import { PassportData } from '../common/src/utils/types';
-import { samplePassportData } from '../common/src/utils/passportDataStatic';
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../common/src/utils/mockPassportData';
 import "@ethersproject/shims"
 import { ethers } from "ethers";
 import MainScreen from './src/screens/MainScreen';
@@ -27,7 +27,7 @@ function App(): JSX.Element {
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState<string>(ethers.ZeroAddress);
-  const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
+  const [passportData, setPassportData] = useState<PassportData>(mockPassportData_sha256WithRSAEncryption_65537 as PassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
