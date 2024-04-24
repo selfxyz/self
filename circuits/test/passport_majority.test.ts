@@ -5,7 +5,7 @@ import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src
 import { generateCircuitInputs } from '../../common/src/utils/generateInputs';
 const wasm_tester = require("circom_tester").wasm;
 
-describe.only("start testing of proof_of_passport_majority.circom", function () {
+describe("start testing of proof_of_passport_majority.circom", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;

@@ -210,7 +210,7 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     }}
                   />
                 }
-                <Text textAlign='center'>Hold your device near the NFC tag.</Text>
+                <Text textAlign='center'>Hold your device near the NFC tag and stop moving when it vibrates.</Text>
               </YStack>
             </Sheet.Frame>
           </Sheet>

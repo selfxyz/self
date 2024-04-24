@@ -6,12 +6,12 @@ import { attributeToPosition } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { App } from '../utils/AppClass';
 import { DEFAULT_ADDRESS } from '@env';
-import { blueColor, borderColor, componentBgColor, componentBgColor2, textColor1, textColor2 } from '../utils/colors';
+import { borderColor, componentBgColor, componentBgColor2, textColor1, textColor2 } from '../utils/colors';
 import ENS from "../images/ens_mark_dao.png"
 import { useToastController } from '@tamagui/toast'
-import Clipboard from '@react-native-community/clipboard';
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
+import { formatAttribute } from '../utils/utils';
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -199,7 +199,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
                   const indexes = attributeToPosition[key_];
                   const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
                   const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1] + 1);
-                  const mrzAttributeFormatted = mrzAttribute;
+                  const mrzAttributeFormatted = formatAttribute(key_, mrzAttribute);
 
                   return (
                     <XStack key={key} mx="$2" gap="$3" alignItems='center' >
@@ -266,10 +266,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
           ) : generatingProof ? (
             <XStack ai="center" gap="$1">
               <Spinner />
-              <Text color={componentBgColor} marginLeft="$2" fow="bold">
+              <Text color={textColor2} marginLeft="$2" fow="bold">
                 Generating ZK proof
               </Text>
             </XStack>
+          ) : address == ethers.ZeroAddress ? (
+            <Text color={textColor2} fow="bold">
+              Enter address
+            </Text>
           ) : (
             <Text color={textColor1} fow="bold">
               Generate ZK proof
