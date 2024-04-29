@@ -1,4 +1,6 @@
+import { assert } from './shaPad';
 import { sha256 } from 'js-sha256';
+import {sha1} from 'js-sha1';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -153,9 +155,15 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(bytesArray: number[]) {
+export function hash(signatureAlgorithm : string, bytesArray: number[]) {
   let unsignedBytesArray = bytesArray.map(toUnsignedByte);
-  let hash = sha256(unsignedBytesArray);
+  assert(
+    signatureAlgorithm == 'sha1WithRSAEncryption' || 
+    signatureAlgorithm == 'sha256WithRSAEncryption', 
+    'Unsupported signature algorithm: ' + signatureAlgorithm
+  );
+  let hash = (signatureAlgorithm == 'sha1WithRSAEncryption' ) ? 
+    sha1(unsignedBytesArray) : sha256(unsignedBytesArray);
   return hexToSignedBytes(hash);
 }
 
@@ -261,5 +269,20 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
 
   const yymmdd = `${YY}${MM}${DD}`;
   return Array.from(yymmdd).map(char => parseInt(char));
+}
+
+export function getDigestLengthBytes(signatureAlgorithm: string) {
+  assert(
+    signatureAlgorithm == 'sha1WithRSAEncryption' || 
+    signatureAlgorithm == 'sha256WithRSAEncryption', 
+    'Unsupported signature algorithm: ' + signatureAlgorithm
+  );
+
+  if (signatureAlgorithm == 'sha1WithRSAEncryption') {
+    return 20;
+  }
+  if (signatureAlgorithm == 'sha256WithRSAEncryption') {
+    return 32;
+  }
 }
 

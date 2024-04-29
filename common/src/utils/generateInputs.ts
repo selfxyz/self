@@ -1,7 +1,8 @@
 import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
-import { assert, sha256Pad } from "./sha256Pad";
+import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
-import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte, getCurrentDateYYMMDD } from "./utils";
+import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords,
+  toUnsignedByte, getCurrentDateYYMMDD, getDigestLengthBytes } from "./utils";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
@@ -27,13 +28,22 @@ export function generateCircuitInputs(
     }).toString())
   }
 
+  assert(
+    passportData.signatureAlgorithm == 'sha1WithRSAEncryption' ||
+    passportData.signatureAlgorithm == 'sha256WithRSAEncryption',
+    'Unsupported signature algorithm: ' + passportData.signatureAlgorithm
+  );
+
   const formattedMrz = formatMrz(passportData.mrz);
 
-  const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
+  const concatenatedDataHashesHashDigest = hash(passportData.signatureAlgorithm, passportData.dataGroupHashes);
   console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
 
+  if (passportData.signatureAlgorithm == 'sha1WithRSAEncryption')
+
   assert(
-    arraysAreEqual(passportData.eContent.slice(72, 72 + 32), concatenatedDataHashesHashDigest),
+    arraysAreEqual(passportData.eContent.slice(72, 72 + getDigestLengthBytes(passportData.signatureAlgorithm)),
+    concatenatedDataHashesHashDigest),
     'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
   )
 
@@ -64,7 +74,8 @@ export function generateCircuitInputs(
     throw new Error(`This number of datagroups is currently unsupported. Please contact us so we add support!`);
   }
 
-  const [messagePadded, messagePaddedLen] = sha256Pad(
+  const [messagePadded, messagePaddedLen] = shaPad(
+    passportData.signatureAlgorithm,
     new Uint8Array(passportData.dataGroupHashes),
     MAX_DATAHASHES_LEN
   );
