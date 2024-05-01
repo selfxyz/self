@@ -157,11 +157,6 @@ export function hexToDecimal(hex: string): string {
 // hash logic here because the one in utils.ts only works with node
 export function hash(signatureAlgorithm : string, bytesArray: number[]) {
   let unsignedBytesArray = bytesArray.map(toUnsignedByte);
-  assert(
-    signatureAlgorithm == 'sha1WithRSAEncryption' || 
-    signatureAlgorithm == 'sha256WithRSAEncryption', 
-    'Unsupported signature algorithm: ' + signatureAlgorithm
-  );
   let hash = (signatureAlgorithm == 'sha1WithRSAEncryption' ) ? 
     sha1(unsignedBytesArray) : sha256(unsignedBytesArray);
   return hexToSignedBytes(hash);
@@ -272,17 +267,12 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
 }
 
 export function getDigestLengthBytes(signatureAlgorithm: string) {
-  assert(
-    signatureAlgorithm == 'sha1WithRSAEncryption' || 
-    signatureAlgorithm == 'sha256WithRSAEncryption', 
-    'Unsupported signature algorithm: ' + signatureAlgorithm
-  );
-
   if (signatureAlgorithm == 'sha1WithRSAEncryption') {
     return 20;
   }
   if (signatureAlgorithm == 'sha256WithRSAEncryption') {
     return 32;
   }
+  return 32
 }
 

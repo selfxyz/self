@@ -39,21 +39,6 @@ export const prove = async ({
 
   const reveal_bitmap = revealBitmapFromMapping(disclosure);
 
-  if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
-    console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-    toast.show('Error', {
-      message: `${passportData.signatureAlgorithm} not supported for proof right now.`,
-      customData: {
-        type: "error",
-      },
-    })
-    setStep(Steps.NFC_SCAN_COMPLETED);
-    setGeneratingProof(false);
-    amplitude.track('Sig alg not supported for proof: ' + passportData.signatureAlgorithm);
-    return;
-  }
-  amplitude.track('Sig alg supported: ' + passportData.signatureAlgorithm);
-
   try {
     const inputs = generateCircuitInputs(
       passportData,
@@ -62,6 +47,7 @@ export const prove = async ({
       majority,
       { developmentMode: false }
     );
+    amplitude.track('Sig alg supported: ' + passportData.signatureAlgorithm);
 
     Object.keys(inputs).forEach((key) => {
       if (Array.isArray(inputs[key as keyof typeof inputs])) {
@@ -86,7 +72,7 @@ export const prove = async ({
     })
     setStep(Steps.NFC_SCAN_COMPLETED);
     setGeneratingProof(false);
-    amplitude.track('Proof generation unsuccessful');
+    amplitude.track(error.message);
   }
 };
 

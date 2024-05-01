@@ -28,18 +28,14 @@ export function generateCircuitInputs(
     }).toString())
   }
 
-  assert(
-    passportData.signatureAlgorithm == 'sha1WithRSAEncryption' ||
-    passportData.signatureAlgorithm == 'sha256WithRSAEncryption',
-    'Unsupported signature algorithm: ' + passportData.signatureAlgorithm
-  );
+  if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
+    console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    throw new Error(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+  }
 
   const formattedMrz = formatMrz(passportData.mrz);
-
   const concatenatedDataHashesHashDigest = hash(passportData.signatureAlgorithm, passportData.dataGroupHashes);
   console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
-
-  if (passportData.signatureAlgorithm == 'sha1WithRSAEncryption')
 
   assert(
     arraysAreEqual(passportData.eContent.slice(72, 72 + getDigestLengthBytes(passportData.signatureAlgorithm)),
