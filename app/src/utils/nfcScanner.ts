@@ -98,13 +98,15 @@ const scanIOS = async (
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
-    toast.show('Error', {
-      message: e.message,
-      customData: {
-        type: "error",
-      },
-    })
+    amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
+    if (!e.message.includes("UserCanceled")) {
+      toast.show('Failed to read passport', {
+        message: e.message,
+        customData: {
+          type: "error",
+        },
+      })
+    }
   }
 };
 
