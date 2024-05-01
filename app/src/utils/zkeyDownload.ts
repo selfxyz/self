@@ -3,12 +3,14 @@ import {
   Platform,
 } from 'react-native';
 import RNFS from 'react-native-fs';
-import { ARKZKEY_URL, ZKEY_URL } from '../../../common/src/constants/constants';
+import { ARKZKEY_URL, ZKEY_NAME, ZKEY_URL } from '../../../common/src/constants/constants';
 import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
+import { unzip } from 'react-native-zip-archive';
 
 const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
+const localZipPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zip';
 const localUrlPath = RNFS.DocumentDirectoryPath + '/zkey_url.txt';
 
 async function initMopro() {
@@ -33,7 +35,7 @@ export async function downloadZkey(
 
   const options = {
     fromUrl: url,
-    toFile: localZkeyPath,
+    toFile: localZipPath,
     background: true,
     begin: () => {
       console.log('Download has begun');
@@ -48,9 +50,24 @@ export async function downloadZkey(
   };
 
   RNFS.downloadFile(options).promise
-    .then(() => {
-      setDownloadStatus('completed')
+    .then(async () => {
       console.log('Download complete');
+      RNFS.readDir(RNFS.DocumentDirectoryPath)
+        .then((result) => {
+          console.log('Directory contents before:', result);
+        })
+
+      const unzipPath = RNFS.DocumentDirectoryPath;
+      await unzip(localZipPath, unzipPath);
+      const oldPath = `${unzipPath}/${ZKEY_NAME}${Platform.OS === 'android' ? '.arkzkey' : '.zkey'}`;
+      const newPath = `${unzipPath}/proof_of_passport.zkey`;
+      await RNFS.moveFile(oldPath, newPath);
+      RNFS.readDir(RNFS.DocumentDirectoryPath)
+      .then((result) => {
+        console.log('Directory contents after:', result);
+      })
+      console.log('Unzip complete');
+      setDownloadStatus('completed')
       const endTime = Date.now();
       amplitude.track('zkey download succeeded, took ' + ((endTime - startTime) / 1000) + ' seconds');
       RNFS.writeFile(localUrlPath, url, 'utf8');
