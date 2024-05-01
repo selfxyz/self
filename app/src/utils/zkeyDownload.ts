@@ -97,7 +97,7 @@ export async function checkForZkey({
   setShowWarning,
   toast
 }: CheckForZkeyProps) {
-  console.log('local zkey path:', localZkeyPath)
+  console.log('local zip path:', localZipPath)
   const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
 
   let storedUrl = '';
@@ -107,8 +107,8 @@ export async function checkForZkey({
     console.log('zkey_url.txt file not found, so assuming zkey is outdated.');
   }
 
-  const fileExists = await RNFS.exists(localZkeyPath);
-  const fileInfo = fileExists ? await RNFS.stat(localZkeyPath) : null;
+  const fileExists = await RNFS.exists(localZipPath);
+  const fileInfo = fileExists ? await RNFS.stat(localZipPath) : null;
 
   const response = await axios.head(url);
   const expectedSize = parseInt(response.headers['content-length'], 10);
