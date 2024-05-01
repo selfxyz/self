@@ -56,7 +56,7 @@ If you want to modify the circuits, you'll have to adapt a few things.
 
 First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
 
-Then, upload the zkey and the arkzkey built at a publicly available url and replace the two urls in `common/src/constants/constants.ts`
+Then, upload the zkey and the arkzkey built at a publicly available url and replace the two urls in `common/src/constants/constants.ts`. Be sure they have the name you put as ZKEY_NAME before you zip them, because they will need to unzip to theses name.
 
 Adapt the inputs you pass in `app/src/utils/prover.ts` and if you want to mint SBTs, adapt and redeploy the contracts.
 
