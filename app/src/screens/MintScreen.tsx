@@ -91,7 +91,7 @@ const MintScreen: React.FC<MintScreenProps> = ({
                         <Text color={textColor1} fontWeight="bold" fontSize="$5" mt="$3">ZK proof generated  🎉</Text>
                         <Text color={textColor2} mt="$1">Proof generation duration: {formatDuration(proofTime)}</Text>
 
-                        <Text color={textColor2} fontSize="$5" mt="$4" textAlign='left'>You can now use this proof to mint a Soulbond token.</Text>
+                        <Text color={textColor2} fontSize="$5" mt="$4" textAlign='left'>You can now use this proof to mint a Soulbound token.</Text>
                         <Text color={textColor2} fontSize="$4" mt="$2" textAlign='left'>Disclosed information will be displayed on SBT.</Text>
                     </YStack>
                     <XStack flex={1} />

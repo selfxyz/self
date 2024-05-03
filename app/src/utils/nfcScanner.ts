@@ -67,7 +67,7 @@ const scanAndroid = async (
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('NFC scan unsuccessful');
+    amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -98,13 +98,15 @@ const scanIOS = async (
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('NFC scan unsuccessful');
-    toast.show('Error', {
-      message: e.message,
-      customData: {
-        type: "error",
-      },
-    })
+    amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
+    if (!e.message.includes("UserCanceled")) {
+      toast.show('Failed to read passport', {
+        message: e.message,
+        customData: {
+          type: "error",
+        },
+      })
+    }
   }
 };
 
@@ -161,9 +163,9 @@ const handleResponseIOS = async (
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);
   console.log('pubKey', passportData.pubKey);
-  console.log('dataGroupHashes', [...passportData.dataGroupHashes]);
-  console.log('eContent', [...passportData.eContent]);
-  console.log('encryptedDigest', [...passportData.encryptedDigest]);
+  console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
+  console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
+  console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
   console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
   // console.log('passportData', JSON.stringify(passportData, null, 2));

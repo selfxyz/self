@@ -225,14 +225,14 @@ class PassportReader: NSObject{
 
         } catch {
           print("Error serializing SOD data: \(error)")
-          reject("E_PASSPORT_READ", "Failed to read passport", error)
+          reject("E_PASSPORT_READ", error.localizedDescription, error)
         }
 
         let stringified = String(data: try JSONEncoder().encode(ret), encoding: .utf8)
 
         resolve(stringified)
       } catch {
-        reject("E_PASSPORT_READ", "Failed to read passport", error)
+        reject("E_PASSPORT_READ", error.localizedDescription, error)
       }
     }
   }
