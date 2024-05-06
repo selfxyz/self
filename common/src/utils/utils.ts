@@ -1,6 +1,6 @@
 import { assert } from './shaPad';
 import { sha256 } from 'js-sha256';
-import {sha1} from 'js-sha1';
+//import {sha1} from 'js-sha1';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -148,9 +148,9 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(signatureAlgorithm : string, bytesArray: number[]) {
+export function hash(signatureAlgorithm: string, bytesArray: number[]) {
   let unsignedBytesArray = bytesArray.map(toUnsignedByte);
-  let hash = (signatureAlgorithm == 'sha1WithRSAEncryption' ) ? 
+  let hash = (signatureAlgorithm == 'sha1WithRSAEncryption') ?
     sha1(unsignedBytesArray) : sha256(unsignedBytesArray);
   return hexToSignedBytes(hash);
 }
@@ -173,7 +173,7 @@ export function formatSigAlg(
   exponent: string = "65537"
   // remove the default 65537 once NFC reading always returns exponent
   // and when ecdsa parameters are managed
-) {  
+) {
   sigAlg = sigAlg.replace(/-/g, '_')
   return exponent ? `${sigAlg}_${exponent}` : sigAlg
 }

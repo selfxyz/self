@@ -1,6 +1,6 @@
 pragma circom  2.1.6;
 
-include "./isOlderThan.circom";
+include "../isOlderThan.circom";
 
 template isOlderThan_tester() {
 

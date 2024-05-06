@@ -2,12 +2,12 @@ import { describe } from 'mocha'
 import chai, { assert, expect } from 'chai'
 import chaiAsPromised from 'chai-as-promised'
 import { groth16 } from 'snarkjs'
-import { attributeToPosition } from '../../common/src/constants/constants'
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData'
-import { generateCircuitInputs } from '../../common/src/utils/generateInputs'
+import { attributeToPosition } from '../../../common/src/constants/constants'
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData'
+import { generateCircuitInputs } from '../../../common/src/utils/generateInputs'
 import path from 'path'
 import fs from 'fs'
-import { PassportData } from '../../common/src/utils/types'
+import { PassportData } from '../../../common/src/utils/types'
 const wasm_tester = require("circom_tester").wasm;
 
 chai.use(chaiAsPromised)

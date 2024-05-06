@@ -604,7 +604,7 @@ SPEC CHECKSUMS:
   React-Core: 8293312ad137ea82fd2c29deb163dbc24aa4e00e
   React-CoreModules: 32fab1d62416849a3b6dac6feff9d54e5ddc2d1e
   React-cxxreact: 55d0f7cb6b4cc09ba9190797f1da87182d1a2fb6
-  React-debug: 7e61555c8158126c6cd98c3154381ad3821aaaca
+  React-debug: 878f0c4026b30a6240f7a15f8612efcf5d8c3df9
   React-jsc: 0db8e8cc2074d979c37ffa7b8d7c914833960497
   React-jsi: 58677ff4848ceb6aeb9118fe03448a843ea5e16a
   React-jsiexecutor: 2c15ba1bace70177492368d5180b564f165870fd
@@ -641,4 +641,4 @@ SPEC CHECKSUMS:
 
 PODFILE CHECKSUM: 2e0fb25883367cd333873ac29cbb9f28ba88c30f
 
-COCOAPODS: 1.14.3
+COCOAPODS: 1.15.2
