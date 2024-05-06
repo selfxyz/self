@@ -10,7 +10,7 @@ import { IMT } from "@zk-kit/imt";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputs } from '../../common/src/utils/generateInputs';
 
-describe("start testing of proof_of_passport_majority.circom", function () {
+describe("start testing register.circom", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
