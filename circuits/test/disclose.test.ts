@@ -9,7 +9,7 @@ import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../../common
 import { poseidon2 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 
-describe("start testing of proof_of_passport_majority.circom", function () {
+describe("start testing register.circom", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;

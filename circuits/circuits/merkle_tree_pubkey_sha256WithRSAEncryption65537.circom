@@ -14,12 +14,12 @@ template MerkleTreePubkey_sha256WithRSAEncryption65537(n, k, nLevels, pubkeySize
     component chunk_data = ChunkData(n, k, chunk_size);
     chunk_data.data <== pubkey;
 
-    signal leaf_hash_input[1 + k3_chunked_size];
+    signal leaf_hash_input[1 + chunk_size];
     leaf_hash_input[0] <== signatureAlgorithm;
-    for (var i = 0; i < k3_chunked_size; i++) {
+    for (var i = 0; i < chunk_size; i++) {
         leaf_hash_input[i+1] <== chunk_data.outputs[i];
     }
-    signal leaf <== Poseidon(1 + k3_chunked_size)(leaf_hash_input);
+    signal leaf <== Poseidon(1 + chunk_size)(leaf_hash_input);
 
     // Verify inclusion in merkle tree
     signal computed_merkle_root <== MerkleTreeInclusionProof(nLevels)(leaf, path, siblings);
