@@ -10,6 +10,8 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleInfoDictionaryVersion</key>
@@ -85,7 +87,5 @@
 		<string>A0000002472001</string>
 		<string>00000000000000</string>
 	</array>
-	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
 </dict>
 </plist>

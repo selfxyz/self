@@ -726,7 +726,7 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.warroom.proofofpassport-turnoff";
 				PRODUCT_NAME = ProofOfPassport;
 				PROVISIONING_PROFILE_SPECIFIER = "";
 				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/ProofOfPassport-Bridging-Header.h";
