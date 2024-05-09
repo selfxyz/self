@@ -17,6 +17,7 @@ describe("start testing register.circom", function () {
     let mrz: any;
     let passportData: any;
     let poseidon: any;
+    let imt: any;
 
     before(async () => {
 
@@ -42,6 +43,7 @@ describe("start testing register.circom", function () {
             secret: secret,
             mrz: mrz,
             merkle_root: tree.root,
+            merkletree_size: BigInt(proof.pathIndices.length).toString(),
             path: proof.pathIndices.map(index => index.toString()),
             siblings: proof.siblings.flat().map(index => index.toString()),
             bitmap: Array(90).fill(1).map(num => BigInt(num).toString()),
@@ -49,6 +51,7 @@ describe("start testing register.circom", function () {
             current_date: [2, 4, 0, 5, 0, 3].map(num => BigInt(num)),
             majority: ["1", "8"].map(char => BigInt(char.charCodeAt(0)).toString()),
         };
+        console.log("inputs", inputs);
         convertScopeToBinaryAndComputeValue(inputs.scope);
         w = await circuit.calculateWitness(inputs);
     });
@@ -62,9 +65,11 @@ describe("start testing register.circom", function () {
         const scope = BigInt(convertScopeToBinaryAndComputeValue(inputs.scope)).toString();
         const nullifier_js = poseidon.F.toString(poseidon([inputs.secret, scope]));
         let nullifier_circom = await circuit.getOutput(w, ["nullifier"]);
+        let commitment_circom = await circuit.getOutput(w, ["commitment"]);
         nullifier_circom = nullifier_circom.nullifier;
         console.log("nullifier_circom", nullifier_circom);
         console.log("nullifier_js", nullifier_js);
+        console.log("commitment_circom", commitment_circom);
         //expect(nullifier_circom).to.equal(nullifier_js); //TODO: fix this
     });
 });
