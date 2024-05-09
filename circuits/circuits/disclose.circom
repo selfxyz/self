@@ -5,6 +5,7 @@ include "@zk-email/circuits/helpers/extract.circom";
 include "./merkle_tree/tree.circom";
 include "./isOlderThan.circom";
 include "./isValid.circom";
+include "binary-merkle-root.circom";
 
 template Disclose(nLevels) {
 
@@ -12,6 +13,7 @@ template Disclose(nLevels) {
     signal input secret;
     signal input mrz[93];
     signal input merkle_root;
+    signal input merkletree_size;
     signal input path[nLevels];
     signal input siblings[nLevels];
     signal input bitmap[90];
@@ -33,7 +35,9 @@ template Disclose(nLevels) {
     commitment === poseidon_hasheur.out;
 
     // Verify the proof inclusion of the commitment
-    signal computedRoot <== MerkleTreeInclusionProof(nLevels)(commitment, path, siblings);
+    // signal computedRoot <== MerkleTreeInclusionProof(nLevels)(commitment, path, siblings);
+    // merkle_root === computedRoot;
+    signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;
 
     // Disclose optional data

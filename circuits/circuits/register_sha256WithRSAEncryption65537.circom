@@ -63,4 +63,5 @@ template Register(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal output nullifier <== poseidon_nullifier.out;
 }
 
-component main { public [ merkle_root ] } = Register(64, 32, 320, 16, 32);
+component main { public [ merkle_root, signature_algorithm ] } = Register(64, 32, 320, 16, 32);
+

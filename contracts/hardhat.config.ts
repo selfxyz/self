@@ -10,9 +10,22 @@ const config: HardhatUserConfig = {
       optimizer: {
         enabled: true,
         runs: 200,
+        details: {
+          yul: true
+        }
       },
-      viaIR: true,
+
+      metadata: {
+        bytecodeHash: "none"
+      },
+      viaIR: false,
     },
+  },
+  paths: {
+    sources: "./contracts",
+    tests: "./test",
+    cache: "./cache",
+    artifacts: "./artifacts"
   },
   defaultNetwork: "hardhat",
   networks: {

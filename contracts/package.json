@@ -1,19 +1,37 @@
 {
   "name": "hardhat-project",
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
+    "@nomicfoundation/hardhat-ethers": "^3.0.5",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.10",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.1.1",
+    "@typechain/ethers-v6": "^0.4.3",
+    "@typechain/hardhat": "^8.0.3",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.6",
     "@types/snarkjs": "^0.7.7",
+    "chai": "^4.4.1",
+    "ethers": "^6.12.1",
     "hardhat": "^2.17.0",
+    "hardhat-gas-reporter": "^1.0.10",
+    "solidity-coverage": "^0.8.12",
     "ts-node": "^10.9.1",
+    "typechain": "^8.3.2",
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openzeppelin/contracts": "^4.9.2",
-    "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
+    "@types/jest": "^29.5.12",
+    "@zk-kit/imt": "^2.0.0-beta.4",
+    "@zk-kit/imt.sol": "^2.0.0-beta.12",
     "axios": "^1.6.2",
     "dotenv": "^16.3.1",
     "hardhat-contract-sizer": "^2.10.0",
+    "mocha": "^10.4.0",
     "poseidon-lite": "^0.2.0",
+    "poseidon-solidity": "^0.0.5",
     "snarkjs": "^0.7.1"
   }
 }
