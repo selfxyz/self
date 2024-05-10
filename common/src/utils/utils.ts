@@ -276,3 +276,18 @@ export function getDigestLengthBytes(signatureAlgorithm: string) {
   return 32
 }
 
+export function packBytes(unpacked) {
+  const bytesCount = [31, 31, 31];
+  let packed = [0n, 0n, 0n];
+
+  let byteIndex = 0;
+  for (let i = 0; i < bytesCount.length; i++) {
+    for (let j = 0; j < bytesCount[i]; j++) {
+      if (byteIndex < unpacked.length) {
+        packed[i] |= BigInt(unpacked[byteIndex]) << (BigInt(j) * 8n);
+      }
+      byteIndex++;
+    }
+  }
+  return packed;
+}
