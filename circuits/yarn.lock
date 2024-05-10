@@ -516,6 +516,13 @@
     commander "^11.0.0"
     snarkjs "^0.7.0"
 
+"@zk-kit/circuits@^1.0.0-beta":
+  version "1.0.0-beta"
+  resolved "https://registry.yarnpkg.com/@zk-kit/circuits/-/circuits-1.0.0-beta.tgz#4f41315839855762dac11b2ba2ce5e58fd8ad1e9"
+  integrity sha512-ZJBkmm//iFlDB3pQOWAOqSCeUQFYWzI00a980jjbEcuzQgq2PqBxiq36TFxnZHkbrOh39XpeWOoEpCXRkjS2KQ==
+  dependencies:
+    circomlib "^2.0.5"
+
 "@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
   version "2.0.0-beta.1"
   resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"

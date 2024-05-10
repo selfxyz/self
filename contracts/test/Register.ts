@@ -8,7 +8,7 @@ import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
-import { generateCircuitInputs_Register } from "../../common/src/utils/generateInputs";
+import { generateCircuitInputsRegister } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
 
 
@@ -33,7 +33,7 @@ describe("Register", function () {
 
         passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
-        inputs = generateCircuitInputs_Register(
+        inputs = generateCircuitInputsRegister(
             passportData,
             { developmentMode: true }
         );

@@ -3,9 +3,9 @@ pragma circom 2.1.5;
 include "@zk-email/circuits/helpers/rsa.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "@zk-email/circuits/helpers/sha.circom";
-include "./Sha256BytesStatic.circom";
+include "./utils/Sha256BytesStatic.circom";
 
-template PassportVerifier_sha256WithRSAEncryption65537(n, k, max_datahashes_bytes) {
+template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars
     signal input dataHashes[max_datahashes_bytes];
     signal input datahashes_padded_length;
@@ -40,7 +40,6 @@ template PassportVerifier_sha256WithRSAEncryption65537(n, k, max_datahashes_byte
     // hash dataHashes dynamically
     signal dataHashesSha[256] <== Sha256Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
 
-
     // get output of dataHashes sha256 into bytes to check against eContent
     component dataHashesSha_bytes[32];
     for (var i = 0; i < 32; i++) {
@@ -67,10 +66,11 @@ template PassportVerifier_sha256WithRSAEncryption65537(n, k, max_datahashes_byte
         //instantiate each component of the list of Bits2Num of size n
         eContentHash[i] = Bits2Num(n);
     }
-    for (var i = 0; i < 256; i++) {
 
+    for (var i = 0; i < 256; i++) {
         eContentHash[i \ n].in[i % n] <== eContentSha[255 - i];
     }
+
     for (var i = 256; i < n * msg_len; i++) {
         eContentHash[i \ n].in[i % n] <== 0;
     }
