@@ -3,7 +3,7 @@ import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
-import { COMMITMENT_TREE_DEPTH } from "../../common/src/constants/constants";
+import { attributeToPosition, COMMITMENT_TREE_DEPTH } from "../../common/src/constants/constants";
 import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
@@ -85,4 +85,102 @@ describe("start testing register.circom", function () {
         console.log("nullifier_js", nullifier_js);
         expect(nullifier_circom).to.equal(nullifier_js);
     });
+
+    it("should fail to calculate witness with outdated passport", async function () {
+        try {
+            const invalidInputs = {
+                ...inputs,
+                current_date: ["4","4","0","5","1","0"] // 2044
+            }
+            await circuit.calculateWitness(invalidInputs);
+            expect.fail("Expected an error but none was thrown.");
+        } catch (error) {
+            expect(error.message).to.include("Assert Failed");
+        }
+    });
+
+    it("should fail to calculate witness with different attestation_id", async function () {
+        try {
+            const invalidInputs = {
+                ...inputs,
+                attestation_id: poseidon1([
+                    BigInt(Buffer.from("ANON-AADHAAR").readUIntBE(0, 6))
+                ]).toString()
+            }
+            await circuit.calculateWitness(invalidInputs);
+            expect.fail("Expected an error but none was thrown.");
+        } catch (error) {
+            expect(error.message).to.include("Assert Failed");
+        }
+    });
+
+    describe('Selective disclosure', function () {
+        const attributeCombinations = [
+            ['issuing_state', 'name'],
+            ['passport_number', 'nationality', 'date_of_birth'],
+            ['gender', 'expiry_date'],
+        ];
+
+        attributeCombinations.forEach(combination => {
+            it(`Disclosing ${combination.join(", ")}`, async function () {
+                const attributeToReveal = Object.keys(attributeToPosition).reduce((acc, attribute) => {
+                    acc[attribute] = combination.includes(attribute);
+                    return acc;
+                }, {});
+
+                const bitmap = Array(90).fill('0');
+
+                Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
+                    if (reveal) {
+                        const [start, end] = attributeToPosition[attribute];
+                        bitmap.fill('1', start, end + 1);
+                    }
+                });
+
+                inputs = {
+                    ...inputs,
+                    bitmap: bitmap.map(String),
+                }
+
+                w = await circuit.calculateWitness(inputs);
+
+                const revealedData_packed = (await circuit.getOutput(w, ["revealedData_packed[3]"]))
+                const revealedData_packed_formatted = [
+                    revealedData_packed["revealedData_packed[0]"],
+                    revealedData_packed["revealedData_packed[1]"],
+                    revealedData_packed["revealedData_packed[2]"],
+                ];
+                console.log("revealedData_packed_formatted", revealedData_packed_formatted)
+
+                const bytesCount = [31, 31, 26]; // nb of bytes in each of the first three field elements
+
+                const bytesArray = revealedData_packed_formatted.flatMap((element: string, index: number) => {
+                    const bytes = bytesCount[index];
+                    const elementBigInt = BigInt(element);
+                    const byteMask = BigInt(255); // 0xFF
+
+                    const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
+                        return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+                    });
+                    return bytesOfElement;
+                });
+
+                const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
+
+                console.log(result);
+
+                for (let i = 0; i < result.length; i++) {
+                    if (bitmap[i] == '1') {
+                        const char = String.fromCharCode(Number(inputs.mrz[i + 5]));
+                        assert(result[i] == char, 'Should reveal the right character');
+                    } else {
+                        assert(result[i] == '\x00', 'Should not reveal');
+                    }
+                }
+            });
+        });
+    })
+
 });
+
+
