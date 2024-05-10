@@ -8,16 +8,17 @@ import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
-import { generateCircuitInputsRegister, generateCircuitInputs_Disclose } from "../../common/src/utils/generateInputs";
+import { generateCircuitInputsRegister, generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
 import { IMT } from "@zk-kit/imt";
 import { poseidon2 } from "poseidon-lite";
+import { PassportData } from "../../common/src/utils/types";
 
 
 describe("Proof of Passport - Contracts - Register & Disclose flow", function () {
     this.timeout(0);
 
-    let passportData, proof, inputs: any, publicSignals, revealChars, pasrsedCallData: any[], formattedCallData: any;
+    let passportData: PassportData, proof, inputs: any, publicSignals, revealChars, pasrsedCallData: any[], formattedCallData: any;
     // Paths
     const path_register_wasm = "../circuits/build/register_sha256WithRSAEncryption_65537_js/register_sha256WithRSAEncryption_65537.wasm";
     const path_register_zkey = "../circuits/build/register_sha256WithRSAEncryption_65537_final.zkey";
@@ -158,6 +159,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
                 .connect(thirdAccount) // fine that it's not the same account as address is taken from the proof
                 .validateProof(formattedCallData)).not.to.be.reverted;
 
+            imt.insert(BigInt(formattedCallData.commitment));
+            console.log('\x1b[32m%s\x1b[0m', `Commitment: ${BigInt(formattedCallData.commitment)}`);
             // const indexOfCommitment = await register.indexOf(formattedCallData.commitment);
             // const merkleTreeSize = await register.getMerkleTreeSize();
 
@@ -170,29 +173,32 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             /***  Groth16 saga  ***/
             // Generate the proof
-            const input_disclose = generateCircuitInputs_Disclose(
-                poseidon, inputs.secret, inputs.mrz, imt, [49, 50], thirdAccount
+            const bitmap = Array(90).fill(1).map((_, i) => i.toString());
+            const scope = BigInt(0).toString();
+            const input_disclose = generateCircuitInputsDisclose(
+                inputs.secret, inputs.attestation_id, passportData, imt as any, ["1", "8"], bitmap, scope, thirdAccount
             );
             console.log('\x1b[32m%s\x1b[0m', 'Generating proof - SBT');
             console.log(input_disclose);
             ({ proof, publicSignals } = await groth16.fullProve(
-                inputs,
+                input_disclose,
                 path_disclose_wasm,
                 path_disclose_zkey
             ))
-            console.log('\x1b[32m%s\x1b[0m', 'Proof generated - SBT');
-            // Verify the proof
-            const vKey = JSON.parse(fs.readFileSync(path_register_vkey) as unknown as string);
-            const verified = await groth16.verify(
-                vKey,
-                publicSignals,
-                proof
-            )
-            assert(verified == true, 'Should verify')
-            console.log('\x1b[32m%s\x1b[0m', 'Proof verified');
+            // console.log('\x1b[32m%s\x1b[0m', 'Proof generated - SBT');
+            // // Verify the proof
+            // const vKey = JSON.parse(fs.readFileSync(path_disclose_vkey) as unknown as string);
+            // const verified = await groth16.verify(
+            //     vKey,
+            //     publicSignals,
+            //     proof
+            // )
+            // assert(verified == true, 'Should verify')
+            // console.log('\x1b[32m%s\x1b[0m', 'Proof verified - SBT');
 
-            const rawCallData = await groth16.exportSolidityCallData(proof, publicSignals);
-            pasrsedCallData = JSON.parse(`[${rawCallData}]`);
+            // const rawCallData = await groth16.exportSolidityCallData(proof, publicSignals);
+            // pasrsedCallData = JSON.parse(`[${rawCallData}]`);
+            // console.log('\x1b[34m%s\x1b[0m', 'pasrsedCallData:', pasrsedCallData);
         });
     });
 

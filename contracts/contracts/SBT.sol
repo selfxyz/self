@@ -28,8 +28,9 @@ contract SBT is ERC721Enumerable, Ownable {
         uint[3] revealedData_packed;
         uint merkle_root;
         uint scope;
-        uint user_address;
+        uint user_identifier;
         uint[6] current_date;
+        uint attestation_id;
         uint256[2] a;
         uint256[2][2] b;
         uint256[2] c;
@@ -78,7 +79,7 @@ contract SBT is ERC721Enumerable, Ownable {
     function mint(
         SBTProof calldata proof
     ) public {
-        require(verifier.verifyProof(proof.a, proof.b, proof.c, [proof.nullifier, proof.revealedData_packed[0], proof.revealedData_packed[1], proof.revealedData_packed[2], proof.merkle_root, proof.scope, proof.user_address, proof.current_date[0], proof.current_date[1], proof.current_date[2], proof.current_date[3], proof.current_date[4], proof.current_date[5]]), "Invalid Proof");
+        require(verifier.verifyProof(proof.a, proof.b, proof.c, [proof.nullifier, proof.revealedData_packed[0], proof.revealedData_packed[1], proof.revealedData_packed[2], proof.merkle_root, proof.scope, proof.user_identifier, proof.current_date[0], proof.current_date[1], proof.current_date[2], proof.current_date[3], proof.current_date[4], proof.current_date[5], proof.attestation_id]), "Invalid Proof");
 
         // check that the nullifier has not been used before
         // require(!nullifiers[inputs[3]], "Signature already nullified");
@@ -104,7 +105,7 @@ contract SBT is ERC721Enumerable, Ownable {
 
 
         // Effects: Mint token
-        address addr = address(uint160(proof.user_address));
+        address addr = address(uint160(proof.user_identifier));
         uint256 newTokenId = totalSupply();
         _mint(addr, newTokenId);
         nullifiers[proof.nullifier] = true;
