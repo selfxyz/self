@@ -8,6 +8,7 @@ import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
+import { unpackReveal } from '../../common/src/utils/revealBitmap';
 
 describe("start testing register.circom", function () {
     this.timeout(0);
@@ -114,7 +115,7 @@ describe("start testing register.circom", function () {
         }
     });
 
-    describe('Selective disclosure', function () {
+    describe('MRZ selective disclosure', function () {
         const attributeCombinations = [
             ['issuing_state', 'name'],
             ['passport_number', 'nationality', 'date_of_birth'],
@@ -144,43 +145,60 @@ describe("start testing register.circom", function () {
 
                 w = await circuit.calculateWitness(inputs);
 
-                const revealedData_packed = (await circuit.getOutput(w, ["revealedData_packed[3]"]))
-                const revealedData_packed_formatted = [
-                    revealedData_packed["revealedData_packed[0]"],
-                    revealedData_packed["revealedData_packed[1]"],
-                    revealedData_packed["revealedData_packed[2]"],
-                ];
-                console.log("revealedData_packed_formatted", revealedData_packed_formatted)
+                const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
 
-                const bytesCount = [31, 31, 26]; // nb of bytes in each of the first three field elements
+                const reveal_unpacked = unpackReveal(revealedData_packed);
 
-                const bytesArray = revealedData_packed_formatted.flatMap((element: string, index: number) => {
-                    const bytes = bytesCount[index];
-                    const elementBigInt = BigInt(element);
-                    const byteMask = BigInt(255); // 0xFF
-
-                    const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
-                        return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
-                    });
-                    return bytesOfElement;
-                });
-
-                const result = bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
-
-                console.log(result);
-
-                for (let i = 0; i < result.length; i++) {
+                for (let i = 0; i < reveal_unpacked.length; i++) {
                     if (bitmap[i] == '1') {
                         const char = String.fromCharCode(Number(inputs.mrz[i + 5]));
-                        assert(result[i] == char, 'Should reveal the right character');
+                        assert(reveal_unpacked[i] == char, 'Should reveal the right character');
                     } else {
-                        assert(result[i] == '\x00', 'Should not reveal');
+                        assert(reveal_unpacked[i] == '\x00', 'Should not reveal');
                     }
                 }
             });
         });
     })
 
+    it("should allow disclosing majority", async function () {
+        const bitmap = Array(90).fill('0');
+        bitmap[88] = '1';
+        bitmap[89] = '1';
+
+        w = await circuit.calculateWitness({
+            ...inputs,
+            bitmap: bitmap.map(String),
+        });
+        
+        const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
+
+        const reveal_unpacked = unpackReveal(revealedData_packed);
+        console.log("reveal_unpacked", reveal_unpacked)
+
+        expect(reveal_unpacked[88]).to.equal("1");
+        expect(reveal_unpacked[89]).to.equal("8");
+    });
+
+    it("shouldn't allow disclosing wrong majority", async function () {
+        const bitmap = Array(90).fill('0');
+        bitmap[88] = '1';
+        bitmap[89] = '1';
+
+        w = await circuit.calculateWitness({
+            ...inputs,
+            majority: ["5", "0"].map(char => BigInt(char.charCodeAt(0)).toString()),
+            bitmap: bitmap.map(String),
+        });
+        
+        const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
+
+        const reveal_unpacked = unpackReveal(revealedData_packed);
+        console.log("reveal_unpacked", reveal_unpacked)
+
+        expect(reveal_unpacked[88]).to.equal("\x00");
+        expect(reveal_unpacked[89]).to.equal("\x00");
+    });
 });
 
 
