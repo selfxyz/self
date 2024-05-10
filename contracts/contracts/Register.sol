@@ -3,7 +3,6 @@ pragma solidity ^0.8.3;
 
 //import {Groth16Verifier} from "./Verifier.sol";
 import {IRegister} from "./interfaces/IRegister.sol";
-import {Formatter} from "./Formatter.sol";
 import {Registry} from "./Registry.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {IVerifier} from "./IVerifier.sol";
@@ -12,7 +11,6 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 
 contract Register is IRegister {
-    Formatter public immutable formatter;
     Registry public immutable registry;
     using Base64 for *;
     using Strings for uint256;
@@ -25,13 +23,12 @@ contract Register is IRegister {
 
     mapping(uint256 => address) public verifiers;
 
-    constructor(Formatter f, Registry r) {
-        formatter = f;
+    constructor(Registry r) {
         registry = r;
     }
 
     function validateProof(RegisterProof calldata proof) external override {
-        
+
         if (!registry.checkRoot(bytes32(proof.merkle_root))) {
             revert Register__InvalidMerkleRoot();
         }
@@ -57,7 +54,7 @@ contract Register is IRegister {
             proof.a,
             proof.b,
             proof.c,
-            [uint(proof.commitment),uint(proof.nullifier),uint(proof.signature_algorithm), uint(proof.merkle_root)]
+            [uint(proof.commitment),uint(proof.nullifier), uint(proof.merkle_root),uint(proof.signature_algorithm)]
         );
     }
 
@@ -76,6 +73,10 @@ contract Register is IRegister {
     function getMerkleTreeSize(
     ) public view returns (uint256) {
         return imt.size;
+    }
+
+    function getMerkleRoot() public view returns (uint256) {
+        return imt._root();
     }
 
     function indexOf(uint commitment) public view returns (uint256) {
