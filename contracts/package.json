@@ -23,10 +23,12 @@
   "dependencies": {
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openzeppelin/contracts": "^4.9.2",
+    "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.12",
     "@zk-kit/imt": "^2.0.0-beta.4",
     "@zk-kit/imt.sol": "^2.0.0-beta.12",
     "axios": "^1.6.2",
+    "circomlibjs": "^0.1.7",
     "dotenv": "^16.3.1",
     "hardhat-contract-sizer": "^2.10.0",
     "mocha": "^10.4.0",

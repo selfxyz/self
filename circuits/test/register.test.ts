@@ -43,39 +43,22 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     it("should compile and load the circuit", async function () {
         expect(circuit).to.not.be.undefined;
     });
-
-    it("should calculate the witness with correct inputs", async function () {
-        const w = await circuit.calculateWitness(inputs);
-        await circuit.checkConstraints(w);
-
-        let commitment = await circuit.getOutput(w, ["commitment"]);
-        let nullifier = await circuit.getOutput(w, ["nullifier"]);
-        console.log("commitment", commitment);
-        console.log("nullifier", nullifier);
-
-        // commenting to push, will uncomment when fixed
-        // const poseidon = await buildPoseidon();
-        // const commitment_circom = commitment.commitment;
-        // const formattedMrz = formatMrz(inputs.mrz);
-        // const mrz_bytes = packBytes(formattedMrz);
-        // const commitment_bytes = poseidon6([
-        //     BigInt(inputs.secret),
-        //     BigInt(attestation_id),
-        //     getLeaf({
-        //         signatureAlgorithm: passportData.signatureAlgorithm,
-        //         modulus: passportData.pubKey.modulus,
-        //         exponent: passportData.pubKey.exponent
-        //     }),
-        //     BigInt(mrz_bytes[0]),
-        //     BigInt(mrz_bytes[1]),
-        //     BigInt(mrz_bytes[2])
-        // ]);
-        // const commitment_js = BigInt(poseidon.F.toString(commitment_bytes)).toString();
-        // console.log('commitment_js', commitment_js)
-        // console.log('commitment_circom', commitment_circom)
-        // expect(commitment_circom).to.be.equal(commitment_js);
+    it("calculate witness", async function () {
+        w = await circuit.calculateWitness(inputs);
+        let commitment_circom = await circuit.getOutput(w, ["commitment"]);
+        commitment_circom = commitment_circom.commitment;
+        const formattedMrz = formatMrz(inputs.mrz);
+        const mrz_bytes = packBytes(formattedMrz);
+        console.log(inputs.secret)
+        console.log(formattedMrz)
+        console.log('mrz_bytes', mrz_bytes)
+        const commitment_js = poseidon4([inputs.secret, mrz_bytes[0], mrz_bytes[1], mrz_bytes[2]]);
+        //const commitment_js = poseidon.F.toString(commitment_bytes);
+        console.log('commitment_js', commitment_js)
+        console.log('commitment_circom', commitment_circom)
+        expect(commitment_circom).to.be.equal(commitment_js);
     });
-    
+
     it("should fail to calculate witness with invalid mrz", async function () {
         try {
             const invalidInputs = {
