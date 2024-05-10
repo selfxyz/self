@@ -6,6 +6,7 @@ import { poseidon1, poseidon6 } from "poseidon-lite";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
+import { packBytes } from '../../common/src/utils/utils';
 
 describe("Proof of Passport - Circuits - Register flow", function () {
     this.timeout(0);
@@ -122,19 +123,3 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     });
 
 });
-
-function packBytes(unpacked) {
-    const bytesCount = [31, 31, 31];
-    let packed = [0n, 0n, 0n];
-
-    let byteIndex = 0;
-    for (let i = 0; i < bytesCount.length; i++) {
-        for (let j = 0; j < bytesCount[i]; j++) {
-            if (byteIndex < unpacked.length) {
-                packed[i] |= BigInt(unpacked[byteIndex]) << (BigInt(j) * 8n);
-            }
-            byteIndex++;
-        }
-    }
-    return packed;
-}
