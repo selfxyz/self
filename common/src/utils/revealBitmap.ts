@@ -12,3 +12,25 @@ export function revealBitmapFromMapping(attributeToReveal: {[key: string]: boole
 
   return reveal_bitmap;
 }
+
+export function unpackReveal(revealedData_packed: string[]): string[] {
+  const revealedData_packed_formatted = [
+    revealedData_packed["revealedData_packed[0]"],
+    revealedData_packed["revealedData_packed[1]"],
+    revealedData_packed["revealedData_packed[2]"],
+  ];
+
+  const bytesCount = [31, 31, 28]; // nb of bytes in each of the first three field elements
+  const bytesArray = revealedData_packed_formatted.flatMap((element: string, index: number) => {
+      const bytes = bytesCount[index];
+      const elementBigInt = BigInt(element);
+      const byteMask = BigInt(255); // 0xFF
+
+      const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
+          return (elementBigInt >> (BigInt(byteIndex) * BigInt(8))) & byteMask;
+      });
+      return bytesOfElement;
+  });
+
+  return bytesArray.map((byte: bigint) => String.fromCharCode(Number(byte)));
+}
