@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
@@ -8,7 +8,7 @@ import {
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
-import { poseidon2 } from "poseidon-lite";
+import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 
 export function generateCircuitInputsRegister(
@@ -17,7 +17,7 @@ export function generateCircuitInputsRegister(
   passportData: PassportData,
   options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2);
+  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
   tree.setNodes(serializedTree);
 
   if (options.developmentMode) {
@@ -98,44 +98,57 @@ export function generateCircuitInputsRegister(
   };
 }
 
-export function generateCircuitInputs_Disclose(
-  poseidon: any, secret: number, mrz: any, merkletree: IMT, majority: [number, number], address: string
+export function generateCircuitInputsDisclose(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  merkletree: IMT,
+  majority: string[],
+  bitmap: string[],
+  scope: string,
+  user_identifier: string
 ) {
-  // const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2);
-  // tree.setNodes(serializedTree);
+  const pubkey_leaf = getLeaf({
+    signatureAlgorithm: passportData.signatureAlgorithm,
+    modulus: passportData.pubKey.modulus,
+    exponent: passportData.pubKey.exponent,
+  });
 
-  // if (options.developmentMode) {
-  //   tree.insert(getLeaf({
-  //     signatureAlgorithm: passportData.signatureAlgorithm,
-  //     issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-  //     modulus: passportData.pubKey.modulus,
-  //     exponent: passportData.pubKey.exponent
-  //   }).toString());
-  // }
-
-  const formattedMrz = formatMrz(mrz);
+  const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
-  const commitment_bytes = poseidon([secret, mrz_bytes[0], mrz_bytes[1], mrz_bytes[2]]);
-  const commitment = BigInt(poseidon.F.toString(commitment_bytes)).toString();
+  const commitment = poseidon6([
+    secret,
+    attestation_id,
+    pubkey_leaf,
+    mrz_bytes[0],
+    mrz_bytes[1],
+    mrz_bytes[2]
+  ]).toString();
+  console.log("commitment", commitment);
+
   const index = merkletree.indexOf(commitment);
-  console.log(`Index of pubkey in the registry: ${index}`);
+  console.log(`Index of commitment in the tree: ${index}`);
   if (index === -1) {
-    throw new Error("Your public key was not found in the registry");
+    throw new Error("This commitment was not found in the tree");
   }
   const proof = merkletree.createProof(index);
   console.log("verifyProof", merkletree.verifyProof(proof));
 
   return {
-    secret: [BigInt(0).toString()],
-    commitment: commitment,
+    secret: secret,
+    attestation_id: attestation_id,
+    pubkey_leaf: pubkey_leaf.toString(),
     mrz: formattedMrz.map(byte => String(byte)),
+
     merkle_root: [merkletree.root.toString()],
+    merkletree_size: BigInt(proof.pathIndices.length).toString(),
     path: proof.pathIndices.map(index => index.toString()),
     siblings: proof.siblings.flat().map(index => index.toString()),
-    bitmap: Array(90).fill(1).map(num => num.toString()),
-    scope: [BigInt(0).toString()],
+
+    bitmap: bitmap,
+    scope: scope,
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
-    majority: majority.map(num => BigInt(num).toString()),
-    address: [BigInt(address).toString()],
+    majority: majority.map(char => BigInt(char.charCodeAt(0)).toString()),
+    user_identifier: user_identifier,
   };
 }

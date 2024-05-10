@@ -4,7 +4,8 @@ export const ZKEY_NAME = "proof_of_passport_final_v01"
 export const ARKZKEY_URL = `https://d8o9bercqupgk.cloudfront.net/${ZKEY_NAME}.arkzkey.zip`
 export const ZKEY_URL = `https://d8o9bercqupgk.cloudfront.net/${ZKEY_NAME}.zkey.zip`
 
-export const TREE_DEPTH = 16
+export const PUBKEY_TREE_DEPTH = 16
+export const COMMITMENT_TREE_DEPTH = 16
 
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,

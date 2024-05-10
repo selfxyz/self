@@ -1,5 +1,5 @@
 import { ethers } from "hardhat";
-import { TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
+import { PUBKEY_TREE_DEPTH, countryCodes } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { poseidon2 } from 'poseidon-lite';
@@ -12,7 +12,7 @@ const path = require('path');
 const DEV_MODE = true
 
 async function main() {
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2)
   tree.setNodes(serializedTree)
   
   // This adds the pubkey of the mock passportData to the registry so that it's always found for testing purposes.

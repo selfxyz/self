@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
@@ -17,7 +17,7 @@ export function generateCircuitInputs(
   majority: number,
   options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
+  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2)
   tree.setNodes(serializedTree)
 
   if (options.developmentMode) {
