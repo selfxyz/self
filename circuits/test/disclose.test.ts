@@ -47,9 +47,10 @@ describe("start testing register.circom", function () {
             path: proof.pathIndices.map(index => index.toString()),
             siblings: proof.siblings.flat().map(index => index.toString()),
             bitmap: Array(90).fill(1).map(num => BigInt(num).toString()),
-            scope: Array(24).fill('0').map(char => BigInt(char.charCodeAt(0)).toString()),
+            scope: BigInt(0).toString(),
             current_date: [2, 4, 0, 5, 0, 3].map(num => BigInt(num)),
             majority: ["1", "8"].map(char => BigInt(char.charCodeAt(0)).toString()),
+            address: BigInt(0).toString(),
         };
         console.log("inputs", inputs);
         convertScopeToBinaryAndComputeValue(inputs.scope);

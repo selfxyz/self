@@ -8,22 +8,22 @@ include "./isValid.circom";
 include "binary-merkle-root.circom";
 
 template Disclose(nLevels) {
-
-    signal input commitment; // H (secret, mrz) - num
     signal input secret;
+    signal input commitment; // H (secret, mrz) - num
     signal input mrz[93];
     signal input merkle_root;
     signal input merkletree_size;
     signal input path[nLevels];
     signal input siblings[nLevels];
     signal input bitmap[90];
-    signal input scope[24]; // - ASCII
+    signal input scope;
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
+    signal input address;
 
-    signal output validity; // 0 or 1
-    signal output revealedData_packed[3];
+    //signal output validity; // 0 or 1
     signal output nullifier; // Poseidon(secret, scope) - num
+    signal output revealedData_packed[3];
 
     // Verify the commitment
     component poseidon_hasheur = Poseidon(4);
@@ -57,7 +57,7 @@ template Disclose(nLevels) {
     for (var i = 0; i < 6; i++) {
         isValid.validityDateASCII[i] <== mrz[70 + i];
     }
-    validity <== isValid.out;
+    1 === isValid.out;
     signal revealedData[90];
     for (var i = 0; i < 88; i++) {
         revealedData[i] <== mrz[5+i] * bitmap[i];
@@ -68,18 +68,10 @@ template Disclose(nLevels) {
 
     // Generate scope nullifier
     component poseidon_nullifier = Poseidon(2);
-    component num2Bits[24];
-    component bits2Num = Bits2Num(192);
-    for (var i = 23; i >= 0; i--) {
-        num2Bits[i]= Num2Bits(8);
-        num2Bits[i].in <== scope[i];
-        for (var j=7 ; j >= 0 ; j--){
-            bits2Num.in[(23-i) * 8 + j] <== num2Bits[i].out[j];
-        }
-    }
+
     poseidon_nullifier.inputs[0] <== secret;
-    poseidon_nullifier.inputs[1] <== bits2Num.out;
+    poseidon_nullifier.inputs[1] <== scope;
     nullifier <== poseidon_nullifier.out;
 }
 
-component main { public [ merkle_root ] } = Disclose(16);
+component main { public [ merkle_root, scope, address, current_date] } = Disclose(16);
