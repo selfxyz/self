@@ -1,6 +1,7 @@
 export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 
-export const TREE_DEPTH = 16
+export const PUBKEY_TREE_DEPTH = 16
+export const COMMITMENT_TREE_DEPTH = 16
 
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,

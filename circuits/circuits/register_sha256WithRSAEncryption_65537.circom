@@ -38,16 +38,16 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     PV.signature <== signature;
 
     // Generate the commitment
-    component poseidon_commitment = Poseidon(6);
-    poseidon_commitment.inputs[0] <== secret;
-    poseidon_commitment.inputs[1] <== attestation_id;
-    poseidon_commitment.inputs[2] <== leaf;
+    component poseidon_hasher = Poseidon(6);
+    poseidon_hasher.inputs[0] <== secret;
+    poseidon_hasher.inputs[1] <== attestation_id;
+    poseidon_hasher.inputs[2] <== leaf;
 
     signal mrz_packed[3] <== PackBytes(93, 3, 31)(mrz);
     for (var i = 0; i < 3; i++) {
-        poseidon_commitment.inputs[i + 3] <== mrz_packed[i];
+        poseidon_hasher.inputs[i + 3] <== mrz_packed[i];
     }
-    signal output commitment <== poseidon_commitment.out;
+    signal output commitment <== poseidon_hasher.out;
 
     // Generate the nullifier 
     var chunk_size = 11;  // Since ceil(32 / 3) in integer division is 11

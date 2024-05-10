@@ -1,5 +1,5 @@
 import { poseidon12, poseidon2, poseidon8 } from "poseidon-lite"
-import { SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
+import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { IMT } from '@zk-kit/imt'
 import { bigIntToChunkedBytes, formatSigAlg } from "./utils";
 
@@ -23,7 +23,7 @@ export function buildPubkeyTree(pubkeys: any[]) {
     leaves.push(leaf)
   }
 
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2, leaves)
+  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2, leaves)
   console.log('pubkey tree built in', performance.now() - startTime, 'ms')
 
   return tree

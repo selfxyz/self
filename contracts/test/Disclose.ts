@@ -8,7 +8,7 @@ import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
-import { generateCircuitInputs_Disclose } from "../../common/src/utils/generateInputs";
+import { generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
 import { buildPoseidon } from 'circomlibjs';
 
@@ -35,7 +35,7 @@ describe("Register", function () {
         passportData = mockPassportData_sha256WithRSAEncryption_65537;
         const poseidon = await buildPoseidon();
 
-        inputs = generateCircuitInputs_Disclose(
+        inputs = generateCircuitInputsDisclose(
             poseidon,
             0,
             passportData.mrz,
