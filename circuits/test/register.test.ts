@@ -2,11 +2,9 @@ import { describe } from 'mocha'
 import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
-import { poseidon1, poseidon4, poseidon6 } from "poseidon-lite";
+import { poseidon1, poseidon6 } from "poseidon-lite";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
-import { formatMrz } from "../../common/src/utils/utils";
-import { buildPoseidon } from 'circomlibjs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 
 describe("Proof of Passport - Circuits - Register flow", function () {
@@ -43,17 +41,29 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     it("should compile and load the circuit", async function () {
         expect(circuit).to.not.be.undefined;
     });
-    it("calculate witness", async function () {
-        w = await circuit.calculateWitness(inputs);
-        let commitment_circom = await circuit.getOutput(w, ["commitment"]);
-        commitment_circom = commitment_circom.commitment;
-        const formattedMrz = formatMrz(inputs.mrz);
-        const mrz_bytes = packBytes(formattedMrz);
-        console.log(inputs.secret)
-        console.log(formattedMrz)
-        console.log('mrz_bytes', mrz_bytes)
-        const commitment_js = poseidon4([inputs.secret, mrz_bytes[0], mrz_bytes[1], mrz_bytes[2]]);
-        //const commitment_js = poseidon.F.toString(commitment_bytes);
+
+    it("should calculate the witness with correct inputs", async function () {
+        const w = await circuit.calculateWitness(inputs);
+        await circuit.checkConstraints(w);
+
+        console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);
+        
+        const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
+
+        const mrz_bytes = packBytes(inputs.mrz);
+        const commitment_bytes = poseidon6([
+            inputs.secret[0],
+            attestation_id,
+            getLeaf({
+                signatureAlgorithm: passportData.signatureAlgorithm,
+                modulus: passportData.pubKey.modulus,
+                exponent: passportData.pubKey.exponent
+            }),
+            mrz_bytes[0],
+            mrz_bytes[1],
+            mrz_bytes[2]
+        ]);
+        const commitment_js = commitment_bytes.toString();
         console.log('commitment_js', commitment_js)
         console.log('commitment_circom', commitment_circom)
         expect(commitment_circom).to.be.equal(commitment_js);
@@ -112,8 +122,6 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     });
 
 });
-
-
 
 function packBytes(unpacked) {
     const bytesCount = [31, 31, 31];
