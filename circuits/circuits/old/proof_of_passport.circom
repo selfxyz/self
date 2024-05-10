@@ -3,8 +3,8 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier.circom";
-include "./merkle_tree/tree.circom";
-include "./isOlderThan.circom";
+include "../utils/tree.circom";
+include "../utils/isOlderThan.circom";
 
 template ProofOfPassport(n, k, max_datahashes_bytes, nLevels, pubkeySize) {
     signal input mrz[93]; // formatted mrz (5 + 88) chars

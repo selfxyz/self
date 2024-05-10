@@ -1,11 +1,10 @@
-pragma circom  2.1.6;
+pragma circom 2.1.6;
 
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "./dateIsLess.circom";
 
 template IsValid() {
-
     signal input currDate[6];
     signal input validityDateASCII[6];
     
@@ -21,7 +20,6 @@ template IsValid() {
 
     signal currDateYear <== currDate[0] * TEN + currDate[1];
     signal validityYear <== validityDateNum[0] * TEN + validityDateNum[1];
-
 
     component is_valid = DateIsLess();
     is_valid.secondYear  <== validityDateNum[0] * TEN + validityDateNum[1];

@@ -11,7 +11,9 @@ import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 
-export function generateCircuitInputs_Register(
+export function generateCircuitInputsRegister(
+  secret: string,
+  attestation_id: string,
   passportData: PassportData,
   options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
@@ -44,8 +46,6 @@ export function generateCircuitInputs_Register(
 
   // console.log('passportData.pubKey.exponent', passportData.pubKey.exponent);
 
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-
   const leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,
     ...passportData.pubKey,
@@ -72,8 +72,11 @@ export function generateCircuitInputs_Register(
     MAX_DATAHASHES_LEN
   );
 
+  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
+
   return {
-    secret: [BigInt(0).toString()],
+    secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
@@ -83,7 +86,6 @@ export function generateCircuitInputs_Register(
       BigInt(64),
       BigInt(32)
     ),
-    signature_algorithm: [SignatureAlgorithm[sigAlgFormatted].toString()],
     pubkey: splitToWords(
       BigInt(passportData.pubKey.modulus as string),
       BigInt(64),
@@ -92,6 +94,7 @@ export function generateCircuitInputs_Register(
     merkle_root: [tree.root.toString()],
     path: proof.pathIndices.map(index => index.toString()),
     siblings: proof.siblings.flat().map(index => index.toString()),
+    attestation_id: [attestation_id],
   };
 }
 

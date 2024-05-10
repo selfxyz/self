@@ -1,16 +1,14 @@
-pragma circom  2.1.6;
+pragma circom 2.1.6;
 
 include "../node_modules/circomlib/circuits/comparators.circom";
 include "../node_modules/circomlib/circuits/bitify.circom";
 include "./dateIsLess.circom";
 
 template IsOlderThan() {
-
     signal input majorityASCII[2];
     signal input currDate[6];
     signal input birthDateASCII[6];
     
-
     signal birthdateNum[6];
     signal ASCII_rotation <== 48;
     
@@ -26,7 +24,6 @@ template IsOlderThan() {
 
     signal majorityNum;
     majorityNum <== ( majorityASCII[0] - 48 ) * TEN + ( majorityASCII[1] - 48 );
-
 
     component isPrevCentury = LessThan(8);
 

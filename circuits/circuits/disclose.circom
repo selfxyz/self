@@ -2,10 +2,9 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
-include "./merkle_tree/tree.circom";
-include "./isOlderThan.circom";
-include "./isValid.circom";
-include "binary-merkle-root.circom";
+include "./utils/isOlderThan.circom";
+include "./utils/isValid.circom";
+include "./utils/binary-merkle-root.circom";
 
 template Disclose(nLevels) {
     signal input secret;

@@ -1,8 +1,8 @@
 pragma circom 2.1.5;
 
+// Converts data into chunk_size chunks of 192 bits, assuming original n, k are 64 and 32.
+// This is because Poseidon circuit only supports an array of 16 elements.
 template ChunkData(n, k, chunk_size) {
-    // Converting signature (modulus) into chunk_size chunks of 192 bits, assuming original n, k are 64 and 32.
-    // This is because Poseidon circuit only supports an array of 16 elements.
     signal input data[k];
     signal output outputs[chunk_size];
     for(var i = 0; i < chunk_size; i++) {
