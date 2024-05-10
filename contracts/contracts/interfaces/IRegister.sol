@@ -36,8 +36,8 @@ interface IRegister {
     struct RegisterProof {
         uint commitment;
         uint nullifier;
-        uint signature_algorithm;
         uint merkle_root;
+        uint signature_algorithm;
         uint[2] a;
         uint[2][2] b;
         uint[2] c;

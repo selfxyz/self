@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import {Groth16Verifier} from "./Verifier_disclose.sol";
+import {Verifier_disclose} from "./Verifier_disclose.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {Formatter} from "./Formatter.sol";
 import {Registry} from "./Registry.sol";
@@ -15,7 +15,7 @@ contract SBT is ERC721Enumerable, Ownable {
     using Strings for uint256;
     using Base64 for *;
 
-    Groth16Verifier public immutable verifier;
+    Verifier_disclose public immutable verifier;
     Formatter public formatter;
     IRegister public register;
 
@@ -51,7 +51,7 @@ contract SBT is ERC721Enumerable, Ownable {
     mapping(uint256 => Attributes) private tokenAttributes;
 
     constructor(
-        Groth16Verifier v,
+        Verifier_disclose v,
         Formatter f,
         IRegister r
     ) ERC721("ProofOfPassport", "ProofOfPassport") {
