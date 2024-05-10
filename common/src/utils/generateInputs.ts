@@ -126,7 +126,7 @@ export function generateCircuitInputsDisclose(
   ]).toString();
   console.log("commitment", commitment);
 
-  const index = merkletree.indexOf(commitment);
+  const index = merkletree.indexOf(BigInt(commitment));
   console.log(`Index of commitment in the tree: ${index}`);
   if (index === -1) {
     throw new Error("This commitment was not found in the tree");
@@ -139,12 +139,10 @@ export function generateCircuitInputsDisclose(
     attestation_id: attestation_id,
     pubkey_leaf: pubkey_leaf.toString(),
     mrz: formattedMrz.map(byte => String(byte)),
-
     merkle_root: [merkletree.root.toString()],
     merkletree_size: BigInt(proof.pathIndices.length).toString(),
     path: proof.pathIndices.map(index => index.toString()),
     siblings: proof.siblings.flat().map(index => index.toString()),
-
     bitmap: bitmap,
     scope: scope,
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),

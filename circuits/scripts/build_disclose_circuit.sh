@@ -40,7 +40,9 @@ echo $RAND_STR | yarn snarkjs zkey contribute build/disclose.zkey build/disclose
 yarn snarkjs zkey export verificationkey build/disclose_final.zkey build/disclose_vkey.json
 
 yarn snarkjs zkey export solidityVerifier build/disclose_final.zkey build/Verifier_disclose.sol
+sed -i '' 's/Groth16Verifier/Verifier_disclose/g' build/Verifier_disclose.sol
 cp build/Verifier_disclose.sol ../contracts/contracts/Verifier_disclose.sol
+
 echo "copied Verifier_disclose.sol to contracts"
 
 # Install arkzkey-util binary in ark-zkey

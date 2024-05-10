@@ -62,6 +62,7 @@ contract Register is IRegister {
         uint256 index = getMerkleTreeSize();
         uint256 imt_root = imt._insert(commitment);
         merkleRootsCreated[imt_root] = true;
+        require(indexOf(commitment) == index, "Register__CommitmentNotInIMT");
         emit AddCommitment(index, commitment, imt_root);
 
     }
