@@ -68,5 +68,4 @@ yarn-error.log
 
 .expo/
 
-libuniffi_mopro.so
 ios/ProofOfPassport/Assets.xcassets/proof_of_passport.zkey.dataset/proof_of_passport.zkey

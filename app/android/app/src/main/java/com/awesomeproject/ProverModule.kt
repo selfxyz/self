@@ -9,7 +9,6 @@ import android.util.Log
 import android.content.Context
 import java.io.ByteArrayOutputStream
 import com.facebook.react.bridge.ReadableMap
-import uniffi.mopro.GenerateProofResult
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -53,7 +52,7 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     val gson = GsonBuilder().setPrettyPrinting().create()
     Log.e(TAG, gson.toJson(formattedInputs))
 
-    // working example
+    // (used to be) working example
     // val inputs = mutableMapOf<String, List<String>>(
     //   "mrz" to listOf("97","91","95","31","88","80","60","70","82","65","84","65","86","69","82","78","73","69","82","60","60","70","76","79","82","69","78","84","60","72","85","71","85","69","83","60","74","69","65","78","60","60","60","60","60","60","60","60","60","49","57","72","65","51","52","56","50","56","52","70","82","65","48","48","48","55","49","57","49","77","50","57","49","50","48","57","53","60","60","60","60","60","60","60","60","60","60","60","60","60","60","48","50"),
     //   "reveal_bitmap" to listOf("0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"),
@@ -69,32 +68,10 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     //   "address" to listOf("642829559307850963015472508762062935916233390536")
     // )
 
-    // data class InputsPassport(
-    //     val `in`: List<Int>,
-    //     val currDateYear: Int,
-    //     val currDateMonth: Int,
-    //     val currDateDay: Int,
-    //     val credValidYear: Int,
-    //     val credValidMonth: Int,
-    //     val credValidDay: Int,
-    //     val ageLowerbound: Int
-    // )
-
-    // val formattedInputs = InputsPassport(
-    //   `in` = (dg1!!).toBitArray().toCharArray().map { it1 -> it1.digitToInt() },
-    //   currDateDay = current.dayOfMonth,
-    //   credValidDay = nextDate.dayOfMonth,
-    //   credValidMonth = nextDate.month.value,
-    //   credValidYear = nextDate.year.toString().takeLast(2).toInt(),
-    //   currDateMonth = current.month.value,
-    //   currDateYear = current.year.toString().takeLast(2).toInt(),
-    //   ageLowerbound = 18
-    // )
 
     val jsonInputs = gson.toJson(formattedInputs).toByteArray()
-    val zkpTools = ZKPTools(reactApplicationContext) // <== same thing here
+    val zkpTools = ZKPTools(reactApplicationContext)
     
-    // reactContext or context???
     val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
       R.raw.proof_of_passport_dat, // datID as Int
       jsonInputs,
@@ -104,28 +81,6 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     Log.e("ZKP", gson.toJson(zkp))
 
     promise.resolve(zkp.toString())
-
-
-    // val convertedInputs = mutableMapOf<String, List<String>>()
-
-    // for ((key, value) in inputs.toHashMap()) {
-    //     val parsedArray = inputs.getArray(key)?.toArrayList()?.map { item ->
-    //         item.toString()
-    //     } ?: emptyList()
-    //     convertedInputs[key] = parsedArray
-    // }
-
-    // Log.e(TAG, "convertedInputs: $convertedInputs")
-
-    // val startTime = System.currentTimeMillis()
-    // res = uniffi.mopro.generateProof2(convertedInputs)
-    // val endTime = System.currentTimeMillis()
-    // val provingTime = "proving time: " + (endTime - startTime).toString() + " ms"
-    // Log.e(TAG, provingTime)
-      
-    // Log.e(TAG, "res: " + res.toString())
-
-    // promise.resolve(res.toString())
   }
 }
 
