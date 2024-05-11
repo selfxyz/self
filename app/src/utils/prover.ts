@@ -1,7 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 import { revealBitmapFromMapping } from '../../../common/src/utils/revealBitmap';
 import { generateCircuitInputs } from '../../../common/src/utils/generateInputs';
-import { formatProof, formatInputs } from '../../../common/src/utils/utils';
 import { Steps } from './utils';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import Toast from 'react-native-toast-message';
