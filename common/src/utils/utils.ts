@@ -5,14 +5,10 @@ import {sha1} from 'js-sha1';
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
 
-  // console.log('mrzCharcodes:', mrzCharcodes);
-
   mrzCharcodes.unshift(88); // the length of the mrz data
   mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
   mrzCharcodes.unshift(91); // the new length of the whole array
   mrzCharcodes.unshift(97); // the tag for DG1
-
-  // console.log('mrzCharcodes with tags:', mrzCharcodes);
 
   return mrzCharcodes;
 }
@@ -23,9 +19,6 @@ export function parsePubKeyString(pubKeyString: string) {
 
   const modulus = modulusMatch ? modulusMatch[1] : null;
   const exponent = publicExponentMatch ? publicExponentMatch[1] : null;
-
-  // console.log('Modulus:', modulus);
-  // console.log('Public Exponent:', exponent);
 
   if (!modulus || !exponent) {
     throw new Error('Could not parse public key string');
@@ -195,7 +188,6 @@ export function bigIntToChunkedBytes(num: BigInt | bigint, bytesPerChunk: number
   return res;
 }
 
-
 export function hexStringToSignedIntArray(hexString: string) {
   let result = [];
   for (let i = 0; i < hexString.length; i += 2) {
@@ -205,51 +197,9 @@ export function hexStringToSignedIntArray(hexString: string) {
   return result;
 };
 
-function bytesToBigInt(bytes: number[]) {
-  let hex = bytes.reverse().map(byte => byte.toString(16).padStart(2, '0')).join('');
-  // console.log('hex', hex)
-  return BigInt(`0x${hex}`).toString();
-}
-
-function splitInto(arr: number[], size: number) {
-  const res = [];
-  for (let i = 0; i < arr.length; i += size) {
-    res.push(arr.slice(i, i + size));
-  }
-  return res;
-}
-
 export function formatRoot(root: string): string {
   let rootHex = BigInt(root).toString(16);
   return rootHex.length % 2 === 0 ? "0x" + rootHex : "0x0" + rootHex;
-}
-
-function setFirstBitOfLastByteToZero(bytes: number[]) {
-  bytes[bytes.length - 1] &= 0x7F; // AND with 01111111 to set the first bit of the last byte to 0
-  return bytes;
-}
-
-// from reverse engineering ark-serialize.
-export function formatProof(proof: number[]) {
-  const splittedProof = splitInto(proof, 32);
-  splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
-  splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
-  splittedProof[7] = setFirstBitOfLastByteToZero(splittedProof[7]);
-  const proooof = splittedProof.map(bytesToBigInt);
-
-  return {
-    "a": [proooof[0], proooof[1]],
-    "b": [
-      [proooof[2], proooof[3]],
-      [proooof[4], proooof[5]]
-    ],
-    "c": [proooof[6], proooof[7]]
-  }
-}
-
-export function formatInputs(inputs: number[]) {
-  const splitted = splitInto(inputs.slice(8), 32);
-  return splitted.map(bytesToBigInt);
 }
 
 export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
