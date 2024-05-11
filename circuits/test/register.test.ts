@@ -18,7 +18,11 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     before(async () => {
         circuit = await wasm_tester(
             path.join(__dirname, "../circuits/register_sha256WithRSAEncryption_65537.circom"),
-            { include: ["node_modules"] },
+            { include: [
+                "node_modules",
+                "./node_modules/@zk-kit/binary-merkle-root.circom/src",
+                "./node_modules/circomlib/circuits"
+            ] },
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();

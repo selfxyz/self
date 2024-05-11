@@ -21,7 +21,11 @@ describe("start testing register.circom", function () {
 
     before(async () => {
         circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose.circom"),
-            { include: ["node_modules"] },
+            { include: [
+                "node_modules",
+                "./node_modules/@zk-kit/binary-merkle-root.circom/src",
+                "./node_modules/circomlib/circuits"
+            ] },
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
@@ -53,7 +57,7 @@ describe("start testing register.circom", function () {
             mrz_bytes[0],
             mrz_bytes[1],
             mrz_bytes[2]
-        ]).toString();
+        ])
         console.log("commitment", commitment);
 
         tree = new IMT(poseidon2, COMMITMENT_TREE_DEPTH, 0, 2);
