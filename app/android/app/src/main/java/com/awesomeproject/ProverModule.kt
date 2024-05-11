@@ -46,6 +46,8 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
       "siblings" to inputs.getArray("siblings")?.toArrayList()?.map { it.toString() },
       "root" to inputs.getArray("root")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
       "address" to inputs.getArray("address")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
+      "current_date" to inputs.getArray("current_date")?.toArrayList()?.map { it.toString() },
+      "majority" to inputs.getArray("majority")?.toArrayList()?.map { it.toString() },
     )
 
     val gson = GsonBuilder().setPrettyPrinting().create()
@@ -94,7 +96,6 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     
     // reactContext or context???
     val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
-      R.raw.proof_of_passport_zkey, //zkeyID as Int
       R.raw.proof_of_passport_dat, // datID as Int
       jsonInputs,
       zkpTools::witnesscalc_proof_of_passport
@@ -138,6 +139,7 @@ data class Proof(
 ) {
     companion object {
         fun fromJson(jsonString: String): Proof {
+            Log.d("Proof", jsonString)
             val json = Gson().fromJson(jsonString, Proof::class.java)
             json.curve = getDefaultCurve()
             return json
@@ -163,9 +165,15 @@ class ZKPTools(val context: Context) {
     wtnsSize: LongArray,
     errorMsg: ByteArray,
     errorMsgMaxSize: Long): Int
-  external fun CalcPublicBufferSize(zkeyBuffer: ByteArray, zkeySize: Long): Long
   external fun groth16_prover(
       zkeyBuffer: ByteArray, zkeySize: Long,
+      wtnsBuffer: ByteArray, wtnsSize: Long,
+      proofBuffer: ByteArray, proofSize: LongArray,
+      publicBuffer: ByteArray, publicSize: LongArray,
+      errorMsg: ByteArray, errorMsgMaxSize: Long
+  ): Int
+  external fun groth16_prover_zkey_file(
+      zkeyPath: String,
       wtnsBuffer: ByteArray, wtnsSize: Long,
       proofBuffer: ByteArray, proofSize: LongArray,
       publicBuffer: ByteArray, publicSize: LongArray,
@@ -174,8 +182,7 @@ class ZKPTools(val context: Context) {
 
   init {
       System.loadLibrary("rapidsnark");
-      System.loadLibrary("witnesscalc_proof_of_passport") // moonshot to avoid CMakeLists.txt and proofofpassport.cpp
-    //   System.loadLibrary("proofofpassport")
+      System.loadLibrary("proofofpassport")
   }
 
   fun openRawResourceAsByteArray(resourceName: Int): ByteArray {
@@ -201,7 +208,7 @@ class ZKPTools(val context: Context) {
 class ZKPUseCase(val context: Context) {
 
     fun generateZKP(
-        zkpId: Int, datFile: Int, inputs: ByteArray, proofFunction: (
+        datFile: Int, inputs: ByteArray, proofFunction: (
             circuitBuffer: ByteArray,
             circuitSize: Long,
             jsonBuffer: ByteArray,
@@ -213,7 +220,6 @@ class ZKPUseCase(val context: Context) {
         ) -> Int
     ): ZkProof {
         val zkpTool = ZKPTools(context)
-        val zkp = zkpTool.openRawResourceAsByteArray(zkpId)
         val datFile = zkpTool.openRawResourceAsByteArray(datFile)
 
         val msg = ByteArray(256)
@@ -246,62 +252,55 @@ class ZKPUseCase(val context: Context) {
             throw Exception("Error during zkp ${msg.decodeToString()}")
         }
 
-        // val pubData = ByteArray(4 *1024 *1024)
+        val pubData = ByteArray(4 *1024 *1024)
+        val pubLen = LongArray(1)
+        pubLen[0] = pubData.size.toLong()
 
+        val proofData = ByteArray(4*1024*1024)
+        val proofLen = LongArray(1)
+        proofLen[0] = proofData.size.toLong()
 
-        // val pubLen = LongArray(1)
-        // pubLen[0] = pubData.size.toLong()
+        val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
 
-        // val proofData = ByteArray(4*1024*1024)
-        // val proofLen = LongArray(1)
-        // proofLen[0] = proofData.size.toLong()
+        val verification = zkpTool.groth16_prover_zkey_file(
+            "/data/user/0/com.proofofpassport/files/proof_of_passport.zkey",
+            witnessData,
+            witnessLen[0],
+            proofData,
+            proofLen,
+            pubData,
+            pubLen,
+            msg,
+            256
+        )
 
-        // val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
+        if (verification == 2) {
+            throw Exception("Not enough memory for verification ${msg.decodeToString()}")
+        }
 
-        // val verification = zkpTool.groth16_prover(
-        //     zkp,
-        //     zkp.size.toLong(),
-        //     witnessData,
-        //     witnessLen[0],
-        //     proofData,
-        //     proofLen,
-        //     pubData,
-        //     pubLen,
-        //     msg,
-        //     256
-        // )
+        if (verification == 1) {
+            throw Exception("Error during verification ${msg.decodeToString()}")
+        }
 
-        // if (verification == 2) {
-        //     throw Exception("Not enough memory for verification ${msg.decodeToString()}")
-        // }
+        val proofDataZip = proofData.copyOfRange(0, proofLen[0].toInt())
 
-        // if (verification == 1) {
-        //     throw Exception("Error during verification ${msg.decodeToString()}")
-        // }
+        val index = findLastIndexOfSubstring(
+            proofDataZip.toString(Charsets.UTF_8),
+            "\"protocol\":\"groth16\"}"
+        )
+        val indexPubData = findLastIndexOfSubstring(
+            pubData.decodeToString(),
+            "]"
+        )
 
-        // val proofDataZip = proofData.copyOfRange(0, proofLen[0].toInt())
+        val formatedPubData = pubData.decodeToString().slice(0..indexPubData)
 
-        // val index = findLastIndexOfSubstring(
-        //     proofDataZip.toString(Charsets.UTF_8),
-        //     "\"protocol\":\"groth16\"}"
-        // )
-        // val indexPubData = findLastIndexOfSubstring(
-        //     pubData.decodeToString(),
-        //     "]"
-        // )
+        val foramtedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
+        val proof = Proof.fromJson(foramtedProof)
 
-        // val formatedPubData = pubData.decodeToString().slice(0..indexPubData)
-
-        // val foramtedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
-        // val proof = Proof.fromJson(foramtedProof)
-
-        // return ZkProof(
-        //     proof = proof,
-        //     pub_signals = getPubSignals(formatedPubData).toList()
-        // )
         return ZkProof(
-            proof = Proof.fromJson(""),
-            pub_signals = emptyList()
+            proof = proof,
+            pub_signals = getPubSignals(formatedPubData).toList()
         )
     }
 
