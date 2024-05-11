@@ -23,7 +23,7 @@ fi
 cd ..
 
 echo "compiling circuit"
-circom circuits/register_sha256WithRSAEncryption_65537.circom -l node_modules --r1cs --O1 --wasm -c --output build
+circom circuits/register_sha256WithRSAEncryption_65537.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
 
 echo "building zkey"
 yarn snarkjs groth16 setup build/register_sha256WithRSAEncryption_65537.r1cs build/powersOfTau28_hez_final_20.ptau build/register_sha256WithRSAEncryption_65537.zkey
