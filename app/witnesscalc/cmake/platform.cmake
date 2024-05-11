@@ -62,7 +62,7 @@ else()
 
 endif()
 
-if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin" AND NOT TARGET_PLATFORM MATCHES "^android(_x86_64)?")
     set(GMP_DEFINIONS -D_LONG_LONG_LIMB)
 endif()
 
