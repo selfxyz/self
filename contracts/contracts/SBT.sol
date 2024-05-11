@@ -8,8 +8,8 @@ import {Verifier_disclose} from "./Verifier_disclose.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {Formatter} from "./Formatter.sol";
 import {Registry} from "./Registry.sol";
-import "hardhat/console.sol";
 import {IRegister} from "./interfaces/IRegister.sol";
+import "hardhat/console.sol";
 
 contract SBT is ERC721Enumerable, Ownable {
     using Strings for uint256;
@@ -19,21 +19,21 @@ contract SBT is ERC721Enumerable, Ownable {
     Formatter public formatter;
     IRegister public register;
 
-    uint constant scope = 0;
+    uint constant scope = 5;
 
     mapping(uint256 => bool) public nullifiers;
 
     struct SBTProof {
         uint nullifier;
         uint[3] revealedData_packed;
+        uint attestation_id;
         uint merkle_root;
         uint scope;
-        uint user_identifier;
         uint[6] current_date;
-        uint attestation_id;
-        uint256[2] a;
-        uint256[2][2] b;
-        uint256[2] c;
+        uint user_identifier;
+        uint[2] a;
+        uint[2][2] b;
+        uint[2] c;
     }
 
     struct AttributePosition {
@@ -76,42 +76,64 @@ contract SBT is ERC721Enumerable, Ownable {
         attributePositions.push(AttributePosition("older_than", 88, 89, 7));
     }
 
-    function mint(
-        SBTProof calldata proof
-    ) public {
-        require(verifier.verifyProof(proof.a, proof.b, proof.c, [proof.nullifier, proof.revealedData_packed[0], proof.revealedData_packed[1], proof.revealedData_packed[2], proof.merkle_root, proof.scope, proof.user_identifier, proof.current_date[0], proof.current_date[1], proof.current_date[2], proof.current_date[3], proof.current_date[4], proof.current_date[5], proof.attestation_id]), "Invalid Proof");
-
-        // check that the nullifier has not been used before
-        // require(!nullifiers[inputs[3]], "Signature already nullified");
-
-        // require(registry.checkRoot(bytes32(proof.merkle_root)), "Invalid merkle root");
-        require(register.checkRoot(proof.merkle_root), "Invalid merkle root");
+    function mint(SBTProof calldata proof) public {
+        require(
+            register.checkRoot(uint(proof.merkle_root)),
+            "Invalid merkle root"
+        );
         require(!nullifiers[proof.nullifier], "Signature already nullified");
-        nullifiers[proof.nullifier] = true;
 
         // require that the current date is valid
         // Convert the last four parameters into a valid timestamp, adding 30 years to adjust for block.timestamp starting in 1970
         uint[6] memory dateNum;
         for (uint i = 0; i < 6; i++) {
-            dateNum[i] = proof.revealedData_packed[6 + i];
+            dateNum[i] = proof.current_date[i];
         }
         uint currentTimestamp = getCurrentTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
         require(
-            currentTimestamp >= block.timestamp - 1 days  && currentTimestamp <= block.timestamp + 1 days,
+            currentTimestamp >= block.timestamp - 1 days &&
+                currentTimestamp <= block.timestamp + 1 days,
             "Current date is not within the valid range"
         );
 
+        require(
+            verifier.verifyProof(
+                proof.a,
+                proof.b,
+                proof.c,
+                [
+                    uint(proof.nullifier),
+                    uint(proof.revealedData_packed[0]),
+                    uint(proof.revealedData_packed[1]),
+                    uint(proof.revealedData_packed[2]),
+                    uint(proof.attestation_id),
+                    uint(proof.merkle_root),
+                    uint(proof.scope),
+                    uint(proof.current_date[0]),
+                    uint(proof.current_date[1]),
+                    uint(proof.current_date[2]),
+                    uint(proof.current_date[3]),
+                    uint(proof.current_date[4]),
+                    uint(proof.current_date[5]),
+                    uint(proof.user_identifier)
+                ]
+            ),
+            "Invalid Proof"
+        );
+
+        nullifiers[proof.nullifier] = true;
 
         // Effects: Mint token
         address addr = address(uint160(proof.user_identifier));
         uint256 newTokenId = totalSupply();
         _mint(addr, newTokenId);
-        nullifiers[proof.nullifier] = true;
 
         // Set attributes
-        bytes memory charcodes = fieldElementsToBytes(proof.revealedData_packed);
+        bytes memory charcodes = fieldElementsToBytes(
+            proof.revealedData_packed
+        );
         // console.logBytes1(charcodes[21]);
 
         Attributes storage attributes = tokenAttributes[newTokenId];
@@ -126,7 +148,7 @@ contract SBT is ERC721Enumerable, Ownable {
             }
             string memory attributeValue = string(attributeBytes);
             attributes.values[i] = attributeValue;
-            console.log(attribute.name, attributes.values[i]);
+            // console.log(attribute.name, attributes.values[i]);
         }
     }
 
@@ -177,9 +199,7 @@ contract SBT is ERC721Enumerable, Ownable {
         if (isAttributeEmpty(date)) {
             return false; // this is disregarded anyway in the next steps
         }
-        uint256 expiryDate = formatter.dateToUnixTimestamp(
-            date
-        );
+        uint256 expiryDate = formatter.dateToUnixTimestamp(date);
 
         return block.timestamp > expiryDate;
     }
@@ -228,16 +248,22 @@ contract SBT is ERC721Enumerable, Ownable {
         return tokenAttributes[_tokenId].values[7];
     }
 
-    function getCurrentTimestamp(uint256[6] memory dateNum) public view returns (uint256) {
+    function getCurrentTimestamp(
+        uint256[6] memory dateNum
+    ) public view returns (uint256) {
         string memory date = "";
         for (uint i = 0; i < 6; i++) {
-            date = string(abi.encodePacked(date, bytes1(uint8(48 + dateNum[i] % 10))));
+            date = string(
+                abi.encodePacked(date, bytes1(uint8(48 + (dateNum[i] % 10))))
+            );
         }
         uint256 currentTimestamp = formatter.dateToUnixTimestamp(date);
         return currentTimestamp;
     }
 
-    function isAttributeEmpty(string memory attribute) private pure returns (bool) {
+    function isAttributeEmpty(
+        string memory attribute
+    ) private pure returns (bool) {
         for (uint i = 0; i < bytes(attribute).length; i++) {
             if (bytes(attribute)[i] != 0) {
                 return false;
@@ -246,22 +272,41 @@ contract SBT is ERC721Enumerable, Ownable {
         return true;
     }
 
-    function appendAttribute(bytes memory baseURI, string memory traitType, string memory value) private view returns (bytes memory) {
+    function appendAttribute(
+        bytes memory baseURI,
+        string memory traitType,
+        string memory value
+    ) private view returns (bytes memory) {
         if (!isAttributeEmpty(value)) {
-            baseURI = abi.encodePacked(baseURI,
-                '{"trait_type": "', traitType, '", "value": "', formatAttribute(traitType, value), '"},');
+            baseURI = abi.encodePacked(
+                baseURI,
+                '{"trait_type": "',
+                traitType,
+                '", "value": "',
+                formatAttribute(traitType, value),
+                '"},'
+            );
         }
         return baseURI;
     }
 
-    function formatAttribute(string memory traitType, string memory value) private view returns (string memory) {
-        if (isStringEqual(traitType, "Issuing State") || isStringEqual(traitType, "Nationality")) {
+    function formatAttribute(
+        string memory traitType,
+        string memory value
+    ) private view returns (string memory) {
+        if (
+            isStringEqual(traitType, "Issuing State") ||
+            isStringEqual(traitType, "Nationality")
+        ) {
             return formatter.formatCountryName(value);
         } else if (isStringEqual(traitType, "First Name")) {
             return formatter.formatName(value)[0];
         } else if (isStringEqual(traitType, "Last Name")) {
             return formatter.formatName(value)[1];
-        } else if (isStringEqual(traitType, "Date of birth") || isStringEqual(traitType, "Expiry date")) {
+        } else if (
+            isStringEqual(traitType, "Date of birth") ||
+            isStringEqual(traitType, "Expiry date")
+        ) {
             return formatter.formatDate(value);
         } else if (isStringEqual(traitType, "Older Than")) {
             return formatter.formatAge(value);
@@ -272,20 +317,29 @@ contract SBT is ERC721Enumerable, Ownable {
         }
     }
 
-    function isStringEqual(string memory a, string memory b) public pure returns (bool) {
+    function isStringEqual(
+        string memory a,
+        string memory b
+    ) public pure returns (bool) {
         return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
     }
 
-    function substring(bytes memory str, uint startIndex, uint endIndex) public pure returns (bytes memory) {
+    function substring(
+        bytes memory str,
+        uint startIndex,
+        uint endIndex
+    ) public pure returns (bytes memory) {
         bytes memory strBytes = bytes(str);
-        bytes memory result = new bytes(endIndex-startIndex);
-        for(uint i = startIndex; i < endIndex; i++) {
-            result[i-startIndex] = strBytes[i];
+        bytes memory result = new bytes(endIndex - startIndex);
+        for (uint i = startIndex; i < endIndex; i++) {
+            result[i - startIndex] = strBytes[i];
         }
         return result;
     }
 
-    function tokenURI(uint256 _tokenId) public view override virtual returns (string memory) {
+    function tokenURI(
+        uint256 _tokenId
+    ) public view virtual override returns (string memory) {
         require(
             _exists(_tokenId),
             "ERC721Metadata: URI query for nonexistent token"
@@ -294,19 +348,34 @@ contract SBT is ERC721Enumerable, Ownable {
 
         bytes memory baseURI = abi.encodePacked('{ "attributes": [');
 
-        baseURI = appendAttribute(baseURI, "Issuing State", attributes.values[0]);
+        baseURI = appendAttribute(
+            baseURI,
+            "Issuing State",
+            attributes.values[0]
+        );
         baseURI = appendAttribute(baseURI, "First Name", attributes.values[1]);
         baseURI = appendAttribute(baseURI, "Last Name", attributes.values[1]);
-        baseURI = appendAttribute(baseURI, "Passport Number", attributes.values[2]);
+        baseURI = appendAttribute(
+            baseURI,
+            "Passport Number",
+            attributes.values[2]
+        );
         baseURI = appendAttribute(baseURI, "Nationality", attributes.values[3]);
-        baseURI = appendAttribute(baseURI, "Date of birth", attributes.values[4]);
+        baseURI = appendAttribute(
+            baseURI,
+            "Date of birth",
+            attributes.values[4]
+        );
         baseURI = appendAttribute(baseURI, "Gender", attributes.values[5]);
         baseURI = appendAttribute(baseURI, "Expiry date", attributes.values[6]);
         baseURI = appendAttribute(baseURI, "Expired", attributes.values[6]);
         baseURI = appendAttribute(baseURI, "Older Than", attributes.values[7]);
 
         // Remove the trailing comma if baseURI has one
-        if (keccak256(abi.encodePacked(baseURI[baseURI.length - 1])) == keccak256(abi.encodePacked(','))) {
+        if (
+            keccak256(abi.encodePacked(baseURI[baseURI.length - 1])) ==
+            keccak256(abi.encodePacked(","))
+        ) {
             baseURI = substring(baseURI, 0, bytes(baseURI).length - 1);
         }
 
@@ -317,8 +386,12 @@ contract SBT is ERC721Enumerable, Ownable {
             '"}'
         );
 
-        console.log(string(baseURI));
-
-        return string(abi.encodePacked("data:application/json;base64,", baseURI.encode()));
+        return
+            string(
+                abi.encodePacked(
+                    "data:application/json;base64,",
+                    baseURI.encode()
+                )
+            );
     }
 }

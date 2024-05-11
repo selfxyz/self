@@ -61,7 +61,7 @@ describe("start testing register.circom", function () {
         console.log("commitment", commitment);
 
         tree = new IMT(poseidon2, COMMITMENT_TREE_DEPTH, 0, 2);
-        tree.insert(commitment);
+        tree.insert(BigInt(commitment));
 
         inputs = generateCircuitInputsDisclose(
             secret,
@@ -71,7 +71,8 @@ describe("start testing register.circom", function () {
             majority,
             bitmap,
             scope,
-            user_identifier
+            user_identifier,
+            16
         );
 
         console.log(JSON.stringify(inputs, null, 2));
@@ -95,7 +96,7 @@ describe("start testing register.circom", function () {
         try {
             const invalidInputs = {
                 ...inputs,
-                current_date: ["4","4","0","5","1","0"] // 2044
+                current_date: ["4", "4", "0", "5", "1", "0"] // 2044
             }
             await circuit.calculateWitness(invalidInputs);
             expect.fail("Expected an error but none was thrown.");
@@ -174,7 +175,7 @@ describe("start testing register.circom", function () {
             ...inputs,
             bitmap: bitmap.map(String),
         });
-        
+
         const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
 
         const reveal_unpacked = unpackReveal(revealedData_packed);
@@ -194,7 +195,7 @@ describe("start testing register.circom", function () {
             majority: ["5", "0"].map(char => BigInt(char.charCodeAt(0)).toString()),
             bitmap: bitmap.map(String),
         });
-        
+
         const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
 
         const reveal_unpacked = unpackReveal(revealedData_packed);

@@ -10,21 +10,19 @@ interface IRegister {
     error Register__YouAreUsingTheSameNullifierTwice();
     /// @notice Error thrown when the proof provided is invalid
     error Register__InvalidProof();
+    /// @notice Error thrown when the signature algorithm provided is invalid
+    error Register__InvalidSignatureAlgorithm();
+    /// @notice Error thrown when the verifier address is invalid
+    error Register__InvalidVerifierAddress();
+    /// @notice Error thrown when the signature algorithm is already set
+    error Register__SignatureAlgorithmAlreadySet();
 
     /// @notice Event emitted when a proof is successfully validated
     /// @param merkle_root The Merkle root used in the proof
     /// @param nullifier The nullifier used in the proof
     /// @param commitment The commitment used in the proof
-    event ProofValidated(
-        uint merkle_root,
-        uint nullifier,
-        uint commitment
-    );
-    event AddCommitment(
-        uint index,
-        uint commitment,
-        uint merkle_root
-    );
+    event ProofValidated(uint merkle_root, uint nullifier, uint commitment);
+    event AddCommitment(uint index, uint commitment, uint merkle_root);
 
     /// @notice Struct to hold data for Register proofs
     /// @param merkle_root The Merkle root used in the proof
@@ -50,8 +48,9 @@ interface IRegister {
     /// @notice Verifies a Register proof
     /// @param proof The Register proof to verify
     /// @return bool Returns true if the proof is valid, false otherwise
-    function verifyProof(RegisterProof calldata proof) external view returns (bool);
-
+    function verifyProof(
+        RegisterProof calldata proof
+    ) external view returns (bool);
 
     /// @notice Checks if a given root is valid
     /// @param root The root to check
@@ -61,6 +60,10 @@ interface IRegister {
     /// @notice Gets the size of the Merkle tree
     /// @return uint Returns the size of the Merkle tree
     function getMerkleTreeSize() external view returns (uint);
+
+    /// @notice Retrieves the current Merkle root of the tree
+    /// @return uint256 Returns the current Merkle root
+    function getMerkleRoot() external view returns (uint);
 
     /// @notice Finds the index of a given commitment in the Merkle tree
     /// @param commitment The commitment to find
