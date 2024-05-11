@@ -7,17 +7,6 @@
 using namespace std;
 
 extern "C"
-JNIEXPORT jlong JNICALL
-Java_com_proofofpassport_prover_ZKPTools_CalcPublicBufferSize(JNIEnv *env, jobject thiz,
-                                                         jbyteArray zkey_buffer, jlong zkey_size) {
-    const void *zkeyBuffer = env->GetByteArrayElements(zkey_buffer, nullptr);
-    jlong result = CalcPublicBufferSize(zkeyBuffer, static_cast<unsigned long>(zkey_size));
-    env->ReleaseByteArrayElements(zkey_buffer,
-                                  reinterpret_cast<jbyte *>(const_cast<void *>(zkeyBuffer)), 0);
-    return result;
-}
-
-extern "C"
 JNIEXPORT jint JNICALL
 Java_com_proofofpassport_prover_ZKPTools_groth16_1prover(JNIEnv *env, jobject thiz,
                                                     jbyteArray zkey_buffer, jlong zkey_size,
@@ -92,4 +81,56 @@ Java_com_proofofpassport_prover_ZKPTools_witnesscalc_1proof_1of_1passport(JNIEnv
     env->ReleaseByteArrayElements(error_msg, reinterpret_cast<jbyte *>(errorMsg), 0);
 
     return result;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL Java_com_proofofpassport_prover_ZKPTools_groth16_1prover_1zkey_1file(
+        JNIEnv *env, jobject obj,
+        jstring zkeyPath,
+        jbyteArray wtnsBuffer, jlong wtnsSize,
+        jbyteArray proofBuffer, jlongArray proofSize,
+        jbyteArray publicBuffer, jlongArray publicSize,
+        jbyteArray errorMsg, jlong errorMsgMaxSize
+) {
+    // Convert jbyteArray to native types
+    const char *nativeZkeyPath = env->GetStringUTFChars(zkeyPath, nullptr);
+
+    void *nativeWtnsBuffer = env->GetByteArrayElements(wtnsBuffer, nullptr);
+
+    char *nativeProofBuffer = (char *) env->GetByteArrayElements(proofBuffer, nullptr);
+    char *nativePublicBuffer = (char *) env->GetByteArrayElements(publicBuffer, nullptr);
+    char *nativeErrorMsg = (char *) env->GetByteArrayElements(errorMsg, nullptr);
+
+    jlong *nativeProofSizeArr = env->GetLongArrayElements(proofSize, 0);
+    jlong *nativePublicSizeArr = env->GetLongArrayElements(publicSize, 0);
+
+    unsigned long nativeProofSize = nativeProofSizeArr[0];
+    unsigned long nativePublicSize = nativePublicSizeArr[0];
+
+    // Call the groth16_prover function`
+    int status_code = groth16_prover_zkey_file(
+            nativeZkeyPath,
+            nativeWtnsBuffer, wtnsSize,
+            nativeProofBuffer, &nativeProofSize,
+            nativePublicBuffer, &nativePublicSize,
+            nativeErrorMsg, errorMsgMaxSize
+    );
+
+    // Convert the results back to JNI types
+    nativeProofSizeArr[0] = nativeProofSize;
+    nativePublicSizeArr[0] = nativePublicSize;
+
+    env->SetLongArrayRegion(proofSize, 0, 1, (jlong *) nativeProofSizeArr);
+    env->SetLongArrayRegion(publicSize, 0, 1, (jlong *) nativePublicSizeArr);
+
+    // Release the native buffers
+    env->ReleaseByteArrayElements(wtnsBuffer, (jbyte *) nativeWtnsBuffer, 0);
+    env->ReleaseByteArrayElements(proofBuffer, (jbyte *) nativeProofBuffer, 0);
+    env->ReleaseByteArrayElements(publicBuffer, (jbyte *) nativePublicBuffer, 0);
+    env->ReleaseByteArrayElements(errorMsg, (jbyte *) nativeErrorMsg, 0);
+
+    env->ReleaseLongArrayElements(proofSize, (jlong *) nativeProofSizeArr, 0);
+    env->ReleaseLongArrayElements(publicSize, (jlong *) nativePublicSizeArr, 0);
+
+    return status_code;
 }

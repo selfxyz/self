@@ -3,12 +3,6 @@ cmake_minimum_required(VERSION 3.22.1)
 
 project("proofofpassport")
 
-set(JDK_DIR "/Library/Java/JavaVirtualMachines/zulu-11.jdk/Contents/Home")
-
-# Include the JDK header files
-include_directories(${JDK_DIR}/include)
-include_directories(${JDK_DIR}/include/darwin)
-
 include_directories(include)
 
 link_directories(lib)
@@ -25,4 +19,3 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
 
 target_link_libraries(${CMAKE_PROJECT_NAME}
         rapidsnark proof_of_passport)
-        # android log fq fr gmp rapidsnark proof_of_passport rapidsnark-fr-fq)
