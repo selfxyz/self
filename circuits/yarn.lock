@@ -516,6 +516,13 @@
     commander "^11.0.0"
     snarkjs "^0.7.0"
 
+"@zk-kit/binary-merkle-root.circom@^1.0.0-beta":
+  version "1.0.0-beta"
+  resolved "https://registry.yarnpkg.com/@zk-kit/binary-merkle-root.circom/-/binary-merkle-root.circom-1.0.0-beta.tgz#1124840ff3d0af8c28ad4d9ee5004d41f6768978"
+  integrity sha512-yj8bPpYWNjmk3DLIv9zyIyZ0WxTWKuYs1BxEDOCNKBmk6Gw4FtTcAsppXAF4gkqkvU29hhG/naaOuz0SGQSCFg==
+  dependencies:
+    circomlib "^2.0.5"
+
 "@zk-kit/circuits@^1.0.0-beta":
   version "1.0.0-beta"
   resolved "https://registry.yarnpkg.com/@zk-kit/circuits/-/circuits-1.0.0-beta.tgz#4f41315839855762dac11b2ba2ce5e58fd8ad1e9"

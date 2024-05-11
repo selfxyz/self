@@ -5,7 +5,7 @@ include "@zk-email/circuits/helpers/extract.circom";
 include "./passport_verifier_sha256WithRSAEncryption_65537.circom";
 include "./utils/chunk_data.circom";
 include "./utils/compute_pubkey_leaf.circom";
-include "./utils/binary-merkle-root.circom";
+include "binary-merkle-root.circom";
 
 template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
