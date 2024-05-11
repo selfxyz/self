@@ -106,7 +106,8 @@ export function generateCircuitInputsDisclose(
   majority: string[],
   bitmap: string[],
   scope: string,
-  user_identifier: string
+  user_identifier: string,
+  nLevels: number
 ) {
   const pubkey_leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,
@@ -124,15 +125,23 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[1],
     mrz_bytes[2]
   ]).toString();
-  console.log("commitment", commitment);
+  // console.log("commitment", commitment);
 
   const index = merkletree.indexOf(BigInt(commitment));
-  console.log(`Index of commitment in the tree: ${index}`);
+  // console.log(`Index of commitment in the tree: ${index}`);
   if (index === -1) {
     throw new Error("This commitment was not found in the tree");
   }
   const proof = merkletree.createProof(index);
-  console.log("verifyProof", merkletree.verifyProof(proof));
+  // console.log("verifyProof", merkletree.verifyProof(proof));
+  const real_path = proof.pathIndices.map(index => index.toString());
+  while (real_path.length < nLevels) {
+    real_path.push("0");
+  }
+  const real_siblings = proof.siblings.flat().map(index => index.toString());
+  while (real_siblings.length < nLevels) {
+    real_siblings.push("0");
+  }
 
   return {
     secret: secret,
@@ -141,8 +150,8 @@ export function generateCircuitInputsDisclose(
     mrz: formattedMrz.map(byte => String(byte)),
     merkle_root: [merkletree.root.toString()],
     merkletree_size: BigInt(proof.pathIndices.length).toString(),
-    path: proof.pathIndices.map(index => index.toString()),
-    siblings: proof.siblings.flat().map(index => index.toString()),
+    path: real_path,
+    siblings: real_siblings,
     bitmap: bitmap,
     scope: scope,
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
