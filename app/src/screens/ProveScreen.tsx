@@ -11,6 +11,7 @@ import { DEFAULT_ADDRESS } from '@env';
 import Clipboard from '@react-native-community/clipboard';
 import Toast from 'react-native-toast-message';
 import { ethers } from 'ethers';
+import { Proof } from '../../../common/src/utils/types';
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -24,7 +25,7 @@ interface ProveScreenProps {
   handleMint: () => void;
   step: number;
   mintText: string;
-  proof: { proof: string, inputs: string } | null;
+  proof: Proof | null;
   proofTime: number;
   hideData: boolean;
   ens: string;

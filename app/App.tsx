@@ -8,7 +8,7 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE
 } from '@env';
-import { PassportData } from '../common/src/utils/types';
+import { PassportData, Proof } from '../common/src/utils/types';
 import { samplePassportData } from '../common/src/utils/passportDataStatic';
 import "@ethersproject/shims"
 import { ethers } from "ethers";
@@ -28,6 +28,7 @@ global.Buffer = Buffer;
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
 
 const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
+console.log('localZkeyPath', localZkeyPath);
 
 function App(): JSX.Element {
   const [passportNumber, setPassportNumber] = useState(DEFAULT_PNUMBER ?? "");
@@ -38,7 +39,7 @@ function App(): JSX.Element {
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
-  const [proof, setProof] = useState<{ proof: string, inputs: string } | null>(null);
+  const [proof, setProof] = useState<Proof | null>(null);
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
   const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
