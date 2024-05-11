@@ -3,7 +3,7 @@ import { revealBitmapFromMapping } from '../../../common/src/utils/revealBitmap'
 import { generateCircuitInputs } from '../../../common/src/utils/generateInputs';
 import { formatProof, formatInputs } from '../../../common/src/utils/utils';
 import { Steps } from './utils';
-import { PassportData } from '../../../common/src/utils/types';
+import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as amplitude from '@amplitude/analytics-react-native';
 
 interface ProverProps {
@@ -14,7 +14,7 @@ interface ProverProps {
   setStep: (value: number) => void;
   setGeneratingProof: (value: boolean) => void;
   setProofTime: (value: number) => void;
-  setProof: (value: { proof: string; inputs: string } | null) => void;
+  setProof: (value: Proof | null) => void;
   toast: any
 }
 
@@ -79,7 +79,7 @@ export const prove = async ({
 const generateProof = async (
   inputs: any,
   setProofTime: (value: number) => void,
-  setProof: (value: { proof: string; inputs: string } | null) => void,
+  setProof: (proof: Proof) => void,
   setGeneratingProof: (value: boolean) => void,
   setStep: (value: number) => void,
 ) => {
@@ -97,29 +97,21 @@ const generateProof = async (
 
     if (Platform.OS === 'android') {
       const parsedResponse = parseProofAndroid(response);
-      const finalProof = {
-        proof: JSON.stringify(formatProof(parsedResponse.proof)),
-        inputs: JSON.stringify(formatInputs(parsedResponse.inputs)),
-      };
-      console.log('finalProof:', finalProof);
+      console.log('parsedResponse', parsedResponse);
 
-      setProof(finalProof);
+      setProof(parsedResponse);
       setGeneratingProof(false);
       setStep(Steps.PROOF_GENERATED);
     } else {
       const parsedResponse = JSON.parse(response);
       console.log('parsedResponse', parsedResponse);
-
       console.log('parsedResponse.proof:', parsedResponse.proof);
       console.log('parsedResponse.inputs:', parsedResponse.inputs);
 
-      const finalProof = {
-        proof: JSON.stringify(parsedResponse.proof),
-        inputs: JSON.stringify(parsedResponse.inputs),
-      };
-      console.log('finalProof:', finalProof);
-
-      setProof(finalProof);
+      setProof({
+        proof: parsedResponse.proof,
+        pub_signals: parsedResponse.inputs,
+      });
       setGeneratingProof(false);
       setStep(Steps.PROOF_GENERATED);
     }
@@ -128,12 +120,22 @@ const generateProof = async (
   }
 };
 
-const parseProofAndroid = (response: any) => {
-  const match = response.match(/GenerateProofResult\(proof=\[(.*?)\], inputs=\[(.*?)\]\)/);
+const parseProofAndroid = (response: string) => {
+  const match = response.match(/ZkProof\(proof=Proof\(pi_a=\[(.*?)\], pi_b=\[\[(.*?)\], \[(.*?)\], \[1, 0\]\], pi_c=\[(.*?)\], protocol=groth16, curve=bn128\), pub_signals=\[(.*?)\]\)/);
+
   if (!match) throw new Error('Invalid input format');
 
+  const [, pi_a, pi_b_1, pi_b_2, pi_c, pub_signals] = match;
+
   return {
-    proof: match[1].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256),
-    inputs: match[2].split(',').map((n: any) => (parseInt(n.trim()) + 256) % 256)
-  };
+    proof: {
+      a: pi_a.split(',').map((n: string) => n.trim()),
+      b: [
+        pi_b_1.split(',').map((n: string) => n.trim()),
+        pi_b_2.split(',').map((n: string) => n.trim()),
+      ],
+      c: pi_c.split(',').map((n: string) => n.trim()),
+    },
+    pub_signals: pub_signals.split(',').map((n: string) => n.trim())
+  } as Proof;
 };

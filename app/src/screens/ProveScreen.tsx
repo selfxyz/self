@@ -12,6 +12,7 @@ import { useToastController } from '@tamagui/toast'
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
 import { formatAttribute } from '../utils/utils';
+import { Proof } from '../../../common/src/utils/types';
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -25,7 +26,7 @@ interface ProveScreenProps {
   handleMint: () => void;
   step: number;
   mintText: string;
-  proof: { proof: string, inputs: string } | null;
+  proof: Proof | null;
   proofTime: number;
   hideData: boolean;
   ens: string;

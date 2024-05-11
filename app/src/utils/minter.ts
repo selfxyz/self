@@ -5,9 +5,10 @@ import contractAddresses from "../../deployments/addresses.json";
 import proofOfPassportArtefact from "../../deployments/ProofOfPassport.json";
 import { Steps } from './utils';
 import { AWS_ENDPOINT } from '../../../common/src/constants/constants';
+import { Proof } from "../../../common/src/utils/types";
 
 interface MinterProps {
-  proof: { proof: string; inputs: string } | null;
+  proof: Proof | null;
   setStep: (value: number) => void;
   setMintText: (value: string) => void;
   toast: any
@@ -15,7 +16,7 @@ interface MinterProps {
 
 export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) => {
   setStep(Steps.TX_MINTING);
-  if (!proof?.proof || !proof?.inputs) {
+  if (!proof?.proof || !proof?.pub_signals) {
     console.log('proof or inputs is null');
     return;
   }
@@ -25,11 +26,8 @@ export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) 
   }
 
   // Format the proof and publicInputs as calldata for the verifier contract
-  const p = JSON.parse(proof.proof);
-  const i = JSON.parse(proof.inputs);
-  console.log('p', p);
-  console.log('i', i);
-  const cd = groth16ExportSolidityCallData(p, i);
+  console.log('proof', proof);
+  const cd = groth16ExportSolidityCallData(proof.proof, proof.pub_signals);
   const callData = JSON.parse(`[${cd}]`);
   console.log('callData', callData);
 

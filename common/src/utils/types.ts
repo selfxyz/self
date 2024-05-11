@@ -7,3 +7,12 @@ export type PassportData = {
   encryptedDigest: number[];
   photoBase64: string;
 };
+
+export type Proof = {
+  proof: {
+    a: [string, string],
+    b: [[string, string], [string, string]],
+    c: [string, string]
+  };
+  pub_signals: string[];
+}
