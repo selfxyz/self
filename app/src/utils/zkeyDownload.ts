@@ -57,10 +57,13 @@ export async function downloadZkey(
         toast
       );
     } else {
+      const response = await axios.head(zkeyZipUrls[circuit]);
+      const expectedSize = parseInt(response.headers['content-length'], 10);
+
       setShowWarningModal({
         show: true,
         circuit: circuit,
-        size: 0,
+        size: expectedSize,
       });
     }
 }
