@@ -14,7 +14,7 @@ interface ProverProps {
   setStep: (value: number) => void;
   setGeneratingProof: (value: boolean) => void;
   setProofTime: (value: number) => void;
-  setProof: (value: Proof | null) => void;
+  setProof: (proof: Proof) => void;
   toast: any
 }
 
