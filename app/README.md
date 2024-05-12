@@ -56,9 +56,9 @@ If you want to modify the circuits, you'll have to adapt a few things.
 
 First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
 
-Then, upload the zkey and the arkzkey built at a publicly available url and replace the two urls in `common/src/constants/constants.ts`. Be sure they have the name you put as ZKEY_NAME before you zip them, because they will need to unzip to theses name.
+Then, upload the zipped zkeys built at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`. Be sure the zkey is named `<circuit_name>.zkey` before you zip it, and the zip is then named `<circuit_name>.zkey.zip`.
 
-Adapt the inputs you pass in `app/src/utils/prover.ts` and if you want to mint SBTs, adapt and redeploy the contracts.
+Adapt the inputs you pass in `app/src/utils/prover.ts`, and adapt and redeploy the contracts.
 
 ### Android
 
@@ -66,17 +66,6 @@ Build the android native module:
 ```
 ./scripts/build_android_module.sh
 ```
-
-You might need to set the rust-toolchain rust version as global default. Example:
-```
-rustup default 1.67.0
-```
-
-For macOS users you might also need to set-up the path to sdk:
-in `/app/android` create `local.properties`
-
-Add the following line:
-`sdk.dir=/Users/<user>/Library/Android/sdk` or any relevant path to your sdk
 
 ### iOS
 
