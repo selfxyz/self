@@ -215,7 +215,10 @@ class ZKPUseCase(val context: Context) {
 
         Log.e("ZKPUseCase", "Witness gen res: $res")
         Log.e("ZKPUseCase", "Witness gen return length: ${byteArr.size}")
-        Log.e("ZKPUseCase", "witnessLen: $witnessLen")
+
+        if (res == 3) {
+            throw Exception("Error 3")
+        }
 
         if (res == 2) {
             throw Exception("Not enough memory for zkp")
@@ -235,6 +238,8 @@ class ZKPUseCase(val context: Context) {
 
         val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
 
+        Log.e("ZKPUseCase", "zkey_path: $zkey_path")
+
         val verification = zkpTool.groth16_prover_zkey_file(
             zkey_path,
             witnessData,
@@ -246,6 +251,8 @@ class ZKPUseCase(val context: Context) {
             msg,
             256
         )
+
+        Log.e("ZKPUseCase", "Verification res: $verification")
 
         if (verification == 2) {
             throw Exception("Not enough memory for verification ${msg.decodeToString()}")
@@ -266,14 +273,19 @@ class ZKPUseCase(val context: Context) {
             "]"
         )
 
-        val formatedPubData = pubData.decodeToString().slice(0..indexPubData)
+        val formattedPubData = pubData.decodeToString().slice(0..indexPubData)
 
-        val foramtedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
-        val proof = Proof.fromJson(foramtedProof)
+        val formattedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
+
+        Log.e("ZKPUseCase", "formattedProof: $formattedProof")
+
+        val proof = Proof.fromJson(formattedProof)
+
+        Log.e("ZKPUseCase", "Proof: $proof")
 
         return ZkProof(
             proof = proof,
-            pub_signals = getPubSignals(formatedPubData).toList()
+            pub_signals = getPubSignals(formattedPubData).toList()
         )
     }
 
