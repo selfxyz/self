@@ -45,7 +45,7 @@ export const prove = async ({
       passportData,
       reveal_bitmap,
       address,
-      { developmentMode: true }
+      { developmentMode: false }
     );
 
     Object.keys(inputs).forEach((key) => {

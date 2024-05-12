@@ -34,7 +34,7 @@ struct Proof: Codable {
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
-    @objc(runProveAction:resolve:reject:)
+    @objc(runProveAction:witness_calculator:dat_file_name:inputs:resolve:reject:)
     func runProveAction(_ zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         do {
             let inputsJson = try! JSONEncoder().encode(inputs)
@@ -74,7 +74,7 @@ class Prover: NSObject {
 
 public func calcWtns(witness_calculator: String, dat_file_name: String, inputsJson: Data) throws -> Data {
     let dat = NSDataAsset(name: dat_file_name + ".dat")!.data
-    return try _calcWtns(dat: dat, jsonData: inputsJson)
+    return try _calcWtns(witness_calculator: witness_calculator, dat: dat, jsonData: inputsJson)
 }
 
 private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) throws -> Data {
@@ -89,14 +89,18 @@ private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) th
     let wtnsBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: (100 * 1024 * 1024))
     let errorBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(errorSize))
     
-    let witnessFunction = selectWitnessFunction(named: witness_calculator)
-
-    let result = witnessFunction(
-        (dat as NSData).bytes, datSize,
-        (jsonData as NSData).bytes, jsonDataSize,
-        wtnsBuffer, wtnsSize,
-        errorBuffer, errorSize
-    )
+    let result: Int32
+    
+    if witness_calculator == "proof_of_passport" {
+        result = witnesscalc_proof_of_passport(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } else {
+        fatalError("Invalid witness calculator name")
+    }
     
     if result == WITNESSCALC_ERROR {
         let errorMessage = String(bytes: Data(bytes: errorBuffer, count: Int(errorSize)), encoding: .utf8)!
@@ -111,22 +115,13 @@ private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) th
     return Data(bytes: wtnsBuffer, count: Int(wtnsSize.pointee))
 }
 
-private func selectWitnessFunction(named witness_calculator: String) -> (UnsafeRawPointer?, UInt, UnsafeRawPointer?, UInt, UnsafeMutablePointer<UInt8>?, UnsafeMutablePointer<UInt>?, UnsafeMutablePointer<UInt8>?, UInt) -> Int32 {
-    switch witness_calculator {
-    case "proof_of_passport":
-        return witnesscalc_proof_of_passport
-    // case "another_calculator":
-    //     return witnesscalc_another_calculator
-    default:
-        fatalError("Invalid witness calculator name")
-    }
-}
-
 public func groth16prove(zkey_path: String, wtns: Data) throws -> (proof: Data, publicInputs: Data) {
-    // let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    // let zkeyURL = documentsPath.appendingPathComponent("proof_of_passport.zkey")
-    
-    guard let zkeyData = try? Data(contentsOf: zkey_path) else {
+    guard let zkeyURL = URL(string: "file://" + zkey_path) else {
+        throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid zkey file path."])
+    }
+    print("zkeyURL: \(zkeyURL)")
+
+    guard let zkeyData = try? Data(contentsOf: zkeyURL) else {
         throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to load zkey file."])
     }
     
