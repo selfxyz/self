@@ -1,4 +1,7 @@
 // Function to extract information from a two-line MRZ.
+
+import { countryCodes } from "../../../common/src/constants/constants";
+
 // The actual parsing would depend on the standard being used (TD1, TD2, TD3, MRVA, MRVB).
 export function extractMRZInfo(mrzString: string) {
   const mrzLines = mrzString.split('\n');
@@ -34,9 +37,21 @@ export const Steps = {
   MRZ_SCAN_COMPLETED: 2,
   NFC_SCANNING: 3,
   NFC_SCAN_COMPLETED: 4,
-  GENERATING_PROOF: 5,
-  PROOF_GENERATED: 6,
-  TX_MINTING: 7,
-  TX_MINTED: 8
+  APP_SELECTED: 5,
+  GENERATING_PROOF: 6,
+  PROOF_GENERATED: 7,
+  TX_MINTING: 8,
+  TX_MINTED: 9
 };
 
+export function formatAttribute(key: string, attribute: string) {
+  if (key === 'expiry_date') {
+    const year = '20' + attribute.substring(0, 2); // Assuming all expiry dates are in the 2000s
+    const month = attribute.substring(2, 4);
+    const day = attribute.substring(4, 6);
+    return `${year}-${month}-${day}`; // ISO 8601 format (YYYY-MM-DD)
+  } else if (key === 'nationality' && attribute in countryCodes) {
+    return countryCodes[attribute as keyof typeof countryCodes]
+  }
+  return attribute;
+}

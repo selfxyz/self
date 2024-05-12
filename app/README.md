@@ -1,14 +1,14 @@
 # Proof of Passport App
 
-### Requirements
+## Requirements
 
 Install `nodejs v18`, [circom](https://docs.circom.io/) and [snarkjs](https://github.com/iden3/snarkjs)
 
-For android, install java, android studio and the android sdk
+For Android, install Java, Android Studio and the Android SDK
 
-For ios, install Xcode and [cocoapods](https://cocoapods.org/)
+For iOS, install Xcode and [cocoapods](https://cocoapods.org/)
 
-### Installation
+## Installation
 
 ```bash
 yarn
@@ -19,13 +19,50 @@ In `/common`, also run:
 yarn
 ```
 
-### Build the app
+## Run the app
 
-Go to the `circuit` folder of the monorepo and build the circuit.
+Let's run the app with the currently deployed zkey to mint the Proof of Passport SBT.
 
-#### Build the android native module
+First, connect your phone to your computer and allow access.
 
-Run:
+### Android
+
+Launch the react-native server:
+```
+yarn start
+```
+
+Press `a` to open the app on Android.
+
+To see the Android logs you'll have to use the Android Studio Logcat.
+
+### iOS
+
+To run the app on iOS, you will need an Apple Developer account. Free accounts can't run apps that use NFC reading.
+
+Open the ios project on Xcode and add your provisionning profile in Targets > ProofOfPassport > Signing and Capabilities
+
+Then, install pods:
+```
+cd ios
+pod install
+```
+
+And run the app in Xcode.
+
+## Modify the circuits
+
+If you want to modify the circuits, you'll have to adapt a few things.
+
+First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
+
+Then, upload the zkey and the arkzkey built at a publicly available url and replace the two urls in `common/src/constants/constants.ts`. Be sure they have the name you put as ZKEY_NAME before you zip them, because they will need to unzip to theses name.
+
+Adapt the inputs you pass in `app/src/utils/prover.ts` and if you want to mint SBTs, adapt and redeploy the contracts.
+
+### Android
+
+Build the android native module:
 ```
 ./scripts/build_android_module.sh
 ```
@@ -36,66 +73,52 @@ rustup default 1.67.0
 ```
 
 For macOS users you might also need to set-up the path to sdk:
-in /app/android create local.properties
+in `/app/android` create `local.properties`
 
 Add the following line:
-sdk.dir=/Users/<user>/Library/Android/sdk or any relevant path to your sdk
+`sdk.dir=/Users/<user>/Library/Android/sdk` or any relevant path to your sdk
 
-#### Build the iOS native module
+### iOS
 
-To run the app on iOS, you will need an Apple Developer account. Free accounts can't run apps that have NFC reading.
-
-Run:
+Find your [development team id](https://chat.openai.com/share/9d52c37f-d9da-4a62-acb9-9e4ee8179f95) and run:
 ```
 export DEVELOPMENT_TEAM="<your-development-team-id>"
 ./scripts/build_ios_module.sh
 ```
 
-#### Run the server
+## Export a new release
 
-To run the server, first connect your phone to your computer, allow access, then:
-```
-yarn start
-```
-Then press `a` for android or `i` for iOS
+### Android
 
-If you want to see the logs and have a better ios developer experience, open `/ios` in Xcode and launch the app from there instead.
+#### Export as apk
 
-> :warning: Due to the current limitations of mopro, see [#51](https://github.com/zk-passport/proof-of-passport/issues/51), the proving on iOS only works when the app is run on Xcode. It will not work with the react native server or in a .ipa build. We are working on fixing that.
-
-To see the android logs you'll have to use the Android Studio Logcat.
-
-To export an apk:
 ```
 cd android
 ./gradlew assembleRelease
 ```
 The built apk it located at `android/app/build/outputs/apk/release/app-release.apk`
 
-#### Download zkey
-If you want to mint a proof of passport SBT, instead of building the circuit yourself, run:
-```
-./scripts/download_current_zkey.sh
-```
-
-This will download the zkey currently deployed onchain in the proof of passport contract and place it in `circuits/build``
-Then, build the android or iOS native module and run the app.
-
-#### Releases
-
-##### Play Store
+#### Publish on the Play Store
 As explained [here](https://reactnative.dev/docs/signed-apk-android), first setup `android/app/my-upload-key.keystore` and the private vars in `~/.gradle/gradle.properties`, then run:
 ```
 npx react-native build-android --mode=release
 ```
 This builds `android/app/build/outputs/bundle/release/app-release.aab`.
+
 Then to test the release on an android phone, delete the previous version of the app and run:
 ```
 yarn android --mode release
 ```
 
+Don't forget to bump `versionCode` in `android/app/build.gradle`.
 
-### FAQ
+### iOS
+
+In Xcode, go to `Product>Archive` then follow the flow.
+
+Don't forget to bump the build number.
+
+## FAQ
 
 If you get something like this:
 ```

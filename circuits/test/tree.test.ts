@@ -5,7 +5,7 @@ import { groth16 } from 'snarkjs'
 import fs from 'fs'
 import { IMT } from "@zk-kit/imt"
 import { poseidon12, poseidon2 } from "poseidon-lite"
-import { genSampleData } from '../../common/src/utils/passportData'
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData'
 import { bigIntToChunkedBytes, formatSigAlg } from '../../common/src/utils/utils'
 import { getLeaf } from '../../common/src/utils/pubkeyTree'
 import { TREE_DEPTH } from '../../common/src/constants/constants'
@@ -33,7 +33,7 @@ describe('Merkle tree tests', function () {
   this.timeout(0)
 
   let tree: IMT;
-  const passportData = genSampleData();
+  const passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
   this.beforeAll(async () => {
     // log niche exponents

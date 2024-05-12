@@ -3,27 +3,31 @@ import { revealBitmapFromMapping } from '../../../common/src/utils/revealBitmap'
 import { generateCircuitInputs } from '../../../common/src/utils/generateInputs';
 import { Steps } from './utils';
 import { PassportData, Proof } from '../../../common/src/utils/types';
-import Toast from 'react-native-toast-message';
+import * as amplitude from '@amplitude/analytics-react-native';
 import RNFS from 'react-native-fs';
 
 interface ProverProps {
   passportData: PassportData | null;
   disclosure: any;
   address: string;
+  majority: number;
   setStep: (value: number) => void;
   setGeneratingProof: (value: boolean) => void;
   setProofTime: (value: number) => void;
-  setProof: (proof: Proof) => void;
+  setProof: (value: Proof | null) => void;
+  toast: any
 }
 
 export const prove = async ({
   passportData,
   disclosure,
   address,
+  majority,
   setStep,
   setGeneratingProof,
   setProofTime,
   setProof,
+  toast
 }: ProverProps) => {
   if (passportData === null) {
     console.log('passport data is null');
@@ -35,18 +39,15 @@ export const prove = async ({
 
   const reveal_bitmap = revealBitmapFromMapping(disclosure);
 
-  // if (!["sha256WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
-  //   console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-  //   return;
-  // }
-
   try {
     const inputs = generateCircuitInputs(
       passportData,
       reveal_bitmap,
       address,
+      majority,
       { developmentMode: false }
     );
+    amplitude.track('Sig alg supported: ' + passportData.signatureAlgorithm);
 
     Object.keys(inputs).forEach((key) => {
       if (Array.isArray(inputs[key as keyof typeof inputs])) {
@@ -60,14 +61,18 @@ export const prove = async ({
     await generateProof(inputs, setProofTime, setProof, setGeneratingProof, setStep);
     const end = Date.now();
     console.log('Total proof time from frontend:', end - start);
+    amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
   } catch (error: any) {
     console.error(error);
-    Toast.show({
-      type: 'error',
-      text1: error.message,
-    });
+    toast.show('Error', {
+      message: error.message,
+      customData: {
+        type: "error",
+      },
+    })
     setStep(Steps.NFC_SCAN_COMPLETED);
     setGeneratingProof(false);
+    amplitude.track(error.message);
   }
 };
 

@@ -4,10 +4,10 @@ import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../../utils/utils';
 import { Steps } from './utils';
-import Toast from 'react-native-toast-message';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
+import * as amplitude from '@amplitude/analytics-react-native';
 
 interface NFCScannerProps {
   passportNumber: string;
@@ -15,6 +15,7 @@ interface NFCScannerProps {
   dateOfExpiry: string;
   setPassportData: (data: PassportData) => void;
   setStep: (value: number) => void;
+  toast: any;
 }
 
 export const scan = async ({
@@ -23,13 +24,16 @@ export const scan = async ({
   dateOfExpiry,
   setPassportData,
   setStep,
+  toast
 }: NFCScannerProps) => {
   const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
   if (!check.success) {
-    Toast.show({
-      type: 'error',
-      text1: check.message,
-    });
+    toast.show("Unvailable", {
+      message: check.message,
+      customData: {
+        type: "info",
+      },
+    })
     return;
   }
 
@@ -37,9 +41,9 @@ export const scan = async ({
   setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
-    scanAndroid(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep);
+    scanAndroid(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
   } else {
-    scanIOS(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep);
+    scanIOS(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
   }
 };
 
@@ -49,22 +53,28 @@ const scanAndroid = async (
   dateOfExpiry: string,
   setPassportData: (data: PassportData) => void,
   setStep: (value: number) => void,
+  toast: any
 ) => {
   try {
     const response = await PassportReader.scan({
       documentNumber: passportNumber,
       dateOfBirth: dateOfBirth,
-      dateOfExpiry: dateOfExpiry,
+      dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
+    amplitude.track('NFC scan successful');
     handleResponseAndroid(response, setPassportData, setStep);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    Toast.show({
-      type: 'error',
-      text1: e.message,
-    });
+    amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
+    toast.show('Error', {
+      message: e.message,
+      customData: {
+        type: "error",
+      },
+    })
+
   }
 };
 
@@ -74,22 +84,29 @@ const scanIOS = async (
   dateOfExpiry: string,
   setPassportData: (data: PassportData) => void,
   setStep: (value: number) => void,
+  toast: any
 ) => {
   try {
     const response = await NativeModules.PassportReader.scanPassport(
       passportNumber,
       dateOfBirth,
-      dateOfExpiry,
+      dateOfExpiry
     );
     console.log('scanned');
     handleResponseIOS(response, setPassportData, setStep);
+    amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    Toast.show({
-      type: 'error',
-      text1: e.message,
-    });
+    amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
+    if (!e.message.includes("UserCanceled")) {
+      toast.show('Failed to read passport', {
+        message: e.message,
+        customData: {
+          type: "error",
+        },
+      })
+    }
   }
 };
 
@@ -129,6 +146,7 @@ const handleResponseIOS = async (
 
   const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
+  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
   const passportData = {
     mrz,
     signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -140,6 +158,7 @@ const handleResponseIOS = async (
     encryptedDigest: encryptedDigestArray,
     photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
   };
+  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);
@@ -148,6 +167,8 @@ const handleResponseIOS = async (
   console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
   console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
   console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
+
+  // console.log('passportData', JSON.stringify(passportData, null, 2));
 
   setPassportData(passportData);
   setStep(Steps.NFC_SCAN_COMPLETED);
@@ -175,6 +196,7 @@ const handleResponseAndroid = async (
     encapContent
   } = response;
 
+  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -188,6 +210,7 @@ const handleResponseAndroid = async (
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
   };
+  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);

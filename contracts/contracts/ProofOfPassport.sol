@@ -158,66 +158,12 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         );
     }
 
-    function tokenURI(
-        uint256 _tokenId
-    ) public view virtual override returns (string memory) {
-        require(
-            _exists(_tokenId),
-            "ERC721Metadata: URI query for nonexistent token"
-        );
-        Attributes memory attributes = tokenAttributes[_tokenId];
-
-        console.log("Issuing state in tokenURI", attributes.values[0]);
-
-        string memory firstName;
-        string memory lastName;
-
-        (firstName, lastName) = formatter.formatName(attributes.values[1]);
-
-        bytes memory baseURI = (
-            abi.encodePacked(
-                '{ "attributes": [',
-                    '{"trait_type": "Issuing State", "value": "',
-                    formatter.formatCountryName(attributes.values[0]),
-                    '"},{"trait_type": "FirstName", "value": "',
-                    firstName,
-                    '"},{"trait_type": "LastName", "value": "',
-                    lastName,
-                    '"},{"trait_type": "Passport Number", "value": "',
-                    attributes.values[2],
-                    '"},{"trait_type": "Nationality", "value": "',
-                    formatter.formatCountryName(attributes.values[3]),
-                    '"},{"trait_type": "Date of birth", "value": "',
-                    formatter.formatDate(attributes.values[4]),
-                    '"},{"trait_type": "Gender", "value": "',
-                    attributes.values[5],
-                    '"},{"trait_type": "Expiry date", "value": "',
-                    formatter.formatDate(attributes.values[6]),
-                    '"},{"trait_type": "Expired", "value": "',
-                    isExpired(_tokenId) ? "Yes" : "No",
-                    '"},{"trait_type": "Older Than", "value": "',
-                    formatter.formatAge(attributes.values[7]),
-                    '"}',
-                "],",
-                '"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://github.com/zk-passport/proof-of-passport","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
-                _tokenId.toString(),
-                '"}'
-            )
-        );
-
-        return
-            string(
-                abi.encodePacked(
-                    "data:application/json;base64,",
-                    baseURI.encode()
-                )
-            );
-    }
-
-    function isExpired(uint256 _tokenId) public view returns (bool) {
-        Attributes memory attributes = tokenAttributes[_tokenId];
+    function isExpired(string memory date) public view returns (bool) {
+        if (isAttributeEmpty(date)) {
+            return false; // this is disregarded anyway in the next steps
+        }
         uint256 expiryDate = formatter.dateToUnixTimestamp(
-            attributes.values[6]
+            date
         );
 
         return block.timestamp > expiryDate;
@@ -276,4 +222,88 @@ contract ProofOfPassport is ERC721Enumerable, Ownable {
         return currentTimestamp;
     }
 
+    function isAttributeEmpty(string memory attribute) private pure returns (bool) {
+        for (uint i = 0; i < bytes(attribute).length; i++) {
+            if (bytes(attribute)[i] != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function appendAttribute(bytes memory baseURI, string memory traitType, string memory value) private view returns (bytes memory) {
+        if (!isAttributeEmpty(value)) {
+            baseURI = abi.encodePacked(baseURI,
+                '{"trait_type": "', traitType, '", "value": "', formatAttribute(traitType, value), '"},');
+        }
+        return baseURI;
+    }
+
+    function formatAttribute(string memory traitType, string memory value) private view returns (string memory) {
+        if (isStringEqual(traitType, "Issuing State") || isStringEqual(traitType, "Nationality")) {
+            return formatter.formatCountryName(value);
+        } else if (isStringEqual(traitType, "First Name")) {
+            return formatter.formatName(value)[0];
+        } else if (isStringEqual(traitType, "Last Name")) {
+            return formatter.formatName(value)[1];
+        } else if (isStringEqual(traitType, "Date of birth") || isStringEqual(traitType, "Expiry date")) {
+            return formatter.formatDate(value);
+        } else if (isStringEqual(traitType, "Older Than")) {
+            return formatter.formatAge(value);
+        } else if (isStringEqual(traitType, "Expired")) {
+            return isExpired(value) ? "Yes" : "No";
+        } else {
+            return value;
+        }
+    }
+
+    function isStringEqual(string memory a, string memory b) public pure returns (bool) {
+        return keccak256(abi.encodePacked(a)) == keccak256(abi.encodePacked(b));
+    }
+
+    function substring(bytes memory str, uint startIndex, uint endIndex) public pure returns (bytes memory) {
+        bytes memory strBytes = bytes(str);
+        bytes memory result = new bytes(endIndex-startIndex);
+        for(uint i = startIndex; i < endIndex; i++) {
+            result[i-startIndex] = strBytes[i];
+        }
+        return result;
+    }
+
+    function tokenURI(uint256 _tokenId) public view override virtual returns (string memory) {
+        require(
+            _exists(_tokenId),
+            "ERC721Metadata: URI query for nonexistent token"
+        );
+        Attributes memory attributes = tokenAttributes[_tokenId];
+
+        bytes memory baseURI = abi.encodePacked('{ "attributes": [');
+
+        baseURI = appendAttribute(baseURI, "Issuing State", attributes.values[0]);
+        baseURI = appendAttribute(baseURI, "First Name", attributes.values[1]);
+        baseURI = appendAttribute(baseURI, "Last Name", attributes.values[1]);
+        baseURI = appendAttribute(baseURI, "Passport Number", attributes.values[2]);
+        baseURI = appendAttribute(baseURI, "Nationality", attributes.values[3]);
+        baseURI = appendAttribute(baseURI, "Date of birth", attributes.values[4]);
+        baseURI = appendAttribute(baseURI, "Gender", attributes.values[5]);
+        baseURI = appendAttribute(baseURI, "Expiry date", attributes.values[6]);
+        baseURI = appendAttribute(baseURI, "Expired", attributes.values[6]);
+        baseURI = appendAttribute(baseURI, "Older Than", attributes.values[7]);
+
+        // Remove the trailing comma if baseURI has one
+        if (keccak256(abi.encodePacked(baseURI[baseURI.length - 1])) == keccak256(abi.encodePacked(','))) {
+            baseURI = substring(baseURI, 0, bytes(baseURI).length - 1);
+        }
+
+        baseURI = abi.encodePacked(
+            baseURI,
+            '],"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://proofofpassport.com","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
+            _tokenId.toString(),
+            '"}'
+        );
+
+        console.log(string(baseURI));
+
+        return string(abi.encodePacked("data:application/json;base64,", baseURI.encode()));
+    }
 }

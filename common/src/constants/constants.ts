@@ -1,6 +1,7 @@
 export const AWS_ENDPOINT = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 
-export const ZKEY_URL = "https://d3kogqxemg7tfk.cloudfront.net/proof_of_passport_final_merkle_and_age.zkey"
+export const ZKEY_NAME = "proof_of_passport_final_v01"
+export const ZKEY_URL = `https://d8o9bercqupgk.cloudfront.net/${ZKEY_NAME}.zkey.zip`
 
 export const TREE_DEPTH = 16
 

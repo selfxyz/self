@@ -1,7 +1,7 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
-import { getPassportData } from "../../common/src/utils/passportData";
+import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { countryCodes } from "../../common/src/constants/constants";
 import { formatRoot, getCurrentDateYYMMDD } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
@@ -30,7 +30,7 @@ describe("Proof of Passport", function () {
     const newBlock = await ethers.provider.getBlock('latest');
     console.log(`New block timestamp set to: ${newBlock?.timestamp}`);
 
-    passportData = getPassportData();
+    passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
     const attributeToReveal = {
       issuing_state: true,
@@ -51,6 +51,7 @@ describe("Proof of Passport", function () {
       passportData,
       reveal_bitmap,
       address,
+      18,
       { developmentMode: true }
     );
 

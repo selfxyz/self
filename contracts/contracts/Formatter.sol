@@ -10,10 +10,11 @@ contract Formatter is Ownable {
         transferOwnership(msg.sender);
     }
 
-    function formatName(string memory input) public pure returns (string memory firstName, string memory lastName) {
+    function formatName(string memory input) public pure returns (string[] memory) {
         bytes memory inputBytes = bytes(input);
         bytes memory firstNameBytes;
         bytes memory lastNameBytes;
+        string[] memory names = new string[](2);
 
         uint i = 0;
         // Extract last name
@@ -38,10 +39,10 @@ contract Formatter is Ownable {
             i++;
         }
 
-        firstName = string(firstNameBytes);
-        lastName = string(lastNameBytes);
+        names[0] = string(firstNameBytes);
+        names[1] = string(lastNameBytes);
+        return names;
     }
-
 	function formatDate(string memory date) public pure returns (string memory) {
 		// Ensure the date string is the correct length
 		require(bytes(date).length == 6, "Invalid date length");

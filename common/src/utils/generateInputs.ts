@@ -1,7 +1,8 @@
 import { MAX_DATAHASHES_LEN, SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
-import { assert, sha256Pad } from "./sha256Pad";
+import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
-import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords, toUnsignedByte, getCurrentDateYYMMDD } from "./utils";
+import { arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords,
+  toUnsignedByte, getCurrentDateYYMMDD, getDigestLengthBytes } from "./utils";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
@@ -11,7 +12,8 @@ export function generateCircuitInputs(
   passportData: PassportData,
   reveal_bitmap: string[],
   address: string,
-  options: {developmentMode?: boolean} = {developmentMode: false}
+  majority: number,
+  options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
   const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2)
   tree.setNodes(serializedTree)
@@ -26,18 +28,23 @@ export function generateCircuitInputs(
     }).toString())
   }
 
-  const formattedMrz = formatMrz(passportData.mrz);
+  if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
+    console.log(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+    throw new Error(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+  }
 
-  const concatenatedDataHashesHashDigest = hash(passportData.dataGroupHashes);
+  const formattedMrz = formatMrz(passportData.mrz);
+  const concatenatedDataHashesHashDigest = hash(passportData.signatureAlgorithm, passportData.dataGroupHashes);
   console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
 
   assert(
-    arraysAreEqual(passportData.eContent.slice(72, 72 + 32), concatenatedDataHashesHashDigest),
+    arraysAreEqual(passportData.eContent.slice(72, 72 + getDigestLengthBytes(passportData.signatureAlgorithm)),
+    concatenatedDataHashesHashDigest),
     'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
   )
 
   console.log('passportData.pubKey.exponent', passportData.pubKey.exponent)
-  
+
   const sigAlgFormatted = formatSigAlg(
     passportData.signatureAlgorithm,
     passportData.pubKey.exponent
@@ -48,7 +55,7 @@ export function generateCircuitInputs(
     ...passportData.pubKey,
   }).toString()
   console.log('leaf', leaf)
-  
+
   const index = tree.indexOf(leaf) // this index is not the index in public_keys_parsed.json, but the index in the tree
   console.log(`Index of pubkey in the registry: ${index}`)
   if (index === -1) {
@@ -63,7 +70,8 @@ export function generateCircuitInputs(
     throw new Error(`This number of datagroups is currently unsupported. Please contact us so we add support!`);
   }
 
-  const [messagePadded, messagePaddedLen] = sha256Pad(
+  const [messagePadded, messagePaddedLen] = shaPad(
+    passportData.signatureAlgorithm,
     new Uint8Array(passportData.dataGroupHashes),
     MAX_DATAHASHES_LEN
   );
@@ -90,7 +98,7 @@ export function generateCircuitInputs(
     siblings: proof.siblings.flat().map(index => index.toString()),
     root: [tree.root.toString()],
     address: [BigInt(address).toString()],
-    majority: [BigInt(49).toString(), BigInt(56).toString()],
+    majority: [BigInt(Math.floor(majority / 10) + 48).toString(), BigInt(majority % 10 + 48).toString()],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
   }
 }

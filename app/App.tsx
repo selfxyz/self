@@ -1,15 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import {
-  DeviceEventEmitter,
-} from 'react-native';
-import Toast from 'react-native-toast-message';
-import {
   DEFAULT_PNUMBER,
   DEFAULT_DOB,
-  DEFAULT_DOE
+  DEFAULT_DOE,
+  AMPLITUDE_KEY
 } from '@env';
 import { PassportData, Proof } from '../common/src/utils/types';
-import { samplePassportData } from '../common/src/utils/passportDataStatic';
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../common/src/utils/mockPassportData';
 import "@ethersproject/shims"
 import { ethers } from "ethers";
 import MainScreen from './src/screens/MainScreen';
@@ -17,12 +14,13 @@ import { Steps } from './src/utils/utils';
 import { startCameraScan } from './src/utils/cameraScanner';
 import { scan } from './src/utils/nfcScanner';
 import { mint } from './src/utils/minter';
-import { toastConfig } from './src/utils/toastConfig';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
+import { useToastController } from '@tamagui/toast';
+import * as amplitude from '@amplitude/analytics-react-native';
+import { checkForZkey } from './src/utils/zkeyDownload';
 import RNFS from 'react-native-fs';
-import { ZKEY_URL } from '../common/src/constants/constants';
 global.Buffer = Buffer;
 
 console.log('DEFAULT_PNUMBER', DEFAULT_PNUMBER);
@@ -35,7 +33,7 @@ function App(): JSX.Element {
   const [dateOfBirth, setDateOfBirth] = useState(DEFAULT_DOB ?? '');
   const [dateOfExpiry, setDateOfExpiry] = useState(DEFAULT_DOE ?? '');
   const [address, setAddress] = useState<string>(ethers.ZeroAddress);
-  const [passportData, setPassportData] = useState<PassportData>(samplePassportData as PassportData);
+  const [passportData, setPassportData] = useState<PassportData>(mockPassportData_sha256WithRSAEncryption_65537 as PassportData);
   const [step, setStep] = useState<number>(Steps.MRZ_SCAN);
   const [generatingProof, setGeneratingProof] = useState<boolean>(false);
   const [proofTime, setProofTime] = useState<number>(0);
@@ -43,6 +41,7 @@ function App(): JSX.Element {
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
   const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
+  const [showWarning, setShowWarning] = useState(false);
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -55,6 +54,8 @@ function App(): JSX.Element {
     older_than: false,
   });
 
+  const toast = useToastController();
+
   const handleDisclosureChange = (field: string) => {
     setDisclosure(
       {
@@ -64,63 +65,13 @@ function App(): JSX.Element {
   };
 
   useEffect(() => {
-    const logEventListener = DeviceEventEmitter.addListener('LOG_EVENT', e => {
-      console.log(e);
-    });
-
-    return () => {
-      logEventListener.remove();
-    };
+    checkForZkey({
+      setDownloadStatus,
+      setShowWarning,
+      toast
+    })
+    amplitude.init(AMPLITUDE_KEY);
   }, []);
-
-  useEffect(() => {
-    downloadZkey()
-  }, []);
-
-  async function downloadZkey() {
-    const fileExists = await RNFS.exists(localZkeyPath);
-    if (!fileExists) {
-      console.log('launching zkey download')
-      setDownloadStatus('downloading');
-
-      let previousPercentComplete = -1;
-
-      const options = {
-        fromUrl: ZKEY_URL,
-        toFile: localZkeyPath,
-        background: true,
-        begin: () => {
-          console.log('Download has begun');
-        },
-        progress: (res: any) => {
-          const percentComplete = Math.floor((res.bytesWritten / res.contentLength) * 100);
-          if (percentComplete !== previousPercentComplete) {
-            console.log(`${percentComplete}%`);
-            previousPercentComplete = percentComplete;
-          }
-        },
-      };
-      
-      RNFS.downloadFile(options).promise
-        .then(() => {
-          setDownloadStatus('completed')
-          console.log('Download complete');
-        })
-        .catch((error) => {
-          console.error(error);
-          setDownloadStatus('error');
-          Toast.show({
-            type: 'error',
-            text1: `Error: ${error.message}`,
-            position: 'top',
-            bottomOffset: 80,
-          })
-        });
-    } else {
-      console.log('zkey already downloaded')
-      setDownloadStatus('completed');
-    }
-  }
 
   const handleStartCameraScan = async () => {
     startCameraScan({
@@ -128,9 +79,9 @@ function App(): JSX.Element {
       setDateOfBirth,
       setDateOfExpiry,
       setStep,
+      toast
     });
   };
-
 
   const handleNFCScan = () => {
     scan({
@@ -139,18 +90,21 @@ function App(): JSX.Element {
       dateOfExpiry,
       setPassportData,
       setStep,
+      toast
     });
   };
 
   const handleProve = () => {
     prove({
       passportData,
+      majority,
       disclosure,
       address,
       setStep,
       setGeneratingProof,
       setProofTime,
       setProof,
+      toast
     });
   };
 
@@ -159,11 +113,12 @@ function App(): JSX.Element {
       proof,
       setStep,
       setMintText,
+      toast
     });
   };
 
   return (
-    <YStack f={1} bg="white" h="100%" w="100%">
+    <YStack f={1} bc="#161616" h="100%" w="100%">
       <YStack h="100%" w="100%">
         <MainScreen
           onStartCameraScan={handleStartCameraScan}
@@ -190,9 +145,11 @@ function App(): JSX.Element {
           majority={majority}
           setMajority={setMajority}
           zkeydownloadStatus={zkeydownloadStatus}
+          showWarning={showWarning}
+          setShowWarning={setShowWarning}
+          setDownloadStatus={setDownloadStatus}
         />
       </YStack>
-      <Toast config={toastConfig} />
     </YStack>
   );
 }
