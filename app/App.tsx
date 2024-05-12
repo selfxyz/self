@@ -19,7 +19,7 @@ import { YStack } from 'tamagui';
 import { prove } from './src/utils/prover';
 import { useToastController } from '@tamagui/toast';
 import * as amplitude from '@amplitude/analytics-react-native';
-import { checkForZkey } from './src/utils/zkeyDownload';
+import { downloadZkey, IsZkeyDownloading, ShowWarningModalProps } from './src/utils/zkeyDownload';
 import RNFS from 'react-native-fs';
 global.Buffer = Buffer;
 
@@ -40,8 +40,16 @@ function App(): JSX.Element {
   const [proof, setProof] = useState<Proof | null>(null);
   const [mintText, setMintText] = useState<string>("");
   const [majority, setMajority] = useState<number>(18);
-  const [zkeydownloadStatus, setDownloadStatus] = useState<"not_started" | "downloading" | "completed" | "error">("not_started");
-  const [showWarning, setShowWarning] = useState(false);
+  const [isZkeyDownloading, setIsZkeyDownloading] = useState<IsZkeyDownloading>({
+    register_sha256WithRSAEncryption_65537: false,
+    disclose: false,
+    proof_of_passport: false,
+  });
+  const [showWarningModal, setShowWarningModal] = useState<ShowWarningModalProps>({
+    show: false,
+    circuit: "",
+    size: 0,
+  });
 
   const [disclosure, setDisclosure] = useState({
     issuing_state: false,
@@ -65,12 +73,16 @@ function App(): JSX.Element {
   };
 
   useEffect(() => {
-    checkForZkey({
-      setDownloadStatus,
-      setShowWarning,
-      toast
-    })
     amplitude.init(AMPLITUDE_KEY);
+    // downloadZkey("register_sha256WithRSAEncryption_65537"); // temporary, might move after nfc scanning
+    // downloadZkey("disclose");
+    downloadZkey(
+      "proof_of_passport",
+      isZkeyDownloading,
+      setIsZkeyDownloading,
+      setShowWarningModal,
+      toast
+    );
   }, []);
 
   const handleStartCameraScan = async () => {
@@ -144,10 +156,10 @@ function App(): JSX.Element {
           setDateOfExpiry={setDateOfExpiry}
           majority={majority}
           setMajority={setMajority}
-          zkeydownloadStatus={zkeydownloadStatus}
-          showWarning={showWarning}
-          setShowWarning={setShowWarning}
-          setDownloadStatus={setDownloadStatus}
+          isZkeyDownloading={isZkeyDownloading}
+          showWarningModal={showWarningModal}
+          setShowWarningModal={setShowWarningModal}
+          setIsZkeyDownloading={setIsZkeyDownloading}
         />
       </YStack>
     </YStack>

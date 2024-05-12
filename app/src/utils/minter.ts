@@ -4,7 +4,7 @@ import groth16ExportSolidityCallData from '../../utils/snarkjs';
 import contractAddresses from "../../deployments/addresses.json";
 import proofOfPassportArtefact from "../../deployments/ProofOfPassport.json";
 import { Steps } from './utils';
-import { AWS_ENDPOINT } from '../../../common/src/constants/constants';
+import { RELAYER_URL } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
 
 interface MinterProps {
@@ -42,7 +42,7 @@ export const mint = async ({ proof, setStep, setMintText, toast }: MinterProps) 
       .mint.populateTransaction(...callData);
     console.log('transactionRequest', transactionRequest);
 
-    const response = await axios.post(AWS_ENDPOINT, {
+    const response = await axios.post(RELAYER_URL, {
       chain: "sepolia",
       tx_data: transactionRequest
     });

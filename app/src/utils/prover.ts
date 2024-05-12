@@ -1,7 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 import { revealBitmapFromMapping } from '../../../common/src/utils/revealBitmap';
 import { generateCircuitInputs } from '../../../common/src/utils/generateInputs';
-import { Steps } from './utils';
+import { parseProofAndroid, Steps } from './utils';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as amplitude from '@amplitude/analytics-react-native';
 import RNFS from 'react-native-fs';
@@ -128,24 +128,4 @@ const generateProof = async (
   } catch (err: any) {
     console.log('err', err);
   }
-};
-
-const parseProofAndroid = (response: string) => {
-  const match = response.match(/ZkProof\(proof=Proof\(pi_a=\[(.*?)\], pi_b=\[\[(.*?)\], \[(.*?)\], \[1, 0\]\], pi_c=\[(.*?)\], protocol=groth16, curve=bn128\), pub_signals=\[(.*?)\]\)/);
-
-  if (!match) throw new Error('Invalid input format');
-
-  const [, pi_a, pi_b_1, pi_b_2, pi_c, pub_signals] = match;
-
-  return {
-    proof: {
-      a: pi_a.split(',').map((n: string) => n.trim()),
-      b: [
-        pi_b_1.split(',').map((n: string) => n.trim()),
-        pi_b_2.split(',').map((n: string) => n.trim()),
-      ],
-      c: pi_c.split(',').map((n: string) => n.trim()),
-    },
-    pub_signals: pub_signals.split(',').map((n: string) => n.trim())
-  } as Proof;
 };
