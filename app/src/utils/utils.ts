@@ -1,6 +1,7 @@
 // Function to extract information from a two-line MRZ.
 
 import { countryCodes } from "../../../common/src/constants/constants";
+import { Proof } from "../../../common/src/utils/types";
 
 // The actual parsing would depend on the standard being used (TD1, TD2, TD3, MRVA, MRVB).
 export function extractMRZInfo(mrzString: string) {
@@ -55,3 +56,23 @@ export function formatAttribute(key: string, attribute: string) {
   }
   return attribute;
 }
+
+export const parseProofAndroid = (response: string) => {
+  const match = response.match(/ZkProof\(proof=Proof\(pi_a=\[(.*?)\], pi_b=\[\[(.*?)\], \[(.*?)\], \[1, 0\]\], pi_c=\[(.*?)\], protocol=groth16, curve=bn128\), pub_signals=\[(.*?)\]\)/);
+
+  if (!match) throw new Error('Invalid input format');
+
+  const [, pi_a, pi_b_1, pi_b_2, pi_c, pub_signals] = match;
+
+  return {
+    proof: {
+      a: pi_a.split(',').map((n: string) => n.trim()),
+      b: [
+        pi_b_1.split(',').map((n: string) => n.trim()),
+        pi_b_2.split(',').map((n: string) => n.trim()),
+      ],
+      c: pi_c.split(',').map((n: string) => n.trim()),
+    },
+    pub_signals: pub_signals.split(',').map((n: string) => n.trim())
+  } as Proof;
+};

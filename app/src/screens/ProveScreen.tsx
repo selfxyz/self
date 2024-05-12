@@ -12,7 +12,7 @@ import { useToastController } from '@tamagui/toast'
 import { ethers } from 'ethers';
 import { Platform } from 'react-native';
 import { formatAttribute } from '../utils/utils';
-import { Proof } from '../../../common/src/utils/types';
+import { downloadZkey, IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
 
 interface ProveScreenProps {
   selectedApp: App | null;
@@ -28,7 +28,9 @@ interface ProveScreenProps {
   setEns: (ens: string) => void;
   majority: number;
   setMajority: (age: number) => void;
-  zkeydownloadStatus: string;
+  isZkeyDownloading: IsZkeyDownloading;
+  setIsZkeyDownloading: (value: IsZkeyDownloading) => void;
+  setShowWarningModal: (value: ShowWarningModalProps) => void;
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({
@@ -45,13 +47,33 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   setEns,
   majority,
   setMajority,
-  zkeydownloadStatus
+  isZkeyDownloading,
+  setIsZkeyDownloading,
+  setShowWarningModal
 }) => {
   const { height } = useWindowDimensions();
   const [inputValue, setInputValue] = useState(DEFAULT_ADDRESS ?? '');
   const provider = new ethers.JsonRpcProvider(`https://eth-mainnet.g.alchemy.com/v2/lpOn3k6Fezetn1e5QF-iEsn-J0C6oGE0`);
   const toast = useToastController()
+  const circuit = "proof_of_passport" //later, pass this as input
 
+  useEffect(() => {
+    launchZkeyDownloadIfRequired();
+
+  }, [])
+
+  async function launchZkeyDownloadIfRequired() {
+    if (!isZkeyDownloading[circuit]) {
+      // this already checks if downloading is required
+      downloadZkey(
+        circuit,
+        isZkeyDownloading,
+        setIsZkeyDownloading,
+        setShowWarningModal,
+        toast
+      );
+    }
+  }
 
   useEffect(() => {
     if (ens != '' && inputValue == '') {
@@ -236,7 +258,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
           </YStack >
         </YStack >
         <Button
-          disabled={zkeydownloadStatus != "completed" || (address == ethers.ZeroAddress)}
+          disabled={isZkeyDownloading[circuit] || (address == ethers.ZeroAddress)}
           borderWidth={1.3}
           borderColor={borderColor}
           borderRadius={100}
@@ -245,18 +267,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
           backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"}
           alignSelf='center'
         >
-          {zkeydownloadStatus === "downloading" ? (
+          {isZkeyDownloading[circuit] ? (
             <XStack ai="center" gap="$1">
               <Spinner />
               <Text color={textColor1} fow="bold">
                 Downloading ZK proving key
-              </Text>
-            </XStack>
-          ) : zkeydownloadStatus === "error" ? (
-            <XStack ai="center" gap="$1">
-              <Spinner />
-              <Text color={textColor1} fow="bold">
-                Error downloading ZK proving key
               </Text>
             </XStack>
           ) : generatingProof ? (
@@ -278,7 +293,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
         </Button>
         {(height > 750) && <Text fontSize={10} color={generatingProof ? "#a0a0a0" : "#161616"} py="$2" alignSelf='center'>This operation can take up to 2 mn, phone may freeze during this time</Text>}
       </YStack >
-
     </YStack >
   );
 };

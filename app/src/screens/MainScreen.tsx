@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Profiler } from 'react';
+import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, ScrollView } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ExternalLink } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
@@ -17,7 +17,7 @@ import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, tex
 import MintScreen from './MintScreen';
 import { ToastViewport, useToastController } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
-import { downloadZkey } from '../utils/zkeyDownload';
+import { CircuitName, fetchZkey, IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
 
 interface MainScreenProps {
   onStartCameraScan: () => void;
@@ -43,10 +43,10 @@ interface MainScreenProps {
   setDateOfExpiry: (date: string) => void;
   majority: number;
   setMajority: (age: number) => void;
-  zkeydownloadStatus: string;
-  showWarning: boolean;
-  setShowWarning: (value: boolean) => void;
-  setDownloadStatus: (value: "not_started" | "downloading" | "completed" | "error") => void;
+  isZkeyDownloading: IsZkeyDownloading;
+  showWarningModal: ShowWarningModalProps;
+  setShowWarningModal: (value: ShowWarningModalProps) => void;
+  setIsZkeyDownloading: (value: IsZkeyDownloading) => void;
 }
 
 const MainScreen: React.FC<MainScreenProps> = ({
@@ -73,10 +73,10 @@ const MainScreen: React.FC<MainScreenProps> = ({
   setDateOfExpiry,
   majority,
   setMajority,
-  zkeydownloadStatus,
-  showWarning,
-  setShowWarning,
-  setDownloadStatus
+  isZkeyDownloading,
+  showWarningModal,
+  setShowWarningModal,
+  setIsZkeyDownloading
 }) => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
@@ -442,7 +442,9 @@ const MainScreen: React.FC<MainScreenProps> = ({
               setEns={setEns}
               majority={majority}
               setMajority={setMajority}
-              zkeydownloadStatus={zkeydownloadStatus}
+              isZkeyDownloading={isZkeyDownloading}
+              setIsZkeyDownloading={setIsZkeyDownloading}
+              setShowWarningModal={setShowWarningModal}
             />
           </Tabs.Content>
           <Tabs.Content value="mint" f={1}>
@@ -457,20 +459,26 @@ const MainScreen: React.FC<MainScreenProps> = ({
           </Tabs.Content>
         </Tabs>
       </YStack>
-      <Modal visible={showWarning} animationType="slide" transparent={true}>
+      <Modal visible={showWarningModal.show} animationType="slide" transparent={true}>
         <YStack bc="#161616" p={20} ai="center" jc="center" position="absolute" top={0} bottom={0} left={0} right={0}>
           <YStack bc="#343434" p={20} borderRadius={10} ai="center" jc="center">
             <Text fontWeight="bold" fontSize={18} color="#a0a0a0">👋 Hi</Text>
             <Text mt={10} textAlign="center" color="#a0a0a0">
-              The app needs to download a large file (300MB). Please make sure you're connected to a Wi-Fi network before continuing.
+              The app needs to download a large file ({(showWarningModal.size / 1024 / 1024).toFixed(2)}MB). Please make sure you're connected to a Wi-Fi network before continuing.
             </Text>
             <XStack mt={20}>
               <Button onPress={() => {
-                downloadZkey(
-                  setDownloadStatus,
+                fetchZkey(
+                  showWarningModal.circuit as CircuitName,
+                  isZkeyDownloading,
+                  setIsZkeyDownloading,
                   toast
                 );
-                setShowWarning(false)
+                setShowWarningModal({
+                  show: false,
+                  circuit: '',
+                  size: 0,
+                })
               }} bc="#4caf50" borderRadius={5} padding={10}>
                 <Text color="#ffffff">Continue</Text>
               </Button>

@@ -280,9 +280,9 @@ describe("Proof of Passport", function () {
 
         console.log('transactionRequest', transactionRequest);
 
-        const apiEndpoint = process.env.AWS_ENDPOINT;
+        const apiEndpoint = process.env.RELAYER_URL;
         if (!apiEndpoint) {
-          throw new Error('AWS_ENDPOINT env variable is not set');
+          throw new Error('RELAYER_URL env variable is not set');
         }
         const response = await axios.post(apiEndpoint, {
           chain: "mumbai",
