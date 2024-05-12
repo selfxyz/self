@@ -21,8 +21,6 @@ yarn
 
 ## Run the app
 
-Let's run the app with the currently deployed zkey to mint the Proof of Passport SBT.
-
 First, connect your phone to your computer and allow access.
 
 ### Android
@@ -60,10 +58,17 @@ Then, upload the zipped zkeys built at publicly available urls and replace the u
 
 Adapt the inputs you pass in `app/src/utils/prover.ts`, and adapt and redeploy the contracts.
 
+Run the common init script:
+```
+./scripts/common.sh
+```
+
 ### Android
 
+Find your android ndk path. It should be something like `/Users/<your-user-name>/Library/Android/sdk/ndk/23.1.7779620`
 Build the android native module:
 ```
+export ANDROID_NDK="<your-android-ndk-path>"
 ./scripts/build_android_module.sh
 ```
 

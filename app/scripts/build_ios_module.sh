@@ -1,8 +1,6 @@
 #!/bin/bash
 
-source common.sh
-
-cd app/witnesscalc
+cd witnesscalc
 ./build_gmp.sh ios
 make ios
 cd build_witnesscalc_ios
