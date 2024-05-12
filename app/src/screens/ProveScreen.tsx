@@ -23,11 +23,6 @@ interface ProveScreenProps {
   setAddress: (address: string) => void;
   generatingProof: boolean;
   handleProve: () => void;
-  handleMint: () => void;
-  step: number;
-  mintText: string;
-  proof: Proof | null;
-  proofTime: number;
   hideData: boolean;
   ens: string;
   setEns: (ens: string) => void;
