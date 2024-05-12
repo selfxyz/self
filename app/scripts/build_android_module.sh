@@ -28,4 +28,4 @@ cd witnesscalc
 make android
 cd ..
 
-cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.dat android/app/src/main/res/raw/proof_of_passport_dat.dat
+cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.dat android/app/src/main/res/raw/proof_of_passport.dat

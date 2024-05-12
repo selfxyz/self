@@ -4,6 +4,7 @@ import { generateCircuitInputs } from '../../../common/src/utils/generateInputs'
 import { Steps } from './utils';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as amplitude from '@amplitude/analytics-react-native';
+import RNFS from 'react-native-fs';
 
 interface ProverProps {
   passportData: PassportData | null;
@@ -86,8 +87,18 @@ const generateProof = async (
     console.log('launching generateProof function');
     console.log('inputs in App.tsx', inputs);
 
+    const zkey_path = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey'
+    // "/data/user/0/com.proofofpassport/files/proof_of_passport.zkey" on android
+    const witness_calculator = "proof_of_passport"
+    const dat_file_name = "proof_of_passport"
+
     const startTime = Date.now();
-    const response = await NativeModules.Prover.runProveAction(inputs);
+    const response = await NativeModules.Prover.runProveAction(
+      zkey_path,
+      witness_calculator,
+      dat_file_name,
+      inputs
+    );
     const endTime = Date.now();
     console.log('time spent:', endTime - startTime);
     console.log('proof response:', response);

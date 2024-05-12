@@ -10,10 +10,12 @@
 
 @interface RCT_EXTERN_MODULE(Prover, NSObject)
 
-RCT_EXTERN_METHOD(runProveAction:(NSDictionary *)inputs
+RCT_EXTERN_METHOD(runProveAction:(NSString *)zkey_path
+                  witness_calculator:(NSString *)witness_calculator
+                  dat_file_name:(NSString *)dat_file_name
+                  inputs:(NSDictionary *)inputs
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)
-
 + (BOOL) requiresMainQueueSetup {
     return YES;
 }
