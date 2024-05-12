@@ -351,53 +351,6 @@ const MainScreen: React.FC<MainScreenProps> = ({
                   </YStack>
 
                 </YStack>
-                {/* <YStack flex={1} jc="space-evenly">
-
-                  <YStack >
-                    <H4 color={textColor1}>How do I scan my passport ?</H4>
-                    <Text color={textColor1}>1. Find the location of the NFC chip of your passport. Most of the time, it will be in the back cover. If you have an American passport, the front and back cover are NFC-protected, so you have to open your passport and scan the back cover from the inside.
-                      <Button pl="$1" unstyled h="$1" w="$3" jc="flex-end" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/where-is-my-chip/')}>
-                        <ExternalLink color="#3185FC" size={12} />
-                      </Button>
-                    </Text>
-                    <Text color={textColor1} mt="$2">2. Find the location of the NFC reader of your phone. On an iPhone, it should be on the upper part of your phone. On Android phones, it should be in the center.
-                      <Button pl="$1" unstyled h="$1" w="$3" jc="flex-end" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/locate-NFC-reader/')}>
-                        <ExternalLink color="#3185FC" size={12} />
-                      </Button>
-                    </Text>
-                    <Text color={textColor1} mt="$2">3. Keep your passport pressed against your phone when the NFC popup shows up and hold still.</Text>
-                  </YStack>
-                  <YStack gap="$1">
-                    <H4 color={textColor1} mt="$2">Security and Privacy</H4>
-                    <Text color={textColor1}>Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information. It works by generating a proof showing your passport data has been correctly signed by a government authority without revealing the signature.</Text>
-                  </YStack>
-                  <YStack gap="$2">
-                    <H4 color={textColor1} mt="$1">What are zero-knowledge proofs ?</H4>
-
-                    <Text color={textColor1}>Zero-knowledge proofs rely on mathematical magic tricks to show the correctness of some computation while hiding some inputs of its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
-                  </YStack>
-
-                  <YStack gap="$2">
-                    <H4 >Contacts</H4>
-                    <XStack mt="$2" ml="$3" gap="$5">
-                      <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
-                        <Image
-                          source={{ uri: Telegram, width: 24, height: 24 }}
-                        />
-                      </Pressable>
-                      <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
-                        <Image
-                          source={{ uri: X, width: 24, height: 24 }}
-                        />
-                      </Pressable>
-                      <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
-                        <Image
-                          source={{ uri: Github, width: 24, height: 24 }}
-                        />
-                      </Pressable>
-                    </XStack>
-                  </YStack>
-                </YStack> */}
                 <Button mt="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" alignSelf='center' w="80%" onPress={() => setHelpIsOpen(false)}>
                   <Text color={textColor1} w="80%" textAlign='center' fow="bold">Close</Text>
                 </Button>
