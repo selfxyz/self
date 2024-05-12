@@ -22,14 +22,16 @@ import com.proofofpassport.R
 
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
-  lateinit var res: GenerateProofResult
 
   override fun getName(): String {
     return "Prover"
   }
 
   @ReactMethod
-  fun runProveAction(inputs: ReadableMap, promise: Promise) {
+  fun runProveAction(zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: ReadableMap, promise: Promise) {
+    Log.e(TAG, "zkey_path in provePassport kotlin: " + zkey_path)
+    Log.e(TAG, "witness_calculator in provePassport kotlin: " + witness_calculator)
+    Log.e(TAG, "dat_file_name in provePassport kotlin: " + dat_file_name)
     Log.e(TAG, "inputs in provePassport kotlin: " + inputs.toString())
 
     val formattedInputs = mutableMapOf<String, Any?>(
@@ -71,11 +73,24 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
 
     val jsonInputs = gson.toJson(formattedInputs).toByteArray()
     val zkpTools = ZKPTools(reactApplicationContext)
+
+    val witnessCalcFunction = when (witness_calculator) {
+        "proof_of_passport" -> zkpTools::witnesscalc_proof_of_passport
+        // "another_calculator" -> zkpTools::witnesscalc_another_calculator
+        else -> throw IllegalArgumentException("Invalid witness calculator name")
+    }  
     
+    // Get the resource ID dynamically
+    val resId = reactApplicationContext.resources.getIdentifier(dat_file_name, "raw", reactApplicationContext.packageName)
+    if (resId == 0) {
+        throw IllegalArgumentException("Invalid dat file name")
+    }
+
     val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
-      R.raw.proof_of_passport_dat, // datID as Int
+      zkey_path,
+      resId,
       jsonInputs,
-      zkpTools::witnesscalc_proof_of_passport
+      witnessCalcFunction
     )
 
     Log.e("ZKP", gson.toJson(zkp))
@@ -163,7 +178,10 @@ class ZKPTools(val context: Context) {
 class ZKPUseCase(val context: Context) {
 
     fun generateZKP(
-        datFile: Int, inputs: ByteArray, proofFunction: (
+        zkey_path: String,
+        datId: Int,
+        inputs: ByteArray,
+        proofFunction: (
             circuitBuffer: ByteArray,
             circuitSize: Long,
             jsonBuffer: ByteArray,
@@ -175,7 +193,7 @@ class ZKPUseCase(val context: Context) {
         ) -> Int
     ): ZkProof {
         val zkpTool = ZKPTools(context)
-        val datFile = zkpTool.openRawResourceAsByteArray(datFile)
+        val datFile = zkpTool.openRawResourceAsByteArray(datId)
 
         val msg = ByteArray(256)
 
@@ -218,7 +236,7 @@ class ZKPUseCase(val context: Context) {
         val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
 
         val verification = zkpTool.groth16_prover_zkey_file(
-            "/data/user/0/com.proofofpassport/files/proof_of_passport.zkey",
+            zkey_path,
             witnessData,
             witnessLen[0],
             proofData,
