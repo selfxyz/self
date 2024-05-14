@@ -10,7 +10,7 @@ import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputsRegister, generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
 import fs from 'fs';
-import { IMT } from "@zk-kit/imt";
+import { IMT, LeanIMT } from "@zk-kit/imt";
 import { poseidon2 } from "poseidon-lite";
 import { PassportData } from "../../common/src/utils/types";
 import { Signer } from "ethers";
@@ -31,7 +31,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     // Smart contracts
     let Verifier_register: any, verifier_register: any, Registry: any, registry: any, Formatter: any, formatter: any, Register: any, register: any, Verifier_disclose: any, verifier_disclose: any, SBT: any, sbt: any, PoseidonT3: any, poseidonT3: any;
     let owner, otherAccount, thirdAccount: Signer;
-    let imt: IMT;
+    let imt: LeanIMT;
 
     let bitmap, scope, user_address, majority, user_identifier, current_date, input_disclose: any;
     let proof_disclose, publicSignals_disclose, proof_result_disclose, vkey_disclose, verified_disclose: any, rawCallData_disclose, parsedCallData_disclose: any[], formattedCallData_disclose: any;
@@ -64,27 +64,38 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             await deployContracts();
 
             /*** Initialize merkle tree ***/
-            imt = new IMT(poseidon2, 2, 0, 2);
+            imt = new LeanIMT((a: bigint, b: bigint) => poseidon2([a, b]), []);
         });
-    async function deployContracts() {
+    async function deployContracts(network = 'hardhat') {
+        console.log(`Deploying contracts on ${network}...`);
+
+        // Network-specific configurations can be added here
+        let deployOptions = {};
+        if (network !== 'hardhat') {
+            deployOptions = {
+                gasPrice: 10 * 10 ** 9,
+                gasLimit: 8000000 // example gas limit
+            };
+        }
+
         Verifier_register = await ethers.getContractFactory("Verifier_register");
-        verifier_register = await Verifier_register.deploy();
+        verifier_register = await Verifier_register.deploy(deployOptions);
         await verifier_register.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_register deployed to ${verifier_register.target}`);
 
         Formatter = await ethers.getContractFactory("Formatter");
-        formatter = await Formatter.deploy();
+        formatter = await Formatter.deploy(deployOptions);
         await formatter.waitForDeployment();
         await formatter.addCountryCodes(Object.entries(countryCodes));
         console.log('\x1b[34m%s\x1b[0m', `Formatter deployed to ${formatter.target}`);
 
         Registry = await ethers.getContractFactory("Registry");
-        registry = await Registry.deploy(formatRoot(inputs.merkle_root));
+        registry = await Registry.deploy(formatRoot(inputs.merkle_root), deployOptions);
         await registry.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Registry deployed to ${registry.target}`);
 
         PoseidonT3 = await ethers.getContractFactory("PoseidonT3");
-        poseidonT3 = await PoseidonT3.deploy();
+        poseidonT3 = await PoseidonT3.deploy(deployOptions);
         await poseidonT3.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
 
@@ -94,19 +105,19 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
                 PoseidonT3: poseidonT3Address
             }
         });
-        register = await Register.deploy(registry.target);
+        register = await Register.deploy(registry.target, deployOptions);
         await register.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Register deployed to ${register.target}`);
 
         Verifier_disclose = await ethers.getContractFactory("Verifier_disclose");
-        verifier_disclose = await Verifier_disclose.deploy();
+        verifier_disclose = await Verifier_disclose.deploy(deployOptions);
         await verifier_disclose.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_disclose deployed to ${verifier_disclose.target}`);
 
         await register.addSignatureAlgorithm(0, verifier_register.target); // dev function - will not be deployed in production
 
         SBT = await ethers.getContractFactory("SBT");
-        sbt = await SBT.deploy(verifier_disclose.target, formatter.target, register.target);
+        sbt = await SBT.deploy(verifier_disclose.target, formatter.target, register.target, deployOptions);
         await sbt.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `SBT deployed to ${sbt.target}`);
     }
@@ -238,7 +249,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             user_address = await thirdAccount.getAddress();
             majority = ["1", "8"];
             input_disclose = generateCircuitInputsDisclose(
-                inputs.secret, inputs.attestation_id, passportData, imt as any, majority, bitmap, scope, BigInt(user_address.toString()).toString(), 16
+                inputs.secret, inputs.attestation_id, passportData, imt as any, majority, bitmap, scope, BigInt(user_address.toString()).toString()
             );
             // Generate the proof
             console.log('\x1b[32m%s\x1b[0m', 'Generating proof - Disclose');
@@ -329,6 +340,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
 
     });
+
+
 
     // describe("Minting on mumbai", function () {
     //     it.skip("Should allow minting using a proof generated by ark-circom", async function () {

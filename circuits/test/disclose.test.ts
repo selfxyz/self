@@ -5,12 +5,12 @@ import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { attributeToPosition, COMMITMENT_TREE_DEPTH } from "../../common/src/constants/constants";
 import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
-import { IMT } from "@zk-kit/imt";
+import { LeanIMT } from "@zk-kit/imt";
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
 import { unpackReveal } from '../../common/src/utils/revealBitmap';
 
-describe("start testing register.circom", function () {
+describe("start testing disclose.circom", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
@@ -21,11 +21,13 @@ describe("start testing register.circom", function () {
 
     before(async () => {
         circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose.circom"),
-            { include: [
-                "node_modules",
-                "./node_modules/@zk-kit/binary-merkle-root.circom/src",
-                "./node_modules/circomlib/circuits"
-            ] },
+            {
+                include: [
+                    "node_modules",
+                    "./node_modules/@zk-kit/binary-merkle-root.circom/src",
+                    "./node_modules/circomlib/circuits"
+                ]
+            },
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
@@ -60,8 +62,9 @@ describe("start testing register.circom", function () {
         ])
         console.log("commitment", commitment);
 
-        tree = new IMT(poseidon2, COMMITMENT_TREE_DEPTH, 0, 2);
+        tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
         tree.insert(BigInt(commitment));
+        console.log("tree_nodes", tree._nodes);
 
         inputs = generateCircuitInputsDisclose(
             secret,
@@ -71,8 +74,7 @@ describe("start testing register.circom", function () {
             majority,
             bitmap,
             scope,
-            user_identifier,
-            16
+            user_identifier
         );
 
         console.log(JSON.stringify(inputs, null, 2));
