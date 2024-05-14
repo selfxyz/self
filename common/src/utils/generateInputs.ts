@@ -3,9 +3,10 @@ import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
   arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords,
-  toUnsignedByte, getDigestLengthBytes, getCurrentDateYYMMDD
+  toUnsignedByte, getDigestLengthBytes, getCurrentDateYYMMDD,
+  generateMerkleProof
 } from "./utils";
-import { IMT } from "@zk-kit/imt";
+import { IMT, LeanIMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
@@ -102,12 +103,11 @@ export function generateCircuitInputsDisclose(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
-  merkletree: IMT,
+  merkletree: LeanIMT,
   majority: string[],
   bitmap: string[],
   scope: string,
   user_identifier: string,
-  nLevels: number
 ) {
   const pubkey_leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,
@@ -125,23 +125,11 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[1],
     mrz_bytes[2]
   ]).toString();
-  // console.log("commitment", commitment);
-
   const index = merkletree.indexOf(BigInt(commitment));
-  // console.log(`Index of commitment in the tree: ${index}`);
   if (index === -1) {
     throw new Error("This commitment was not found in the tree");
   }
-  const proof = merkletree.createProof(index);
-  // console.log("verifyProof", merkletree.verifyProof(proof));
-  const real_path = proof.pathIndices.map(index => index.toString());
-  while (real_path.length < nLevels) {
-    real_path.push("0");
-  }
-  const real_siblings = proof.siblings.flat().map(index => index.toString());
-  while (real_siblings.length < nLevels) {
-    real_siblings.push("0");
-  }
+  const { merkleProofSiblings, merkleProofIndices } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
   return {
     secret: secret,
@@ -149,9 +137,9 @@ export function generateCircuitInputsDisclose(
     pubkey_leaf: pubkey_leaf.toString(),
     mrz: formattedMrz.map(byte => String(byte)),
     merkle_root: [merkletree.root.toString()],
-    merkletree_size: BigInt(proof.pathIndices.length).toString(),
-    path: real_path,
-    siblings: real_siblings,
+    merkletree_size: BigInt(merkletree.depth).toString(),
+    path: merkleProofIndices,
+    siblings: merkleProofSiblings,
     bitmap: bitmap,
     scope: scope,
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
