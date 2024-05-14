@@ -31,7 +31,9 @@ const MainScreen: React.FC = () => {
     dateOfBirth,
     dateOfExpiry,
     deleteMrzFields,
-    update
+    update,
+    clearPassportDataFromStorage,
+    clearSecretFromStorage,
   } = useUserStore()
 
   const {
@@ -73,6 +75,7 @@ const MainScreen: React.FC = () => {
       scan();
     }
   }
+
   useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
       setStep(Steps.MRZ_SCAN_COMPLETED);
@@ -251,6 +254,25 @@ const MainScreen: React.FC = () => {
                     <VenetianMask color={textColor1} />
                   </Button>
                 </Fieldset>
+
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                    Delete passport data
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                    <VenetianMask color={textColor1} />
+                  </Button>
+                </Fieldset>
+
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                    Delete secret (caution)
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearSecretFromStorage}>
+                    <VenetianMask color={textColor1} />
+                  </Button>
+                </Fieldset>
+
                 <YStack flex={1} />
 
                 <YStack mb="$0">

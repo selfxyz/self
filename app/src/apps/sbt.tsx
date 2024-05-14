@@ -128,17 +128,8 @@ export const sbtApp: AppType = {
         { developmentMode: false }
       );
 
-      // remove that when it's only disclosure proof
-      amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
-  
-      Object.keys(inputs).forEach((key) => {
-        if (Array.isArray(inputs[key as keyof typeof inputs])) {
-          console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
-        } else {
-          console.log(key, inputs[key as keyof typeof inputs]);
-        }
-      });
-  
+      console.log('inputs:', inputs);
+      
       const start = Date.now();
 
       const proof = await generateProof(
