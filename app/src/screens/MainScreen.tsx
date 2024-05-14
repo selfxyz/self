@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, ScrollView } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ExternalLink } from '@tamagui/lucide-icons';
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2 } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
@@ -9,114 +9,68 @@ import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
-import { App } from '../utils/AppClass';
 import { Linking, Modal, Platform, Pressable } from 'react-native';
-import { Keyboard } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
 import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
-import MintScreen from './MintScreen';
-import { ToastViewport, useToastController } from '@tamagui/toast';
+import SendProofScreen from './SendProofScreen';
+import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
-import { CircuitName, fetchZkey, IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
+import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+import useUserStore from '../stores/userStore';
+import { scan } from '../utils/nfcScanner';
+import useNavigationStore from '../stores/navigationStore';
 
-interface MainScreenProps {
-  onStartCameraScan: () => void;
-  nfcScan: () => void;
-  passportData: any;
-  disclosure: { [key: string]: boolean };
-  handleDisclosureChange: (field: string) => void;
-  address: string;
-  setAddress: (address: string) => void;
-  generatingProof: boolean;
-  handleProve: () => void;
-  step: number;
-  mintText: string;
-  proof: any;
-  proofTime: number;
-  handleMint: () => void;
-  setStep: (step: number) => void;
-  passportNumber: string;
-  setPassportNumber: (number: string) => void;
-  dateOfBirth: string;
-  setDateOfBirth: (date: string) => void;
-  dateOfExpiry: string;
-  setDateOfExpiry: (date: string) => void;
-  majority: number;
-  setMajority: (age: number) => void;
-  isZkeyDownloading: IsZkeyDownloading;
-  showWarningModal: ShowWarningModalProps;
-  setShowWarningModal: (value: ShowWarningModalProps) => void;
-  setIsZkeyDownloading: (value: IsZkeyDownloading) => void;
-}
-
-const MainScreen: React.FC<MainScreenProps> = ({
-  onStartCameraScan,
-  nfcScan,
-  passportData,
-  disclosure,
-  handleDisclosureChange,
-  address,
-  setAddress,
-  generatingProof,
-  handleProve,
-  step,
-  mintText,
-  proof,
-  proofTime,
-  handleMint,
-  setStep,
-  passportNumber,
-  setPassportNumber,
-  dateOfBirth,
-  setDateOfBirth,
-  dateOfExpiry,
-  setDateOfExpiry,
-  majority,
-  setMajority,
-  isZkeyDownloading,
-  showWarningModal,
-  setShowWarningModal,
-  setIsZkeyDownloading
-}) => {
+const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
-  const [ens, setEns] = useState<string>('');
-  const [selectedTab, setSelectedTab] = useState("scan");
-  const [selectedApp, setSelectedApp] = useState<App | null>(null);
   const [brokenCamera, setBrokenCamera] = useState(false);
-  const [hideData, setHideData] = useState(false);
 
-  const toast = useToastController();
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    deleteMrzFields,
+    update
+  } = useUserStore()
+
+  const {
+    showWarningModal,
+    update: updateNavigationStore,
+    step,
+    setStep,
+    selectedTab,
+    hideData
+  } = useNavigationStore();
 
   const handleRestart = () => {
-    setStep(Steps.MRZ_SCAN);
-    setSelectedApp(null)
-    setPassportNumber("");
-    setDateOfBirth("");
-    setDateOfExpiry("");
-    setSelectedTab("scan");
-
+    updateNavigationStore({
+      selectedTab: "scan",
+      selectedApp: null,
+      step: Steps.MRZ_SCAN,
+    })
+    deleteMrzFields();
   }
+
   const handleSkip = () => {
     setStep(Steps.NFC_SCAN_COMPLETED);
-    setPassportNumber("");
-    setDateOfBirth("");
-    setDateOfExpiry("");
-
+    deleteMrzFields();
   }
+
   const handleHideData = () => {
-    setHideData(!hideData);
+    updateNavigationStore({
+      hideData: !hideData,
+    })
   }
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
       console.log('ios');
-      nfcScan();
+      scan();
     }
     else {
       console.log('android :)');
       setNFCScanIsOpen(true);
-      nfcScan();
+      scan();
     }
   }
   useEffect(() => {
@@ -139,10 +93,14 @@ const MainScreen: React.FC<MainScreenProps> = ({
       }, 700);
     }
     else if (step == Steps.PROOF_GENERATED) {
-      setSelectedTab("mint");
+      updateNavigationStore({
+        selectedTab: "mint",
+      })
     }
     if (step == Steps.NFC_SCAN_COMPLETED) {
-      setSelectedTab("app");
+      updateNavigationStore({
+        selectedTab: "app",
+      })
     }
     return () => {
       if (timeoutId) {
@@ -151,42 +109,18 @@ const MainScreen: React.FC<MainScreenProps> = ({
     };
   }, [step]);
 
-  // Keyboard management
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-
-  useEffect(() => {
-    const showSubscription = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardVisible(true);
-    });
-    const hideSubscription = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardVisible(false);
-    });
-
-    return () => {
-      showSubscription.remove();
-      hideSubscription.remove();
-    };
-  }, []);
-
-  const { height, width } = useWindowDimensions();
+  const { height } = useWindowDimensions();
 
   return (
     <>
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
-
             <Button p="$2" py="$3" pr="$7" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
-
-
-
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
             </Text>
-
             <Button p="$2" py="$3" pl="$7" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
-
-
           </XStack>
           <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
@@ -238,19 +172,55 @@ const MainScreen: React.FC<MainScreenProps> = ({
                       <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
                         Passport Number
                       </Label>
-                      <Input bg={componentBgColor} color={textColor1} h="$3.5" borderColor={passportNumber?.length === 9 ? "green" : "unset"} flex={1} id="passport_number" onChangeText={(text) => setPassportNumber(text.toUpperCase())} value={passportNumber} keyboardType="default" />
+                      <Input
+                        bg={componentBgColor}
+                        color={textColor1}
+                        h="$3.5"
+                        borderColor={passportNumber?.length === 9 ? "green" : "unset"}
+                        flex={1}
+                        id="passportnumber"
+                        onChangeText={(text) => {
+                          update({passportNumber: text.toUpperCase()})
+                        }}
+                        value={passportNumber}
+                        keyboardType="default"
+                      />
                     </Fieldset>
                     <Fieldset gap="$4" horizontal>
                       <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
                         Date of birth (yymmdd)
                       </Label>
-                      <Input bg={componentBgColor} color={textColor1} h="$3.5" borderColor={dateOfBirth?.length === 6 ? "green" : "unset"} flex={1} id="date_of_birth" onChangeText={setDateOfBirth} value={dateOfBirth} keyboardType={Platform.OS == "ios" ? "default" : "number-pad"} />
+                      <Input
+                        bg={componentBgColor}
+                        color={textColor1}
+                        h="$3.5"
+                        borderColor={dateOfBirth?.length === 6 ? "green" : "unset"}
+                        flex={1}
+                        id="dateofbirth"
+                        onChangeText={(text) => {
+                          update({dateOfBirth: text})
+                        }}
+                        value={dateOfBirth}
+                        keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
+                      />
                     </Fieldset>
                     <Fieldset gap="$4" horizontal>
                       <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
                         Date of expiry (yymmdd)
                       </Label>
-                      <Input bg={componentBgColor} color={textColor1} h="$3.5" borderColor={dateOfExpiry?.length === 6 ? "green" : "unset"} flex={1} id="date_of_expiry" onChangeText={setDateOfExpiry} value={dateOfExpiry} keyboardType={Platform.OS == "ios" ? "default" : "number-pad"} />
+                      <Input
+                        bg={componentBgColor}
+                        color={textColor1}
+                        h="$3.5"
+                        borderColor={dateOfExpiry?.length === 6 ? "green" : "unset"}
+                        flex={1}
+                        id="dateofexpiry"
+                        onChangeText={(text) => {
+                          update({dateOfExpiry: text})
+                        }}
+                        value={dateOfExpiry}
+                        keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
+                      />
                     </Fieldset>
                   </YStack>
                 }
@@ -263,8 +233,6 @@ const MainScreen: React.FC<MainScreenProps> = ({
                     <Switch.Thumb animation="bouncy" bc={bgColor} />
                   </Switch>
                 </Fieldset>
-
-
 
                 <Fieldset gap="$4" mt="$1" horizontal>
                   <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
@@ -360,55 +328,28 @@ const MainScreen: React.FC<MainScreenProps> = ({
           </Sheet>
           <XStack bc="#343434" h={1.2} />
         </YStack>
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan" value={selectedTab} onValueChange={setSelectedTab}>
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan"
+          value={selectedTab}
+          onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
+        >
           <ToastViewport flexDirection="column-reverse" top={15} right={0} left={0} />
           <ToastMessage />
           <Tabs.Content value="scan" f={1}>
             <ScanScreen
-              onStartCameraScan={onStartCameraScan}
               handleNFCScan={handleNFCScan}
-              step={step} />
+              step={step}
+            />
           </Tabs.Content>
 
           <Tabs.Content value="app" f={1}>
-            <AppScreen
-              selectedApp={selectedApp}
-              setSelectedApp={setSelectedApp}
-              step={step}
-              setStep={setStep}
-              setSelectedTab={setSelectedTab}
-            />
+            <AppScreen />
           </Tabs.Content>
 
           <Tabs.Content value="prove" f={1}>
-            <ProveScreen
-              passportData={passportData}
-              disclosure={disclosure}
-              selectedApp={selectedApp}
-              handleDisclosureChange={handleDisclosureChange}
-              address={address}
-              setAddress={setAddress}
-              generatingProof={generatingProof}
-              handleProve={handleProve}
-              hideData={hideData}
-              ens={ens}
-              setEns={setEns}
-              majority={majority}
-              setMajority={setMajority}
-              isZkeyDownloading={isZkeyDownloading}
-              setIsZkeyDownloading={setIsZkeyDownloading}
-              setShowWarningModal={setShowWarningModal}
-            />
+            <ProveScreen />
           </Tabs.Content>
           <Tabs.Content value="mint" f={1}>
-            <MintScreen
-              selectedApp={selectedApp}
-              step={step}
-              mintText={mintText}
-              proof={proof}
-              proofTime={proofTime}
-              handleMint={handleMint}
-            />
+            <SendProofScreen />
           </Tabs.Content>
         </Tabs>
       </YStack>
@@ -420,19 +361,19 @@ const MainScreen: React.FC<MainScreenProps> = ({
               The app needs to download a large file ({(showWarningModal.size / 1024 / 1024).toFixed(2)}MB). Please make sure you're connected to a Wi-Fi network before continuing.
             </Text>
             <XStack mt={20}>
-              <Button onPress={() => {
-                fetchZkey(
-                  showWarningModal.circuit as CircuitName,
-                  isZkeyDownloading,
-                  setIsZkeyDownloading,
-                  toast
-                );
-                setShowWarningModal({
-                  show: false,
-                  circuit: '',
-                  size: 0,
-                })
-              }} bc="#4caf50" borderRadius={5} padding={10}>
+              <Button
+                onPress={() => {
+                  fetchZkey(showWarningModal.circuit as CircuitName);
+                  updateNavigationStore({
+                    showWarningModal: {
+                      show: false,
+                      circuit: '',
+                      size: 0,
+                    }
+                  });
+                }}
+                bc="#4caf50" borderRadius={5} padding={10}
+              >
                 <Text color="#ffffff">Continue</Text>
               </Button>
             </XStack>

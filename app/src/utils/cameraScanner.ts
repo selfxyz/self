@@ -1,32 +1,26 @@
 import { NativeModules, Platform } from 'react-native';
 import { formatDateToYYMMDD, extractMRZInfo, Steps } from './utils';
 import * as amplitude from '@amplitude/analytics-react-native';
+import useUserStore from '../stores/userStore';
+import useNavigationStore from '../stores/navigationStore';
 
-interface CameraScannerProps {
-  setPassportNumber: (value: string) => void;
-  setDateOfBirth: (value: string) => void;
-  setDateOfExpiry: (value: string) => void;
-  setStep: (value: number) => void;
-  toast: any
-}
+export const startCameraScan = async () => {
+  const {toast, setStep} = useNavigationStore.getState();
 
-export const startCameraScan = async ({
-  setPassportNumber,
-  setDateOfBirth,
-  setDateOfExpiry,
-  setStep,
-  toast
-}: CameraScannerProps) => {
   if (Platform.OS === 'ios') {
     try {
       const result = await NativeModules.MRZScannerModule.startScanning();
       console.log("Scan result:", result);
       console.log(`Document Number: ${result.documentNumber}, Expiry Date: ${result.expiryDate}, Birth Date: ${result.birthDate}`);
-      setPassportNumber(result.documentNumber);
-      setDateOfBirth(formatDateToYYMMDD(result.birthDate));
-      setDateOfExpiry(formatDateToYYMMDD(result.expiryDate));
+
+      useUserStore.setState({
+        passportNumber: result.documentNumber,
+        dateOfBirth: formatDateToYYMMDD(result.birthDate),
+        dateOfExpiry: formatDateToYYMMDD(result.expiryDate),
+      })
+
       setStep(Steps.MRZ_SCAN_COMPLETED);
-      toast.show("Scan successful", {
+      toast?.show("Scan successful", {
         message: 'Nice to meet you!',
         customData: {
           type: "success",
@@ -42,12 +36,16 @@ export const startCameraScan = async ({
       .then((mrzInfo: string) => {
         try {
           const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
-          setPassportNumber(documentNumber);
-          setDateOfBirth(birthDate);
-          setDateOfExpiry(expiryDate);
+
+          useUserStore.setState({
+            passportNumber: documentNumber,
+            dateOfBirth: birthDate,
+            dateOfExpiry: expiryDate,
+          })
+
           setStep(Steps.MRZ_SCAN_COMPLETED);
           amplitude.track('Camera scan successful');
-          toast.show("Scan successful", {
+          toast?.show("Scan successful", {
             message: 'Nice to meet you!',
             customData: {
               type: "success",

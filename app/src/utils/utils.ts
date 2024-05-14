@@ -41,8 +41,8 @@ export const Steps = {
   APP_SELECTED: 5,
   GENERATING_PROOF: 6,
   PROOF_GENERATED: 7,
-  TX_MINTING: 8,
-  TX_MINTED: 9
+  PROOF_SENDING: 8,
+  PROOF_SENT: 9
 };
 
 export function formatAttribute(key: string, attribute: string) {

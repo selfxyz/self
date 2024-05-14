@@ -15,7 +15,7 @@ export enum SignatureAlgorithm {
   sha512WithRSAEncryption_65537 = 10
 }
 
-export const attributeToPosition: { [key: string]: number[] } = {
+export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],
   passport_number: [44, 52],

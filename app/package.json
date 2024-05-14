@@ -43,7 +43,8 @@
     "react-native-passport-reader": "^1.0.3",
     "react-native-svg": "13.4.0",
     "react-native-zip-archive": "^6.1.0",
-    "tamagui": "^1.94.3"
+    "tamagui": "^1.94.3",
+    "zustand": "^4.5.2"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

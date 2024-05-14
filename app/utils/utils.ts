@@ -53,7 +53,7 @@ export const getTx = (input: string | null): string => {
   return transaction;
 }
 
-export const shortenInput = (input: string | null): string => {
+export const shortenTxHash = (input: string | null): string => {
   if (!input) return '';
   if (input.length > 9) {
     return input.substring(0, 25) + '\u2026';
