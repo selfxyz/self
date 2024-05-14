@@ -3,6 +3,7 @@ import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { unzip } from 'react-native-zip-archive';
+import useNavigationStore from '../stores/navigationStore';
 
 // this should not change, instead update the zkey on the bucket
 const zkeyZipUrls = {
@@ -35,11 +36,12 @@ export type IsZkeyDownloading = {
 
 export async function downloadZkey(
   circuit: CircuitName,
-  isZkeyDownloading: IsZkeyDownloading,
-  setIsZkeyDownloading: (value: IsZkeyDownloading) => void,
-  setShowWarningModal: (value: ShowWarningModalProps) => void,
-  toast: any
 ) {
+    const {
+      isZkeyDownloading,
+      update
+    } = useNavigationStore.getState();
+
     const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
     if (!downloadRequired) {
       console.log(`zkey for ${circuit} already downloaded`)
@@ -49,21 +51,18 @@ export async function downloadZkey(
 
     const networkInfo = await NetInfo.fetch();
     console.log('Network type:', networkInfo.type)
-    if (networkInfo.type === 'wifi') {
-      fetchZkey(
-        circuit,
-        isZkeyDownloading,
-        setIsZkeyDownloading,
-        toast
-      );
+    if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
+      fetchZkey(circuit);
     } else {
       const response = await axios.head(zkeyZipUrls[circuit]);
       const expectedSize = parseInt(response.headers['content-length'], 10);
 
-      setShowWarningModal({
-        show: true,
-        circuit: circuit,
-        size: expectedSize,
+      update({
+        showWarningModal: {
+          show: true,
+          circuit: circuit,
+          size: expectedSize,
+        }
       });
     }
 }
@@ -108,16 +107,21 @@ export async function isDownloadRequired(
 
 export async function fetchZkey(
   circuit: CircuitName,
-  isZkeyDownloading: IsZkeyDownloading,
-  setIsZkeyDownloading: (value: IsZkeyDownloading) => void,
-  toast: any
 ) {
   console.log(`fetching zkey for ${circuit} ...`)
   amplitude.track(`fetching zkey for ${circuit} ...`);
 
-  setIsZkeyDownloading({
-    ...isZkeyDownloading,
-    [circuit]: true,
+  const {
+    isZkeyDownloading,
+    toast,
+    update
+  } = useNavigationStore.getState();
+
+  update({
+    isZkeyDownloading: {
+      ...isZkeyDownloading,
+      [circuit]: true,
+    }
   });
 
   const startTime = Date.now();
@@ -154,9 +158,12 @@ export async function fetchZkey(
         console.log('Directory contents after unzipping:', result);
       })
       console.log('Unzip complete');
-      setIsZkeyDownloading({
-        ...isZkeyDownloading,
-        [circuit]: false,
+
+      update({
+        isZkeyDownloading: {
+          ...isZkeyDownloading,
+          [circuit]: false,
+        }
       });
 
       amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
@@ -180,12 +187,14 @@ export async function fetchZkey(
     })
     .catch((error) => {
       console.error(error);
-      setIsZkeyDownloading({
-        ...isZkeyDownloading,
-        [circuit]: false,
+      update({
+        isZkeyDownloading: {
+          ...isZkeyDownloading,
+          [circuit]: false,
+        }
       });
       amplitude.track('zkey download failed: ' + error.message);
-      toast.show('Error', {
+      toast?.show('Error', {
         message: `Error: ${error.message}`,
         customData: {
           type: "error",
