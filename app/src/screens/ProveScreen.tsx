@@ -40,7 +40,12 @@ const ProveScreen: React.FC = () => {
     majority,
     disclosure,
     update
-  } = useAppStore() ;
+  } = useAppStore();
+
+  const {
+    registered,
+    passportData,
+  } = useUserStore();
   
   const handleDisclosureChange = (field: string) => {
     const requiredOrOptional = selectedApp.disclosureOptions[field as keyof typeof selectedApp.disclosureOptions];
@@ -58,7 +63,6 @@ const ProveScreen: React.FC = () => {
   };
   
   const { height } = useWindowDimensions();
-  const passportData = useUserStore(state => state.passportData);
 
   useEffect(() => {
     // this already checks if downloading is required
@@ -210,7 +214,14 @@ const ProveScreen: React.FC = () => {
           backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"}
           alignSelf='center'
         >
-          {isZkeyDownloading[selectedApp.circuit] ? (
+          {!registered ? (
+            <XStack ai="center" gap="$1">
+              <Spinner />
+              <Text color={textColor1} fow="bold">
+                Registering identity...
+              </Text>
+            </XStack>
+          ) : isZkeyDownloading[selectedApp.circuit] ? (
             <XStack ai="center" gap="$1">
               <Spinner />
               <Text color={textColor1} fow="bold">
