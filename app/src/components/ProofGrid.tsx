@@ -1,9 +1,10 @@
 import React, { useMemo } from 'react';
 import { Svg, Rect } from 'react-native-svg';
 import { YStack } from 'tamagui';
+import { Proof } from '../../../common/src/utils/types';
 
 interface ProofGridProps {
-    proof: { proof: string; inputs: string } | null;
+    proof: Proof | null;
 }
 
 const ProofGrid: React.FC<ProofGridProps> = ({ proof }) => {
@@ -22,7 +23,7 @@ const ProofGrid: React.FC<ProofGridProps> = ({ proof }) => {
             return { rValues: [], gValues: [], bValues: [] };
         }
 
-        const parsedProof = JSON.parse(proof.proof);
+        const parsedProof = proof.proof;
         return {
             rValues: sumAndScaleDigits(parsedProof.a),
             gValues: sumAndScaleDigits(parsedProof.b.flat()),

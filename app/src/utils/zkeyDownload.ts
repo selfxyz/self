@@ -1,138 +1,204 @@
-import {
-  NativeModules,
-  Platform,
-} from 'react-native';
 import RNFS from 'react-native-fs';
-import { ARKZKEY_URL, ZKEY_NAME, ZKEY_URL } from '../../../common/src/constants/constants';
 import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 import { unzip } from 'react-native-zip-archive';
+import useNavigationStore from '../stores/navigationStore';
 
-const localZkeyPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zkey';
-const localZipPath = RNFS.DocumentDirectoryPath + '/proof_of_passport.zip';
-const localUrlPath = RNFS.DocumentDirectoryPath + '/zkey_url.txt';
+// this should not change, instead update the zkey on the bucket
+const zkeyZipUrls = {
+  register_sha256WithRSAEncryption_65537: "qweqwe",
+  disclose: "qweqwe",
+  proof_of_passport: `https://d8o9bercqupgk.cloudfront.net/proof_of_passport.zkey.zip`,
+};
 
-async function initMopro() {
-  if (Platform.OS === 'android') {
-    const res = await NativeModules.Prover.runInitAction()
-    console.log('Mopro init res:', res)
-  }
+export type CircuitName = keyof typeof zkeyZipUrls;
+
+export type ShowWarningModalProps = {
+  show: boolean,
+  circuit: CircuitName | "",
+  size: number,
 }
 
+export type IsZkeyDownloading = {
+  [circuit in CircuitName]: boolean;
+}
+
+// each time we download a zkey, we store the size of the zip file in a file named <circuit_name>_zip_size.txt
+// we assume a new zkey zip will always have a different size
+
+// the downloadZkey function downloads a zkey if either:
+// 1. the zkey file does not exist
+// 2. <circuit_name>_zip_size.txt does not show the same size as the server response (zkey is outdated)
+// 3. the zkey is currently downloading
+// 4. the commitment is already registered and the function is called for a register zkey. If it's the case, there is no need to download the latest zkey.
+// => this should be fine is the function is never called after the commitment is registered.
+
 export async function downloadZkey(
-  setDownloadStatus: (value:  "not_started" | "downloading" | "completed" | "error") => void,
-  toast: any
+  circuit: CircuitName,
 ) {
-  console.log('launching zkey download')
-  setDownloadStatus('downloading');
-  amplitude.track('Downloading zkey...');
+    const {
+      isZkeyDownloading,
+      update
+    } = useNavigationStore.getState();
+
+    const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
+    if (!downloadRequired) {
+      console.log(`zkey for ${circuit} already downloaded`)
+      amplitude.track(`zkey for ${circuit} already downloaded`);
+      return;
+    }
+
+    const networkInfo = await NetInfo.fetch();
+    console.log('Network type:', networkInfo.type)
+    if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
+      fetchZkey(circuit);
+    } else {
+      const response = await axios.head(zkeyZipUrls[circuit]);
+      const expectedSize = parseInt(response.headers['content-length'], 10);
+
+      update({
+        showWarningModal: {
+          show: true,
+          circuit: circuit,
+          size: expectedSize,
+        }
+      });
+    }
+}
+
+export async function isDownloadRequired(
+  circuit: CircuitName,
+  isZkeyDownloading: IsZkeyDownloading
+) {
+  if (isZkeyDownloading[circuit]) {
+    return false;
+  }
+
+  const fileExists = await RNFS.exists(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey`);
+  if (!fileExists) {
+    return true;
+  }
+
+  let storedZipSize = 0;
+  try {
+    storedZipSize = Number(await RNFS.readFile(`${RNFS.DocumentDirectoryPath}/${circuit}_zip_size.txt`, 'utf8'));
+  } catch (error) {
+    console.log(`${circuit}_zip_size.txt file not found, so assuming zkey is outdated.`);
+    return true;
+  }
+
+  console.log('storedZipSize:', storedZipSize)
+
+  const response = await axios.head(zkeyZipUrls[circuit]);
+  const expectedSize = parseInt(response.headers['content-length'], 10);
+
+  console.log('expectedSize:', expectedSize)
+  
+  const isZipComplete = storedZipSize === expectedSize;
+
+  console.log('isZipComplete:', isZipComplete)
+
+  if (!isZipComplete) {
+    return true;
+  }
+  return false
+}
+
+export async function fetchZkey(
+  circuit: CircuitName,
+) {
+  console.log(`fetching zkey for ${circuit} ...`)
+  amplitude.track(`fetching zkey for ${circuit} ...`);
+
+  const {
+    isZkeyDownloading,
+    toast,
+    update
+  } = useNavigationStore.getState();
+
+  update({
+    isZkeyDownloading: {
+      ...isZkeyDownloading,
+      [circuit]: true,
+    }
+  });
+
   const startTime = Date.now();
-
-  const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
-
   let previousPercentComplete = -1;
-
   const options = {
-    fromUrl: url,
-    toFile: localZipPath,
+    fromUrl: zkeyZipUrls[circuit],
+    toFile: `${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`,
     background: true,
     begin: () => {
       console.log('Download has begun');
     },
     progress: (res: any) => {
       const percentComplete = Math.floor((res.bytesWritten / res.contentLength) * 100);
-      if (percentComplete !== previousPercentComplete) {
+      if (percentComplete % 5 === 0 && percentComplete !== previousPercentComplete) {
         console.log(`${percentComplete}%`);
         previousPercentComplete = percentComplete;
       }
-    },
+    }
   };
 
   RNFS.downloadFile(options).promise
     .then(async () => {
       console.log('Download complete');
+
       RNFS.readDir(RNFS.DocumentDirectoryPath)
         .then((result) => {
-          console.log('Directory contents before:', result);
+          console.log('Directory contents before unzipping:', result);
         })
 
-      const unzipPath = RNFS.DocumentDirectoryPath;
-      await unzip(localZipPath, unzipPath);
-      const oldPath = `${unzipPath}/${ZKEY_NAME}${Platform.OS === 'android' ? '.arkzkey' : '.zkey'}`;
-      const newPath = `${unzipPath}/proof_of_passport.zkey`;
-      await RNFS.moveFile(oldPath, newPath);
+      await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, RNFS.DocumentDirectoryPath);
+
       RNFS.readDir(RNFS.DocumentDirectoryPath)
       .then((result) => {
-        console.log('Directory contents after:', result);
+        console.log('Directory contents after unzipping:', result);
       })
       console.log('Unzip complete');
-      setDownloadStatus('completed')
-      const endTime = Date.now();
-      amplitude.track('zkey download succeeded, took ' + ((endTime - startTime) / 1000) + ' seconds');
-      RNFS.writeFile(localUrlPath, url, 'utf8');
-      initMopro()
+
+      update({
+        isZkeyDownloading: {
+          ...isZkeyDownloading,
+          [circuit]: false,
+        }
+      });
+
+      amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
+
+      const zipSize = await RNFS.stat(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`);
+
+      console.log('zipSize:', zipSize.size);
+
+      RNFS.writeFile(`${RNFS.DocumentDirectoryPath}/${circuit}_zip_size.txt`, zipSize.size.toString(), 'utf8');
+
+      console.log('zip size written to file');
+
+      // delete the zip file
+      RNFS.unlink(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`)
+        .then(() => {
+          console.log('zip file deleted');
+        })
+        .catch((error) => {
+          console.error(error);
+        });
     })
     .catch((error) => {
       console.error(error);
-      setDownloadStatus('error');
+      update({
+        isZkeyDownloading: {
+          ...isZkeyDownloading,
+          [circuit]: false,
+        }
+      });
       amplitude.track('zkey download failed: ' + error.message);
-      toast.show('Error', {
+      toast?.show('Error', {
         message: `Error: ${error.message}`,
         customData: {
           type: "error",
         },
       });
     });
-}
-
-interface CheckForZkeyProps {
-  setDownloadStatus: (value: "not_started" | "downloading" | "completed" | "error") => void;
-  setShowWarning: (value: boolean) => void;
-  toast: any
-}
-
-export async function checkForZkey({
-  setDownloadStatus,
-  setShowWarning,
-  toast
-}: CheckForZkeyProps) {
-  console.log('local zip path:', localZipPath)
-  const url = Platform.OS === 'android' ? ARKZKEY_URL : ZKEY_URL
-
-  let storedUrl = '';
-  try {
-    storedUrl = await RNFS.readFile(localUrlPath, 'utf8');
-  } catch (error) {
-    console.log('zkey_url.txt file not found, so assuming zkey is outdated.');
-  }
-
-  const fileExists = await RNFS.exists(localZipPath);
-  const fileInfo = fileExists ? await RNFS.stat(localZipPath) : null;
-
-  const response = await axios.head(url);
-  const expectedSize = parseInt(response.headers['content-length'], 10);
-  const isFileComplete = fileInfo && fileInfo.size === expectedSize;
-
-  console.log('expectedSize:', expectedSize)
-  console.log('fileInfo.size:', fileInfo?.size)
-  console.log('isFileComplete:', isFileComplete)
-
-  if (!isFileComplete || url !== storedUrl) {
-    const state = await NetInfo.fetch();
-    console.log('Network start type:', state.type)
-    if (state.type === 'wifi') {
-      downloadZkey(
-        setDownloadStatus,
-        toast
-      )
-    } else {
-      setShowWarning(true);
-    }
-  } else {
-    console.log('zkey already downloaded')
-    amplitude.track('zkey already downloaded');
-    setDownloadStatus('completed');
-    initMopro()
-  }
 }

@@ -1,8 +1,4 @@
-export const AWS_ENDPOINT = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
-
-export const ZKEY_NAME = "proof_of_passport_final_v01"
-export const ARKZKEY_URL = `https://d8o9bercqupgk.cloudfront.net/${ZKEY_NAME}.arkzkey.zip`
-export const ZKEY_URL = `https://d8o9bercqupgk.cloudfront.net/${ZKEY_NAME}.zkey.zip`
+export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 
 export const PUBKEY_TREE_DEPTH = 16
 export const COMMITMENT_TREE_DEPTH = 16
@@ -20,7 +16,7 @@ export enum SignatureAlgorithm {
   sha512WithRSAEncryption_65537 = 10
 }
 
-export const attributeToPosition: { [key: string]: number[] } = {
+export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],
   passport_number: [44, 52],

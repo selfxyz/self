@@ -17,7 +17,7 @@ endif()
 
 if(USE_ASM AND ARCH MATCHES "x86_64")
 
-    if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin")
+    if (CMAKE_HOST_SYSTEM_NAME MATCHES "Darwin" AND NOT TARGET_PLATFORM MATCHES "^android(_x86_64)?")
         set(NASM_FLAGS -fmacho64 --prefix _)
     else()
         set(NASM_FLAGS -felf64 -DPIC)

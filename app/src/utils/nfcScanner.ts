@@ -8,27 +8,26 @@ import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
+import useUserStore from '../stores/userStore';
+import useNavigationStore from '../stores/navigationStore';
 
-interface NFCScannerProps {
-  passportNumber: string;
-  dateOfBirth: string;
-  dateOfExpiry: string;
-  setPassportData: (data: PassportData) => void;
-  setStep: (value: number) => void;
-  toast: any;
-}
+export const scan = async () => {
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry
+  } = useUserStore.getState()
+  
+  const {toast, setStep} = useNavigationStore.getState();
 
-export const scan = async ({
-  passportNumber,
-  dateOfBirth,
-  dateOfExpiry,
-  setPassportData,
-  setStep,
-  toast
-}: NFCScannerProps) => {
-  const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
+  const check = checkInputs(
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry
+  );
+
   if (!check.success) {
-    toast.show("Unvailable", {
+    toast?.show("Unvailable", {
       message: check.message,
       customData: {
         type: "info",
@@ -41,20 +40,20 @@ export const scan = async ({
   setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
-    scanAndroid(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
+    scanAndroid();
   } else {
-    scanIOS(passportNumber, dateOfBirth, dateOfExpiry, setPassportData, setStep, toast);
+    scanIOS();
   }
 };
 
-const scanAndroid = async (
-  passportNumber: string,
-  dateOfBirth: string,
-  dateOfExpiry: string,
-  setPassportData: (data: PassportData) => void,
-  setStep: (value: number) => void,
-  toast: any
-) => {
+const scanAndroid = async () => {
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry
+  } = useUserStore.getState()
+  const {toast, setStep} = useNavigationStore.getState();
+
   try {
     const response = await PassportReader.scan({
       documentNumber: passportNumber,
@@ -63,12 +62,12 @@ const scanAndroid = async (
     });
     console.log('scanned');
     amplitude.track('NFC scan successful');
-    handleResponseAndroid(response, setPassportData, setStep);
+    handleResponseAndroid(response);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
     amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
-    toast.show('Error', {
+    toast?.show('Error', {
       message: e.message,
       customData: {
         type: "error",
@@ -78,14 +77,14 @@ const scanAndroid = async (
   }
 };
 
-const scanIOS = async (
-  passportNumber: string,
-  dateOfBirth: string,
-  dateOfExpiry: string,
-  setPassportData: (data: PassportData) => void,
-  setStep: (value: number) => void,
-  toast: any
-) => {
+const scanIOS = async () => {
+  const {
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry
+  } = useUserStore.getState()
+  const {toast, setStep} = useNavigationStore.getState();
+
   try {
     const response = await NativeModules.PassportReader.scanPassport(
       passportNumber,
@@ -93,14 +92,14 @@ const scanIOS = async (
       dateOfExpiry
     );
     console.log('scanned');
-    handleResponseIOS(response, setPassportData, setStep);
+    handleResponseIOS(response);
     amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
     amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
-      toast.show('Failed to read passport', {
+      toast?.show('Failed to read passport', {
         message: e.message,
         customData: {
           type: "error",
@@ -112,8 +111,6 @@ const scanIOS = async (
 
 const handleResponseIOS = async (
   response: any,
-  setPassportData: (data: PassportData) => void,
-  setStep: (value: number) => void,
 ) => {
   const parsed = JSON.parse(response);
 
@@ -170,14 +167,12 @@ const handleResponseIOS = async (
 
   // console.log('passportData', JSON.stringify(passportData, null, 2));
 
-  setPassportData(passportData);
-  setStep(Steps.NFC_SCAN_COMPLETED);
+  useUserStore.getState().registerPassportData(passportData)
+  useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED);
 };
 
 const handleResponseAndroid = async (
   response: any,
-  setPassportData: (data: PassportData) => void,
-  setStep: (value: number) => void,
 ) => {
   const {
     mrz,
@@ -226,6 +221,6 @@ const handleResponseAndroid = async (
   console.log("unicodeVersion", unicodeVersion)
   console.log("encapContent", encapContent)
 
-  setPassportData(passportData);
-  setStep(Steps.NFC_SCAN_COMPLETED);
+  useUserStore.getState().registerPassportData(passportData)
+  useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED);
 };

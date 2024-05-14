@@ -34,17 +34,21 @@ struct Proof: Codable {
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
-    @objc(runProveAction:resolve:reject:)
-    func runProveAction(_ inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(runProveAction:witness_calculator:dat_file_name:inputs:resolve:reject:)
+    func runProveAction(_ zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         do {
             let inputsJson = try! JSONEncoder().encode(inputs)
             print("inputs size: \(inputsJson.count) bytes")
             print("inputs data: \(String(data: inputsJson, encoding: .utf8) ?? "")")
             
-            let wtns = try! calcWtns(inputsJson: inputsJson)
+            let wtns = try! calcWtns(
+                witness_calculator: witness_calculator,
+                dat_file_name: dat_file_name,
+                inputsJson: inputsJson
+            )
             print("wtns size: \(wtns.count) bytes")
 
-            let (proofRaw, pubSignalsRaw) = try groth16prove(wtns: wtns)
+            let (proofRaw, pubSignalsRaw) = try groth16prove(zkey_path: zkey_path, wtns: wtns)
             let proof = try JSONDecoder().decode(Proof.self, from: proofRaw)
             let pubSignals = try JSONDecoder().decode([String].self, from: pubSignalsRaw)
 
@@ -68,12 +72,12 @@ class Prover: NSObject {
     }
 }
 
-public func calcWtns(inputsJson: Data) throws -> Data {
-    let dat = NSDataAsset(name: "proof_of_passport.dat")!.data
-    return try _calcWtns(dat: dat, jsonData: inputsJson)
+public func calcWtns(witness_calculator: String, dat_file_name: String, inputsJson: Data) throws -> Data {
+    let dat = NSDataAsset(name: dat_file_name + ".dat")!.data
+    return try _calcWtns(witness_calculator: witness_calculator, dat: dat, jsonData: inputsJson)
 }
 
-private func _calcWtns(dat: Data, jsonData: Data) throws -> Data {
+private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) throws -> Data {
     let datSize = UInt(dat.count)
     let jsonDataSize = UInt(jsonData.count)
 
@@ -85,12 +89,18 @@ private func _calcWtns(dat: Data, jsonData: Data) throws -> Data {
     let wtnsBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: (100 * 1024 * 1024))
     let errorBuffer = UnsafeMutablePointer<UInt8>.allocate(capacity: Int(errorSize))
     
-    let result = witnesscalc_proof_of_passport(
-        (dat as NSData).bytes, datSize,
-        (jsonData as NSData).bytes, jsonDataSize,
-        wtnsBuffer, wtnsSize,
-        errorBuffer, errorSize
-    )
+    let result: Int32
+    
+    if witness_calculator == "proof_of_passport" {
+        result = witnesscalc_proof_of_passport(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } else {
+        fatalError("Invalid witness calculator name")
+    }
     
     if result == WITNESSCALC_ERROR {
         let errorMessage = String(bytes: Data(bytes: errorBuffer, count: Int(errorSize)), encoding: .utf8)!
@@ -105,10 +115,12 @@ private func _calcWtns(dat: Data, jsonData: Data) throws -> Data {
     return Data(bytes: wtnsBuffer, count: Int(wtnsSize.pointee))
 }
 
-public func groth16prove(wtns: Data) throws -> (proof: Data, publicInputs: Data) {
-    let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-    let zkeyURL = documentsPath.appendingPathComponent("proof_of_passport.zkey")
-    
+public func groth16prove(zkey_path: String, wtns: Data) throws -> (proof: Data, publicInputs: Data) {
+    guard let zkeyURL = URL(string: "file://" + zkey_path) else {
+        throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid zkey file path."])
+    }
+    print("zkeyURL: \(zkeyURL)")
+
     guard let zkeyData = try? Data(contentsOf: zkeyURL) else {
         throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to load zkey file."])
     }

@@ -7,16 +7,15 @@ import { useToastController } from '@tamagui/toast'
 import NFCHelp from '../images/nfc_help.png'
 import SCANHelp from '../images/scan_help.png'
 import { Linking } from 'react-native';
+import { startCameraScan } from '../utils/cameraScanner';
 
 interface ScanScreenProps {
-  onStartCameraScan: () => void;
   handleNFCScan: () => void;
   step: number;
 }
 
 
-const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCScan, step }) => {
-  const toast = useToastController();
+const ScanScreen: React.FC<ScanScreenProps> = ({ handleNFCScan, step }) => {
   return (
     <ScrollView f={1}>
       <YStack mt="$4" mb="$6" f={1} p="$5" gap="$5" px="$5" justifyContent='center'>
@@ -56,7 +55,7 @@ const ScanScreen: React.FC<ScanScreenProps> = ({ onStartCameraScan, handleNFCSca
                 </XStack>
               )}
               <XStack f={1} />
-              <Button h="$3" onPress={onStartCameraScan} p="$2" borderRadius="$4" borderWidth={1} backgroundColor="#282828" borderColor="#343434">
+              <Button h="$3" onPress={startCameraScan} p="$2" borderRadius="$4" borderWidth={1} backgroundColor="#282828" borderColor="#343434">
                 <XStack gap="$2">
                   <Text color="#ededed" fontSize="$5" >Open camera</Text>
                   <ExternalLink size="$1" color="#ededed" />
