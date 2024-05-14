@@ -64,7 +64,14 @@ describe('DateIsLessChecker Circuit Test', function () {
     });
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, '../circuits/tests/isOlderThan_tester.circom'));
+        circuit = await wasm_tester(
+            path.join(__dirname, '../circuits/tests/isOlderThan_tester.circom'),
+            {
+                include: [
+                    "node_modules",
+                ]
+            }
+        );
     });
 
     it("compile and load the circuit", async function () {

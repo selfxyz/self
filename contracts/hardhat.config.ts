@@ -51,7 +51,7 @@ const config: HardhatUserConfig = {
     },
     optimismSepolia: {
       url: "https://opt-sepolia.g.alchemy.com/v2/t30F1rBnOskwo0M0Q4Re6bXQHQPpW_Sz",
-      accounts: [`0x${PKEY}`],
+      accounts: [process.env.PKEY as string],
       gasPrice: 5 * 10 ** 9, // Optimism uses a different gas mechanism, set to 0 for automatic handling
     }
   },

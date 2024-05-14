@@ -3,16 +3,8 @@
 # Record the start time
 START_TIME=$(date +%s)
 
-# Check if the first argument is "app-only"
-if [ "$1" == "app-only" ]; then
-    echo "Building only for the app"
-    APP_ONLY=1
-else
-    APP_ONLY=0
-fi
-
 mkdir -p build
-cd build    
+cd build
 if [ ! -f powersOfTau28_hez_final_20.ptau ]; then
     echo "Download power of tau...."
     wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_20.ptau
@@ -44,28 +36,9 @@ sed -i '' 's/Groth16Verifier/Verifier_register/g' build/Verifier_register.sol
 cp build/Verifier_register.sol ../contracts/contracts/Verifier_register.sol
 echo "copied Verifier_register.sol to contracts"
 
-# Install arkzkey-util binary in ark-zkey
-cd ../app/ark-zkey
-echo "[ark-zkey] Installing arkzkey-util..."
-if ! command -v arkzkey-util &> /dev/null
-then
-    cargo install --bin arkzkey-util --path .
-else
-    echo "arkzkey-util already installed, skipping."
-fi
-
-cd ../../circuits/build
-arkzkey-util register_sha256WithRSAEncryption_65537_final.zkey
-echo "Arkzkey generated"
-cd ..
-
-# Calculate and print the time taken by the whole script
-END_TIME=$(date +%s)
-ELAPSED_TIME=$(($END_TIME - $START_TIME))
-echo "Build completed in $ELAPSED_TIME seconds"
+echo "Build completed in $(($(date +%s) - $START_TIME)) seconds"
 
 echo "file sizes:"
 echo "Size of register_sha256WithRSAEncryption_65537.r1cs: $(wc -c <build/register_sha256WithRSAEncryption_65537.r1cs) bytes"
 echo "Size of register_sha256WithRSAEncryption_65537.wasm: $(wc -c <build/register_sha256WithRSAEncryption_65537_js/register_sha256WithRSAEncryption_65537.wasm) bytes"
 echo "Size of register_sha256WithRSAEncryption_65537_final.zkey: $(wc -c <build/register_sha256WithRSAEncryption_65537_final.zkey) bytes"
-echo "Size of register_sha256WithRSAEncryption_65537_final.arkzkey: $(wc -c <build/register_sha256WithRSAEncryption_65537_final.arkzkey) bytes"
