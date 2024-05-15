@@ -78,7 +78,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             };
         }
 
-        Verifier_register = await ethers.getContractFactory("Verifier_register");
+        Verifier_register = await ethers.getContractFactory("Verifier_register_sha256WithRSAEncryption_65537");
         verifier_register = await Verifier_register.deploy(deployOptions);
         await verifier_register.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_register deployed to ${verifier_register.target}`);
@@ -100,7 +100,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
 
         const poseidonT3Address = poseidonT3.target;
-        Register = await ethers.getContractFactory("ProofOfPassportRegister", {
+        Register = await ethers.getContractFactory("ProofOfPassportRegister_dev", {
             libraries: {
                 PoseidonT3: poseidonT3Address
             }

@@ -57,10 +57,15 @@ const config: HardhatUserConfig = {
       url: "https://opt-sepolia.g.alchemy.com/v2/t30F1rBnOskwo0M0Q4Re6bXQHQPpW_Sz",
       accounts: [process.env.PKEY as string],
       gasPrice: 5 * 10 ** 9, // Optimism uses a different gas mechanism, set to 0 for automatic handling
+    },
+    optimism: {
+      url: "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL",
+      accounts: [process.env.PKEY_OP as string],
     }
   },
   etherscan: {
-    apiKey: "GSZW9CN933WI4N3ZMQF9XCX9R6AC2H9IZF",
+    //apiKey: "GSZW9CN933WI4N3ZMQF9XCX9R6AC2H9IZF", ethereum
+    apiKey: "86Q5KMJ24TADN1WRUUVSDK31IAR44I1J4K" // optimism
   }
 };
 
