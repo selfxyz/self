@@ -100,7 +100,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
 
         const poseidonT3Address = poseidonT3.target;
-        Register = await ethers.getContractFactory("Register", {
+        Register = await ethers.getContractFactory("ProofOfPassportRegister", {
             libraries: {
                 PoseidonT3: poseidonT3Address
             }

@@ -31,10 +31,10 @@ echo "building vkey"
 echo $RAND_STR | yarn snarkjs zkey contribute build/register_sha256WithRSAEncryption_65537.zkey build/register_sha256WithRSAEncryption_65537_final.zkey
 yarn snarkjs zkey export verificationkey build/register_sha256WithRSAEncryption_65537_final.zkey build/register_sha256WithRSAEncryption_65537_vkey.json
 
-yarn snarkjs zkey export solidityverifier build/register_sha256WithRSAEncryption_65537_final.zkey build/Verifier_register.sol
-sed -i '' 's/Groth16Verifier/Verifier_register/g' build/Verifier_register.sol
-cp build/Verifier_register.sol ../contracts/contracts/Verifier_register.sol
-echo "copied Verifier_register.sol to contracts"
+yarn snarkjs zkey export solidityverifier build/register_sha256WithRSAEncryption_65537_final.zkey build/Verifier_register_sha256WithRSAEncryption_65537.sol
+sed -i '' 's/Groth16Verifier/Verifier_register_sha256WithRSAEncryption_65537/g' build/Verifier_register_sha256WithRSAEncryption_65537.sol
+cp build/Verifier_register_sha256WithRSAEncryption_65537.sol ../contracts/contracts/Verifier_register_sha256WithRSAEncryption_65537.sol
+echo "copied Verifier_register_sha256WithRSAEncryption_65537.sol to contracts"
 
 echo "Build completed in $(($(date +%s) - $START_TIME)) seconds"
 

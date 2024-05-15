@@ -48,10 +48,11 @@ import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
    _      _      _      _      _      _      _      _      _      _      '.    `-.   . . . . ._. . . . . ,-'::::;  _                
  _( )_  _( )_  _( )_  _( )_  _( )_  _( )_  _( )_  _( )_  _( )_  _( )_  _( )`:__( )``--..___________..--'':::::;'`_( )_              
 (_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(_ o _)(`._::,.:,.:,:_ctr_:,:,.::,.:_;'`_)(_ o _)             
- (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,`"\/"\/\/'""""`\/"\/""\/"(_,_)  (_,_)                                                                                               `"\/"\/\/'""""`\/"\/""\/"                          
-***/
+ (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,_)  (_,`"\/"\/\/'""""`\/"\/""\/"(_,_)  (_,_) 
+ 
+ ***/
 
-contract Register is IRegister, Ownable {
+contract ProofOfPassportRegister is IRegister, Ownable {
     Registry public immutable registry;
     using Base64 for *;
     using Strings for uint256;
@@ -148,8 +149,18 @@ contract Register is IRegister, Ownable {
         verifiers[signature_algorithm] = verifier_address;
     }
 
-    /*** DEV FUNCTIONS ***/
-    function dev_add_commitment(uint256 commitment) external {
-        _addCommitment(commitment);
+    function updateSignaturesAlgorithm(
+        uint256 signature_algorithm,
+        address verifier_address
+    ) external onlyOwner {
+        require(
+            verifier_address != address(0),
+            "Register__InvalidVerifierAddress"
+        );
+        verifiers[signature_algorithm] = verifier_address;
+    }
+
+    function removeSignatureAlgorithm(uint256 signature_algorithm) external onlyOwner {
+        verifiers[signature_algorithm] = address(0);
     }
 }

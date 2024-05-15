@@ -19,7 +19,7 @@ contract SBT is ERC721Enumerable, Ownable {
     Formatter public formatter;
     IRegister public register;
 
-    uint constant scope = 5;
+    uint constant scope = 1;
 
     mapping(uint256 => bool) public nullifiers;
 
