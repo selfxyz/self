@@ -39,10 +39,10 @@ const useUserStore = create<UserState>((set, get) => ({
   secret: "",
 
   // When user opens the app, checks presence of passportData
-  // - If passportData is not present, starts the onboarding flow
-  // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
-  // 	- If the commitment is present in the tree, proceed to main screen
-  // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
+	// - If passportData is not present, starts the onboarding flow
+	// - If passportData is present, then secret must be here too (they are always set together). Request the tree.
+	// 	- If the commitment is present in the tree, proceed to main screen
+	// 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
     if (!passportDataCreds) {
@@ -72,8 +72,8 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   // When reading passport for the first time:
-  // - Check presence of secret. If there is none, create one and store it
-  // 	- Store the passportData and try registering the commitment in the background
+	// - Check presence of secret. If there is none, create one and store it
+	// 	- Store the passportData and try registering the commitment in the background
   registerPassportData: async (passportData) => {
     const secretCreds = await Keychain.getGenericPassword({ service: "secret" });
 
@@ -115,38 +115,38 @@ const useUserStore = create<UserState>((set, get) => ({
     } = useNavigationStore.getState();
 
     try {
-      //   const inputs = generateCircuitInputsRegister(
-      //     passportData,
-      //     secret,
-      //     { developmentMode: false }
-      //   );
+    //   const inputs = generateCircuitInputsRegister(
+    //     passportData,
+    //     secret,
+    //     { developmentMode: false }
+    //   );
 
-      //   amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+    //   amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+  
+    //   Object.keys(inputs).forEach((key) => {
+    //     if (Array.isArray(inputs[key as keyof typeof inputs])) {
+    //       console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
+    //     } else {
+    //       console.log(key, inputs[key as keyof typeof inputs]);
+    //     }
+    //   });
+  
+    //   const start = Date.now();
 
-      //   Object.keys(inputs).forEach((key) => {
-      //     if (Array.isArray(inputs[key as keyof typeof inputs])) {
-      //       console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
-      //     } else {
-      //       console.log(key, inputs[key as keyof typeof inputs]);
-      //     }
-      //   });
+    //   const proof = await generateProof(
+    //     `Register_${passportData.signatureAlgorithm}`, // TODO format it
+    //     inputs,
+    //   );
 
-      //   const start = Date.now();
+    //   const end = Date.now();
+    //   console.log('Total proof time from frontend:', end - start);
+    //   amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
 
-      //   const proof = await generateProof(
-      //     `Register_${passportData.signatureAlgorithm}`, // TODO format it
-      //     inputs,
-      //   );
+    //   // TODO send the proof to the relayer
 
-      //   const end = Date.now();
-      //   console.log('Total proof time from frontend:', end - start);
-      //   amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
-
-      //   // TODO send the proof to the relayer
-
-      //   set({
-      //     registered: true,
-      //   });
+    //   set({
+    //     registered: true,
+    //   });
     } catch (error: any) {
       console.error(error);
       toast?.show('Error', {
@@ -178,7 +178,7 @@ const useUserStore = create<UserState>((set, get) => ({
     passportNumber: "",
     dateOfBirth: "",
     dateOfExpiry: "",
-  }),
+  }, true),
 }))
 
 export default useUserStore
