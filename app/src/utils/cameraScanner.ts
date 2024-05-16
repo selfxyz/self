@@ -5,7 +5,7 @@ import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 
 export const startCameraScan = async () => {
-  const {toast, setStep} = useNavigationStore.getState();
+  const { toast, setStep } = useNavigationStore.getState();
 
   if (Platform.OS === 'ios') {
     try {
@@ -21,7 +21,7 @@ export const startCameraScan = async () => {
 
       setStep(Steps.MRZ_SCAN_COMPLETED);
       toast?.show("Scan successful", {
-        message: 'Nice to meet you!',
+        message: '',
         customData: {
           type: "success",
         },
@@ -50,7 +50,7 @@ export const startCameraScan = async () => {
             customData: {
               type: "success",
             },
-          })    
+          })
         } catch (error: any) {
           console.error('Invalid MRZ format:', error.message);
           amplitude.track('Camera scan unsuccessful');

@@ -5,7 +5,7 @@ import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import ScanScreen from './ScanScreen';
+import ScanScreen from './NfcScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
@@ -19,6 +19,8 @@ import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
 import useUserStore from '../stores/userStore';
 import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
+import CameraScreen from './CameraScreen';
+import NfcScreen from './NfcScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -47,7 +49,7 @@ const MainScreen: React.FC = () => {
 
   const handleRestart = () => {
     updateNavigationStore({
-      selectedTab: "scan",
+      selectedTab: "camera",
       selectedApp: null,
       step: Steps.MRZ_SCAN,
     })
@@ -103,6 +105,11 @@ const MainScreen: React.FC = () => {
     if (step == Steps.NFC_SCAN_COMPLETED) {
       updateNavigationStore({
         selectedTab: "app",
+      })
+    }
+    if (step == Steps.MRZ_SCAN_COMPLETED) {
+      updateNavigationStore({
+        selectedTab: "nfc",
       })
     }
     return () => {
@@ -183,7 +190,7 @@ const MainScreen: React.FC = () => {
                         flex={1}
                         id="passportnumber"
                         onChangeText={(text) => {
-                          update({passportNumber: text.toUpperCase()})
+                          update({ passportNumber: text.toUpperCase() })
                         }}
                         value={passportNumber}
                         keyboardType="default"
@@ -201,7 +208,7 @@ const MainScreen: React.FC = () => {
                         flex={1}
                         id="dateofbirth"
                         onChangeText={(text) => {
-                          update({dateOfBirth: text})
+                          update({ dateOfBirth: text })
                         }}
                         value={dateOfBirth}
                         keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
@@ -219,7 +226,7 @@ const MainScreen: React.FC = () => {
                         flex={1}
                         id="dateofexpiry"
                         onChangeText={(text) => {
-                          update({dateOfExpiry: text})
+                          update({ dateOfExpiry: text })
                         }}
                         value={dateOfExpiry}
                         keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
@@ -350,19 +357,21 @@ const MainScreen: React.FC = () => {
           </Sheet>
           <XStack bc="#343434" h={1.2} />
         </YStack>
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan"
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="camera"
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
           <ToastViewport flexDirection="column-reverse" top={15} right={0} left={0} />
           <ToastMessage />
-          <Tabs.Content value="scan" f={1}>
-            <ScanScreen
-              handleNFCScan={handleNFCScan}
-              step={step}
+          <Tabs.Content value="camera" f={1}>
+            <CameraScreen
             />
           </Tabs.Content>
-
+          <Tabs.Content value="nfc" f={1}>
+            <NfcScreen
+              handleNFCScan={handleNFCScan}
+            />
+          </Tabs.Content>
           <Tabs.Content value="app" f={1}>
             <AppScreen />
           </Tabs.Content>

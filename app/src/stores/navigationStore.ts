@@ -33,7 +33,7 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
 
   toast: null,
 
-  selectedTab: "scan",
+  selectedTab: "camera",
   selectedApp: null,
 
   setToast: (toast) => set({ toast }),
