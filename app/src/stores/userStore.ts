@@ -44,10 +44,10 @@ const useUserStore = create<UserState>((set, get) => ({
   secret: "",
 
   // When user opens the app, checks presence of passportData
-	// - If passportData is not present, starts the onboarding flow
-	// - If passportData is present, then secret must be here too (they are always set together). Request the tree.
-	// 	- If the commitment is present in the tree, proceed to main screen
-	// 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
+  // - If passportData is not present, starts the onboarding flow
+  // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
+  // 	- If the commitment is present in the tree, proceed to main screen
+  // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
     if (!passportDataCreds) {
@@ -76,8 +76,8 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   // When reading passport for the first time:
-	// - Check presence of secret. If there is none, create one and store it
-	// 	- Store the passportData and try registering the commitment in the background
+  // - Check presence of secret. If there is none, create one and store it
+  // 	- Store the passportData and try registering the commitment in the background
   registerPassportData: async (passportData) => {
     const secretCreds = await Keychain.getGenericPassword({ service: "secret" });
 

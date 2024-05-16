@@ -64,7 +64,6 @@ const config: HardhatUserConfig = {
     }
   },
   etherscan: {
-    //apiKey: "GSZW9CN933WI4N3ZMQF9XCX9R6AC2H9IZF", ethereum
     apiKey: "86Q5KMJ24TADN1WRUUVSDK31IAR44I1J4K" // optimism
   }
 };
