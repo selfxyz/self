@@ -12,6 +12,11 @@ import useNavigationStore from './navigationStore';
 import { Steps } from '../utils/utils';
 import { ethers } from 'ethers';
 import { downloadZkey } from '../utils/zkeyDownload';
+import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
+import { PASSPORT_ATTESTATION_ID, RPC_URL } from '../../../common/src/constants/constants';
+import { generateProof } from '../utils/prover';
+import { formatSigAlg } from '../../../common/src/utils/utils';
+import { sendRegisterTransaction } from '../utils/transactions';
 
 interface UserState {
   passportNumber: string
@@ -60,9 +65,8 @@ const useUserStore = create<UserState>((set, get) => ({
     useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this currently means go to app selection screen
 
     // download zkeys if they are not already downloaded
-    // downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
-    // downloadZkey("disclose");
-    downloadZkey("proof_of_passport");
+    downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
+    downloadZkey("disclose");
 
     // TODO: check if the commitment is already registered, if not retry registering it
 
@@ -92,7 +96,7 @@ const useUserStore = create<UserState>((set, get) => ({
     const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
 
     if (passportDataCreds && passportDataCreds.password) {
-      throw new Error("passportData is already registered, this should never happen")
+      console.log("passportData is already registered, this should never happen in prod")
     }
 
     await Keychain.setGenericPassword("passportData", JSON.stringify(passportData), { service: "passportData" });
@@ -109,44 +113,58 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   registerCommitment: async (secret, passportData) => {
-    // just like in handleProve, generate inputs and launch commitment registration
     const {
       toast
     } = useNavigationStore.getState();
 
     try {
-    //   const inputs = generateCircuitInputsRegister(
-    //     passportData,
-    //     secret,
-    //     { developmentMode: false }
-    //   );
+      const inputs = generateCircuitInputsRegister(
+        secret,
+        PASSPORT_ATTESTATION_ID,
+        passportData,
+        { developmentMode: true }
+      );
 
-    //   amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+      amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
   
-    //   Object.keys(inputs).forEach((key) => {
-    //     if (Array.isArray(inputs[key as keyof typeof inputs])) {
-    //       console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
-    //     } else {
-    //       console.log(key, inputs[key as keyof typeof inputs]);
-    //     }
-    //   });
+      Object.keys(inputs).forEach((key) => {
+        if (Array.isArray(inputs[key as keyof typeof inputs])) {
+          console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
+        } else {
+          console.log(key, inputs[key as keyof typeof inputs]);
+        }
+      });
   
-    //   const start = Date.now();
+      const start = Date.now();
 
-    //   const proof = await generateProof(
-    //     `Register_${passportData.signatureAlgorithm}`, // TODO format it
-    //     inputs,
-    //   );
+      const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
 
-    //   const end = Date.now();
-    //   console.log('Total proof time from frontend:', end - start);
-    //   amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+      const proof = await generateProof(
+        `register_${sigAlgFormatted}`,
+        inputs,
+      );
 
-    //   // TODO send the proof to the relayer
+      console.log('proof:', proof);
 
-    //   set({
-    //     registered: true,
-    //   });
+      const end = Date.now();
+      console.log('Total proof time from frontend:', end - start);
+      amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+
+      const provider = new ethers.JsonRpcProvider(RPC_URL);
+
+      const serverResponse = await sendRegisterTransaction(proof)
+      const txHash = serverResponse?.data.hash;
+
+      const receipt = await provider.waitForTransaction(txHash);
+      console.log('receipt status:', receipt?.status);
+
+      if (receipt?.status === 0) {
+        throw new Error("Transaction failed");
+      }
+
+      set({
+        registered: true,
+      });
     } catch (error: any) {
       console.error(error);
       toast?.show('Error', {
@@ -178,7 +196,7 @@ const useUserStore = create<UserState>((set, get) => ({
     passportNumber: "",
     dateOfBirth: "",
     dateOfExpiry: "",
-  }, true),
+  }),
 }))
 
 export default useUserStore

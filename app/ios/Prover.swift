@@ -9,8 +9,12 @@ import Foundation
 import React
 import Security
 
-#if canImport(witnesscalc_proof_of_passport)
-import witnesscalc_proof_of_passport
+#if canImport(witnesscalc_register_sha256WithRSAEncryption_65537)
+import witnesscalc_register_sha256WithRSAEncryption_65537
+#endif
+
+#if canImport(witnesscalc_disclose)
+import witnesscalc_disclose
 #endif
 
 #if canImport(groth16_prover)
@@ -91,8 +95,15 @@ private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) th
     
     let result: Int32
     
-    if witness_calculator == "proof_of_passport" {
-        result = witnesscalc_proof_of_passport(
+    if witness_calculator == "register_sha256WithRSAEncryption_65537" {
+        result = witnesscalc_register_sha256WithRSAEncryption_65537(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } else if witness_calculator == "disclose" {
+        result = witnesscalc_disclose(
             (dat as NSData).bytes, datSize,
             (jsonData as NSData).bytes, jsonDataSize,
             wtnsBuffer, wtnsSize,

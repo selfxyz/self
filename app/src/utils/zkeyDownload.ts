@@ -7,9 +7,8 @@ import useNavigationStore from '../stores/navigationStore';
 
 // this should not change, instead update the zkey on the bucket
 const zkeyZipUrls = {
-  register_sha256WithRSAEncryption_65537: "qweqwe",
-  disclose: "qweqwe",
-  proof_of_passport: `https://d8o9bercqupgk.cloudfront.net/proof_of_passport.zkey.zip`,
+  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537.zkey.zip",
+  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose.zkey.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;

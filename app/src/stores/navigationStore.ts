@@ -22,7 +22,6 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   isZkeyDownloading: {
     register_sha256WithRSAEncryption_65537: false,
     disclose: false,
-    proof_of_passport: false,
   },
   showWarningModal: {
     show: false,

@@ -34,6 +34,7 @@ export type AppType = {
   finalButtonAction: () => void;
   finalButtonText: string;
 
+  scope: string;
   circuit: CircuitName; // circuit and witness calculator name
   
   fields: React.FC[];

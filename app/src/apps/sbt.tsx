@@ -3,19 +3,23 @@ import { Flame } from '@tamagui/lucide-icons';
 import { Text, XStack, YStack } from 'tamagui';
 import { generateProof } from "../utils/prover";
 import useUserStore from "../stores/userStore";
-import { generateCircuitInputs } from "../../../common/src/utils/generateInputs";
+import { generateCircuitInputsDisclose } from "../../../common/src/utils/generateInputs";
 import EnterAddress from "../components/EnterAddress";
 import { revealBitmapFromMapping } from "../../../common/src/utils/revealBitmap";
 import useSbtStore from "../stores/sbtStore";
 import useNavigationStore from "../stores/navigationStore";
 import { Steps } from "../utils/utils";
-import { mintSBT } from "../utils/minter";
+import { mintSBT } from "../utils/transactions";
 import { ethers } from "ethers";
 import * as amplitude from '@amplitude/analytics-react-native';
 import Clipboard from "@react-native-community/clipboard";
 import { shortenTxHash } from "../../utils/utils";
 import { textColor1 } from "../utils/colors";
 import { Pressable } from "react-native";
+import { COMMITMENT_TREE_TRACKER_URL, PASSPORT_ATTESTATION_ID, RPC_URL } from "../../../common/src/constants/constants";
+import { poseidon2 } from "poseidon-lite";
+import axios from 'axios';
+import { LeanIMT } from "@zk-kit/imt";
 
 const sepolia = () => (
   <YStack ml="$2" p="$2" px="$3" bc="#0d1e18" borderRadius="$10">
@@ -91,8 +95,8 @@ export const sbtApp: AppType = {
 
   finalButtonText: 'Copy to clipboard',
 
-
-  circuit: "proof_of_passport", // will be "disclose" soon
+  scope: '1',
+  circuit: "disclose",
 
   // fields the user can fill
   fields: [
@@ -104,28 +108,45 @@ export const sbtApp: AppType = {
       update,
       disclosure,
       address,
-      majority
+      majority,
     } = useSbtStore.getState();
 
     const {
       toast,
-      setStep
+      setStep,
     } = useNavigationStore.getState();
+
+    const {
+      secret,
+      passportData
+    } = useUserStore.getState();
 
     setStep(Steps.GENERATING_PROOF);
     
     await new Promise(resolve => setTimeout(resolve, 10));
     const reveal_bitmap = revealBitmapFromMapping(disclosure);
-  
-    const passportData = useUserStore.getState().passportData;
-  
+
+    const serializedCommitmentTree = await axios.get(COMMITMENT_TREE_TRACKER_URL);
+
+    console.log('serializedCommitmentTree:', serializedCommitmentTree);
+
+    const imt = new LeanIMT(
+      (a: bigint, b: bigint) => poseidon2([a, b]),
+      []
+    );
+
+    imt.import(serializedCommitmentTree.data);
+
     try {
-      const inputs = generateCircuitInputs(
+      const inputs = generateCircuitInputsDisclose(
+        secret,
+        PASSPORT_ATTESTATION_ID,
         passportData,
+        imt,
+        majority.toString().split(""),
         reveal_bitmap,
+        sbtApp.scope,
         address,
-        majority,
-        { developmentMode: false }
       );
 
       console.log('inputs:', inputs);
@@ -183,15 +204,10 @@ export const sbtApp: AppType = {
       },
     })
 
-    const provider = new ethers.JsonRpcProvider('https://gateway.tenderly.co/public/sepolia');
-    // https://mainnet.optimism.io
+    const provider = new ethers.JsonRpcProvider(RPC_URL);
 
     try {
-      const serverResponse = await mintSBT(
-        proof,
-        provider,
-        "sepolia"
-      )
+      const serverResponse = await mintSBT(proof)
       const txHash = serverResponse?.data.hash;
 
       setStep(Steps.PROOF_SENT);

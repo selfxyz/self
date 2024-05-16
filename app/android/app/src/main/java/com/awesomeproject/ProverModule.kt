@@ -75,8 +75,8 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     val zkpTools = ZKPTools(reactApplicationContext)
 
     val witnessCalcFunction = when (witness_calculator) {
-        "proof_of_passport" -> zkpTools::witnesscalc_proof_of_passport
-        // "another_calculator" -> zkpTools::witnesscalc_another_calculator
+        "register_sha256WithRSAEncryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
+        "disclose" -> zkpTools::witnesscalc_disclose
         else -> throw IllegalArgumentException("Invalid witness calculator name")
     }  
     
@@ -127,7 +127,15 @@ data class ZkProof(
 )
 
 class ZKPTools(val context: Context) {
-  external fun witnesscalc_proof_of_passport(circuitBuffer: ByteArray,
+  external fun witnesscalc_register_sha256WithRSAEncryption_65537(circuitBuffer: ByteArray,
+    circuitSize: Long,
+    jsonBuffer: ByteArray,
+    jsonSize: Long,
+    wtnsBuffer: ByteArray,
+    wtnsSize: LongArray,
+    errorMsg: ByteArray,
+    errorMsgMaxSize: Long): Int
+  external fun witnesscalc_disclose(circuitBuffer: ByteArray,
     circuitSize: Long,
     jsonBuffer: ByteArray,
     jsonSize: Long,

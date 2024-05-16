@@ -67,5 +67,3 @@ yarn-error.log
 .env
 
 .expo/
-
-ios/ProofOfPassport/Assets.xcassets/proof_of_passport.zkey.dataset/proof_of_passport.zkey
