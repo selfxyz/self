@@ -81,7 +81,7 @@ contract SBT is ERC721Enumerable, Ownable {
             register.checkRoot(uint(proof.merkle_root)),
             "Invalid merkle root"
         );
-        require(!nullifiers[proof.nullifier], "Signature already nullified");
+        // require(!nullifiers[proof.nullifier], "Signature already nullified");
 
         // require that the current date is valid
         // Convert the last four parameters into a valid timestamp, adding 30 years to adjust for block.timestamp starting in 1970

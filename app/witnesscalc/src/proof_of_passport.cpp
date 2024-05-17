@@ -3,7 +3,7 @@
 #include <assert.h>
 #include "circom.hpp"
 #include "calcwit.hpp"
-namespace CIRCUIT_NAME {namespace CIRCUIT_NAME {namespace CIRCUIT_NAME {void Ark_0_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
+namespace CIRCUIT_NAME {void Ark_0_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
 void Ark_0_run(uint ctx_index,Circom_CalcWit* ctx);
 void Sigma_1_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
 void Sigma_1_run(uint ctx_index,Circom_CalcWit* ctx);
@@ -972297,6 +972297,4 @@ ProofOfPassport_289_create(1,0,ctx,"main",0);
 ProofOfPassport_289_run(0,ctx);
 }
 
-}
-}
 }

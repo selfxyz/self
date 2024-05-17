@@ -1,21 +1,35 @@
 #!/bin/bash
 
-cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.cpp witnesscalc/src
-cp ../circuits/build/proof_of_passport_cpp/proof_of_passport.dat witnesscalc/src
+cp ../circuits/build/register_sha256WithRSAEncryption_65537_cpp/register_sha256WithRSAEncryption_65537.cpp witnesscalc/src
+cp ../circuits/build/register_sha256WithRSAEncryption_65537_cpp/register_sha256WithRSAEncryption_65537.dat witnesscalc/src
+cp ../circuits/build/disclose_cpp/disclose.cpp witnesscalc/src
+cp ../circuits/build/disclose_cpp/disclose.dat witnesscalc/src
 
 cd witnesscalc/src
 
 # This adds the namespace to the circuit file as described in the README
-last_include=$(grep -n '#include' proof_of_passport.cpp | tail -1 | cut -d: -f1)
+last_include=$(grep -n '#include' register_sha256WithRSAEncryption_65537.cpp | tail -1 | cut -d: -f1)
 if [[ "$OSTYPE" == "darwin"* ]]; then
   # macOS requires an empty string with the -i flag and handles backslashes differently
   sed -i "" "${last_include}a\\
-namespace CIRCUIT_NAME {" proof_of_passport.cpp
+namespace CIRCUIT_NAME {" register_sha256WithRSAEncryption_65537.cpp
 else
   # Linux
-  sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" proof_of_passport.cpp
+  sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" register_sha256WithRSAEncryption_65537.cpp
 fi
-echo "}" >> proof_of_passport.cpp
+echo "}" >> register_sha256WithRSAEncryption_65537.cpp
+
+# This adds the namespace to the circuit file as described in the README
+last_include=$(grep -n '#include' disclose.cpp | tail -1 | cut -d: -f1)
+if [[ "$OSTYPE" == "darwin"* ]]; then
+  # macOS requires an empty string with the -i flag and handles backslashes differently
+  sed -i "" "${last_include}a\\
+namespace CIRCUIT_NAME {" disclose.cpp
+else
+  # Linux
+  sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" disclose.cpp
+fi
+echo "}" >> disclose.cpp
 
 cd ../..
 git submodule init

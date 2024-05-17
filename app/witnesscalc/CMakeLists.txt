@@ -35,9 +35,12 @@ install(TARGETS
     tests
     test_platform
     authV2
-    proof_of_passport
-    witnesscalc_proof_of_passport
-    witnesscalc_proof_of_passportStatic
+    disclose
+    witnesscalc_disclose
+    witnesscalc_discloseStatic
+    register_sha256WithRSAEncryption_65537
+    witnesscalc_register_sha256WithRSAEncryption_65537
+    witnesscalc_register_sha256WithRSAEncryption_65537Static
     witnesscalc_authV2
     witnesscalc_authV2Static
     fr
@@ -49,12 +52,14 @@ install(FILES "${GMP_LIB_DIR}/${GMP_LIB_FILE}"
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 install(FILES
-    src/proof_of_passport.dat
+    src/disclose.dat
+    src/register_sha256WithRSAEncryption_65537.dat
     src/authV2.dat
     DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
 install(FILES
     src/witnesscalc.h
-    src/witnesscalc_proof_of_passport.h
+    src/witnesscalc_disclose.h
+    src/witnesscalc_register_sha256WithRSAEncryption_65537.h
     src/witnesscalc_authV2.h
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

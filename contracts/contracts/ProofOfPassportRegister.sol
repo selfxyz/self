@@ -60,6 +60,9 @@ contract ProofOfPassportRegister is IRegister, Ownable {
     using InternalLeanIMT for LeanIMTData;
     LeanIMTData internal imt;
 
+    // poseidon("E-PASSPORT")
+    bytes32 public attestationId = bytes32(0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24);
+
     mapping(uint256 => bool) public nullifiers;
     mapping(uint256 => bool) public merkleRootsCreated;
     mapping(uint256 => address) public verifiers;
@@ -69,18 +72,18 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         transferOwnership(msg.sender);
     }
 
-    function validateProof(RegisterProof calldata proof) external override {
+    function validateProof(RegisterProof calldata proof, uint256 signature_algorithm) external override {
         if (!registry.checkRoot(bytes32(proof.merkle_root))) {
-            revert Register__InvalidMerkleRoot();
+            revert("InvalidMerkleRoot");
         }
-        if (nullifiers[proof.nullifier]) {
-            revert Register__YouAreUsingTheSameNullifierTwice();
+        // if (nullifiers[proof.nullifier]) {
+        //     revert("YouAreUsingTheSameNullifierTwice");
+        // }
+        if (bytes32(proof.attestation_id) != attestationId) {
+            revert("InvalidAttestationId");
         }
-        if (verifiers[proof.signature_algorithm] == address(0)) {
-            revert Register__InvalidSignatureAlgorithm();
-        }
-        if (!verifyProof(proof)) {
-            revert Register__InvalidProof();
+        if (!verifyProof(proof, signature_algorithm)) {
+            revert("InvalidProof");
         }
 
         nullifiers[proof.nullifier] = true;
@@ -95,10 +98,11 @@ contract ProofOfPassportRegister is IRegister, Ownable {
     }
 
     function verifyProof(
-        RegisterProof calldata proof
+        RegisterProof calldata proof,
+        uint256 signature_algorithm
     ) public view override returns (bool) {
         return
-            IVerifier(verifiers[proof.signature_algorithm]).verifyProof(
+            IVerifier(verifiers[signature_algorithm]).verifyProof(
                 proof.a,
                 proof.b,
                 proof.c,
@@ -106,7 +110,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
                     uint(proof.commitment),
                     uint(proof.nullifier),
                     uint(proof.merkle_root),
-                    uint(proof.signature_algorithm)
+                    uint(proof.attestation_id)
                 ]
             );
     }

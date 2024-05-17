@@ -49,12 +49,15 @@ export function toStandardName(jmrtdName: string): string {
       return "sha384WithRSAEncryption";
     case "SHA512withRSA":
       return "sha512WithRSAEncryption";
+    
     case "SAwithRSA/PSS":
     case "SSAwithRSA/PSS":
     case "RSASSA-PSS":
-      return "rsassa-pss";
+    case "rsassa-pss":
     case "SHA256withRSAandMGF1":
-      return "id-mgf1"
+    case "id-mgf1":
+      return "rsassaPss";
+
 
     // added this one for iOS
     case "rsaEncryption":

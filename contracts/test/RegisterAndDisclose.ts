@@ -2,13 +2,14 @@ import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
-import { countryCodes } from "../../common/src/constants/constants";
+import { countryCodes, PASSPORT_ATTESTATION_ID } from "../../common/src/constants/constants";
 import { formatRoot, getCurrentDateYYMMDD } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import axios from 'axios';
 import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputsRegister, generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
+import { formatCallData_disclose, formatCallData_register } from "../../common/src/utils/formatCallData";
 import fs from 'fs';
 import { IMT, LeanIMT } from "@zk-kit/imt";
 import { poseidon2 } from "poseidon-lite";
@@ -36,7 +37,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     let bitmap, scope, user_address, majority, user_identifier, current_date, input_disclose: any;
     let proof_disclose, publicSignals_disclose, proof_result_disclose, vkey_disclose, verified_disclose: any, rawCallData_disclose, parsedCallData_disclose: any[], formattedCallData_disclose: any;
     let secret: string = BigInt(0).toString();
-    let attestation_id: string = BigInt(0).toString();
+    let attestation_id: string = PASSPORT_ATTESTATION_ID;
 
     before(
         async function generateProof() {
@@ -114,10 +115,15 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         await verifier_disclose.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_disclose deployed to ${verifier_disclose.target}`);
 
-        await register.addSignatureAlgorithm(0, verifier_register.target); // dev function - will not be deployed in production
+        await register.addSignatureAlgorithm(1, verifier_register.target); // dev function - will not be deployed in production
 
         SBT = await ethers.getContractFactory("SBT");
-        sbt = await SBT.deploy(verifier_disclose.target, formatter.target, register.target, deployOptions);
+        sbt = await SBT.deploy(
+            verifier_disclose.target,
+            formatter.target,
+            register.target,
+            deployOptions
+        );
         await sbt.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `SBT deployed to ${sbt.target}`);
     }
@@ -160,20 +166,12 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             const rawCallData = await groth16.exportSolidityCallData(proof, publicSignals);
             parsedCallData_register = JSON.parse(`[${rawCallData}]`);
-            formattedCallData_register = {
-                commitment: parsedCallData_register[3][0],
-                nullifier: parsedCallData_register[3][1],
-                merkle_root: parsedCallData_register[3][2],
-                signature_algorithm: parsedCallData_register[3][3],
-                a: parsedCallData_register[0],
-                b: [parsedCallData_register[1][0], parsedCallData_register[1][1]],
-                c: parsedCallData_register[2],
-            };
+            formattedCallData_register = formatCallData_register(parsedCallData_register)
 
             // Set fake commitments into the tree
             const commitments = [1, 2, 3];
             for (const commitment of commitments) {
-                await register.dev_add_commitment(commitment); // this is a dev function and will not be deplyed in production
+                await register.devAddCommitment(commitment); // this is a dev function and will not be deplyed in production
                 imt.insert(BigInt(commitment));
             }
         });
@@ -186,16 +184,25 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
         it("Register with a wrong proof should fail - Register", async function () {
             await expect(register
-                .validateProof({ ...formattedCallData_register, a: [0, 0] }))
+                .validateProof({ ...formattedCallData_register, a: [0, 0] }, 1))
                 .to.be.revertedWith("Register__InvalidProof()")
                 .catch(error => {
                     assert(error.message.includes("Register__InvalidProof()"), "Expected revert with Register__InvalidProof(), but got another error");
                 });
         });
 
+        it("Register with a wrong attestation id should fail - Register", async function () {
+            await expect(register
+                .validateProof({ ...formattedCallData_register, attestation_id: "10" }, 1))
+                .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
+                .catch(error => {
+                    assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
+                });
+        });
+
         it("Register with a wrong signature algorithm should fail - Register", async function () {
             await expect(register
-                .validateProof({ ...formattedCallData_register, signature_algorithm: 10 }))
+                .validateProof({ ...formattedCallData_register}, 2))
                 .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
                 .catch(error => {
                     assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
@@ -204,7 +211,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
         it("Register with a wrong merkle root should fail - Register", async function () {
             await expect(register
-                .validateProof({ ...formattedCallData_register, merkle_root: 0 }))
+                .validateProof({ ...formattedCallData_register, merkle_root: 0 }, 1))
                 .to.be.revertedWith("Register__InvalidMerkleRoot()")
                 .catch(error => {
                     assert(error.message.includes("Register__InvalidMerkleRoot()"), "Expected revert with Register__InvalidMerkleRoot(), but got another error");
@@ -213,7 +220,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
         it("Register should succeed - Register", async function () {
             expect(await register
-                .validateProof(formattedCallData_register)).not.to.be.reverted;
+                .validateProof(formattedCallData_register, 1)).not.to.be.reverted;
             imt.insert(BigInt(formattedCallData_register.commitment));
             /// check if the merkle root is equal to the one from the imt
             // console.log('\x1b[34m%s\x1b[0m', `IMT Merkle root of TS Object - TS: ${imt.root}`);
@@ -225,7 +232,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
         it("Register with the same proof should fail - Register", async function () {
             await expect(register
-                .validateProof(formattedCallData_register))
+                .validateProof(formattedCallData_register, 1))
                 .to.be.revertedWith("Register__YouAreUsingTheSameNullifierTwice()")
                 .catch(error => {
                     assert(error.message.includes("Register__YouAreUsingTheSameNullifierTwice()"), "Expected revert with Register__YouAreUsingTheSameNullifierTwice(), but got another error");
@@ -245,7 +252,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             // refactor in generate inputs function
             bitmap = Array(90).fill("1");
-            scope = BigInt(5).toString();
+            scope = BigInt(1).toString();
             user_address = await thirdAccount.getAddress();
             majority = ["1", "8"];
             input_disclose = generateCircuitInputsDisclose(
@@ -278,18 +285,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             console.log('\x1b[32m%s\x1b[0m', 'Proof verified - Disclose');
             rawCallData_disclose = await groth16.exportSolidityCallData(proof_disclose, publicSignals_disclose);
             parsedCallData_disclose = JSON.parse(`[${rawCallData_disclose}]`);
-            formattedCallData_disclose = {
-                nullifier: parsedCallData_disclose[3][0],
-                revealedData_packed: [parsedCallData_disclose[3][1], parsedCallData_disclose[3][2], parsedCallData_disclose[3][3]],
-                attestation_id: parsedCallData_disclose[3][4],
-                merkle_root: parsedCallData_disclose[3][5],
-                scope: parsedCallData_disclose[3][6],
-                current_date: [parsedCallData_disclose[3][7], parsedCallData_disclose[3][8], parsedCallData_disclose[3][9], parsedCallData_disclose[3][10], parsedCallData_disclose[3][11], parsedCallData_disclose[3][12]],
-                user_identifier: parsedCallData_disclose[3][13],
-                a: parsedCallData_disclose[0],
-                b: [parsedCallData_disclose[1][0], parsedCallData_disclose[1][1]],
-                c: parsedCallData_disclose[2],
-            };
+            formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
+
         })
         it("SBT mint should fail with a wrong current date - SBT", async function () {
             await expect(sbt.mint({ ...formattedCallData_disclose, current_date: [2, 4, 0, 1, 0, 1] }))

@@ -35,7 +35,7 @@ interface IRegister {
         uint commitment;
         uint nullifier;
         uint merkle_root;
-        uint signature_algorithm;
+        uint attestation_id;
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
@@ -43,13 +43,14 @@ interface IRegister {
 
     /// @notice Validates a Register proof
     /// @param proof The Register proof to validate
-    function validateProof(RegisterProof calldata proof) external;
+    function validateProof(RegisterProof calldata proof, uint256 signature_algorithm) external;
 
     /// @notice Verifies a Register proof
     /// @param proof The Register proof to verify
     /// @return bool Returns true if the proof is valid, false otherwise
     function verifyProof(
-        RegisterProof calldata proof
+        RegisterProof calldata proof,
+        uint256 signature_algorithm
     ) external view returns (bool);
 
     /// @notice Checks if a given root is valid
