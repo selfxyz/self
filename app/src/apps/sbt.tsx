@@ -19,6 +19,7 @@ import { Pressable } from "react-native";
 import { COMMITMENT_TREE_TRACKER_URL, PASSPORT_ATTESTATION_ID, RPC_URL } from "../../../common/src/constants/constants";
 import { poseidon2 } from "poseidon-lite";
 import axios from 'axios';
+import https from 'https'
 import { LeanIMT } from "@zk-kit/imt";
 
 const sepolia = () => (
@@ -125,8 +126,12 @@ export const sbtApp: AppType = {
     
     await new Promise(resolve => setTimeout(resolve, 10));
     const reveal_bitmap = revealBitmapFromMapping(disclosure);
+    
+    const httpsAgent = new https.Agent({
+      rejectUnauthorized: false
+    })
 
-    const serializedCommitmentTree = await axios.get(COMMITMENT_TREE_TRACKER_URL);
+    const serializedCommitmentTree = await axios.get(COMMITMENT_TREE_TRACKER_URL, { httpsAgent })
 
     console.log('serializedCommitmentTree:', serializedCommitmentTree);
 

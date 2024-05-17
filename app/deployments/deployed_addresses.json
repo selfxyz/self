@@ -1,9 +1,9 @@
 {
-  "Deploy_Registry#Formatter": "0x6BE397955e562172dCBCab6B3a2DBBb12eaB0CB9",
-  "Deploy_Registry#PoseidonT3": "0xFA915138883C434067DdA1198F9202D4d07C0b28",
-  "Deploy_Registry#Registry": "0x3F34D2a3c320Fa531339FB17844ad7BBDFDbF306",
-  "Deploy_Registry#Verifier_disclose": "0xe27ebf1DF8080A03d4AeB187FaE96404b2769cd2",
-  "Deploy_Registry#Verifier_register_sha256WithRSAEncryption_65537": "0x35c9B5cb9AE9Dea1Fe8dC62854EB84d3e1c6F55b",
-  "Deploy_Registry#ProofOfPassportRegister": "0xc376571556Ee5103255dc29F23dBf16830Ba1031",
-  "Deploy_Registry#SBT": "0xD95986A045D362cc050ED91AAcBa01270eA53b9B"
+  "Deploy_Registry#Formatter": "0x24c919Dc3E5BA89c0898778D71435D566B05B4c5",
+  "Deploy_Registry#PoseidonT3": "0x4572441E3A703f9557E81639282CcbEf88A8a1B1",
+  "Deploy_Registry#Registry": "0x34a57F3421aDe65Ab4c0187BC8E12886Fd70ddCB",
+  "Deploy_Registry#Verifier_disclose": "0x214007909475A4Eed3f0a8C827E86de55EcFc340",
+  "Deploy_Registry#Verifier_register_sha256WithRSAEncryption_65537": "0x3C183200751Aa52958Ae2419D165ADA04Fba5c00",
+  "Deploy_Registry#ProofOfPassportRegister": "0xFd84F23Be557133DCa47Fc9aa22031AcCE557335",
+  "Deploy_Registry#SBT": "0x09082fb07341F4e664af8EBdcf16C95512fe3185"
 }

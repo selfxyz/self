@@ -58,9 +58,12 @@ const useUserStore = create<UserState>((set, get) => ({
 
     const secret = (secretCreds as Keychain.UserCredentials).password
 
+    console.log("Setting passportData, secret and registered boolean to true, skipping onboarding")
+
     set({
       passportData: JSON.parse(passportDataCreds.password),
       secret,
+      registered: true,
     });
     useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this currently means go to app selection screen
 

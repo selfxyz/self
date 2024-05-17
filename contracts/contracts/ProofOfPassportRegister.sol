@@ -76,9 +76,9 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         if (!registry.checkRoot(bytes32(proof.merkle_root))) {
             revert("InvalidMerkleRoot");
         }
-        if (nullifiers[proof.nullifier]) {
-            revert("YouAreUsingTheSameNullifierTwice");
-        }
+        // if (nullifiers[proof.nullifier]) {
+        //     revert("YouAreUsingTheSameNullifierTwice");
+        // }
         if (bytes32(proof.attestation_id) != attestationId) {
             revert("InvalidAttestationId");
         }
