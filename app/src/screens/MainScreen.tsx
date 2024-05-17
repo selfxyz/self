@@ -5,7 +5,7 @@ import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import ScanScreen from './NfcScreen';
+import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
@@ -19,14 +19,15 @@ import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
 import useUserStore from '../stores/userStore';
 import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
-import CameraScreen from './CameraScreen';
 import NfcScreen from './NfcScreen';
+import CameraScreen from './CameraScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [brokenCamera, setBrokenCamera] = useState(false);
+  const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
   const {
     passportNumber,
@@ -49,7 +50,7 @@ const MainScreen: React.FC = () => {
 
   const handleRestart = () => {
     updateNavigationStore({
-      selectedTab: "camera",
+      selectedTab: "scan",
       selectedApp: null,
       step: Steps.MRZ_SCAN,
     })
@@ -87,6 +88,9 @@ const MainScreen: React.FC = () => {
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
     if (step == Steps.MRZ_SCAN_COMPLETED) {
+      updateNavigationStore({
+        selectedTab: "nfc",
+      })
       timeoutId = setTimeout(() => {
         setNFCScanIsOpen(false);
       }, 0);
@@ -105,11 +109,6 @@ const MainScreen: React.FC = () => {
     if (step == Steps.NFC_SCAN_COMPLETED) {
       updateNavigationStore({
         selectedTab: "app",
-      })
-    }
-    if (step == Steps.MRZ_SCAN_COMPLETED) {
-      updateNavigationStore({
-        selectedTab: "nfc",
       })
     }
     return () => {
@@ -355,16 +354,81 @@ const MainScreen: React.FC = () => {
               </YStack>
             </Sheet.Frame>
           </Sheet>
+
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} modal dismissOnOverlayPress={true} animation="medium" snapPoints={[80]}>
+            <Sheet.Overlay />
+            <Sheet.Frame>
+              <YStack p="$4" f={1} bg={bgColor} pl="$3" gap="$3" borderColor="white" >
+                <Text fontSize="$6" mb="$4" color={textColor1}>Enter your the information manually</Text>
+                <Fieldset gap="$4" horizontal>
+                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                    Passport Number
+                  </Text>
+                  <Input
+                    bg={componentBgColor}
+                    color={textColor1}
+                    h="$3.5"
+                    borderColor={passportNumber?.length === 9 ? "green" : "unset"}
+                    flex={1}
+                    id="passportnumber"
+                    onChangeText={(text) => {
+                      update({ passportNumber: text.toUpperCase() })
+                    }}
+                    value={passportNumber}
+                    keyboardType="default"
+                  />
+                </Fieldset>
+                <Fieldset gap="$4" horizontal>
+                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                    Date of birth (yymmdd)
+                  </Text>
+                  <Input
+                    bg={componentBgColor}
+                    color={textColor1}
+                    h="$3.5"
+                    borderColor={dateOfBirth?.length === 6 ? "green" : "unset"}
+                    flex={1}
+                    id="dateofbirth"
+                    onChangeText={(text) => {
+                      update({ dateOfBirth: text })
+                    }}
+                    value={dateOfBirth}
+                    keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
+                  />
+                </Fieldset>
+                <Fieldset gap="$4" horizontal>
+                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                    Date of expiry (yymmdd)
+                  </Text>
+                  <Input
+                    bg={componentBgColor}
+                    color={textColor1}
+                    h="$3.5"
+                    borderColor={dateOfExpiry?.length === 6 ? "green" : "unset"}
+                    flex={1}
+                    id="dateofexpiry"
+                    onChangeText={(text) => {
+                      update({ dateOfExpiry: text })
+                    }}
+                    value={dateOfExpiry}
+                    keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
+                  />
+                </Fieldset>
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
           <XStack bc="#343434" h={1.2} />
         </YStack>
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="camera"
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan"
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
           <ToastViewport flexDirection="column-reverse" top={15} right={0} left={0} />
           <ToastMessage />
-          <Tabs.Content value="camera" f={1}>
+          <Tabs.Content value="scan" f={1}>
             <CameraScreen
+              sheetIsOpen={sheetIsOpen}
+              setSheetIsOpen={setSheetIsOpen}
             />
           </Tabs.Content>
           <Tabs.Content value="nfc" f={1}>
@@ -372,6 +436,7 @@ const MainScreen: React.FC = () => {
               handleNFCScan={handleNFCScan}
             />
           </Tabs.Content>
+
           <Tabs.Content value="app" f={1}>
             <AppScreen />
           </Tabs.Content>

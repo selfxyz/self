@@ -18,9 +18,6 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
   return (
     <YStack f={1} p="$3">
 
-
-
-
       <Image borderRadius="$5" alignSelf='center'
         w="$12"
         h="$14"
