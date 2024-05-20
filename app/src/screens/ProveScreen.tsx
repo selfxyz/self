@@ -32,9 +32,9 @@ const ProveScreen: React.FC = () => {
     handleProve,
     circuit,
   } = selectedApp
-  
+
   const useAppStore = appStoreMapping[selectedApp.id as keyof typeof appStoreMapping]
-  
+
   const {
     address,
     majority,
@@ -46,7 +46,7 @@ const ProveScreen: React.FC = () => {
     registered,
     passportData,
   } = useUserStore();
-  
+
   const handleDisclosureChange = (field: string) => {
     const requiredOrOptional = selectedApp.disclosureOptions[field as keyof typeof selectedApp.disclosureOptions];
 
@@ -61,7 +61,7 @@ const ProveScreen: React.FC = () => {
       }
     });
   };
-  
+
   const { height } = useWindowDimensions();
 
   useEffect(() => {
@@ -75,25 +75,25 @@ const ProveScreen: React.FC = () => {
         <YStack alignSelf='center' my="$3">
           {hideData
             ? <Image
-                w={height > 750 ? 150 : 100}
-                h={height > 750 ? 190 : 80}
-                borderRadius={height > 800 ? "$7" : "$6"}
-                source={{
-                  uri: USER,
-                }}
-              />
+              w={height > 750 ? 150 : 100}
+              h={height > 750 ? 190 : 80}
+              borderRadius={height > 800 ? "$7" : "$6"}
+              source={{
+                uri: USER,
+              }}
+            />
             : <Image
-                w={height > 750 ? 150 : 110}
-                h={height > 750 ? 190 : 130}
-                borderRadius={height > 750 ? "$7" : "$6"}
-                source={{
-                  uri: passportData.photoBase64 ?? USER,
-                }}
-              />
+              w={height > 750 ? 150 : 110}
+              h={height > 750 ? 190 : 130}
+              borderRadius={height > 750 ? "$7" : "$6"}
+              source={{
+                uri: passportData.photoBase64 ?? USER,
+              }}
+            />
           }
         </YStack>
         <Text color={textColor1} fontSize="$5" fontWeight="bold" ml="$2" mb="$1">
-          Hi {" "} 
+          Hi {" "}
           {
             hideData
               ? maskString(getFirstName(passportData.mrz))
@@ -105,7 +105,6 @@ const ProveScreen: React.FC = () => {
         {fields.map((Field, index) => (
           <Field key={index} />
         ))}
-
 
         <YStack f={1} >
           <YStack bc="#1c1c1c" borderWidth={1.2} borderColor="#343434" borderRadius="$6">
@@ -247,14 +246,14 @@ const ProveScreen: React.FC = () => {
         </Button>
         {
           (height > 750) &&
-            <Text
-              fontSize={10}
-              color={step === Steps.GENERATING_PROOF ? "#a0a0a0" : "#161616"}
-              py="$2"
-              alignSelf='center'
-            >
-              This operation can take up to 1 mn, phone may freeze during this time
-            </Text>
+          <Text
+            fontSize={10}
+            color={step === Steps.GENERATING_PROOF ? "#a0a0a0" : "#161616"}
+            py="$2"
+            alignSelf='center'
+          >
+            This operation can take up to 1 mn, phone may freeze during this time
+          </Text>
         }
       </YStack >
     </YStack >

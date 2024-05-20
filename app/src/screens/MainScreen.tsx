@@ -125,13 +125,16 @@ const MainScreen: React.FC = () => {
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
-            <Button p="$2" py="$3" pr="$7" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
             </Text>
-            <Button p="$2" py="$3" pl="$7" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
+            <XStack>
+              <Button p="$2" py="$3" pr="$7" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
+              <Button p="$2" py="$3" pl="$7" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
+            </XStack>
+
           </XStack>
-          <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
+          <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
               <YStack gap="$5" f={1} pt="$3">
@@ -158,7 +161,7 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={SettingsIsOpen} onOpenChange={setSettingsIsOpen} modal animation="medium" snapPoints={[88]}>
+          <Sheet open={SettingsIsOpen} onOpenChange={setSettingsIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
             <Sheet.Overlay />
             <Sheet.Frame bg={bgColor} borderRadius="$9">
               <YStack p="$3" pb="$5" f={1} gap={height > 750 ? "$3" : "$1"} mb="$1.5">
@@ -282,18 +285,18 @@ const MainScreen: React.FC = () => {
                 <YStack flex={1} />
 
                 <YStack mb="$0">
-                  <Button p="$2.5" borderRadius="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} onPress={() => setSettingsIsOpen(false)} w="80%" alignSelf='center'>
+                  {/* <Button p="$2.5" borderRadius="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} onPress={() => setSettingsIsOpen(false)} w="80%" alignSelf='center'>
                     <Text color={textColor1} textAlign='center' fow="bold">Close</Text>
-                  </Button>
+                  </Button> */}
                 </YStack>
               </YStack>
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} modal animation="medium" snapPoints={[88]}>
+          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
             <Sheet.Overlay />
             <Sheet.Frame bg={bgColor} borderRadius="$9">
-              <YStack bg={bgColor} px="$3" pb="$5" flex={1} >
+              <YStack px="$3" pb="$5" flex={1} >
                 <XStack ml="$2" mt="$3" gap="$2">
                   <H2 color={textColor1}>Help</H2>
                   <HelpCircle color={textColor1} mt="$1" alignSelf='center' size="$2" />
@@ -347,18 +350,18 @@ const MainScreen: React.FC = () => {
                   </YStack>
 
                 </YStack>
-                <Button mt="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" alignSelf='center' w="80%" onPress={() => setHelpIsOpen(false)}>
+                {/* <Button mt="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" alignSelf='center' w="80%" onPress={() => setHelpIsOpen(false)}>
                   <Text color={textColor1} w="80%" textAlign='center' fow="bold">Close</Text>
-                </Button>
+                </Button> */}
 
               </YStack>
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} modal dismissOnOverlayPress={true} animation="medium" snapPoints={[80]}>
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[80]}>
             <Sheet.Overlay />
-            <Sheet.Frame>
-              <YStack p="$4" f={1} bg={bgColor} pl="$3" gap="$3" borderColor="white" >
+            <Sheet.Frame bg={bgColor} borderRadius="$9" pt="$2">
+              <YStack p="$4" f={1} gap="$3">
                 <Text fontSize="$6" mb="$4" color={textColor1}>Enter your the information manually</Text>
                 <Fieldset gap="$4" horizontal>
                   <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
