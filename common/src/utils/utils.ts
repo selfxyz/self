@@ -1,4 +1,4 @@
-import { IMT, LeanIMT } from '@zk-kit/imt';
+import { LeanIMT } from '@zk-kit/lean-imt';
 import { assert } from './shaPad';
 import { sha256 } from 'js-sha256';
 //import {sha1} from 'js-sha1';

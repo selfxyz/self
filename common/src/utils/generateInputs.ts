@@ -6,7 +6,8 @@ import {
   toUnsignedByte, getDigestLengthBytes, getCurrentDateYYMMDD,
   generateMerkleProof
 } from "./utils";
-import { IMT, LeanIMT } from "@zk-kit/imt";
+import { LeanIMT } from "@zk-kit/lean-imt";
+import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";

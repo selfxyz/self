@@ -5,7 +5,7 @@ import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { attributeToPosition, COMMITMENT_TREE_DEPTH } from "../../common/src/constants/constants";
 import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
-import { LeanIMT } from "@zk-kit/imt";
+import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
 import { unpackReveal } from '../../common/src/utils/revealBitmap';

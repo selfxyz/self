@@ -11,7 +11,7 @@ import { revealBitmapFromMapping } from "../../common/src/utils/revealBitmap";
 import { generateCircuitInputsRegister, generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
 import { formatCallData_disclose, formatCallData_register } from "../../common/src/utils/formatCallData";
 import fs from 'fs';
-import { IMT, LeanIMT } from "@zk-kit/imt";
+import { LeanIMT } from "@zk-kit/lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { PassportData } from "../../common/src/utils/types";
 import { Signer } from "ethers";
@@ -256,7 +256,14 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             user_address = await thirdAccount.getAddress();
             majority = ["1", "8"];
             input_disclose = generateCircuitInputsDisclose(
-                inputs.secret, inputs.attestation_id, passportData, imt as any, majority, bitmap, scope, BigInt(user_address.toString()).toString()
+                inputs.secret,
+                inputs.attestation_id,
+                passportData,
+                imt as any,
+                majority,
+                bitmap,
+                scope,
+                BigInt(user_address.toString()).toString()
             );
             // Generate the proof
             console.log('\x1b[32m%s\x1b[0m', 'Generating proof - Disclose');
@@ -286,6 +293,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             rawCallData_disclose = await groth16.exportSolidityCallData(proof_disclose, publicSignals_disclose);
             parsedCallData_disclose = JSON.parse(`[${rawCallData_disclose}]`);
             formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
+            console.log('formattedCallData_disclose', formattedCallData_disclose);
 
         })
         it("SBT mint should fail with a wrong current date - SBT", async function () {
@@ -306,8 +314,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             ).to.be.true;
         });
         it("SBT mint should succeed - SBT", async function () {
-            expect(
-                await sbt.mint(formattedCallData_disclose)
+            await expect(
+                sbt.mint(formattedCallData_disclose)
             ).not.to.be.reverted;
         });
         it("URI et Expiry saga - SBT", async function () {
@@ -334,8 +342,6 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             await expect(sbt.mint(formattedCallData_disclose))
                 .to.be.revertedWith("Signature already nullified");
         });
-
-
     });
 
 
