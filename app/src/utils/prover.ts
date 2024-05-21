@@ -13,7 +13,7 @@ export const generateProof = async (
     const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`
     // Example: "/data/user/0/com.proofofpassport/files/register_sha256WithRSAEncryption_65537.zkey" on android
     const witness_calculator = circuit;
-    const dat_file_name = circuit
+    const dat_file_name = circuit.toLowerCase();
 
     const response = await NativeModules.Prover.runProveAction(
       zkey_path,

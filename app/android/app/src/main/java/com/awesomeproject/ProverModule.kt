@@ -75,7 +75,7 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     val zkpTools = ZKPTools(reactApplicationContext)
 
     val witnessCalcFunction = when (witness_calculator) {
-        "register_sha256WithRSAEncryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
+        "register_sha256withrsaencryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
         "disclose" -> zkpTools::witnesscalc_disclose
         else -> throw IllegalArgumentException("Invalid witness calculator name")
     }  
