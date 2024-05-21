@@ -10,13 +10,14 @@ import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
 import { Steps } from '../utils/utils';
-import { ethers } from 'ethers';
 import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID, RPC_URL } from '../../../common/src/constants/constants';
 import { generateProof } from '../utils/prover';
 import { formatSigAlg } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
+import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
+import { ethers } from 'ethers';
 
 interface UserState {
   passportNumber: string
@@ -53,23 +54,21 @@ const useUserStore = create<UserState>((set, get) => ({
     downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
     downloadZkey("disclose");
 
-    const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
-    if (!passportDataCreds) {
+    const secret = await loadSecretOrCreateIt();
+    set({ secret });
+
+    const passportData = await loadPassportData();
+    if (!passportData) {
       console.log("No passport data found, starting onboarding flow")
       return;
     }
-    const secretCreds = await Keychain.getGenericPassword({ service: "secret" })
 
-    const secret = (secretCreds as Keychain.UserCredentials).password
-
-    console.log("Setting passportData, secret and registered boolean to true, skipping onboarding")
-
+    console.log("skipping onboarding")
     set({
-      passportData: JSON.parse(passportDataCreds.password),
-      secret,
+      passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this currently means go to app selection screen
+    useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this means go to app selection screen
 
     // TODO: check if the commitment is already registered, if not retry registering it
 
@@ -82,37 +81,22 @@ const useUserStore = create<UserState>((set, get) => ({
   // - Check presence of secret. If there is none, create one and store it
   // 	- Store the passportData and try registering the commitment in the background
   registerPassportData: async (passportData) => {
-    const secretCreds = await Keychain.getGenericPassword({ service: "secret" });
+    const secret = await loadSecret() as string;
 
-    if (secretCreds && secretCreds.password) {
-      // This should only ever happen if the user deletes the passport data in the options
-      console.log("secret is already registered, let's keep it.")
-    } else {
-      const randomWallet = ethers.Wallet.createRandom();
-      const secret = randomWallet.privateKey;
-      await Keychain.setGenericPassword("secret", secret, { service: "secret" });
+    const alreadyStoredPassportData = await loadPassportData();
+
+    if (alreadyStoredPassportData) {
+      console.log("passportData is already stored, this should never happen in prod")
+      console.log("replacing it with the new one")
     }
 
-    const newSecretCreds = await Keychain.getGenericPassword({ service: "secret" })
-    const secret = (newSecretCreds as Keychain.UserCredentials).password
-
-    const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
-
-    if (passportDataCreds && passportDataCreds.password) {
-      console.log("passportData is already registered, this should never happen in prod")
-    }
-
-    await Keychain.setGenericPassword("passportData", JSON.stringify(passportData), { service: "passportData" });
+    await storePassportData(passportData)
+    set({ passportData });
 
     get().registerCommitment(
       secret,
       passportData
     )
-
-    set({
-      passportData,
-      secret
-    });
   },
 
   registerCommitment: async (secret, passportData) => {
@@ -165,9 +149,7 @@ const useUserStore = create<UserState>((set, get) => ({
         throw new Error("Transaction failed");
       }
 
-      set({
-        registered: true,
-      });
+      set({ registered: true });
     } catch (error: any) {
       console.error(error);
       toast?.show('Error', {

@@ -21,6 +21,7 @@ import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -37,6 +38,8 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
+    registerCommitment,
+    secret
   } = useUserStore()
 
   const {
@@ -45,7 +48,8 @@ const MainScreen: React.FC = () => {
     step,
     setStep,
     selectedTab,
-    hideData
+    hideData,
+    toast
   } = useNavigationStore();
 
   const handleRestart = () => {
@@ -58,8 +62,16 @@ const MainScreen: React.FC = () => {
   }
 
   const handleSkip = () => {
+    registerCommitment(
+      secret,
+      mockPassportData_sha256WithRSAEncryption_65537
+    )
+    update({
+      passportData: mockPassportData_sha256WithRSAEncryption_65537
+    })
     setStep(Steps.NFC_SCAN_COMPLETED);
     deleteMrzFields();
+    toast?.show("Using mock passport data!", { type: "info" })
   }
 
   const handleHideData = () => {
