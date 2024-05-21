@@ -8,12 +8,12 @@ export const generateProof = async (
 ) => {
   try {
     console.log('launching generateProof function');
-    console.log('inputs in App.tsx', inputs);
+    console.log('inputs in prover.ts', inputs);
 
     const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`
     // Example: "/data/user/0/com.proofofpassport/files/register_sha256WithRSAEncryption_65537.zkey" on android
     const witness_calculator = circuit;
-    const dat_file_name = circuit.toLowerCase();
+    const dat_file_name = Platform.OS == "android" ? circuit.toLowerCase() : circuit;
 
     const response = await NativeModules.Prover.runProveAction(
       zkey_path,

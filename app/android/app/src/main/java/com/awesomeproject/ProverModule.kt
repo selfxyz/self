@@ -34,22 +34,14 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     Log.e(TAG, "dat_file_name in provePassport kotlin: " + dat_file_name)
     Log.e(TAG, "inputs in provePassport kotlin: " + inputs.toString())
 
-    val formattedInputs = mutableMapOf<String, Any?>(
-      "mrz" to inputs.getArray("mrz")?.toArrayList()?.map { it.toString() },
-      "reveal_bitmap" to inputs.getArray("reveal_bitmap")?.toArrayList()?.map { it.toString() },
-      "dataHashes" to inputs.getArray("dataHashes")?.toArrayList()?.map { it.toString() },
-      "datahashes_padded_length" to inputs.getArray("datahashes_padded_length")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
-      "eContentBytes" to inputs.getArray("eContentBytes")?.toArrayList()?.map { it.toString() },
-      "signature" to inputs.getArray("signature")?.toArrayList()?.map { it.toString() },
-      "signatureAlgorithm" to inputs.getArray("signatureAlgorithm")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
-      "pubkey" to inputs.getArray("pubkey")?.toArrayList()?.map { it.toString() },
-      "pathIndices" to inputs.getArray("pathIndices")?.toArrayList()?.map { it.toString() },
-      "siblings" to inputs.getArray("siblings")?.toArrayList()?.map { it.toString() },
-      "root" to inputs.getArray("root")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
-      "address" to inputs.getArray("address")?.toArrayList()?.map { it.toString() }?.firstOrNull(),
-      "current_date" to inputs.getArray("current_date")?.toArrayList()?.map { it.toString() },
-      "majority" to inputs.getArray("majority")?.toArrayList()?.map { it.toString() },
-    )
+    val formattedInputs = mutableMapOf<String, Any?>()
+
+    val iterator = inputs.keySetIterator()
+    while (iterator.hasNextKey()) {
+        val key = iterator.nextKey()
+        val array = inputs.getArray(key)?.toArrayList()?.map { it.toString() }
+        formattedInputs[key] = if (array?.size == 1) array.firstOrNull() else array
+    }
 
     val gson = GsonBuilder().setPrettyPrinting().create()
     Log.e(TAG, gson.toJson(formattedInputs))
@@ -75,7 +67,7 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     val zkpTools = ZKPTools(reactApplicationContext)
 
     val witnessCalcFunction = when (witness_calculator) {
-        "register_sha256withrsaencryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
+        "register_sha256WithRSAEncryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
         "disclose" -> zkpTools::witnesscalc_disclose
         else -> throw IllegalArgumentException("Invalid witness calculator name")
     }  
