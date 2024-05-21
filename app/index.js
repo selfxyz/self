@@ -12,6 +12,8 @@ const tamaguiConfig = createTamagui(config)
 
 LogBox.ignoreLogs([
   /bad setState/,
+  'Warning, duplicate ID for input',
+  /Warning, duplicate ID for input/
 ])
 
 const Root = () => (
