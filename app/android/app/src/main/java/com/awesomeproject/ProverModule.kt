@@ -240,7 +240,7 @@ class ZKPUseCase(val context: Context) {
 
         Log.e("ZKPUseCase", "zkey_path: $zkey_path")
 
-        val verification = zkpTool.groth16_prover_zkey_file(
+        val proofGen = zkpTool.groth16_prover_zkey_file(
             zkey_path,
             witnessData,
             witnessLen[0],
@@ -252,14 +252,14 @@ class ZKPUseCase(val context: Context) {
             256
         )
 
-        Log.e("ZKPUseCase", "Verification res: $verification")
+        Log.e("ZKPUseCase", "proofGen res: $proofGen")
 
-        if (verification == 2) {
-            throw Exception("Not enough memory for verification ${msg.decodeToString()}")
+        if (proofGen == 2) {
+            throw Exception("Not enough memory for proofGen ${msg.decodeToString()}")
         }
 
-        if (verification == 1) {
-            throw Exception("Error during verification ${msg.decodeToString()}")
+        if (proofGen == 1) {
+            throw Exception("Error during proofGen ${msg.decodeToString()}")
         }
 
         val proofDataZip = proofData.copyOfRange(0, proofLen[0].toInt())

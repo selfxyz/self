@@ -71,10 +71,6 @@ const useUserStore = create<UserState>((set, get) => ({
     });
     useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this currently means go to app selection screen
 
-    // download zkeys if they are not already downloaded
-    downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
-    downloadZkey("disclose");
-
     // TODO: check if the commitment is already registered, if not retry registering it
 
     // set({

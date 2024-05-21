@@ -19,7 +19,6 @@ import { Pressable } from "react-native";
 import { COMMITMENT_TREE_TRACKER_URL, PASSPORT_ATTESTATION_ID, RPC_URL } from "../../../common/src/constants/constants";
 import { poseidon2 } from "poseidon-lite";
 import axios from 'axios';
-// import https from 'https'
 import { LeanIMT } from "@zk-kit/imt";
 
 const sepolia = () => (
@@ -131,9 +130,6 @@ export const sbtApp: AppType = {
     // const serializedCommitmentTree = await axios.get(COMMITMENT_TREE_TRACKER_URL)
 
     // console.log('Fetching commitment tree from:', COMMITMENT_TREE_TRACKER_URL);
-    // const response = await RNFetchBlob.config({
-    //   trusty: true, // This allows self-signed certificates
-    // }).fetch('GET', 'https://34.222.134.21/api/download-merkle-tree');
 
     // const serializedCommitmentTree = await response.json();
     // console.log(serializedCommitmentTree);
