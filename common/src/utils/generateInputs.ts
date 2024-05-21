@@ -128,11 +128,11 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[2]
   ]);
 
-  console.log('commitment', commitment);
+  console.log('commitment', commitment.toString());
 
   const index = findIndexInTree(merkletree, commitment);
 
-  const { merkleProofSiblings, merkleProofIndices } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
+  const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
   return {
     secret: [secret],
@@ -140,7 +140,7 @@ export function generateCircuitInputsDisclose(
     pubkey_leaf: [pubkey_leaf.toString()],
     mrz: formattedMrz.map(byte => String(byte)),
     merkle_root: [merkletree.root.toString()],
-    merkletree_size: [BigInt(merkletree.depth).toString()],
+    merkletree_size: [BigInt(depthForThisOne).toString()],
     path: merkleProofIndices.map(index => BigInt(index).toString()),
     siblings: merkleProofSiblings.map(index => BigInt(index).toString()),
     bitmap: bitmap,

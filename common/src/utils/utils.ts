@@ -246,6 +246,7 @@ export function packBytes(unpacked) {
 
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
   const { siblings: merkleProofSiblings, index } = imt.generateProof(_index)
+  const depthForThisOne = merkleProofSiblings.length
   // The index must be converted to a list of indices, 1 for each tree level.
   // The circuit tree depth is 20, so the number of siblings must be 20, even if
   // the tree depth is actually 3. The missing siblings can be set to 0, as they
@@ -258,5 +259,5 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
       merkleProofSiblings[i] = BigInt(0)
     }
   }
-  return { merkleProofSiblings, merkleProofIndices }
+  return { merkleProofSiblings, merkleProofIndices, depthForThisOne  }
 }
