@@ -126,26 +126,43 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[0],
     mrz_bytes[1],
     mrz_bytes[2]
-  ]).toString();
-  const index = merkletree.indexOf(BigInt(commitment));
-  if (index === -1) {
-    throw new Error("This commitment was not found in the tree");
-  }
+  ]);
+
+  console.log('commitment', commitment);
+
+  const index = findIndexInTree(merkletree, commitment);
+
   const { merkleProofSiblings, merkleProofIndices } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
   return {
-    secret: secret,
-    attestation_id: attestation_id,
-    pubkey_leaf: pubkey_leaf.toString(),
+    secret: [secret],
+    attestation_id: [attestation_id],
+    pubkey_leaf: [pubkey_leaf.toString()],
     mrz: formattedMrz.map(byte => String(byte)),
     merkle_root: [merkletree.root.toString()],
-    merkletree_size: BigInt(merkletree.depth).toString(),
-    path: merkleProofIndices,
-    siblings: merkleProofSiblings,
+    merkletree_size: [BigInt(merkletree.depth).toString()],
+    path: merkleProofIndices.map(index => BigInt(index).toString()),
+    siblings: merkleProofSiblings.map(index => BigInt(index).toString()),
     bitmap: bitmap,
-    scope: scope,
+    scope: [scope],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
     majority: majority.map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: user_identifier,
+    user_identifier: [user_identifier],
   };
+}
+
+// this get the commitment index whether it is a string or a bigint
+// this is necessary rn because when the tree is send from the server in a serialized form,
+// the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
+function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+  let index = tree.indexOf(commitment);
+  if (index === -1) {
+    index = tree.indexOf(commitment.toString() as unknown as bigint);
+  }
+  if (index === -1) {
+    throw new Error("This commitment was not found in the tree");
+  } else {
+    console.log(`Index of commitment in the registry: ${index}`);
+  }
+  return index;
 }

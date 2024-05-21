@@ -49,6 +49,10 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is present in the tree, proceed to main screen
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
+    // download zkeys if they are not already downloaded
+    downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
+    downloadZkey("disclose");
+
     const passportDataCreds = await Keychain.getGenericPassword({ service: "passportData" });
     if (!passportDataCreds) {
       console.log("No passport data found, starting onboarding flow")
