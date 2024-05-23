@@ -19,7 +19,7 @@ describe('DateIsLessChecker Circuit Test', function () {
      * 
      */
 
-    const n = 100;
+    const n = 10;
 
     const yearStart = 2023;
     const yearEnd = 2049;

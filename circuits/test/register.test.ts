@@ -18,11 +18,13 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     before(async () => {
         circuit = await wasm_tester(
             path.join(__dirname, "../circuits/register_sha256WithRSAEncryption_65537.circom"),
-            { include: [
-                "node_modules",
-                "./node_modules/@zk-kit/binary-merkle-root.circom/src",
-                "./node_modules/circomlib/circuits"
-            ] },
+            {
+                include: [
+                    "node_modules",
+                    "./node_modules/@zk-kit/binary-merkle-root.circom/src",
+                    "./node_modules/circomlib/circuits"
+                ]
+            },
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
@@ -39,8 +41,6 @@ describe("Proof of Passport - Circuits - Register flow", function () {
             passportData,
             { developmentMode: true }
         );
-
-        console.log(JSON.stringify(inputs, null, 2));
     });
 
     it("should compile and load the circuit", async function () {
@@ -52,7 +52,7 @@ describe("Proof of Passport - Circuits - Register flow", function () {
         await circuit.checkConstraints(w);
 
         console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);
-        
+
         const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
 
         const mrz_bytes = packBytes(inputs.mrz);

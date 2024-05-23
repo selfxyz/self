@@ -31,8 +31,6 @@ describe("start testing disclose.circom", function () {
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-        console.log("secret", secret);
-
         const attestation_name = "E-PASSPORT";
         attestation_id = poseidon1([
             BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))
@@ -60,11 +58,8 @@ describe("start testing disclose.circom", function () {
             mrz_bytes[1],
             mrz_bytes[2]
         ])
-        console.log("commitment", commitment);
-
         tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
         tree.insert(BigInt(commitment));
-        console.log("tree_nodes", tree._nodes);
 
         inputs = generateCircuitInputsDisclose(
             secret,
@@ -76,8 +71,6 @@ describe("start testing disclose.circom", function () {
             scope,
             user_identifier
         );
-
-        console.log(JSON.stringify(inputs, null, 2));
     });
 
     it("should compile and load the circuit", async function () {

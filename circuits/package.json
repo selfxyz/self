@@ -4,7 +4,8 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "test": "yarn ts-mocha test/**/*.test.ts --exit"
+    "test": "yarn ts-mocha test/**/*.test.ts --exit",
+    "install-circuits": "cd ../common && yarn && cd ../app && yarn"
   },
   "dependencies": {
     "@types/chai-as-promised": "^7.1.6",
