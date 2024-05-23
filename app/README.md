@@ -2,21 +2,32 @@
 
 ## Requirements
 
-Install `nodejs v18`, [circom](https://docs.circom.io/) and [snarkjs](https://github.com/iden3/snarkjs)
+| Requirement | Version | Installation Guide |
+|-------------|---------|--------------------|
+| nodejs      | > v18     | [Install nodejs](https://nodejs.org/) |
+| circom      | Latest  | [Install circom](https://docs.circom.io/) |
+| snarkjs     | Latest  | [Install snarkjs](https://github.com/iden3/snarkjs) |
 
-For Android, install Java, Android Studio and the Android SDK
 
-For iOS, install Xcode and [cocoapods](https://cocoapods.org/)
+### Android
+| Requirement | Version | Installation Guide |
+|-------------|---------|--------------------|
+| Java        | 11      | [Install Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) or [GPT4 guide](https://chatgpt.com/share/26cd879b-26bb-4fd4-b59e-cfe002a06afe) |
+| Android Studio | Latest | [Install Android Studio](https://developer.android.com/studio) |
+| Android SDK | Latest  | [Install Android SDK](https://developer.android.com/studio#downloads) |
+| Android Ndk         | 23.1.7779620 | [Install NDK](https://developer.android.com/studio) or [GPT4 guide](https://chatgpt.com/share/a6e2544b-d32a-4554-a452-402511d03ffc) |
+
+### iOS
+| Requirement | Version | Installation Guide |
+|-------------|---------|--------------------|
+| Xcode       | Latest  | [Install Xcode](https://developer.apple.com/xcode/) |
+| cocoapods   | Latest  | [Install cocoapods](https://cocoapods.org/) |
+
 
 ## Installation
 
 ```bash
-yarn
-```
-
-In `/common`, also run:
-```bash
-yarn
+yarn install-app
 ```
 
 ## Run the app
@@ -24,6 +35,11 @@ yarn
 First, connect your phone to your computer and allow access.
 
 ### Android
+
+Create the file `android/local.properties` with the following content:
+```
+sdk.dir=/Users/<your-user-name>/Library/Android/sdk
+```
 
 Launch the react-native server:
 ```
@@ -36,7 +52,7 @@ To see the Android logs you'll have to use the Android Studio Logcat.
 
 ### iOS
 
-To run the app on iOS, you will need an Apple Developer account. Free accounts can't run apps that use NFC reading.
+To run the app on iOS, you will need an `Apple Developer account`. Free accounts can't run apps that use NFC reading.
 
 Open the ios project on Xcode and add your provisionning profile in Targets > ProofOfPassport > Signing and Capabilities
 
