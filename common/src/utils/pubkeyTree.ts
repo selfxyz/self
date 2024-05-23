@@ -1,5 +1,5 @@
 import { poseidon12, poseidon2, poseidon8 } from "poseidon-lite"
-import { SignatureAlgorithm, TREE_DEPTH } from "../constants/constants";
+import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { IMT } from '@zk-kit/imt'
 import { bigIntToChunkedBytes, formatSigAlg } from "./utils";
 
@@ -7,7 +7,7 @@ export function buildPubkeyTree(pubkeys: any[]) {
   let leaves: bigint[] = []
   let startTime = performance.now();
 
-  for(let i = 0; i < pubkeys.length; i++) {
+  for (let i = 0; i < pubkeys.length; i++) {
     const pubkey = pubkeys[i]
 
     if (i % 3000 === 0 && i !== 0) {
@@ -23,7 +23,7 @@ export function buildPubkeyTree(pubkeys: any[]) {
     leaves.push(leaf)
   }
 
-  const tree = new IMT(poseidon2, TREE_DEPTH, 0, 2, leaves)
+  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2, leaves)
   console.log('pubkey tree built in', performance.now() - startTime, 'ms')
 
   return tree
@@ -32,8 +32,8 @@ export function buildPubkeyTree(pubkeys: any[]) {
 export function getLeaf(pubkey: any, i?: number): bigint {
   const sigAlgFormatted = formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent)
 
-  console.log('pubkey', pubkey)
-  console.log('sigAlgFormatted', sigAlgFormatted)
+  // console.log('pubkey', pubkey)
+  // console.log('sigAlgFormatted', sigAlgFormatted)
   if (
     sigAlgFormatted === "sha256WithRSAEncryption_65537"
     || sigAlgFormatted === "sha256WithRSAEncryption_3"
@@ -46,11 +46,11 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     // This is because Poseidon circuit only supports an array of 16 elements, and field size is 254.
     const pubkeyChunked = bigIntToChunkedBytes(BigInt(pubkey.modulus), 192, 11);
 
-    console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
+    // console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
     try {
       // leaf is poseidon(signatureAlgorithm, ...pubkey)
       return poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
-    } catch(err) {
+    } catch (err) {
       console.log('err', err, i, sigAlgFormatted, pubkey)
     }
   } else if (
@@ -61,7 +61,7 @@ export function getLeaf(pubkey: any, i?: number): bigint {
   ) {
     try {
       return poseidon8([SignatureAlgorithm[sigAlgFormatted], pubkey.pub, pubkey.prime, pubkey.a, pubkey.b, pubkey.generator, pubkey.order, pubkey.cofactor])
-    } catch(err) {
+    } catch (err) {
       console.log('err', err, i, sigAlgFormatted, pubkey)
     }
   }

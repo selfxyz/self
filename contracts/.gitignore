@@ -8,3 +8,6 @@ typechain-types
 #Hardhat files
 cache
 artifacts
+ignition/deployed_addresses.json
+ignition/parameters.json
+ignition/deployments

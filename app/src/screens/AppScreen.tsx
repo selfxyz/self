@@ -1,74 +1,54 @@
 import React from 'react';
-import ZUPASS from '../images/zupass.png';
-import GITCOIN from '../images/gitcoin.png';
-import { YStack } from 'tamagui';
+import { ScrollView, YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
-import { App, gitcoin, soulbound, zuzalu } from '../utils/AppClass';
 import { Steps } from '../utils/utils';
+import useNavigationStore from '../stores/navigationStore';
+import { AppType } from '../utils/appType';
+import sbtApp from '../apps/sbt';
+import zupassApp from '../apps/zupass';
+import gitcoinApp from '../apps/gitcoin';
 
-interface AppScreenProps {
-  selectedApp: App | null;
-  setSelectedApp: (app: App | null) => void;
-  step: number;
-  setStep: (step: number) => void;
-}
+const AppScreen: React.FC = () => {
+  const {
+    selectedApp,
+    update
+  } = useNavigationStore();
 
-const AppScreen: React.FC<AppScreenProps> = ({ selectedApp, setSelectedApp, step, setStep }) => {
-
-  const handleCardSelect = (app: App) => {
-    if (selectedApp != app) {
-      setSelectedApp(app);
-      if (step >= Steps.NFC_SCAN_COMPLETED) {
-        setStep(Steps.NFC_SCAN_COMPLETED);
-      }
-    }
+  const handleCardSelect = (app: AppType) => {
+    update({
+      selectedTab: "prove",
+      selectedApp: app,
+      step: Steps.APP_SELECTED,
+    })
   };
 
+  // add new apps here
   const cardsData = [
-    {
-      app: zuzalu,
-      title: 'Add to Zupasss',
-      description: 'Prove your identity at in person events',
-      background: ZUPASS,
-      colorOfTheText: 'white',
-      selectable: false
-    },
-    {
-      app: gitcoin,
-      title: 'Add to Gitcoin passport',
-      description: 'And donate to your favorite projects',
-      background: GITCOIN,
-      colorOfTheText: 'white',
-      selectable: false,
-    },
-    {
-      app: soulbound,
-      title: 'Mint SBT 🔥',
-      description: 'And prove you\'re a human',
-      colorOfTheText: 'black',
-      selectable: true
-
-    },
+    sbtApp,
+    zupassApp,
+    gitcoinApp
   ];
 
   return (
-    <YStack flex={1} gap="$5" px="$5" jc="center" alignItems='center' >
-
-      {cardsData.map(card => (
-        <AppCard
-          key={card.app.id}
-          title={card.title}
-          description={card.description}
-          colorOfTheText={card.colorOfTheText}
-          background={card.background}
-          id={card.app.id}
-          onTouchStart={() => handleCardSelect(card.app)}
-          selected={selectedApp && selectedApp.id === card.app.id ? true : false}
-          selectable={card.selectable}
-        />
-      ))}
-
-    </YStack>
+    <ScrollView f={1}>
+      <YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center'>
+        {
+          cardsData.map(app => (
+            <AppCard
+              key={app.id}
+              title={app.title}
+              description={app.description}
+              id={app.id}
+              onTouchStart={() => handleCardSelect(app)}
+              selected={selectedApp && selectedApp.id === app.id ? true : false}
+              selectable={app.selectable}
+              icon={app.icon}
+              tags={app.tags}
+            />
+          ))
+        }
+      </YStack>
+    </ScrollView>
   );
 }
 

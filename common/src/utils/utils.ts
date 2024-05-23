@@ -1,16 +1,15 @@
+import { LeanIMT } from '@zk-kit/lean-imt';
+import { assert } from './shaPad';
 import { sha256 } from 'js-sha256';
+//import {sha1} from 'js-sha1';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
-
-  // console.log('mrzCharcodes:', mrzCharcodes);
 
   mrzCharcodes.unshift(88); // the length of the mrz data
   mrzCharcodes.unshift(95, 31); // the MRZ_INFO_TAG
   mrzCharcodes.unshift(91); // the new length of the whole array
   mrzCharcodes.unshift(97); // the tag for DG1
-
-  // console.log('mrzCharcodes with tags:', mrzCharcodes);
 
   return mrzCharcodes;
 }
@@ -21,9 +20,6 @@ export function parsePubKeyString(pubKeyString: string) {
 
   const modulus = modulusMatch ? modulusMatch[1] : null;
   const exponent = publicExponentMatch ? publicExponentMatch[1] : null;
-
-  // console.log('Modulus:', modulus);
-  // console.log('Public Exponent:', exponent);
 
   if (!modulus || !exponent) {
     throw new Error('Could not parse public key string');
@@ -153,9 +149,10 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(bytesArray: number[]) {
+export function hash(signatureAlgorithm: string, bytesArray: number[]) {
   let unsignedBytesArray = bytesArray.map(toUnsignedByte);
-  let hash = sha256(unsignedBytesArray);
+  let hash = (signatureAlgorithm == 'sha1WithRSAEncryption') ?
+    sha1(unsignedBytesArray) : sha256(unsignedBytesArray);
   return hexToSignedBytes(hash);
 }
 
@@ -177,7 +174,7 @@ export function formatSigAlg(
   exponent: string = "65537"
   // remove the default 65537 once NFC reading always returns exponent
   // and when ecdsa parameters are managed
-) {  
+) {
   sigAlg = sigAlg.replace(/-/g, '_')
   return exponent ? `${sigAlg}_${exponent}` : sigAlg
 }
@@ -192,7 +189,6 @@ export function bigIntToChunkedBytes(num: BigInt | bigint, bytesPerChunk: number
   return res;
 }
 
-
 export function hexStringToSignedIntArray(hexString: string) {
   let result = [];
   for (let i = 0; i < hexString.length; i += 2) {
@@ -202,51 +198,9 @@ export function hexStringToSignedIntArray(hexString: string) {
   return result;
 };
 
-function bytesToBigInt(bytes: number[]) {
-  let hex = bytes.reverse().map(byte => byte.toString(16).padStart(2, '0')).join('');
-  // console.log('hex', hex)
-  return BigInt(`0x${hex}`).toString();
-}
-
-function splitInto(arr: number[], size: number) {
-  const res = [];
-  for (let i = 0; i < arr.length; i += size) {
-    res.push(arr.slice(i, i + size));
-  }
-  return res;
-}
-
 export function formatRoot(root: string): string {
   let rootHex = BigInt(root).toString(16);
   return rootHex.length % 2 === 0 ? "0x" + rootHex : "0x0" + rootHex;
-}
-
-function setFirstBitOfLastByteToZero(bytes: number[]) {
-  bytes[bytes.length - 1] &= 0x7F; // AND with 01111111 to set the first bit of the last byte to 0
-  return bytes;
-}
-
-// from reverse engineering ark-serialize.
-export function formatProof(proof: number[]) {
-  const splittedProof = splitInto(proof, 32);
-  splittedProof[1] = setFirstBitOfLastByteToZero(splittedProof[1]);
-  splittedProof[5] = setFirstBitOfLastByteToZero(splittedProof[5]); // We might need to do the same for input 3
-  splittedProof[7] = setFirstBitOfLastByteToZero(splittedProof[7]);
-  const proooof = splittedProof.map(bytesToBigInt);
-
-  return {
-    "a": [proooof[0], proooof[1]],
-    "b": [
-      [proooof[2], proooof[3]],
-      [proooof[4], proooof[5]]
-    ],
-    "c": [proooof[6], proooof[7]]
-  }
-}
-
-export function formatInputs(inputs: number[]) {
-  const splitted = splitInto(inputs.slice(8), 32);
-  return splitted.map(bytesToBigInt);
 }
 
 export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
@@ -263,3 +217,47 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   return Array.from(yymmdd).map(char => parseInt(char));
 }
 
+export function getDigestLengthBytes(signatureAlgorithm: string) {
+  if (signatureAlgorithm == 'sha1WithRSAEncryption') {
+    return 20;
+  }
+  if (signatureAlgorithm == 'sha256WithRSAEncryption') {
+    return 32;
+  }
+  return 32
+}
+
+export function packBytes(unpacked) {
+  const bytesCount = [31, 31, 31];
+  let packed = [0n, 0n, 0n];
+
+  let byteIndex = 0;
+  for (let i = 0; i < bytesCount.length; i++) {
+    for (let j = 0; j < bytesCount[i]; j++) {
+      if (byteIndex < unpacked.length) {
+        packed[i] |= BigInt(unpacked[byteIndex]) << (BigInt(j) * 8n);
+      }
+      byteIndex++;
+    }
+  }
+  return packed;
+}
+
+
+export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
+  const { siblings: merkleProofSiblings, index } = imt.generateProof(_index)
+  const depthForThisOne = merkleProofSiblings.length
+  // The index must be converted to a list of indices, 1 for each tree level.
+  // The circuit tree depth is 20, so the number of siblings must be 20, even if
+  // the tree depth is actually 3. The missing siblings can be set to 0, as they
+  // won't be used to calculate the root in the circuit.
+  const merkleProofIndices: number[] = []
+
+  for (let i = 0; i < maxDepth; i += 1) {
+    merkleProofIndices.push((index >> i) & 1)
+    if (merkleProofSiblings[i] === undefined) {
+      merkleProofSiblings[i] = BigInt(0)
+    }
+  }
+  return { merkleProofSiblings, merkleProofIndices, depthForThisOne  }
+}

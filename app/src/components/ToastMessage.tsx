@@ -1,0 +1,26 @@
+import { Toast, useToastState } from '@tamagui/toast'
+import { YStack } from '@tamagui/stacks'
+import { greenColorDark, greenColorLight, redColorDark, redColorLight, blueColorDark, blueColorLight, textColor1 } from '../utils/colors'
+
+export const ToastMessage = () => {
+    const toast = useToastState();
+    if (!toast || toast.isHandledNatively) return null;
+    return (
+        <Toast
+            bg={toast.customData?.type === "success" ? greenColorDark : toast.customData?.type === "error" ? redColorDark : blueColorDark}
+            animation="100ms"
+            enterStyle={{ y: -20, opacity: 0 }}
+            exitStyle={{ y: -20, opacity: 0 }}
+            opacity={1}
+            x={0}
+            key={toast?.id}
+            duration={toast?.duration}
+
+        >
+            <YStack ai="center" jc="center">
+                <Toast.Title fow="bold" color={toast.customData?.type === "success" ? greenColorLight : toast.customData?.type === "error" ? redColorLight : blueColorLight}>{toast?.title}</Toast.Title>
+                <Toast.Description color={textColor1}>{toast.message}</Toast.Description>
+            </YStack>
+        </Toast>
+    );
+};

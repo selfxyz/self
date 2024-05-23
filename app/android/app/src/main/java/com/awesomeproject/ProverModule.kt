@@ -6,81 +6,47 @@ import com.facebook.react.bridge.ReactMethod
 import com.facebook.react.bridge.Promise
 
 import android.util.Log
+import android.content.Context
+import java.io.ByteArrayOutputStream
 import com.facebook.react.bridge.ReadableMap
-import uniffi.mopro.GenerateProofResult
 
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
+
+import com.proofofpassport.R
+
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
-  lateinit var res: GenerateProofResult
-
 
   override fun getName(): String {
     return "Prover"
   }
 
   @ReactMethod
-  fun runInitAction(promise: Promise) {
-      // Launch a coroutine in the IO dispatcher for background tasks
-      CoroutineScope(Dispatchers.IO).launch {
-          try {
-              val startTime = System.currentTimeMillis()
-              uniffi.mopro.initializeMopro()
-              val endTime = System.currentTimeMillis()
-              val initTime = "init time: " + (endTime - startTime).toString() + " ms"
-              
-              // Since the promise needs to be resolved in the main thread
-              withContext(Dispatchers.Main) {
-                  promise.resolve(initTime)
-              }
-          } catch (e: Exception) {
-              withContext(Dispatchers.Main) {
-                  promise.reject(e)
-              }
-          }
-      }
-  }
-
-  // @ReactMethod
-  // fun downloadFile(url: String, fileName: String, promise: Promise) {
-  //     val client = OkHttpClient()
-  //     val request = Request.Builder().url(url).build()
-  
-  //     try {
-  //         client.newCall(request).execute().use { response ->
-  //             if (!response.isSuccessful) throw IOException("Failed to download file: $response")
-  
-  //             // Use the app's internal files directory
-  //             val fileOutputStream = reactContext.openFileOutput(fileName, Context.MODE_PRIVATE)
-  
-  //             val inputStream = response.body?.byteStream()
-  //             inputStream.use { input ->
-  //                 fileOutputStream.use { output ->
-  //                     input?.copyTo(output)
-  //                 }
-  //             }
-  
-  //             // Resolve the promise with the file path
-  //             val file = File(reactContext.filesDir, fileName)
-  //             promise.resolve(file.absolutePath)
-  //         }
-  //     } catch (e: Exception) {
-  //         // Reject the promise if an exception occurs
-  //         promise.reject(e)
-  //     }
-  // }
-
-
-  @ReactMethod
-  // fun runProveAction(inputs: ReadableMap, zkeypath: String, promise: Promise) {
-  fun runProveAction(inputs: ReadableMap, promise: Promise) {
+  fun runProveAction(zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: ReadableMap, promise: Promise) {
+    Log.e(TAG, "zkey_path in provePassport kotlin: " + zkey_path)
+    Log.e(TAG, "witness_calculator in provePassport kotlin: " + witness_calculator)
+    Log.e(TAG, "dat_file_name in provePassport kotlin: " + dat_file_name)
     Log.e(TAG, "inputs in provePassport kotlin: " + inputs.toString())
 
-    // working example
+    val formattedInputs = mutableMapOf<String, Any?>()
+
+    val iterator = inputs.keySetIterator()
+    while (iterator.hasNextKey()) {
+        val key = iterator.nextKey()
+        val array = inputs.getArray(key)?.toArrayList()?.map { it.toString() }
+        formattedInputs[key] = if (array?.size == 1) array.firstOrNull() else array
+    }
+
+    val gson = GsonBuilder().setPrettyPrinting().create()
+    Log.e(TAG, gson.toJson(formattedInputs))
+
+    // (used to be) working example
     // val inputs = mutableMapOf<String, List<String>>(
     //   "mrz" to listOf("97","91","95","31","88","80","60","70","82","65","84","65","86","69","82","78","73","69","82","60","60","70","76","79","82","69","78","84","60","72","85","71","85","69","83","60","74","69","65","78","60","60","60","60","60","60","60","60","60","49","57","72","65","51","52","56","50","56","52","70","82","65","48","48","48","55","49","57","49","77","50","57","49","50","48","57","53","60","60","60","60","60","60","60","60","60","60","60","60","60","60","48","50"),
     //   "reveal_bitmap" to listOf("0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0","0"),
@@ -96,35 +62,247 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     //   "address" to listOf("642829559307850963015472508762062935916233390536")
     // )
 
-    val convertedInputs = mutableMapOf<String, List<String>>()
 
-    for ((key, value) in inputs.toHashMap()) {
-        val parsedArray = inputs.getArray(key)?.toArrayList()?.map { item ->
-            item.toString()
-        } ?: emptyList()
-        convertedInputs[key] = parsedArray
+    val jsonInputs = gson.toJson(formattedInputs).toByteArray()
+    val zkpTools = ZKPTools(reactApplicationContext)
+
+    val witnessCalcFunction = when (witness_calculator) {
+        "register_sha256WithRSAEncryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
+        "disclose" -> zkpTools::witnesscalc_disclose
+        else -> throw IllegalArgumentException("Invalid witness calculator name")
+    }  
+    
+    // Get the resource ID dynamically
+    val resId = reactApplicationContext.resources.getIdentifier(dat_file_name, "raw", reactApplicationContext.packageName)
+    if (resId == 0) {
+        throw IllegalArgumentException("Invalid dat file name")
     }
 
-    Log.e(TAG, "convertedInputs: $convertedInputs")
+    val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
+      zkey_path,
+      resId,
+      jsonInputs,
+      witnessCalcFunction
+    )
 
-    val startTime = System.currentTimeMillis()
-    res = uniffi.mopro.generateProof2(convertedInputs)
-    val endTime = System.currentTimeMillis()
-    val provingTime = "proving time: " + (endTime - startTime).toString() + " ms"
-    Log.e(TAG, provingTime)
-      
-    Log.e(TAG, "res: " + res.toString())
+    Log.e("ZKP", gson.toJson(zkp))
 
-    promise.resolve(res.toString())
+    promise.resolve(zkp.toString())
+  }
+}
+
+
+data class Proof(
+    val pi_a: List<String>,
+    val pi_b: List<List<String>>,
+    val pi_c: List<String>,
+    val protocol: String,
+    var curve: String = "bn128"
+) {
+    companion object {
+        fun fromJson(jsonString: String): Proof {
+            Log.d("Proof", jsonString)
+            val json = Gson().fromJson(jsonString, Proof::class.java)
+            json.curve = getDefaultCurve()
+            return json
+        }
+
+        private fun getDefaultCurve(): String {
+            return "bn128"
+        }
+    }
+}
+
+data class ZkProof(
+    val proof: Proof,
+    val pub_signals: List<String>
+)
+
+class ZKPTools(val context: Context) {
+  external fun witnesscalc_register_sha256WithRSAEncryption_65537(circuitBuffer: ByteArray,
+    circuitSize: Long,
+    jsonBuffer: ByteArray,
+    jsonSize: Long,
+    wtnsBuffer: ByteArray,
+    wtnsSize: LongArray,
+    errorMsg: ByteArray,
+    errorMsgMaxSize: Long): Int
+  external fun witnesscalc_disclose(circuitBuffer: ByteArray,
+    circuitSize: Long,
+    jsonBuffer: ByteArray,
+    jsonSize: Long,
+    wtnsBuffer: ByteArray,
+    wtnsSize: LongArray,
+    errorMsg: ByteArray,
+    errorMsgMaxSize: Long): Int
+  external fun groth16_prover(
+      zkeyBuffer: ByteArray, zkeySize: Long,
+      wtnsBuffer: ByteArray, wtnsSize: Long,
+      proofBuffer: ByteArray, proofSize: LongArray,
+      publicBuffer: ByteArray, publicSize: LongArray,
+      errorMsg: ByteArray, errorMsgMaxSize: Long
+  ): Int
+  external fun groth16_prover_zkey_file(
+      zkeyPath: String,
+      wtnsBuffer: ByteArray, wtnsSize: Long,
+      proofBuffer: ByteArray, proofSize: LongArray,
+      publicBuffer: ByteArray, publicSize: LongArray,
+      errorMsg: ByteArray, errorMsgMaxSize: Long
+  ): Int
+
+  init {
+      System.loadLibrary("rapidsnark");
+      System.loadLibrary("proofofpassport")
   }
 
-  @ReactMethod
-  fun runVerifyAction(promise: Promise) {
-    val startTime = System.currentTimeMillis()
-    val valid = "valid: " + uniffi.mopro.verifyProof2(res.proof, res.inputs).toString()
-    val endTime = System.currentTimeMillis()
-    val verifyingTime = "verifying time: " + (endTime - startTime).toString() + " ms"
-    Log.e(TAG, verifyingTime)
-    promise.resolve(valid)
+  fun openRawResourceAsByteArray(resourceName: Int): ByteArray {
+      val inputStream = context.resources.openRawResource(resourceName)
+      val byteArrayOutputStream = ByteArrayOutputStream()
+
+      try {
+          val buffer = ByteArray(1024)
+          var length: Int
+
+          while (inputStream.read(buffer).also { length = it } != -1) {
+              byteArrayOutputStream.write(buffer, 0, length)
+          }
+
+          return byteArrayOutputStream.toByteArray()
+      } finally {
+          byteArrayOutputStream.close()
+          inputStream.close()
+      }
   }
+}
+
+class ZKPUseCase(val context: Context) {
+
+    fun generateZKP(
+        zkey_path: String,
+        datId: Int,
+        inputs: ByteArray,
+        proofFunction: (
+            circuitBuffer: ByteArray,
+            circuitSize: Long,
+            jsonBuffer: ByteArray,
+            jsonSize: Long,
+            wtnsBuffer: ByteArray,
+            wtnsSize: LongArray,
+            errorMsg: ByteArray,
+            errorMsgMaxSize: Long
+        ) -> Int
+    ): ZkProof {
+        val zkpTool = ZKPTools(context)
+        val datFile = zkpTool.openRawResourceAsByteArray(datId)
+
+        val msg = ByteArray(256)
+
+        val witnessLen = LongArray(1)
+        witnessLen[0] = 100 * 1024 * 1024
+
+        val byteArr = ByteArray(100 * 1024 * 1024)
+
+        val res = proofFunction(
+            datFile,
+            datFile.size.toLong(),
+            inputs,
+            inputs.size.toLong(),
+            byteArr,
+            witnessLen,
+            msg,
+            256
+        )
+
+        Log.e("ZKPUseCase", "Witness gen res: $res")
+        Log.e("ZKPUseCase", "Witness gen return length: ${byteArr.size}")
+
+        if (res == 3) {
+            throw Exception("Error 3")
+        }
+
+        if (res == 2) {
+            throw Exception("Not enough memory for zkp")
+        }
+
+        if (res == 1) {
+            throw Exception("Error during zkp ${msg.decodeToString()}")
+        }
+
+        val pubData = ByteArray(4 *1024 *1024)
+        val pubLen = LongArray(1)
+        pubLen[0] = pubData.size.toLong()
+
+        val proofData = ByteArray(4*1024*1024)
+        val proofLen = LongArray(1)
+        proofLen[0] = proofData.size.toLong()
+
+        val witnessData = byteArr.copyOfRange(0, witnessLen[0].toInt())
+
+        Log.e("ZKPUseCase", "zkey_path: $zkey_path")
+
+        val proofGen = zkpTool.groth16_prover_zkey_file(
+            zkey_path,
+            witnessData,
+            witnessLen[0],
+            proofData,
+            proofLen,
+            pubData,
+            pubLen,
+            msg,
+            256
+        )
+
+        Log.e("ZKPUseCase", "proofGen res: $proofGen")
+
+        if (proofGen == 2) {
+            throw Exception("Not enough memory for proofGen ${msg.decodeToString()}")
+        }
+
+        if (proofGen == 1) {
+            throw Exception("Error during proofGen ${msg.decodeToString()}")
+        }
+
+        val proofDataZip = proofData.copyOfRange(0, proofLen[0].toInt())
+
+        val index = findLastIndexOfSubstring(
+            proofDataZip.toString(Charsets.UTF_8),
+            "\"protocol\":\"groth16\"}"
+        )
+        val indexPubData = findLastIndexOfSubstring(
+            pubData.decodeToString(),
+            "]"
+        )
+
+        val formattedPubData = pubData.decodeToString().slice(0..indexPubData)
+
+        val formattedProof = proofDataZip.toString(Charsets.UTF_8).slice(0..index)
+
+        Log.e("ZKPUseCase", "formattedProof: $formattedProof")
+
+        val proof = Proof.fromJson(formattedProof)
+
+        Log.e("ZKPUseCase", "Proof: $proof")
+
+        return ZkProof(
+            proof = proof,
+            pub_signals = getPubSignals(formattedPubData).toList()
+        )
+    }
+
+    private fun findLastIndexOfSubstring(mainString: String, searchString: String): Int {
+        val index = mainString.lastIndexOf(searchString)
+
+        if (index != -1) {
+            // If substring is found, calculate the last index of the substring
+            return index + searchString.length - 1
+        }
+
+        return -1
+    }
+
+    private fun getPubSignals(jsonString: String): List<String> {
+        val gson = Gson()
+        val stringArray = gson.fromJson(jsonString, Array<String>::class.java)
+        return stringArray.toList()
+    }
 }

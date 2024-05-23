@@ -10,8 +10,19 @@
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
 	<string></string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
+	<key>NSAppTransportSecurity</key>
+    <dict>
+        <key>NSAllowsArbitraryLoads</key>
+        <true/>
+        <key>NSAllowsArbitraryLoadsInWebContent</key>
+        <true/>
+        <key>NSAllowsLocalNetworking</key>
+        <true/>
+    </dict>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -31,9 +42,11 @@
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
 	<key>NSAppTransportSecurity</key>
-	<dict/>
+	<string></string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Needed to secure the secret</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Needed to scan your passport MRZ, you can however enter it manually.</string>
+	<string>Needed to scan the passport MRZ.</string>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>
@@ -85,7 +98,5 @@
 		<string>A0000002472001</string>
 		<string>00000000000000</string>
 	</array>
-	<key>CFBundleIconName</key>
-	<string>AppIcon</string>
 </dict>
 </plist>

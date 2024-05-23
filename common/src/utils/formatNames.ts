@@ -6,6 +6,7 @@
 
 export function toStandardName(jmrtdName: string): string {
   switch (jmrtdName) {
+    
     // hash functions
     case "SHA-1":
     case "SHA1":
@@ -22,6 +23,7 @@ export function toStandardName(jmrtdName: string): string {
     case "SHA-512":
     case "SHA512":
       return "sha512";
+
     // sig algs
     case "SHA1withECDSA":
       return "ecdsa-with-SHA1";
@@ -47,14 +49,25 @@ export function toStandardName(jmrtdName: string): string {
       return "sha384WithRSAEncryption";
     case "SHA512withRSA":
       return "sha512WithRSAEncryption";
+    
     case "SAwithRSA/PSS":
     case "SSAwithRSA/PSS":
     case "RSASSA-PSS":
-      return "rsassa-pss";
+    case "rsassa-pss":
     case "SHA256withRSAandMGF1":
-      return "id-mgf1"
+    case "id-mgf1":
+      return "rsassaPss";
+
+
+    // added this one for iOS
     case "rsaEncryption":
-      return "sha256WithRSAEncryption"; // added this one for iOS
+    // for security
+    case "SHA256WITHRSA":
+    case "SHA256withRSA":
+    case "sha256withRSA":
+    case "sha256withrsa":
+    case "SHA256WITHRSAENCRYPTION":
+      return "sha256WithRSAEncryption";
     default:
       console.log(`JMRTD sig alg or hash function ${jmrtdName} not found in mapping, returning it as it is`);
       return jmrtdName;

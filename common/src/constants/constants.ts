@@ -1,6 +1,14 @@
-export const AWS_ENDPOINT = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
+export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
+export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/api/download-merkle-tree"
 
-export const TREE_DEPTH = 16
+export const PUBKEY_TREE_DEPTH = 16
+export const COMMITMENT_TREE_DEPTH = 16
+
+// poseidon("E-PASSPORT")
+export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
+
+export const CHAIN_NAME = "optimism"
+export const RPC_URL = "https://mainnet.optimism.io"
 
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,
@@ -15,7 +23,7 @@ export enum SignatureAlgorithm {
   sha512WithRSAEncryption_65537 = 10
 }
 
-export const attributeToPosition: { [key: string]: number[] } = {
+export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],
   passport_number: [44, 52],
