@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2 } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
@@ -41,6 +41,24 @@ const MainScreen: React.FC = () => {
     registerCommitment,
     secret
   } = useUserStore()
+
+  const decrementStep = () => {
+    if (selectedTab === "nfc") {
+      updateNavigationStore({
+        selectedTab: "scan",
+      })
+    }
+    else if (selectedTab === "app") {
+      updateNavigationStore({
+        selectedTab: "nfc",
+      })
+    }
+    else if (selectedTab === "prove") {
+      updateNavigationStore({
+        selectedTab: "app",
+      })
+    }
+  };
 
   const {
     showWarningModal,
@@ -99,7 +117,15 @@ const MainScreen: React.FC = () => {
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
-    if (step == Steps.MRZ_SCAN_COMPLETED) {
+    if (step == Steps.MRZ_SCAN) {
+      updateNavigationStore({
+        selectedTab: "scan",
+      })
+      timeoutId = setTimeout(() => {
+        setNFCScanIsOpen(false);
+      }, 0);
+    }
+    else if (step == Steps.MRZ_SCAN_COMPLETED) {
       updateNavigationStore({
         selectedTab: "nfc",
       })
@@ -137,14 +163,15 @@ const MainScreen: React.FC = () => {
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
+            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={selectedTab === "scan" ? "transparent" : "#a0a0a0"} /></Button>
+
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
             </Text>
             <XStack>
-              <Button p="$2" py="$3" pr="$7" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
-              <Button p="$2" py="$3" pl="$7" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
+              <Button p="$2" py="$3" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
+              <Button p="$2" py="$3" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
             </XStack>
-
           </XStack>
           <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
