@@ -1,7 +1,6 @@
 pragma circom 2.1.5;
-include "../../node_modules/circomlib/circuits/sha256/sha256.circom";
-include "../../node_modules/circomlib/circuits/bitify.circom";
-
+include "circomlib/circuits/sha256/sha256.circom";
+include "circomlib/circuits/bitify.circom";
 
 template Mgf1_sha256(seedLen, maskLen) { //in bytes
     var seedLenBits = seedLen * 8;
@@ -10,10 +9,10 @@ template Mgf1_sha256(seedLen, maskLen) { //in bytes
     var hashLenBits = hashLen * 8;//output len of sha function in bits
 
     signal input seed[seedLenBits]; //each represents a bit
-    signal output mask[maskLenBits];
+    signal output out[maskLenBits];
     
     assert(maskLen <= 0xffffffff * hashLen );
-    var iterations = (maskLen / hashLen) + 1; //adding 1, in-case maskLen/hashLen is 0
+    var iterations = (maskLen \ hashLen) + 1; //adding 1, in-case maskLen \ hashLen is 0
 
     component sha256[iterations];
     component num2Bits[iterations];
@@ -30,7 +29,7 @@ template Mgf1_sha256(seedLen, maskLen) { //in bytes
         concated[i] = seed[i];
     }
 
-    for (var i = 0; i < iterations; i++) {//At(maskLen / hashLen) +1least 1 iteration 
+    for (var i = 0; i < iterations; i++) {
         num2Bits[i].in <== i; //convert counter to bits
 
         for (var j = 0; j < 32; j++) {
@@ -46,6 +45,6 @@ template Mgf1_sha256(seedLen, maskLen) { //in bytes
     }
 
     for (var i = 0; i < maskLenBits; i++) {
-        mask[i] <== hashed[i];
+        out[i] <== hashed[i];
     }
 }
