@@ -2,7 +2,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/sha256/sha256.circom";
 include "circomlib/circuits/bitify.circom";
 
-template Mgf1_sha256(seedLen, maskLen) { //in bytes
+template Mgf1Sha256(seedLen, maskLen) { //in bytes
     var seedLenBits = seedLen * 8;
     var maskLenBits = maskLen * 8;
     var hashLen = 32; //output len of sha function in bytes 
