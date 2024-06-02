@@ -163,6 +163,11 @@ const handleResponseIOS = async (
     };
     amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
+    console.log('passportData', JSON.stringify({
+      ...passportData,
+      photoBase64: passportData.photoBase64.substring(0, 100) + '...'
+    }, null, 2));
+
     console.log('mrz', passportData.mrz);
     console.log('signatureAlgorithm', passportData.signatureAlgorithm);
     console.log('pubKey', passportData.pubKey);
@@ -170,8 +175,6 @@ const handleResponseIOS = async (
     console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
     console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
     console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
-
-    // console.log('passportData', JSON.stringify(passportData, null, 2));
 
     useUserStore.getState().registerPassportData(passportData)
     useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED);
@@ -224,6 +227,11 @@ const handleResponseAndroid = async (
   };
   amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
+  console.log('passportData', JSON.stringify({
+    ...passportData,
+    photoBase64: passportData.photoBase64.substring(0, 100) + '...'
+  }, null, 2));
+  
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);
   console.log('pubKey', passportData.pubKey);
