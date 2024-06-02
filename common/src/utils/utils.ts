@@ -1,7 +1,6 @@
 import { LeanIMT } from '@zk-kit/lean-imt';
-import { assert } from './shaPad';
 import { sha256 } from 'js-sha256';
-//import {sha1} from 'js-sha1';
+import { sha1 } from 'js-sha1';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -63,7 +62,6 @@ export function formatAndConcatenateDataHashes(
 
 export function assembleEContent(
   messageDigest: number[],
-  timeOfSignature: number[],
 ) {
   const constructedEContent = [];
 
@@ -82,8 +80,8 @@ export function assembleEContent(
   constructedEContent.push(
     ...[48, 28, 6, 9, 42, -122, 72, -122, -9, 13, 1, 9, 5],
   );
-  // time of the signature
-  constructedEContent.push(...timeOfSignature);
+  // mock time of signature
+  constructedEContent.push(...[49, 15, 23, 13, 49, 57, 49, 50, 49, 54, 49, 55, 50, 50, 51, 56, 90]);
   // 1.2.840.113549.1.9.4 is RFC_3369_MESSAGE_DIGEST_OID
   constructedEContent.push(
     ...[48, 47, 6, 9, 42, -122, 72, -122, -9, 13, 1, 9, 4],
@@ -150,9 +148,12 @@ export function hexToDecimal(hex: string): string {
 
 // hash logic here because the one in utils.ts only works with node
 export function hash(signatureAlgorithm: string, bytesArray: number[]) {
-  let unsignedBytesArray = bytesArray.map(toUnsignedByte);
-  let hash = (signatureAlgorithm == 'sha1WithRSAEncryption') ?
-    sha1(unsignedBytesArray) : sha256(unsignedBytesArray);
+  const unsignedBytesArray = bytesArray.map(toUnsignedByte);
+  const hash = (signatureAlgorithm == 'sha1WithRSAEncryption')
+    ? sha1(unsignedBytesArray)
+    : (signatureAlgorithm == 'sha256WithRSAEncryption' || signatureAlgorithm == 'rsassaPss')
+    ? sha256(unsignedBytesArray)
+    : sha256(unsignedBytesArray); //defaults to sha256
   return hexToSignedBytes(hash);
 }
 
