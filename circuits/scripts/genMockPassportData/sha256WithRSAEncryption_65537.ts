@@ -5,7 +5,7 @@ import * as forge from 'node-forge';
 import { writeFileSync } from "fs";
 
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
-const sampleDataHashes_256 = [
+const sampleDataHashes = [
   [
     2,
     [-66, 82, -76, -21, -34, 33, 79, 50, -104, -120, -114, 35, 116, -32, 6, -14, -100, -115, -128, -8, 10, 61, 98, 86, -8, 45, -49, -46, 90, -24, -81, 38]
@@ -35,10 +35,10 @@ const signatureAlgorithm = 'sha256WithRSAEncryption'
 
 export function genMockPassportData_sha256WithRSAEncryption_65537(): PassportData {
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  sampleDataHashes_256.unshift([1, mrzHash]);
+  sampleDataHashes.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     mrzHash,
-    sampleDataHashes_256 as [number, number[]][],
+    sampleDataHashes as [number, number[]][],
   );
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
