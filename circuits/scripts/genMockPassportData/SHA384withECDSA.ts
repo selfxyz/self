@@ -1,8 +1,10 @@
 import assert from "assert";
 import { PassportData } from "../../../common/src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual } from "../../../common/src/utils/utils";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import { writeFileSync } from "fs";
+import elliptic from 'elliptic';
+import * as crypto from 'crypto';
 
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
@@ -31,34 +33,35 @@ const sampleDataHashes = [
     [76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59, -100, -69, -7, 28, -58, 95, 69, 15, -74, 56, 54, 38]
   ]
 ]
-const signatureAlgorithm = 'sha256WithRSAEncryption'
 
-export function genMockPassportData_sha256WithRSAEncryption_65537(): PassportData {
+const signatureAlgorithm = 'SHA384withECDSA'
+
+export function genMockPassportData_SHA384withECDSA(): PassportData {
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
   sampleDataHashes.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     mrzHash,
     sampleDataHashes as [number, number[]][],
   );
-
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
-
-  const rsa = forge.pki.rsa;
-  const privKey = rsa.generateKeyPair({ bits: 2048 }).privateKey;
-  const modulus = privKey.n.toString(16);
-
-  const md = forge.md.sha256.create();
+  
+  const ec = new elliptic.ec('p384');
+  const keyPair = ec.genKeyPair();
+  const pubKey = keyPair.getPublic();
+  
+  const md = forge.md.sha384.create();
   md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-
-  const signature = privKey.sign(md)
-  const signatureBytes = Array.from(signature, (c: string) => c.charCodeAt(0));
-
+  const signature = keyPair.sign(md.digest().toHex(), 'hex');
+  const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+  
+  const Qx = pubKey.getX().toString(16);
+  const Qy = pubKey.getY().toString(16);
+  
   return {
     mrz: sampleMRZ,
     signatureAlgorithm: signatureAlgorithm,
     pubKey: {
-      modulus: hexToDecimal(modulus),
-      exponent: '65537',
+      publicKeyQ: `(${Qx},${Qy},1,fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000fffffffc)`
     },
     dataGroupHashes: concatenatedDataHashes,
     eContent: eContent,
@@ -72,24 +75,31 @@ function verify(passportData: PassportData): boolean {
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
 
+  console.log("mrzHash:", mrzHash);
   assert(
     arraysAreEqual(mrzHash, dataGroupHashes.slice(31, 31 + mrzHash.length)),
     'mrzHash is at the right place in dataGroupHashes'
   );
 
-  const modulus = new forge.jsbn.BigInteger(pubKey.modulus, 10);
-  const exponent = new forge.jsbn.BigInteger(pubKey.exponent, 10);
-  const rsaPublicKey = forge.pki.rsa.setPublicKey(modulus, exponent);
+  const cleanPublicKeyQ = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
+  const Qx = cleanPublicKeyQ[0];
+  const Qy = cleanPublicKeyQ[1];
 
-  const md = forge.md.sha256.create();
-  md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+  const ec = new elliptic.ec('p384');
+  const key = ec.keyFromPublic({ x: Qx, y: Qy }, 'hex');
 
-  const signature = String.fromCharCode(...encryptedDigest);
+  const messageBuffer = Buffer.from(eContent);
+  const msgHash = crypto.createHash('sha384').update(messageBuffer).digest();
 
-  return rsaPublicKey.verify(md.digest().bytes(), signature);
+  const signature = Buffer.from(encryptedDigest).toString('hex');
+
+  const isValid = key.verify(msgHash, signature);
+
+  return isValid;
 }
 
-const mockPassportData = genMockPassportData_sha256WithRSAEncryption_65537();
+
+const mockPassportData = genMockPassportData_SHA384withECDSA();
 console.log("Passport Data:", JSON.stringify(mockPassportData, null, 2));
 console.log("Signature valid:", verify(mockPassportData));
 
