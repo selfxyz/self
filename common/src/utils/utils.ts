@@ -1,6 +1,7 @@
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
+import { sha384 } from 'js-sha512';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -151,9 +152,11 @@ export function hash(signatureAlgorithm: string, bytesArray: number[]) {
   const unsignedBytesArray = bytesArray.map(toUnsignedByte);
   const hash = (signatureAlgorithm == 'sha1WithRSAEncryption')
     ? sha1(unsignedBytesArray)
+    : (signatureAlgorithm == 'SHA384withECDSA')
+    ? sha384(unsignedBytesArray)
     : (signatureAlgorithm == 'sha256WithRSAEncryption' || signatureAlgorithm == 'rsassaPss')
     ? sha256(unsignedBytesArray)
-    : sha256(unsignedBytesArray); //defaults to sha256
+    : sha256(unsignedBytesArray); // defaults to sha256
   return hexToSignedBytes(hash);
 }
 
