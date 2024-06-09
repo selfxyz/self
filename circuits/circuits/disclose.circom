@@ -60,6 +60,11 @@ template Disclose(nLevels) {
     older_than[0] <== isOlderThan.out * majority[0];
     older_than[1] <== isOlderThan.out * majority[1];
 
+    // constrain bitmap to be 0s or 1s
+    for (var i = 0; i < 90; i++) {
+        bitmap[i] * (bitmap[i] - 1) === 0;
+    }
+
     signal revealedData[90];
     for (var i = 0; i < 88; i++) {
         revealedData[i] <== mrz[5+i] * bitmap[i];
