@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import ScanScreen from './ScanScreen';
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
@@ -22,10 +21,14 @@ import useNavigationStore from '../stores/navigationStore';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import Dialog from "react-native-dialog";
+import { contribute } from '../utils/contribute';
+
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
+  const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [brokenCamera, setBrokenCamera] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
@@ -39,6 +42,7 @@ const MainScreen: React.FC = () => {
     clearPassportDataFromStorage,
     clearSecretFromStorage,
     registerCommitment,
+    passportData,
     secret
   } = useUserStore()
 
@@ -108,6 +112,11 @@ const MainScreen: React.FC = () => {
       scan();
     }
   }
+  function handleContribute() {
+    contribute(passportData);
+    setDialogContributeIsOpen(false);
+  }
+
 
   useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
@@ -284,6 +293,27 @@ const MainScreen: React.FC = () => {
                     <Switch.Thumb animation="bouncy" bc={bgColor} />
                   </Switch>
                 </Fieldset>
+
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                    Contribute
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textColor1} />
+                  </Button>
+                </Fieldset>
+
+                <Dialog.Container visible={DialogContributeIsOpen}>
+                  <Dialog.Title>Contribute</Dialog.Title>
+                  <Dialog.Description>
+                    By pressing yes, you accept sending your passport data.
+                    Passport data are encrypted and will be deleted once the signature algorithm is implemented.
+                  </Dialog.Description>
+                  <Dialog.Button onPress={() => setDialogContributeIsOpen(false)} label="Cancel" />
+                  <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
+                </Dialog.Container>
+
+
 
                 <Fieldset gap="$4" mt="$1" horizontal>
                   <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
