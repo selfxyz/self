@@ -37,7 +37,7 @@ export const sbtApp: AppType = {
   selectable: true,
   icon: Flame,
   tags: [sepolia()],
-  
+
   // ProveScreen UI
   name: 'Soulbound token',
   disclosureOptions: {
@@ -45,7 +45,7 @@ export const sbtApp: AppType = {
     expiry_date: "optional",
     older_than: "optional"
   },
-  
+
   // SendProofScreen UI before sending proof
   beforeSendText1: "You can now use this proof to mint a Soulbound token.",
   beforeSendText2: "Disclosed information will be displayed on SBT.",
@@ -62,14 +62,14 @@ export const sbtApp: AppType = {
 
     return (
       <Pressable onPress={() => {
-          Clipboard.setString(txHash);
-          toast?.show('🖨️', {
-            message: "Tx copied to clipboard",
-            customData: {
-              type: "success",
-            },
-          })
-        }}
+        Clipboard.setString(txHash);
+        toast?.show('🖨️', {
+          message: "Tx copied to clipboard",
+          customData: {
+            type: "success",
+          },
+        })
+      }}
       >
         <XStack jc='space-between' h="$2" ai="center">
           <Text color={textColor1} fontWeight="bold" fontSize="$5">
@@ -122,9 +122,9 @@ export const sbtApp: AppType = {
     } = useUserStore.getState();
 
     setStep(Steps.GENERATING_PROOF);
-    
+
     const reveal_bitmap = revealBitmapFromMapping(disclosure);
-    
+
     const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
     // const serializedCommitmentTree = "[[\"9366833337168993085050982292715343583458999801189875133285760454940954329736\",\"17067815450997614268337156469331439256078702232208444991806942459610897177755\",\"6218618977460894587557092460164616095207478656436068295742870309857616419830\",\"1009498555512750055176786258919772755314598234878788682229429740456064488924\",\"2317777252282411584898482846587421326341858131145081778162865818517424463113\",\"14350861400343175672772758664935358862843556622155842278173685659399974430673\"],[\"5757843324860707578753413472099376283217223062835733089254074659436006978958\",\"9384382887555344903988763589988369409408141218078864334664000402547342440893\",\"20714514634358291855499138323356766695315870633431415798546884765927810445680\"],[\"6444500081923737565029349850782686417529434309028817508928891238372057960879\",\"20714514634358291855499138323356766695315870633431415798546884765927810445680\"],[\"13949165376611379310020797746578693825960496340786495286952352659551479278661\"]]"
     console.log('response.data:', response.data);
@@ -149,7 +149,7 @@ export const sbtApp: AppType = {
       );
 
       console.log('inputs:', inputs);
-      
+
       const start = Date.now();
 
       const proof = await generateProof(
@@ -173,7 +173,7 @@ export const sbtApp: AppType = {
           type: "error",
         },
       })
-      setStep(Steps.NFC_SCAN_COMPLETED);
+      setStep(Steps.NEXT_SCREEN);
       amplitude.track(error.message);
     }
   },
@@ -188,15 +188,15 @@ export const sbtApp: AppType = {
       toast,
       setStep
     } = useNavigationStore.getState();
-    
+
     if (!proof) {
       console.error('Proof is not generated');
       return;
     }
 
     setStep(Steps.PROOF_SENDING);
-    
-    toast?.show('🚀',{
+
+    toast?.show('🚀', {
       message: "Transaction sent...",
       customData: {
         type: "info",
@@ -214,7 +214,7 @@ export const sbtApp: AppType = {
         txHash: txHash,
         proofSentText: `SBT minting... Network: Sepolia. Transaction hash: ${txHash}`
       });
-      
+
       const receipt = await provider.waitForTransaction(txHash);
       console.log('receipt status:', receipt?.status);
 
@@ -248,7 +248,7 @@ export const sbtApp: AppType = {
       if (error.isAxiosError && error.response) {
         const errorMessage = error.response.data.error;
         console.log('Server error message:', errorMessage);
-  
+
         // parse blockchain error and show it
         const match = errorMessage.match(/execution reverted: "([^"]*)"/);
         if (match && match[1]) {
