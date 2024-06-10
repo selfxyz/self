@@ -30,6 +30,14 @@ export function buildPubkeyTree(pubkeys: any[]) {
 }
 
 export function getLeaf(pubkey: any, i?: number): bigint {
+  if (!pubkey?.modulus && pubkey?.pubKey?.modulus) {
+    pubkey.modulus = pubkey.pubKey.modulus
+    pubkey.exponent = pubkey.pubKey.exponent
+  }
+  if (!pubkey?.publicKeyQ && pubkey?.pubKey?.publicKeyQ) {
+    pubkey.publicKeyQ = pubkey.pubKey.publicKeyQ
+  }
+
   const sigAlgFormatted = formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent)
 
   // console.log('pubkey', pubkey)
@@ -54,12 +62,13 @@ export function getLeaf(pubkey: any, i?: number): bigint {
       console.log('err', err, i, sigAlgFormatted, pubkey)
     }
   } else if (
-    sigAlgFormatted === "ecdsa_with_SHA1"
-    || sigAlgFormatted === "ecdsa_with_SHA384"
-    || sigAlgFormatted === "ecdsa_with_SHA256"
-    || sigAlgFormatted === "ecdsa_with_SHA512"
+    sigAlgFormatted === "ecdsa-with-SHA1"
+    || sigAlgFormatted === "ecdsa-with-SHA384"
+    || sigAlgFormatted === "ecdsa-with-SHA256"
+    || sigAlgFormatted === "ecdsa-with-SHA512"
   ) {
     try {
+      // this will be replaced by just X and Y or pubkey in publicKeyQ
       return poseidon8([SignatureAlgorithm[sigAlgFormatted], pubkey.pub, pubkey.prime, pubkey.a, pubkey.b, pubkey.generator, pubkey.order, pubkey.cofactor])
     } catch (err) {
       console.log('err', err, i, sigAlgFormatted, pubkey)

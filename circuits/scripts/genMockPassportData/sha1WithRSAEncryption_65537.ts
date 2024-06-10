@@ -1,6 +1,6 @@
 import { writeFileSync } from "fs";
 import { PassportData } from "../../../common/src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual } from "../../../common/src/utils/utils";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import { assert } from "console";
 
@@ -18,15 +18,16 @@ const sampleDataHashes = [
     14,
     [76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59]
   ]
-]
+] as [number, number[]][]
+const signatureAlgorithm = 'sha1WithRSAEncryption'
+const hashLen = 20
 
 export function genMockPassportData_sha1WithRSAEncryption_65537(): PassportData {
-  const signatureAlgorithm = 'sha1WithRSAEncryption'
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  sampleDataHashes.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
-    mrzHash,
-    sampleDataHashes as [number, number[]][],
+    [[1, mrzHash], ...sampleDataHashes],
+    hashLen,
+    31 // could have been different
   );
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
@@ -59,10 +60,17 @@ function verify(passportData: PassportData): boolean {
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
+  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)
+  console.log('dg1HashOffset', dg1HashOffset);
+  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
+  const concatHash = hash(signatureAlgorithm, dataGroupHashes)
   assert(
-    arraysAreEqual(mrzHash, dataGroupHashes.slice(31, 31 + mrzHash.length)),
-    'mrzHash is at the right place in dataGroupHashes'
+    arraysAreEqual(
+      concatHash,
+      eContent.slice(eContent.length - concatHash.length)
+    ),
+    'concatHash is not at the right place in eContent'
   );
 
   const modulus = new forge.jsbn.BigInteger(pubKey.modulus, 10);
@@ -72,8 +80,10 @@ function verify(passportData: PassportData): boolean {
   const md = forge.md.sha1.create();
   md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
 
-  const signature = String.fromCharCode(...encryptedDigest);
-
+  const signature = Buffer.from(encryptedDigest).toString(
+    'binary',
+  );
+  
   return rsaPublicKey.verify(md.digest().bytes(), signature);
 }
 
