@@ -28,7 +28,7 @@ interface UserState {
   secret: string
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
-  registerCommitment: (secret: string, passportData: PassportData) => void
+  registerCommitment: (passportData?: PassportData) => void
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
   update: (patch: any) => void
@@ -68,7 +68,7 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED); // this means go to app selection screen
+    useNavigationStore.getState().setStep(Steps.REGISTERED); // this means go to app selection screen
 
     // TODO: check if the commitment is already registered, if not retry registering it
 
@@ -81,7 +81,6 @@ const useUserStore = create<UserState>((set, get) => ({
   // - Check presence of secret. If there is none, create one and store it
   // 	- Store the passportData and try registering the commitment in the background
   registerPassportData: async (passportData) => {
-    const secret = await loadSecret() as string;
 
     const alreadyStoredPassportData = await loadPassportData();
 
@@ -92,17 +91,21 @@ const useUserStore = create<UserState>((set, get) => ({
 
     await storePassportData(passportData)
     set({ passportData });
-
-    get().registerCommitment(
-      secret,
-      passportData
-    )
   },
 
-  registerCommitment: async (secret, passportData) => {
+  registerCommitment: async (mockPassportData?: PassportData) => {
     const {
       toast
     } = useNavigationStore.getState();
+    const secret = await loadSecret() as string;
+    let passportData = get().passportData
+    if (mockPassportData) {
+      passportData = mockPassportData
+    }
+    console.log("register commitment")
+    console.log("sig alg: in userstore", passportData.signatureAlgorithm)
+    console.log(secret)
+    console.log(passportData)
 
     try {
       const inputs = generateCircuitInputsRegister(
@@ -113,7 +116,7 @@ const useUserStore = create<UserState>((set, get) => ({
       );
 
       amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
-  
+
       Object.keys(inputs).forEach((key) => {
         if (Array.isArray(inputs[key as keyof typeof inputs])) {
           console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
@@ -121,7 +124,7 @@ const useUserStore = create<UserState>((set, get) => ({
           console.log(key, inputs[key as keyof typeof inputs]);
         }
       });
-  
+
       const start = Date.now();
 
       const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);

@@ -37,12 +37,14 @@ export const Steps = {
   MRZ_SCAN: 1,
   MRZ_SCAN_COMPLETED: 2,
   NFC_SCANNING: 3,
-  NFC_SCAN_COMPLETED: 4,
-  APP_SELECTED: 5,
-  GENERATING_PROOF: 6,
-  PROOF_GENERATED: 7,
-  PROOF_SENDING: 8,
-  PROOF_SENT: 9
+  NEXT_SCREEN: 4,
+  REGISTER: 5,
+  REGISTERED: 6,
+  APP_SELECTED: 7,
+  GENERATING_PROOF: 8,
+  PROOF_GENERATED: 9,
+  PROOF_SENDING: 10,
+  PROOF_SENT: 11
 };
 
 export function formatAttribute(key: string, attribute: string) {
@@ -53,6 +55,17 @@ export function formatAttribute(key: string, attribute: string) {
     return `${year}-${month}-${day}`; // ISO 8601 format (YYYY-MM-DD)
   } else if (key === 'nationality' && attribute in countryCodes) {
     return countryCodes[attribute as keyof typeof countryCodes]
+  }
+  else if (key === 'date_of_birth') {
+    let year = '19' + attribute.substring(0, 2);
+    const currentYear = 2024;
+    const birthYear = parseInt(year);
+    if (currentYear - birthYear > 100) {
+      year = '20' + attribute.substring(0, 2);
+    }
+    const month = attribute.substring(2, 4);
+    const day = attribute.substring(4, 6);
+    return `${year}-${month}-${day}`; // ISO 8601 format (YYYY-MM-DD)
   }
   return attribute;
 }
