@@ -1,8 +1,9 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/helpers/rsa.circom";
-include "@zk-email/circuits/helpers/extract.circom";
-include "@zk-email/circuits/helpers/sha.circom";
+include "@zk-email/circuits/lib/rsa.circom";
+include "@zk-email/circuits/utils/bytes.circom";
+include "@zk-email/circuits/lib/sha.circom";
+include "@zk-email/circuits/utils/array.circom";
 include "./utils/Sha256BytesStatic.circom";
 
 template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes) {
@@ -63,7 +64,6 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     //eContentHash:  list of length 256/n +1 of components of n bits 
     component eContentHash[msg_len];
     for (var i = 0; i < msg_len; i++) {
-        //instantiate each component of the list of Bits2Num of size n
         eContentHash[i] = Bits2Num(n);
     }
 
@@ -76,14 +76,14 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     }
     
     // verify eContentHash signature
-    component rsa = RSAVerify65537(64, 32);
+    component rsa = RSAVerifier65537(64, 32);
 
     for (var i = 0; i < msg_len; i++) {
-        rsa.base_message[i] <== eContentHash[i].out;
+        rsa.message[i] <== eContentHash[i].out;
     }
 
     for (var i = msg_len; i < k; i++) {
-        rsa.base_message[i] <== 0;
+        rsa.message[i] <== 0;
     }
 
     rsa.modulus <== pubkey;

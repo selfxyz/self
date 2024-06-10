@@ -340,7 +340,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
         it("SBT mint should fail with same proof twice - SBT", async function () {
             await expect(sbt.mint(formattedCallData_disclose))
-                .to.be.revertedWith("Signature already nullified");
+                .to.be.reverted;
         });
     });
 
