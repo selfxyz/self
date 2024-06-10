@@ -14,7 +14,7 @@ import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID, RPC_URL } from '../../../common/src/constants/constants';
 import { generateProof } from '../utils/prover';
-import { formatSigAlg } from '../../../common/src/utils/utils';
+import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
@@ -124,7 +124,7 @@ const useUserStore = create<UserState>((set, get) => ({
   
       const start = Date.now();
 
-      const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
 
       const proof = await generateProof(
         `register_${sigAlgFormatted}`,

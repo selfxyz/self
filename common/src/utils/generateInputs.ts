@@ -2,7 +2,7 @@ import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../co
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
-  arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords,
+  arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlgNameForCircuit, hash, splitToWords,
   toUnsignedByte, getHashLen, getCurrentDateYYMMDD,
   generateMerkleProof,
   findSubarrayIndex
@@ -54,7 +54,7 @@ export function generateCircuitInputsRegister(
 
   const concatHash = hash(signatureAlgorithm, dataGroupHashes);
 
-  const sigAlgFormatted = formatSigAlg(signatureAlgorithm, pubKey.exponent);
+  const sigAlgFormatted = formatSigAlgNameForCircuit(signatureAlgorithm, pubKey.exponent);
   const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
   assert(

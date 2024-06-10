@@ -213,13 +213,13 @@ export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
 }
 
-export function formatSigAlg(
+export function formatSigAlgNameForCircuit(
   sigAlg: string,
-  exponent: string = "65537"
-  // remove the default 65537 once NFC reading always returns exponent
-  // and when ecdsa parameters are managed
+  exponent?: string
 ) {
+  // replace - by _, for instance for ecdsa-with-SHA256
   sigAlg = sigAlg.replace(/-/g, '_')
+  // add exponent, for instance for sha256WithRSAEncryption
   return exponent ? `${sigAlg}_${exponent}` : sigAlg
 }
 
