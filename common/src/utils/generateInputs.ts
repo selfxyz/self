@@ -12,7 +12,7 @@ import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
-import { mockPassportData_sha256WithRSAEncryption_65537 } from "./mockPassportData";
+import { mockPassportData_sha256WithRSAEncryption_65537, mockPassportData_sha1WithRSAEncryption_65537 } from "./mockPassportData";
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -29,6 +29,13 @@ export function generateCircuitInputsRegister(
       issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
       modulus: mockPassportData_sha256WithRSAEncryption_65537.pubKey.modulus,
       exponent: mockPassportData_sha256WithRSAEncryption_65537.pubKey.exponent
+    }).toString());
+
+    tree.insert(getLeaf({
+      signatureAlgorithm: mockPassportData_sha1WithRSAEncryption_65537.signatureAlgorithm,
+      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+      modulus: mockPassportData_sha1WithRSAEncryption_65537.pubKey.modulus,
+      exponent: mockPassportData_sha1WithRSAEncryption_65537.pubKey.exponent
     }).toString());
   }
 
