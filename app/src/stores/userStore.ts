@@ -95,7 +95,8 @@ const useUserStore = create<UserState>((set, get) => ({
 
   registerCommitment: async (mockPassportData?: PassportData) => {
     const {
-      toast
+      toast,
+      setStep
     } = useNavigationStore.getState();
     const secret = await loadSecret() as string;
     let passportData = get().passportData
@@ -103,7 +104,6 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData = mockPassportData
     }
     console.log("register commitment")
-    console.log("sig alg: in userstore", passportData.signatureAlgorithm)
     console.log(secret)
     console.log(passportData)
 
@@ -153,6 +153,7 @@ const useUserStore = create<UserState>((set, get) => ({
       }
 
       set({ registered: true });
+      setStep(Steps.REGISTERED);
     } catch (error: any) {
       console.error(error);
       toast?.show('Error', {
