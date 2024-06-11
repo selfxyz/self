@@ -1,8 +1,7 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/helpers/rsa.circom";
+include "./utils/rsaPkcs1.circom";
 include "@zk-email/circuits/helpers/extract.circom";
-// include "@zk-email/circuits/helpers/sha.circom";
 include "./utils/Sha1BytesStatic.circom";
 include "./utils/Sha1Bytes.circom";
 include "dmpierre/sha1-circom/circuits/sha1.circom";
@@ -77,10 +76,6 @@ template PassportVerifier_sha1WithRSAEncryption_65537(n, k, max_datahashes_bytes
 
     for (var i = 160; i < n * msg_len; i++) {
         eContentHash[i \ n].in[i % n] <== 0;
-    }
-
-    for (var i=0; i< msg_len; i++ ) {
-        log("eContentHash", eContentHash[i].out);
     }
     
     // verify eContentHash signature
