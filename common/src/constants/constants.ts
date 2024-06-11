@@ -301,3 +301,271 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 6/QfJTKVixJpVfDh386ALXc97EPWDMWIalUwYoV/eRSMnuV8nZ0+Ctp3Qrtk/JYd
 +FWhKbtlPeRjmGVr6mVlvDJ7KqtY5/RqqwfWeXhXezGhQqQ/OoQQCRkCAwEAAQ==
 -----END RSA PUBLIC KEY-----`;
+
+export const DEFAULT_RPC_URL = "https://mainnet.optimism.io";
+export const REGISTER_CONTRACT_ADDRESS = "0xFd84F23Be557133DCa47Fc9aa22031AcCE557335";
+
+/*** ABI ***/
+
+export const REGISTER_ABI = [
+  {
+    "inputs": [],
+    "name": "Register__InvalidMerkleRoot",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Register__InvalidProof",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Register__InvalidSignatureAlgorithm",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Register__InvalidVerifierAddress",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Register__SignatureAlgorithmAlreadySet",
+    "type": "error"
+  },
+  {
+    "inputs": [],
+    "name": "Register__YouAreUsingTheSameNullifierTwice",
+    "type": "error"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "index",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "commitment",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "merkle_root",
+        "type": "uint256"
+      }
+    ],
+    "name": "AddCommitment",
+    "type": "event"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "merkle_root",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "nullifier",
+        "type": "uint256"
+      },
+      {
+        "indexed": false,
+        "internalType": "uint256",
+        "name": "commitment",
+        "type": "uint256"
+      }
+    ],
+    "name": "ProofValidated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "root",
+        "type": "uint256"
+      }
+    ],
+    "name": "checkRoot",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMerkleRoot",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "getMerkleTreeSize",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "commitment",
+        "type": "uint256"
+      }
+    ],
+    "name": "indexOf",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "commitment",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nullifier",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "merkle_root",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "attestation_id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "a",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "uint256[2][2]",
+            "name": "b",
+            "type": "uint256[2][2]"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "c",
+            "type": "uint256[2]"
+          }
+        ],
+        "internalType": "struct IRegister.RegisterProof",
+        "name": "proof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "signature_algorithm",
+        "type": "uint256"
+      }
+    ],
+    "name": "validateProof",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "components": [
+          {
+            "internalType": "uint256",
+            "name": "commitment",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "nullifier",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "merkle_root",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "attestation_id",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "a",
+            "type": "uint256[2]"
+          },
+          {
+            "internalType": "uint256[2][2]",
+            "name": "b",
+            "type": "uint256[2][2]"
+          },
+          {
+            "internalType": "uint256[2]",
+            "name": "c",
+            "type": "uint256[2]"
+          }
+        ],
+        "internalType": "struct IRegister.RegisterProof",
+        "name": "proof",
+        "type": "tuple"
+      },
+      {
+        "internalType": "uint256",
+        "name": "signature_algorithm",
+        "type": "uint256"
+      }
+    ],
+    "name": "verifyProof",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  }
+]
