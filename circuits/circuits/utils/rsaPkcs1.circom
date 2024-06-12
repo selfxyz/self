@@ -153,8 +153,6 @@ template RSAVerify65537(n, k) {
     // smaller than the modulus. Thus, we don't have to check that bigPow is fully reduced.
 
     for (var i = 0; i < k; i++) {
-        log("bigPow.out[i]: ", bigPow.out[i]);
-        log("padder.padded_message[i]: ", padder.padded_message[i]);
         bigPow.out[i] === padder.padded_message[i];
     }
 }
