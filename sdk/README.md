@@ -2,7 +2,7 @@
 
 ## Installation
 
-yarn add @proofofpassport/sdk
+yarn add proof-of-passport-sdk
 
 ## Development
 
