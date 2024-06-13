@@ -1,9 +1,9 @@
 import { groth16 } from 'snarkjs';
 import fs from 'fs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from '../common/src/constants/constants';
-import { ethers } from 'ethers';
-import { attributeToGetter, checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
+import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
 import dotenv from 'dotenv';
+import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
 
 dotenv.config();
 
@@ -94,83 +94,6 @@ export class ProofOfPassportWeb2Verifier {
         return this.report;
     }
 }
-export class ProofOfPassportWeb3Verifier {
-    scope: string;
-    attestationId: string;
-    requirements: Array<[string, number | string]>;
-    rpcUrl: string;
-    report: ProofOfPassportVerifierReport;
-
-    constructor(options: { scope: string, attestationId?: string, requirements?: Array<[string, number | string]>, rpcUrl?: string }) {
-        this.scope = options.scope;
-        this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
-        this.requirements = options.requirements || [];
-        this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
-        this.report = new ProofOfPassportVerifierReport();
-    }
-
-    async verify(address: string, tokenID: number): Promise<ProofOfPassportVerifierReport> {
-        const provider = new ethers.JsonRpcProvider(this.rpcUrl);
-        const contract = new ethers.Contract(SBT_CONTRACT_ADDRESS, SBT_ABI, provider);
-
-        //1. Verify the user owns a soulbond token
-        const ownerOfToken = await contract.ownerOf(tokenID);
-        if (ownerOfToken !== address) {
-            this.report.exposeAttribute('owner_of');
-        }
-
-        //2. Verify attributes of the soublond token
-        for (const requirement of this.requirements) {
-            const attribute = requirement[0];
-            const value = requirement[1];
-            const getterName = attributeToGetter[attribute];
-            if (typeof contract[getterName] !== 'function') {
-                console.error(`No such function ${getterName} on contract`);
-                continue;
-            }
-            const SBTAttribute = await contract[getterName](tokenID);
-            if (SBTAttribute !== value) {
-                this.report.exposeAttribute(attribute as keyof ProofOfPassportVerifierReport);
-            }
-        }
-        return this.report;
-    }
-
-}
-
-class ProofOfPassportVerifierReport {
-    scope: boolean = false;
-    merkle_root: boolean = false;
-    attestation_id: boolean = false;
-    current_date: boolean = false;
-    issuing_state: boolean = false;
-    name: boolean = false;
-    passport_number: boolean = false;
-    nationality: boolean = false;
-    date_of_birth: boolean = false;
-    gender: boolean = false;
-    expiry_date: boolean = false;
-    older_than: boolean = false;
-    owner_of: boolean = false;
-    proof: boolean = false;
-
-    valid: boolean = true;
-
-    public user_identifier: number;
-    public nullifier: number;
-
-    constructor() { }
-
-    exposeAttribute(attribute: keyof ProofOfPassportVerifierReport) {
-        (this[attribute] as boolean) = true;
-        this.valid = false;
-    }
-
-    toJson() {
-        return JSON.stringify(this);
-    }
-
-}
 
 export class ProofOfPassportWeb2Inputs {
     publicSignals: string[];
@@ -181,4 +104,3 @@ export class ProofOfPassportWeb2Inputs {
         this.proof = proof;
     }
 }
-

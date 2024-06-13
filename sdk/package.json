@@ -1,8 +1,13 @@
 {
-  "name": "sdk",
+  "name": "@proofofpassport/sdk",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zk-passport/proof-of-passport"
+  },
+  "author": "turnoffthiscomputer",
   "dependencies": {
     "@types/chai-as-promised": "^7.1.8",
     "@types/expect": "^24.3.0",
@@ -34,6 +39,7 @@
     "ts-node": "^10.9.2"
   },
   "scripts": {
+    "build": "tsc",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/sdk.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn"
   }

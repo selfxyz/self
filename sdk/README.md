@@ -3,6 +3,12 @@
 ## Installation
 
 ```bash
+yarn add @proofofpassport/sdk
+```
+
+## Development
+
+```bash
 yarn install-sdk
 ```
 ## Tests
