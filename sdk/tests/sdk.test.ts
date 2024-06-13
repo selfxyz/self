@@ -7,7 +7,7 @@ import { poseidon2, poseidon6 } from "poseidon-lite";
 import { PASSPORT_ATTESTATION_ID } from "../../common/src/constants/constants";
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
-import { ProofOfPassportWeb2Inputs, ProofOfPassportWeb2Verifier, ProofOfPassportWeb3Verifier } from '../sdk';
+import { ProofOfPassportWeb2Inputs, ProofOfPassportWeb2Verifier, ProofOfPassportWeb3Verifier } from '../index';
 import dotenv from 'dotenv';
 dotenv.config();
 
