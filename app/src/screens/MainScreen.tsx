@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
@@ -20,17 +20,19 @@ import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
+import NextScreen from './NextScreen';
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
 import Dialog from "react-native-dialog";
 import { contribute } from '../utils/contribute';
+import RegisterScreen from './RegisterScreen';
 
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
+  const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
-  const [brokenCamera, setBrokenCamera] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
   const {
@@ -42,27 +44,10 @@ const MainScreen: React.FC = () => {
     clearPassportDataFromStorage,
     clearSecretFromStorage,
     registerCommitment,
+    registerPassportData,
     passportData,
-    secret
+    registered
   } = useUserStore()
-
-  const decrementStep = () => {
-    if (selectedTab === "nfc") {
-      updateNavigationStore({
-        selectedTab: "scan",
-      })
-    }
-    else if (selectedTab === "app") {
-      updateNavigationStore({
-        selectedTab: "nfc",
-      })
-    }
-    else if (selectedTab === "prove") {
-      updateNavigationStore({
-        selectedTab: "app",
-      })
-    }
-  };
 
   const {
     showWarningModal,
@@ -82,25 +67,42 @@ const MainScreen: React.FC = () => {
     })
     deleteMrzFields();
   }
-
-  const handleSkip = () => {
-    registerCommitment(
-      secret,
-      mockPassportData_sha256WithRSAEncryption_65537
-    )
-    update({
-      passportData: mockPassportData_sha256WithRSAEncryption_65537
-    })
-    setStep(Steps.NFC_SCAN_COMPLETED);
-    deleteMrzFields();
-    toast?.show("Using mock passport data!", { type: "info" })
-  }
-
   const handleHideData = () => {
     updateNavigationStore({
       hideData: !hideData,
     })
   }
+
+  const handleSkip = () => {
+    registerPassportData(
+      mockPassportData_sha256WithRSAEncryption_65537
+    )
+    update({
+      passportData: mockPassportData_sha256WithRSAEncryption_65537
+    })
+    setStep(Steps.NEXT_SCREEN);
+    deleteMrzFields();
+    toast?.show("Using mock passport data!", { type: "info" })
+  }
+
+  const decrementStep = () => {
+    if (selectedTab === "nfc") {
+      setStep(Steps.MRZ_SCAN);
+    }
+    else if (selectedTab === "next") {
+      setStep(Steps.MRZ_SCAN_COMPLETED);
+    }
+    else if (selectedTab === "register") {
+      setStep(Steps.NEXT_SCREEN);
+    }
+    else if (selectedTab === "prove") {
+      setStep(Steps.REGISTERED);
+    }
+    else if (selectedTab === "mint") {
+      setStep(Steps.REGISTERED);
+    }
+  };
+
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
       console.log('ios');
@@ -117,12 +119,18 @@ const MainScreen: React.FC = () => {
     setDialogContributeIsOpen(false);
   }
 
-
   useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
       setStep(Steps.MRZ_SCAN_COMPLETED);
     }
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
+
+  useEffect(() => {
+    if (registered) {
+      setStep(Steps.REGISTERED);
+    }
+  }, [registered]);
+
 
   useEffect(() => {
     let timeoutId: ReturnType<typeof setTimeout>;
@@ -142,7 +150,7 @@ const MainScreen: React.FC = () => {
         setNFCScanIsOpen(false);
       }, 0);
     }
-    else if (step == Steps.NFC_SCAN_COMPLETED) {
+    else if (step == Steps.NEXT_SCREEN) {
       // Set the timeout and store its ID
       timeoutId = setTimeout(() => {
         setNFCScanIsOpen(false);
@@ -153,7 +161,17 @@ const MainScreen: React.FC = () => {
         selectedTab: "mint",
       })
     }
-    if (step == Steps.NFC_SCAN_COMPLETED) {
+    if (step == Steps.NEXT_SCREEN) {
+      updateNavigationStore({
+        selectedTab: "next",
+      })
+    }
+    if (step == Steps.REGISTER) {
+      updateNavigationStore({
+        selectedTab: "register",
+      })
+    }
+    if (step == Steps.REGISTERED) {
       updateNavigationStore({
         selectedTab: "app",
       })
@@ -172,7 +190,7 @@ const MainScreen: React.FC = () => {
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
-            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={selectedTab === "scan" ? "transparent" : "#a0a0a0"} /></Button>
+            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan" || selectedTab === "app") ? "transparent" : "#a0a0a0"} /></Button>
 
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
@@ -187,7 +205,7 @@ const MainScreen: React.FC = () => {
             <Sheet.Frame>
               <YStack gap="$5" f={1} pt="$3">
                 <H2 textAlign='center'>Ready to scan</H2>
-                {step >= Steps.NFC_SCAN_COMPLETED ?
+                {step >= Steps.NEXT_SCREEN ?
                   <CheckCircle2
                     size="$8"
                     alignSelf='center'
@@ -217,74 +235,15 @@ const MainScreen: React.FC = () => {
                   <H2 color={textColor1}>Settings</H2>
                   <Cog color={textColor1} mt="$1" alignSelf='center' size="$2" />
                 </XStack>
-                <Fieldset horizontal>
-                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="name" >
-                    Broken camera
-                  </Label>
-                  <Switch size="$3.5" checked={brokenCamera} onCheckedChange={setBrokenCamera}>
-                    <Switch.Thumb animation="bouncy" bc={bgColor} />
-                  </Switch>
-                </Fieldset>
-                {
-                  brokenCamera &&
-                  <YStack pl="$3" gap="$1">
-                    <Fieldset gap="$4" horizontal>
-                      <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
-                        Passport Number
-                      </Label>
-                      <Input
-                        bg={componentBgColor}
-                        color={textColor1}
-                        h="$3.5"
-                        borderColor={passportNumber?.length === 9 ? "green" : "unset"}
-                        flex={1}
-                        id="passportnumber"
-                        onChangeText={(text) => {
-                          update({ passportNumber: text.toUpperCase() })
-                        }}
-                        value={passportNumber}
-                        keyboardType="default"
-                      />
-                    </Fieldset>
-                    <Fieldset gap="$4" horizontal>
-                      <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
-                        Date of birth (yymmdd)
-                      </Label>
-                      <Input
-                        bg={componentBgColor}
-                        color={textColor1}
-                        h="$3.5"
-                        borderColor={dateOfBirth?.length === 6 ? "green" : "unset"}
-                        flex={1}
-                        id="dateofbirth"
-                        onChangeText={(text) => {
-                          update({ dateOfBirth: text })
-                        }}
-                        value={dateOfBirth}
-                        keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
-                      />
-                    </Fieldset>
-                    <Fieldset gap="$4" horizontal>
-                      <Label color={textColor1} width={160} justifyContent="flex-end" fontSize={13}>
-                        Date of expiry (yymmdd)
-                      </Label>
-                      <Input
-                        bg={componentBgColor}
-                        color={textColor1}
-                        h="$3.5"
-                        borderColor={dateOfExpiry?.length === 6 ? "green" : "unset"}
-                        flex={1}
-                        id="dateofexpiry"
-                        onChangeText={(text) => {
-                          update({ dateOfExpiry: text })
-                        }}
-                        value={dateOfExpiry}
-                        keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
-                      />
-                    </Fieldset>
-                  </YStack>
-                }
 
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                    Contribute
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textColor1} />
+                  </Button>
+                </Fieldset>
                 <Fieldset horizontal>
                   <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
                     Private mode
@@ -294,13 +253,15 @@ const MainScreen: React.FC = () => {
                   </Switch>
                 </Fieldset>
 
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
-                    Contribute
+
+
+                <Fieldset horizontal>
+                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
+                    Display other options
                   </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
-                    <Share color={textColor1} />
-                  </Button>
+                  <Switch size="$3.5" checked={displayOtherOptions} onCheckedChange={() => setDisplayOtherOptions(!displayOtherOptions)}>
+                    <Switch.Thumb animation="bouncy" bc={bgColor} />
+                  </Switch>
                 </Fieldset>
 
                 <Dialog.Container visible={DialogContributeIsOpen}>
@@ -314,42 +275,46 @@ const MainScreen: React.FC = () => {
                 </Dialog.Container>
 
 
+                {displayOtherOptions && (
+                  <>
+                    <XStack my="$3" alignSelf='center' h={2} w="80%" bg={componentBgColor} borderRadius={100} />
+                    <Fieldset gap="$4" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                        Restart to step 1
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
+                        <IterationCw color={textColor1} />
+                      </Button>
+                    </Fieldset>
 
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
-                    Restart to step 1
-                  </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
-                    <IterationCw color={textColor1} />
-                  </Button>
-                </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        Use mock passport data
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleSkip}>
+                        <VenetianMask color={textColor1} />
+                      </Button>
+                    </Fieldset>
 
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
-                    Use mock passport data
-                  </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleSkip}>
-                    <VenetianMask color={textColor1} />
-                  </Button>
-                </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        Delete passport data
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                        <Eraser color={textColor1} />
+                      </Button>
+                    </Fieldset>
 
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
-                    Delete passport data
-                  </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
-                    <VenetianMask color={textColor1} />
-                  </Button>
-                </Fieldset>
-
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
-                    Delete secret (caution)
-                  </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearSecretFromStorage}>
-                    <VenetianMask color={textColor1} />
-                  </Button>
-                </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        Delete secret (caution)
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearSecretFromStorage}>
+                        <Eraser color={textColor2} />
+                      </Button>
+                    </Fieldset>
+                  </>
+                )}
 
                 <YStack flex={1} />
 
@@ -359,6 +324,7 @@ const MainScreen: React.FC = () => {
                   </Button> */}
                 </YStack>
               </YStack>
+
             </Sheet.Frame>
           </Sheet>
 
@@ -491,7 +457,7 @@ const MainScreen: React.FC = () => {
           </Sheet>
           <XStack bc="#343434" h={1.2} />
         </YStack>
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue="scan"
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
@@ -508,11 +474,15 @@ const MainScreen: React.FC = () => {
               handleNFCScan={handleNFCScan}
             />
           </Tabs.Content>
-
+          <Tabs.Content value="next" f={1}>
+            <NextScreen />
+          </Tabs.Content>
+          <Tabs.Content value="register" f={1}>
+            <RegisterScreen />
+          </Tabs.Content>
           <Tabs.Content value="app" f={1}>
             <AppScreen />
           </Tabs.Content>
-
           <Tabs.Content value="prove" f={1}>
             <ProveScreen />
           </Tabs.Content>

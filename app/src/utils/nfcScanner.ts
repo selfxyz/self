@@ -17,8 +17,8 @@ export const scan = async () => {
     dateOfBirth,
     dateOfExpiry
   } = useUserStore.getState()
-  
-  const {toast, setStep} = useNavigationStore.getState();
+
+  const { toast, setStep } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -52,7 +52,7 @@ const scanAndroid = async () => {
     dateOfBirth,
     dateOfExpiry
   } = useUserStore.getState()
-  const {toast, setStep} = useNavigationStore.getState();
+  const { toast, setStep } = useNavigationStore.getState();
 
   try {
     const response = await PassportReader.scan({
@@ -83,7 +83,7 @@ const scanIOS = async () => {
     dateOfBirth,
     dateOfExpiry
   } = useUserStore.getState()
-  const {toast, setStep} = useNavigationStore.getState();
+  const { toast, setStep } = useNavigationStore.getState();
 
   try {
     const response = await NativeModules.PassportReader.scanPassport(
@@ -112,7 +112,7 @@ const scanIOS = async () => {
 const handleResponseIOS = async (
   response: any,
 ) => {
-  const {toast} = useNavigationStore.getState();
+  const { toast } = useNavigationStore.getState();
 
   const parsed = JSON.parse(response);
 
@@ -177,7 +177,7 @@ const handleResponseIOS = async (
     console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     useUserStore.getState().registerPassportData(passportData)
-    useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED);
+    useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
   } catch (e: any) {
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
@@ -231,7 +231,7 @@ const handleResponseAndroid = async (
     ...passportData,
     photoBase64: passportData.photoBase64.substring(0, 100) + '...'
   }, null, 2));
-  
+
   console.log('mrz', passportData.mrz);
   console.log('signatureAlgorithm', passportData.signatureAlgorithm);
   console.log('pubKey', passportData.pubKey);
@@ -247,5 +247,5 @@ const handleResponseAndroid = async (
   console.log("encapContent", encapContent)
 
   useUserStore.getState().registerPassportData(passportData)
-  useNavigationStore.getState().setStep(Steps.NFC_SCAN_COMPLETED);
+  useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
 };
