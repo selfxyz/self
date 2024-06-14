@@ -39,14 +39,14 @@ ts-node src/dsc/extract_sig_algs.ts
 
 ### CSCAs (WIP)
 
-Extract pem certificates from ldif file:
+Extract pem certificates from all the masterlists from the ldif file:
 ```
-ts-node src/csca/extract_certificates.ts
+ts-node src/csca/extract_masterlists.ts
 ```
 
-Extract readable public keys from pem certicates:
+Visualize the content of a PEM file:
 ```
-ts-node src/csca/extract_pubkeys.ts
+openssl x509 -text -in outputs/unique_cscas/unique_cert_0.pem
 ```
 
 More info: [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx)

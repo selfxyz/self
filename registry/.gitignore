@@ -1,3 +1,5 @@
 node_modules/
 certificates
-csca_certificates
+cscas
+masterlists
+unique_cscas
