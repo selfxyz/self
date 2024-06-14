@@ -27,7 +27,7 @@ async function main() {
   for (let i = 0; i < numCertificates; i += concurrencyLimit) {
     const tasks: any = [];
     for (let j = 0; j < concurrencyLimit && i + j < numCertificates; j++) {
-      tasks.push(extractModulus(i + j));
+      tasks.push(extractPubkey(i + j));
     }
     await Promise.all(tasks);
   }
@@ -39,7 +39,7 @@ async function main() {
   console.log("public_keys_parsed.json written!")
 }
 
-async function extractModulus(i: number): Promise<void> {
+async function extractPubkey(i: number): Promise<void> {
   try {
     const certTextres = await execAsync(`openssl x509 -text -in outputs/certificates/certificate_${i}.pem`);
     const certText = certTextres.stdout as string;
@@ -87,6 +87,11 @@ function parsePubkey(certText: string, signatureAlgorithm: string): any {
     
     if (!modulusHex) {
       console.error(`Modulus not found`);
+      return null;
+    }
+
+    if (Number(exponent) !== 65537) {
+      console.error(`signatureAlgorithm`, signatureAlgorithm, `exponent`, exponent);
       return null;
     }
     return {
@@ -174,5 +179,5 @@ main();
 // Errors:
 // Certificate 11445: Ukraine put sha256WithRSAEncryption instead of ecdsa something
 // Certificate 11680: Ukraine put sha256WithRSAEncryption instead of ecdsa something
-// Certificate 17767: Benin put ecdsa-with-SHA256 instead of ecdsa something
-// Certificate 17765: Benin put ecdsa-with-SHA256 instead of ecdsa something
+// Certificate 17767: Benin put ecdsa-with-SHA256 instead of rsa something
+// Certificate 17765: Benin put ecdsa-with-SHA256 instead of rsa something
