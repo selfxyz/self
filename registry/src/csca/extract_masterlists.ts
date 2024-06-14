@@ -1,8 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as util from 'util';
 import { execSync } from 'child_process';
-const execAsync = util.promisify(execSync);
 
 // extract masterlists from ICAO ldif file
 const fileContent = fs.readFileSync("inputs/icao_download_section/icaopkd-002-complete-000243.ldif", "utf-8");
