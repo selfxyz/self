@@ -32,7 +32,7 @@ Build the merkle tree used in the app, serialize it and place it in `common/pubk
 ts-node src/dsc/build_merkle_tree.ts
 ```
 
-Visualize the signature algorithms of each countries, run:
+Visualize the signature algorithms of each country:
 ```
 ts-node src/dsc/extract_sig_algs.ts
 ```
@@ -47,6 +47,11 @@ ts-node src/csca/extract_masterlists.ts
 Visualize the content of a PEM file:
 ```
 openssl x509 -text -in outputs/unique_cscas/unique_cert_0.pem
+```
+
+Visualize the signature algorithms of each country:
+```
+ts-node src/csca/extract_sig_algs.ts
 ```
 
 More info: [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx)
