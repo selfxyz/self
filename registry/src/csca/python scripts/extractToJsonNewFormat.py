@@ -72,10 +72,10 @@ def total_signature_count(signature_counts):
     total_count = sum(sum(item['amount'] for item in country_list) for country_list in signature_counts.values())
     print("Total signature count:", total_count)
 
-plain_text_directory = 'plain_text_unique'
+plain_text_directory = '../../../outputs/plain_text_unique'
 signature_counts = count_signature_algorithms(plain_text_directory)
 
-with open('signature_counts_new_format.json', 'w') as json_file:
+with open('../../../outputs/csca_formatted.json', 'w') as json_file:
     json.dump(signature_counts, json_file, indent=4)
 
 total_signature_count(signature_counts)
