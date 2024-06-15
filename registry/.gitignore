@@ -3,3 +3,6 @@ certificates
 cscas
 masterlists
 unique_cscas
+src/csca/python scripts/plain_text/*
+src/csca/python scripts/plain_text_master/*
+src/csca/python scripts/plain_text_unique/*
