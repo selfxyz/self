@@ -5,6 +5,7 @@ import path from 'path';
 const wasm_tester = require("circom_tester").wasm;
 import { splitToWords } from '../../common/src/utils/utils';
 import { sha256Pad } from '../../common/src/utils/shaPad';
+import { findStartIndex } from '../../common/src/utils/csca';
 
 describe('DSC chain certificate', function () {
     this.timeout(0); // Disable timeout
@@ -43,13 +44,17 @@ describe('DSC chain certificate', function () {
     const dsc_tbsCertificateListOfBytes = Array.from(dsc_tbsCertificateBuffer).map(byte => BigInt(byte).toString());
     const dsc_tbsCertificateUint8Array = Uint8Array.from(dsc_tbsCertificateListOfBytes.map(byte => parseInt(byte)));
     const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+    const [dsc_modulus_numArray, startIndex] = findStartIndex(dsc_modulus, dsc_message_padded);
 
+    assert(startIndex !== -1, "Modulus not found in message padded");
 
     const inputs = {
         raw_dsc_cert: Array.from(dsc_message_padded).map((x) => x.toString()),
         message_padded_bytes: BigInt(dsc_messagePaddedLen).toString(),
         modulus: csca_modulus_formatted,
         signature: dsc_signature_formatted,
+        start_index: startIndex.toString(),
+        dsc_modulus: dsc_modulus_numArray.map(x => x.toString()),
     }
     console.log("inputs:", inputs);
 
@@ -63,6 +68,7 @@ describe('DSC chain certificate', function () {
             }
         );
     });
+
     it('check inputs', () => {
         expect(inputs.raw_dsc_cert.length).to.equal(max_cert_bytes);
         expect(inputs.modulus.length).to.equal(k);
@@ -90,4 +96,3 @@ describe('DSC chain certificate', function () {
     })
 
 })
-
