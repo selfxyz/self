@@ -1,0 +1,93 @@
+import { assert, expect } from 'chai'
+import fs from 'fs'
+const forge = require('node-forge');
+import path from 'path';
+const wasm_tester = require("circom_tester").wasm;
+import { splitToWords } from '../../common/src/utils/utils';
+import { sha256Pad } from '../../common/src/utils/shaPad';
+
+describe('DSC chain certificate', function () {
+    this.timeout(0); // Disable timeout
+    let circuit;
+    const n = 121;
+    const k = 17;
+    const max_cert_bytes = 2048;
+    const dsc = fs.readFileSync('../common/src/constants/mock_dsc.crt', 'utf8');
+    const csca = fs.readFileSync('../common/src/constants/mock_csca.crt', 'utf8');
+    const dscCert = forge.pki.certificateFromPem(dsc);
+    const cscaCert = forge.pki.certificateFromPem(csca);
+
+    const dsc_modulus = dscCert.publicKey.n.toString(16).toLowerCase();
+    const csca_modulus = cscaCert.publicKey.n.toString(16).toLowerCase();
+    const csca_modulus_number = BigInt(`0x${csca_modulus}`);
+
+    const csca_bufferModulus = Buffer.from(csca_modulus, 'hex');
+    const csca_bitsModulus = Array.from(csca_bufferModulus).flatMap(byte => {
+        return Array.from({ length: 8 }, (_, bit) => (byte >> (7 - bit)) & 1);
+    });
+    const csca_bitsModulus_padded = new Array(2057 - csca_bitsModulus.length).fill(0).concat(csca_bitsModulus);
+    const csca_bitsModulus_padded_slices = [];
+    for (let i = 0; i < csca_bitsModulus_padded.length; i += n) {
+        csca_bitsModulus_padded_slices.push(csca_bitsModulus_padded.slice(i, i + n));
+    }
+
+    const dsc_signature = dscCert.signature;
+    const dsc_signature_hex = forge.util.bytesToHex(dsc_signature);
+    const dsc_signature_number = BigInt(`0x${dsc_signature_hex}`);
+
+    const csca_modulus_formatted = splitToWords(csca_modulus_number, BigInt(n), BigInt(k));
+    const dsc_signature_formatted = splitToWords(dsc_signature_number, BigInt(n), BigInt(k));
+
+    const dsc_tbsCertificateDer = forge.asn1.toDer(dscCert.tbsCertificate).getBytes();
+    const dsc_tbsCertificateBuffer = Buffer.from(dsc_tbsCertificateDer, 'binary')
+    const dsc_tbsCertificateListOfBytes = Array.from(dsc_tbsCertificateBuffer).map(byte => BigInt(byte).toString());
+    const dsc_tbsCertificateUint8Array = Uint8Array.from(dsc_tbsCertificateListOfBytes.map(byte => parseInt(byte)));
+    const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+
+
+    const inputs = {
+        raw_dsc_cert: Array.from(dsc_message_padded).map((x) => x.toString()),
+        message_padded_bytes: BigInt(dsc_messagePaddedLen).toString(),
+        modulus: csca_modulus_formatted,
+        signature: dsc_signature_formatted,
+    }
+    console.log("inputs:", inputs);
+
+    before(async () => {
+        circuit = await wasm_tester(
+            path.join(__dirname, '../circuits/dsc.circom'),
+            {
+                include: [
+                    "node_modules",
+                ]
+            }
+        );
+    });
+    it('check inputs', () => {
+        expect(inputs.raw_dsc_cert.length).to.equal(max_cert_bytes);
+        expect(inputs.modulus.length).to.equal(k);
+        expect(inputs.signature.length).to.equal(k);
+        it('check modulus slices size', () => {
+            inputs.modulus.forEach(slice => {
+                expect(slice.length).to.equal(n);
+            });
+        });
+        it('check signature slices size', () => {
+            inputs.signature.forEach(slice => {
+                expect(slice.length).to.equal(n);
+            });
+        });
+    })
+
+    it('should compile and load the circuit', () => {
+        expect(circuit).to.not.be.undefined;
+    })
+
+    it('should compute the correct output', async () => {
+        console.log("Inputs:", inputs);
+        const witness = await circuit.calculateWitness(inputs, true);
+        console.log(witness);
+    })
+
+})
+
