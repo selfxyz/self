@@ -13,8 +13,8 @@ describe('DSC chain certificate', function () {
     const n = 121;
     const k = 17;
     const max_cert_bytes = 2048;
-    const dsc = fs.readFileSync('../common/src/constants/mock_dsc.crt', 'utf8');
-    const csca = fs.readFileSync('../common/src/constants/mock_csca.crt', 'utf8');
+    const dsc = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_2048/mock_dsc.crt', 'utf8');
+    const csca = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_2048/mock_csca.crt', 'utf8');
     const dscCert = forge.pki.certificateFromPem(dsc);
     const cscaCert = forge.pki.certificateFromPem(csca);
 
@@ -53,7 +53,7 @@ describe('DSC chain certificate', function () {
 
     before(async () => {
         circuit = await wasm_tester(
-            path.join(__dirname, '../circuits/dsc.circom'),
+            path.join(__dirname, '../circuits/tests/certificates/dsc_2048.circom'),
             {
                 include: [
                     "node_modules",
