@@ -5,13 +5,14 @@ include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/rsa.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "@zk-email/circuits/helpers/sha.circom";
+include "./utils/splitBytesToWords.circom";
 
 template DSC(max_cert_bytes, n, k,l) {
     signal input raw_dsc_cert[max_cert_bytes]; 
     signal input message_padded_bytes;
     signal input modulus[k];
     signal input signature[k];
-    signal input dsc_modulus[l];
+    signal input dsc_modulus[k];
     signal input start_index;
 
     // variables verification
@@ -50,10 +51,16 @@ template DSC(max_cert_bytes, n, k,l) {
     }
 
     // verify DSC modulus
-    component shiftLeft = VarShiftLeft(2048, l);
+    component shiftLeft = VarShiftLeft(2048, 256);
     shiftLeft.in <== raw_dsc_cert;
     shiftLeft.shift <== start_index;
-    shiftLeft.out === dsc_modulus;
+
+    component splitBytesToWords = SplitBytesToWords(256, 121, 17);
+    splitBytesToWords.in <== shiftLeft.out;
+    for (var i = 0; i < k; i++) {
+        dsc_modulus[i] === splitBytesToWords.out[i];
+    }
+
 
 }
 

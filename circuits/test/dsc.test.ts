@@ -19,24 +19,17 @@ describe('DSC chain certificate', function () {
     const cscaCert = forge.pki.certificateFromPem(csca);
 
     const dsc_modulus = dscCert.publicKey.n.toString(16).toLowerCase();
+
     const csca_modulus = cscaCert.publicKey.n.toString(16).toLowerCase();
     const csca_modulus_number = BigInt(`0x${csca_modulus}`);
-
-    const csca_bufferModulus = Buffer.from(csca_modulus, 'hex');
-    const csca_bitsModulus = Array.from(csca_bufferModulus).flatMap(byte => {
-        return Array.from({ length: 8 }, (_, bit) => (byte >> (7 - bit)) & 1);
-    });
-    const csca_bitsModulus_padded = new Array(2057 - csca_bitsModulus.length).fill(0).concat(csca_bitsModulus);
-    const csca_bitsModulus_padded_slices = [];
-    for (let i = 0; i < csca_bitsModulus_padded.length; i += n) {
-        csca_bitsModulus_padded_slices.push(csca_bitsModulus_padded.slice(i, i + n));
-    }
+    const dsc_modulus_number = BigInt(`0x${dsc_modulus}`);
 
     const dsc_signature = dscCert.signature;
     const dsc_signature_hex = forge.util.bytesToHex(dsc_signature);
     const dsc_signature_number = BigInt(`0x${dsc_signature_hex}`);
 
     const csca_modulus_formatted = splitToWords(csca_modulus_number, BigInt(n), BigInt(k));
+    const dsc_modulus_formatted = splitToWords(dsc_modulus_number, BigInt(n), BigInt(k));
     const dsc_signature_formatted = splitToWords(dsc_signature_number, BigInt(n), BigInt(k));
 
     const dsc_tbsCertificateDer = forge.asn1.toDer(dscCert.tbsCertificate).getBytes();
@@ -44,9 +37,9 @@ describe('DSC chain certificate', function () {
     const dsc_tbsCertificateListOfBytes = Array.from(dsc_tbsCertificateBuffer).map(byte => BigInt(byte).toString());
     const dsc_tbsCertificateUint8Array = Uint8Array.from(dsc_tbsCertificateListOfBytes.map(byte => parseInt(byte)));
     const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
-    const [dsc_modulus_numArray, startIndex] = findStartIndex(dsc_modulus, dsc_message_padded);
+    const startIndex = findStartIndex(dsc_modulus, dsc_message_padded);
 
-    assert(startIndex !== -1, "Modulus not found in message padded");
+    assert(startIndex != -1, "Modulus not found in message padded");
 
     const inputs = {
         raw_dsc_cert: Array.from(dsc_message_padded).map((x) => x.toString()),
@@ -54,7 +47,7 @@ describe('DSC chain certificate', function () {
         modulus: csca_modulus_formatted,
         signature: dsc_signature_formatted,
         start_index: startIndex.toString(),
-        dsc_modulus: dsc_modulus_numArray.map(x => x.toString()),
+        dsc_modulus: dsc_modulus_formatted,
     }
     console.log("inputs:", inputs);
 

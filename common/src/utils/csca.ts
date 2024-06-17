@@ -1,5 +1,5 @@
 
-export function findStartIndex(modulus: string, messagePadded: Uint8Array): [number[], number] {
+export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
     for (let i = 0; i < modulus.length; i += 2) {
         const hexPair = modulus.slice(i, i + 2);
@@ -27,5 +27,5 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): [num
             break;
         }
     }
-    return [modulusNumArray, startIndex];
+    return startIndex;
 }
