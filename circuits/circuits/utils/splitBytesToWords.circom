@@ -1,6 +1,15 @@
 pragma circom 2.1.5;
 include "circomlib/circuits/bitify.circom";
 
+/// NOTE: this circuit is unaudited and should not be used in production
+/// @title SplitBytesToWords
+/// @notice split an array of bytes into an array of words
+/// @notice useful for casting a message or modulus before RSA verification
+/// @param l: number of bytes in the input array
+/// @param n: number of bits in a word
+/// @param k: number of words
+/// @input in: array of bytes
+/// @output out: array of words
 template SplitBytesToWords (l,n,k) {
     signal input in[l];
     signal output out[k];
