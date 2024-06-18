@@ -29,7 +29,7 @@ export function generateCircuitInputsRegister(
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
 
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(serializedTree);
+  tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
   if (options.developmentMode) {
     tree.insert(getLeaf(mockPassportData_sha256WithRSAEncryption_65537).toString());
