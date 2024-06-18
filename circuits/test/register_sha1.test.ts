@@ -3,26 +3,27 @@ import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { poseidon1, poseidon6 } from "poseidon-lite";
-import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha1WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
 
-describe("Proof of Passport - Circuits - Register flow", function () {
+describe("Circuits - sha1WithRSAEncryption_65537 Register flow", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
-    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
+    let passportData = mockPassportData_sha1WithRSAEncryption_65537;
     let attestation_id: string;
 
     before(async () => {
         circuit = await wasm_tester(
-            path.join(__dirname, "../circuits/register_sha256WithRSAEncryption_65537.circom"),
+            path.join(__dirname, "../circuits/register_sha1WithRSAEncryption_65537.circom"),
             {
                 include: [
                     "node_modules",
                     "./node_modules/@zk-kit/binary-merkle-root.circom/src",
-                    "./node_modules/circomlib/circuits"
+                    "./node_modules/circomlib/circuits",
+                    "./node_modules/dmpierre/sha1-circom/circuits",
                 ]
             },
         );

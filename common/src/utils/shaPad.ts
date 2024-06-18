@@ -13,13 +13,11 @@ export function sha1Pad(prehash_prepad_m: Uint8Array, maxShaBytes: number): [Uin
   let length_bits = prehash_prepad_m.length * 8; // bytes to bits
   let length_in_bytes = int64toBytes(length_bits);
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(2 ** 7)); // Add the 1 on the end, length 505
-  // while ((prehash_prepad_m.length * 8 + length_in_bytes.length * 8) % 320 !== 0) {
   while ((prehash_prepad_m.length * 8 + length_in_bytes.length * 8) % 512 !== 0) {
     prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(0));
   }
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, length_in_bytes);
   assert((prehash_prepad_m.length * 8) % 512 === 0, "Padding did not complete properly!");
-  // assert((prehash_prepad_m.length * 8) % 320 === 0, "Padding did not complete properly!");
   let messageLen = prehash_prepad_m.length;
   while (prehash_prepad_m.length < maxShaBytes) {
     prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int64toBytes(0));
@@ -37,7 +35,6 @@ export function sha256Pad(prehash_prepad_m: Uint8Array, maxShaBytes: number): [U
   let length_bits = prehash_prepad_m.length * 8; // bytes to bits
   let length_in_bytes = int64toBytes(length_bits);
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(2 ** 7)); // Add the 1 on the end, length 505
-  // while ((prehash_prepad_m.length * 8 + length_in_bytes.length * 8) % 512 !== 0) {
   while ((prehash_prepad_m.length * 8 + length_in_bytes.length * 8) % 512 !== 0) {
     prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(0));
   }
