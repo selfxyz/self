@@ -21,7 +21,7 @@ export function generateCircuitInputsRegister(
   options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(serializedTree);
+  tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
   if (options.developmentMode) {
     tree.insert(getLeaf({
