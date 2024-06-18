@@ -21,7 +21,9 @@ function App(): JSX.Element {
   }, [toast, setToast]);
 
   useEffect(() => {
-    amplitude.init(AMPLITUDE_KEY);
+    if (AMPLITUDE_KEY) {
+      amplitude.init(AMPLITUDE_KEY);
+    }
     initUserStore();
   }, []);
 
