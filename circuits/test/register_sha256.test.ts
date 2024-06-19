@@ -39,7 +39,6 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
             secret,
             attestation_id,
             passportData,
-            { developmentMode: true }
         );
     });
 

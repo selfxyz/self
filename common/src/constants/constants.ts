@@ -10,6 +10,9 @@ export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469
 export const CHAIN_NAME = "optimism"
 export const RPC_URL = "https://mainnet.optimism.io"
 
+// we make it global here because passing it to generateCircuitInputsRegister caused trouble
+export const DEVELOPMENT_MODE = true
+
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,
   sha256WithRSAEncryption_3 = 2,

@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
@@ -23,15 +23,14 @@ import {
 export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
-  passportData: PassportData,
-  options: { developmentMode?: boolean } = { developmentMode: false }
+  passportData: PassportData
 ) {
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
 
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
   tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
-  if (options.developmentMode) {
+  if (DEVELOPMENT_MODE) {
     tree.insert(getLeaf(mockPassportData_sha256WithRSAEncryption_65537).toString());
     tree.insert(getLeaf(mockPassportData_sha1WithRSAEncryption_65537).toString());
     tree.insert(getLeaf(mockPassportData_rsassaPss_65537).toString());
