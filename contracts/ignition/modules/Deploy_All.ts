@@ -10,7 +10,6 @@ export default buildModule("Deploy_Registry", (m) => {
         BigInt(0).toString(),
         BigInt(0).toString(),
         mockPassportData_sha256WithRSAEncryption_65537,
-        { developmentMode: true }
     );
     const root = formatRoot(inputs.merkle_root.toString());
 

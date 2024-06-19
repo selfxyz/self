@@ -109,7 +109,6 @@ const useUserStore = create<UserState>((set, get) => ({
         secret,
         PASSPORT_ATTESTATION_ID,
         passportData,
-        { developmentMode: true }
       );
 
       amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);

@@ -9,7 +9,7 @@ export default buildModule("Deploy_Registry", (m) => {
     let passportData = mockPassportData_sha256WithRSAEncryption_65537;
 
     let inputs: any = generateCircuitInputsRegister(
-        secret, attestation_id, passportData, { developmentMode: true }
+        secret, attestation_id, passportData
     );
     let merkle_root = inputs.merkle_root.toString();
     const root = formatRoot(merkle_root);

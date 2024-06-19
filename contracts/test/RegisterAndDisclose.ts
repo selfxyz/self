@@ -70,14 +70,12 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
                 secret,
                 attestation_id,
                 mockPassportData_sha256WithRSAEncryption_65537,
-                { developmentMode: true }
             );
 
             register_circuits.sha1WithRSAEncryption_65537.inputs = generateCircuitInputsRegister(
                 secret,
                 attestation_id,
                 mockPassportData_sha1WithRSAEncryption_65537,
-                { developmentMode: true }
             );
 
             /*** Deploy contracts ***/
