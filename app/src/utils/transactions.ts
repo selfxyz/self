@@ -4,12 +4,13 @@ import groth16ExportSolidityCallData from '../../utils/snarkjs';
 import contractAddresses from "../../deployments/deployed_addresses.json";
 import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#ProofOfPassportRegister.json";
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";
-import { CHAIN_NAME, RELAYER_URL, RPC_URL } from '../../../common/src/constants/constants';
+import { CHAIN_NAME, RELAYER_URL, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
 import { formatCallData_disclose, formatCallData_register } from "../../../common/src/utils/formatCallData";
 
 export const sendRegisterTransaction = async (
   proof: Proof,
+  sigAlgIndex: SignatureAlgorithm
 ) => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
 
@@ -35,7 +36,7 @@ export const sendRegisterTransaction = async (
     );
 
     const transactionRequest = await registerContract
-      .validateProof.populateTransaction(formattedCallData_register, 1);
+      .validateProof.populateTransaction(formattedCallData_register, sigAlgIndex);
     console.log('transactionRequest', transactionRequest);
 
     const response = await axios.post(RELAYER_URL, {

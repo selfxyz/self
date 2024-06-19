@@ -12,7 +12,7 @@ import useNavigationStore from './navigationStore';
 import { Steps } from '../utils/utils';
 import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { PASSPORT_ATTESTATION_ID, RPC_URL } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { generateProof } from '../utils/prover';
 import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
@@ -128,6 +128,7 @@ const useUserStore = create<UserState>((set, get) => ({
       const start = Date.now();
 
       const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
 
       const proof = await generateProof(
         `register_${sigAlgFormatted}`,
@@ -142,7 +143,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-      const serverResponse = await sendRegisterTransaction(proof)
+      const serverResponse = await sendRegisterTransaction(proof, sigAlgIndex)
       const txHash = serverResponse?.data.hash;
 
       const receipt = await provider.waitForTransaction(txHash);
