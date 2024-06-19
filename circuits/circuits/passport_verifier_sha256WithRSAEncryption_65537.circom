@@ -66,7 +66,7 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     // get output of eContentBytes sha256 into k chunks of n bits each
     var msg_len = (256 + n) \ n;
 
-    //eContentHash:  list of length 256/n +1 of components of n bits 
+    //eContentHash: list of length 256/n +1 of components of n bits 
     component eContentHash[msg_len];
     for (var i = 0; i < msg_len; i++) {
         eContentHash[i] = Bits2Num(n);
@@ -81,7 +81,7 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     }
     
     // verify eContentHash signature
-    component rsa = RSAVerifier65537(64, 32);
+    component rsa = RSAVerifier65537(n, k);
 
     for (var i = 0; i < msg_len; i++) {
         rsa.message[i] <== eContentHash[i].out;
