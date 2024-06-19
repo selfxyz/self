@@ -30,12 +30,12 @@ export function generateCircuitInputsRegister(
       exponent: mockPassportData_sha256WithRSAEncryption_65537.pubKey.exponent
     }).toString());
 
-    tree.insert(getLeaf({
-      signatureAlgorithm: mockPassportData_sha1WithRSAEncryption_65537.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: mockPassportData_sha1WithRSAEncryption_65537.pubKey.modulus,
-      exponent: mockPassportData_sha1WithRSAEncryption_65537.pubKey.exponent
-    }).toString());
+    // tree.insert(getLeaf({
+    //   signatureAlgorithm: mockPassportData_sha1WithRSAEncryption_65537.signatureAlgorithm,
+    //   issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+    //   modulus: mockPassportData_sha1WithRSAEncryption_65537.pubKey.modulus,
+    //   exponent: mockPassportData_sha1WithRSAEncryption_65537.pubKey.exponent
+    // }).toString());
   }
 
   if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
