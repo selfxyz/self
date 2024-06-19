@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
@@ -12,24 +12,30 @@ import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
-import { mockPassportData_sha256WithRSAEncryption_65537 } from "./mockPassportData";
+import { mockPassportData_sha256WithRSAEncryption_65537, mockPassportData_sha1WithRSAEncryption_65537 } from "./mockPassportData";
 
 export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
-  passportData: PassportData,
-  options: { developmentMode?: boolean } = { developmentMode: false }
+  passportData: PassportData
 ) {
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(serializedTree);
+  tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
-  if (options.developmentMode) {
+  if (DEVELOPMENT_MODE) {
     tree.insert(getLeaf({
       signatureAlgorithm: mockPassportData_sha256WithRSAEncryption_65537.signatureAlgorithm,
       issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
       modulus: mockPassportData_sha256WithRSAEncryption_65537.pubKey.modulus,
       exponent: mockPassportData_sha256WithRSAEncryption_65537.pubKey.exponent
     }).toString());
+
+    // tree.insert(getLeaf({
+    //   signatureAlgorithm: mockPassportData_sha1WithRSAEncryption_65537.signatureAlgorithm,
+    //   issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
+    //   modulus: mockPassportData_sha1WithRSAEncryption_65537.pubKey.modulus,
+    //   exponent: mockPassportData_sha1WithRSAEncryption_65537.pubKey.exponent
+    // }).toString());
   }
 
   if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
@@ -74,9 +80,6 @@ export function generateCircuitInputsRegister(
     new Uint8Array(passportData.dataGroupHashes),
     MAX_DATAHASHES_LEN
   );
-
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
   return {
     secret: [secret],

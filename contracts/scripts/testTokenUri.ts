@@ -34,7 +34,6 @@ async function main() {
     reveal_bitmap,
     address,
     18,
-    { developmentMode: true }
   );
 
   const Verifier = await ethers.getContractFactory("Groth16Verifier");
