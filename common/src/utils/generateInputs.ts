@@ -14,16 +14,14 @@ import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import {
-  mockPassportData_rsassaPss_65537,
-  mockPassportData_sha1WithRSAEncryption_65537,
-  mockPassportData_sha256WithRSAEncryption_65537,
-  mockPassportData_SHA384withECDSA
+  mockPassportDatas,
 } from "./mockPassportData";
 
 export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
-  passportData: PassportData
+  passportData: PassportData,
+  mocks: PassportData[] = mockPassportDatas
 ) {
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
 
@@ -31,10 +29,9 @@ export function generateCircuitInputsRegister(
   tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
   if (DEVELOPMENT_MODE) {
-    tree.insert(getLeaf(mockPassportData_sha256WithRSAEncryption_65537).toString());
-    tree.insert(getLeaf(mockPassportData_sha1WithRSAEncryption_65537).toString());
-    tree.insert(getLeaf(mockPassportData_rsassaPss_65537).toString());
-    // tree.insert(getLeaf(mockPassportData_SHA384withECDSA).toString());
+    for (const mockPassportData of mocks) {
+      tree.insert(getLeaf(mockPassportData).toString());
+    }
   }
 
   if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(signatureAlgorithm)) {

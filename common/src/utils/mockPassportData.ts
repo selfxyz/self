@@ -206,3 +206,10 @@ export const mockPassportData_SHA384withECDSA = {
   ],
   "photoBase64": "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIw3..."
 }
+
+export const mockPassportDatas = [
+  mockPassportData_sha256WithRSAEncryption_65537,
+  mockPassportData_sha1WithRSAEncryption_65537,
+  mockPassportData_rsassaPss_65537,
+  // mockPassportData_SHA384withECDSA // temp cause formatting of ecdsa key is not done well now
+]
