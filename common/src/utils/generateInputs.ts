@@ -82,9 +82,6 @@ export function generateCircuitInputsRegister(
     MAX_DATAHASHES_LEN
   );
 
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
-
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
