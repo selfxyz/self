@@ -11,7 +11,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     signal input secret;
 
     signal input mrz[93];
-    signal input dg1HashOffset;
+    signal input dg1_hash_offset;
     signal input econtent[max_datahashes_bytes];
     signal input datahashes_padded_length;
     signal input signed_attributes[104];
@@ -32,7 +32,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     // Verify passport validity
     component PV = PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
-    PV.dg1HashOffset <== dg1HashOffset;
+    PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== econtent;
     PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== signed_attributes;

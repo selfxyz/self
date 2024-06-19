@@ -11,7 +11,7 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     var eContentBytesLength = 72 + hashLen; // 104
 
     signal input mrz[93]; // formatted mrz (5 + 88) chars
-    signal input dg1HashOffset;
+    signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
@@ -37,8 +37,8 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
         }
     }
 
-    // assert mrz_hash equals the one extracted from dataHashes input (bytes dg1HashOffset to dg1HashOffset + hashLen)
-    signal dg1Hash[hashLen] <== SelectSubArray(max_datahashes_bytes, hashLen)(dataHashes, dg1HashOffset, hashLen);
+    // assert mrz_hash equals the one extracted from dataHashes input (bytes dg1_hash_offset to dg1_hash_offset + hashLen)
+    signal dg1Hash[hashLen] <== SelectSubArray(max_datahashes_bytes, hashLen)(dataHashes, dg1_hash_offset, hashLen);
     for(var i = 0; i < hashLen; i++) {
         dg1Hash[i] === mrzSha_bytes[i].out;
     }
