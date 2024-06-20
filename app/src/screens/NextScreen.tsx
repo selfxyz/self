@@ -55,13 +55,13 @@ const NextScreen: React.FC = () => {
           }
         </YStack>
         <Text color={textColor1} fontSize="$5" fontWeight="bold">
-          Hi {" "}
+          Hi{" "}
           {
             hideData
               ? maskString(getFirstName(passportData.mrz))
               : getFirstName(passportData.mrz)
           }
-          👋
+          {" "}👋
         </Text>
 
         <YStack gap="$2.5" mt="$2" ml="$2">
