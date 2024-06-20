@@ -183,7 +183,7 @@ export async function fetchZkey(
         }
       });
       amplitude.track('zkey download failed: ' + error.message);
-      toast?.show('Error', {
+      toast.show('Error', {
         message: `Error: ${error.message}`,
         customData: {
           type: "error",

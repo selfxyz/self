@@ -79,7 +79,7 @@ const MainScreen: React.FC = () => {
     })
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();
-    toast?.show("Using mock passport data!", { type: "info" })
+    toast.show("Using mock passport data!", { type: "info" })
   }
 
   const decrementStep = () => {

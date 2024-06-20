@@ -9,7 +9,7 @@ interface NavigationState {
   isZkeyDownloading: IsZkeyDownloading
   showWarningModal: ShowWarningModalProps
   hideData: boolean
-  toast: ReturnType<typeof useToastController> | null
+  toast: ReturnType<typeof useToastController>
   selectedTab: string
   selectedApp: AppType | null
   setToast: (toast: ReturnType<typeof useToastController>) => void;
@@ -30,7 +30,7 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   },
   hideData: false,
 
-  toast: null,
+  toast: null as unknown as ReturnType<typeof useToastController>,
 
   selectedTab: "scan",
   selectedApp: null,

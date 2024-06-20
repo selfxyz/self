@@ -112,7 +112,7 @@ const useUserStore = create<UserState>((set, get) => ({
     const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
     if (isAlreadyRegistered) {
       console.log("commitment is already registered")
-      toast?.show('Identity already registered, skipping', {
+      toast.show('Identity already registered, skipping', {
         customData: {
           type: "info",
         },
@@ -172,7 +172,7 @@ const useUserStore = create<UserState>((set, get) => ({
       setStep(Steps.REGISTERED);
     } catch (error: any) {
       console.error(error);
-      toast?.show('Error', {
+      toast.show('Error', {
         message: "Error registering your identity, please relaunch the app",
         customData: {
           type: "error",
