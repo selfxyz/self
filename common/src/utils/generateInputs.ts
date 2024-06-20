@@ -89,7 +89,7 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()],
+    // dg1_hash_offset: [dg1HashOffset.toString()], uncomment when adding new circuits
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     signed_attributes: eContent.map(toUnsignedByte).map(byte => String(byte)),
