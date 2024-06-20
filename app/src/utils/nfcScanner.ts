@@ -130,7 +130,7 @@ const handleResponseIOS = async (
   console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
   console.log('signatureAlgorithm', signatureAlgorithm)
   console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
-  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
+  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
   console.log('pem', pem)
 
   try {
@@ -153,6 +153,7 @@ const handleResponseIOS = async (
     const passportData = {
       mrz,
       signatureAlgorithm: toStandardName(signatureAlgorithm),
+      dsc: pem,
       pubKey: {
         modulus: modulus,
       },
@@ -208,13 +209,15 @@ const handleResponseAndroid = async (
     digestEncryptionAlgorithm,
     LDSVersion,
     unicodeVersion,
-    encapContent
+    encapContent,
+    documentSigningCertificate
   } = response;
 
   amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
+    dsc: "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----",
     pubKey: {
       modulus: modulus,
       curveName: curveName,
@@ -245,6 +248,7 @@ const handleResponseAndroid = async (
   console.log("LDSVersion", LDSVersion)
   console.log("unicodeVersion", unicodeVersion)
   console.log("encapContent", encapContent)
+  console.log("documentSigningCertificate", documentSigningCertificate)
 
   useUserStore.getState().registerPassportData(passportData)
   useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
