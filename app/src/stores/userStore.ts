@@ -18,6 +18,7 @@ import { formatSigAlg } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
+import forge from 'node-forge';
 
 interface UserState {
   passportNumber: string
@@ -26,6 +27,7 @@ interface UserState {
   registered: boolean
   passportData: PassportData
   secret: string
+  dscCertificate: any
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
@@ -43,6 +45,7 @@ const useUserStore = create<UserState>((set, get) => ({
   registered: false,
   passportData: mockPassportData_sha256WithRSAEncryption_65537,
   secret: "",
+  dscCertificate: null,
 
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
@@ -112,6 +115,7 @@ const useUserStore = create<UserState>((set, get) => ({
         secret,
         PASSPORT_ATTESTATION_ID,
         passportData,
+        get().dscCertificate,
         { developmentMode: true }
       );
 

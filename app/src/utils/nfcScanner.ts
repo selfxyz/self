@@ -10,6 +10,16 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
+import { CSCA_AKI_MODULUS } from '../../../common/src/constants/constants';
+import { sha256Pad } from '../../../common/src/utils/shaPad';
+import { findStartIndex, getCSCAInputs } from '../../../common/src/utils/csca';
+function derToBytes(derValue: string) {
+  const bytes = [];
+  for (let i = 0; i < derValue.length; i++) {
+    bytes.push(derValue.charCodeAt(i));
+  }
+  return bytes;
+}
 
 export const scan = async () => {
   const {
@@ -50,7 +60,8 @@ const scanAndroid = async () => {
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry
+    dateOfExpiry,
+    dscCertificate
   } = useUserStore.getState()
   const { toast, setStep } = useNavigationStore.getState();
 
@@ -121,18 +132,81 @@ const handleResponseIOS = async (
   const signatureAlgorithm = parsed.signatureAlgorithm;
   const mrz = parsed.passportMRZ;
   const signatureBase64 = parsed.signatureBase64;
-  console.log('dataGroupsPresent', parsed.dataGroupsPresent)
-  console.log('placeOfBirth', parsed.placeOfBirth)
-  console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
-  console.log('isPACESupported', parsed.isPACESupported)
-  console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
-  console.log('residenceAddress', parsed.residenceAddress)
-  console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
-  console.log('signatureAlgorithm', signatureAlgorithm)
-  console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
-  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '\n')
-  console.log('pem', pem)
+  //console.log('dataGroupsPresent', parsed.dataGroupsPresent)
+  //console.log('placeOfBirth', parsed.placeOfBirth)
+  //console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
+  //console.log('isPACESupported', parsed.isPACESupported)
+  //console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
+  //console.log('residenceAddress', parsed.residenceAddress)
+  //console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
+  //console.log('signatureAlgorithm', signatureAlgorithm)
+  //console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
+  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '')
+  //console.log('pem', pem)
+  const certificate = forge.pki.certificateFromPem(pem);
+  useUserStore.getState().dscCertificate = certificate;
 
+  /*** begging of CSCA code implementation */
+
+  //const dsc_certificate = forge.pki.certificateFromPem(pem);
+
+  // // Find the authorityKeyIdentifier extension
+  // const authorityKeyIdentifierExt = certificate.extensions.find(
+  //   (ext) => ext.name === 'authorityKeyIdentifier'
+  // );
+
+  // // if (authorityKeyIdentifierExt) {
+  // //   // Remove the ASN.1 DER prefix (if present) and convert the rest to byte array
+  // const value = authorityKeyIdentifierExt.value;
+
+  // //   // Function to convert ASN.1 DER encoded value to a byte array
+
+
+  // const byteArray = derToBytes(value);
+  // //   console.log('Authority Key Identifier (byte array):', byteArray);
+  // //   // Convert byte array to the desired format
+  // const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
+  // //   console.log('Formatted Authority Key Identifier:', formattedValue);
+  // //   /*** CSCA chain verif ***/
+  // //const cscac_aki: string = parsed.documentSigningCertificate.aki;
+  // //console.log('cscac_aki_from_passport', cscac_aki);
+
+  // const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
+  // const cscac_modulus: string = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
+  // console.log('CSCA modulus extracted from json:', cscac_modulus);
+
+  // } else {
+  //   console.log('Authority Key Identifier not found');
+  // }
+
+  // // signature extraction pem
+  // const signature = derToBytes(certificate.signature);
+  // //console.log('DSC signature:', signature);
+  // const formattedValue = signature.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
+  // //console.log('DSC signature in hex:', formattedValue);
+  // //const signature10 = (signature as any).n.toString(10);
+  // //console.log('DSC signature in 10:', signature10);
+
+
+
+
+
+
+  // // Extract the TBS (To Be Signed) part of the certificate which is signed by the root certificate
+  // // Convert the Asn1 object to a DER-encoded string
+  // const tbsCertificateDer = forge.asn1.toDer(certificate.tbsCertificate).getBytes();
+  // const tbsCertificateBytes = derToBytes(tbsCertificateDer);
+  // //console.log('TBS Certificate Bytes:', tbsCertificateBytes);
+  // const dsc_modulus = (certificate.publicKey as any).n.toString(16); // Ensure this is a string
+  // console.log('DSC modulus:', dsc_modulus);
+  // const dsc_tbsCertificateUint8Array = Uint8Array.from(tbsCertificateBytes.map(byte => parseInt(byte.toString(16), 16)));
+  // const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, 4096);
+  // const startIndex = findStartIndex(dsc_modulus, dsc_message_padded); // Now dsc_modulus is correctly passed as a string
+  // console.log('startIndex:', startIndex);
+
+  // /*** END of CSCA code implementation */
+
+  console.log('*****');
   try {
     const cert = forge.pki.certificateFromPem(pem);
     console.log('cert', cert);
@@ -161,20 +235,44 @@ const handleResponseIOS = async (
       encryptedDigest: encryptedDigestArray,
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
+    // const inputs = generateCircuitInputsRegister(
+    //   '0',
+    //   '0',
+    //   passportData,
+
+    // );
+    const n_dsc = 64;
+    const k_dsc = 32;
+    const n_csca = 121;
+    const k_csca = 34;
+    const max_cert_bytes = 4096;
+    const inputs = getCSCAInputs(
+      certificate,
+      null,
+      n_dsc,
+      k_dsc,
+      n_csca,
+      k_csca,
+      false
+    );
+    console.log('******');
+    Object.entries(inputs).forEach(([key, value]) => {
+      console.log(`${key}:`, value);
+    });
     amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
-    console.log('passportData', JSON.stringify({
-      ...passportData,
-      photoBase64: passportData.photoBase64.substring(0, 100) + '...'
-    }, null, 2));
+    //console.log('passportData', JSON.stringify({
+    //  ...passportData,
+    //  photoBase64: passportData.photoBase64.substring(0, 100) + '...'
+    //}, null, 2));
 
-    console.log('mrz', passportData.mrz);
-    console.log('signatureAlgorithm', passportData.signatureAlgorithm);
-    console.log('pubKey', passportData.pubKey);
-    console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
-    console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
-    console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
-    console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
+    //console.log('mrz', passportData.mrz);
+    //console.log('signatureAlgorithm', passportData.signatureAlgorithm);
+    //console.log('pubKey', passportData.pubKey);
+    //console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
+    //console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
+    //console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
+    //console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
 
     useUserStore.getState().registerPassportData(passportData)
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);

@@ -13,11 +13,17 @@ import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import { mockPassportData_sha256WithRSAEncryption_65537 } from "./mockPassportData";
+import { getCSCAInputs } from "./csca";
+//import { readFileSync } from "fs";
+import forge from "node-forge";
+
+
 
 export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
+  dscCertificate: any,
   options: { developmentMode?: boolean } = { developmentMode: false }
 ) {
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
@@ -78,6 +84,22 @@ export function generateCircuitInputsRegister(
   const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
   const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
+  // DSC verification
+  // csca_modulus
+  // dsc_tbsCertificate
+  // dsc_signature
+  // dsc_modulus
+  // dsc_message_padded_bytes
+  // dsc_start_index
+
+  //const dsc_crt = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.crt', 'utf8');
+  //const csca_crt = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt', 'utf8');
+  //const dsc_cert = forge.pki.certificateFromPem(dsc_crt);
+  //const csca_cert = forge.pki.certificateFromPem(csca_crt);
+
+  const csca_inputs = getCSCAInputs(dsc_cert, null, 64, 32, 121, 34, false);
+
+
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
@@ -89,15 +111,22 @@ export function generateCircuitInputsRegister(
       BigInt(64),
       BigInt(32)
     ),
-    pubkey: splitToWords(
-      BigInt(passportData.pubKey.modulus as string),
-      BigInt(64),
-      BigInt(32)
-    ),
+    //pubkey: splitToWords(
+    //  BigInt(passportData.pubKey.modulus as string),
+    //  BigInt(64),
+    //  BigInt(32)
+    //),
+    dsc_modulus: csca_inputs.dsc_modulus,
     merkle_root: [tree.root.toString()],
     path: proof.pathIndices.map(index => index.toString()),
     siblings: proof.siblings.flat().map(index => index.toString()),
     attestation_id: [attestation_id],
+    raw_dsc_cert: csca_inputs.raw_dsc_cert,
+    raw_dsc_cert_padded_bytes: csca_inputs.raw_dsc_cert_padded_bytes,
+    csca_modulus: csca_inputs.csca_modulus,
+    dsc_signature: csca_inputs.dsc_signature,
+    start_index: csca_inputs.start_index
+
   };
 }
 
