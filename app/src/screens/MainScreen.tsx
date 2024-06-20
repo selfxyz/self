@@ -32,6 +32,7 @@ const MainScreen: React.FC = () => {
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
+  const [dialogDeleteSecretIsOpen, setDialogDeleteSecretIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
@@ -43,8 +44,6 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
-    registerCommitment,
-    registerPassportData,
     passportData,
     registered
   } = useUserStore()
@@ -111,9 +110,15 @@ const MainScreen: React.FC = () => {
       scan();
     }
   }
+
   function handleContribute() {
     contribute(passportData);
     setDialogContributeIsOpen(false);
+  }
+
+  function handleDeleteSecret() {
+    clearSecretFromStorage()
+    setDialogDeleteSecretIsOpen(false);
   }
 
   useEffect(() => {
@@ -271,6 +276,14 @@ const MainScreen: React.FC = () => {
                   <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
                 </Dialog.Container>
 
+                <Dialog.Container visible={dialogDeleteSecretIsOpen}>
+                  <Dialog.Title>Delete Secret</Dialog.Title>
+                  <Dialog.Description>
+                    You are about to delete your secret. Be careful! You will not be able to recover your identity.
+                  </Dialog.Description>
+                  <Dialog.Button onPress={() => setDialogDeleteSecretIsOpen(false)} label="Cancel" />
+                  <Dialog.Button onPress={() => handleDeleteSecret()} label="Delete secret" />
+                </Dialog.Container>
 
                 {displayOtherOptions && (
                   <>
@@ -306,7 +319,7 @@ const MainScreen: React.FC = () => {
                       <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete secret (caution)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearSecretFromStorage}>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
                         <Eraser color={textColor2} />
                       </Button>
                     </Fieldset>
