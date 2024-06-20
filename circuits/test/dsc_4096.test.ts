@@ -5,7 +5,7 @@ import path from 'path';
 const wasm_tester = require("circom_tester").wasm;
 import { splitToWords } from '../../common/src/utils/utils';
 import { sha256Pad } from '../../common/src/utils/shaPad';
-import { findStartIndex, getCSCAInputs } from '../../common/src/utils/csca';
+import { computeLeafFromModulus, findStartIndex, getCSCAInputs } from '../../common/src/utils/csca';
 
 describe('DSC chain certificate', function () {
     this.timeout(0); // Disable timeout
@@ -19,10 +19,10 @@ describe('DSC chain certificate', function () {
     const csca = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt', 'utf8');
     const dscCert = forge.pki.certificateFromPem(dsc);
     const cscaCert = forge.pki.certificateFromPem(csca);
-
-
     const inputs = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
-    console.log("inputs:", inputs);
+
+    console.log("inputs:", JSON.stringify(inputs, null, 2));
+    fs.writeFileSync('inputs.json', JSON.stringify(inputs, null, 2));
 
     before(async () => {
         circuit = await wasm_tester(
@@ -30,6 +30,8 @@ describe('DSC chain certificate', function () {
             {
                 include: [
                     "node_modules",
+                    "./node_modules/@zk-kit/binary-merkle-root.circom/src",
+                    "./node_modules/circomlib/circuits"
                 ]
             }
         );

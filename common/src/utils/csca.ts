@@ -1,7 +1,10 @@
 import { sha256Pad } from "./shaPad";
 import forge from "node-forge";
 import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS } from "../constants/constants";
+import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, PUBKEY_TREE_DEPTH } from "../constants/constants";
+import { poseidon16, poseidon2, poseidon3 } from "poseidon-lite";
+import { IMT } from "@zk-kit/imt";
+
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
@@ -96,6 +99,9 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
 
+    // merkle tree saga
+    const leaf = computeLeafFromModulus(csca_modulus_formatted);
+    const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
 
 
     return {
@@ -105,7 +111,10 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
         "dsc_signature": dsc_signature_formatted,
         "dsc_modulus": dsc_modulus_formatted,
         "start_index": startIndex_formatted,
-        "secret": "0"
+        "secret": "0",
+        "merkle_root": root,
+        "path": proof.pathIndices.map(index => index.toString()),
+        "siblings": proof.siblings.flat().map(sibling => sibling.toString())
     }
 }
 
@@ -116,3 +125,45 @@ export function derToBytes(derValue: string) {
     }
     return bytes;
 }
+
+export function getCSCAModulusProof(leaf: string, n, k) {
+    const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+    // get all the modulus
+    // split them into 34 bit words of 121 bits using the splitToWords method
+    const csca_modulus_array = Object.values(CSCA_AKI_MODULUS);
+    const csca_modulus_array_number = csca_modulus_array.map((modulus) => {
+        const cleanedModulus = modulus.replace(/:/g, ''); // Remove colons
+        return BigInt(`0x${cleanedModulus}`);
+    });
+    const csca_modulus_formatted = csca_modulus_array_number.map((modulus) => splitToWords(modulus, BigInt(n), BigInt(k)));
+
+    // hash the first 16 using poseidon, hash the 16 next using poseidon, hash the last 2 ones using poseidon
+    const hashedModuliGroups = [];
+    for (let i = 0; i < csca_modulus_formatted.length; i++) {
+        const finalPoseidonHash = computeLeafFromModulus(csca_modulus_formatted[i]);
+        hashedModuliGroups.push(finalPoseidonHash.toString());
+        tree.insert(finalPoseidonHash.toString());
+    }
+    //console.log('hashedModuliGroups', hashedModuliGroups);
+    //console.log("size of the list", hashedModuliGroups.length);
+    //console.log("root", tree.root);
+    const index = tree.indexOf(leaf);
+    if (index === -1) {
+        throw new Error("Your public key was not found in the registry");
+    }
+
+    const proof = tree.createProof(index);
+    console.log("proof", proof);
+    return [tree.root, proof];
+
+}
+
+export function computeLeafFromModulus(modulus_formatted: string[]) {
+    const poseidonHashOfTheFirst16 = poseidon16(modulus_formatted.slice(0, 16));
+    const poseidonHashOfTheNext16 = poseidon16(modulus_formatted.slice(16, 32));
+    const poseidonHashOfTheLast2 = poseidon2(modulus_formatted.slice(-2));
+    const finalPoseidonHash = poseidon3([poseidonHashOfTheFirst16, poseidonHashOfTheNext16, poseidonHashOfTheLast2]);
+    return finalPoseidonHash.toString();
+}
+//getCSCAModulusMerkleTree("7013779953511677452538135461619722358450225673833899813888513931978925381442", 121, 34);
+

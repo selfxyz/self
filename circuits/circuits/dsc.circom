@@ -5,9 +5,10 @@ include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/rsa.circom";
 include "@zk-email/circuits/helpers/extract.circom";
 include "@zk-email/circuits/helpers/sha.circom";
-include "../utils/splitBytesToWords.circom";
+include "binary-merkle-root.circom";
+include "./utils/splitBytesToWords.circom";
 
-template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len ) {
+template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
     signal input raw_dsc_cert[max_cert_bytes]; 
     signal input raw_dsc_cert_padded_bytes;
     signal input csca_modulus[k_csca];
@@ -16,12 +17,36 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len ) {
     signal input start_index;
     signal input secret;
 
+    signal input merkle_root;
+    signal input path[nLevels];
+    signal input siblings[nLevels];
+
     signal output blinded_csca_commitment;
+
+    // verify the leaf
+    component poseidon16first = Poseidon(16);
+    component poseidon16next = Poseidon(16);
+    component poseidon2last = Poseidon(2);
+    component poseidonfinal = Poseidon(3);
+    for (var i = 0; i < 16; i++) {
+        poseidon16first.inputs[i] <== csca_modulus[i];
+        poseidon16next.inputs[i] <== csca_modulus[i+16];
+    }
+    poseidon2last.inputs[0] <== csca_modulus[32];
+    poseidon2last.inputs[1] <== csca_modulus[33];
+    poseidonfinal.inputs[0] <== poseidon16first.out;
+    poseidonfinal.inputs[1] <== poseidon16next.out;
+    poseidonfinal.inputs[2] <== poseidon2last.out;
+    signal leaf <== poseidonfinal.out;
+
+
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
+    merkle_root === computed_merkle_root;
 
     // variables verification
     assert(max_cert_bytes % 64 == 0);
     assert(n_csca * k_csca > max_cert_bytes);
-    assert(n_csca < (255 \ 2));
+    assert(n_csca <= (255 \ 2));
 
     // hash raw TBS certificate
     signal sha[256] <== Sha256Bytes(max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
