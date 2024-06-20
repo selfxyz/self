@@ -55,7 +55,9 @@ const MainScreen: React.FC = () => {
     setStep,
     selectedTab,
     hideData,
-    toast
+    toast,
+    showRegistrationErrorSheet,
+    registrationErrorMessage,
   } = useNavigationStore();
 
   const handleRestart = () => {
@@ -465,6 +467,36 @@ const MainScreen: React.FC = () => {
               </YStack>
             </Sheet.Frame>
           </Sheet>
+
+          <Sheet
+            open={showRegistrationErrorSheet}
+            onOpenChange={(open: boolean) => {
+              updateNavigationStore({
+                showRegistrationErrorSheet: open
+              })
+            }}
+            dismissOnSnapToBottom modal animation="medium" snapPoints={[80]}
+          >
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgColor} borderRadius="$9" pt="$2">
+              <YStack p="$4" f={1} gap="$3">
+                <H2 textAlign='center' mb="$6" color={textColor1}>Passport unsupported</H2>
+                <Text fontSize="$6" mb="$4" color={textColor1}>Unfortunately, your passport is currently not supported. Details:</Text>
+                <Text fontSize="$6" mb="$4" textAlign="center" color="#a0a0a0">{registrationErrorMessage} </Text>
+
+                <Text fontSize="$6" mb="$4" color={textColor1}>To help us add support for it, please consider contributing its data!</Text>
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                    Contribute
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textColor1} />
+                  </Button>
+                </Fieldset>
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+          
           <XStack bc="#343434" h={1.2} />
         </YStack>
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}

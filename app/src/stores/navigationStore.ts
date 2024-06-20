@@ -12,6 +12,8 @@ interface NavigationState {
   toast: ReturnType<typeof useToastController>
   selectedTab: string
   selectedApp: AppType | null
+  showRegistrationErrorSheet: boolean
+  registrationErrorMessage: string
   setToast: (toast: ReturnType<typeof useToastController>) => void;
   setStep: (step: number) => void
   update: (patch: any) => void
@@ -29,6 +31,9 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
     size: 0,
   },
   hideData: false,
+
+  showRegistrationErrorSheet: false,
+  registrationErrorMessage: "",
 
   toast: null as unknown as ReturnType<typeof useToastController>,
 

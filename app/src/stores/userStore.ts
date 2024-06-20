@@ -101,7 +101,8 @@ const useUserStore = create<UserState>((set, get) => ({
   registerCommitment: async (mockPassportData?: PassportData) => {
     const {
       toast,
-      setStep
+      setStep,
+      update: updateNavigationStore,
     } = useNavigationStore.getState();
     const secret = await loadSecret() as string;
     let passportData = get().passportData
@@ -172,12 +173,11 @@ const useUserStore = create<UserState>((set, get) => ({
       setStep(Steps.REGISTERED);
     } catch (error: any) {
       console.error(error);
-      toast.show('Error', {
-        message: "Error registering your identity, please relaunch the app",
-        customData: {
-          type: "error",
-        },
+      updateNavigationStore({
+        showRegistrationErrorSheet: true,
+        registrationErrorMessage: error.message,
       })
+      setStep(Steps.NEXT_SCREEN);
       amplitude.track(error.message);
     }
   },

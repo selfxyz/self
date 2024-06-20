@@ -35,8 +35,8 @@ export function generateCircuitInputsRegister(
   }
 
   if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(signatureAlgorithm)) {
-    console.error(`${signatureAlgorithm} not supported for proof right now.`);
-    throw new Error(`${signatureAlgorithm} not supported for proof right now.`);
+    console.error(`${signatureAlgorithm} has not been implemented.`);
+    throw new Error(`${signatureAlgorithm} has not been implemented.`);
   }
 
   const hashLen = getHashLen(signatureAlgorithm);
@@ -49,9 +49,6 @@ export function generateCircuitInputsRegister(
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
   const concatHash = hash(signatureAlgorithm, dataGroupHashes);
-
-  const sigAlgFormatted = formatSigAlgNameForCircuit(signatureAlgorithm, pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
   assert(
     arraysAreEqual(
