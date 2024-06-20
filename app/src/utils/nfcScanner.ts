@@ -156,6 +156,7 @@ const handleResponseIOS = async (
       dsc: pem,
       pubKey: {
         modulus: modulus,
+        exponent: (publicKey as any).e.toString(10),
       },
       dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
@@ -214,12 +215,21 @@ const handleResponseAndroid = async (
   } = response;
 
   amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+
+  const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
+
+  const cert = forge.pki.certificateFromPem(pem);
+  console.log('cert', cert);
+  const publicKey = cert.publicKey;
+  console.log('publicKey', publicKey);
+
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
-    dsc: "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----",
+    dsc: pem,
     pubKey: {
       modulus: modulus,
+      exponent: (publicKey as any).e.toString(10),
       curveName: curveName,
       publicKeyQ: publicKeyQ,
     },
