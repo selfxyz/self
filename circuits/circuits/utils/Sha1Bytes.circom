@@ -1,7 +1,10 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/helpers/utils.circom";
 include "dmpierre/sha1-circom/circuits/sha1compression.circom";
+include "circomlib/circuits/bitify.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/mimcsponge.circom";
+include "@zk-email/circuits/lib/fp.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
@@ -33,7 +36,7 @@ template Sha1Bytes(max_num_bytes) {
 //Sha1 template from https://github.com/dmpierre/sha1-circom/blob/fe18319cf72b9f3b83d0cea8f49a1f04482c125b/circuits/sha1.circom
 template Sha1General(maxBitsPadded) {
     assert(maxBitsPadded % 512 == 0);
-    var maxBitsPaddedBits = log2_ceil(maxBitsPadded);
+    var maxBitsPaddedBits = log2Ceil(maxBitsPadded);
     assert(2 ** maxBitsPaddedBits > maxBitsPadded);
 
     signal input paddedIn[maxBitsPadded];
@@ -46,7 +49,7 @@ template Sha1General(maxBitsPadded) {
     var j;
     var maxBlocks;
     maxBlocks = (maxBitsPadded\512);
-    var maxBlocksBits = log2_ceil(maxBlocks);
+    var maxBlocksBits = log2Ceil(maxBlocks);
     assert(2 ** maxBlocksBits > maxBlocks);
 
     inBlockIndex <-- (in_len_padded_bits >> 9);
@@ -105,7 +108,8 @@ template Sha1General(maxBitsPadded) {
     }
 
     for (i =0; i < 160; i++) {
-        arraySelectors[i] = QuinSelector(maxBlocks, maxBlocksBits);
+        arraySelectors[i] = ItemAtIndex(maxBlocks);
+
         for (j=0; j<maxBlocks; j++) {
             arraySelectors[i].in[j] <== outs[j][i];
         }

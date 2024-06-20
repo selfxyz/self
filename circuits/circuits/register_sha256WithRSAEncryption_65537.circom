@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/helpers/extract.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 include "./passport_verifier_sha256WithRSAEncryption_65537.circom";
 include "./utils/chunk_data.circom";
 include "./utils/compute_pubkey_leaf.circom";
@@ -11,6 +11,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     signal input secret;
 
     signal input mrz[93];
+    signal input dg1_hash_offset;
     signal input econtent[max_datahashes_bytes];
     signal input datahashes_padded_length;
     signal input signed_attributes[104];
@@ -31,6 +32,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     // Verify passport validity
     component PV = PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
+    PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== econtent;
     PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== signed_attributes;
@@ -43,7 +45,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     poseidon_hasher.inputs[1] <== attestation_id;
     poseidon_hasher.inputs[2] <== leaf;
 
-    signal mrz_packed[3] <== PackBytes(93, 3, 31)(mrz);
+    signal mrz_packed[3] <== PackBytes(93)(mrz);
     for (var i = 0; i < 3; i++) {
         poseidon_hasher.inputs[i + 3] <== mrz_packed[i];
     }

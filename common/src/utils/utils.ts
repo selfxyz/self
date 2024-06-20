@@ -32,30 +32,70 @@ export function parsePubKeyString(pubKeyString: string) {
 }
 
 export function formatAndConcatenateDataHashes(
-  mrzHash: number[],
   dataHashes: [number, number[]][],
+  hashLen: number,
+  dg1HashOffset: number
 ) {
-  // Let's replace the first array with the MRZ hash
-  dataHashes.shift();
-  dataHashes.unshift([1, mrzHash]);
   // concatenating dataHashes :
-
   let concat: number[] = []
 
-  const startingSequence = [
-    48, -126, 1, 37, 2, 1, 0, 48, 11, 6, 9, 96, -122, 72, 1, 101, 3, 4, 2, 1,
-    48, -126, 1, 17,
-  ]
+  const startingSequence = Array.from({length: dg1HashOffset},
+    () => Math.floor(Math.random() * 256) - 128
+  );
+
+  // sha256 with rsa (index of mrzhash is 31)
+  // const startingSequence = [
+  //   // SEQUENCE + long form indicator + length (293 bytes)
+  //   48, -126, 1, 37,
+  //   // length: 1 byte
+  //   2, 1,
+  //   // LDSSecurityObjectVersion v0
+  //   0,
+  //   // padding: size 11 - size 9...
+  //   48, 11, 6, 9,
+  //   // 2.16.840.1.101.3.4.2.1 is sha256
+  //   96, -122, 72, 1, 101, 3, 4, 2, 1,
+  //   // SEQUENCE + long form indicator + length (273 bytes)
+  //   48, -126, 1, 17,
+  // ]
+
+  // rsassaPss (index of mrzhash is 30)
+  // // SEQUENCE + short form indicator + length (137 bytes)
+  // 48, -127, -119,
+  // 2, 1,
+  // 0,
+  // 48, 13, 6, 9,
+  // // 2.16.840.1.101.3.4.2.1 is sha256
+  // 96, -122, 72, 1, 101, 3, 4, 2, 1,
+  // // NULL tag + SEQUENCE + length (117 bytes)
+  // 5, 0, 48, 117,
+  
+  // SHA384withECDSA (index of mrzhash is 33)
+  // // SEQUENCE + long form indicator + length (313 bytes)
+  // 48, -126, 1, 57,
+  // 2, 1,
+  // 1,
+  // 48, 13, 6, 9,
+  // // 2.16.840.1.101.3.4.2.1 is sha384
+  // 96, -122, 72, 1, 101, 3, 4, 2, 2,
+  // // NULL tag + SEQUENCE + long form indicator + length (275 bytes)
+  // 5, 0, 48, -126, 1, 19,
+
+  // => current conclusion is we should be able to just hardcode indexes
+  // => as they shouldn't change must for same sig alg.
+  // => wrong: our rsassaPss has less datagroups so the length is different (30 rather then 31)
 
   // console.log(`startingSequence`, startingSequence.map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
 
-  // Starting sequence. Should be the same for everybody, but not sure
   concat.push(...startingSequence)
 
   for (const dataHash of dataHashes) {
     // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
 
-    concat.push(...[48, 37, 2, 1, dataHash[0], 4, 32, ...dataHash[1]])
+    concat.push(...dataHash[1])
+    // concat.push(...[48, hashLen + 5, 2, 1, dataHash[0], 4, hashLen, ...dataHash[1]])
+    // 48, 37, 2, 1, 1, 4, 32,
+    // 48, 53, 2, 1, 1, 4, 48,
   }
 
   return concat;
@@ -173,13 +213,13 @@ export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
 }
 
-export function formatSigAlg(
+export function formatSigAlgNameForCircuit(
   sigAlg: string,
-  exponent: string = "65537"
-  // remove the default 65537 once NFC reading always returns exponent
-  // and when ecdsa parameters are managed
+  exponent?: string
 ) {
+  // replace - by _, for instance for ecdsa-with-SHA256
   sigAlg = sigAlg.replace(/-/g, '_')
+  // add exponent, for instance for sha256WithRSAEncryption
   return exponent ? `${sigAlg}_${exponent}` : sigAlg
 }
 
@@ -221,14 +261,25 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   return Array.from(yymmdd).map(char => parseInt(char));
 }
 
-export function getDigestLengthBytes(signatureAlgorithm: string) {
-  if (signatureAlgorithm == 'sha1WithRSAEncryption') {
-    return 20;
+export function getHashLen(signatureAlgorithm: string) {
+  switch (signatureAlgorithm) {
+    case "sha1WithRSAEncryption":
+    case "ecdsa-with-SHA1":
+      return 20;
+    case "sha256WithRSAEncryption":
+    case "rsassaPss":
+    case "ecdsa-with-SHA256":
+      return 32;
+    case "sha384WithRSAEncryption":
+    case "ecdsa-with-SHA384":
+      return 48;
+    case "sha512WithRSAEncryption":
+    case "ecdsa-with-SHA512":
+      return 64;
+    default:
+      console.log(`${signatureAlgorithm} not found in getHashLen`);
+      return 32;
   }
-  if (signatureAlgorithm == 'sha256WithRSAEncryption') {
-    return 32;
-  }
-  return 32
 }
 
 export function packBytes(unpacked) {
@@ -264,4 +315,10 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
     }
   }
   return { merkleProofSiblings, merkleProofIndices, depthForThisOne  }
+}
+
+export function findSubarrayIndex(arr: any[], subarray: any[]): number {
+  return arr.findIndex((_, index) =>
+    subarray.every((element, i) => element === arr[index + i])
+  );
 }

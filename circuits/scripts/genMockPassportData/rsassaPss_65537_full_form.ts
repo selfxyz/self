@@ -4,7 +4,7 @@
 
 import assert from "assert";
 import { PassportData } from "../../../common/src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual } from "../../../common/src/utils/utils";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import crypto from 'crypto';
 import { writeFileSync } from "fs";
@@ -35,8 +35,9 @@ const sampleDataHashes = [
     14,
     [76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59, -100, -69, -7, 28, -58, 95, 69, 15, -74, 56, 54, 38]
   ]
-]
+] as [number, number[]][]
 const signatureAlgorithm = 'rsassaPss'
+const hashLen = 32
 
 export function genMockPassportData_rsassaPss_65537(): PassportData {
   const keypair = forge.pki.rsa.generateKeyPair(2048);
@@ -48,10 +49,10 @@ export function genMockPassportData_rsassaPss_65537(): PassportData {
   const salt = Buffer.from('dee959c7e06411361420ff80185ed57f3e6776afdee959c7e064113614201420', 'hex');
 
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  sampleDataHashes.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
-    mrzHash,
-    sampleDataHashes as [number, number[]][],
+    [[1, mrzHash], ...sampleDataHashes],
+    hashLen,
+    30
   );
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
@@ -113,11 +114,16 @@ function verify(passportData: PassportData): boolean {
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
+  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)
+  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
-  console.log("mrzHash", mrzHash);
+  const concatHash = hash(signatureAlgorithm, dataGroupHashes)
   assert(
-    arraysAreEqual(mrzHash, dataGroupHashes.slice(31, 31 + mrzHash.length)),
-    'mrzHash is at the right place in dataGroupHashes'
+    arraysAreEqual(
+      concatHash,
+      eContent.slice(eContent.length - concatHash.length)
+    ),
+    'concatHash is not at the right place in eContent'
   );
 
   const modulus = new forge.jsbn.BigInteger(pubKey.modulus, 10);

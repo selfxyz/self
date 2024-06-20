@@ -31,8 +31,10 @@ export function toStandardName(jmrtdName: string): string {
       return "ecdsa-with-SHA224";
     case "SHA256withECDSA":
       return "ecdsa-with-SHA256";
-    case "RSA":
-      return "rsaEncryption";
+    case "SHA384withECDSA":
+      return "ecdsa-with-SHA384";
+    case "SHA512withECDSA":
+      return "ecdsa-with-SHA512";
     case "MD2withRSA":
       return "md2WithRSAEncryption";
     case "MD4withRSA":
@@ -60,6 +62,7 @@ export function toStandardName(jmrtdName: string): string {
 
 
     // added this one for iOS
+    case "RSA":
     case "rsaEncryption":
     // for security
     case "SHA256WITHRSA":
