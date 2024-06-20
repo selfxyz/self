@@ -23,9 +23,8 @@ const RegisterScreen: React.FC = () => {
         <Text mt="$12" color={textColor1} fontSize="$10" fontWeight="bold">
           Register
         </Text>
-        <Text mt="$6" fontSize="$6" color={textColor1}>Join Proof of Passport to affirm your identity and start sharing securely.</Text>
-        <Text mt="$1" fontSize="$4" color={textColor2}>Easily verify your nationality, gender, or age and take control of your personal data.</Text>
-        <Text fontSize="$4" color={textColor2}>Share only what you want with the application you wish.</Text>
+        <Text mt="$6" fontSize="$6" color={textColor1}>Join Proof of Passport to start sharing your identity securely.</Text>
+        <Text mt="$1" fontSize="$4" color={textColor2}>Easily verify your nationality, humanity, or age and share only what you want to reveal.</Text>
         <YStack f={1} />
 
         <XStack mt="$5" bg={componentBgColor} borderRadius={100} borderWidth={1} borderColor={borderColor} py="$2" px="$3">

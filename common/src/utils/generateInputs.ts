@@ -34,9 +34,9 @@ export function generateCircuitInputsRegister(
     }
   }
 
-  if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(signatureAlgorithm)) {
-    console.error(`${signatureAlgorithm} not supported for proof right now.`);
-    throw new Error(`${signatureAlgorithm} not supported for proof right now.`);
+  if (!["sha256WithRSAEncryption"].includes(signatureAlgorithm)) {
+    console.error(`${signatureAlgorithm} has not been implemented.`);
+    throw new Error(`${signatureAlgorithm} has not been implemented.`);
   }
 
   const hashLen = getHashLen(signatureAlgorithm);
@@ -49,9 +49,6 @@ export function generateCircuitInputsRegister(
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
   const concatHash = hash(signatureAlgorithm, dataGroupHashes);
-
-  const sigAlgFormatted = formatSigAlgNameForCircuit(signatureAlgorithm, pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
   assert(
     arraysAreEqual(
@@ -89,7 +86,7 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()],
+    // dg1_hash_offset: [dg1HashOffset.toString()], uncomment when adding new circuits
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     signed_attributes: eContent.map(toUnsignedByte).map(byte => String(byte)),
@@ -163,7 +160,7 @@ export function generateCircuitInputsDisclose(
 // this get the commitment index whether it is a string or a bigint
 // this is necessary rn because when the tree is send from the server in a serialized form,
 // the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
-function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   let index = tree.indexOf(commitment);
   if (index === -1) {
     index = tree.indexOf(commitment.toString() as unknown as bigint);
