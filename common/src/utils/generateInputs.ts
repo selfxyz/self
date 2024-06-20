@@ -163,7 +163,7 @@ export function generateCircuitInputsDisclose(
 // this get the commitment index whether it is a string or a bigint
 // this is necessary rn because when the tree is send from the server in a serialized form,
 // the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
-function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   let index = tree.indexOf(commitment);
   if (index === -1) {
     index = tree.indexOf(commitment.toString() as unknown as bigint);

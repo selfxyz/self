@@ -74,9 +74,6 @@ const MainScreen: React.FC = () => {
   }
 
   const handleSkip = () => {
-    registerPassportData(
-      mockPassportData_sha256WithRSAEncryption_65537
-    )
     update({
       passportData: mockPassportData_sha256WithRSAEncryption_65537
     })
