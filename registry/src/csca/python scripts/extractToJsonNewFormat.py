@@ -13,7 +13,7 @@ def count_signature_algorithms(directory):
                 # Extract only the value of C from the country
                 country_code = re.search(r"C=([^,]+)", country)
                 if country_code:
-                    country = country_code.group(1)
+                    country = country_code.group(1).upper()
 
                 # Extract the signature algorithm base name
                 if "pss" in content.lower():
