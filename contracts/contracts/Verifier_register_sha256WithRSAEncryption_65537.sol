@@ -58,8 +58,7 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
     uint256 constant IC4x = 14613389678546212980267363741146616867687828022443048568110347091304913068964;
     uint256 constant IC4y = 2672547359422053553293714739235770001886154635430020950295973341917842766972;
     
- 
-    // Memory data
+     // Memory data
     uint16 constant pVk = 0;
     uint16 constant pPairing = 128;
 
@@ -73,7 +72,7 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                     return(0, 0x20)
                 }
             }
-            
+
             // G1 function to multiply a G1 value(x,y) to value in an address
             function g1_mulAccC(pR, x, y, s) {
                 let success
@@ -142,7 +141,6 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                 mstore(add(_pPairing, 384), mload(add(pMem, pVk)))
                 mstore(add(_pPairing, 416), mload(add(pMem, add(pVk, 32))))
 
-
                 // gamma2
                 mstore(add(_pPairing, 448), gammax1)
                 mstore(add(_pPairing, 480), gammax2)
@@ -158,7 +156,6 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                 mstore(add(_pPairing, 672), deltax2)
                 mstore(add(_pPairing, 704), deltay1)
                 mstore(add(_pPairing, 736), deltay2)
-
 
                 let success := staticcall(sub(gas(), 2000), 8, _pPairing, 768, _pPairing, 0x20)
 
@@ -179,7 +176,6 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
             checkField(calldataload(add(_pubSignals, 96)))
             
             checkField(calldataload(add(_pubSignals, 128)))
-            
 
             // Validate all evaluations
             let isValid := checkPairing(_pA, _pB, _pC, _pubSignals, pMem)

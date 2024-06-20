@@ -109,6 +109,7 @@ template Sha1General(maxBitsPadded) {
 
     for (i =0; i < 160; i++) {
         arraySelectors[i] = ItemAtIndex(maxBlocks);
+
         for (j=0; j<maxBlocks; j++) {
             arraySelectors[i].in[j] <== outs[j][i];
         }
