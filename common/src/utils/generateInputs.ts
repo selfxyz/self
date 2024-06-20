@@ -34,7 +34,7 @@ export function generateCircuitInputsRegister(
     }
   }
 
-  if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(signatureAlgorithm)) {
+  if (!["sha256WithRSAEncryption"].includes(signatureAlgorithm)) {
     console.error(`${signatureAlgorithm} has not been implemented.`);
     throw new Error(`${signatureAlgorithm} has not been implemented.`);
   }
