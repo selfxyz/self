@@ -19,6 +19,8 @@ def check_ecdsa_in_files(folder_path):
             file_path = os.path.join(folder_path, filename)
             with open(file_path, 'r') as file:
                 content = file.read()
+                if "6144 bit" in content: # skip 6144 bit certificates for the moment
+                    continue
                 modulus_match = modulus_pattern.search(content)
                 ski_match = ski_pattern.search(content)
                 if modulus_match and ski_match:
