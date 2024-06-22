@@ -58,7 +58,9 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     signal mHash[256];
     var hLen = 32;
     var sLen = 32;
-    var hashLenBits = 256; //sha256
+    var hLenBits = 256; //sha256
+    var sLenBits = 256; //sha256
+    var emLenBits = emLen * 8;
 
     signal messageBits[messageLen*8];
     component num2BitsMessage[messageLen];
@@ -84,7 +86,6 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     assert(eM[0] == 188); //inconsistent
 
     signal eMsgInBits[emLen * 8];
-    // signal maskedDB[emBits - hashLenBits - 8];
     signal maskedDB[(emLen - hLen - 1) * 8];
     signal hash[hLen * 8];
     var dbMaskLen = emLen - hLen - 1;
@@ -109,7 +110,7 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     }
 
     //Ref: https://github.com/directdemocracy-vote/app/blob/d0590b5515e749fa72fc50f05062273eb2465da1/httpdocs/app/js/rsa-blind.js#L183
-    signal mask <== 0xff00 >> (8 * emBits / 8 - emBits) & 0xff;
+    signal mask <== 0xff00 >> (emLenBits / 8 - emBits) & 0xff;
     signal maskBits[8];
     component num2BitsMask = Num2Bits(8);
     num2BitsMask.in <== mask;
@@ -121,14 +122,13 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     }
 
     //extract hash
-    for (var i=0; i<hashLenBits; i++) {
-        // hash[i] <== eMsgInBits[(emBits) - hashLenBits-8 +i];
-        hash[i] <== eMsgInBits[(emLen - hLen-1) * 8 +i];
+    for (var i=0; i<hLenBits; i++) {
+        hash[i] <== eMsgInBits[(emLenBits) - hLenBits-8 +i];
     }
 
     //DbMask MGF1
     component MGF1 = Mgf1Sha256(hLen, dbMaskLen);
-    for (var i = 0; i < (hLen * 8); i++) {
+    for (var i = 0; i < (hLenBits); i++) {
         MGF1.seed[i] <== hash[i];
     }
     for (var i = 0; i < dbMaskLen * 8; i++) {
@@ -153,7 +153,7 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
 
     // If the emLen - hLen - sLen - 2 leftmost octets of DB are not
     // zero, output "inconsistent" and stop.
-    for (var i = 0; i < (emLen-hLen-sLen-2) * 8; i++) {
+    for (var i = 0; i < (emLenBits-528); i++) { //hLenBits + sLenBits + 16 = 256 + 256 + 16 = 528
         assert(DB[i] == 0);
     }
     // if the octet at position emLen - hLen - sLen - 1 (the
@@ -161,18 +161,19 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     // value 0x01, output "inconsistent" and stop.
     component bits2Num = Bits2Num(8);
     for (var i = 0; i < 8; i++) {
-        bits2Num.in[7-i] <== DB[(emBits)-hashLenBits-256-16+i];
+        bits2Num.in[7-i] <== DB[(emLenBits)- 528 +i]; //emLen - hLen - sLen - 1
+
     }
     assert(bits2Num.out == 1);
 
     //extract salt
-    for (var i = 0; i < sLen * 8; i++) {
-        //last sLenBits bits of DB
-        salt[(sLen * 8) -1 - i] <== DB[(dbMaskLen * 8) -1 - i];
+    for (var i = 0; i < sLenBits; i++) {
+        //last sLenBits (256) bits of DB
+        salt[256 -1 - i] <== DB[(dbMaskLen * 8) -1 - i];
     }
 
     //M' = (0x)00 00 00 00 00 00 00 00 || mHash || salt ;
-    signal mDash[(8 + hLen + sLen) * 8]; // 8 + hLen + sLen = 8 + 32 + 32 = 72 bytes = 576 bits
+    signal mDash[576]; // 8 + hLen + sLen = 8 + 32 + 32 = 72 bytes = 576 bits
     for (var i = 0; i < 64; i++) {
         mDash[i] <== 0;
     }
