@@ -14,6 +14,8 @@ describe("Proof of Passport - Circuits - Register flow", function () {
     let circuit: any;
     let passportData = mockPassportData_sha256WithRSAEncryption_65537;
     let attestation_id: string;
+    const n_dsc = 121;
+    const k_dsc = 17;
 
     before(async () => {
         circuit = await wasm_tester(
@@ -27,7 +29,8 @@ describe("Proof of Passport - Circuits - Register flow", function () {
             },
         );
 
-        const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+        //const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+        const secret = BigInt(0).toString();
         console.log("secret", secret);
 
         const attestation_name = "E-PASSPORT";
@@ -39,7 +42,8 @@ describe("Proof of Passport - Circuits - Register flow", function () {
             secret,
             attestation_id,
             passportData,
-            { developmentMode: true }
+            n_dsc,
+            k_dsc
         );
     });
 
@@ -54,6 +58,9 @@ describe("Proof of Passport - Circuits - Register flow", function () {
         console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);
 
         const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
+        console.log("commitment_circom", commitment_circom)
+        const blinded_dsc_commitment = (await circuit.getOutput(w, ["blinded_dsc_commitment"])).blinded_dsc_commitment;
+        console.log("blinded_dsc_commitment", blinded_dsc_commitment)
 
         const mrz_bytes = packBytes(inputs.mrz);
         const commitment_bytes = poseidon6([
@@ -113,17 +120,17 @@ describe("Proof of Passport - Circuits - Register flow", function () {
         }
     });
 
-    it("should fail to calculate witness with invalid merkle root", async function () {
-        try {
-            const invalidInputs = {
-                ...inputs,
-                merkle_root: inputs.merkle_root.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
-            }
-            await circuit.calculateWitness(invalidInputs);
-            expect.fail("Expected an error but none was thrown.");
-        } catch (error) {
-            expect(error.message).to.include("Assert Failed");
-        }
-    });
+    // it("should fail to calculate witness with invalid merkle root", async function () {
+    //     try {
+    //         const invalidInputs = {
+    //             ...inputs,
+    //             merkle_root: inputs.merkle_root.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+    //         }
+    //         await circuit.calculateWitness(invalidInputs);
+    //         expect.fail("Expected an error but none was thrown.");
+    //     } catch (error) {
+    //         expect(error.message).to.include("Assert Failed");
+    //     }
+    // });
 
 });

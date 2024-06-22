@@ -21,7 +21,7 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal output blinded_csca_commitment;
+    signal output blinded_dsc_commitment;
 
     // verify the leaf
     component poseidon16first = Poseidon(16);
@@ -88,13 +88,13 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
         dsc_modulus[i] === spbt_1.out[i];
     }
     // generate blinded commitment
-    component spbt_2 = SplitBytesToWords(dsc_mod_len, 192, 15);
+    component spbt_2 = SplitBytesToWords(dsc_mod_len, 230, 9);
     spbt_2.in <== shiftLeft.out;
-    component poseidon = Poseidon(16);
+    component poseidon = Poseidon(10);
     poseidon.inputs[0] <== secret;
-    for (var i = 0; i < 15; i++) {
+    for (var i = 0; i < 9; i++) {
         poseidon.inputs[i+1] <== spbt_2.out[i];
     }
-    blinded_csca_commitment <== poseidon.out;
+    blinded_dsc_commitment <== poseidon.out;
 }
 

@@ -1,7 +1,7 @@
-import { poseidon12, poseidon2, poseidon8 } from "poseidon-lite"
+import { poseidon10, poseidon2, poseidon8 } from "poseidon-lite"
 import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { IMT } from '@zk-kit/imt'
-import { bigIntToChunkedBytes, formatSigAlg } from "./utils";
+import { formatSigAlg, splitToWords } from "./utils";
 
 export function buildPubkeyTree(pubkeys: any[]) {
   let leaves: bigint[] = []
@@ -17,7 +17,7 @@ export function buildPubkeyTree(pubkeys: any[]) {
     const leaf = getLeaf(pubkey, i)
 
     if (!leaf) {
-      // console.log('no leaf for this weird signature:', i, formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent))
+      console.log('ERROR: no leaf for this signature:', i, formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent))
       continue
     }
     leaves.push(leaf)
@@ -32,8 +32,6 @@ export function buildPubkeyTree(pubkeys: any[]) {
 export function getLeaf(pubkey: any, i?: number): bigint {
   const sigAlgFormatted = formatSigAlg(pubkey.signatureAlgorithm, pubkey.exponent)
 
-  // console.log('pubkey', pubkey)
-  // console.log('sigAlgFormatted', sigAlgFormatted)
   if (
     sigAlgFormatted === "sha256WithRSAEncryption_65537"
     || sigAlgFormatted === "sha256WithRSAEncryption_3"
@@ -42,14 +40,10 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     || sigAlgFormatted === "rsassaPss_3"
     || sigAlgFormatted === "sha512WithRSAEncryption_65537"
   ) {
-    // Converting pubkey.modulus into 11 chunks of 192 bits, assuming it is originally 2048 bits.
-    // This is because Poseidon circuit only supports an array of 16 elements, and field size is 254.
-    const pubkeyChunked = bigIntToChunkedBytes(BigInt(pubkey.modulus), 192, 11);
-
-    // console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
+    const pubkeyChunked = splitToWords(BigInt(pubkey.modulus), BigInt(230), BigInt(9));
     try {
-      // leaf is poseidon(signatureAlgorithm, ...pubkey)
-      return poseidon12([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
+      const leaf = poseidon10([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
+      return leaf
     } catch (err) {
       console.log('err', err, i, sigAlgFormatted, pubkey)
     }

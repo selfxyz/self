@@ -42,9 +42,10 @@ describe('DSC chain certificate', function () {
     })
 
     it('should compute the correct output', async () => {
-        console.log("Inputs:", inputs);
+        //console.log("Inputs:", inputs);
         const witness = await circuit.calculateWitness(inputs, true);
-        console.log(witness);
+        const blinded_dsc_commitment = (await circuit.getOutput(witness, ["blinded_dsc_commitment"])).blinded_dsc_commitment;
+        console.log("blinded_dsc_commitment", blinded_dsc_commitment)
     })
 
 })

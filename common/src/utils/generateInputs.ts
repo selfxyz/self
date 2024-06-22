@@ -23,20 +23,9 @@ export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
-  dscCertificate: any,
-  options: { developmentMode?: boolean } = { developmentMode: false }
+  n_dsc: number,
+  k_dsc: number
 ) {
-  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(serializedTree);
-
-  if (options.developmentMode) {
-    tree.insert(getLeaf({
-      signatureAlgorithm: mockPassportData_sha256WithRSAEncryption_65537.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: mockPassportData_sha256WithRSAEncryption_65537.pubKey.modulus,
-      exponent: mockPassportData_sha256WithRSAEncryption_65537.pubKey.exponent
-    }).toString());
-  }
 
   if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
     console.error(`${passportData.signatureAlgorithm} not supported for proof right now.`);
@@ -45,7 +34,6 @@ export function generateCircuitInputsRegister(
 
   const formattedMrz = formatMrz(passportData.mrz);
   const concatenatedDataHashesHashDigest = hash(passportData.signatureAlgorithm, passportData.dataGroupHashes);
-  // console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
 
   assert(
     arraysAreEqual(passportData.eContent.slice(72, 72 + getDigestLengthBytes(passportData.signatureAlgorithm)),
@@ -53,22 +41,6 @@ export function generateCircuitInputsRegister(
     'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
   );
 
-  // console.log('passportData.pubKey.exponent', passportData.pubKey.exponent);
-
-  const leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    ...passportData.pubKey,
-  }).toString();
-  // console.log('leaf', leaf);
-
-  const index = tree.indexOf(leaf);
-  // console.log(`Index of pubkey in the registry: ${index}`);
-  if (index === -1) {
-    throw new Error("Your public key was not found in the registry");
-  }
-
-  const proof = tree.createProof(index);
-  // console.log("verifyProof", tree.verifyProof(proof));
 
   if (passportData.dataGroupHashes.length > MAX_DATAHASHES_LEN) {
     console.error(`Data hashes too long. Max length is ${MAX_DATAHASHES_LEN} bytes.`);
@@ -81,25 +53,6 @@ export function generateCircuitInputsRegister(
     MAX_DATAHASHES_LEN
   );
 
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
-
-  // DSC verification
-  // csca_modulus
-  // dsc_tbsCertificate
-  // dsc_signature
-  // dsc_modulus
-  // dsc_message_padded_bytes
-  // dsc_start_index
-
-  //const dsc_crt = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.crt', 'utf8');
-  //const csca_crt = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt', 'utf8');
-  //const dsc_cert = forge.pki.certificateFromPem(dsc_crt);
-  //const csca_cert = forge.pki.certificateFromPem(csca_crt);
-
-  const csca_inputs = getCSCAInputs(dsc_cert, null, 64, 32, 121, 34, false);
-
-
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
@@ -108,25 +61,16 @@ export function generateCircuitInputsRegister(
     signed_attributes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
     signature: splitToWords(
       BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-      BigInt(64),
-      BigInt(32)
+      BigInt(n_dsc),
+      BigInt(k_dsc)
     ),
-    //pubkey: splitToWords(
-    //  BigInt(passportData.pubKey.modulus as string),
-    //  BigInt(64),
-    //  BigInt(32)
-    //),
-    dsc_modulus: csca_inputs.dsc_modulus,
-    merkle_root: [tree.root.toString()],
-    path: proof.pathIndices.map(index => index.toString()),
-    siblings: proof.siblings.flat().map(index => index.toString()),
+    dsc_modulus: splitToWords(
+      BigInt(passportData.pubKey.modulus as string),
+      BigInt(n_dsc),
+      BigInt(k_dsc)
+    ),
     attestation_id: [attestation_id],
-    raw_dsc_cert: csca_inputs.raw_dsc_cert,
-    raw_dsc_cert_padded_bytes: csca_inputs.raw_dsc_cert_padded_bytes,
-    csca_modulus: csca_inputs.csca_modulus,
-    dsc_signature: csca_inputs.dsc_signature,
-    start_index: csca_inputs.start_index
-
+    dsc_secret: [BigInt(0).toString()]
   };
 }
 
