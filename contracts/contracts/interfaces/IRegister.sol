@@ -32,10 +32,18 @@ interface IRegister {
     /// @param b The 'b' parameter of the zkSNARK proof
     /// @param c The 'c' parameter of the zkSNARK proof
     struct RegisterProof {
-        uint commitment;
+        uint blinded_dsc_commitment;
         uint nullifier;
-        uint merkle_root;
+        uint commitment;
         uint attestation_id;
+        uint[2] a;
+        uint[2][2] b;
+        uint[2] c;
+    }
+
+    struct CSCAProof {
+        uint blinded_dsc_commitment;
+        uint merkle_root;
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
@@ -43,13 +51,18 @@ interface IRegister {
 
     /// @notice Validates a Register proof
     /// @param proof The Register proof to validate
-    function validateProof(RegisterProof calldata proof, uint256 signature_algorithm) external;
+    function validateProof(
+        RegisterProof calldata proof,
+        CSCAProof calldata proof_csca,
+        uint256 signature_algorithm
+    ) external;
 
     /// @notice Verifies a Register proof
     /// @param proof The Register proof to verify
     /// @return bool Returns true if the proof is valid, false otherwise
     function verifyProof(
         RegisterProof calldata proof,
+        CSCAProof calldata proof_csca,
         uint256 signature_algorithm
     ) external view returns (bool);
 
@@ -70,4 +83,7 @@ interface IRegister {
     /// @param commitment The commitment to find
     /// @return uint Returns the index of the commitment
     function indexOf(uint commitment) external view returns (uint);
+
+    /// @notice DEV function
+    function devAddCommitment(uint commitment) external;
 }

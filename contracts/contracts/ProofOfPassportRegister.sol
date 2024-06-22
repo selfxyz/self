@@ -6,6 +6,7 @@ import {IRegister} from "./interfaces/IRegister.sol";
 import {Registry} from "./Registry.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {IVerifier} from "./IVerifier.sol";
+import {IVerifierCSCA} from "./IVerifierCSCA.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
@@ -61,19 +62,28 @@ contract ProofOfPassportRegister is IRegister, Ownable {
     LeanIMTData internal imt;
 
     // poseidon("E-PASSPORT")
-    bytes32 public attestationId = bytes32(0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24);
+    bytes32 public attestationId =
+        bytes32(
+            0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24
+        );
 
     mapping(uint256 => bool) public nullifiers;
     mapping(uint256 => bool) public merkleRootsCreated;
     mapping(uint256 => address) public verifiers;
+    address public cscaVerifier;
 
-    constructor(Registry r) {
+    constructor(Registry r, address _cscaVerifier) {
         registry = r;
+        cscaVerifier = _cscaVerifier;
         transferOwnership(msg.sender);
     }
 
-    function validateProof(RegisterProof calldata proof, uint256 signature_algorithm) external override {
-        if (!registry.checkRoot(bytes32(proof.merkle_root))) {
+    function validateProof(
+        RegisterProof calldata proof,
+        CSCAProof calldata proof_csca,
+        uint256 signature_algorithm
+    ) external override {
+        if (!registry.checkRoot(bytes32(proof_csca.merkle_root))) {
             revert("InvalidMerkleRoot");
         }
         // if (nullifiers[proof.nullifier]) {
@@ -82,7 +92,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         if (bytes32(proof.attestation_id) != attestationId) {
             revert("InvalidAttestationId");
         }
-        if (!verifyProof(proof, signature_algorithm)) {
+        if (!verifyProof(proof, proof_csca, signature_algorithm)) {
             revert("InvalidProof");
         }
 
@@ -91,7 +101,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         _addCommitment(proof.commitment);
 
         emit ProofValidated(
-            proof.merkle_root,
+            proof_csca.merkle_root,
             proof.nullifier,
             proof.commitment
         );
@@ -99,6 +109,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
 
     function verifyProof(
         RegisterProof calldata proof,
+        CSCAProof calldata proof_csca,
         uint256 signature_algorithm
     ) public view override returns (bool) {
         return
@@ -107,10 +118,19 @@ contract ProofOfPassportRegister is IRegister, Ownable {
                 proof.b,
                 proof.c,
                 [
-                    uint(proof.commitment),
+                    uint(proof.blinded_dsc_commitment),
                     uint(proof.nullifier),
-                    uint(proof.merkle_root),
+                    uint(proof.commitment),
                     uint(proof.attestation_id)
+                ]
+            ) &&
+            IVerifierCSCA(cscaVerifier).verifyProof(
+                proof_csca.a,
+                proof_csca.b,
+                proof_csca.c,
+                [
+                    uint(proof_csca.blinded_dsc_commitment),
+                    uint(proof_csca.merkle_root)
                 ]
             );
     }
@@ -164,7 +184,21 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         verifiers[signature_algorithm] = verifier_address;
     }
 
-    function removeSignatureAlgorithm(uint256 signature_algorithm) external onlyOwner {
+    function updateCSCAVerifier(address _cscaVerifier) external onlyOwner {
+        require(
+            _cscaVerifier != address(0),
+            "Register__InvalidVerifierAddress"
+        );
+        cscaVerifier = _cscaVerifier;
+    }
+
+    function removeSignatureAlgorithm(
+        uint256 signature_algorithm
+    ) external onlyOwner {
         verifiers[signature_algorithm] = address(0);
+    }
+
+    function devAddCommitment(uint commitment) external onlyOwner {
+        _addCommitment(commitment);
     }
 }
