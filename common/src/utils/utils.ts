@@ -194,7 +194,7 @@ export function hash(signatureAlgorithm: string, bytesArray: number[]) {
     ? sha1(unsignedBytesArray)
     : (signatureAlgorithm == 'SHA384withECDSA')
     ? sha384(unsignedBytesArray)
-    : (signatureAlgorithm == 'sha256WithRSAEncryption' || signatureAlgorithm == 'rsassaPss')
+    : (signatureAlgorithm == 'sha256WithRSAEncryption' || signatureAlgorithm == 'sha256WithRSASSAPSS')
     ? sha256(unsignedBytesArray)
     : sha256(unsignedBytesArray); // defaults to sha256
   return hexToSignedBytes(hash);

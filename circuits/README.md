@@ -41,7 +41,7 @@ Proof of Passport currently supports the following sig/hash algorithms:
 
 - [x] sha256WithRSAEncryption
 - [x] sha1WithRSAEncryption
-- [ ] rsassaPss (under development)
+- [x] sha256WithRSASSAPSS
 - [ ] ecdsa-with-SHA384
 - [ ] ecdsa-with-SHA1
 - [ ] ecdsa-with-SHA256

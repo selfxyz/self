@@ -32,10 +32,10 @@ const sampleDataHashes = [
     [76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59, -100, -69, -7, 28, -58, 95, 69, 15, -74, 56, 54, 38]
   ]
 ] as [number, number[]][]
-const signatureAlgorithm = 'rsassaPss'
+const signatureAlgorithm = 'sha256WithRSASSAPSS'
 const hashLen = 32
 
-export function genMockPassportData_rsassaPss_65537(): PassportData {
+export function genMockPassportData_sha256WithRSASSAPSS_65537(): PassportData {
   const keypair = forge.pki.rsa.generateKeyPair(2048);
   const privateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
 
@@ -117,7 +117,7 @@ function verify(passportData: PassportData): boolean {
   return isVerified;
 }
 
-const mockPassportData = genMockPassportData_rsassaPss_65537();
+const mockPassportData = genMockPassportData_sha256WithRSASSAPSS_65537();
 console.log("Passport Data:", JSON.stringify(mockPassportData, null, 2));
 console.log("Signature valid:", verify(mockPassportData));
 
