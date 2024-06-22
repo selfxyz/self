@@ -34,7 +34,7 @@ export function generateCircuitInputsRegister(
     }
   }
 
-  if (!["sha256WithRSAEncryption"].includes(signatureAlgorithm)) {
+  if (!["sha256WithRSAEncryption", "rsassaPss"].includes(signatureAlgorithm)) {
     console.error(`${signatureAlgorithm} has not been implemented.`);
     throw new Error(`${signatureAlgorithm} has not been implemented.`);
   }
@@ -86,7 +86,7 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
-    // dg1_hash_offset: [dg1HashOffset.toString()], uncomment when adding new circuits
+    // dg1_hash_offset: [dg1HashOffset.toString()], //uncomment when adding new circuits
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     signed_attributes: eContent.map(toUnsignedByte).map(byte => String(byte)),
