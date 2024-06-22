@@ -3,7 +3,7 @@ import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { poseidon1, poseidon6 } from "poseidon-lite";
-import { mockPassportData_rsassaPss_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256WithRSASSAPSS_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
@@ -12,7 +12,7 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
-    let passportData = mockPassportData_rsassaPss_65537;
+    let passportData = mockPassportData_sha256WithRSASSAPSS_65537;
     let attestation_id: string;
 
     before(async () => {
