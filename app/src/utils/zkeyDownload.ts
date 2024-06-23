@@ -5,7 +5,6 @@ import axios from 'axios';
 import { unzip } from 'react-native-zip-archive';
 import useNavigationStore from '../stores/navigationStore';
 
-// this should not change, instead update the zkey on the bucket
 const zkeyZipUrls = {
   register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca.zkey.zip",
   disclose: "https://d8o9bercqupgk.cloudfront.net/disclose.zkey.zip",
@@ -150,12 +149,19 @@ export async function fetchZkey(
           console.log('Directory contents before unzipping:', result);
         })
 
-      await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, RNFS.DocumentDirectoryPath);
-
-      RNFS.readDir(RNFS.DocumentDirectoryPath)
-        .then((result) => {
-          console.log('Directory contents after unzipping:', result);
-        })
+      // this trick makes sure the zkey ends up being named <circuit>.zkey
+      const unzipPath = `${RNFS.DocumentDirectoryPath}/${circuit}_temp`;
+      await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, unzipPath);
+      const files = await RNFS.readDir(unzipPath);
+      const zkeyFile = files.find(file => file.name.endsWith('.zkey'));
+      if (zkeyFile) {
+        await RNFS.moveFile(zkeyFile.path, `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`);
+        console.log(`File renamed to ${circuit}.zkey`);
+      } else {
+        throw new Error('Zkey file not found in the unzipped directory');
+      }
+      await RNFS.unlink(unzipPath);
+      
       console.log('Unzip complete');
 
       update({
@@ -168,11 +174,9 @@ export async function fetchZkey(
       amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
 
       const zipSize = await RNFS.stat(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`);
-
       console.log('zipSize:', zipSize.size);
 
       RNFS.writeFile(`${RNFS.DocumentDirectoryPath}/${circuit}_zip_size.txt`, zipSize.size.toString(), 'utf8');
-
       console.log('zip size written to file');
 
       // delete the zip file
@@ -183,6 +187,12 @@ export async function fetchZkey(
         .catch((error) => {
           console.error(error);
         });
+
+      RNFS.readDir(RNFS.DocumentDirectoryPath)
+      .then((result) => {
+        console.log('Directory contents at the end:', result);
+      })
+
     })
     .catch((error) => {
       console.error(error);
