@@ -1,5 +1,7 @@
 #!/bin/bash
 
+source "scripts/common.sh"
+
 cd witnesscalc
 ./build_gmp.sh android
 make android

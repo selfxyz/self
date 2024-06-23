@@ -73,12 +73,7 @@ First, go to the `circuit` folder of the monorepo, modify the circuits and build
 
 Then, upload the zipped zkeys built at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`. Be sure the zkey is named `<circuit_name>.zkey` before you zip it, and the zip is then named `<circuit_name>.zkey.zip`.
 
-Adapt the inputs you pass in `app/src/utils/prover.ts`, and adapt and redeploy the contracts.
-
-Run the common init script:
-```
-./scripts/common.sh
-```
+Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt and redeploy the contracts.
 
 ### Android
 
