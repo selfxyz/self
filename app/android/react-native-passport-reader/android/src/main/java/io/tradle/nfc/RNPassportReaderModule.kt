@@ -580,6 +580,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
             passport.putString("encapContent", gson.toJson(ldsso.encoded))
 
+            // Convert the document signing certificate to PEM format
+            val docSigningCert = sodFile.docSigningCertificate
+            val pemCert = "-----BEGIN CERTIFICATE-----\n" + Base64.encodeToString(docSigningCert.encoded, Base64.DEFAULT) + "-----END CERTIFICATE-----"
+            passport.putString("documentSigningCertificate", pemCert)
+
             // passport.putString("getDocSigningCertificate", gson.toJson(sodFile.getDocSigningCertificate))
             // passport.putString("getIssuerX500Principal", gson.toJson(sodFile.getIssuerX500Principal))
             // passport.putString("getSerialNumber", gson.toJson(sodFile.getSerialNumber))
