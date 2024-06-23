@@ -7,7 +7,7 @@ import useNavigationStore from '../stores/navigationStore';
 
 // this should not change, instead update the zkey on the bucket
 const zkeyZipUrls = {
-  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537.zkey.zip",
+  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca.zkey.zip",
   disclose: "https://d8o9bercqupgk.cloudfront.net/disclose.zkey.zip",
 };
 
@@ -36,34 +36,34 @@ export type IsZkeyDownloading = {
 export async function downloadZkey(
   circuit: CircuitName,
 ) {
-    const {
-      isZkeyDownloading,
-      update
-    } = useNavigationStore.getState();
+  const {
+    isZkeyDownloading,
+    update
+  } = useNavigationStore.getState();
 
-    const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
-    if (!downloadRequired) {
-      console.log(`zkey for ${circuit} already downloaded`)
-      amplitude.track(`zkey for ${circuit} already downloaded`);
-      return;
-    }
+  const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
+  if (!downloadRequired) {
+    console.log(`zkey for ${circuit} already downloaded`)
+    amplitude.track(`zkey for ${circuit} already downloaded`);
+    return;
+  }
 
-    const networkInfo = await NetInfo.fetch();
-    console.log('Network type:', networkInfo.type)
-    if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
-      fetchZkey(circuit);
-    } else {
-      const response = await axios.head(zkeyZipUrls[circuit]);
-      const expectedSize = parseInt(response.headers['content-length'], 10);
+  const networkInfo = await NetInfo.fetch();
+  console.log('Network type:', networkInfo.type)
+  if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
+    fetchZkey(circuit);
+  } else {
+    const response = await axios.head(zkeyZipUrls[circuit]);
+    const expectedSize = parseInt(response.headers['content-length'], 10);
 
-      update({
-        showWarningModal: {
-          show: true,
-          circuit: circuit,
-          size: expectedSize,
-        }
-      });
-    }
+    update({
+      showWarningModal: {
+        show: true,
+        circuit: circuit,
+        size: expectedSize,
+      }
+    });
+  }
 }
 
 export async function isDownloadRequired(
@@ -93,7 +93,7 @@ export async function isDownloadRequired(
   const expectedSize = parseInt(response.headers['content-length'], 10);
 
   console.log('expectedSize:', expectedSize)
-  
+
   const isZipComplete = storedZipSize === expectedSize;
 
   console.log('isZipComplete:', isZipComplete)
@@ -153,9 +153,9 @@ export async function fetchZkey(
       await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, RNFS.DocumentDirectoryPath);
 
       RNFS.readDir(RNFS.DocumentDirectoryPath)
-      .then((result) => {
-        console.log('Directory contents after unzipping:', result);
-      })
+        .then((result) => {
+          console.log('Directory contents after unzipping:', result);
+        })
       console.log('Unzip complete');
 
       update({

@@ -6,10 +6,11 @@ import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#Proof
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";
 import { CHAIN_NAME, RELAYER_URL, RPC_URL } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
-import { formatCallData_disclose, formatCallData_register } from "../../../common/src/utils/formatCallData";
+import { formatCallData_disclose, formatCallData_dsc, formatCallData_register } from "../../../common/src/utils/formatCallData";
 
 export const sendRegisterTransaction = async (
   proof: Proof,
+  cscaProof: Proof
 ) => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
 
@@ -22,10 +23,14 @@ export const sendRegisterTransaction = async (
   const cd = groth16ExportSolidityCallData(proof.proof, proof.pub_signals);
   const callData = JSON.parse(`[${cd}]`);
   console.log('callData', callData);
-
   const formattedCallData_register = formatCallData_register(callData)
-
   console.log('formattedCallData_register', formattedCallData_register);
+
+  const cd_csca = groth16ExportSolidityCallData(cscaProof.proof, cscaProof.pub_signals);
+  const callData_csca = JSON.parse(`[${cd_csca}]`);
+  console.log('callData_csca', callData_csca);
+  const formattedCallData_csca = formatCallData_dsc(callData_csca);
+  console.log('formattedCallData_csca', formattedCallData_csca);
 
   try {
     const registerContract = new ethers.Contract(
@@ -35,7 +40,7 @@ export const sendRegisterTransaction = async (
     );
 
     const transactionRequest = await registerContract
-      .validateProof.populateTransaction(formattedCallData_register, 1);
+      .validateProof.populateTransaction(formattedCallData_register, formattedCallData_csca, 1);
     console.log('transactionRequest', transactionRequest);
 
     const response = await axios.post(RELAYER_URL, {
@@ -79,7 +84,7 @@ export const mintSBT = async (
   console.log('parsedCallData_disclose', parsedCallData_disclose);
 
   const formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
-  
+
   try {
     const proofOfPassportContract = new ethers.Contract(
       contractAddresses["Deploy_Registry#SBT"],

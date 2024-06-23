@@ -10,7 +10,7 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { CSCA_AKI_MODULUS } from '../../../common/src/constants/constants';
+import { CSCA_AKI_MODULUS, k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
 import { sha256Pad } from '../../../common/src/utils/shaPad';
 import { findStartIndex, getCSCAInputs } from '../../../common/src/utils/csca';
 function derToBytes(derValue: string) {
@@ -25,7 +25,8 @@ export const scan = async () => {
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry
+    dateOfExpiry,
+    cscaProof
   } = useUserStore.getState()
 
   const { toast, setStep } = useNavigationStore.getState();
@@ -209,9 +210,9 @@ const handleResponseIOS = async (
   console.log('*****');
   try {
     const cert = forge.pki.certificateFromPem(pem);
-    console.log('cert', cert);
+    //console.log('cert', cert);
     const publicKey = cert.publicKey;
-    console.log('publicKey', publicKey);
+    //console.log('publicKey', publicKey);
 
     const modulus = (publicKey as any).n.toString(10);
 
@@ -241,25 +242,39 @@ const handleResponseIOS = async (
     //   passportData,
 
     // );
-    const n_dsc = 64;
-    const k_dsc = 32;
-    const n_csca = 121;
-    const k_csca = 34;
-    const max_cert_bytes = 4096;
-    const inputs = getCSCAInputs(
+    /*
+    const inputs_csca = getCSCAInputs(
       certificate,
       null,
       n_dsc,
       k_dsc,
       n_csca,
       k_csca,
-      false
+      max_cert_bytes
     );
-    console.log('******');
-    Object.entries(inputs).forEach(([key, value]) => {
-      console.log(`${key}:`, value);
-    });
-    amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
+
+    try {
+      console.log("inputs_csca before requesting modal server - nfcsScanner.ts");;
+      const response = await fetch("https://remicolin--app-py-run-script-dev.modal.run", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(inputs_csca)
+      });
+      useUserStore.getState().cscaProof = response;
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const data = await response.json();
+      console.log('Response from server:', data);
+    } catch (error) {
+      console.error('Error during request:', error);
+    } 
+    */
+
+    //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
     //console.log('passportData', JSON.stringify({
     //  ...passportData,
@@ -306,7 +321,8 @@ const handleResponseAndroid = async (
     digestEncryptionAlgorithm,
     LDSVersion,
     unicodeVersion,
-    encapContent
+    encapContent,
+    documentSigningCertificate,
   } = response;
 
   amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
@@ -343,6 +359,46 @@ const handleResponseAndroid = async (
   console.log("LDSVersion", LDSVersion)
   console.log("unicodeVersion", unicodeVersion)
   console.log("encapContent", encapContent)
+  console.log("documentSigningCertificate", documentSigningCertificate)
+
+  //console.log('pem', pem)
+  const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
+  useUserStore.getState().dscCertificate = certificate;
+
+  /*
+  const inputs_csca = getCSCAInputs(
+    certificate,
+    null,
+    n_dsc,
+    k_dsc,
+    n_csca,
+    k_csca,
+    max_cert_bytes,
+    false
+  );
+  console.log("inputs_csca", inputs_csca)
+
+  try {
+    console.log("inputs_csca before requesting modal server - nfcsScanner.ts");;
+    const response = await fetch("https://remicolin--app-py-run-script-dev.modal.run", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(inputs_csca)
+    });
+    useUserStore.getState().cscaProof = response;
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Response from server:', data);
+  } catch (error) {
+    console.error('Error during request:', error);
+  }
+  */
 
   useUserStore.getState().registerPassportData(passportData)
   useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);

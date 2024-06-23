@@ -18,7 +18,6 @@ import { formatSigAlg } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
-import forge from 'node-forge';
 
 interface UserState {
   passportNumber: string
@@ -28,6 +27,7 @@ interface UserState {
   passportData: PassportData
   secret: string
   dscCertificate: any
+  cscaProof: any
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
@@ -46,6 +46,7 @@ const useUserStore = create<UserState>((set, get) => ({
   passportData: mockPassportData_sha256WithRSAEncryption_65537,
   secret: "",
   dscCertificate: null,
+  cscaProof: {},
 
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
@@ -115,12 +116,12 @@ const useUserStore = create<UserState>((set, get) => ({
         secret,
         PASSPORT_ATTESTATION_ID,
         passportData,
-        get().dscCertificate,
-        { developmentMode: true }
+        121,
+        17
       );
 
       amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
-
+      console.log("userStore - inputs - Object.keys(inputs).forEach((key) => {...")
       Object.keys(inputs).forEach((key) => {
         if (Array.isArray(inputs[key as keyof typeof inputs])) {
           console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
@@ -132,10 +133,9 @@ const useUserStore = create<UserState>((set, get) => ({
       const start = Date.now();
 
       const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-
       const proof = await generateProof(
         `register_${sigAlgFormatted}`,
-        inputs,
+        inputs
       );
 
       console.log('proof:', proof);
@@ -146,7 +146,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-      const serverResponse = await sendRegisterTransaction(proof)
+      const serverResponse = await sendRegisterTransaction(proof, get().cscaProof)
       const txHash = serverResponse?.data.hash;
 
       const receipt = await provider.waitForTransaction(txHash);

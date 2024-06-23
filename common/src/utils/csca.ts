@@ -50,7 +50,7 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
         const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
         const csca_modulus_number = BigInt(`0x${csca_modulus}`);
         csca_modulus_formatted = splitToWords(csca_modulus_number, BigInt(n_csca), BigInt(k_csca));
-        console.log('csca_modulus_formatted', csca_modulus_formatted);
+        //console.log('csca_modulus_formatted', csca_modulus_formatted);
 
 
     }
@@ -60,19 +60,19 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
         const authorityKeyIdentifierExt = dscCertificate.extensions.find(
             (ext) => ext.name === 'authorityKeyIdentifier'
         );
-        console.log('authorityKeyIdentifierExt', authorityKeyIdentifierExt);
+        //console.log('authorityKeyIdentifierExt', authorityKeyIdentifierExt);
         const value = authorityKeyIdentifierExt.value;
-        console.log('value', value);
+        //console.log('value', value);
         const byteArray = derToBytes(value);
-        console.log('Authority Key Identifier (byte array):', byteArray);
+        //console.log('Authority Key Identifier (byte array):', byteArray);
         const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-        console.log('Formatted Authority Key Identifier:', formattedValue);
+        //console.log('Formatted Authority Key Identifier:', formattedValue);
         const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
         const csca_modulus = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
         const csca_modulus_cleaned = csca_modulus.replace(/:/g, '');
         const csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
-        console.log('CSCA modulus as bigint:', csca_modulus_bigint);
+        //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
         console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
     }
 
@@ -106,13 +106,13 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
 
     return {
         "raw_dsc_cert": dsc_message_padded_formatted,
-        "raw_dsc_cert_padded_bytes": dsc_messagePaddedLen_formatted,
+        "raw_dsc_cert_padded_bytes": [dsc_messagePaddedLen_formatted],
         "csca_modulus": csca_modulus_formatted,
         "dsc_signature": dsc_signature_formatted,
         "dsc_modulus": dsc_modulus_formatted,
-        "start_index": startIndex_formatted,
-        "secret": "0",
-        "merkle_root": root,
+        "start_index": [startIndex_formatted],
+        "secret": [BigInt(0).toString()],
+        "merkle_root": [BigInt(root).toString()],
         "path": proof.pathIndices.map(index => index.toString()),
         "siblings": proof.siblings.flat().map(sibling => sibling.toString())
     }
@@ -126,10 +126,8 @@ export function derToBytes(derValue: string) {
     return bytes;
 }
 
-export function getCSCAModulusProof(leaf: string, n, k) {
+export function getCSCAModulusMerkleTree(n, k) {
     const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-    // get all the modulus
-    // split them into 34 bit words of 121 bits using the splitToWords method
     const csca_modulus_array = Object.values(CSCA_AKI_MODULUS);
     const csca_modulus_array_number = csca_modulus_array.map((modulus) => {
         const cleanedModulus = modulus.replace(/:/g, ''); // Remove colons
@@ -137,24 +135,11 @@ export function getCSCAModulusProof(leaf: string, n, k) {
     });
     const csca_modulus_formatted = csca_modulus_array_number.map((modulus) => splitToWords(modulus, BigInt(n), BigInt(k)));
 
-    // hash the first 16 using poseidon, hash the 16 next using poseidon, hash the last 2 ones using poseidon
-    const hashedModuliGroups = [];
     for (let i = 0; i < csca_modulus_formatted.length; i++) {
         const finalPoseidonHash = computeLeafFromModulus(csca_modulus_formatted[i]);
-        hashedModuliGroups.push(finalPoseidonHash.toString());
         tree.insert(finalPoseidonHash.toString());
     }
-    //console.log('hashedModuliGroups', hashedModuliGroups);
-    //console.log("size of the list", hashedModuliGroups.length);
-    //console.log("root", tree.root);
-    const index = tree.indexOf(leaf);
-    if (index === -1) {
-        throw new Error("Your public key was not found in the registry");
-    }
-
-    const proof = tree.createProof(index);
-    console.log("proof", proof);
-    return [tree.root, proof];
+    return tree;
 
 }
 
@@ -165,5 +150,30 @@ export function computeLeafFromModulus(modulus_formatted: string[]) {
     const finalPoseidonHash = poseidon3([poseidonHashOfTheFirst16, poseidonHashOfTheNext16, poseidonHashOfTheLast2]);
     return finalPoseidonHash.toString();
 }
-//getCSCAModulusMerkleTree("7013779953511677452538135461619722358450225673833899813888513931978925381442", 121, 34);
+
+export function getCSCAModulusProof(leaf, n, k) {
+    const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+    const csca_modulus_array = Object.values(CSCA_AKI_MODULUS);
+    const csca_modulus_array_number = csca_modulus_array.map((modulus) => {
+        const cleanedModulus = modulus.replace(/:/g, ''); // Remove colons
+        return BigInt(`0x${cleanedModulus}`);
+    });
+    const csca_modulus_formatted = csca_modulus_array_number.map((modulus) => splitToWords(modulus, BigInt(n), BigInt(k)));
+
+    const hashedModuliGroups = [];
+    for (let i = 0; i < csca_modulus_formatted.length; i++) {
+        const finalPoseidonHash = computeLeafFromModulus(csca_modulus_formatted[i]);
+        hashedModuliGroups.push(finalPoseidonHash.toString());
+        tree.insert(finalPoseidonHash.toString());
+    }
+    const index = tree.indexOf(leaf);
+    if (index === -1) {
+        throw new Error("Your public key was not found in the registry");
+    }
+
+    const proof = tree.createProof(index);
+    console.log("proof", proof);
+    return [tree.root, proof];
+
+}
 

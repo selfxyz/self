@@ -95,6 +95,9 @@ const MainScreen: React.FC = () => {
     else if (selectedTab === "register") {
       setStep(Steps.NEXT_SCREEN);
     }
+    else if (selectedTab === "app") {
+      setStep(Steps.REGISTER);
+    }
     else if (selectedTab === "prove") {
       setStep(Steps.REGISTERED);
     }
@@ -190,7 +193,7 @@ const MainScreen: React.FC = () => {
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
-            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan" || selectedTab === "app") ? "transparent" : "#a0a0a0"} /></Button>
+            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan") ? "transparent" : "#a0a0a0"} /></Button>
 
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}

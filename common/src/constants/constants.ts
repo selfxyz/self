@@ -36,7 +36,11 @@ export const attributeToPosition = {
 };
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-
+export const n_dsc = 121;
+export const k_dsc = 17;
+export const n_csca = 121;
+export const k_csca = 34;
+export const max_cert_bytes = 1664;
 export const countryCodes = {
   "AFG": "Afghanistan",
   "ALA": "Aland Islands",
@@ -304,8 +308,8 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 -----END RSA PUBLIC KEY-----`;
 
 export const DEFAULT_RPC_URL = "https://mainnet.optimism.io";
-export const REGISTER_CONTRACT_ADDRESS = "0xFd84F23Be557133DCa47Fc9aa22031AcCE557335";
-export const SBT_CONTRACT_ADDRESS = "0x98aA4401ef9d3dFed09D8c98B5a62FA325CF23b3";
+export const REGISTER_CONTRACT_ADDRESS = "0x395C63B95505BBa611d090d0a3021988EB57C3B9";
+export const SBT_CONTRACT_ADDRESS = "0x5d0E4aA46e16aDeBeF98EcB50651bC642CE53ebb";
 /*** ABI ***/
 
 export const REGISTER_ABI = [
