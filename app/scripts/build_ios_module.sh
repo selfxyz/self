@@ -35,3 +35,5 @@ cp witnesscalc/build_witnesscalc_ios/src/Release-iphoneos/libwitnesscalc_disclos
 mkdir -p ios/ProofOfPassport/Assets.xcassets/disclose.dat.dataset
 cp witnesscalc/src/disclose.dat ios/ProofOfPassport/Assets.xcassets/disclose.dat.dataset/disclose.dat
 cp witnesscalc/src/witnesscalc_disclose.h ios
+
+echo "copied artifacts to ios directory"
