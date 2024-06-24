@@ -1,8 +1,6 @@
 import { ethers } from "ethers";
 import verifier_dsc_4096_artifacts from "../../../app/deployments/artifacts/Deploy_Registry#Verifier_dsc_4096.json";
 import contractAddresses from "../../../app/deployments/deployed_addresses.json";
-import { groth16 } from 'snarkjs'
-import { formatCallData_dsc } from "../../../common/src/utils/formatCallData";
 import { RPC_URL } from "../../../common/src/constants/constants";
 
 async function verifyProof() {
