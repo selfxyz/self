@@ -7,6 +7,7 @@ include "@zk-email/circuits/helpers/extract.circom";
 include "@zk-email/circuits/helpers/sha.circom";
 include "binary-merkle-root.circom";
 include "./utils/splitBytesToWords.circom";
+include "./utils/splitSignalsToWords.circom";
 
 template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
     signal input raw_dsc_cert[max_cert_bytes]; 
@@ -88,8 +89,8 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
         dsc_modulus[i] === spbt_1.out[i];
     }
     // generate blinded commitment
-    component spbt_2 = SplitBytesToWords(dsc_mod_len, 230, 9);
-    spbt_2.in <== shiftLeft.out;
+    component spbt_2 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
+    spbt_2.in <== dsc_modulus;
     component poseidon = Poseidon(10);
     poseidon.inputs[0] <== secret;
     for (var i = 0; i < 9; i++) {
