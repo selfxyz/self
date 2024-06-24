@@ -117,7 +117,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `Formatter deployed to ${formatter.target}`);
 
         Registry = await ethers.getContractFactory("Registry");
-        registry = await Registry.deploy(formatRoot(inputs_csca.merkle_root), deployOptions);
+        registry = await Registry.deploy(formatRoot(inputs_csca.merkle_root[0]), deployOptions);
         await registry.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Registry deployed to ${registry.target}`);
 

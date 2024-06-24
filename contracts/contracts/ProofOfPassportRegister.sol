@@ -95,6 +95,12 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         if (!verifyProof(proof, proof_csca, signature_algorithm)) {
             revert("InvalidProof");
         }
+        if (
+            bytes32(proof.blinded_dsc_commitment) !=
+            bytes32(proof_csca.blinded_dsc_commitment)
+        ) {
+            revert("Register__BlindedDSCCommitmentDontMatch");
+        }
 
         nullifiers[proof.nullifier] = true;
 

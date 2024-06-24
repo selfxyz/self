@@ -16,6 +16,8 @@ interface IRegister {
     error Register__InvalidVerifierAddress();
     /// @notice Error thrown when the signature algorithm is already set
     error Register__SignatureAlgorithmAlreadySet();
+    /// @notice Error thrown when the blinded_dsc_commitment don't match between the proofs
+    error Register__BlindedDSCCommitmentDontMatch();
 
     /// @notice Event emitted when a proof is successfully validated
     /// @param merkle_root The Merkle root used in the proof
