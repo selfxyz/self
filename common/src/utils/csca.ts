@@ -1,9 +1,10 @@
 import { sha256Pad } from "./shaPad";
-import forge from "node-forge";
+import * as forge from "node-forge";
 import { splitToWords } from "./utils";
 import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { poseidon16, poseidon2, poseidon3 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
+import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
@@ -152,20 +153,9 @@ export function computeLeafFromModulus(modulus_formatted: string[]) {
 }
 
 export function getCSCAModulusProof(leaf, n, k) {
-    const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-    const csca_modulus_array = Object.values(CSCA_AKI_MODULUS);
-    const csca_modulus_array_number = csca_modulus_array.map((modulus) => {
-        const cleanedModulus = modulus.replace(/:/g, ''); // Remove colons
-        return BigInt(`0x${cleanedModulus}`);
-    });
-    const csca_modulus_formatted = csca_modulus_array_number.map((modulus) => splitToWords(modulus, BigInt(n), BigInt(k)));
-
-    const hashedModuliGroups = [];
-    for (let i = 0; i < csca_modulus_formatted.length; i++) {
-        const finalPoseidonHash = computeLeafFromModulus(csca_modulus_formatted[i]);
-        hashedModuliGroups.push(finalPoseidonHash.toString());
-        tree.insert(finalPoseidonHash.toString());
-    }
+    let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+    tree.setNodes(serialized_csca_tree);
+    //const tree = getCSCAModulusMerkleTree(n, k);
     const index = tree.indexOf(leaf);
     if (index === -1) {
         throw new Error("Your public key was not found in the registry");
