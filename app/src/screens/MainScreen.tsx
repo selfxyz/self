@@ -6,7 +6,7 @@ import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
 import ProveScreen from './ProveScreen';
-import { Steps } from '../utils/utils';
+import { ModalProofSteps, Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
 import { Linking, Modal, Platform, Pressable } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
@@ -25,6 +25,9 @@ import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/
 import Dialog from "react-native-dialog";
 import { contribute } from '../utils/contribute';
 import RegisterScreen from './RegisterScreen';
+import { RPC_URL } from '../../../common/src/constants/constants';
+import { sendRegisterTransaction } from '../utils/transactions';
+import { ethers } from 'ethers';
 
 
 const MainScreen: React.FC = () => {
@@ -34,6 +37,7 @@ const MainScreen: React.FC = () => {
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
+  const [modalProofStep, setModalProofStep] = useState(0);
 
   const {
     passportNumber,
@@ -43,10 +47,14 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
+    clearProofsFromStorage,
     registerCommitment,
     registerPassportData,
     passportData,
-    registered
+    registered,
+    setRegistered,
+    cscaProof,
+    localProof,
   } = useUserStore()
 
   const {
@@ -109,18 +117,43 @@ const MainScreen: React.FC = () => {
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
       console.log('ios');
-      scan();
+      scan(setModalProofStep);
     }
     else {
       console.log('android :)');
       setNFCScanIsOpen(true);
-      scan();
+      scan(setModalProofStep);
     }
   }
+
+
   function handleContribute() {
     contribute(passportData);
     setDialogContributeIsOpen(false);
   }
+
+  useEffect(() => {
+    if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
+      console.log('CSCA Proof received:', cscaProof);
+      if ((cscaProof !== null) && (localProof !== null)) {
+        const sendTransaction = async () => {
+          console.log("local proof already generated, sending transaction");
+          const provider = new ethers.JsonRpcProvider(RPC_URL);
+          const serverResponse = await sendRegisterTransaction(localProof, cscaProof)
+          const txHash = serverResponse?.data.hash;
+          const receipt = await provider.waitForTransaction(txHash);
+          console.log('receipt status:', receipt?.status);
+          if (receipt?.status === 0) {
+            throw new Error("Transaction failed");
+          }
+          setRegistered(true);
+          setStep(Steps.REGISTERED);
+        }
+        sendTransaction();
+      }
+
+    }
+  }, [modalProofStep]);
 
   useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
@@ -304,6 +337,15 @@ const MainScreen: React.FC = () => {
                         Delete passport data
                       </Label>
                       <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                        <Eraser color={textColor1} />
+                      </Button>
+                    </Fieldset>
+
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        Delete proofs
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
                         <Eraser color={textColor1} />
                       </Button>
                     </Fieldset>

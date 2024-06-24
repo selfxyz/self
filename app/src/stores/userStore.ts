@@ -5,7 +5,7 @@ import {
   DEFAULT_DOE,
 } from '@env';
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
-import { PassportData } from '../../../common/src/utils/types';
+import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
@@ -27,14 +27,17 @@ interface UserState {
   passportData: PassportData
   secret: string
   dscCertificate: any
-  cscaProof: any
+  cscaProof: Proof | null
+  localProof: Proof | null
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
+  clearProofsFromStorage: () => void
   update: (patch: any) => void
   deleteMrzFields: () => void
+  setRegistered: (registered: boolean) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
@@ -46,7 +49,11 @@ const useUserStore = create<UserState>((set, get) => ({
   passportData: mockPassportData_sha256WithRSAEncryption_65537,
   secret: "",
   dscCertificate: null,
-  cscaProof: {},
+  cscaProof: null,
+  localProof: null,
+  setRegistered: (registered: boolean) => {
+    set({ registered });
+  },
 
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
@@ -67,6 +74,7 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
+
     console.log("skipping onboarding")
     set({
       passportData: JSON.parse(passportData),
@@ -76,9 +84,10 @@ const useUserStore = create<UserState>((set, get) => ({
 
     // TODO: check if the commitment is already registered, if not retry registering it
 
-    // set({
-    //   registered: true,
-    // });
+    //  set({
+    //    registered: true,
+    //  });
+
   },
 
   // When reading passport for the first time:
@@ -137,27 +146,31 @@ const useUserStore = create<UserState>((set, get) => ({
         `register_${sigAlgFormatted}`,
         inputs
       );
-
-      console.log('proof:', proof);
+      console.log('localProof:', proof);
+      get().localProof = proof;
 
       const end = Date.now();
       console.log('Total proof time from frontend:', end - start);
       amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
 
-      const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-      const serverResponse = await sendRegisterTransaction(proof, get().cscaProof)
-      const txHash = serverResponse?.data.hash;
-
-      const receipt = await provider.waitForTransaction(txHash);
-      console.log('receipt status:', receipt?.status);
-
-      if (receipt?.status === 0) {
-        throw new Error("Transaction failed");
+      if ((get().cscaProof !== null) && (get().localProof !== null)) {
+        console.log("Proof from Modal server already received, sending transaction");
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const serverResponse = await sendRegisterTransaction(proof, get().cscaProof as Proof)
+        const txHash = serverResponse?.data.hash;
+        const receipt = await provider.waitForTransaction(txHash);
+        console.log('receipt status:', receipt?.status);
+        if (receipt?.status === 0) {
+          throw new Error("Transaction failed");
+        }
+        set({ registered: true });
+        setStep(Steps.REGISTERED);
+      }
+      else {
+        console.log("Proof from Modal server not received, waiting for it...");
       }
 
-      set({ registered: true });
-      setStep(Steps.REGISTERED);
     } catch (error: any) {
       console.error(error);
       toast?.show('Error', {
@@ -170,8 +183,14 @@ const useUserStore = create<UserState>((set, get) => ({
     }
   },
 
+
   clearPassportDataFromStorage: async () => {
     await Keychain.resetGenericPassword({ service: "passportData" });
+  },
+
+  clearProofsFromStorage: async () => {
+    get().cscaProof = null;
+    get().localProof = null;
   },
 
   clearSecretFromStorage: async () => {

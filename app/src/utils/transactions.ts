@@ -20,15 +20,17 @@ export const sendRegisterTransaction = async (
   }
 
   // Format the proof and publicInputs as calldata for the verifier contract
+  //console.log("exporting local proof:", proof, proof.proof, proof.pub_signals);
   const cd = groth16ExportSolidityCallData(proof.proof, proof.pub_signals);
   const callData = JSON.parse(`[${cd}]`);
-  console.log('callData', callData);
+  //console.log('callData', callData);
   const formattedCallData_register = formatCallData_register(callData)
   console.log('formattedCallData_register', formattedCallData_register);
 
+  //console.log("exporting csca proof", cscaProof, cscaProof.proof, cscaProof.pub_signals)
   const cd_csca = groth16ExportSolidityCallData(cscaProof.proof, cscaProof.pub_signals);
   const callData_csca = JSON.parse(`[${cd_csca}]`);
-  console.log('callData_csca', callData_csca);
+  //console.log('callData_csca', callData_csca);
   const formattedCallData_csca = formatCallData_dsc(callData_csca);
   console.log('formattedCallData_csca', formattedCallData_csca);
 

@@ -3,25 +3,18 @@ import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../../utils/utils';
-import { Steps } from './utils';
-import { PassportData } from '../../../common/src/utils/types';
+import { ModalProofSteps, Steps } from './utils';
+import { castCSCAProof, PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { CSCA_AKI_MODULUS, k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
-import { sha256Pad } from '../../../common/src/utils/shaPad';
-import { findStartIndex, getCSCAInputs } from '../../../common/src/utils/csca';
-function derToBytes(derValue: string) {
-  const bytes = [];
-  for (let i = 0; i < derValue.length; i++) {
-    bytes.push(derValue.charCodeAt(i));
-  }
-  return bytes;
-}
+import { k_csca, k_dsc, max_cert_bytes, MODAL_SERVER_ADDRESS, n_csca, n_dsc } from '../../../common/src/constants/constants';
+import { getCSCAInputs } from '../../../common/src/utils/csca';
 
-export const scan = async () => {
+
+export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
@@ -51,13 +44,13 @@ export const scan = async () => {
   setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
-    scanAndroid();
+    scanAndroid(setModalProofStep);
   } else {
-    scanIOS();
+    scanIOS(setModalProofStep);
   }
 };
 
-const scanAndroid = async () => {
+const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
@@ -74,7 +67,7 @@ const scanAndroid = async () => {
     });
     console.log('scanned');
     amplitude.track('NFC scan successful');
-    handleResponseAndroid(response);
+    handleResponseAndroid(response, setModalProofStep);
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
@@ -89,7 +82,7 @@ const scanAndroid = async () => {
   }
 };
 
-const scanIOS = async () => {
+const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
@@ -104,7 +97,7 @@ const scanIOS = async () => {
       dateOfExpiry
     );
     console.log('scanned');
-    handleResponseIOS(response);
+    handleResponseIOS(response, setModalProofStep);
     amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
@@ -123,6 +116,7 @@ const scanIOS = async () => {
 
 const handleResponseIOS = async (
   response: any,
+  setModalProofStep: (modalProofStep: number) => void
 ) => {
   const { toast } = useNavigationStore.getState();
 
@@ -147,71 +141,9 @@ const handleResponseIOS = async (
   const certificate = forge.pki.certificateFromPem(pem);
   useUserStore.getState().dscCertificate = certificate;
 
-  /*** begging of CSCA code implementation */
 
-  //const dsc_certificate = forge.pki.certificateFromPem(pem);
-
-  // // Find the authorityKeyIdentifier extension
-  // const authorityKeyIdentifierExt = certificate.extensions.find(
-  //   (ext) => ext.name === 'authorityKeyIdentifier'
-  // );
-
-  // // if (authorityKeyIdentifierExt) {
-  // //   // Remove the ASN.1 DER prefix (if present) and convert the rest to byte array
-  // const value = authorityKeyIdentifierExt.value;
-
-  // //   // Function to convert ASN.1 DER encoded value to a byte array
-
-
-  // const byteArray = derToBytes(value);
-  // //   console.log('Authority Key Identifier (byte array):', byteArray);
-  // //   // Convert byte array to the desired format
-  // const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-  // //   console.log('Formatted Authority Key Identifier:', formattedValue);
-  // //   /*** CSCA chain verif ***/
-  // //const cscac_aki: string = parsed.documentSigningCertificate.aki;
-  // //console.log('cscac_aki_from_passport', cscac_aki);
-
-  // const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
-  // const cscac_modulus: string = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
-  // console.log('CSCA modulus extracted from json:', cscac_modulus);
-
-  // } else {
-  //   console.log('Authority Key Identifier not found');
-  // }
-
-  // // signature extraction pem
-  // const signature = derToBytes(certificate.signature);
-  // //console.log('DSC signature:', signature);
-  // const formattedValue = signature.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-  // //console.log('DSC signature in hex:', formattedValue);
-  // //const signature10 = (signature as any).n.toString(10);
-  // //console.log('DSC signature in 10:', signature10);
-
-
-
-
-
-
-  // // Extract the TBS (To Be Signed) part of the certificate which is signed by the root certificate
-  // // Convert the Asn1 object to a DER-encoded string
-  // const tbsCertificateDer = forge.asn1.toDer(certificate.tbsCertificate).getBytes();
-  // const tbsCertificateBytes = derToBytes(tbsCertificateDer);
-  // //console.log('TBS Certificate Bytes:', tbsCertificateBytes);
-  // const dsc_modulus = (certificate.publicKey as any).n.toString(16); // Ensure this is a string
-  // console.log('DSC modulus:', dsc_modulus);
-  // const dsc_tbsCertificateUint8Array = Uint8Array.from(tbsCertificateBytes.map(byte => parseInt(byte.toString(16), 16)));
-  // const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, 4096);
-  // const startIndex = findStartIndex(dsc_modulus, dsc_message_padded); // Now dsc_modulus is correctly passed as a string
-  // console.log('startIndex:', startIndex);
-
-  // /*** END of CSCA code implementation */
-
-  console.log('*****');
   try {
-    const cert = forge.pki.certificateFromPem(pem);
-    //console.log('cert', cert);
-    const publicKey = cert.publicKey;
+    const publicKey = certificate.publicKey;
     //console.log('publicKey', publicKey);
 
     const modulus = (publicKey as any).n.toString(10);
@@ -236,13 +168,9 @@ const handleResponseIOS = async (
       encryptedDigest: encryptedDigestArray,
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
-    // const inputs = generateCircuitInputsRegister(
-    //   '0',
-    //   '0',
-    //   passportData,
+    useUserStore.getState().registerPassportData(passportData)
 
-    // );
-    /*
+    // Finally, generate CSCA Inputs and request modal server
     const inputs_csca = getCSCAInputs(
       certificate,
       null,
@@ -250,46 +178,11 @@ const handleResponseIOS = async (
       k_dsc,
       n_csca,
       k_csca,
-      max_cert_bytes
+      max_cert_bytes,
+      false
     );
+    sendCSCARequest(inputs_csca, setModalProofStep);
 
-    try {
-      console.log("inputs_csca before requesting modal server - nfcsScanner.ts");;
-      const response = await fetch("https://remicolin--app-py-run-script-dev.modal.run", {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(inputs_csca)
-      });
-      useUserStore.getState().cscaProof = response;
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      const data = await response.json();
-      console.log('Response from server:', data);
-    } catch (error) {
-      console.error('Error during request:', error);
-    } 
-    */
-
-    //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
-
-    //console.log('passportData', JSON.stringify({
-    //  ...passportData,
-    //  photoBase64: passportData.photoBase64.substring(0, 100) + '...'
-    //}, null, 2));
-
-    //console.log('mrz', passportData.mrz);
-    //console.log('signatureAlgorithm', passportData.signatureAlgorithm);
-    //console.log('pubKey', passportData.pubKey);
-    //console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
-    //console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
-    //console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
-    //console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
-
-    useUserStore.getState().registerPassportData(passportData)
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
   } catch (e: any) {
     console.log('error during parsing:', e);
@@ -306,6 +199,7 @@ const handleResponseIOS = async (
 
 const handleResponseAndroid = async (
   response: any,
+  setModalProofStep: (modalProofStep: number) => void
 ) => {
   const {
     mrz,
@@ -360,12 +254,12 @@ const handleResponseAndroid = async (
   console.log("unicodeVersion", unicodeVersion)
   console.log("encapContent", encapContent)
   console.log("documentSigningCertificate", documentSigningCertificate)
+  useUserStore.getState().registerPassportData(passportData)
 
-  //console.log('pem', pem)
+  // Finally request the Modal server to verify the DSC certificate
   const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
   useUserStore.getState().dscCertificate = certificate;
 
-  /*
   const inputs_csca = getCSCAInputs(
     certificate,
     null,
@@ -376,30 +270,34 @@ const handleResponseAndroid = async (
     max_cert_bytes,
     false
   );
-  console.log("inputs_csca", inputs_csca)
+  sendCSCARequest(inputs_csca, setModalProofStep);
+  useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+};
 
+const sendCSCARequest = async (inputs_csca: any, setModalProofStep: (modalProofStep: number) => void) => {
   try {
-    console.log("inputs_csca before requesting modal server - nfcsScanner.ts");;
-    const response = await fetch("https://remicolin--app-py-run-script-dev.modal.run", {
+    console.log("inputs_csca before requesting modal server - nfcsScanner.ts");
+    fetch(MODAL_SERVER_ADDRESS, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(inputs_csca)
+    }).then(response => {
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    }).then(data => {
+      useUserStore.getState().cscaProof = castCSCAProof(data);
+      setModalProofStep(ModalProofSteps.MODAL_SERVER_SUCCESS);
+      console.log('Response from server:', data);
+    }).catch(error => {
+      console.error('Error during request:', error);
+      setModalProofStep(ModalProofSteps.MODAL_SERVER_ERROR);
     });
-    useUserStore.getState().cscaProof = response;
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const data = await response.json();
-    console.log('Response from server:', data);
   } catch (error) {
     console.error('Error during request:', error);
+    setModalProofStep(ModalProofSteps.MODAL_SERVER_ERROR);
   }
-  */
-
-  useUserStore.getState().registerPassportData(passportData)
-  useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
 };

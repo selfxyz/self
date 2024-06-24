@@ -9,12 +9,23 @@ import useNavigationStore from '../stores/navigationStore';
 const RegisterScreen: React.FC = () => {
 
   const [registering, setRegistering] = useState(false);
+  const [registerStep, setRegisterStep] = useState<string | null>(null);
 
   const { isZkeyDownloading } = useNavigationStore.getState();
 
   const handleRegister = async () => {
     setRegistering(true);
-    useUserStore.getState().registerCommitment()
+    useUserStore.getState().registerCommitment();
+    setRegisterStep("Generating witness...");
+    setTimeout(() => {
+      setRegisterStep("Generating proof...");
+      setTimeout(() => {
+        setRegisterStep("DSC verification...");
+        setTimeout(() => {
+          setRegisterStep("Registering...");
+        }, 8000);
+      }, 10000);
+    }, 6000);
   }
 
   return (
@@ -31,10 +42,8 @@ const RegisterScreen: React.FC = () => {
         <XStack mt="$5" bg={componentBgColor} borderRadius={100} borderWidth={1} borderColor={borderColor} py="$2" px="$3">
           <XStack bg={componentBgColor2} borderRadius={100} p="$2" >
             <LockKeyhole alignSelf='center' size={24} color={textColor1} />
-
           </XStack>
           <Text alignSelf='center' ml="$3" pr="$5" fontSize="$3" color={textColor1}>Registration does not leak any personal information</Text>
-
         </XStack>
 
         <Button
@@ -46,10 +55,10 @@ const RegisterScreen: React.FC = () => {
           mb="$6"
           w="100%"
         >
-          <XStack gap="$2.5">
+          <XStack gap="$3">
             {(registering || isZkeyDownloading.register_sha256WithRSAEncryption_65537) && <Spinner color="white" size="small" />}
-            <Text color="white" fontSize="$5" >
-              {isZkeyDownloading.register_sha256WithRSAEncryption_65537 ? "Downloading zkey..." : (registering ? "Registering..." : "Register")}
+            <Text color={textColor1} fontSize="$5" >
+              {isZkeyDownloading.register_sha256WithRSAEncryption_65537 ? "Downloading zkey..." : (registerStep || "Register")}
             </Text>
           </XStack>
         </Button>

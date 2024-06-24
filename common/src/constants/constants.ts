@@ -5,9 +5,10 @@ export const PUBKEY_TREE_DEPTH = 16
 export const CSCA_TREE_DEPTH = 12
 export const COMMITMENT_TREE_DEPTH = 16
 
+export const MODAL_SERVER_ADDRESS = "https://remicolin--app-py-run-script-dev.modal.run"
+
 // poseidon("E-PASSPORT")
 export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
-
 export const CHAIN_NAME = "optimism"
 export const RPC_URL = "https://mainnet.optimism.io"
 
