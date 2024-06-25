@@ -166,6 +166,7 @@ const useUserStore = create<UserState>((set, get) => ({
         }
         set({ registered: true });
         setStep(Steps.REGISTERED);
+        toast?.show("✅ Registered", { type: "success" })
       }
       else {
         console.log("Proof from Modal server not received, waiting for it...");
