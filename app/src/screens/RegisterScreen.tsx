@@ -23,9 +23,9 @@ const RegisterScreen: React.FC = () => {
         setRegisterStep("DSC verification...");
         setTimeout(() => {
           setRegisterStep("Registering...");
-        }, 8000);
-      }, 10000);
-    }, 6000);
+        }, 4000);
+      }, 4000);
+    }, 4000);
   }
 
   return (
