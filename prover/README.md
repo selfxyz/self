@@ -13,6 +13,7 @@ pip install -r requirements.txt
 launch modal server
 
 ```
+./import_circuit.sh
 modal deploy dsc_prover.py --name dsc_prover
 ```
 
