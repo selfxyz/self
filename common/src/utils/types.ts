@@ -24,7 +24,7 @@ export function castCSCAProof(proof: any): Proof {
       b: [proof.proof.pi_b[0].slice(0, 2), proof.proof.pi_b[1].slice(0, 2)],
       c: proof.proof.pi_c.slice(0, 2)
     },
-    pub_signals: proof.public
+    pub_signals: proof.pub_signals
   }
 }
 
