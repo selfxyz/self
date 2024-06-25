@@ -148,6 +148,7 @@ const MainScreen: React.FC = () => {
           }
           setRegistered(true);
           setStep(Steps.REGISTERED);
+          toast?.show("✅ Registered", { type: "success" })
         }
         sendTransaction();
       }
