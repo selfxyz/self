@@ -21,5 +21,6 @@ modal deploy dsc_prover.py --name dsc_prover
 create a test/csca_inputs.json file with the inputs for the CSCA circuit and run the request.py script
 
 ```
-python test/request.py
+cd test
+python request.py
 ```
