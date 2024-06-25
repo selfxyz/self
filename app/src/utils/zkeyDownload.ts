@@ -7,7 +7,7 @@ import useNavigationStore from '../stores/navigationStore';
 
 const zkeyZipUrls = {
   register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca.zkey.zip",
-  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose.zkey.zip",
+  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose2.zkey.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;
@@ -161,7 +161,7 @@ export async function fetchZkey(
         throw new Error('Zkey file not found in the unzipped directory');
       }
       await RNFS.unlink(unzipPath);
-      
+
       console.log('Unzip complete');
 
       update({
@@ -189,9 +189,9 @@ export async function fetchZkey(
         });
 
       RNFS.readDir(RNFS.DocumentDirectoryPath)
-      .then((result) => {
-        console.log('Directory contents at the end:', result);
-      })
+        .then((result) => {
+          console.log('Directory contents at the end:', result);
+        })
 
     })
     .catch((error) => {
