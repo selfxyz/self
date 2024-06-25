@@ -46,7 +46,7 @@ async def generate_dsc_proof(request: Request):
             public_content = public_file.read()
         response_data = {
             "proof": json.loads(proof_content),
-            "public": json.loads(public_content)
+            "pub_signals": json.loads(public_content)
         }
         return PlainTextResponse(json.dumps(response_data), media_type="application/json")
     except FileNotFoundError:
