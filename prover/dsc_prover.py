@@ -5,24 +5,15 @@ import subprocess
 import asyncio
 import json
 import hashlib
+image = Image.from_dockerfile("Dockerfile")
 
-# Define the image with bash, nodejs, npm, and snarkjs, and ensure using a compatible Node.js version
-image = Image.debian_slim().apt_install("bash", "curl").run_commands(
-    "curl -fsSL https://deb.nodesource.com/setup_16.x | bash -",
-    "apt-get install -y nodejs",
-    "npm install -g snarkjs"
-)
-
-# Create the app
 app = App(image=image)
 
-# Mount the local directory containing the script and necessary files
 mount = Mount.from_local_dir("src", remote_path="/root/src")
 
-# Define the function to execute the script and capture the logs
 @app.function(mounts=[mount], cpu=14)
 @web_endpoint(method="POST")
-async def run_script(request: Request):
+async def generate_dsc_proof(request: Request):
     # Read the JSON data from the request body
     data = await request.json()
     # Convert JSON data to a properly formatted string
@@ -64,3 +55,4 @@ async def run_script(request: Request):
 # Run the app
 if __name__ == "__main__":
     app.run()
+
