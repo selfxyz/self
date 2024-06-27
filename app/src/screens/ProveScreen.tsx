@@ -93,13 +93,13 @@ const ProveScreen: React.FC = () => {
           }
         </YStack>
         <Text color={textColor1} fontSize="$5" fontWeight="bold" ml="$2" mb="$1">
-          Hi {" "}
+          Hi{" "}
           {
             hideData
               ? maskString(getFirstName(passportData.mrz))
               : getFirstName(passportData.mrz)
           }
-          👋
+          {" "}👋
         </Text>
 
         {fields.map((Field, index) => (

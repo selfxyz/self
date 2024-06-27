@@ -2,12 +2,12 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "./passport_verifier_sha256WithRSAEncryption_65537.circom";
+include "./passport_verifier_sha256WithRSASSAPSS_65537.circom";
 include "./utils/chunk_data.circom";
 include "./utils/compute_pubkey_leaf.circom";
 include "binary-merkle-root.circom";
 
-template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
+template register_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
 
     signal input mrz[93];
@@ -30,7 +30,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     merkle_root === computed_merkle_root;
 
     // Verify passport validity
-    component PV = PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes);
+    component PV = PassportVerifier_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== econtent;
@@ -58,4 +58,4 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
 }
 
 // We hardcode 1 here for sha256WithRSAEncryption_65537
-component main { public [ merkle_root, attestation_id ] } = Register_sha256WithRSAEncryption_65537(64, 32, 320, 16, 1);
+component main { public [ merkle_root, attestation_id ] } = register_sha256WithRSASSAPSS_65537(64, 32, 320, 16, 4);

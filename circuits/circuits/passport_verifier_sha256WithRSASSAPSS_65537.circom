@@ -1,12 +1,14 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/lib/rsa.circom";
+// include "@zk-email/circuits/lib/rsa.circom";
 include "@zk-email/circuits/utils/bytes.circom";
 include "@zk-email/circuits/lib/sha.circom";
 include "@zk-email/circuits/utils/array.circom";
 include "./utils/Sha256BytesStatic.circom";
+include "./utils/RSASSAPSS.circom";
 
-template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes) {
+
+template PassportVerifier_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes) {
     var hashLen = 32;
     var eContentBytesLength = 72 + hashLen; // 104
 
@@ -60,37 +62,14 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
         eContentBytes[eContentBytesLength - hashLen + i] === dataHashesSha_bytes[i].out;
     }
 
-    // hash eContentBytes
-    signal eContentSha[256] <== Sha256BytesStatic(104)(eContentBytes);
+    // decode signature to get encoded message
+    component rsaDecode = RSASSAPSS_Decode(n, k);
+    rsaDecode.signature <== signature;
+    rsaDecode.modulus <== pubkey;
+    signal encodedMessage[(n*k) \ 8] <== rsaDecode.eM;
 
-    // get output of eContentBytes sha256 into k chunks of n bits each
-    var msg_len = (256 + n) \ n;
-
-    //eContentHash: list of length 256/n +1 of components of n bits 
-    component eContentHash[msg_len];
-    for (var i = 0; i < msg_len; i++) {
-        eContentHash[i] = Bits2Num(n);
-    }
-
-    for (var i = 0; i < 256; i++) {
-        eContentHash[i \ n].in[i % n] <== eContentSha[255 - i];
-    }
-
-    for (var i = 256; i < n * msg_len; i++) {
-        eContentHash[i \ n].in[i % n] <== 0;
-    }
-    
-    // verify eContentHash signature
-    component rsa = RSAVerifier65537(n, k);
-
-    for (var i = 0; i < msg_len; i++) {
-        rsa.message[i] <== eContentHash[i].out;
-    }
-
-    for (var i = msg_len; i < k; i++) {
-        rsa.message[i] <== 0;
-    }
-
-    rsa.modulus <== pubkey;
-    rsa.signature <== signature;
+    // verify eContent signature
+    component rsaVerify = RSASSAPSSVerify_SHA256(n*k, eContentBytesLength);
+    rsaVerify.eM <== encodedMessage;
+    rsaVerify.message <== eContentBytes;
 }

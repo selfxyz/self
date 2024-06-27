@@ -532,7 +532,15 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             val passport = Arguments.createMap()
             passport.putString("mrz", mrzInfo.toString())
             passport.putString("signatureAlgorithm", sodFile.docSigningCertificate.sigAlgName) // this one is new
-  
+            Log.d(TAG, "sodFile.docSigningCertificate: ${sodFile.docSigningCertificate}")
+
+            val certificate = sodFile.docSigningCertificate
+            val certificateBytes = certificate.encoded
+            val certificateBase64 = Base64.encodeToString(certificateBytes, Base64.DEFAULT)
+            Log.d(TAG, "certificateBase64: ${certificateBase64}")
+
+            passport.putString("documentSigningCertificate", certificateBase64)
+
             val publicKey = sodFile.docSigningCertificate.publicKey
             if (publicKey is RSAPublicKey) {
                 passport.putString("modulus", publicKey.modulus.toString())

@@ -1,7 +1,7 @@
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 // import { describe } from "mocha";
-import { mockPassportData_sha1WithRSAEncryption_65537, mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256WithRSASSAPSS_65537, mockPassportData_sha1WithRSAEncryption_65537, mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { countryCodes, PASSPORT_ATTESTATION_ID, SignatureAlgorithm } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
@@ -29,7 +29,6 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     this.timeout(0);
 
     let proof, publicSignals
-    // Paths
 
     const register_circuits: RegisterCircuitArtifacts = {
         sha256WithRSAEncryption_65537: {
@@ -41,6 +40,11 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             wasm: "../circuits/build/register_sha1WithRSAEncryption_65537_js/register_sha1WithRSAEncryption_65537.wasm",
             zkey: "../circuits/build/register_sha1WithRSAEncryption_65537_final.zkey",
             vkey: "../circuits/build/register_sha1WithRSAEncryption_65537_vkey.json"
+        },
+        sha256WithRSASSAPSS_65537: {
+            wasm: "../circuits/build/register_sha256WithRSASSAPSS_65537_js/register_sha256WithRSASSAPSS_65537.wasm",
+            zkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_final.zkey",
+            vkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_vkey.json"
         }
     }
 
@@ -53,7 +57,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     let owner, otherAccount, thirdAccount: Signer;
     let imt: LeanIMT;
 
-    let bitmap, scope, user_address, majority, user_identifier, current_date, input_disclose: any;
+    let bitmap, scope, user_address, majority, input_disclose: any;
     let proof_disclose, publicSignals_disclose, proof_result_disclose, vkey_disclose, verified_disclose: any, rawCallData_disclose, parsedCallData_disclose: any[], formattedCallData_disclose: any;
     let secret: string = BigInt(0).toString();
     let attestation_id: string = PASSPORT_ATTESTATION_ID;
@@ -76,6 +80,12 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
                 secret,
                 attestation_id,
                 mockPassportData_sha1WithRSAEncryption_65537,
+            );
+
+            register_circuits.sha256WithRSASSAPSS_65537.inputs = generateCircuitInputsRegister(
+                secret,
+                attestation_id,
+                mockPassportData_sha256WithRSASSAPSS_65537,
             );
 
             /*** Deploy contracts ***/
@@ -110,6 +120,12 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         register_circuits.sha1WithRSAEncryption_65537.verifier = verifier_register_sha1WithRSAEncryption_65537;
         console.log('\x1b[34m%s\x1b[0m', `Verifier_register_sha1WithRSAEncryption_65537 deployed to ${verifier_register_sha1WithRSAEncryption_65537.target}`);
 
+        const Verifier_register_sha256WithRSASSAPSS_65537 = await ethers.getContractFactory("Verifier_register_sha256WithRSASSAPSS_65537");
+        const verifier_register_sha256WithRSASSAPSS_65537 = await Verifier_register_sha256WithRSASSAPSS_65537.deploy(deployOptions);
+        await verifier_register_sha256WithRSASSAPSS_65537.waitForDeployment();
+        register_circuits.sha256WithRSASSAPSS_65537.verifier = verifier_register_sha256WithRSASSAPSS_65537;
+        console.log('\x1b[34m%s\x1b[0m', `Verifier_register_sha256WithRSASSAPSS_65537 deployed to ${verifier_register_sha256WithRSASSAPSS_65537.target}`);
+
         const Formatter = await ethers.getContractFactory("Formatter");
         formatter = await Formatter.deploy(deployOptions);
         await formatter.waitForDeployment();
@@ -141,9 +157,9 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         await verifier_disclose.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_disclose deployed to ${verifier_disclose.target}`);
 
-        // for indexes, see SignatureAlgorithm object in common/src/constants/constants.ts
-        await register.addSignatureAlgorithm(1, verifier_register_sha256WithRSAEncryption_65537.target);
-        await register.addSignatureAlgorithm(3, verifier_register_sha1WithRSAEncryption_65537.target);
+        await register.addSignatureAlgorithm(SignatureAlgorithm["sha256WithRSAEncryption_65537"], verifier_register_sha256WithRSAEncryption_65537.target);
+        await register.addSignatureAlgorithm(SignatureAlgorithm["sha1WithRSAEncryption_65537"], verifier_register_sha1WithRSAEncryption_65537.target);
+        await register.addSignatureAlgorithm(SignatureAlgorithm["sha256WithRSASSAPSS_65537"], verifier_register_sha256WithRSASSAPSS_65537.target);
 
         const SBT = await ethers.getContractFactory("SBT");
         sbt = await SBT.deploy(
@@ -172,7 +188,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
     /*** Register flow ***/
     describe("Proof of Passport - Register flow", function () {
-        const sigAlgNames = ['sha256WithRSAEncryption_65537', 'sha1WithRSAEncryption_65537']
+        const sigAlgNames = ['sha256WithRSAEncryption_65537', 'sha1WithRSAEncryption_65537', 'sha256WithRSASSAPSS_65537']
 
         before(async function () {
             await Promise.all(sigAlgNames.map(async (sigAlgName) => {
@@ -216,7 +232,12 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             it(`Verifier contract verifies a correct proof - Register - ${sigAlgName}`, async function () {
                 expect(
-                    await sigAlgArtifacts.verifier.verifyProof(sigAlgArtifacts.parsedCallData[0], sigAlgArtifacts.parsedCallData[1], sigAlgArtifacts.parsedCallData[2], sigAlgArtifacts.parsedCallData[3])
+                    await sigAlgArtifacts.verifier.verifyProof(
+                        sigAlgArtifacts.parsedCallData[0],
+                        sigAlgArtifacts.parsedCallData[1],
+                        sigAlgArtifacts.parsedCallData[2],
+                        sigAlgArtifacts.parsedCallData[3]
+                    )
                 ).to.be.true;
             });
 

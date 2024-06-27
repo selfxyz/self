@@ -32,6 +32,7 @@ const MainScreen: React.FC = () => {
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
+  const [dialogDeleteSecretIsOpen, setDialogDeleteSecretIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
 
@@ -43,8 +44,6 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
-    registerCommitment,
-    registerPassportData,
     passportData,
     registered
   } = useUserStore()
@@ -56,7 +55,9 @@ const MainScreen: React.FC = () => {
     setStep,
     selectedTab,
     hideData,
-    toast
+    toast,
+    showRegistrationErrorSheet,
+    registrationErrorMessage,
   } = useNavigationStore();
 
   const handleRestart = () => {
@@ -74,15 +75,12 @@ const MainScreen: React.FC = () => {
   }
 
   const handleSkip = () => {
-    registerPassportData(
-      mockPassportData_sha256WithRSAEncryption_65537
-    )
     update({
       passportData: mockPassportData_sha256WithRSAEncryption_65537
     })
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();
-    toast?.show("Using mock passport data!", { type: "info" })
+    toast.show("Using mock passport data!", { type: "info" })
   }
 
   const decrementStep = () => {
@@ -114,9 +112,15 @@ const MainScreen: React.FC = () => {
       scan();
     }
   }
+
   function handleContribute() {
     contribute(passportData);
     setDialogContributeIsOpen(false);
+  }
+
+  function handleDeleteSecret() {
+    clearSecretFromStorage()
+    setDialogDeleteSecretIsOpen(false);
   }
 
   useEffect(() => {
@@ -274,6 +278,14 @@ const MainScreen: React.FC = () => {
                   <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
                 </Dialog.Container>
 
+                <Dialog.Container visible={dialogDeleteSecretIsOpen}>
+                  <Dialog.Title>Delete Secret</Dialog.Title>
+                  <Dialog.Description>
+                    You are about to delete your secret. Be careful! You will not be able to recover your identity.
+                  </Dialog.Description>
+                  <Dialog.Button onPress={() => setDialogDeleteSecretIsOpen(false)} label="Cancel" />
+                  <Dialog.Button onPress={() => handleDeleteSecret()} label="Delete secret" />
+                </Dialog.Container>
 
                 {displayOtherOptions && (
                   <>
@@ -309,7 +321,7 @@ const MainScreen: React.FC = () => {
                       <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete secret (caution)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearSecretFromStorage}>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
                         <Eraser color={textColor2} />
                       </Button>
                     </Fieldset>
@@ -455,6 +467,36 @@ const MainScreen: React.FC = () => {
               </YStack>
             </Sheet.Frame>
           </Sheet>
+
+          <Sheet
+            open={showRegistrationErrorSheet}
+            onOpenChange={(open: boolean) => {
+              updateNavigationStore({
+                showRegistrationErrorSheet: open
+              })
+            }}
+            dismissOnSnapToBottom modal animation="medium" snapPoints={[80]}
+          >
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgColor} borderRadius="$9" pt="$2">
+              <YStack p="$4" f={1} gap="$3">
+                <H2 textAlign='center' mb="$6" color={textColor1}>Passport unsupported</H2>
+                <Text fontSize="$6" mb="$4" color={textColor1}>Unfortunately, your passport is currently not supported. Details:</Text>
+                <Text fontSize="$6" mb="$4" textAlign="center" color="#a0a0a0">{registrationErrorMessage} </Text>
+
+                <Text fontSize="$6" mb="$4" color={textColor1}>To help us add support for it, please consider contributing its data!</Text>
+                <Fieldset gap="$4" mt="$1" horizontal>
+                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                    Contribute
+                  </Label>
+                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textColor1} />
+                  </Button>
+                </Fieldset>
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+          
           <XStack bc="#343434" h={1.2} />
         </YStack>
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}

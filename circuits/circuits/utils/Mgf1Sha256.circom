@@ -34,7 +34,7 @@ template Mgf1Sha256(seedLen, maskLen) { //in bytes
 
         for (var j = 0; j < 32; j++) {
             //concat seed and counter
-            concated[seedLenBits + j] = num2Bits[i].out[j];
+            concated[seedLenBits + j] = num2Bits[i].out[31-j];
         }
 
         sha256[i].in <== concated;
