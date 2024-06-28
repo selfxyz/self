@@ -18,7 +18,7 @@ describe("start testing disclose.circom", function () {
     let tree: any;
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose.circom"),
+        circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose_ofac.circom"),
             {
                 include: [
                     "node_modules",

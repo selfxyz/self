@@ -1,4 +1,4 @@
-ragma circom 2.1.5;
+pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/helpers/extract.circom";
@@ -12,16 +12,18 @@ template ProvePassportNotInOfac(nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
     signal output isEqual;
+    signal passport;
 
-    // extract deets 
-    signal passport = mrz[50...58]
 
-    component poseidon_hasher = Poseidon(1);
-    poseidon_hasher.inputs[0] <== passport
+    component poseidon_hasher = Poseidon(9);
+    for (var i = 0; i < 9; i++) {
+        poseidon_hasher.inputs[i] <== mrz[50+i];
+    }
 
     signal computedRoot <== BinaryMerkleRoot(nLevels)(poseidon_hasher.out, merkletree_size, path, siblings);
-    isEqual <== merkle_root == computedRoot;
+    signal diff <== merkle_root - computedRoot;
+    isEqual <== (1 - diff * diff);
 
 }
 
-component main { public [ merkle_root, scope] } = ProvePassportNotInOfac(16);
+component main { public [ merkle_root ] } = ProvePassportNotInOfac(16);
