@@ -6,7 +6,7 @@ include "@zk-email/circuits/lib/sha.circom";
 include "@zk-email/circuits/utils/array.circom";
 include "./utils/Sha256BytesStatic.circom";
 include "./utils/RSASSAPSS.circom";
-
+include "@zk-email/circuits/lib/fp.circom";
 
 template PassportVerifier_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes) {
     var hashLen = 32;
@@ -18,8 +18,8 @@ template PassportVerifier_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes) 
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    // pubkey that signed the passport
-    signal input pubkey[k];
+    // dsc_modulus that signed the passport
+    signal input dsc_modulus[k];
 
     // signature of the passport
     signal input signature[k];
@@ -65,8 +65,9 @@ template PassportVerifier_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes) 
     // decode signature to get encoded message
     component rsaDecode = RSASSAPSS_Decode(n, k);
     rsaDecode.signature <== signature;
-    rsaDecode.modulus <== pubkey;
-    signal encodedMessage[(n*k) \ 8] <== rsaDecode.eM;
+    rsaDecode.modulus <== dsc_modulus;
+    var emLen = div_ceil(n*k, 8);
+    signal encodedMessage[emLen] <== rsaDecode.eM;
 
     // verify eContent signature
     component rsaVerify = RSASSAPSSVerify_SHA256(n*k, eContentBytesLength);

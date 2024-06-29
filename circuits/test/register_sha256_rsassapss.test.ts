@@ -7,6 +7,7 @@ import { mockPassportData_sha256WithRSASSAPSS_65537 } from "../../common/src/uti
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
+import { k_dsc, n_dsc } from '../../common/src/constants/constants';
 
 describe("Proof of Passport - Circuits - RSASSAPSS", function () {
     this.timeout(0);
@@ -40,8 +41,11 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
             secret,
             attestation_id,
             passportData,
+            64,
+            32,
             [passportData],
         );
+
     });
 
     it("should compile and load the circuit", async function () {

@@ -56,7 +56,8 @@ interface IRegister {
     function validateProof(
         RegisterProof calldata proof,
         CSCAProof calldata proof_csca,
-        uint256 signature_algorithm
+        uint256 signature_algorithm,
+        uint256 signature_algorithm_csca
     ) external;
 
     /// @notice Verifies a Register proof
@@ -65,7 +66,8 @@ interface IRegister {
     function verifyProof(
         RegisterProof calldata proof,
         CSCAProof calldata proof_csca,
-        uint256 signature_algorithm
+        uint256 signature_algorithm,
+        uint256 signature_algorithm_csca
     ) external view returns (bool);
 
     /// @notice Checks if a given root is valid

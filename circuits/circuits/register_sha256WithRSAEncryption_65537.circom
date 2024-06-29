@@ -19,8 +19,8 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     signal input dsc_secret;
     signal input attestation_id;
 
-    component splitSignalsToWords_modulus = SplitSignalsToWords(121,17,230,9); // TODO refactor and create assertion that 121*17 < 254 * 9 and 254 <= 254
-    component splitSignalsToWords_signature = SplitSignalsToWords(121,17,230,9); // TODO refactor and create assertion that 121*17 < 254 * 9 and 254 <= 254
+    component splitSignalsToWords_modulus = SplitSignalsToWords(n,k,230,9); // TODO refactor and create assertion that 121*17 < 254 * 9 and 254 <= 254
+    component splitSignalsToWords_signature = SplitSignalsToWords(n,k,230,9); // TODO refactor and create assertion that 121*17 < 254 * 9 and 254 <= 254
     splitSignalsToWords_modulus.in <== dsc_modulus;
     splitSignalsToWords_signature.in <== signature;
 

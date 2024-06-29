@@ -43,7 +43,7 @@ export const sendRegisterTransaction = async (
     );
 
     const transactionRequest = await registerContract
-      .validateProof.populateTransaction(formattedCallData_register, formattedCallData_csca, sigAlgIndex);
+      .validateProof.populateTransaction(formattedCallData_register, formattedCallData_csca, sigAlgIndex, sigAlgIndex);
     console.log('transactionRequest', transactionRequest);
 
     const response = await axios.post(RELAYER_URL, {

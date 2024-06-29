@@ -70,18 +70,18 @@ contract ProofOfPassportRegister is IRegister, Ownable {
     mapping(uint256 => bool) public nullifiers;
     mapping(uint256 => bool) public merkleRootsCreated;
     mapping(uint256 => address) public verifiers;
-    address public cscaVerifier;
+    mapping(uint256 => address) public cscaVerifier;
 
-    constructor(Registry r, address _cscaVerifier) {
+    constructor(Registry r) {
         registry = r;
-        cscaVerifier = _cscaVerifier;
         transferOwnership(msg.sender);
     }
 
     function validateProof(
         RegisterProof calldata proof,
         CSCAProof calldata proof_csca,
-        uint256 signature_algorithm
+        uint256 signature_algorithm,
+        uint256 signature_algorithm_csca
     ) external override {
         if (!registry.checkRoot(bytes32(proof_csca.merkle_root))) {
             revert("InvalidMerkleRoot");
@@ -92,7 +92,14 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         if (bytes32(proof.attestation_id) != attestationId) {
             revert("InvalidAttestationId");
         }
-        if (!verifyProof(proof, proof_csca, signature_algorithm)) {
+        if (
+            !verifyProof(
+                proof,
+                proof_csca,
+                signature_algorithm,
+                signature_algorithm_csca
+            )
+        ) {
             revert("InvalidProof");
         }
         if (
@@ -116,7 +123,8 @@ contract ProofOfPassportRegister is IRegister, Ownable {
     function verifyProof(
         RegisterProof calldata proof,
         CSCAProof calldata proof_csca,
-        uint256 signature_algorithm
+        uint256 signature_algorithm,
+        uint256 signature_algorithm_csca
     ) public view override returns (bool) {
         return
             IVerifier(verifiers[signature_algorithm]).verifyProof(
@@ -130,7 +138,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
                     uint(proof.attestation_id)
                 ]
             ) &&
-            IVerifierCSCA(cscaVerifier).verifyProof(
+            IVerifierCSCA(cscaVerifier[signature_algorithm_csca]).verifyProof(
                 proof_csca.a,
                 proof_csca.b,
                 proof_csca.c,
@@ -190,18 +198,38 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         verifiers[signature_algorithm] = verifier_address;
     }
 
-    function updateCSCAVerifier(address _cscaVerifier) external onlyOwner {
+    function addCSCAVerifier(
+        uint256 signature_algorithm_csca,
+        address _cscaVerifier
+    ) external onlyOwner {
         require(
             _cscaVerifier != address(0),
             "Register__InvalidVerifierAddress"
         );
-        cscaVerifier = _cscaVerifier;
+        cscaVerifier[signature_algorithm_csca] = _cscaVerifier;
+    }
+
+    function updateCSCAVerifier(
+        uint256 signature_algorithm_csca,
+        address _cscaVerifier
+    ) external onlyOwner {
+        require(
+            _cscaVerifier != address(0),
+            "Register__InvalidVerifierAddress"
+        );
+        cscaVerifier[signature_algorithm_csca] = _cscaVerifier;
     }
 
     function removeSignatureAlgorithm(
         uint256 signature_algorithm
     ) external onlyOwner {
         verifiers[signature_algorithm] = address(0);
+    }
+
+    function removeCSCAVerifier(
+        uint256 signature_algorithm_csca
+    ) external onlyOwner {
+        cscaVerifier[signature_algorithm_csca] = address(0);
     }
 
     function devAddCommitment(uint commitment) external onlyOwner {

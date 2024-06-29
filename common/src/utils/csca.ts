@@ -1,8 +1,8 @@
-import { sha256Pad } from "./shaPad";
+import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
 import { splitToWords } from "./utils";
 import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, PUBKEY_TREE_DEPTH } from "../constants/constants";
-import { poseidon16, poseidon2, poseidon3 } from "poseidon-lite";
+import { poseidon1, poseidon16, poseidon2, poseidon3, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 
@@ -39,19 +39,17 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
 }
 
 export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, n_dsc: number, k_dsc: number, n_csca: number, k_csca: number, max_cert_bytes: number, devmod: boolean = false) {
-    //const csca_modulus = cscaCertificate.publicKey.n.toString(16);
-    //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
-    //const csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
     let csca_modulus_formatted;
+    let csca_modulus_bigint;
     // the purpose of devmode is to get the csca modulus from the mock_csca certificate instead of using the registry which parses aki to csca modulus
     if (devmod) {
         console.log('DEV MODE');
         //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
         const rsaPublicKey = cscaCertificate.publicKey as forge.pki.rsa.PublicKey;
         const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
-        const csca_modulus_number = BigInt(`0x${csca_modulus}`);
-        csca_modulus_formatted = splitToWords(csca_modulus_number, BigInt(n_csca), BigInt(k_csca));
-        //console.log('csca_modulus_formatted', csca_modulus_formatted);
+        csca_modulus_bigint = BigInt(`0x${csca_modulus}`);
+        csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
+        console.log('csca_modulus_formatted', csca_modulus_formatted);
 
 
     }
@@ -71,15 +69,20 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
         const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
         const csca_modulus = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
         const csca_modulus_cleaned = csca_modulus.replace(/:/g, '');
-        const csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
+        csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
         //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
         console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
     }
 
+    const signatureAlgorithm = dscCertificate.signatureOid;;
+    console.log('signatureAlgorithm', signatureAlgorithm);
+
     //dsc modulus
     const dsc_modulus = dscCertificate.publicKey.n.toString(16).toLowerCase();
+    //console.log('dsc_modulus', dsc_modulus);
     const dsc_modulus_bytes_array = dsc_modulus.match(/.{2}/g).map(byte => parseInt(byte, 16));
+    //console.log('dsc_modulus_bytes_array', dsc_modulus_bytes_array);
     const dsc_modulus_bytes_array_formatted = dsc_modulus_bytes_array.map(byte => byte.toString());
     const dsc_modulus_number = BigInt(`0x${dsc_modulus}`);
     const dsc_modulus_formatted = splitToWords(dsc_modulus_number, BigInt(n_dsc), BigInt(k_dsc));
@@ -94,14 +97,24 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
     const tbsCertificateDer = forge.asn1.toDer(dscCertificate.tbsCertificate).getBytes();
     const tbsCertificateBytes = derToBytes(tbsCertificateDer);
     const dsc_tbsCertificateUint8Array = Uint8Array.from(tbsCertificateBytes.map(byte => parseInt(byte.toString(16), 16)));
-    const [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+
+    let dsc_message_padded;
+    let dsc_messagePaddedLen;
+    if (signatureAlgorithm === '1.2.840.113549.1.1.5') { // sha1
+        [dsc_message_padded, dsc_messagePaddedLen] = sha1Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+    }
+    else if (signatureAlgorithm === '1.2.840.113549.1.1.11') { //sha256
+        [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+    }
     const startIndex = findStartIndex(dsc_modulus, dsc_message_padded);
     const startIndex_formatted = startIndex.toString();
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
+    console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
+    console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
-    const leaf = computeLeafFromModulus(csca_modulus_formatted);
+    const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
 
 
@@ -127,29 +140,57 @@ export function derToBytes(derValue: string) {
     return bytes;
 }
 
-export function getCSCAModulusMerkleTree(n, k) {
+export function getCSCAModulusMerkleTree() {
     const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-    const csca_modulus_array = Object.values(CSCA_AKI_MODULUS);
-    const csca_modulus_array_number = csca_modulus_array.map((modulus) => {
-        const cleanedModulus = modulus.replace(/:/g, ''); // Remove colons
-        return BigInt(`0x${cleanedModulus}`);
-    });
-    const csca_modulus_formatted = csca_modulus_array_number.map((modulus) => splitToWords(modulus, BigInt(n), BigInt(k)));
-
-    for (let i = 0; i < csca_modulus_formatted.length; i++) {
-        const finalPoseidonHash = computeLeafFromModulus(csca_modulus_formatted[i]);
-        tree.insert(finalPoseidonHash.toString());
-    }
+    tree.setNodes(serialized_csca_tree);
     return tree;
 
 }
 
-export function computeLeafFromModulus(modulus_formatted: string[]) {
-    const poseidonHashOfTheFirst16 = poseidon16(modulus_formatted.slice(0, 16));
-    const poseidonHashOfTheNext16 = poseidon16(modulus_formatted.slice(16, 32));
-    const poseidonHashOfTheLast2 = poseidon2(modulus_formatted.slice(-2));
-    const finalPoseidonHash = poseidon3([poseidonHashOfTheFirst16, poseidonHashOfTheNext16, poseidonHashOfTheLast2]);
-    return finalPoseidonHash.toString();
+export function computeLeafFromModulusFormatted(modulus_formatted: string[]) {
+    if (modulus_formatted.length <= 64) {
+        const hashInputs = new Array(4);
+        for (let i = 0; i < 4; i++) {
+            hashInputs[i] = new Array(16).fill(BigInt(0));
+        }
+        for (let i = 0; i < 64; i++) {
+            if (i < modulus_formatted.length) {
+                hashInputs[i % 4][Math.floor(i / 4)] = BigInt(modulus_formatted[i]);
+            }
+        }
+        for (let i = 0; i < 4; i++) {
+            hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
+        }
+        const finalHash = poseidon4(hashInputs.map(h => h));
+        console.log(finalHash);
+        return finalHash.toString();
+    }
+    else {
+        throw new Error("Modulus length is too long");
+    }
+}
+export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
+    if (modulus_bigint <= BigInt(2n ** 4096n - 1n)) {
+        const modulus_formatted = splitToWords(modulus_bigint, BigInt(64), BigInt(64));
+        const hashInputs = new Array(4);
+        for (let i = 0; i < 4; i++) {
+            hashInputs[i] = new Array(16).fill(BigInt(0));
+        }
+        for (let i = 0; i < 64; i++) {
+            if (i < modulus_formatted.length) {
+                hashInputs[i % 4][Math.floor(i / 4)] = BigInt(modulus_formatted[i]);
+            }
+        }
+        for (let i = 0; i < 4; i++) {
+            hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
+        }
+        const finalHash = poseidon4(hashInputs.map(h => h));
+        console.log(finalHash);
+        return finalHash.toString();
+    }
+    else {
+        throw new Error("Modulus length is too long");
+    }
 }
 
 export function getCSCAModulusProof(leaf, n, k) {
@@ -160,10 +201,8 @@ export function getCSCAModulusProof(leaf, n, k) {
     if (index === -1) {
         throw new Error("Your public key was not found in the registry");
     }
-
     const proof = tree.createProof(index);
-    console.log("proof", proof);
     return [tree.root, proof];
-
 }
+
 

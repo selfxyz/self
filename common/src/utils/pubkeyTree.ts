@@ -39,7 +39,6 @@ export function getLeaf(pubkey: any, i?: number): bigint {
   if (!pubkey?.publicKeyQ && pubkey?.pubKey?.publicKeyQ) {
     pubkey.publicKeyQ = pubkey.pubKey.publicKeyQ
   }
-
   const sigAlgFormatted = toStandardName(pubkey.signatureAlgorithm)
   const sigAlgFormattedForCircuit = formatSigAlgNameForCircuit(sigAlgFormatted, pubkey.exponent)
 
@@ -52,8 +51,9 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     || sigAlgFormattedForCircuit === "sha512WithRSAEncryption_65537"
   ) {
     const pubkeyChunked = splitToWords(BigInt(pubkey.modulus), BigInt(230), BigInt(9));
+    const leaf = poseidon10([SignatureAlgorithm[sigAlgFormattedForCircuit], ...pubkeyChunked])
     try {
-      const leaf = poseidon10([SignatureAlgorithm[sigAlgFormatted], ...pubkeyChunked])
+
       return leaf
     } catch (err) {
       console.log('err', err, i, sigAlgFormattedForCircuit, pubkey)

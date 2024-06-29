@@ -155,6 +155,7 @@ const handleResponseIOS = async (
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
     amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+    console.log('signatureAlgorithm before conversion', signatureAlgorithm);
     const passportData = {
       mrz,
       signatureAlgorithm: toStandardName(signatureAlgorithm),

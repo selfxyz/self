@@ -3,8 +3,9 @@ import { PassportData } from "../../../common/src/utils/types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import crypto from 'crypto';
-import { writeFileSync } from "fs";
-
+import { readFileSync, writeFileSync } from "fs";
+const dsc_key = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.key', 'utf8');
+const dsc_crt = readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.crt', 'utf8');
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
   [
@@ -36,12 +37,14 @@ const signatureAlgorithm = 'sha256WithRSASSAPSS'
 const hashLen = 32
 
 export function genMockPassportData_sha256WithRSASSAPSS_65537(): PassportData {
-  const keypair = forge.pki.rsa.generateKeyPair(2048);
-  const privateKeyPem = forge.pki.privateKeyToPem(keypair.privateKey);
+  const privateKeyPem = forge.pki.privateKeyFromPem(dsc_key);
+  const privateKeyPemString = forge.pki.privateKeyToPem(privateKeyPem);
+  const certificate = forge.pki.certificateFromPem(dsc_crt);
 
-  const publicKey = keypair.publicKey;
-  const modulus = publicKey.n.toString(10);
-  const exponent = publicKey.e.toString(10);
+  const publicKey = certificate.publicKey as forge.pki.rsa.PublicKey;
+
+  const modulus = (publicKey as any).n.toString(10);
+  const exponent = (publicKey as any).e.toString(10);
   const salt = Buffer.from('dee959c7e06411361420ff80185ed57f3e6776afdee959c7e064113614201420', 'hex');
 
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
@@ -53,6 +56,7 @@ export function genMockPassportData_sha256WithRSASSAPSS_65537(): PassportData {
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
+
   const my_message = Buffer.from(eContent);
   const hash_algorithm = 'sha256';
 
@@ -62,7 +66,7 @@ export function genMockPassportData_sha256WithRSASSAPSS_65537(): PassportData {
     saltLength: salt.length,
   };
 
-  const signature = crypto.sign(hash_algorithm, my_message, private_key);
+  const signature = crypto.sign(hash_algorithm, my_message, privateKeyPemString);
   const signatureArray = Array.from(signature, byte => byte < 128 ? byte : byte - 256);
 
   return {

@@ -1,8 +1,9 @@
-import { writeFileSync } from "fs";
+import { readFileSync, writeFileSync } from "fs";
 import { PassportData } from "../../../common/src/utils/types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import { assert } from "console";
+const dsc_key = readFileSync('../common/src/mock_certificates/sha1_rsa_4096/mock_dsc.key', 'utf8');
 
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
@@ -32,8 +33,7 @@ export function genMockPassportData_sha1WithRSAEncryption_65537(): PassportData 
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
-  const rsa = forge.pki.rsa;
-  const privKey = rsa.generateKeyPair({ bits: 2048 }).privateKey;
+  const privKey = forge.pki.privateKeyFromPem(dsc_key);
   const modulus = privKey.n.toString(16);
 
   const md = forge.md.sha1.create();
@@ -83,7 +83,7 @@ function verify(passportData: PassportData): boolean {
   const signature = Buffer.from(encryptedDigest).toString(
     'binary',
   );
-  
+
   return rsaPublicKey.verify(md.digest().bytes(), signature);
 }
 

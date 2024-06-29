@@ -27,7 +27,8 @@ build_circuit() {
     echo "Size of ${CIRCUIT_NAME}_final.zkey: $(wc -c <build/${CIRCUIT_NAME}_final.zkey) bytes"
 }
 
-declare -a CIRCUITS=("register_sha256WithRSAEncryption_65537" "register_sha1WithRSAEncryption_65537" "register_sha256WithRSAEncryption_65537" "disclose")
+#declare -a CIRCUITS=("register_sha256WithRSAEncryption_65537" "register_sha1WithRSAEncryption_65537" "register_sha256WithRSAEncryption_65537" "disclose")
+declare -a CIRCUITS=("register_sha256WithRSAEncryption_65537")
 
 TOTAL_START_TIME=$(date +%s)
 for CIRCUIT_NAME in "${CIRCUITS[@]}"; do

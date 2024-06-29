@@ -1,0 +1,65 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            6c:e2:6b:a6:23:c5:82:7c:16:90:d5:26:b9:eb:3f:07:c2:4c:6d:ff
+        Signature Algorithm: rsassaPss        
+        Hash Algorithm: sha256
+        Mask Algorithm: mgf1 with sha256
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        Issuer: CN=Mock CSCA
+        Validity
+            Not Before: Jun 29 15:25:22 2024 GMT
+            Not After : Jun 28 15:25:22 2029 GMT
+        Subject: CN=Mock DSC
+        Subject Public Key Info:
+            Public Key Algorithm: rsassaPss
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:c1:c7:21:24:16:c2:9d:43:c0:78:c4:ae:20:ff:
+                    c7:13:94:65:79:2f:b0:48:8b:44:55:7e:6e:b4:12:
+                    cc:58:57:74:0a:38:06:f5:68:f0:57:83:47:e6:0d:
+                    17:1c:42:f5:a3:b6:21:90:ca:1a:23:08:cc:db:c4:
+                    0a:f2:fe:b0:f9:f3:68:5d:b5:b6:bd:48:ea:09:5e:
+                    5a:a9:40:5b:e5:53:a2:2b:ed:a5:40:d1:f6:20:66:
+                    83:5c:e3:db:e6:b6:47:fd:3d:61:24:bc:10:df:e3:
+                    d5:7d:f3:ab:d6:eb:11:70:af:f4:cb:76:88:e5:22:
+                    b3:7a:00:6a:74:6b:e3:72:6b:a5:14:95:89:a7:95:
+                    b7:c4:e9:0d:fe:55:fd:68:fb:90:e9:d8:b4:28:33:
+                    7c:04:04:ac:fe:f3:38:04:4f:48:2d:be:cc:8d:6f:
+                    d1:49:9a:ec:45:68:1a:0c:f0:6c:6f:83:8d:84:08:
+                    4f:00:43:ac:d2:fc:6d:05:97:0c:9b:ca:91:d6:3b:
+                    b3:6b:91:45:27:53:6e:13:82:bd:0c:80:64:cd:71:
+                    5f:18:93:c4:c9:0e:f0:4f:c8:51:74:df:3c:0e:bb:
+                    75:1d:c3:fd:f8:1c:f1:6e:c3:af:31:7e:70:a9:eb:
+                    b4:f7:88:8e:17:e6:33:4b:03:14:02:94:64:28:b4:
+                    f5:11
+                Exponent: 65537 (0x10001)
+                No PSS parameter restrictions
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                D3:1F:68:B8:63:97:5F:9B:A2:CB:71:0C:80:76:1C:A0:13:E7:70:D5
+            X509v3 Authority Key Identifier: 
+                18:3E:F9:86:AD:44:08:28:C3:90:0A:D8:11:D1:63:DF:AF:CC:EE:57
+    Signature Algorithm: rsassaPss
+    Signature Value:        
+        Hash Algorithm: sha256
+        Mask Algorithm: mgf1 with sha256
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        a5:9f:19:a2:77:84:c3:c8:18:43:e8:2c:1a:3c:62:c4:4d:a8:
+        9b:a8:5f:f5:d7:c5:b7:95:22:f3:a1:cf:21:f4:5d:df:2d:82:
+        32:fa:00:9e:6a:45:77:c6:4b:8d:3b:a0:6d:eb:58:ab:d4:b9:
+        4e:52:e5:4c:af:e0:0f:b6:d1:15:d9:14:f3:c9:bc:99:5c:09:
+        21:2c:96:6a:9a:6c:1f:a1:ee:11:a6:62:32:34:e1:02:d7:0f:
+        7c:13:f8:88:4f:91:4f:be:2e:34:0a:7b:d1:42:6e:6e:fb:1a:
+        a7:b1:56:0a:02:50:8c:b3:bd:9f:61:24:ec:85:a3:d7:2c:b4:
+        04:14:e5:e5:45:82:b0:20:5d:bf:c0:92:0e:8a:c1:23:e5:25:
+        3b:2c:db:14:cb:e5:db:0c:69:f0:c3:0e:c3:ca:19:67:75:96:
+        1f:95:3f:30:3b:52:14:34:05:4c:92:d1:4c:89:4f:1e:5e:70:
+        b6:8a:82:2e:06:42:f9:fa:aa:9a:76:35:a0:73:e3:ec:a0:af:
+        da:52:05:1e:e4:dd:09:ba:c3:41:59:8e:2e:91:26:cf:f8:fc:
+        0a:94:a0:5e:93:2a:06:9f:40:e4:a4:e3:7d:96:96:e4:5b:c1:
+        c3:83:b7:23:b2:5a:a7:26:68:95:df:60:b7:9d:06:df:79:32:
+        df:94:b4:81

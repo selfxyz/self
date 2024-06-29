@@ -2,12 +2,14 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/helpers/rsa.circom";
-include "@zk-email/circuits/helpers/extract.circom";
-include "@zk-email/circuits/helpers/sha.circom";
+include "circomlib/circuits/comparators.circom";
+include "@zk-email/circuits/lib/sha.circom";
+include "@zk-email/circuits/lib/rsa.circom";
 include "binary-merkle-root.circom";
 include "./utils/splitBytesToWords.circom";
 include "./utils/splitSignalsToWords.circom";
+include "./utils/leafHasher.circom";
+include "./utils/leafHasher2.circom";
 
 template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
     signal input raw_dsc_cert[max_cert_bytes]; 
@@ -25,20 +27,12 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
     signal output blinded_dsc_commitment;
 
     // verify the leaf
-    component poseidon16first = Poseidon(16);
-    component poseidon16next = Poseidon(16);
-    component poseidon2last = Poseidon(2);
-    component poseidonfinal = Poseidon(3);
-    for (var i = 0; i < 16; i++) {
-        poseidon16first.inputs[i] <== csca_modulus[i];
-        poseidon16next.inputs[i] <== csca_modulus[i+16];
-    }
-    poseidon2last.inputs[0] <== csca_modulus[32];
-    poseidon2last.inputs[1] <== csca_modulus[33];
-    poseidonfinal.inputs[0] <== poseidon16first.out;
-    poseidonfinal.inputs[1] <== poseidon16next.out;
-    poseidonfinal.inputs[2] <== poseidon2last.out;
-    signal leaf <== poseidonfinal.out;
+    // component leafHasher = LeafHasher(k_csca);
+    // leafHasher.in <== csca_modulus;
+    // signal leaf <== leafHasher.out;
+    component leafHasher2 = LeafHasher2(n_csca,k_csca);
+    leafHasher2.in <== csca_modulus;
+    signal leaf <== leafHasher2.out;
 
 
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
@@ -65,12 +59,12 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
     }
 
     // verify RSA dsc_signature
-    component rsa = RSAVerify65537(n_csca, k_csca);
+    component rsa = RSAVerifier65537(n_csca, k_csca);
     for (var i = 0; i < msg_len; i++) {
-        rsa.base_message[i] <== base_msg[i].out;
+        rsa.message[i] <== base_msg[i].out;
     }
     for (var i = msg_len; i < k_csca; i++) {
-        rsa.base_message[i] <== 0;
+        rsa.message[i] <== 0;
     }
     for (var i = 0; i < k_csca; i++) {
         rsa.modulus[i] <== csca_modulus[i];

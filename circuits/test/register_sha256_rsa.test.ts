@@ -43,7 +43,8 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
             attestation_id,
             passportData,
             n_dsc,
-            k_dsc
+            k_dsc,
+            [mockPassportData_sha256WithRSAEncryption_65537]
         );
     });
 
