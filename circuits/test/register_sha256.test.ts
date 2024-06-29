@@ -8,7 +8,7 @@ import { generateCircuitInputsRegister } from '../../common/src/utils/generateIn
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
 
-describe("Proof of Passport - Circuits - Register flow", function () {
+describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;

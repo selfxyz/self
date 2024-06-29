@@ -52,7 +52,8 @@ To see the Android logs you'll have to use the Android Studio Logcat.
 
 ### iOS
 
-To run the app on iOS, you will need an `Apple Developer account`. Free accounts can't run apps that use NFC reading.
+> :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
+> Contact us if you need it to contribute.
 
 Open the ios project on Xcode and add your provisionning profile in Targets > ProofOfPassport > Signing and Capabilities
 

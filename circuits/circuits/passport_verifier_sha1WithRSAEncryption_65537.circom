@@ -1,14 +1,14 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/lib/rsa.circom";
+include "./utils/rsaPkcs1.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "@zk-email/circuits/lib/sha.circom";
-include "@zk-email/circuits/utils/array.circom";
-include "./utils/Sha256BytesStatic.circom";
+include "./utils/Sha1BytesStatic.circom";
+include "./utils/Sha1Bytes.circom";
+include "dmpierre/sha1-circom/circuits/sha1.circom";
 
-template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes) {
-    var hashLen = 32;
-    var eContentBytesLength = 72 + hashLen; // 104
+template PassportVerifier_sha1WithRSAEncryption_65537(n, k, max_datahashes_bytes) {
+    var hashLen = 20;
+    var eContentBytesLength = 72 + hashLen; // 92
 
     signal input mrz[93]; // formatted mrz (5 + 88) chars
     signal input dg1_hash_offset;
@@ -16,19 +16,19 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    // dsc_modulus that signed the passport
-    signal input dsc_modulus[k];
+    // pubkey that signed the passport
+    signal input pubkey[k];
 
     // signature of the passport
     signal input signature[k];
 
-    // compute sha256 of formatted mrz
-    signal mrzSha[256] <== Sha256BytesStatic(93)(mrz);
+    // compute sha1 of formatted mrz
+    signal mrzSha[160] <== Sha1BytesStatic(93)(mrz);
 
     // mrzSha_bytes: list of 32 Bits2Num
     component mrzSha_bytes[hashLen];
 
-    // cast the 256 bits from mrzSha into a list of 32 bytes
+    // cast the 160 bits from mrzSha into a list of 20 bytes
     for (var i = 0; i < hashLen; i++) {
         mrzSha_bytes[i] = Bits2Num(8);
 
@@ -44,9 +44,9 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     }
 
     // hash dataHashes dynamically
-    signal dataHashesSha[256] <== Sha256Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
+    signal dataHashesSha[160] <== Sha1Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
 
-    // get output of dataHashes sha256 into bytes to check against eContent
+    // get output of dataHashes into bytes to check against eContent
     component dataHashesSha_bytes[hashLen];
     for (var i = 0; i < hashLen; i++) {
         dataHashesSha_bytes[i] = Bits2Num(8);
@@ -55,42 +55,42 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
         }
     }
 
-    // assert dataHashesSha is in eContentBytes in range bytes 72 to 104
+    // assert dataHashesSha is in eContentBytes in range bytes 72 to 92
     for(var i = 0; i < hashLen; i++) {
         eContentBytes[eContentBytesLength - hashLen + i] === dataHashesSha_bytes[i].out;
     }
 
     // hash eContentBytes
-    signal eContentSha[256] <== Sha256BytesStatic(104)(eContentBytes);
+    signal eContentSha[160] <== Sha1BytesStatic(eContentBytesLength)(eContentBytes);
 
-    // get output of eContentBytes sha256 into k chunks of n bits each
-    var msg_len = (256 + n) \ n;
+    // get output of eContentBytes sha1 into k chunks of n bits each
+    var msg_len = (160 + n) \ n;
 
-    //eContentHash: list of length 256/n +1 of components of n bits 
+    //eContentHash: list of length 160/n +1 of components of n bits 
     component eContentHash[msg_len];
     for (var i = 0; i < msg_len; i++) {
         eContentHash[i] = Bits2Num(n);
     }
 
-    for (var i = 0; i < 256; i++) {
-        eContentHash[i \ n].in[i % n] <== eContentSha[255 - i];
+    for (var i = 0; i < 160; i++) {
+        eContentHash[i \ n].in[i % n] <== eContentSha[159 - i];
     }
 
-    for (var i = 256; i < n * msg_len; i++) {
+    for (var i = 160; i < n * msg_len; i++) {
         eContentHash[i \ n].in[i % n] <== 0;
     }
     
     // verify eContentHash signature
-    component rsa = RSAVerifier65537(n, k);
+    component rsa = RSAVerify65537(n, k);
 
     for (var i = 0; i < msg_len; i++) {
-        rsa.message[i] <== eContentHash[i].out;
+        rsa.base_message[i] <== eContentHash[i].out;
     }
 
     for (var i = msg_len; i < k; i++) {
-        rsa.message[i] <== 0;
+        rsa.base_message[i] <== 0;
     }
 
-    rsa.modulus <== dsc_modulus;
+    rsa.modulus <== pubkey;
     rsa.signature <== signature;
 }

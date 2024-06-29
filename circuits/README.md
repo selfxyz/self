@@ -40,8 +40,8 @@ Proof of Passport currently supports the following sig/hash algorithms:
 
 
 - [x] sha256WithRSAEncryption
-- [ ] sha1WithRSAEncryption (under development)
-- [ ] rsassaPss
+- [x] sha1WithRSAEncryption
+- [x] sha256WithRSASSAPSS
 - [ ] ecdsa-with-SHA384
 - [ ] ecdsa-with-SHA1
 - [ ] ecdsa-with-SHA256
@@ -57,12 +57,10 @@ Proof of Passport currently supports the following sig/hash algorithms:
 yarn install-circuits
 ```
 
-
-
 ## Build circuits (dev only)
 
 ```bash
-./scripts/build_circuit.sh
+./scripts/build_circuits.sh
 ```
 
 ## Run tests
@@ -71,7 +69,3 @@ yarn install-circuits
 yarn test
 ```
 This will run tests with sample data generated on the fly.
-
-The 
-
-To run tests with your own passport data, extract your `passportData.json` using the app (available soon), place it in `inputs/`, then run `yarn test`

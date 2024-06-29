@@ -20,81 +20,52 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract Verifier_register_sha256WithRSAEncryption_65537 {
+contract Verifier_register_sha1WithRSAEncryption_65537 {
     // Scalar field size
-    uint256 constant r =
-        21888242871839275222246405745257275088548364400416034343698204186575808495617;
+    uint256 constant r    = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
-    uint256 constant q =
-        21888242871839275222246405745257275088696311157297823662689037894645226208583;
+    uint256 constant q   = 21888242871839275222246405745257275088696311157297823662689037894645226208583;
 
     // Verification Key data
-    uint256 constant alphax =
-        20491192805390485299153009773594534940189261866228447918068658471970481763042;
-    uint256 constant alphay =
-        9383485363053290200918347156157836566562967994039712273449902621266178545958;
-    uint256 constant betax1 =
-        4252822878758300859123897981450591353533073413197771768651442665752259397132;
-    uint256 constant betax2 =
-        6375614351688725206403948262868962793625744043794305715222011528459656738731;
-    uint256 constant betay1 =
-        21847035105528745403288232691147584728191162732299865338377159692350059136679;
-    uint256 constant betay2 =
-        10505242626370262277552901082094356697409835680220590971873171140371331206856;
-    uint256 constant gammax1 =
-        11559732032986387107991004021392285783925812861821192530917403151452391805634;
-    uint256 constant gammax2 =
-        10857046999023057135944570762232829481370756359578518086990519993285655852781;
-    uint256 constant gammay1 =
-        4082367875863433681332203403145435568316851327593401208105741076214120093531;
-    uint256 constant gammay2 =
-        8495653923123431417604973247489272438418190587263600148770280649306958101930;
-    uint256 constant deltax1 =
-        7842079659365013504527459449399747263216258154598341788384122232221645841820;
-    uint256 constant deltax2 =
-        592531936512242424805746165164273891143030619107820922605882698648367478821;
-    uint256 constant deltay1 =
-        7685389033119699102327185162270826842281918923605465986875254173021486948521;
-    uint256 constant deltay2 =
-        14338800814001509796778713685029146703960490458582669157577770246620462564074;
+    uint256 constant alphax  = 20491192805390485299153009773594534940189261866228447918068658471970481763042;
+    uint256 constant alphay  = 9383485363053290200918347156157836566562967994039712273449902621266178545958;
+    uint256 constant betax1  = 4252822878758300859123897981450591353533073413197771768651442665752259397132;
+    uint256 constant betax2  = 6375614351688725206403948262868962793625744043794305715222011528459656738731;
+    uint256 constant betay1  = 21847035105528745403288232691147584728191162732299865338377159692350059136679;
+    uint256 constant betay2  = 10505242626370262277552901082094356697409835680220590971873171140371331206856;
+    uint256 constant gammax1 = 11559732032986387107991004021392285783925812861821192530917403151452391805634;
+    uint256 constant gammax2 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
+    uint256 constant gammay1 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
+    uint256 constant gammay2 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
+    uint256 constant deltax1 = 13155179383413945275687042601864057745717821721437680053026365184572594484550;
+    uint256 constant deltax2 = 13419763754509431879614817407927849049139910459488314935101788246897460635978;
+    uint256 constant deltay1 = 21461827286215648586210619400681535578437522448486174192703397303023830118552;
+    uint256 constant deltay2 = 12737898342805752317935622271701172371990602062953535674427676773537602957073;
 
-    uint256 constant IC0x =
-        8717354459045927956647299801195462428104821609917433788177448756317513802457;
-    uint256 constant IC0y =
-        7949913439363190099670038253230765067880189350221938927935108268117528163436;
-
-    uint256 constant IC1x =
-        15997987389630954586752278248129109519329357952005125818987503910532291457489;
-    uint256 constant IC1y =
-        4278778275612708600450012876992239171434211314395167482352303460331938474458;
-
-    uint256 constant IC2x =
-        7744807019190956449997403910621396274934018759940557820117051684334383253546;
-    uint256 constant IC2y =
-        15644888800694698340956754924273690405569685023582037971277324052297192753560;
-
-    uint256 constant IC3x =
-        21058629094728372207228920360000937155629387949785082005623579160835276648555;
-    uint256 constant IC3y =
-        16261316501816871973497099946194793152983276367760367342038153774256759952842;
-
-    uint256 constant IC4x =
-        21241671207305510186239297693073749788229886922198947851253988762033593366196;
-    uint256 constant IC4y =
-        7270842731243524884029836802598846345817005438651531769614810431466164056101;
-
+    
+    uint256 constant IC0x = 19950267415749769872984420635469219689637916763338714397594201219209357028767;
+    uint256 constant IC0y = 11341752974833232963273183460328031645291254337522467099721253089381997536320;
+    
+    uint256 constant IC1x = 11343271873447077701345513372787017979035448895799705910074152336406632103014;
+    uint256 constant IC1y = 15291140079645029904975407443517463786063189008869473596208133516803303710125;
+    
+    uint256 constant IC2x = 6292918500439751291901422848995771412468846049104271000519437364662679332041;
+    uint256 constant IC2y = 1878279471168197263319180659589173388877997868101930670989411481503721284369;
+    
+    uint256 constant IC3x = 19090924808474659577406284164688929291816288947267788776359044398392811107731;
+    uint256 constant IC3y = 13853769554127135937032588662814446560788563521681976738789630741456776650960;
+    
+    uint256 constant IC4x = 10289494778834425299665842959201067528454414592551242737919429067761473110056;
+    uint256 constant IC4y = 10819880897088345060810729932987810005442991406854600436496172825722441835954;
+    
+ 
     // Memory data
     uint16 constant pVk = 0;
     uint16 constant pPairing = 128;
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(
-        uint[2] calldata _pA,
-        uint[2][2] calldata _pB,
-        uint[2] calldata _pC,
-        uint[4] calldata _pubSignals
-    ) public view returns (bool) {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[4] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, q)) {
@@ -102,7 +73,7 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                     return(0, 0x20)
                 }
             }
-
+            
             // G1 function to multiply a G1 value(x,y) to value in an address
             function g1_mulAccC(pR, x, y, s) {
                 let success
@@ -137,21 +108,19 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                 mstore(add(_pVk, 32), IC0y)
 
                 // Compute the linear combination vk_x
-
+                
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
-
+                
                 g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
-
+                
                 g1_mulAccC(_pVk, IC3x, IC3y, calldataload(add(pubSignals, 64)))
-
+                
                 g1_mulAccC(_pVk, IC4x, IC4y, calldataload(add(pubSignals, 96)))
+                
 
                 // -A
                 mstore(_pPairing, calldataload(pA))
-                mstore(
-                    add(_pPairing, 32),
-                    mod(sub(q, calldataload(add(pA, 32))), q)
-                )
+                mstore(add(_pPairing, 32), mod(sub(q, calldataload(add(pA, 32))), q))
 
                 // B
                 mstore(add(_pPairing, 64), calldataload(pB))
@@ -173,6 +142,7 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                 mstore(add(_pPairing, 384), mload(add(pMem, pVk)))
                 mstore(add(_pPairing, 416), mload(add(pMem, add(pVk, 32))))
 
+
                 // gamma2
                 mstore(add(_pPairing, 448), gammax1)
                 mstore(add(_pPairing, 480), gammax2)
@@ -189,14 +159,8 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
                 mstore(add(_pPairing, 704), deltay1)
                 mstore(add(_pPairing, 736), deltay2)
 
-                let success := staticcall(
-                    sub(gas(), 2000),
-                    8,
-                    _pPairing,
-                    768,
-                    _pPairing,
-                    0x20
-                )
+
+                let success := staticcall(sub(gas(), 2000), 8, _pPairing, 768, _pPairing, 0x20)
 
                 isOk := and(success, mload(_pPairing))
             }
@@ -205,22 +169,23 @@ contract Verifier_register_sha256WithRSAEncryption_65537 {
             mstore(0x40, add(pMem, pLastMem))
 
             // Validate that all evaluations ∈ F
-
+            
             checkField(calldataload(add(_pubSignals, 0)))
-
+            
             checkField(calldataload(add(_pubSignals, 32)))
-
+            
             checkField(calldataload(add(_pubSignals, 64)))
-
+            
             checkField(calldataload(add(_pubSignals, 96)))
-
+            
             checkField(calldataload(add(_pubSignals, 128)))
+            
 
             // Validate all evaluations
             let isValid := checkPairing(_pA, _pB, _pC, _pubSignals, pMem)
 
             mstore(0, isValid)
-            return(0, 0x20)
-        }
-    }
-}
+             return(0, 0x20)
+         }
+     }
+ }

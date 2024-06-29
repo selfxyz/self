@@ -49,7 +49,7 @@ export async function downloadZkey(
 
   const networkInfo = await NetInfo.fetch();
   console.log('Network type:', networkInfo.type)
-  if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
+  if (networkInfo.type === 'wifi' || circuit === 'disclose') {
     fetchZkey(circuit);
   } else {
     const response = await axios.head(zkeyZipUrls[circuit]);
@@ -203,7 +203,7 @@ export async function fetchZkey(
         }
       });
       amplitude.track('zkey download failed: ' + error.message);
-      toast?.show('Error', {
+      toast.show('Error', {
         message: `Error: ${error.message}`,
         customData: {
           type: "error",

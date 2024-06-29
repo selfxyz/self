@@ -63,7 +63,7 @@ export const sbtApp: AppType = {
     return (
       <Pressable onPress={() => {
         Clipboard.setString(txHash);
-        toast?.show('🖨️', {
+        toast.show('🖨️', {
           message: "Tx copied to clipboard",
           customData: {
             type: "success",
@@ -85,7 +85,7 @@ export const sbtApp: AppType = {
     const toast = useNavigationStore.getState().toast;
 
     Clipboard.setString(txHash);
-    toast?.show('🖨️', {
+    toast.show('🖨️', {
       message: "Tx copied to clipboard",
       customData: {
         type: "success",
@@ -167,7 +167,7 @@ export const sbtApp: AppType = {
       setStep(Steps.PROOF_GENERATED);
     } catch (error: any) {
       console.error(error);
-      toast?.show('Error', {
+      toast.show('Error', {
         message: error.message,
         customData: {
           type: "error",
@@ -196,7 +196,7 @@ export const sbtApp: AppType = {
 
     setStep(Steps.PROOF_SENDING);
 
-    toast?.show('🚀', {
+    toast.show('🚀', {
       message: "Transaction sent...",
       customData: {
         type: "info",
@@ -219,7 +219,7 @@ export const sbtApp: AppType = {
       console.log('receipt status:', receipt?.status);
 
       if (receipt?.status === 1) {
-        toast?.show('🎊', {
+        toast.show('🎊', {
           message: "SBT minted",
           customData: {
             type: "success",
@@ -229,7 +229,7 @@ export const sbtApp: AppType = {
           proofSentText: `SBT minted. Network: Sepolia. Transaction hash: ${txHash}`
         });
       } else {
-        toast?.show('Error', {
+        toast.show('Error', {
           message: "SBT mint failed",
           customData: {
             type: "error",
@@ -253,14 +253,14 @@ export const sbtApp: AppType = {
         const match = errorMessage.match(/execution reverted: "([^"]*)"/);
         if (match && match[1]) {
           console.log('Parsed blockchain error:', match[1]);
-          toast?.show('Error', {
+          toast.show('Error', {
             message: `Error: ${match[1]}`,
             customData: {
               type: "error",
             },
           })
         } else {
-          toast?.show('Error', {
+          toast.show('Error', {
             message: `Error: mint failed`,
             customData: {
               type: "error",

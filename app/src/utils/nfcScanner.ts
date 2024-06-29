@@ -31,7 +31,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
   );
 
   if (!check.success) {
-    toast?.show("Unvailable", {
+    toast.show("Unvailable", {
       message: check.message,
       customData: {
         type: "info",
@@ -72,7 +72,7 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
     amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
-    toast?.show('Error', {
+    toast.show('Error', {
       message: e.message,
       customData: {
         type: "error",
@@ -104,7 +104,7 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     setStep(Steps.MRZ_SCAN_COMPLETED);
     amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
-      toast?.show('Failed to read passport', {
+      toast.show('Failed to read passport', {
         message: e.message,
         customData: {
           type: "error",
@@ -127,20 +127,18 @@ const handleResponseIOS = async (
   const signatureAlgorithm = parsed.signatureAlgorithm;
   const mrz = parsed.passportMRZ;
   const signatureBase64 = parsed.signatureBase64;
-  //console.log('dataGroupsPresent', parsed.dataGroupsPresent)
-  //console.log('placeOfBirth', parsed.placeOfBirth)
-  //console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
-  //console.log('isPACESupported', parsed.isPACESupported)
-  //console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
-  //console.log('residenceAddress', parsed.residenceAddress)
-  //console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
-  //console.log('signatureAlgorithm', signatureAlgorithm)
-  //console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
-  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\\\\n/g, '')
-  //console.log('pem', pem)
+  console.log('dataGroupsPresent', parsed.dataGroupsPresent)
+  console.log('placeOfBirth', parsed.placeOfBirth)
+  console.log('activeAuthenticationPassed', parsed.activeAuthenticationPassed)
+  console.log('isPACESupported', parsed.isPACESupported)
+  console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
+  console.log('residenceAddress', parsed.residenceAddress)
+  console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
+  console.log('signatureAlgorithm', signatureAlgorithm)
+  console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
+  const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
   const certificate = forge.pki.certificateFromPem(pem);
-  useUserStore.getState().dscCertificate = certificate;
-
+  console.log('pem', pem)
 
   try {
     const publicKey = certificate.publicKey;
@@ -160,8 +158,10 @@ const handleResponseIOS = async (
     const passportData = {
       mrz,
       signatureAlgorithm: toStandardName(signatureAlgorithm),
+      dsc: pem,
       pubKey: {
         modulus: modulus,
+        exponent: (publicKey as any).e.toString(10),
       },
       dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
@@ -188,7 +188,7 @@ const handleResponseIOS = async (
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
     amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
-    toast?.show('Error', {
+    toast.show('Error', {
       message: "Your signature algorithm is not supported at that time. Please try again later.",
       customData: {
         type: "error",
@@ -216,15 +216,25 @@ const handleResponseAndroid = async (
     LDSVersion,
     unicodeVersion,
     encapContent,
-    documentSigningCertificate,
+    documentSigningCertificate
   } = response;
 
   amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+
+  const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
+
+  const cert = forge.pki.certificateFromPem(pem);
+  console.log('cert', cert);
+  const publicKey = cert.publicKey;
+  console.log('publicKey', publicKey);
+
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     signatureAlgorithm: toStandardName(signatureAlgorithm),
+    dsc: pem,
     pubKey: {
       modulus: modulus,
+      exponent: (publicKey as any).e.toString(10),
       curveName: curveName,
       publicKeyQ: publicKeyQ,
     },

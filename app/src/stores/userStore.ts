@@ -12,12 +12,13 @@ import useNavigationStore from './navigationStore';
 import { Steps } from '../utils/utils';
 import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { PASSPORT_ATTESTATION_ID, RPC_URL } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { generateProof } from '../utils/prover';
-import { formatSigAlg } from '../../../common/src/utils/utils';
+import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
+import { isCommitmentRegistered } from '../utils/registration';
 
 interface UserState {
   passportNumber: string
@@ -74,27 +75,29 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
+    const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
 
-    console.log("skipping onboarding")
+    if (!isAlreadyRegistered) {
+      console.log("not registered but passport data found, skipping to nextScreen")
+      set({
+        passportData: JSON.parse(passportData),
+      });
+      useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+      return;
+    }
+
+    console.log("registered and passport data found, skipping to app selection screen")
     set({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.REGISTERED); // this means go to app selection screen
-
-    // TODO: check if the commitment is already registered, if not retry registering it
-
-    //  set({
-    //    registered: true,
-    //  });
-
+    useNavigationStore.getState().setStep(Steps.REGISTERED);
   },
 
   // When reading passport for the first time:
   // - Check presence of secret. If there is none, create one and store it
   // 	- Store the passportData and try registering the commitment in the background
   registerPassportData: async (passportData) => {
-
     const alreadyStoredPassportData = await loadPassportData();
 
     if (alreadyStoredPassportData) {
@@ -109,16 +112,27 @@ const useUserStore = create<UserState>((set, get) => ({
   registerCommitment: async (mockPassportData?: PassportData) => {
     const {
       toast,
-      setStep
+      setStep,
+      update: updateNavigationStore,
     } = useNavigationStore.getState();
     const secret = await loadSecret() as string;
     let passportData = get().passportData
     if (mockPassportData) {
       passportData = mockPassportData
     }
-    console.log("register commitment")
-    console.log(secret)
-    console.log(passportData)
+
+    const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
+    if (isAlreadyRegistered) {
+      console.log("commitment is already registered")
+      toast.show('Identity already registered, skipping', {
+        customData: {
+          type: "info",
+        },
+      })
+      set({ registered: true });
+      setStep(Steps.REGISTERED);
+      return;
+    }
 
     try {
       const inputs = generateCircuitInputsRegister(
@@ -127,6 +141,7 @@ const useUserStore = create<UserState>((set, get) => ({
         passportData,
         121,
         17
+
       );
 
       amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
@@ -141,7 +156,9 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const start = Date.now();
 
-      const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
+
       const proof = await generateProof(
         `register_${sigAlgFormatted}`,
         inputs
@@ -157,7 +174,7 @@ const useUserStore = create<UserState>((set, get) => ({
       if ((get().cscaProof !== null) && (get().localProof !== null)) {
         console.log("Proof from Modal server already received, sending transaction");
         const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const serverResponse = await sendRegisterTransaction(proof, get().cscaProof as Proof)
+        const serverResponse = await sendRegisterTransaction(proof, get().cscaProof as Proof, sigAlgIndex)
         const txHash = serverResponse?.data.hash;
         const receipt = await provider.waitForTransaction(txHash);
         console.log('receipt status:', receipt?.status);
@@ -174,12 +191,11 @@ const useUserStore = create<UserState>((set, get) => ({
 
     } catch (error: any) {
       console.error(error);
-      toast?.show('Error', {
-        message: "Error registering your identity, please relaunch the app",
-        customData: {
-          type: "error",
-        },
+      updateNavigationStore({
+        showRegistrationErrorSheet: true,
+        registrationErrorMessage: error.message,
       })
+      setStep(Steps.NEXT_SCREEN);
       amplitude.track(error.message);
     }
   },

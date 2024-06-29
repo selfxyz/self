@@ -32,7 +32,6 @@ async function main() {
     reveal_bitmap,
     address,
     18,
-    { developmentMode: true }
   );
 
   console.log('generating proof...');

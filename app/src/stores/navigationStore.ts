@@ -9,9 +9,11 @@ interface NavigationState {
   isZkeyDownloading: IsZkeyDownloading
   showWarningModal: ShowWarningModalProps
   hideData: boolean
-  toast: ReturnType<typeof useToastController> | null
+  toast: ReturnType<typeof useToastController>
   selectedTab: string
   selectedApp: AppType | null
+  showRegistrationErrorSheet: boolean
+  registrationErrorMessage: string
   setToast: (toast: ReturnType<typeof useToastController>) => void;
   setStep: (step: number) => void
   update: (patch: any) => void
@@ -30,7 +32,10 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   },
   hideData: false,
 
-  toast: null,
+  showRegistrationErrorSheet: false,
+  registrationErrorMessage: "",
+
+  toast: null as unknown as ReturnType<typeof useToastController>,
 
   selectedTab: "scan",
   selectedApp: null,
