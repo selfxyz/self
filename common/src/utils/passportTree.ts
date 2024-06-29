@@ -1,9 +1,10 @@
 import { poseidon9, poseidon2 } from "poseidon-lite"
 import { IMT } from '@zk-kit/imt'
 import { stringToAsciiBigIntArray } from "./utils";
+import { LeanIMT } from "@zk-kit/lean-imt";
 
 export function buildPassTree(passports :any[]){
-    let leaves: BigInt[] = []
+    let leaves: bigint[] = []
     let startTime = performance.now();
     for (let i = 0; i < passports.length; i++) {
         const passport = passports[i]
@@ -21,9 +22,6 @@ export function buildPassTree(passports :any[]){
           }
         }
         
-        // Add some form of passport validation either here or in py script for json formation ? 
-        // console.log(passport.Pass_No)
-        // console.log(stringToAsciiBigIntArray(passport.Pass_No).length)
         const leaf = getOfacLeaf(stringToAsciiBigIntArray(passport.Pass_No), i)
         if (!leaf) {
           continue
@@ -34,28 +32,11 @@ export function buildPassTree(passports :any[]){
     console.log("Total passports paresed are : ", leaves.length," over ",passports.length )
 
     // What depth is optimal ?
-    const tree = new IMT(poseidon2, 16, 0, 2, leaves)
+    const tree = new LeanIMT((a, b) => poseidon2([a, b]), leaves);
     console.log('passport tree built in', performance.now() - startTime, 'ms')
-    verifyProof(tree, passports)
     return tree
 }
 
-// JUST TESTING THE PROOF
-export function verifyProof(tree :IMT ,passports :any[]) {
-  const passno =  passports[5].Pass_No
-  const leaf = getOfacLeaf(stringToAsciiBigIntArray(passno))
-  const index = tree.indexOf(leaf);
-  if (index === -1) {
-    throw new Error("Your public key was not found in the registry");
-  } else {
-    console.log("Index of passport in the registry: ", index);
-  }
-
-  const proof = tree.createProof(index);
-  console.log("verifyProof", tree.verifyProof(proof));
-} 
-
-// change this to take passports ascii array 
 export function getOfacLeaf(passport: any, i?: number): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport)

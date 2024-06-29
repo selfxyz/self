@@ -163,24 +163,17 @@ export function generateCircuitInputsDisclose(
 }
 
 
-export function generateOfacCircuitInputsDisclose(
+export function generateCircuitInputsDiscloseOfac(
   passportData: PassportData,
   merkletree: LeanIMT,
 ) {
-  const formattedMrz= formatMrz(passportData.mrz);
-  const passport_leaf = getOfacLeaf(formattedMrz.slice(50,59)).toString();
-  const commitment = poseidon1([
-      passport_leaf
-  ])
-
-  console.log('commitment', commitment.toString());
-
-  const index = findIndexInTree(merkletree, commitment);
-
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const passport_leaf = getOfacLeaf(mrz_bytes.slice(49,58))
+  const index = findIndexInTree(merkletree, passport_leaf);
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
   return {
-    mrz: formattedMrz.map(byte => String(byte)),
+    mrz: mrz_bytes.map(byte => String(byte)),
     merkle_root: [merkletree.root.toString()],
     merkletree_size: [BigInt(depthForThisOne).toString()],
     path: merkleProofIndices.map(index => BigInt(index).toString()),

@@ -3,11 +3,12 @@ import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
 import { formatMrz } from '../../common/src/utils/utils';
-import { poseidon1, poseidon2 } from "poseidon-lite";
+import { poseidon2 } from "poseidon-lite";
 import { LeanIMT } from "@zk-kit/lean-imt";
+import serializedTree from "../../common/ofacdata/passport_tree.json"
 import { getOfacLeaf } from '../../common/src/utils/passportTree';
-import { generateOfacCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
-
+import { generateCircuitInputsDiscloseOfac } from '../../common/src/utils/generateInputs';
+import { stringToAsciiBigIntArray } from "../../common/src/utils/utils";
 
 describe("start testing disclose.circom", function () {
     this.timeout(0);
@@ -28,16 +29,14 @@ describe("start testing disclose.circom", function () {
             },
         );
 
-        const mrz_bytes = formatMrz(passportData.mrz);
-        const passport_leaf = getOfacLeaf(mrz_bytes.slice(50,59)).toString();
-        const commitment = poseidon1([
-            passport_leaf
-        ])
-
-        tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
-        tree.insert(BigInt(commitment));
-
-        inputs = generateOfacCircuitInputsDisclose(
+        tree = new LeanIMT<any>((a, b) => poseidon2([a, b]), []);
+        let deepcopy = JSON.parse(JSON.stringify(serializedTree));
+        tree.import(deepcopy); // copying from json after writing changes leaf to type strings
+        const leaves = tree.leaves 
+        // console.log(typeof(leaves[0]))
+        // console.log(typeof(tree.root))
+            
+        inputs = generateCircuitInputsDiscloseOfac(
             passportData,
             tree,
         );
@@ -49,9 +48,7 @@ describe("start testing disclose.circom", function () {
 
     it("should give a bool if passport exists in ofac list", async function () {
         w = await circuit.calculateWitness(inputs);
-        const isEqual = (await circuit.getOutput(w, ["isEqual"])).bool;
+        const isEqual = (await circuit.getOutput(w, ["out"]));
         console.log("Bool Value", isEqual)
     });
 });
-
-
