@@ -10,7 +10,7 @@ export const MODAL_SERVER_ADDRESS = "https://zk-passport--dsc-prover-generate-ds
 // poseidon("E-PASSPORT")
 export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
 export const CHAIN_NAME = "optimism"
-export const RPC_URL = "https://mainnet.optimism.io"
+export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL"
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEVELOPMENT_MODE = true
