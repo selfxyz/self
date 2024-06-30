@@ -1,36 +1,36 @@
 #!/bin/bash
 
-cp ../circuits/build/register_sha256WithRSAEncryption_65537_cpp/register_sha256WithRSAEncryption_65537.cpp witnesscalc/src
-cp ../circuits/build/register_sha256WithRSAEncryption_65537_cpp/register_sha256WithRSAEncryption_65537.dat witnesscalc/src
-cp ../circuits/build/disclose_cpp/disclose.cpp witnesscalc/src
-cp ../circuits/build/disclose_cpp/disclose.dat witnesscalc/src
+# Function to copy and modify a circuit file
+modify_circuit_file() {
+    local file=$1
+    cp ../circuits/build/${file}_cpp/${file}.cpp witnesscalc/src
+    cp ../circuits/build/${file}_cpp/${file}.dat witnesscalc/src
 
-cd witnesscalc/src
+    cd witnesscalc/src
 
-# This adds the namespace to the circuit file as described in the README
-last_include=$(grep -n '#include' register_sha256WithRSAEncryption_65537.cpp | tail -1 | cut -d: -f1)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  # macOS requires an empty string with the -i flag and handles backslashes differently
-  sed -i "" "${last_include}a\\
-namespace CIRCUIT_NAME {" register_sha256WithRSAEncryption_65537.cpp
-else
-  # Linux
-  sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" register_sha256WithRSAEncryption_65537.cpp
-fi
-echo "}" >> register_sha256WithRSAEncryption_65537.cpp
+    # Add namespace to the circuit file
+    last_include=$(grep -n '#include' ${file}.cpp | tail -1 | cut -d: -f1)
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        # macOS
+        sed -i "" "${last_include}a\\
+namespace CIRCUIT_NAME {" ${file}.cpp
+    else
+        # Linux
+        sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" ${file}.cpp
+    fi
+    echo "}" >> ${file}.cpp
 
-# This adds the namespace to the circuit file as described in the README
-last_include=$(grep -n '#include' disclose.cpp | tail -1 | cut -d: -f1)
-if [[ "$OSTYPE" == "darwin"* ]]; then
-  # macOS requires an empty string with the -i flag and handles backslashes differently
-  sed -i "" "${last_include}a\\
-namespace CIRCUIT_NAME {" disclose.cpp
-else
-  # Linux
-  sed -i "${last_include}a \\nnamespace CIRCUIT_NAME {" disclose.cpp
-fi
-echo "}" >> disclose.cpp
+    cd ../..
+}
 
-cd ../..
+# Array of circuit files
+declare -a CIRCUITS=("register_sha256WithRSAEncryption_65537" "disclose")
+
+# Main execution
+for circuit in "${CIRCUITS[@]}"; do
+    modify_circuit_file "$circuit"
+done
+
+# Initialize and update git submodules
 git submodule init
 git submodule update

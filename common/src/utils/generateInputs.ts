@@ -1,10 +1,11 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
-  arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlg, hash, splitToWords,
-  toUnsignedByte, getDigestLengthBytes, getCurrentDateYYMMDD,
-  generateMerkleProof
+  arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlgNameForCircuit, hash, splitToWords,
+  toUnsignedByte, getHashLen, getCurrentDateYYMMDD,
+  generateMerkleProof,
+  findSubarrayIndex
 } from "./utils";
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { IMT } from "@zk-kit/imt";
@@ -12,48 +13,59 @@ import { getLeaf } from "./pubkeyTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
-import { mockPassportData_sha256WithRSAEncryption_65537 } from "./mockPassportData";
+import {
+  mockPassportDatas,
+} from "./mockPassportData";
 
 export function generateCircuitInputsRegister(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
-  options: { developmentMode?: boolean } = { developmentMode: false }
+  mocks: PassportData[] = mockPassportDatas
 ) {
+  const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
+
   const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(serializedTree);
+  tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
 
-  if (options.developmentMode) {
-    tree.insert(getLeaf({
-      signatureAlgorithm: mockPassportData_sha256WithRSAEncryption_65537.signatureAlgorithm,
-      issuer: 'C = TS, O = Government of Syldavia, OU = Ministry of tests, CN = CSCA-TEST',
-      modulus: mockPassportData_sha256WithRSAEncryption_65537.pubKey.modulus,
-      exponent: mockPassportData_sha256WithRSAEncryption_65537.pubKey.exponent
-    }).toString());
+  if (DEVELOPMENT_MODE) {
+    for (const mockPassportData of mocks) {
+      tree.insert(getLeaf(mockPassportData).toString());
+    }
   }
 
-  if (!["sha256WithRSAEncryption", "sha1WithRSAEncryption"].includes(passportData.signatureAlgorithm)) {
-    console.error(`${passportData.signatureAlgorithm} not supported for proof right now.`);
-    throw new Error(`${passportData.signatureAlgorithm} not supported for proof right now.`);
+  if (![
+    "sha256WithRSAEncryption",
+    // "sha1WithRSAEncryption",
+    // "sha256WithRSASSAPSS"
+  ].includes(signatureAlgorithm)) {
+    console.error(`${signatureAlgorithm} has not been implemented.`);
+    throw new Error(`${signatureAlgorithm} has not been implemented.`);
   }
 
-  const formattedMrz = formatMrz(passportData.mrz);
-  const concatenatedDataHashesHashDigest = hash(passportData.signatureAlgorithm, passportData.dataGroupHashes);
-  // console.log('concatenatedDataHashesHashDigest', concatenatedDataHashesHashDigest);
+  const hashLen = getHashLen(signatureAlgorithm);
+  const formattedMrz = formatMrz(mrz);
+  const mrzHash = hash(signatureAlgorithm, formattedMrz);
+
+  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)
+  console.log('dg1HashOffset', dg1HashOffset);
+
+  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
+
+  const concatHash = hash(signatureAlgorithm, dataGroupHashes);
 
   assert(
-    arraysAreEqual(passportData.eContent.slice(72, 72 + getDigestLengthBytes(passportData.signatureAlgorithm)),
-      concatenatedDataHashesHashDigest),
-    'concatenatedDataHashesHashDigest is at the right place in passportData.eContent'
+    arraysAreEqual(
+      concatHash,
+      eContent.slice(eContent.length - hashLen)
+    ),
+    'concatHash is not at the right place in eContent'
   );
 
-  // console.log('passportData.pubKey.exponent', passportData.pubKey.exponent);
-
   const leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    ...passportData.pubKey,
+    signatureAlgorithm: signatureAlgorithm,
+    ...pubKey,
   }).toString();
-  // console.log('leaf', leaf);
 
   const index = tree.indexOf(leaf);
   // console.log(`Index of pubkey in the registry: ${index}`);
@@ -64,33 +76,31 @@ export function generateCircuitInputsRegister(
   const proof = tree.createProof(index);
   // console.log("verifyProof", tree.verifyProof(proof));
 
-  if (passportData.dataGroupHashes.length > MAX_DATAHASHES_LEN) {
-    console.error(`Data hashes too long. Max length is ${MAX_DATAHASHES_LEN} bytes.`);
-    throw new Error(`This number of datagroups is currently unsupported. Please contact us so we add support!`);
+  if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
+    console.error(`Data hashes too long (${dataGroupHashes.length} bytes). Max length is ${MAX_DATAHASHES_LEN} bytes.`);
+    throw new Error(`This length of datagroups (${dataGroupHashes.length} bytes) is currently unsupported. Please contact us so we add support!`);
   }
 
   const [messagePadded, messagePaddedLen] = shaPad(
-    passportData.signatureAlgorithm,
-    new Uint8Array(passportData.dataGroupHashes),
+    signatureAlgorithm,
+    new Uint8Array(dataGroupHashes),
     MAX_DATAHASHES_LEN
   );
-
-  const sigAlgFormatted = formatSigAlg(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-  const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted]
 
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
+    // dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
-    signed_attributes: passportData.eContent.map(toUnsignedByte).map(byte => String(byte)),
+    signed_attributes: eContent.map(toUnsignedByte).map(byte => String(byte)),
     signature: splitToWords(
-      BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
+      BigInt(bytesToBigDecimal(encryptedDigest)),
       BigInt(64),
       BigInt(32)
     ),
     pubkey: splitToWords(
-      BigInt(passportData.pubKey.modulus as string),
+      BigInt(pubKey.modulus as string),
       BigInt(64),
       BigInt(32)
     ),
@@ -154,7 +164,7 @@ export function generateCircuitInputsDisclose(
 // this get the commitment index whether it is a string or a bigint
 // this is necessary rn because when the tree is send from the server in a serialized form,
 // the bigints are converted to strings and I can't figure out how to use tree.import to load bigints there
-function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   let index = tree.indexOf(commitment);
   if (index === -1) {
     index = tree.indexOf(commitment.toString() as unknown as bigint);

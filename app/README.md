@@ -52,7 +52,8 @@ To see the Android logs you'll have to use the Android Studio Logcat.
 
 ### iOS
 
-To run the app on iOS, you will need an `Apple Developer account`. Free accounts can't run apps that use NFC reading.
+> :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
+> Contact us if you need it to contribute.
 
 Open the ios project on Xcode and add your provisionning profile in Targets > ProofOfPassport > Signing and Capabilities
 
@@ -72,12 +73,7 @@ First, go to the `circuit` folder of the monorepo, modify the circuits and build
 
 Then, upload the zipped zkeys built at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`. Be sure the zkey is named `<circuit_name>.zkey` before you zip it, and the zip is then named `<circuit_name>.zkey.zip`.
 
-Adapt the inputs you pass in `app/src/utils/prover.ts`, and adapt and redeploy the contracts.
-
-Run the common init script:
-```
-./scripts/common.sh
-```
+Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt and redeploy the contracts.
 
 ### Android
 

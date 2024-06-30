@@ -53,7 +53,7 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
 
       </YStack>
 
-      <YStack gap="$2">
+      <YStack gap="$2" mb="$6">
         <Button borderWidth={1.3} borderColor={borderColor} borderRadius="$10" bg="#3185FC" onPress={handleNFCScan}><Nfc color={textColor1} /></Button>
       </YStack>
 

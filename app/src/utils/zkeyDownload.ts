@@ -50,7 +50,7 @@ export async function downloadZkey(
 
     const networkInfo = await NetInfo.fetch();
     console.log('Network type:', networkInfo.type)
-    if (networkInfo.type === 'wifi') { //todo: no need to check for register circuit as zkey is smol
+    if (networkInfo.type === 'wifi' || circuit === 'disclose') {
       fetchZkey(circuit);
     } else {
       const response = await axios.head(zkeyZipUrls[circuit]);
@@ -145,17 +145,7 @@ export async function fetchZkey(
     .then(async () => {
       console.log('Download complete');
 
-      RNFS.readDir(RNFS.DocumentDirectoryPath)
-        .then((result) => {
-          console.log('Directory contents before unzipping:', result);
-        })
-
       await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, RNFS.DocumentDirectoryPath);
-
-      RNFS.readDir(RNFS.DocumentDirectoryPath)
-      .then((result) => {
-        console.log('Directory contents after unzipping:', result);
-      })
       console.log('Unzip complete');
 
       update({
@@ -193,7 +183,7 @@ export async function fetchZkey(
         }
       });
       amplitude.track('zkey download failed: ' + error.message);
-      toast?.show('Error', {
+      toast.show('Error', {
         message: `Error: ${error.message}`,
         customData: {
           type: "error",

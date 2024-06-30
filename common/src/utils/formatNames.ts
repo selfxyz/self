@@ -31,8 +31,10 @@ export function toStandardName(jmrtdName: string): string {
       return "ecdsa-with-SHA224";
     case "SHA256withECDSA":
       return "ecdsa-with-SHA256";
-    case "RSA":
-      return "rsaEncryption";
+    case "SHA384withECDSA":
+      return "ecdsa-with-SHA384";
+    case "SHA512withECDSA":
+      return "ecdsa-with-SHA512";
     case "MD2withRSA":
       return "md2WithRSAEncryption";
     case "MD4withRSA":
@@ -54,12 +56,18 @@ export function toStandardName(jmrtdName: string): string {
     case "SSAwithRSA/PSS":
     case "RSASSA-PSS":
     case "rsassa-pss":
+    case "rsassaPss":
+    case "rsassapss":
+    case "rsapss":
     case "SHA256withRSAandMGF1":
     case "id-mgf1":
-      return "rsassaPss";
+      return "sha256WithRSASSAPSS";
+    // we call it sha256WithRSASSAPSS even if specs says rsassaPss because there are multiple hash functions used
+    // e.g. Italy uses sha512 with it
 
 
     // added this one for iOS
+    case "RSA":
     case "rsaEncryption":
     // for security
     case "SHA256WITHRSA":

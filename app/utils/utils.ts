@@ -10,7 +10,13 @@ export function formatDuration(durationInMs: number) {
   const minutes = Math.floor((durationInSeconds % 3600) / 60);
   const seconds = Math.floor(durationInSeconds % 60);
 
-  return minutes > 0 ? `${minutes}m ${seconds}s` : `${seconds}s`;
+  if (minutes > 0) {
+    return `${minutes}m ${seconds}s`;
+  } else if (seconds > 0) {
+    return `${seconds}s`;
+  } else {
+    return `${durationInMs}ms`;
+  }
 }
 export function checkInputs(
   passportNumber: string,
