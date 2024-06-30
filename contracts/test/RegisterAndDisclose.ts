@@ -12,8 +12,12 @@ import fs from 'fs';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { Signer } from "ethers";
-import { getCSCAInputs, getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
+import { getCSCAInputs } from "../../common/src/utils/csca";
 import forge from "node-forge";
+import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../common/src/constants/mockCertificates';
+
+//const mock_dsc_sha256_rsa_4096 = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.pem', 'utf8');
+//const mock_csca_sha256_rsa_4096 = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.pem', 'utf8');
 
 type RegisterCircuitArtifacts = {
     [key: string]: {
@@ -67,10 +71,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     const n_csca = 121;
     const k_csca = 34;
     const max_cert_bytes = 1664;
-    const dsc = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_dsc.crt', 'utf8');
-    const csca = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt', 'utf8');
-    const dscCert = forge.pki.certificateFromPem(dsc);
-    const cscaCert = forge.pki.certificateFromPem(csca);
+    const dscCert = forge.pki.certificateFromPem(mock_dsc_sha256_rsa_4096);
+    const cscaCert = forge.pki.certificateFromPem(mock_csca_sha256_rsa_4096);
     let inputs_csca = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
     let parsedCallData_csca: any;
     let formattedCallData_csca: any;
@@ -313,41 +315,32 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
                 ).to.be.true;
             });
 
-            // it(`Register with a wrong proof should fail - Register - ${sigAlgName}`, async function () {
-            //     await expect(register
-            //         .validateProof({ ...sigAlgArtifacts.formattedCallData, a: [0, 0] }, sigAlgIndex))
-            //         .to.be.revertedWith("Register__InvalidProof()")
-            //         .catch(error => {
-            //             assert(error.message.includes("Register__InvalidProof()"), "Expected revert with Register__InvalidProof(), but got another error");
-            //         });
-            // });
+            it(`Register with a wrong proof should fail - Register - ${sigAlgName}`, async function () {
+                await expect(register
+                    .validateProof({ ...sigAlgArtifacts.formattedCallData, a: [0, 0] }, formattedCallData_csca, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidProof");
+            });
 
-            // it(`Register with a wrong attestation id should fail - Register - ${sigAlgName}`, async function () {
-            //     await expect(register
-            //         .validateProof({ ...sigAlgArtifacts.formattedCallData, attestation_id: "10" }, sigAlgIndex))
-            //         .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
-            //         .catch(error => {
-            //             assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
-            //         });
-            // });
+            it(`Register with a wrong attestation id should fail - Register - ${sigAlgName}`, async function () {
+                await expect(register
+                    .validateProof({ ...sigAlgArtifacts.formattedCallData, attestation_id: "10" }, formattedCallData_csca, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidAttestationId")
+            });
 
-            // it(`Register with a wrong signature algorithm should fail - Register - ${sigAlgName}`, async function () {
-            //     await expect(register
-            //         .validateProof({ ...sigAlgArtifacts.formattedCallData }, sigAlgIndex + 1))
-            //         .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
-            //         .catch(error => {
-            //             assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
-            //         });
-            // });
+            it(`Register with a wrong signature algorithm should fail - Register - ${sigAlgName}`, async function () {
+                await expect(register
+                    .validateProof({ ...sigAlgArtifacts.formattedCallData }, formattedCallData_csca, sigAlgIndex + 1, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
+                    .catch(error => {
+                        assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
+                    });
+            });
 
-            // it(`Register with a wrong merkle root should fail - Register - ${sigAlgName}`, async function () {
-            //     await expect(register
-            //         .validateProof({ ...sigAlgArtifacts.formattedCallData, merkle_root: 0 }, sigAlgIndex))
-            //         .to.be.revertedWith("Register__InvalidMerkleRoot()")
-            //         .catch(error => {
-            //             assert(error.message.includes("Register__InvalidMerkleRoot()"), "Expected revert with Register__InvalidMerkleRoot(), but got another error");
-            //         });
-            // });
+            it(`Register with a wrong merkle root should fail - Register - ${sigAlgName}`, async function () {
+                await expect(register
+                    .validateProof(sigAlgArtifacts.formattedCallData, { ...formattedCallData_csca, merkle_root: 0 }, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidMerkleRoot")
+            });
 
             it(`Register should succeed - Register - ${sigAlgName}`, async function () {
                 await expect(register

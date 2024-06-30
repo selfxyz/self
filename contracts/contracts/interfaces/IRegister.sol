@@ -18,6 +18,8 @@ interface IRegister {
     error Register__SignatureAlgorithmAlreadySet();
     /// @notice Error thrown when the blinded_dsc_commitment don't match between the proofs
     error Register__BlindedDSCCommitmentDontMatch();
+    /// @notice Error thrown when the attestation id is invalid
+    error Register__InvalidAttestationId();
 
     /// @notice Event emitted when a proof is successfully validated
     /// @param merkle_root The Merkle root used in the proof

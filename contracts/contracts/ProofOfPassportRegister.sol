@@ -84,13 +84,13 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         uint256 signature_algorithm_csca
     ) external override {
         if (!registry.checkRoot(bytes32(proof_csca.merkle_root))) {
-            revert("InvalidMerkleRoot");
+            revert("Register__InvalidMerkleRoot");
         }
         // if (nullifiers[proof.nullifier]) {
         //     revert("YouAreUsingTheSameNullifierTwice");
         // }
         if (bytes32(proof.attestation_id) != attestationId) {
-            revert("InvalidAttestationId");
+            revert("Register__InvalidAttestationId");
         }
         if (
             !verifyProof(
@@ -100,7 +100,7 @@ contract ProofOfPassportRegister is IRegister, Ownable {
                 signature_algorithm_csca
             )
         ) {
-            revert("InvalidProof");
+            revert("Register__InvalidProof");
         }
         if (
             bytes32(proof.blinded_dsc_commitment) !=
