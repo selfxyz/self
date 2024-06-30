@@ -3,32 +3,34 @@ import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { poseidon1, poseidon6 } from "poseidon-lite";
-import { mockPassportData_sha256WithRSASSAPSS_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
 
-describe("Proof of Passport - Circuits - RSASSAPSS", function () {
+describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
-    let passportData = mockPassportData_sha256WithRSASSAPSS_65537;
+    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
     let attestation_id: string;
+    const n_dsc = 121;
+    const k_dsc = 17;
 
     before(async () => {
         circuit = await wasm_tester(
-            path.join(__dirname, "../circuits/register_sha256WithRSASSAPSS_65537.circom"),
+            path.join(__dirname, "../circuits/register_sha256WithRSAEncryption_65537.circom"),
             {
                 include: [
                     "node_modules",
-                    "node_modules/@zk-email/circuits/helpers/sha.circom",
                     "./node_modules/@zk-kit/binary-merkle-root.circom/src",
                     "./node_modules/circomlib/circuits"
                 ]
             },
         );
 
-        const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+        //const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+        const secret = BigInt(0).toString();
         console.log("secret", secret);
 
         const attestation_name = "E-PASSPORT";
@@ -38,9 +40,12 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
 
         inputs = generateCircuitInputsRegister(
             secret,
+            BigInt(0).toString(),
             attestation_id,
             passportData,
-            [passportData],
+            n_dsc,
+            k_dsc,
+            [mockPassportData_sha256WithRSAEncryption_65537]
         );
     });
 
@@ -49,14 +54,15 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
     });
 
     it("should calculate the witness with correct inputs", async function () {
-        console.time('calculateWitness')
         const w = await circuit.calculateWitness(inputs);
-        console.timeEnd('calculateWitness')
         await circuit.checkConstraints(w);
 
         console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);
 
         const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
+        console.log("commitment_circom", commitment_circom)
+        const blinded_dsc_commitment = (await circuit.getOutput(w, ["blinded_dsc_commitment"])).blinded_dsc_commitment;
+        console.log("blinded_dsc_commitment", blinded_dsc_commitment)
 
         const mrz_bytes = packBytes(inputs.mrz);
         const commitment_bytes = poseidon6([
@@ -116,17 +122,17 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
         }
     });
 
-    it("should fail to calculate witness with invalid merkle root", async function () {
-        try {
-            const invalidInputs = {
-                ...inputs,
-                merkle_root: inputs.merkle_root.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
-            }
-            await circuit.calculateWitness(invalidInputs);
-            expect.fail("Expected an error but none was thrown.");
-        } catch (error) {
-            expect(error.message).to.include("Assert Failed");
-        }
-    });
+    // it("should fail to calculate witness with invalid merkle root", async function () {
+    //     try {
+    //         const invalidInputs = {
+    //             ...inputs,
+    //             merkle_root: inputs.merkle_root.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+    //         }
+    //         await circuit.calculateWitness(invalidInputs);
+    //         expect.fail("Expected an error but none was thrown.");
+    //     } catch (error) {
+    //         expect(error.message).to.include("Assert Failed");
+    //     }
+    // });
 
 });

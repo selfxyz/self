@@ -3,24 +3,26 @@ import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { poseidon1, poseidon6 } from "poseidon-lite";
-import { mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256WithRSASSAPSS_65537 } from "../../common/src/utils/mockPassportData";
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../common/src/utils/utils';
+import { k_dsc, n_dsc } from '../../common/src/constants/constants';
 
-describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
+describe("Proof of Passport - Circuits - RSASSAPSS", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
-    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
+    let passportData = mockPassportData_sha256WithRSASSAPSS_65537;
     let attestation_id: string;
 
     before(async () => {
         circuit = await wasm_tester(
-            path.join(__dirname, "../circuits/register_sha256WithRSAEncryption_65537.circom"),
+            path.join(__dirname, "../circuits/register_sha256WithRSASSAPSS_65537.circom"),
             {
                 include: [
                     "node_modules",
+                    "node_modules/@zk-email/circuits/helpers/sha.circom",
                     "./node_modules/@zk-kit/binary-merkle-root.circom/src",
                     "./node_modules/circomlib/circuits"
                 ]
@@ -37,9 +39,14 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
 
         inputs = generateCircuitInputsRegister(
             secret,
+            BigInt(0).toString(),
             attestation_id,
             passportData,
+            64,
+            32,
+            [passportData],
         );
+
     });
 
     it("should compile and load the circuit", async function () {
@@ -47,7 +54,9 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
     });
 
     it("should calculate the witness with correct inputs", async function () {
+        console.time('calculateWitness')
         const w = await circuit.calculateWitness(inputs);
+        console.timeEnd('calculateWitness')
         await circuit.checkConstraints(w);
 
         console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);

@@ -16,8 +16,8 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    // pubkey that signed the passport
-    signal input pubkey[k];
+    // dsc_modulus that signed the passport
+    signal input dsc_modulus[k];
 
     // signature of the passport
     signal input signature[k];
@@ -91,6 +91,6 @@ template PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_byt
         rsa.message[i] <== 0;
     }
 
-    rsa.modulus <== pubkey;
+    rsa.modulus <== dsc_modulus;
     rsa.signature <== signature;
 }

@@ -1,30 +1,44 @@
 import React, { useState, useEffect } from 'react';
+import { Linking, Modal, Platform, Pressable } from 'react-native';
+import forge from 'node-forge';
+import Dialog from "react-native-dialog";
+import { ethers } from 'ethers';
+// import ressources
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import ProveScreen from './ProveScreen';
-import { Steps } from '../utils/utils';
-import AppScreen from './AppScreen';
-import { Linking, Modal, Platform, Pressable } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
-import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
-import SendProofScreen from './SendProofScreen';
 import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
-import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+// import stores
 import useUserStore from '../stores/userStore';
-import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
+// import utils
+import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
+import { ModalProofSteps, Steps } from '../utils/utils';
+import { scan } from '../utils/nfcScanner';
+import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+import { contribute } from '../utils/contribute';
+import { sendCSCARequest } from '../utils/cscaRequest';
+import { sendRegisterTransaction } from '../utils/transactions';
+// import utils from common
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import { getCSCAInputs } from '../../../common/src/utils/csca';
+import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
+// import screens
+import ProveScreen from './ProveScreen';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
-import Dialog from "react-native-dialog";
-import { contribute } from '../utils/contribute';
 import RegisterScreen from './RegisterScreen';
+import SendProofScreen from './SendProofScreen';
+import AppScreen from './AppScreen';
+// import constants
+import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
+import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 
 
 const MainScreen: React.FC = () => {
@@ -35,6 +49,7 @@ const MainScreen: React.FC = () => {
   const [dialogDeleteSecretIsOpen, setDialogDeleteSecretIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
+  const [modalProofStep, setModalProofStep] = useState(0);
 
   const {
     passportNumber,
@@ -44,8 +59,12 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
+    clearProofsFromStorage,
     passportData,
-    registered
+    registered,
+    setRegistered,
+    cscaProof,
+    localProof,
   } = useUserStore()
 
   const {
@@ -80,6 +99,40 @@ const MainScreen: React.FC = () => {
     })
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();
+
+    const n_dsc = 121;
+    const k_dsc = 17;
+    const n_csca = 121;
+    const k_csca = 34;
+    const max_cert_bytes = 1664;
+    const dsc = mock_dsc_sha256_rsa_4096;
+    const csca = mock_csca_sha256_rsa_4096;
+    const dscCert = forge.pki.certificateFromPem(dsc);
+    const cscaCert = forge.pki.certificateFromPem(csca);
+
+    let secret = useUserStore.getState().dscSecret;
+    if (secret === null) {
+      // Finally, generate CSCA Inputs and request modal server
+      // Generate a cryptographically secure random secret of (31 bytes)
+      const secretBytes = forge.random.getBytesSync(31);
+      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+      console.log('Generated secret:', secret.toString());
+      useUserStore.getState().setDscSecret(secret);
+    }
+
+
+    const inputs_csca = getCSCAInputs(
+      secret,
+      dscCert,
+      cscaCert,
+      n_dsc,
+      k_dsc,
+      n_csca,
+      k_csca,
+      max_cert_bytes,
+      true
+    );
+    sendCSCARequest(inputs_csca, setModalProofStep);
     toast.show("Using mock passport data!", { type: "info" })
   }
 
@@ -93,6 +146,9 @@ const MainScreen: React.FC = () => {
     else if (selectedTab === "register") {
       setStep(Steps.NEXT_SCREEN);
     }
+    else if (selectedTab === "app") {
+      setStep(Steps.REGISTER);
+    }
     else if (selectedTab === "prove") {
       setStep(Steps.REGISTERED);
     }
@@ -104,12 +160,12 @@ const MainScreen: React.FC = () => {
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
       console.log('ios');
-      scan();
+      scan(setModalProofStep);
     }
     else {
       console.log('android :)');
       setNFCScanIsOpen(true);
-      scan();
+      scan(setModalProofStep);
     }
   }
 
@@ -124,13 +180,44 @@ const MainScreen: React.FC = () => {
   }
 
   useEffect(() => {
+    if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
+      console.log('CSCA Proof received:', cscaProof);
+      if ((cscaProof !== null) && (localProof !== null)) {
+        const sendTransaction = async () => {
+          const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+          const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
+          console.log("local proof already generated, sending transaction");
+          const provider = new ethers.JsonRpcProvider(RPC_URL);
+          const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
+          const txHash = serverResponse?.data.hash;
+          const receipt = await provider.waitForTransaction(txHash);
+          console.log('receipt status:', receipt?.status);
+          if (receipt?.status === 0) {
+            throw new Error("Transaction failed");
+          }
+          setRegistered(true);
+          setStep(Steps.REGISTERED);
+          toast.show('✅', {
+            message: "Registered",
+            customData: {
+              type: "success",
+            },
+          })
+        }
+        sendTransaction();
+      }
+
+    }
+  }, [modalProofStep]);
+
+  useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
       setStep(Steps.MRZ_SCAN_COMPLETED);
     }
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
   useEffect(() => {
-    if (registered) {
+    if (registered && step < Steps.REGISTERED) {
       setStep(Steps.REGISTERED);
     }
   }, [registered]);
@@ -194,7 +281,7 @@ const MainScreen: React.FC = () => {
       <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
         <YStack >
           <XStack jc="space-between" ai="center" px="$3">
-            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan" || selectedTab === "app") ? "transparent" : "#a0a0a0"} /></Button>
+            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan") ? "transparent" : "#a0a0a0"} /></Button>
 
             <Text fontSize="$6" color="#a0a0a0">
               {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
@@ -313,6 +400,15 @@ const MainScreen: React.FC = () => {
                         Delete passport data
                       </Label>
                       <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                        <Eraser color={textColor1} />
+                      </Button>
+                    </Fieldset>
+
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        Delete proofs
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
                         <Eraser color={textColor1} />
                       </Button>
                     </Fieldset>
@@ -496,7 +592,7 @@ const MainScreen: React.FC = () => {
               </YStack>
             </Sheet.Frame>
           </Sheet>
-          
+
           <XStack bc="#343434" h={1.2} />
         </YStack>
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}

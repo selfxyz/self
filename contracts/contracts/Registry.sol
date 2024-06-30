@@ -5,7 +5,6 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract Registry is Ownable {
-
     bytes32 public merkleRoot;
 
     constructor(bytes32 _merkleRoot) {
@@ -13,11 +12,15 @@ contract Registry is Ownable {
         transferOwnership(msg.sender);
     }
 
-	function update(bytes32 _merkleRoot) public onlyOwner {
-		merkleRoot = _merkleRoot;
-	}
+    function update(bytes32 _merkleRoot) public onlyOwner {
+        merkleRoot = _merkleRoot;
+    }
 
-	function checkRoot(bytes32 _merkleRoot) public view returns (bool) {
-		return merkleRoot == _merkleRoot;
-	}
+    function checkRoot(bytes32 _merkleRoot) public view returns (bool) {
+        return merkleRoot == _merkleRoot;
+    }
+
+    function getMerkleRoot() public view returns (bytes32) {
+        return merkleRoot;
+    }
 }

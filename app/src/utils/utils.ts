@@ -47,6 +47,12 @@ export const Steps = {
   PROOF_SENT: 11
 };
 
+export const ModalProofSteps = {
+  MODAL_REQUEST_SENT: 1,
+  MODAL_SERVER_ERROR: 2,
+  MODAL_SERVER_SUCCESS: 3
+};
+
 export function formatAttribute(key: string, attribute: string) {
   if (key === 'expiry_date') {
     const year = '20' + attribute.substring(0, 2); // Assuming all expiry dates are in the 2000s
