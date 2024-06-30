@@ -1,17 +1,12 @@
 import * as fs from 'fs';
-import { buildPubkeyTree } from '../../../common/src/utils/pubkeyTree'
 import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca'
 import { getPublicKey, isRsaPublicKey, readCertificate } from '../../../common/src/utils/certificates'
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
+import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { IMT } from '@zk-kit/imt';
 import { poseidon2 } from 'poseidon-lite';
-import { splitToWords } from '../../../common/src/utils/utils';
 import { writeFile } from 'fs/promises';
 import * as path from 'path';
 import jsrsasign from 'jsrsasign';
-import * as asn1 from 'asn1.js';
-
-
 
 function processCertificate(certificate: jsrsasign.X509, filePath: string) {
     const validAlgorithms = [

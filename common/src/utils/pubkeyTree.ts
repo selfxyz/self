@@ -2,7 +2,7 @@ import { poseidon10, poseidon2, poseidon8 } from "poseidon-lite"
 import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { IMT } from '@zk-kit/imt'
 import { splitToWords } from "./utils";
-import { bigIntToChunkedBytes, formatSigAlgNameForCircuit } from "./utils";
+import { formatSigAlgNameForCircuit } from "./utils";
 import { toStandardName } from "./formatNames";
 
 export function buildPubkeyTree(pubkeys: any[]) {

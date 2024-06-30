@@ -3,14 +3,14 @@ import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../../utils/utils';
-import { ModalProofSteps, Steps } from './utils';
-import { castCSCAProof, PassportData } from '../../../common/src/utils/types';
+import { Steps } from './utils';
+import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { k_csca, k_dsc, max_cert_bytes, MODAL_SERVER_ADDRESS, n_csca, n_dsc } from '../../../common/src/constants/constants';
+import { k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
 import { getCSCAInputs } from '../../../common/src/utils/csca';
 import { sendCSCARequest } from './cscaRequest';
 
@@ -19,8 +19,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry,
-    cscaProof
+    dateOfExpiry
   } = useUserStore.getState()
 
   const { toast, setStep } = useNavigationStore.getState();

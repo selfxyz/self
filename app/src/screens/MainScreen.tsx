@@ -1,38 +1,45 @@
 import React, { useState, useEffect } from 'react';
+import { Linking, Modal, Platform, Pressable } from 'react-native';
+import forge from 'node-forge';
+import Dialog from "react-native-dialog";
+import { ethers } from 'ethers';
+// import ressources
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import ProveScreen from './ProveScreen';
-import { ModalProofSteps, Steps } from '../utils/utils';
-import AppScreen from './AppScreen';
-import { Linking, Modal, Platform, Pressable } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
-import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
-import SendProofScreen from './SendProofScreen';
 import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
-import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+// import stores
 import useUserStore from '../stores/userStore';
-import { scan } from '../utils/nfcScanner';
 import useNavigationStore from '../stores/navigationStore';
+// import utils
+import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
+import { ModalProofSteps, Steps } from '../utils/utils';
+import { scan } from '../utils/nfcScanner';
+import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+import { contribute } from '../utils/contribute';
+import { sendCSCARequest } from '../utils/cscaRequest';
+import { sendRegisterTransaction } from '../utils/transactions';
+// import utils from common
+import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import { getCSCAInputs } from '../../../common/src/utils/csca';
+import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
+// import screens
+import ProveScreen from './ProveScreen';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
-import Dialog from "react-native-dialog";
-import { contribute } from '../utils/contribute';
 import RegisterScreen from './RegisterScreen';
+import SendProofScreen from './SendProofScreen';
+import AppScreen from './AppScreen';
+// import constants
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
-import { sendRegisterTransaction } from '../utils/transactions';
-import { ethers } from 'ethers';
-import { getCSCAInputs } from '../../../common/src/utils/csca';
-import forge from 'node-forge';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
-import { sendCSCARequest } from '../utils/cscaRequest';
-import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
+
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
