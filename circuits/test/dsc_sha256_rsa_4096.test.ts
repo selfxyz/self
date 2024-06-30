@@ -17,7 +17,7 @@ describe('DSC chain certificate', function () {
     const csca = fs.readFileSync('../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt', 'utf8');
     const dscCert = forge.pki.certificateFromPem(dsc);
     const cscaCert = forge.pki.certificateFromPem(csca);
-    const inputs = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+    const inputs = getCSCAInputs(BigInt(0).toString(), dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
 
     console.log("inputs:", JSON.stringify(inputs, null, 2));
     fs.writeFileSync('inputs.json', JSON.stringify(inputs, null, 2));

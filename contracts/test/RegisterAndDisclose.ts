@@ -73,7 +73,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     const max_cert_bytes = 1664;
     const dscCert = forge.pki.certificateFromPem(mock_dsc_sha256_rsa_4096);
     const cscaCert = forge.pki.certificateFromPem(mock_csca_sha256_rsa_4096);
-    let inputs_csca = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+    let inputs_csca = getCSCAInputs(BigInt(0).toString(), dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
     let parsedCallData_csca: any;
     let formattedCallData_csca: any;
     // console.log(inputs_csca);
@@ -99,6 +99,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             register_circuits.sha256WithRSAEncryption_65537.inputs = generateCircuitInputsRegister(
                 secret,
+                BigInt(0).toString(),
                 attestation_id,
                 mockPassportData_sha256WithRSAEncryption_65537,
                 n_dsc,

@@ -19,7 +19,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry
+    dateOfExpiry,
   } = useUserStore.getState()
 
   const { toast, setStep } = useNavigationStore.getState();
@@ -171,8 +171,17 @@ const handleResponseIOS = async (
     };
     useUserStore.getState().registerPassportData(passportData)
 
-    // Finally, generate CSCA Inputs and request modal server
+    let secret = useUserStore.getState().dscSecret;
+    if (secret === null) {
+      // Finally, generate CSCA Inputs and request modal server
+      // Generate a cryptographically secure random secret of (31 bytes)
+      const secretBytes = forge.random.getBytesSync(31);
+      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+      console.log('Generated secret:', secret.toString());
+      useUserStore.getState().setDscSecret(secret);
+    }
     const inputs_csca = getCSCAInputs(
+      secret as string,
       certificate,
       null,
       n_dsc,
@@ -182,6 +191,7 @@ const handleResponseIOS = async (
       max_cert_bytes,
       false
     );
+
     sendCSCARequest(inputs_csca, setModalProofStep);
 
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
@@ -271,7 +281,17 @@ const handleResponseAndroid = async (
   const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
   useUserStore.getState().dscCertificate = certificate;
 
+  let secret = useUserStore.getState().dscSecret;
+  if (secret === null) {
+    // Finally, generate CSCA Inputs and request modal server
+    // Generate a cryptographically secure random secret of (31 bytes)
+    const secretBytes = forge.random.getBytesSync(31);
+    secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+    console.log('Generated secret:', secret.toString());
+    useUserStore.getState().setDscSecret(secret);
+  }
   const inputs_csca = getCSCAInputs(
+    secret as string,
     certificate,
     null,
     n_dsc,

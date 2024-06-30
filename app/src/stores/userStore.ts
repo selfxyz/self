@@ -4,6 +4,7 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
+import forge from 'node-forge';
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
@@ -30,6 +31,7 @@ interface UserState {
   dscCertificate: any
   cscaProof: Proof | null
   localProof: Proof | null
+  dscSecret: string | null
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
@@ -39,13 +41,14 @@ interface UserState {
   update: (patch: any) => void
   deleteMrzFields: () => void
   setRegistered: (registered: boolean) => void
+  setDscSecret: (dscSecret: string) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
   passportNumber: DEFAULT_PNUMBER ?? "",
   dateOfBirth: DEFAULT_DOB ?? "",
   dateOfExpiry: DEFAULT_DOE ?? "",
-
+  dscSecret: null,
   registered: false,
   passportData: mockPassportData_sha256WithRSAEncryption_65537,
   secret: "",
@@ -54,6 +57,9 @@ const useUserStore = create<UserState>((set, get) => ({
   localProof: null,
   setRegistered: (registered: boolean) => {
     set({ registered });
+  },
+  setDscSecret: (dscSecret: string) => {
+    set({ dscSecret });
   },
 
   // When user opens the app, checks presence of passportData
@@ -91,7 +97,7 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.REGISTERED);
+    // useNavigationStore.getState().setStep(Steps.REGISTERED);
   },
 
   // When reading passport for the first time:
@@ -134,9 +140,19 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
+    let dsc_secret = get().dscSecret;
+
     try {
+      if (get().dscSecret === null) {
+        console.log("DSC secret is not set, generating a new one");
+        const secretBytes = forge.random.getBytesSync(31);
+        dsc_secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+        console.log('Generated secret:', dsc_secret.toString());
+        get().setDscSecret(dsc_secret);
+      }
       const inputs = generateCircuitInputsRegister(
         secret,
+        dsc_secret as string,
         PASSPORT_ATTESTATION_ID,
         passportData,
         121,

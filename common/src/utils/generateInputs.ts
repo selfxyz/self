@@ -18,6 +18,7 @@ import {
 
 export function generateCircuitInputsRegister(
   secret: string,
+  dscSecret: string,
   attestation_id: string,
   passportData: PassportData,
   n_dsc: number,
@@ -105,7 +106,7 @@ export function generateCircuitInputsRegister(
       BigInt(k_dsc)
     ),
     attestation_id: [attestation_id],
-    dsc_secret: [BigInt(0).toString()]
+    dsc_secret: [dscSecret]
   };
 }
 

@@ -37,7 +37,7 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
     return startIndex;
 }
 
-export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, n_dsc: number, k_dsc: number, n_csca: number, k_csca: number, max_cert_bytes: number, devmod: boolean = false) {
+export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertificate: any = null, n_dsc: number, k_dsc: number, n_csca: number, k_csca: number, max_cert_bytes: number, devmod: boolean = false) {
     let csca_modulus_formatted;
     let csca_modulus_bigint;
     // the purpose of devmode is to get the csca modulus from the mock_csca certificate instead of using the registry which parses aki to csca modulus
@@ -117,6 +117,8 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
 
 
+
+
     return {
         "raw_dsc_cert": dsc_message_padded_formatted,
         "raw_dsc_cert_padded_bytes": [dsc_messagePaddedLen_formatted],
@@ -124,7 +126,7 @@ export function getCSCAInputs(dscCertificate: any, cscaCertificate: any = null, 
         "dsc_signature": dsc_signature_formatted,
         "dsc_modulus": dsc_modulus_formatted,
         "start_index": [startIndex_formatted],
-        "secret": [BigInt(0).toString()],
+        "secret": [dscSecret],
         "merkle_root": [BigInt(root).toString()],
         "path": proof.pathIndices.map(index => index.toString()),
         "siblings": proof.siblings.flat().map(sibling => sibling.toString())

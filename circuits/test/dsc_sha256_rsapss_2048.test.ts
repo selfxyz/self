@@ -25,7 +25,7 @@ describe('DSC chain certificate', function () {
     const cscaCert = readCertificate(csca_path);
 
 
-    const inputs = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+    const inputs = getCSCAInputs(BigInt(0).toString(), dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
     console.log("inputs:", inputs);
 
     before(async () => {

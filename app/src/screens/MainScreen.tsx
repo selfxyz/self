@@ -109,9 +109,20 @@ const MainScreen: React.FC = () => {
     const csca = mock_csca_sha256_rsa_4096;
     const dscCert = forge.pki.certificateFromPem(dsc);
     const cscaCert = forge.pki.certificateFromPem(csca);
-    const inputs = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+
+    let secret = useUserStore.getState().dscSecret;
+    if (secret === null) {
+      // Finally, generate CSCA Inputs and request modal server
+      // Generate a cryptographically secure random secret of (31 bytes)
+      const secretBytes = forge.random.getBytesSync(31);
+      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+      console.log('Generated secret:', secret.toString());
+      useUserStore.getState().setDscSecret(secret);
+    }
+
 
     const inputs_csca = getCSCAInputs(
+      secret,
       dscCert,
       cscaCert,
       n_dsc,
@@ -206,7 +217,7 @@ const MainScreen: React.FC = () => {
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
   useEffect(() => {
-    if (registered) {
+    if (registered && step < Steps.REGISTERED) {
       setStep(Steps.REGISTERED);
     }
   }, [registered]);

@@ -39,6 +39,7 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
 
         inputs = generateCircuitInputsRegister(
             secret,
+            BigInt(0).toString(),
             attestation_id,
             passportData,
             64,

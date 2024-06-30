@@ -40,6 +40,7 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
 
         inputs = generateCircuitInputsRegister(
             secret,
+            BigInt(0).toString(),
             attestation_id,
             passportData,
             n_dsc,
