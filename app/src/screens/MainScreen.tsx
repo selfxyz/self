@@ -25,10 +25,14 @@ import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/
 import Dialog from "react-native-dialog";
 import { contribute } from '../utils/contribute';
 import RegisterScreen from './RegisterScreen';
-import { RPC_URL } from '../../../common/src/constants/constants';
+import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { sendRegisterTransaction } from '../utils/transactions';
 import { ethers } from 'ethers';
-
+import { getCSCAInputs } from '../../../common/src/utils/csca';
+import forge from 'node-forge';
+import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/certificates';
+import { sendCSCARequest } from '../utils/cscaRequest';
+import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -90,6 +94,29 @@ const MainScreen: React.FC = () => {
     })
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();
+
+    const n_dsc = 121;
+    const k_dsc = 17;
+    const n_csca = 121;
+    const k_csca = 34;
+    const max_cert_bytes = 1664;
+    const dsc = mock_dsc_sha256_rsa_4096;
+    const csca = mock_csca_sha256_rsa_4096;
+    const dscCert = forge.pki.certificateFromPem(dsc);
+    const cscaCert = forge.pki.certificateFromPem(csca);
+    const inputs = getCSCAInputs(dscCert, cscaCert, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+
+    const inputs_csca = getCSCAInputs(
+      dscCert,
+      cscaCert,
+      n_dsc,
+      k_dsc,
+      n_csca,
+      k_csca,
+      max_cert_bytes,
+      true
+    );
+    sendCSCARequest(inputs_csca, setModalProofStep);
     toast.show("Using mock passport data!", { type: "info" })
   }
 
@@ -141,9 +168,11 @@ const MainScreen: React.FC = () => {
       console.log('CSCA Proof received:', cscaProof);
       if ((cscaProof !== null) && (localProof !== null)) {
         const sendTransaction = async () => {
+          const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+          const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
           console.log("local proof already generated, sending transaction");
           const provider = new ethers.JsonRpcProvider(RPC_URL);
-          const serverResponse = await sendRegisterTransaction(localProof, cscaProof)
+          const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
           const txHash = serverResponse?.data.hash;
           const receipt = await provider.waitForTransaction(txHash);
           console.log('receipt status:', receipt?.status);
@@ -152,7 +181,12 @@ const MainScreen: React.FC = () => {
           }
           setRegistered(true);
           setStep(Steps.REGISTERED);
-          toast?.show("✅ Registered", { type: "success" })
+          toast.show('✅', {
+            message: "Registered",
+            customData: {
+              type: "success",
+            },
+          })
         }
         sendTransaction();
       }

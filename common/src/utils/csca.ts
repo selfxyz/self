@@ -1,10 +1,11 @@
 import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
 import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, PUBKEY_TREE_DEPTH } from "../constants/constants";
+import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { poseidon1, poseidon16, poseidon2, poseidon3, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
+import { castCSCAProof } from "./types";
 
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
@@ -204,5 +205,6 @@ export function getCSCAModulusProof(leaf, n, k) {
     const proof = tree.createProof(index);
     return [tree.root, proof];
 }
+
 
 
