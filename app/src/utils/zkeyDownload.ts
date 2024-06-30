@@ -7,7 +7,7 @@ import useNavigationStore from '../stores/navigationStore';
 
 const zkeyZipUrls = {
   register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca2.zkey.zip",
-  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose2.zkey.zip",
+  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose3.zkey.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;
