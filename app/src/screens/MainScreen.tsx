@@ -30,7 +30,7 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { ethers } from 'ethers';
 import { getCSCAInputs } from '../../../common/src/utils/csca';
 import forge from 'node-forge';
-import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/certificates';
+import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 import { sendCSCARequest } from '../utils/cscaRequest';
 import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 
@@ -53,8 +53,6 @@ const MainScreen: React.FC = () => {
     clearPassportDataFromStorage,
     clearSecretFromStorage,
     clearProofsFromStorage,
-    registerCommitment,
-    registerPassportData,
     passportData,
     registered,
     setRegistered,
