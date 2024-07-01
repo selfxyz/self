@@ -21,11 +21,10 @@ template ProvePassportNotInOfac(nLevels) {
     }
 
     signal computedRoot <== BinaryMerkleRoot(nLevels)(poseidon_hasher.out, merkletree_size, path, siblings);
-
-    var diff = 0;
-    diff = merkle_root - computedRoot; 
-    out <==  IsZero()(diff);
-    
+    component iseq = IsEqual();
+    computedRoot ==> iseq.in[0];
+    merkle_root ==> iseq.in[1];
+    out <==  iseq.out;
 }
 
 component main { public [ merkle_root ] } = ProvePassportNotInOfac(16);
