@@ -1,11 +1,26 @@
-import { poseidon9, poseidon2 } from "poseidon-lite"
-import { IMT } from '@zk-kit/imt'
+import { poseidon9, poseidon3, poseidon2 } from "poseidon-lite"
 import { stringToAsciiBigIntArray } from "./utils";
-import { LeanIMT } from "@zk-kit/lean-imt";
+import { ChildNodes,SMT } from "@zk-kit/smt"
+import * as fs from 'fs';
 
-export function buildPassTree(passports :any[]){
-    let leaves: bigint[] = []
+export function passport_smt() {
+
+  // Currently absolute path cause I am calling it from disclose_ofac.test.ts
+  // After I add the export function, will use "../../ofacdata/passport.json" as path
+  const passports = JSON.parse(fs.readFileSync("/Users/ashishkumarsingh/Desktop/zk/proof-of-passport/common/ofacdata/passport.json") as unknown as string)
+  const tree = buildSMT(passports);
+  console.log("Sparse Merkle Tree built")
+
+  return tree
+}
+
+export function buildSMT(passports :any[]){
+    let count = 0
     let startTime = performance.now();
+    
+    const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes))
+    const tree2 = new SMT(hash2, true)
+
     for (let i = 0; i < passports.length; i++) {
         const passport = passports[i]
 
@@ -21,20 +36,18 @@ export function buildPassTree(passports :any[]){
             passport.Pass_No += '<'
           }
         }
-        
-        const leaf = getOfacLeaf(stringToAsciiBigIntArray(passport.Pass_No), i)
-        if (!leaf) {
+
+        const leaf2 = getOfacLeaf(stringToAsciiBigIntArray(passport.Pass_No))
+        if (!leaf2) {
           continue
         }
-        leaves.push(leaf)
+        count += 1
+        tree2.add(leaf2,BigInt(1))
       } 
 
-    console.log("Total passports paresed are : ", leaves.length," over ",passports.length )
-
-    // What depth is optimal ?
-    const tree = new LeanIMT((a, b) => poseidon2([a, b]), leaves);
+    console.log("Total passports paresed are : ",count ," over ",passports.length )
     console.log('passport tree built in', performance.now() - startTime, 'ms')
-    return tree
+    return tree2
 }
 
 export function getOfacLeaf(passport: any, i?: number): bigint {
@@ -49,5 +62,3 @@ export function getOfacLeaf(passport: any, i?: number): bigint {
     console.log('err : passport', err, i, passport)
   }
 }
-
-

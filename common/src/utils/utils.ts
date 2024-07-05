@@ -2,6 +2,8 @@ import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
+import { SMT } from '@zk-kit/smt';
+import { poseidon3, poseidon2 } from 'poseidon-lite';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -298,6 +300,54 @@ export function packBytes(unpacked) {
   return packed;
 }
 
+export function generateSMTProof(smt: SMT, leaf: bigint) {
+  const {entry, matchingEntry, siblings, root, membership} = smt.createProof(leaf);
+  // console.log("entry:",entry)
+  // console.log("entry type",typeof entry)
+  // console.log("entry length",entry.length)
+  // console.log("sibilings length",siblings.length)
+  // console.log("matching entry",matchingEntry)
+
+  const depth = siblings.length
+  siblings.reverse()
+  const bits = entry[0].toString(2)
+  const arr = bits.padStart(256, "0").split("").reverse().map(Number)
+  const path = arr.slice(0, depth).reverse()
+  const exSiblings = new Array(256).fill(0n);
+  const indices = new Array(256).fill(0);
+  let closestleaf;
+  if (!matchingEntry){
+    closestleaf = entry[0];
+  } else {
+    closestleaf = matchingEntry[0];
+  }
+
+  for (let i = 0; i < depth; i++) {
+    exSiblings[i] = siblings[i];
+    indices[i] = path[i];
+  }
+  
+  // CALCULATED ROOT FOR TESTING --
+  // let calculatedNode = poseidon3(entry)
+  // let calculatedNode = BigInt(0) // 0 node , if entry[1] is 0.
+  // console.log("Initial node while calculating",calculatedNode)
+  // console.log(smt.verifyProof(smt.createProof(leaf)))
+  // for (let i = 0; i < depth ; i++) {
+  //   const childNodes: any = indices[i] ? [exSiblings[i], calculatedNode] : [calculatedNode, exSiblings[i]]
+  //   calculatedNode = poseidon2(childNodes)
+  // }
+  // console.log("Actual node", root)
+  // console.log("calculated node", calculatedNode)
+
+  return {
+    root,
+    depth,
+    closestleaf,
+    indices,
+    exSiblings,   
+    membership,
+  };
+}
 
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
   const { siblings: merkleProofSiblings, index } = imt.generateProof(_index)
@@ -307,7 +357,7 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
   // the tree depth is actually 3. The missing siblings can be set to 0, as they
   // won't be used to calculate the root in the circuit.
   const merkleProofIndices: number[] = []
-
+  console.log(depthForThisOne,maxDepth)
   for (let i = 0; i < maxDepth; i += 1) {
     merkleProofIndices.push((index >> i) & 1)
     if (merkleProofSiblings[i] === undefined) {
@@ -329,4 +379,12 @@ export function stringToAsciiBigIntArray(str: string): BigInt[] {
       asciiBigIntArray.push(BigInt(str.charCodeAt(i)));
   }
   return asciiBigIntArray;
+}
+
+export function hexToBin(n: string): string {
+  let bin = Number(`0x${n[0]}`).toString(2)
+  for (let i = 1; i < n.length; i += 1) {
+      bin += Number(`0x${n[i]}`).toString(2).padStart(4, "0")
+  }
+  return bin
 }

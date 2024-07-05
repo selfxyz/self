@@ -4,7 +4,7 @@ import { PassportData } from "./types";
 import {
   arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlgNameForCircuit, hash, splitToWords,
   toUnsignedByte, getHashLen, getCurrentDateYYMMDD,
-  generateMerkleProof,
+  generateMerkleProof, generateSMTProof,
   findSubarrayIndex
 } from "./utils";
 import { LeanIMT } from "@zk-kit/lean-imt";
@@ -12,11 +12,12 @@ import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import { getOfacLeaf } from "./passportTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
-import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
+import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import {
   mockPassportDatas,
 } from "./mockPassportData";
+import { SMT } from "@zk-kit/smt"
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -142,7 +143,6 @@ export function generateCircuitInputsDisclose(
   console.log('commitment', commitment.toString());
 
   const index = findIndexInTree(merkletree, commitment);
-
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
   return {
@@ -162,22 +162,32 @@ export function generateCircuitInputsDisclose(
   };
 }
 
-
 export function generateCircuitInputsDiscloseOfac(
   passportData: PassportData,
-  merkletree: LeanIMT,
+  merkletree: SMT,
 ) {
+
   const mrz_bytes = formatMrz(passportData.mrz);
   const passport_leaf = getOfacLeaf(mrz_bytes.slice(49,58))
-  const index = findIndexInTree(merkletree, passport_leaf);
-  const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
+  const {root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(merkletree, passport_leaf);
+  let exists = membership ? 1 : 0;
+
+  // Testing --
+  // console.log("leaf_value",closestleaf)
+  // console.log("root",root)
+  // console.log("size",depth)
+  // console.log("path",indices)
+  // console.log("siblings",exSiblings)
+  // console.log("membership",membership)
 
   return {
     mrz: mrz_bytes.map(byte => String(byte)),
-    merkle_root: [merkletree.root.toString()],
-    merkletree_size: [BigInt(depthForThisOne).toString()],
-    path: merkleProofIndices.map(index => BigInt(index).toString()),
-    siblings: merkleProofSiblings.map(index => BigInt(index).toString()),
+    leaf_value: [BigInt(closestleaf).toString()],
+    merkle_root: [root.toString()],
+    merkletree_size: [BigInt(depth).toString()],
+    path : indices.map(index => BigInt(index).toString()),
+    siblings: exSiblings.map(index => BigInt(index).toString()),
+    membership: [BigInt(exists).toString()],
   };
 }
 
