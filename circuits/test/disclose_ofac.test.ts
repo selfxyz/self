@@ -1,14 +1,10 @@
-import { assert, expect } from 'chai'
+import { expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
-import { formatMrz } from '../../common/src/utils/utils';
-import { poseidon2 } from "poseidon-lite";
-import { LeanIMT } from "@zk-kit/lean-imt";
-import serializedTree from "../../common/ofacdata/passport_tree.json"
-import { getOfacLeaf } from '../../common/src/utils/passportTree';
+import { passport_smt } from '../../common/src/utils/passportTree';
 import { generateCircuitInputsDiscloseOfac } from '../../common/src/utils/generateInputs';
-import { stringToAsciiBigIntArray } from "../../common/src/utils/utils";
+import { SMT } from "@zk-kit/smt"
 
 describe("start testing disclose.circom", function () {
     this.timeout(0);
@@ -16,7 +12,8 @@ describe("start testing disclose.circom", function () {
     let circuit: any;
     let w: any;
     let passportData = mockPassportData_sha256WithRSAEncryption_65537;
-    let tree: any;
+    let smttree: SMT;
+
 
     before(async () => {
         circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose_ofac.circom"),
@@ -29,16 +26,10 @@ describe("start testing disclose.circom", function () {
             },
         );
 
-        tree = new LeanIMT<any>((a, b) => poseidon2([a, b]), []);
-        let deepcopy = JSON.parse(JSON.stringify(serializedTree));
-        tree.import(deepcopy); // copying from json after writing changes leaf to type strings
-        const leaves = tree.leaves 
-        // console.log(typeof(leaves[0]))
-        // console.log(typeof(tree.root))
-            
+        smttree = passport_smt();            
         inputs = generateCircuitInputsDiscloseOfac(
             passportData,
-            tree,
+            smttree,
         );
     });
 
