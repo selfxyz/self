@@ -12,8 +12,9 @@ describe("start testing disclose.circom", function () {
     let circuit: any;
     let w: any;
     let passportData = mockPassportData_sha256WithRSAEncryption_65537;
-    let smttree: SMT;
-
+    let passportTree: SMT;
+    let nameDobTree: SMT;
+    let nameTree: SMT;
 
     before(async () => {
         circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose_ofac.circom"),
@@ -26,10 +27,14 @@ describe("start testing disclose.circom", function () {
             },
         );
 
-        smttree = passport_smt();            
+        let smttrees = passport_smt(); 
+        passportTree = smttrees[0];
+        nameDobTree = smttrees[1];
+        nameTree = smttrees[2];
+
         inputs = generateCircuitInputsDiscloseOfac(
             passportData,
-            smttree,
+            passportTree,
         );
     });
 

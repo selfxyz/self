@@ -3,7 +3,6 @@ import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
 import { SMT } from '@zk-kit/smt';
-import { poseidon3, poseidon2 } from 'poseidon-lite';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -373,7 +372,7 @@ export function findSubarrayIndex(arr: any[], subarray: any[]): number {
   );
 }
 
-export function stringToAsciiBigIntArray(str: string): BigInt[] {
+export function stringToAsciiBigIntArray(str: string): bigint[] {
   let asciiBigIntArray = [];
   for (let i = 0; i < str.length; i++) {
       asciiBigIntArray.push(BigInt(str.charCodeAt(i)));
