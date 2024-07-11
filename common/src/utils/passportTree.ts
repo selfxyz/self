@@ -3,34 +3,33 @@ import { stringToAsciiBigIntArray } from "./utils";
 import { ChildNodes,SMT } from "@zk-kit/smt"
 import * as fs from 'fs';
 
-// smt trees for 3 levels :
+// SMT trees for 3 levels :
 // 1. Passport tree  : level 3 (Absolute Match)
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
 
 export function passport_smt(): [SMT, SMT, SMT] {
-  let count = 0
   let startTime = performance.now();
 
-  // Currently absolute path cause I am calling it from disclose_ofac.test.ts
-  // After I add the export function, will use "../../ofacdata/passport.json" as path
-  const passports = JSON.parse(fs.readFileSync("/Users/ashishkumarsingh/Desktop/zk/proof-of-passport/common/ofacdata/passport.json") as unknown as string)
+  //Path wrt where it is called from, i.e circuits. Replace when export and import through json
+  const passports = JSON.parse(fs.readFileSync("../common/ofacdata/passport.json") as unknown as string)
   const tree = buildSMT(passports,"passport");
-  console.log("SMT for passports built")
-
-  const names = JSON.parse(fs.readFileSync("/Users/ashishkumarsingh/Desktop/zk/proof-of-passport/common/ofacdata/names.json") as unknown as string)
+  const names = JSON.parse(fs.readFileSync("../common/ofacdata/names.json") as unknown as string)
   const nameDobTree = buildSMT(names,"name_dob");
-  console.log("SMT for names&dob built")
-
   const nameTree1 = buildSMT(names,"name");
-  console.log("SMT for names built")
 
-  console.log('All trees built in', performance.now() - startTime, 'ms')
-  
-  return [tree,nameDobTree,nameTree1]
+  console.log("Total passports processed are : ",tree[0] ," over ",passports.length )
+  console.log("SMT for passports built in"+ tree[1] + "ms")
+  console.log("Total names&dob processed are : ",nameDobTree[0] ," over ",names.length )
+  console.log("SMT for names&dob built in " + nameDobTree[1] + "ms")
+  console.log("Total names processed are : ",nameTree1[0] ," over ",names.length )
+  console.log("SMT for names built in "+ nameTree1[1] + "ms")
+  console.log('Total Time : ', performance.now() - startTime, 'ms')
+
+  return [tree[2],nameDobTree[2],nameTree1[2]]
 }
 
-function buildSMT(field :any[], treetype:string){
+function buildSMT(field :any[], treetype:string): [number, number, SMT]{
     let count = 0
     let startTime = performance.now();
     
@@ -64,7 +63,7 @@ function buildSMT(field :any[], treetype:string){
 
     console.log("Total",treetype ,"paresed are : ",count ," over ",field.length )
     console.log(treetype, 'tree built in', performance.now() - startTime, 'ms')
-    return tree
+    return [count, performance.now() - startTime, tree]
 }
 
 function processPassport(passno : string, index: number): bigint {
@@ -111,7 +110,7 @@ function processName(firstName:string, lastName:string, i: number ): bigint {
   // Removed apostrophes from the first name, eg O'Neil -> ONeil
   // Replace spaces and hyphens with '<' in the first name, eg John Doe -> John<Doe
   // TODO : Handle special cases like malaysia : no two filler characters like << for surname and givenname
-  // TODO : Verify rules for . in names. eg : J. Doe
+  // TODO : Verify rules for . in names. eg : J. Doe (Done same as apostrophe for now)
 
   let arr = lastName + '<<' + firstName
   if (arr.length > 39) {
