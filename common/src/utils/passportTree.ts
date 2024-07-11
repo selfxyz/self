@@ -9,6 +9,8 @@ import * as fs from 'fs';
 // 3. Names tree : level 1 (Partial Match)
 
 export function passport_smt(): [SMT, SMT, SMT] {
+  let count = 0
+  let startTime = performance.now();
 
   // Currently absolute path cause I am calling it from disclose_ofac.test.ts
   // After I add the export function, will use "../../ofacdata/passport.json" as path
@@ -17,14 +19,18 @@ export function passport_smt(): [SMT, SMT, SMT] {
   console.log("SMT for passports built")
 
   const names = JSON.parse(fs.readFileSync("/Users/ashishkumarsingh/Desktop/zk/proof-of-passport/common/ofacdata/names.json") as unknown as string)
-  const nameTree = buildSMT(names,"name_dob");
+  const nameDobTree = buildSMT(names,"name_dob");
+  console.log("SMT for names&dob built")
+
+  const nameTree1 = buildSMT(names,"name");
   console.log("SMT for names built")
 
-  return [tree,nameTree,nameTree]
+  console.log('All trees built in', performance.now() - startTime, 'ms')
+  
+  return [tree,nameDobTree,nameTree1]
 }
-//okosdkoskdosdkosdksodk
 
-export function buildSMT(field :any[], treetype:string){
+function buildSMT(field :any[], treetype:string){
     let count = 0
     let startTime = performance.now();
     
@@ -40,11 +46,11 @@ export function buildSMT(field :any[], treetype:string){
 
         let leaf = BigInt(0)
         if (treetype == "passport") {
-          leaf = getPassportLeaf(entry.Pass_No, i)
+          leaf = processPassport(entry.Pass_No, i)
         } else if (treetype == "name_dob") {
-          leaf = getNameDobLeaf(entry, i)
+          leaf = processNameDob(entry, i)
         } else if (treetype == "name"){
-          leaf = getNameLeaf(entry, i)
+          leaf = processName(entry.First_Name, entry.Last_Name, i)
         }
        
         if( leaf==BigInt(0) || tree.createProof(leaf).membership){
@@ -56,12 +62,12 @@ export function buildSMT(field :any[], treetype:string){
         tree.add(leaf,BigInt(1))
       } 
 
-    console.log("Total passports paresed are : ",count ," over ",field.length )
-    console.log('passport tree built in', performance.now() - startTime, 'ms')
+    console.log("Total",treetype ,"paresed are : ",count ," over ",field.length )
+    console.log(treetype, 'tree built in', performance.now() - startTime, 'ms')
     return tree
 }
 
-function getPassportLeaf(passno : string, index: number): bigint {
+function processPassport(passno : string, index: number): bigint {
   if (passno.length > 9) {
     console.log('passport length is greater than 9:', index, passno)
   } else if (passno.length < 9){
@@ -70,7 +76,7 @@ function getPassportLeaf(passno : string, index: number): bigint {
     }
   }
 
-  const leaf = getOfacLeaf(stringToAsciiBigIntArray(passno))
+  const leaf = getPassportleaf(stringToAsciiBigIntArray(passno))
   if (!leaf) {
     console.log('Error creating leaf value', index, passno)
     return BigInt(0)
@@ -78,46 +84,34 @@ function getPassportLeaf(passno : string, index: number): bigint {
   return leaf
 }
 
-function getNameDobLeaf(entry: any, i: number): bigint {
-  return BigInt(0)
-}
-
-function getNameLeaf(entry: any, i: number): bigint {
-  console.log(entry.First_Name, entry.Last_Name)
-  const nameChunk = nameRules(entry)
-  const leaf = poseidon3(nameChunk)
-  console.log(leaf)
-
+function processNameDob(entry: any, i: number): bigint {
+  const firstName = entry.First_Name
+  const lastName = entry.Last_Name
+  const day = entry.day
+  const month = entry.month
+  const year = entry.year
+  if(day == null || month == null || year == null){
+    console.log('dob is null', i, entry)
+    return BigInt(0)
+  }
+  const nameHash = processName(firstName,lastName,i)
+  const dobHash = processDob(day, month, year,i)
+  const leaf = poseidon2([dobHash, nameHash])
   return leaf
 }
 
-export function getOfacLeaf(passport: any, i?: number): bigint {
-  if (passport.length !== 9) {
-    console.log('parsed passport length is not 9:', i, passport)
-    return
-  }
-  // change into bigint if not already
-  try {
-    return poseidon9(passport)
-  } catch (err) {
-    console.log('err : passport', err, i, passport)
-  }
-}
-
-function nameRules(name:any): bigint[] {
-  // Rules for names : https://egov.ice.gov/sevishelp/schooluser/machine-readable_passport_name_standards.htm
-  // Todo : Handle special cases like malaysia : no two filler characters like << for surname and givenname
+function processName(firstName:string, lastName:string, i: number ): bigint {
   // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-39)
-  // Remove apostrophes from the first name, eg O'Neil -> ONeil
-  // Replace spaces and hyphens with '<' in the first name, eg John Doe -> John<Doe
-  let firstName = name.First_Name
-  let lastName = name.Last_Name
   firstName = firstName.replace(/'/g, '');
   firstName = firstName.replace(/\./g, '');
   firstName = firstName.replace(/[- ]/g, '<');
   lastName = lastName.replace(/'/g, '');
   lastName = lastName.replace(/[- ]/g, '<');
   lastName = lastName.replace(/\./g, '');
+  // Removed apostrophes from the first name, eg O'Neil -> ONeil
+  // Replace spaces and hyphens with '<' in the first name, eg John Doe -> John<Doe
+  // TODO : Handle special cases like malaysia : no two filler characters like << for surname and givenname
+  // TODO : Verify rules for . in names. eg : J. Doe
 
   let arr = lastName + '<<' + firstName
   if (arr.length > 39) {
@@ -127,12 +121,55 @@ function nameRules(name:any): bigint[] {
       arr += '<'
     }
   }
-  console.log(arr)
   let nameArr = stringToAsciiBigIntArray(arr)
+  return getNameLeaf(nameArr, i)
+}
 
+function processDob(day: string, month: string, year: string, i : number): bigint {
+  // YYMMDD
+  const monthMap: { [key: string]: string } = {
+    jan: "01",
+    feb: "02",
+    mar: "03",
+    apr: "04",
+    may: "05",
+    jun: "06",
+    jul: "07",
+    aug: "08",
+    sep: "09",
+    oct: "10",
+    nov: "11",
+    dec: "12"
+  };
+
+  month = monthMap[month.toLowerCase()];
+  year = year.slice(-2);
+  const dob = year + month + day;
+  let arr = stringToAsciiBigIntArray(dob);
+  return getDobLeaf(arr,i)
+}
+
+export function getPassportleaf(passport: (bigint|number)[], i?: number): bigint {
+  if (passport.length !== 9) {
+    console.log('parsed passport length is not 9:', i, passport)
+    return
+  }
+  try {
+    return poseidon9(passport)
+  } catch (err) {
+    console.log('err : passport', err, i, passport)
+  }
+}
+
+export function getNameDobLeaf(nameMrz : (bigint|number)[], dobMrz : (bigint|number)[], i? : number): bigint {
+  return poseidon2([getNameLeaf(nameMrz), getDobLeaf(dobMrz)])
+}
+
+export function getNameLeaf(nameMrz : (bigint|number)[] , i? : number ) : bigint {
   let concatenatedBigInts = [];
   let chunks = [];
-  chunks.push(nameArr.slice(0, 13), nameArr.slice(13, 26), nameArr.slice(26, 39)); // 39/3 for posedion to digest
+
+  chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39)); // 39/3 for posedion to digest
 
   for(const chunk of chunks){
     const strArr: string[] = Array.from(chunk).map(String);
@@ -140,5 +177,25 @@ function nameRules(name:any): bigint[] {
     const result: bigint = BigInt(concatenatedStr);
     concatenatedBigInts.push(result);
   }
-  return concatenatedBigInts;
+
+  try {
+    return poseidon3(concatenatedBigInts)
+  } catch (err) {
+    console.log('err : Name', err, i, nameMrz)
+  }
 }
+
+export function getDobLeaf(dobMrz : (bigint|number)[], i? : number): bigint {
+  const strArr: string[] = Array.from(dobMrz).map(String);
+  const concatenatedStr: string = strArr.join('');
+  let result: bigint[] = []
+  result.push(BigInt(concatenatedStr));
+
+  try {
+    return poseidon1(result)
+  } catch (err) {
+    console.log('err : Dob', err, i, dobMrz)
+  }
+}
+
+passport_smt()

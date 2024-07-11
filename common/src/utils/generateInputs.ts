@@ -10,7 +10,7 @@ import {
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
-import { getOfacLeaf } from "./passportTree";
+import { getPassportleaf } from "./passportTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
@@ -168,7 +168,7 @@ export function generateCircuitInputsDiscloseOfac(
 ) {
 
   const mrz_bytes = formatMrz(passportData.mrz);
-  const passport_leaf = getOfacLeaf(mrz_bytes.slice(49,58))
+  const passport_leaf = getPassportleaf(mrz_bytes.slice(49,58))
   const {root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(merkletree, passport_leaf);
   let exists = membership ? 1 : 0;
 
