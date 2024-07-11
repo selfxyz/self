@@ -1,4 +1,4 @@
-import { poseidon9, poseidon3, poseidon2, poseidon1 } from "poseidon-lite"
+import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from "poseidon-lite"
 import { stringToAsciiBigIntArray } from "./utils";
 import { ChildNodes,SMT } from "@zk-kit/smt"
 import * as fs from 'fs';
@@ -166,36 +166,30 @@ export function getNameDobLeaf(nameMrz : (bigint|number)[], dobMrz : (bigint|num
 }
 
 export function getNameLeaf(nameMrz : (bigint|number)[] , i? : number ) : bigint {
-  let concatenatedBigInts = [];
-  let chunks = [];
+  let middleChunks: bigint[] = [];
+  let chunks: (number|bigint)[][] = [];
 
   chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39)); // 39/3 for posedion to digest
 
   for(const chunk of chunks){
-    const strArr: string[] = Array.from(chunk).map(String);
-    const concatenatedStr: string = strArr.join('');
-    const result: bigint = BigInt(concatenatedStr);
-    concatenatedBigInts.push(result);
+    middleChunks.push(poseidon13(chunk))
   }
 
   try {
-    return poseidon3(concatenatedBigInts)
+    return poseidon3(middleChunks)
   } catch (err) {
     console.log('err : Name', err, i, nameMrz)
   }
 }
 
 export function getDobLeaf(dobMrz : (bigint|number)[], i? : number): bigint {
-  const strArr: string[] = Array.from(dobMrz).map(String);
-  const concatenatedStr: string = strArr.join('');
-  let result: bigint[] = []
-  result.push(BigInt(concatenatedStr));
-
+  if (dobMrz.length !== 6) {
+    console.log('parsed dob length is not 9:', i, dobMrz)
+    return
+  }
   try {
-    return poseidon1(result)
+    return poseidon6(dobMrz)
   } catch (err) {
     console.log('err : Dob', err, i, dobMrz)
   }
 }
-
-passport_smt()
