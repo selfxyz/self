@@ -8,7 +8,7 @@ import * as fs from 'fs';
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
 
-export function passport_smt(): [SMT, SMT, SMT] {
+export function passport_smt(): [SMT,SMT,SMT] {
   let startTime = performance.now();
 
   //Path wrt where it is called from, i.e circuits. Replace when export and import through json

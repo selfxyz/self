@@ -162,7 +162,7 @@ export function generateCircuitInputsDisclose(
   };
 }
 
-export function generateCircuitInputsDiscloseOfac(
+export function generateCircuitInputsOfac(
   passportData: PassportData,
   merkletree: SMT,
 ) {
@@ -172,21 +172,12 @@ export function generateCircuitInputsDiscloseOfac(
   const {root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(merkletree, passport_leaf);
   let exists = membership ? 1 : 0;
 
-  // Testing --
-  // console.log("leaf_value",closestleaf)
-  // console.log("root",root)
-  // console.log("size",depth)
-  // console.log("path",indices)
-  // console.log("siblings",exSiblings)
-  // console.log("membership",membership)
-
   return {
-    mrz: mrz_bytes.map(byte => String(byte)),
     leaf_value: [BigInt(closestleaf).toString()],
-    merkle_root: [root.toString()],
-    merkletree_size: [BigInt(depth).toString()],
-    path : indices.map(index => BigInt(index).toString()),
-    siblings: exSiblings.map(index => BigInt(index).toString()),
+    smt_root: [root.toString()],
+    smt_size: [BigInt(depth).toString()],
+    smt_path : indices.map(index => BigInt(index).toString()),
+    smt_siblings: exSiblings.map(index => BigInt(index).toString()),
     membership: [BigInt(exists).toString()],
   };
 }

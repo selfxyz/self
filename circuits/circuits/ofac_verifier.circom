@@ -4,20 +4,33 @@ include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "binary-merkle-root.circom";
 include "./utils/getCommonLength.circom";
+include "validatePassport.circom";
 
 template ProvePassportNotInOfac(nLevels) {
+    signal input secret;
+    signal input attestation_id;
+    signal input pubkey_leaf;
     signal input mrz[93];
-    signal input leaf_value;
-
     signal input merkle_root;
     signal input merkletree_size;
     signal input path[nLevels];
     signal input siblings[nLevels];
+    signal input current_date[6]; 
+
+    signal input leaf_value;
+    signal input smt_root;
+    signal input smt_size;
+    signal input smt_path[256];
+    signal input smt_siblings[256];
     signal input membership;
     signal output out;
+    signal output proofType;
     signal out1;
     signal out2;
     signal out3;
+
+    // Validate passport
+    ValidatePassport(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings, current_date);
 
     component poseidon_hasher = Poseidon(9);
     for (var i = 0; i < 9; i++) {
@@ -29,17 +42,17 @@ template ProvePassportNotInOfac(nLevels) {
     poseidon_hash.inputs[1] <== 1;
     poseidon_hash.inputs[2] <== 1;
 
-    signal computedRoot <== BinaryMerkleRoot(nLevels)(poseidon_hash.out, merkletree_size, path, siblings);
+    signal computedRoot <== BinaryMerkleRoot(256)(poseidon_hash.out, smt_size, smt_path, smt_siblings);
     component iseq = IsEqual();
     computedRoot ==> iseq.in[0];
-    merkle_root ==> iseq.in[1];
+    smt_root ==> iseq.in[1];
     out1 <==  iseq.out; 
 
     // if out == false ; then proof failed as path and siblings do not compute to root
     // now if out == 1; path and siblings are true but the leaf_value given might be closest or might be actual
     // check if leaf_value = posiedon_hasher.out
-    // if it is, proof == true
-    // if check is false, then the given pah and siblings are correct but for closest leaf
+    // if it is, proof == true (as it's a membership proof)
+    // if check is false, then the given path and siblings are correct but for closest leaf (non-membership proof)
     // now we need to prove it is the closest leaf, i.e siblings length < first common bits of hashes
     // if it is , then proof == true or else == false
     // signal output commonLength;
@@ -49,9 +62,10 @@ template ProvePassportNotInOfac(nLevels) {
     leaf_value ==> iseq2.in[0];
     poseidon_hasher.out ==> iseq2.in[1];
     out2 <== iseq2.out;
+    proofType <== iseq2.out;
 
     component lt = LessEqThan(9);
-    merkletree_size ==> lt.in[0];
+    smt_size ==> lt.in[0];
     lt.in[1] <== PoseidonHashesCommonLength()(leaf_value,poseidon_hasher.out);
     out3 <== lt.out; // true if depth <= matchingbits.length
 
@@ -69,4 +83,4 @@ template ProvePassportNotInOfac(nLevels) {
 
 }
 
-component main { public [ merkle_root ] } = ProvePassportNotInOfac(256);
+component main { public [ merkle_root,smt_root ] } = ProvePassportNotInOfac(16);
