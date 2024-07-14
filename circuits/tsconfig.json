@@ -4,6 +4,6 @@
     "esModuleInterop": true,
     "target": "ES2020",
     "moduleResolution": "node",
-    "module": "CommonJS",
+    "module": "CommonJS"
   }
 }
