@@ -5,6 +5,7 @@ import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH } from "../constants/constants";
 import { poseidon16, poseidon2, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
+import { createHash } from "crypto";
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
@@ -44,11 +45,15 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     if (devmod) {
         console.log('DEV MODE');
         //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
+        //console.log("certificate", cscaCertificate);
+        //console.log('csca_modulus_hex', cscaCertificate.getPublicKeyHex());
+
         const rsaPublicKey = cscaCertificate.publicKey as forge.pki.rsa.PublicKey;
         const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
+        //console.log('csca_modulus', csca_modulus);
         csca_modulus_bigint = BigInt(`0x${csca_modulus}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
-        console.log('csca_modulus_formatted', csca_modulus_formatted);
+        //console.log('csca_modulus_formatted', csca_modulus_formatted);
 
 
     }
@@ -71,7 +76,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
         csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
         //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
-        console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
+        //console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
     }
 
     const signatureAlgorithm = dscCertificate.signatureOid;;
@@ -105,12 +110,17 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     else if (signatureAlgorithm === '1.2.840.113549.1.1.11') { //sha256
         [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
     }
+    else {
+        console.log("Signature algorithm not recognized", signatureAlgorithm);
+        [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+
+    }
     const startIndex = findStartIndex(dsc_modulus, dsc_message_padded);
     const startIndex_formatted = startIndex.toString();
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
-    console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
+    // console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
-    console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
+    // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
     const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
@@ -186,7 +196,7 @@ export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
             hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
         }
         const finalHash = poseidon4(hashInputs.map(h => h));
-        console.log(finalHash);
+        //console.log(finalHash);
         return finalHash.toString();
     }
     else {
@@ -204,6 +214,19 @@ export function getCSCAModulusProof(leaf, n, k) {
     }
     const proof = tree.createProof(index);
     return [tree.root, proof];
+}
+
+export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 'sha256'): string[] {
+    const tbsCertAsn1 = forge.pki.certificateToAsn1(cert).value[0];
+    const tbsCertDer = forge.asn1.toDer(tbsCertAsn1 as any).getBytes();
+    const md = hashAlgorithm === 'sha256' ? forge.md.sha256.create() : forge.md.sha1.create();
+    md.update(tbsCertDer);
+    const tbsCertificateHash = md.digest();
+    const tbsCertificateHashString = tbsCertificateHash.data;
+    const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
+    const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
+    console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
+    return splitToWords(tbsCertificateHashBigint, BigInt(64), BigInt(32));
 }
 
 

@@ -92,3 +92,25 @@ export function readCertificate(filePath: string): jsrsasign.X509 {
     certificate.readCertPEM(certPem);
     return certificate;
 }
+
+export function getTBSCertificate(certificate: jsrsasign.X509): Buffer {
+    // console.log("Certificate:", certificate);
+
+    const certASN1 = certificate.getParam();
+    // console.log("certASN1:", certASN1);
+
+    if (!certASN1) {
+        console.error("Failed to get certificate parameters");
+        throw new Error("Invalid certificate structure");
+    }
+
+    // Extract the TBS part directly from the certificate's hex representation
+    const certHex = certificate.hex;
+    const tbsStartIndex = certHex.indexOf('30') + 2; // Start after the first sequence tag
+    const tbsLength = parseInt(certHex.substr(tbsStartIndex, 2), 16) * 2 + 2; // Length in bytes * 2 for hex + 2 for length field
+    const tbsHex = certHex.substr(tbsStartIndex - 2, tbsLength); // Include the sequence tag
+
+    // console.log("TBS Hex:", tbsHex);
+
+    return Buffer.from(tbsHex, 'hex');
+}
