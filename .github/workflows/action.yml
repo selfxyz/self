@@ -47,6 +47,14 @@ jobs:
         working-directory: ./circuits
         run: yarn install-circuits --immutable
 
+      - name: Run lint
+        working-directory: ./circuits
+        run: yarn lint
+
+      - name: Run Tests
+        working-directory: ./circuits
+        run: yarn test
+
       - name: Run Tests
         working-directory: ./circuits
         run: yarn test
