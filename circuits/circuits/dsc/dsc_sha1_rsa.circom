@@ -40,22 +40,16 @@ template DSC_SHA1_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len,
 
     // hash raw TBS certificate
     signal sha[160] <== Sha1Bytes(max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
-    component splitSignalsToWords = SplitSignalsToWords(1,160, n_csca, k_csca);
-    component bits2Num = Bits2Num(160);
+    component sstw_1 = SplitSignalsToWords(1,160, n_csca, k_csca);
     for (var i = 0; i < 160; i++) {
-        splitSignalsToWords.in[i] <== sha[159 - i];
-        bits2Num.in[i] <== sha[159 - i];
+        sstw_1.in[i] <== sha[159 - i];
     }
 
     //verify RSA dsc_signature
     component rsa = RSAVerify65537(n_csca, k_csca);
     for (var i = 0; i < k_csca; i++) {
-        rsa.base_message[i] <== splitSignalsToWords.out[i];
-    }
-    for (var i = 0; i < k_csca; i++) {
+        rsa.base_message[i] <== sstw_1.out[i];
         rsa.modulus[i] <== csca_modulus[i];
-    }
-    for (var i = 0; i < k_csca; i++) {
         rsa.signature[i] <== dsc_signature[i];
     }
 
@@ -69,12 +63,12 @@ template DSC_SHA1_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len,
         dsc_modulus[i] === spbt_1.out[i];
     }
     // generate blinded commitment
-    component spbt_2 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
-    spbt_2.in <== dsc_modulus;
+    component sstw_2 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
+    sstw_2.in <== dsc_modulus;
     component poseidon = Poseidon(10);
     poseidon.inputs[0] <== secret;
     for (var i = 0; i < 9; i++) {
-        poseidon.inputs[i+1] <== spbt_2.out[i];
+        poseidon.inputs[i+1] <== sstw_2.out[i];
     }
     blinded_dsc_commitment <== poseidon.out;
 }

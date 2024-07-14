@@ -14,7 +14,7 @@ import { packBytes } from "../utils/utils";
 import { getCSCAModulusMerkleTree } from "./csca";
 import {
   mockPassportDatas,
-} from "./mockPassportData";
+} from "../constants/mockPassportData";
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -137,7 +137,7 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[2]
   ]);
 
-  console.log('commitment', commitment.toString());
+  //console.log('commitment', commitment.toString());
 
   const index = findIndexInTree(merkletree, commitment);
 
@@ -171,7 +171,7 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   if (index === -1) {
     throw new Error("This commitment was not found in the tree");
   } else {
-    console.log(`Index of commitment in the registry: ${index}`);
+    //  console.log(`Index of commitment in the registry: ${index}`);
   }
   return index;
 }

@@ -14,17 +14,11 @@ template LeafHasher (n,k) {
        hash[i] = Poseidon(16);
     }
     for (var i = 0; i < 64 ; i ++){
-        // if (i < k ){
         hash[ i % 4 ].inputs[ i \ 4 ] <== splitSignalsToWords.out[i];
-        // }
-        // else{
-        // hash[ i % 4 ].inputs[ i \ 4 ] <== 0;
-        // }
     }
     component finalHash = Poseidon(4);
     for (var i = 0 ; i < 4 ; i++){
         finalHash.inputs[i] <== hash[i].out;
     }
-    log(finalHash.out);
     out <== finalHash.out;
 }

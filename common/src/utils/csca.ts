@@ -45,15 +45,15 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     if (devmod) {
         console.log('DEV MODE');
         //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
-        console.log("certificate", cscaCertificate);
+        //console.log("certificate", cscaCertificate);
         //console.log('csca_modulus_hex', cscaCertificate.getPublicKeyHex());
 
         const rsaPublicKey = cscaCertificate.publicKey as forge.pki.rsa.PublicKey;
         const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
-        console.log('csca_modulus', csca_modulus);
+        //console.log('csca_modulus', csca_modulus);
         csca_modulus_bigint = BigInt(`0x${csca_modulus}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
-        console.log('csca_modulus_formatted', csca_modulus_formatted);
+        //console.log('csca_modulus_formatted', csca_modulus_formatted);
 
 
     }
@@ -76,7 +76,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
         csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
         csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
         //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
-        console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
+        //console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
     }
 
     const signatureAlgorithm = dscCertificate.signatureOid;;
@@ -118,9 +118,9 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     const startIndex = findStartIndex(dsc_modulus, dsc_message_padded);
     const startIndex_formatted = startIndex.toString();
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
-    console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
+    // console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
-    console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
+    // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
     const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
@@ -196,7 +196,7 @@ export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
             hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
         }
         const finalHash = poseidon4(hashInputs.map(h => h));
-        console.log(finalHash);
+        //console.log(finalHash);
         return finalHash.toString();
     }
     else {

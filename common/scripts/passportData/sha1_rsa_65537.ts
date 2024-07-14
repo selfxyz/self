@@ -1,9 +1,9 @@
 import { readFileSync, writeFileSync } from "fs";
-import { PassportData } from "../src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../src/utils/utils";
+import { PassportData } from "../../src/utils/types";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../../src/utils/utils";
 import * as forge from 'node-forge';
 import { assert } from "console";
-const dsc_key = readFileSync('../common/src/mock_certificates/sha1_rsa_2048/mock_dsc.key', 'utf8');
+import { mock_dsc_key_sha1_rsa_4096 } from "../../src/constants/mockCertificates";
 
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
@@ -33,7 +33,7 @@ export function genMockPassportData_sha1WithRSAEncryption_65537(): PassportData 
 
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
-  const privKey = forge.pki.privateKeyFromPem(dsc_key);
+  const privKey = forge.pki.privateKeyFromPem(mock_dsc_key_sha1_rsa_4096);
   const modulus = privKey.n.toString(16);
 
   const md = forge.md.sha1.create();

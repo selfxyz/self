@@ -11,7 +11,7 @@ include "../utils/RSASSAPSS_padded.circom";
 include "../utils/leafHasher.circom";
 
 
-template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
+template DSC_SHA256_RSAPSS(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
     signal input raw_dsc_cert[max_cert_bytes]; 
     signal input raw_dsc_cert_padded_bytes;
     signal input csca_modulus[k_csca];
@@ -61,12 +61,12 @@ template DSC(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels 
         dsc_modulus[i] === spbt_1.out[i];
     }
     // generate blinded commitment
-    component spbt = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
-    spbt.in <== dsc_modulus;
+    component sstw_1 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
+    sstw_1.in <== dsc_modulus;
     component poseidon = Poseidon(10);
     poseidon.inputs[0] <== secret;
     for (var i = 0; i < 9; i++) {
-        poseidon.inputs[i+1] <== spbt.out[i];
+        poseidon.inputs[i+1] <== sstw_1.out[i];
     }
     blinded_dsc_commitment <== poseidon.out;
 }

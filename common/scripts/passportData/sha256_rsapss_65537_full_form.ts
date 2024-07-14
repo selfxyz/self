@@ -3,8 +3,8 @@
 // It is currently broken so the line that errors is commented
 
 import assert from "assert";
-import { PassportData } from "../src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../src/utils/utils";
+import { PassportData } from "../../src/utils/types";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../../src/utils/utils";
 import * as forge from 'node-forge';
 import crypto from 'crypto';
 import { writeFileSync } from "fs";

@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import { attributeToPosition, COMMITMENT_TREE_DEPTH } from "../../../common/src/constants/constants";
 import { poseidon1, poseidon2, poseidon6 } from "poseidon-lite";
@@ -10,17 +10,18 @@ import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { unpackReveal } from '../../../common/src/utils/revealBitmap';
 
-describe("start testing disclose.circom", function () {
+describe("Disclose", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
     let w: any;
-    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
+    let passportData = mockPassportData_sha256_rsa_65537;
     let attestation_id: string;
     let tree: any;
+    const attestation_name = "E-PASSPORT";
 
     before(async () => {
-        circuit = await wasm_tester(path.join(__dirname, "../circuits/disclose.circom"),
+        circuit = await wasm_tester(path.join(__dirname, "../../circuits/disclose/disclose.circom"),
             {
                 include: [
                     "node_modules",
@@ -31,7 +32,6 @@ describe("start testing disclose.circom", function () {
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-        const attestation_name = "E-PASSPORT";
         attestation_id = poseidon1([
             BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))
         ]).toString();
@@ -82,8 +82,8 @@ describe("start testing disclose.circom", function () {
         const nullifier_js = poseidon2([inputs.secret, inputs.scope]).toString();
         const nullifier_circom = (await circuit.getOutput(w, ["nullifier"])).nullifier;
 
-        console.log("nullifier_circom", nullifier_circom);
-        console.log("nullifier_js", nullifier_js);
+        //console.log("nullifier_circom", nullifier_circom);
+        //console.log("nullifier_js", nullifier_js);
         expect(nullifier_circom).to.equal(nullifier_js);
     });
 
@@ -174,7 +174,7 @@ describe("start testing disclose.circom", function () {
         const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
 
         const reveal_unpacked = unpackReveal(revealedData_packed);
-        console.log("reveal_unpacked", reveal_unpacked)
+        //console.log("reveal_unpacked", reveal_unpacked)
 
         expect(reveal_unpacked[88]).to.equal("1");
         expect(reveal_unpacked[89]).to.equal("8");
@@ -194,7 +194,7 @@ describe("start testing disclose.circom", function () {
         const revealedData_packed = await circuit.getOutput(w, ["revealedData_packed[3]"])
 
         const reveal_unpacked = unpackReveal(revealedData_packed);
-        console.log("reveal_unpacked", reveal_unpacked)
+        //console.log("reveal_unpacked", reveal_unpacked)
 
         expect(reveal_unpacked[88]).to.equal("\x00");
         expect(reveal_unpacked[89]).to.equal("\x00");

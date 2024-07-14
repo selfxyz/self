@@ -1,11 +1,11 @@
 import assert from "assert";
-import { PassportData } from "../src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../src/utils/utils";
+import { PassportData } from "../../src/utils/types";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, arraysAreEqual, findSubarrayIndex } from "../../src/utils/utils";
 import * as forge from 'node-forge';
-import { writeFileSync } from "fs";
-import elliptic from 'elliptic';
-import * as crypto from 'crypto';
-
+import crypto from 'crypto';
+import { readFileSync, writeFileSync } from "fs";
+import { mock_dsc_key_sha256_rsapss_2048 } from "../../src/constants/mockCertificates";
+import { mock_dsc_sha256_rsapss_2048 } from "../../src/constants/mockCertificates";
 const sampleMRZ = "P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02"
 const sampleDataHashes = [
   [
@@ -33,40 +33,51 @@ const sampleDataHashes = [
     [76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59, -100, -69, -7, 28, -58, 95, 69, 15, -74, 56, 54, 38]
   ]
 ] as [number, number[]][]
-const signatureAlgorithm = 'SHA384withECDSA'
-const hashLen = 46
+const signatureAlgorithm = 'sha256WithRSASSAPSS'
+const hashLen = 32
 
-export function genMockPassportData_SHA384withECDSA(): PassportData {
+export function genMockPassportData_sha256WithRSASSAPSS_65537(): PassportData {
+  const privateKeyPem = forge.pki.privateKeyFromPem(mock_dsc_key_sha256_rsapss_2048);
+  const privateKeyPemString = forge.pki.privateKeyToPem(privateKeyPem);
+  const certificate = forge.pki.certificateFromPem(mock_dsc_sha256_rsapss_2048);
+
+  const publicKey = certificate.publicKey as forge.pki.rsa.PublicKey;
+
+  const modulus = (publicKey as any).n.toString(10);
+  const exponent = (publicKey as any).e.toString(10);
+  const salt = Buffer.from('dee959c7e06411361420ff80185ed57f3e6776afdee959c7e064113614201420', 'hex');
+
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  sampleDataHashes.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],
     hashLen,
-    33
+    30
   );
+
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
-  const ec = new elliptic.ec('p384');
-  const keyPair = ec.genKeyPair();
-  const pubKey = keyPair.getPublic();
+  const my_message = Buffer.from(eContent);
+  const hash_algorithm = 'sha256';
 
-  const md = forge.md.sha384.create();
-  md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-  const signature = keyPair.sign(md.digest().toHex(), 'hex');
-  const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+  const private_key = {
+    key: privateKeyPemString,
+    padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+    saltLength: salt.length,
+  };
 
-  const Qx = pubKey.getX().toString(16);
-  const Qy = pubKey.getY().toString(16);
+  const signature = crypto.sign(hash_algorithm, my_message, private_key);
+  const signatureArray = Array.from(signature, byte => byte < 128 ? byte : byte - 256);
 
   return {
     mrz: sampleMRZ,
     signatureAlgorithm: signatureAlgorithm,
     pubKey: {
-      publicKeyQ: `(${Qx},${Qy},1,fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000fffffffc)`
+      modulus: modulus,
+      exponent: exponent,
     },
     dataGroupHashes: concatenatedDataHashes,
     eContent: eContent,
-    encryptedDigest: signatureBytes,
+    encryptedDigest: signatureArray,
     photoBase64: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIw3..."
   }
 }
@@ -88,25 +99,28 @@ function verify(passportData: PassportData): boolean {
     'concatHash is not at the right place in eContent'
   );
 
-  const cleanPublicKeyQ = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-  const Qx = cleanPublicKeyQ[0];
-  const Qy = cleanPublicKeyQ[1];
+  const modulus = new forge.jsbn.BigInteger(pubKey.modulus, 10);
+  const exponent = new forge.jsbn.BigInteger(pubKey.exponent, 10);
+  const publicKey = forge.pki.setRsaPublicKey(modulus, exponent);
+  const pem = forge.pki.publicKeyToPem(publicKey);
+  const rsa_public = Buffer.from(pem);
 
-  const ec = new elliptic.ec('p384');
-  const key = ec.keyFromPublic({ x: Qx, y: Qy }, 'hex');
+  const message = Buffer.from(eContent);
+  const signature = Buffer.from(encryptedDigest);
+  const hash_algorithm = "sha256";
 
-  const messageBuffer = Buffer.from(eContent);
-  const msgHash = crypto.createHash('sha384').update(messageBuffer).digest();
+  const public_key = {
+    key: rsa_public,
+    padding: crypto.constants.RSA_PKCS1_PSS_PADDING,
+    saltLength: 32,
+  };
 
-  const signature = Buffer.from(encryptedDigest).toString('hex');
+  const isVerified = crypto.verify(hash_algorithm, message, public_key, signature);
 
-  const isValid = key.verify(msgHash, signature);
-
-  return isValid;
+  return isVerified;
 }
 
-
-const mockPassportData = genMockPassportData_SHA384withECDSA();
+const mockPassportData = genMockPassportData_sha256WithRSASSAPSS_65537();
 console.log("Passport Data:", JSON.stringify(mockPassportData, null, 2));
 console.log("Signature valid:", verify(mockPassportData));
 

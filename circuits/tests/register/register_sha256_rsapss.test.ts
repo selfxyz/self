@@ -3,22 +3,24 @@ import { assert, expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { poseidon1, poseidon6 } from "poseidon-lite";
-import { mockPassportData_sha256WithRSASSAPSS_65537 } from "../../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256_rsapss_65537 } from "../../../common/src/constants/mockPassportData";
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../../common/src/utils/utils';
-import { k_dsc, n_dsc } from '../../../common/src/constants/constants';
 
-describe("Proof of Passport - Circuits - RSASSAPSS", function () {
+describe("Register - SHA256 RSASSAPSS", function () {
     this.timeout(0);
     let inputs: any;
     let circuit: any;
-    let passportData = mockPassportData_sha256WithRSASSAPSS_65537;
+    let passportData = mockPassportData_sha256_rsapss_65537;
+    const attestation_name = "E-PASSPORT";
     let attestation_id: string;
+    const n_dsc = 64;
+    const k_dsc = 32;
 
     before(async () => {
         circuit = await wasm_tester(
-            path.join(__dirname, "../circuits/register_sha256WithRSASSAPSS_65537.circom"),
+            path.join(__dirname, "../../circuits/register/register_sha256WithRSASSAPSS_65537.circom"),
             {
                 include: [
                     "node_modules",
@@ -30,21 +32,18 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
         );
 
         const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-        console.log("secret", secret);
-
-        const attestation_name = "E-PASSPORT";
+        const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
         attestation_id = poseidon1([
             BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))
         ]).toString();
 
         inputs = generateCircuitInputsRegister(
             secret,
-            BigInt(0).toString(),
+            dscSecret,
             attestation_id,
             passportData,
-            64,
-            32,
-            [passportData],
+            n_dsc,
+            k_dsc
         );
 
     });
@@ -59,9 +58,12 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
         console.timeEnd('calculateWitness')
         await circuit.checkConstraints(w);
 
-        console.log("nullifier", (await circuit.getOutput(w, ["nullifier"])).nullifier);
-
+        const nullifier = (await circuit.getOutput(w, ["nullifier"])).nullifier;
+        console.log("\x1b[34m%s\x1b[0m", "nullifier", nullifier);
         const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
+        console.log("\x1b[34m%s\x1b[0m", "commitment", commitment_circom);
+        const blinded_dsc_commitment = (await circuit.getOutput(w, ["blinded_dsc_commitment"])).blinded_dsc_commitment;
+        console.log("\x1b[34m%s\x1b[0m", "blinded_dsc_commitment", blinded_dsc_commitment);
 
         const mrz_bytes = packBytes(inputs.mrz);
         const commitment_bytes = poseidon6([
@@ -77,8 +79,8 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
             mrz_bytes[2]
         ]);
         const commitment_js = commitment_bytes.toString();
-        console.log('commitment_js', commitment_js)
-        console.log('commitment_circom', commitment_circom)
+        //console.log('commitment_js', commitment_js)
+        //console.log('commitment_circom', commitment_circom)
         expect(commitment_circom).to.be.equal(commitment_js);
     });
 
@@ -113,19 +115,6 @@ describe("Proof of Passport - Circuits - RSASSAPSS", function () {
             const invalidInputs = {
                 ...inputs,
                 signature: inputs.signature.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
-            }
-            await circuit.calculateWitness(invalidInputs);
-            expect.fail("Expected an error but none was thrown.");
-        } catch (error) {
-            expect(error.message).to.include("Assert Failed");
-        }
-    });
-
-    it("should fail to calculate witness with invalid merkle root", async function () {
-        try {
-            const invalidInputs = {
-                ...inputs,
-                merkle_root: inputs.merkle_root.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
             }
             await circuit.calculateWitness(invalidInputs);
             expect.fail("Expected an error but none was thrown.");
