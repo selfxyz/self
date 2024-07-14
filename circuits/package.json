@@ -5,7 +5,9 @@
   "license": "MIT",
   "scripts": {
     "test": "yarn ts-mocha tests/**/*.test.ts --exit",
-    "install-circuits": "cd ../common && yarn && cd ../circuits && yarn"
+    "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
   },
   "dependencies": {
     "@types/chai-as-promised": "^7.1.6",
@@ -40,6 +42,7 @@
     "@types/mocha": "^10.0.6",
     "chai": "^4.3.8",
     "mocha": "^10.3.0",
+    "prettier": "^3.3.3",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2"
   }
