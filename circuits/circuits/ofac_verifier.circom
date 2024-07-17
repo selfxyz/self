@@ -43,11 +43,8 @@ template ProvePassportNotInOfac(nLevels) {
     poseidon_hash.inputs[2] <== 1;
 
     signal computedRoot <== BinaryMerkleRoot(256)(poseidon_hash.out, smt_size, smt_path, smt_siblings);
-    component iseq = IsEqual();
-    computedRoot ==> iseq.in[0];
-    smt_root ==> iseq.in[1];
-    out1 <==  iseq.out; 
-
+    out1 <== IsEqual()([computedRoot,smt_root]);
+    
     // if out == false ; then proof failed as path and siblings do not compute to root
     // now if out == 1; path and siblings are true but the leaf_value given might be closest or might be actual
     // check if leaf_value = posiedon_hasher.out
@@ -58,14 +55,11 @@ template ProvePassportNotInOfac(nLevels) {
     // signal output commonLength;
 
     // true if leaf given = leaf calulated
-    component iseq2 = IsEqual();
-    leaf_value ==> iseq2.in[0];
-    poseidon_hasher.out ==> iseq2.in[1];
-    out2 <== iseq2.out;
-    proofType <== iseq2.out;
+    out2 <== IsEqual()([leaf_value,poseidon_hasher.out]);
+    proofType <== out2;
 
     component lt = LessEqThan(9);
-    smt_size ==> lt.in[0];
+    lt.in[0] <== smt_size;
     lt.in[1] <== PoseidonHashesCommonLength()(leaf_value,poseidon_hasher.out);
     out3 <== lt.out; // true if depth <= matchingbits.length
 

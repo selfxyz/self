@@ -2,7 +2,7 @@ import { expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
-import { passport_smt } from '../../common/src/utils/passportTree';
+import { ofac_smt } from '../../common/src/utils/ofacTree';
 import { generateCircuitInputsOfac, generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { SMT } from "@zk-kit/smt"
@@ -65,7 +65,7 @@ describe("start testing disclose.circom", function () {
         tree.insert(BigInt(commitment));
 
         // smt stuff
-        let smttrees = passport_smt(); 
+        let smttrees = ofac_smt(); 
         passportTree = smttrees[0];
         nameDobTree = smttrees[1];
         nameTree = smttrees[2];

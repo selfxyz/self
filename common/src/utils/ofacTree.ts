@@ -8,7 +8,7 @@ import * as fs from 'fs';
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
 
-export function passport_smt(): [SMT,SMT,SMT] {
+export function ofac_smt(): [SMT,SMT,SMT] {
   let startTime = performance.now();
 
   //Path wrt where it is called from, i.e circuits. Replace when export and import through json
@@ -75,7 +75,7 @@ function processPassport(passno : string, index: number): bigint {
     }
   }
 
-  const leaf = getPassportleaf(stringToAsciiBigIntArray(passno))
+  const leaf = getPassportNumberleaf(stringToAsciiBigIntArray(passno))
   if (!leaf) {
     console.log('Error creating leaf value', index, passno)
     return BigInt(0)
@@ -148,7 +148,7 @@ function processDob(day: string, month: string, year: string, i : number): bigin
   return getDobLeaf(arr,i)
 }
 
-export function getPassportleaf(passport: (bigint|number)[], i?: number): bigint {
+export function getPassportNumberleaf(passport: (bigint|number)[], i?: number): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport)
     return
