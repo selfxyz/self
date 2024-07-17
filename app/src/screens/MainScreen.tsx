@@ -25,7 +25,7 @@ import { contribute } from '../utils/contribute';
 import { sendCSCARequest } from '../utils/cscaRequest';
 import { sendRegisterTransaction } from '../utils/transactions';
 // import utils from common
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { getCSCAInputs } from '../../../common/src/utils/csca';
 import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 // import screens
@@ -95,7 +95,7 @@ const MainScreen: React.FC = () => {
 
   const handleSkip = () => {
     update({
-      passportData: mockPassportData_sha256WithRSAEncryption_65537
+      passportData: mockPassportData_sha256_rsa_65537
     })
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();

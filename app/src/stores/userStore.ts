@@ -5,7 +5,7 @@ import {
   DEFAULT_DOE,
 } from '@env';
 import forge from 'node-forge';
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
+import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
@@ -50,7 +50,7 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfExpiry: DEFAULT_DOE ?? "",
   dscSecret: null,
   registered: false,
-  passportData: mockPassportData_sha256WithRSAEncryption_65537,
+  passportData: mockPassportData_sha256_rsa_65537,
   secret: "",
   dscCertificate: null,
   cscaProof: null,
