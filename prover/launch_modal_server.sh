@@ -1,0 +1,1 @@
+modal deploy dsc_prover.py --name dsc_prover

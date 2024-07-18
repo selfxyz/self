@@ -5,6 +5,7 @@ import subprocess
 import asyncio
 import json
 import hashlib
+
 image = Image.from_dockerfile("Dockerfile")
 
 app = App(image=image)
@@ -16,6 +17,16 @@ mount = Mount.from_local_dir("src", remote_path="/root/src")
 async def generate_dsc_proof(request: Request):
     # Read the JSON data from the request body
     data = await request.json()
+    
+    # Extract the signature_algorithm
+    signature_algorithm = data.get("signature_algorithm")
+    if signature_algorithm not in ["sha256_rsa", "sha1_rsa"]:
+        return PlainTextResponse("Invalid or missing signature_algorithm", status_code=400)
+    
+    # Ensure 'inputs' key exists
+    if "inputs" not in data:
+        return PlainTextResponse("Missing 'inputs' in request data", status_code=400)
+    
     # Convert JSON data to a properly formatted string
     json_data = json.dumps(data)
 
@@ -55,4 +66,3 @@ async def generate_dsc_proof(request: Request):
 # Run the app
 if __name__ == "__main__":
     app.run()
-

@@ -1,44 +1,68 @@
 #!/bin/bash
 
 # Record the start time
-START_TIME=$(date +%s)
+TOTAL_START_TIME=$(date +%s)
 
 mkdir -p build
 cd build
 if [ ! -f powersOfTau28_hez_final_22.ptau ]; then
-    echo "Download power of tau...."
+    echo -e "\033[34mDownload power of tau....\033[0m"
     wget https://hermez.s3-eu-west-1.amazonaws.com/powersOfTau28_hez_final_22.ptau
-    echo "Finished download!"
+    echo -e "\033[32mFinished download!\033[0m"
 else 
-    echo "Powers of tau file already downloaded... Skip download action!"
+    echo -e "\033[90mPowers of tau file already downloaded\033[0m"
 fi
 cd ..
 
-echo "compiling circuit"
-circom circuits/tests/certificates/dsc_4096.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
+build_circuit() {
+    local CIRCUIT_NAME=$1
+    local START_TIME=$(date +%s)
 
-echo "building zkey"
-yarn snarkjs groth16 setup build/dsc_4096.r1cs build/powersOfTau28_hez_final_22.ptau build/dsc_4096.zkey
+    echo -e "\033[34mcompiling circuit: $CIRCUIT_NAME\033[0m"
+    circom circuits/tests/dsc/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
 
-if command -v openssl &> /dev/null
-then
-    RAND_STR=$(openssl rand -hex 64)
-else
-    RAND_STR="random text"
-fi
+    echo -e "\033[34mbuilding zkey\033[0m"
+    yarn snarkjs groth16 setup build/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/${CIRCUIT_NAME}.zkey
 
-echo "building vkey"
-echo $RAND_STR | yarn snarkjs zkey contribute build/dsc_4096.zkey build/dsc_4096_final.zkey
-yarn snarkjs zkey export verificationkey build/dsc_4096_final.zkey build/dsc_4096_vkey.json
+    if command -v openssl &> /dev/null
+    then
+        RAND_STR=$(openssl rand -hex 64)
+    else
+        RAND_STR="random text"
+    fi
 
-yarn snarkjs zkey export solidityverifier build/dsc_4096_final.zkey build/Verifier_dsc_4096.sol
-sed -i '' 's/Groth16Verifier/Verifier_dsc_4096/g' build/Verifier_dsc_4096.sol
-cp build/Verifier_dsc_4096.sol ../contracts/contracts/Verifier_dsc_4096.sol
-echo "copied Verifier_dsc_4096.sol to contracts"
+    echo -e "\033[34mbuilding vkey\033[0m"
+    echo $RAND_STR | yarn snarkjs zkey contribute build/${CIRCUIT_NAME}.zkey build/${CIRCUIT_NAME}_final.zkey
+    yarn snarkjs zkey export verificationkey build/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_NAME}_vkey.json
 
-echo "Build completed in $(($(date +%s) - $START_TIME)) seconds"
+    yarn snarkjs zkey export solidityverifier build/${CIRCUIT_NAME}_final.zkey build/Verifier_${CIRCUIT_NAME}.sol
+    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/Verifier_${CIRCUIT_NAME}.sol
+    cp build/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/Verifier_${CIRCUIT_NAME}.sol
+    echo -e "\033[34mcopied Verifier_${CIRCUIT_NAME}.sol to contracts\033[0m"
 
-echo "file sizes:"
-echo "Size of dsc_4096.r1cs: $(wc -c <build/dsc_4096.r1cs) bytes"
-echo "Size of dsc_4096.wasm: $(wc -c <build/dsc_4096_js/dsc_4096.wasm) bytes"
-echo "Size of dsc_4096_final.zkey: $(wc -c <build/dsc_4096_final.zkey) bytes"
+    echo -e "\033[32mBuild of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds\033[0m"
+
+    echo "file sizes:"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}.r1cs: $(wc -c <build/${CIRCUIT_NAME}.r1cs) bytes\033[0m"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}.wasm: $(wc -c <build/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes\033[0m"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}_final.zkey: $(wc -c <build/${CIRCUIT_NAME}_final.zkey) bytes\033[0m"
+}
+
+# Define circuits and their deployment flags
+# name:deploy_flag
+CIRCUITS=(
+    "dsc_sha256_rsa_4096:true"
+    "dsc_sha1_rsa_4096:true"
+)
+
+for circuit in "${CIRCUITS[@]}"; do
+    IFS=':' read -r CIRCUIT_NAME DEPLOY_FLAG <<< "$circuit"
+    if [ "$DEPLOY_FLAG" = "true" ]; then
+        echo -e "\033[34mBuilding circuit $CIRCUIT_NAME\033[0m"
+        build_circuit "$CIRCUIT_NAME"
+    else
+        echo -e "\033[90mSkipping build for $CIRCUIT_NAME\033[0m"
+    fi
+done
+
+echo -e "\033[32mTotal build completed in $(($(date +%s) - TOTAL_START_TIME)) seconds\033[0m"
