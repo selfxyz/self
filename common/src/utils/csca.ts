@@ -24,11 +24,11 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
         if (modulusNumArray[0] === messagePaddedNumber[i]) {
             for (let j = 0; j < modulusNumArray.length; j++) {
                 if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
-                    console.log("NO MODULUS FOUND IN CERTIFICATE");
+                    //console.log("NO MODULUS FOUND IN CERTIFICATE");
                     break;
                 }
                 else if (j === modulusNumArray.length - 1) {
-                    console.log("MODULUS FOUND IN CERTIFICATE");
+                    //console.log("MODULUS FOUND IN CERTIFICATE");
                     startIndex = i;
                 }
             }
@@ -43,7 +43,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     let csca_modulus_bigint;
     // the purpose of devmode is to get the csca modulus from the mock_csca certificate instead of using the registry which parses aki to csca modulus
     if (devmod) {
-        console.log('DEV MODE');
+        // console.log('DEV MODE');
         //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
         //console.log("certificate", cscaCertificate);
         //console.log('csca_modulus_hex', cscaCertificate.getPublicKeyHex());
@@ -58,7 +58,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
 
     }
     else {
-        console.log('NOT DEV MODE');
+        // console.log('NOT DEV MODE');
         // Find the authorityKeyIdentifier extension
         const authorityKeyIdentifierExt = dscCertificate.extensions.find(
             (ext) => ext.name === 'authorityKeyIdentifier'
@@ -80,7 +80,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     }
 
     const signatureAlgorithm = dscCertificate.signatureOid;;
-    console.log('signatureAlgorithm', signatureAlgorithm);
+    //console.log('signatureAlgorithm', signatureAlgorithm);
 
     //dsc modulus
     const dsc_modulus = dscCertificate.publicKey.n.toString(16).toLowerCase();
@@ -216,7 +216,7 @@ export function getCSCAModulusProof(leaf, n, k) {
     return [tree.root, proof];
 }
 
-export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 'sha256'): string[] {
+export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 'sha256', n: number, k: number): string[] {
     const tbsCertAsn1 = forge.pki.certificateToAsn1(cert).value[0];
     const tbsCertDer = forge.asn1.toDer(tbsCertAsn1 as any).getBytes();
     const md = hashAlgorithm === 'sha256' ? forge.md.sha256.create() : forge.md.sha1.create();
@@ -226,7 +226,7 @@ export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 
     const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
     const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
     console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
-    return splitToWords(tbsCertificateHashBigint, BigInt(64), BigInt(32));
+    return splitToWords(tbsCertificateHashBigint, BigInt(n), BigInt(k));
 }
 
 

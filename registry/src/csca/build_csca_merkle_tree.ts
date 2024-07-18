@@ -81,8 +81,8 @@ async function buildCscaMerkleTree() {
 
     if (DEVELOPMENT_MODE) {
         const mockCscaList = [
-            '../common/src/mock_certificates/sha256_rsa_4096/mock_csca.crt',
-            '../common/src/mock_certificates/sha256_rsa_2048/mock_csca.crt',
+            '../common/src/mock_certificates/sha256_rsa_4096/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_rsa_2048/mock_csca.pem',
             '../common/src/mock_certificates/sha256_rsapss_4096/mock_csca.pem',
             '../common/src/mock_certificates/sha256_rsapss_2048/mock_csca.pem',
             '../common/src/mock_certificates/sha1_rsa_4096/mock_csca.crt',

@@ -46,6 +46,8 @@ describe('RSA Verifier', function () {
       mock_dsc_sha256_rsa_2048,
       mock_csca_sha256_rsa_2048
     );
+    const n = 121;
+    const k = 17;
 
     it('should verify DSC has been signed by the CSCA', () => {
       const isVerified = dscCert.verify(cscaCert.publicKey);
@@ -54,18 +56,8 @@ describe('RSA Verifier', function () {
     });
 
     it('should extract and log certificate information', async () => {
-      const csca_inputs = getCSCAInputs(
-        '0',
-        dscCert_forge,
-        cscaCert_forge,
-        64,
-        32,
-        64,
-        32,
-        2048,
-        true
-      );
-      const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256');
+      const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 2048, true);
+      const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
 
       const inputs = {
         message: tbsCertificateHashFormatted,
