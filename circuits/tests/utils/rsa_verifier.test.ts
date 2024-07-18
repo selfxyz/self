@@ -56,17 +56,7 @@ describe('RSA Verifier', function () {
     });
 
     it('should extract and log certificate information', async () => {
-      const csca_inputs = getCSCAInputs(
-        '0',
-        dscCert_forge,
-        cscaCert_forge,
-        n,
-        k,
-        n,
-        k,
-        2048,
-        true
-      );
+      const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 2048, true);
       const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
 
       const inputs = {
