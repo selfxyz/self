@@ -1,4 +1,4 @@
-import { getCSCAInputs } from "../../common/src/utils/csca";
+import { getCSCAInputs, sendCSCARequest } from "../../common/src/utils/csca";
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096, mock_csca_sha1_rsa_4096, mock_dsc_sha1_rsa_4096 } from "../../common/src/constants/mockCertificates";
 import forge from "node-forge";
 import { MODAL_SERVER_ADDRESS } from "../../common/src/constants/constants";
@@ -72,7 +72,7 @@ describe('MODAL PROVER', function () {
                 "signature_algorithm": "sha1_rsa",
                 "inputs": circuitInputs
             }
-            //console.log(JSON.stringify(inputs));
+            console.log(JSON.stringify(inputs));
 
             console.log('\x1b[34msending request to modal server\x1b[0m');
             const response = await sendCSCARequest(inputs);
@@ -89,25 +89,3 @@ describe('MODAL PROVER', function () {
         });
     });
 });
-
-export const sendCSCARequest = async (inputs_csca: any): Promise<any> => {
-    try {
-        const response = await axios.post(MODAL_SERVER_ADDRESS, inputs_csca, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
-        return response.data;
-    } catch (error) {
-        if (axios.isAxiosError(error)) {
-            console.error('Axios error:', error.message);
-            if (error.response) {
-                console.error('Response data:', error.response.data);
-                console.error('Response status:', error.response.status);
-            }
-        } else {
-            console.error('Unexpected error:', error);
-        }
-        throw error;
-    }
-};
