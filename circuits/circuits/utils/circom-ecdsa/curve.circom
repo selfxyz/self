@@ -2,8 +2,8 @@ pragma circom 2.0.3;
 
 include "../../../node_modules/circomlib/circuits/bitify.circom";
 include "fp2.circom";
-include "../../../node_modules/@zk-email/circuits/lib/bigint.circom";
-include "../../../node_modules/@zk-email/circuits/lib/bigint-func.circom";
+include "bigint.circom";
+include "bigint_func.circom";
 
 // in[i] = (x_i, y_i) 
 // Implements constraint: (y_1 + y_3) * (x_2 - x_1) - (y_2 - y_1)*(x_1 - x_3) = 0 mod p

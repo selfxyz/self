@@ -3,7 +3,7 @@
 pragma circom 2.1.5;
 
 include "../../../node_modules/circomlib/circuits/multiplexer.circom";
-include "../../../node_modules/@zk-email/circuits/lib/bigint-func.circom";
+include "bigint_func.circom";
 include "p256.circom";
 include "ecdsa_func.circom";
 include "p256_func.circom";

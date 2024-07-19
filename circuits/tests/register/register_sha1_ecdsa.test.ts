@@ -41,7 +41,6 @@ describe('Register - SHA1 WITH ECDSA', function () {
           './node_modules/@zk-kit/binary-merkle-root.circom/src',
           './node_modules/circomlib/circuits',
           './node_modules/dmpierre/sha1-circom/circuits',
-          './node_modules/@zk-email/circuits',
         ],
       }
     );

@@ -1,9 +1,9 @@
 pragma circom 2.0.3;
 
-include "@zk-email/circuits/lib/bigint.circom";
-include "@zk-email/circuits/lib/bigint-func.circom";
+include "bigint.circom";
+include "bigint_func.circom";
 include "field_elements_func.circom";
-include "@zk-email/circuits/lib/fp.circom";
+include "fp.circom";
 
 // add two elements in Fp2
 template Fp2Add(n, k, p) {

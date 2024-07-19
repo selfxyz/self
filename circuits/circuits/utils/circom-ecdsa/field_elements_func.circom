@@ -1,7 +1,6 @@
 pragma circom 2.0.3;
 
-// include "../../../node_modules/@zk-email/circuits/lib/bigint-func.circom";
-include "../../../node_modules/@zk-email/circuits/lib/bigint-func.circom";
+include "bigint_func.circom";
 
 function get_fp_sgn0(a){
     return a[0] % 2; 
