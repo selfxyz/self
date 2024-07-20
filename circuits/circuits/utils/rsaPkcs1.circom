@@ -134,7 +134,7 @@ template RSAVerify65537(n, k) {
 
     // Check that the signature is in proper form and reduced mod modulus.
     component signatureRangeCheck[k];
-    component bigLessThan = BigLessThanEcdsa(n, k);
+    component bigLessThan = BigLessThan(n, k);
     for (var i = 0; i < k; i++) {
         signatureRangeCheck[i] = Num2Bits(n);
         signatureRangeCheck[i].in <== signature[i];

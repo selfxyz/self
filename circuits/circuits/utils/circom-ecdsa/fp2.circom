@@ -1,7 +1,7 @@
 pragma circom 2.0.3;
 
-include "bigint.circom";
-include "bigint_func.circom";
+include "bigInt.circom";
+include "bigInt_func.circom";
 include "field_elements_func.circom";
 include "fp.circom";
 

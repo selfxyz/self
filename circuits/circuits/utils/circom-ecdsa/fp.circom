@@ -1,9 +1,7 @@
 pragma circom 2.0.3;
 
-
-include "bigint.circom";
-include "bigint_func.circom";
-
+include "bigInt.circom";
+include "bigInt_func.circom";
 
 // a[i], b[i] in 0... 2**n-1
 // represent a = a[0] + a[1] * 2**n + .. + a[k - 1] * 2**(n * k)
@@ -159,7 +157,7 @@ template SignedFpCarryModP(n, k, overflow, p){
     var Xvar[2][50] = get_signed_Fp_carry_witness(n, k, m, in, p); 
     component X_range_checks[m];
     component range_checks[k]; 
-    //component lt = BigLessThanEcdsa(n, k); 
+    // component lt = BigLessThanEcdsa(n, k); 
 
     for(var i=0; i<k; i++){
         out[i] <-- Xvar[1][i];

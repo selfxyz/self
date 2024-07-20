@@ -146,7 +146,7 @@ describe('Register - SHA1 WITH ECDSA', function () {
         console.log(inputs);
         let witness = await circuit.calculateWitness(inputs);
         // expect(witness[1]).to.equal(res);
-        // await circuit.checkConstraints(witness);
+        await circuit.checkConstraints(witness);
       }
     );
   };

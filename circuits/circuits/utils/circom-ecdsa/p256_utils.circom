@@ -2,7 +2,7 @@
 
 pragma circom 2.1.5;
 
-include "bigint_func.circom";
+include "bigInt_func.circom";
 include "p256_func.circom";
 
 // P = 2^256 - 2^224 + 2^192 + 2^96 - 1

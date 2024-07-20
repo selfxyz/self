@@ -12,6 +12,16 @@ function max(a, b) {
     return b;
 }
 
+function div_ceil_ecdsa(m, n) {
+    var ret = 0;
+    if (m % n == 0) {
+        ret = m \ n;
+    } else {
+        ret = m \ n + 1;
+    }
+    return ret;
+}
+
 function log_ceil_ecdsa(n) {
    var n_temp = n;
    for (var i = 0; i < 254; i++) {
@@ -21,16 +31,6 @@ function log_ceil_ecdsa(n) {
        n_temp = n_temp \ 2;
    }
    return 254;
-}
-
-function div_ceil_ecdsa(m, n) {
-    var ret = 0;
-    if (m % n == 0) {
-        ret = m \ n;
-    } else {
-        ret = m \ n + 1;
-    }
-    return ret;
 }
 
 function SplitFn(in, n, m) {
@@ -171,7 +171,7 @@ function long_scalar_mult_ecdsa(n, k, a, b) {
 // out[1] has length k -- remainder
 // implements algorithm of https://people.eecs.berkeley.edu/~fateman/282/F%20Wright%20notes/week4.pdf
 // b[k-1] must be nonzero!
-function long_div2_ecdsa(n, k, m, a, b){
+function long_div2(n, k, m, a, b){
     var out[2][50];
     // assume k+m < 50
     var remainder[50];
@@ -202,7 +202,7 @@ function long_div2_ecdsa(n, k, m, a, b){
                subtrahend[i + j] = mult_shift[j];
             }
         }
-        remainder = long_sub(n, m + k, remainder, subtrahend);
+        remainder = long_sub_ecdsa(n, m + k, remainder, subtrahend);
     }
     for (var i = 0; i < k; i++) {
         out[1][i] = remainder[i];
@@ -212,7 +212,7 @@ function long_div2_ecdsa(n, k, m, a, b){
 }
 
 function long_div_ecdsa(n, k, a, b) {
-    return long_div2_ecdsa(n, k, k, a, b);
+    return long_div2(n, k, k, a, b);
 }
 
 // n bits per register
@@ -228,7 +228,7 @@ function short_div_norm_ecdsa(n, k, a, b) {
 
    var mult[50] = long_scalar_mult_ecdsa(n, k, qhat, b);
    if (long_gt_ecdsa(n, k + 1, mult, a) == 1) {
-      mult = long_sub(n, k + 1, mult, b);
+      mult = long_sub_ecdsa(n, k + 1, mult, b);
       if (long_gt_ecdsa(n, k + 1, mult, a) == 1) {
          return qhat - 2;
       } else {
@@ -417,15 +417,15 @@ function prod2D(n, k, l, a, b) {
 
 function long_add_mod(n, k, a, b, p) {
     var sum[50] = long_add(n,k,a,b); 
-    var temp[2][50] = long_div2_ecdsa(n,k,1,sum,p);
+    var temp[2][50] = long_div2(n,k,1,sum,p);
     return temp[1];
 }
 
 function long_sub_mod(n, k, a, b, p) {
     if(long_gt_ecdsa(n, k, b, a) == 1){
-        return long_add(n, k, a, long_sub(n,k,p,b));
+        return long_add(n, k, a, long_sub_ecdsa(n,k,p,b));
     }else{
-        return long_sub(n, k, a, b);
+        return long_sub_ecdsa(n, k, a, b);
     }
 }
 
@@ -522,8 +522,9 @@ function mod_inv(n, k, a, p) {
     two[0] = 2;
 
     var pMinusTwo[50];
-    pMinusTwo = long_sub(n, k, pCopy, two); // length k
+    pMinusTwo = long_sub_ecdsa(n, k, pCopy, two); // length k
     var out[50];
     out = mod_exp(n, k, a, pCopy, pMinusTwo);
     return out;
 }
+

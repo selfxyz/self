@@ -1,9 +1,8 @@
 /// This file implements the ECDSA verification algorithm along with public key generation (xG)
 
 pragma circom 2.1.5;
-
 include "../../../node_modules/circomlib/circuits/multiplexer.circom";
-include "bigint_func.circom";
+
 include "p256.circom";
 include "ecdsa_func.circom";
 include "p256_func.circom";
@@ -20,6 +19,7 @@ template ECDSAPrivToPub(n, k) {
         n2b[i] = Num2Bits(n);
         n2b[i].in <== privkey[i];
     }
+
     var num_strides = div_ceil_ecdsa(n * k, stride);
     // power[i][j] contains: [j * (1 << stride * i) * G] for 1 <= j < (1 << stride)
     var powers[num_strides][2 ** stride][2][k];
@@ -236,3 +236,4 @@ template ECDSAExtendedVerify(n, k) {
 
     signal output result;
 }
+

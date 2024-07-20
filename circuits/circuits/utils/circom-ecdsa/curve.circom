@@ -2,8 +2,8 @@ pragma circom 2.0.3;
 
 include "../../../node_modules/circomlib/circuits/bitify.circom";
 include "fp2.circom";
-include "bigint.circom";
-include "bigint_func.circom";
+include "bigInt.circom";
+include "bigInt_func.circom";
 
 // in[i] = (x_i, y_i) 
 // Implements constraint: (y_1 + y_3) * (x_2 - x_1) - (y_2 - y_1)*(x_1 - x_3) = 0 mod p
@@ -66,16 +66,23 @@ template PointOnCurve(n, k, a, b, p){
     for(var i=0; i<k; i++)
         x_cu.b[i] <== in[0][i];
 
+    component ax = BigMultShortLong(n, k, 2*n + LOGK); // 2k-1 registers in [0, k*2^{2n})
+    for (var i=0; i<k; i++) {
+        ax.a[i] <== a[i];
+        ax.b[i] <== in[0][i];
+    }
+
     // x_cu + a x + b has 3k-2 positive registers < k^2 * 2^{3n} + 2^{2n} + 2^n < (k^2 + 1) * 2^{3n} 
     component cu_red = PrimeReduce(n, k, 2*k-2, p, 4*n + 3*LOGK + 1);
     for(var i=0; i<3*k-2; i++){
-        if(i == 0)
-            cu_red.in[i] <== x_cu.out[i] + a * in[0][i] + b; 
-        else{
-            if(i < k)
-                cu_red.in[i] <== x_cu.out[i] + a * in[0][i]; 
-            else
+        if (i < k) {
+            cu_red.in[i] <== x_cu.out[i] + ax.out[i] + b[i];
+        } else {
+            if (i < 2*k-1) {
+                cu_red.in[i] <== x_cu.out[i] + ax.out[i];
+            } else {
                 cu_red.in[i] <== x_cu.out[i];
+            }
         }
     }
     // cu_red has k registers < (k^2 + 1)*(2k-1)*2^{4n}
@@ -110,10 +117,11 @@ template PointOnTangent(n, k, a, p){
     }
     component right = BigMultShortLongUnequal(n, 2*k-1, k, 3*n + 2*LOGK + 3); // 3k-2 registers < (3*k+1)*k*2^{3n} 
     for(var i=0; i<2*k-1; i++){
-        if(i == 0)
-            right.a[i] <== 3 * x_sq.out[i] + a; // registers in [0, 3*k*2^{2n} + 2^n = (3k+2^{-n})*2^{2n})  
-        else
-            right.a[i] <== 3 * x_sq.out[i]; 
+        if (i < k) {
+            right.a[i] <== 3 * x_sq.out[i] + a[i]; // registers in [0, 3*k*2^{2n} + 2^n = (3k+2^{-n})*2^{2n})
+        } else {
+            right.a[i] <== 3 * x_sq.out[i];
+        }
     }
     for(var i=0; i<k; i++){
         right.b[i] <== in[0][0][i] - in[1][0][i]; 
@@ -250,17 +258,14 @@ template EllipticCurveDouble(n, k, a, b, p) {
     signal input in[2][k];
     signal output out[2][k];
 
-    var long_a[k];
     var long_3[k];
-    long_a[0] = a;
     long_3[0] = 3;
     for (var i = 1; i < k; i++) {
-        long_a[i] = 0;
         long_3[i] = 0;
     }
 
     // precompute lambda 
-    var lamb_num[50] = long_add_mod(n, k, long_a, prod_mod(n, k, long_3, prod_mod(n, k, in[0], in[0], p), p), p);
+    var lamb_num[50] = long_add_mod(n, k, a, prod_mod(n, k, long_3, prod_mod(n, k, in[0], in[0], p), p), p);
     var lamb_denom[50] = long_add_mod(n, k, in[1], in[1], p);
     var lamb[50] = prod_mod(n, k, lamb_num, mod_inv(n, k, lamb_denom, p), p);
 
@@ -515,3 +520,5 @@ template EllipticCurveScalarMultiplyUnequal(n, k, b, x, p){
     for(var i=0; i<2; i++)for(var idx=0; idx<k; idx++)
         out[i][idx] <== R[0][i][idx];
 }
+
+

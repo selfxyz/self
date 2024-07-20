@@ -4,7 +4,8 @@ include "../../../node_modules/circomlib/circuits/comparators.circom";
 include "../../../node_modules/circomlib/circuits/bitify.circom";
 include "../../../node_modules/circomlib/circuits/gates.circom";
 
-include "bigint_func.circom";
+include "bigInt_func.circom";
+
 
 // addition mod 2**n with carry bit
 template ModSum(n) {
@@ -524,7 +525,7 @@ template BigMod2(n, k, m) {
     signal output div[m - k + 1];
     signal output mod[k];
 
-    var longdiv[2][50] = long_div2_ecdsa(n, k, m-k, a, b);
+    var longdiv[2][50] = long_div2(n, k, m-k, a, b);
     for (var i = 0; i < k; i++) {
         mod[i] <-- longdiv[1][i];
     }
@@ -985,3 +986,5 @@ template BigMultShortLong2DUnequal(n, ka, kb, la, lb) {
         }
     }
 }
+
+
