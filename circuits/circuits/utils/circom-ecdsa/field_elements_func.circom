@@ -15,7 +15,7 @@ function get_fp_sgn0(a){
 // else computes inv = num^{-1} mod p using extended euclidean algorithm
 // https://brilliant.org/wiki/extended-euclidean-algorithm/
 function find_Fp_inverse(n, k, num, p) {
-    var amodp[2][50] = long_div2(n, k, 0, num, p); 
+    var amodp[2][50] = long_div2_ecdsa(n, k, 0, num, p); 
     var a[50];
     var b[50]; 
     var x[50];
@@ -51,7 +51,7 @@ function find_Fp_inverse(n, k, num, p) {
             return ret;
         }
 
-        var r[2][50] = long_div2(n, ka, k - ka, b, a); 
+        var r[2][50] = long_div2_ecdsa(n, ka, k - ka, b, a); 
         var q[50]; 
         for(var i = 0; i < k - ka + 1; i++)
             q[i] = r[0][i];
@@ -96,13 +96,13 @@ function get_signed_Fp_carry_witness(n, k, m, a, p){
     */
 
     if(a_short[50] == 0){
-        out = long_div2(n, k, m, a_short, p);    
+        out = long_div2_ecdsa(n, k, m, a_short, p);    
     }else{
         var a_pos[50];
         for(var i=0; i<k+m; i++) 
             a_pos[i] = -a_short[i];
 
-        var X[2][50] = long_div2(n, k, m, a_pos, p);
+        var X[2][50] = long_div2_ecdsa(n, k, m, a_pos, p);
         // what if X[1] is 0? 
         var Y_is_zero = 1;
         for(var i=0; i<k; i++){
@@ -274,17 +274,17 @@ function find_Fp2_inverse(n, k, a, p) {
     var sq0[50] = prod(n, k, a[0], a[0]);
     var sq1[50] = prod(n, k, a[1], a[1]);
     var sq_sum[50] = long_add(n, 2*k, sq0, sq1);
-    var sq_sum_div[2][50] = long_div2(n, k, k+1, sq_sum, p);
+    var sq_sum_div[2][50] = long_div2_ecdsa(n, k, k+1, sq_sum, p);
     // lambda = 1/(sq_sum)%p
     var lambda[50] = mod_inv(n, k, sq_sum_div[1], p);
     var out0[50] = prod(n, k, lambda, a[0]);
-    var out0_div[2][50] = long_div(n, k, out0, p);
+    var out0_div[2][50] = long_div_ecdsa(n, k, out0, p);
     var out[2][50];
     out[0] = out0_div[1];
     
     var out1_pre[50] = long_sub(n, k, p, a[1]);
     var out1[50] = prod(n, k, lambda, out1_pre);
-    var out1_div[2][50] = long_div(n, k, out1, p);
+    var out1_div[2][50] = long_div_ecdsa(n, k, out1, p);
     out[1] = out1_div[1];
     return out;
 }

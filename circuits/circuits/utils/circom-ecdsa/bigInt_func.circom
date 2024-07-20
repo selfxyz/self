@@ -12,7 +12,7 @@ function max(a, b) {
     return b;
 }
 
-function log_ceil(n) {
+function log_ceil_ecdsa(n) {
    var n_temp = n;
    for (var i = 0; i < 254; i++) {
        if (n_temp == 0) {
@@ -23,7 +23,7 @@ function log_ceil(n) {
    return 254;
 }
 
-function div_ceil(m, n) {
+function div_ceil_ecdsa(m, n) {
     var ret = 0;
     if (m % n == 0) {
         ret = m \ n;
@@ -42,7 +42,7 @@ function SplitThreeFn(in, n, m, k) {
 }
 
 // 1 if true, 0 if false
-function long_gt(n, k, a, b) {
+function long_gt_ecdsa(n, k, a, b) {
     for (var i = k - 1; i >= 0; i--) {
         if (a[i] > b[i]) {
             return 1;
@@ -123,7 +123,7 @@ function long_add_unequal(n, k1, k2, a, b){
 // a has k registers
 // b has k registers
 // a >= b
-function long_sub(n, k, a, b) {
+function long_sub_ecdsa(n, k, a, b) {
     var diff[50];
     var borrow[50];
     for (var i = 0; i < k; i++) {
@@ -150,7 +150,7 @@ function long_sub(n, k, a, b) {
 
 // a is a n-bit scalar
 // b has k registers
-function long_scalar_mult(n, k, a, b) {
+function long_scalar_mult_ecdsa(n, k, a, b) {
     var out[50];
     for (var i = 0; i < 50; i++) {
         out[i] = 0;
@@ -171,7 +171,7 @@ function long_scalar_mult(n, k, a, b) {
 // out[1] has length k -- remainder
 // implements algorithm of https://people.eecs.berkeley.edu/~fateman/282/F%20Wright%20notes/week4.pdf
 // b[k-1] must be nonzero!
-function long_div2(n, k, m, a, b){
+function long_div2_ecdsa(n, k, m, a, b){
     var out[2][50];
     // assume k+m < 50
     var remainder[50];
@@ -191,8 +191,8 @@ function long_div2(n, k, m, a, b){
                 dividend[j] = remainder[j + i];
             }
         }
-        out[0][i] = short_div(n, k, dividend, b);
-        var mult_shift[50] = long_scalar_mult(n, k, out[0][i], b);
+        out[0][i] = short_div_ecdsa(n, k, dividend, b);
+        var mult_shift[50] = long_scalar_mult_ecdsa(n, k, out[0][i], b);
         var subtrahend[50];
         for (var j = 0; j < m + k; j++) {
             subtrahend[j] = 0;
@@ -211,8 +211,8 @@ function long_div2(n, k, m, a, b){
     return out;
 }
 
-function long_div(n, k, a, b) {
-    return long_div2(n, k, k, a, b);
+function long_div_ecdsa(n, k, a, b) {
+    return long_div2_ecdsa(n, k, k, a, b);
 }
 
 // n bits per register
@@ -220,16 +220,16 @@ function long_div(n, k, a, b) {
 // b has k registers
 // assumes leading digit of b is at least 2^(n - 1)
 // 0 <= a < (2**n) * b
-function short_div_norm(n, k, a, b) {
+function short_div_norm_ecdsa(n, k, a, b) {
    var qhat = (a[k] * (1 << n) + a[k - 1]) \ b[k - 1];
    if (qhat > (1 << n) - 1) {
       qhat = (1 << n) - 1;
    }
 
-   var mult[50] = long_scalar_mult(n, k, qhat, b);
-   if (long_gt(n, k + 1, mult, a) == 1) {
+   var mult[50] = long_scalar_mult_ecdsa(n, k, qhat, b);
+   if (long_gt_ecdsa(n, k + 1, mult, a) == 1) {
       mult = long_sub(n, k + 1, mult, b);
-      if (long_gt(n, k + 1, mult, a) == 1) {
+      if (long_gt_ecdsa(n, k + 1, mult, a) == 1) {
          return qhat - 2;
       } else {
          return qhat - 1;
@@ -244,18 +244,18 @@ function short_div_norm(n, k, a, b) {
 // b has k registers
 // assumes leading digit of b is non-zero
 // 0 <= a < b * 2^n
-function short_div(n, k, a, b) {
+function short_div_ecdsa(n, k, a, b) {
     var scale = (1 << n) \ (1 + b[k - 1]);
     // k + 2 registers now
-    var norm_a[50] = long_scalar_mult(n, k + 1, scale, a);
+    var norm_a[50] = long_scalar_mult_ecdsa(n, k + 1, scale, a);
     // k + 1 registers now
-    var norm_b[50] = long_scalar_mult(n, k, scale, b);
+    var norm_b[50] = long_scalar_mult_ecdsa(n, k, scale, b);
     
     var ret;
     if (norm_b[k] != 0) {
-	ret = short_div_norm(n, k + 1, norm_a, norm_b);
+	ret = short_div_norm_ecdsa(n, k + 1, norm_a, norm_b);
     } else {
-	ret = short_div_norm(n, k, norm_a, norm_b);
+	ret = short_div_norm_ecdsa(n, k, norm_a, norm_b);
     }
     return ret;
 }
@@ -417,12 +417,12 @@ function prod2D(n, k, l, a, b) {
 
 function long_add_mod(n, k, a, b, p) {
     var sum[50] = long_add(n,k,a,b); 
-    var temp[2][50] = long_div2(n,k,1,sum,p);
+    var temp[2][50] = long_div2_ecdsa(n,k,1,sum,p);
     return temp[1];
 }
 
 function long_sub_mod(n, k, a, b, p) {
-    if(long_gt(n, k, b, a) == 1){
+    if(long_gt_ecdsa(n, k, b, a) == 1){
         return long_add(n, k, a, long_sub(n,k,p,b));
     }else{
         return long_sub(n, k, a, b);
@@ -431,7 +431,7 @@ function long_sub_mod(n, k, a, b, p) {
 
 function prod_mod(n, k, a, b, p) {
     var prod[50] = prod(n,k,a,b);
-    var temp[2][50] = long_div(n,k,prod,p);
+    var temp[2][50] = long_div_ecdsa(n,k,prod,p);
     return temp[1];
 }
 
@@ -467,7 +467,7 @@ function mod_exp(n, k, a, p, e) {
             var temp[50]; // length 2 * k
             temp = prod(n, k, out, a);
             var temp2[2][50];
-            temp2 = long_div(n, k, temp, p);
+            temp2 = long_div_ecdsa(n, k, temp, p);
             out = temp2[1];
         }
 
@@ -476,7 +476,7 @@ function mod_exp(n, k, a, p, e) {
             var temp[50]; // length 2 * k
             temp = prod(n, k, out, out);
             var temp2[2][50];
-            temp2 = long_div(n, k, temp, p);
+            temp2 = long_div_ecdsa(n, k, temp, p);
             out = temp2[1];
         }
 

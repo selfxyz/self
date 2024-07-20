@@ -306,12 +306,12 @@ template CheckCubicModPIsZero(m) {
     log(555);
 
     // finally, check that qpProd == reduced
-    // CheckCarryToZero(n, m, k) spec:
+    // CheckCarryToZeroEcdsa(n, m, k) spec:
     // in[i] contains values in the range -2^(m-1) to 2^(m-1)
     // constrain that in[] as a big integer is zero
     // each limbs is n bits
     // FAILING HERE:
-    component zeroCheck = CheckCarryToZero(32, m + 50, 14);
+    component zeroCheck = CheckCarryToZeroEcdsa(32, m + 50, 14);
     for (var i = 0; i < 14; i++) {
         if (i < 8) { // reduced only has 8 registers
             zeroCheck.in[i] <== qpProd[i] - reduced[i]; // (m + 39) + 1 bits
@@ -374,7 +374,7 @@ template CheckQuadraticModPIsZero(m) {
         proper[i] = temp[i];
     }
 
-    var qVarTemp[2][100] = long_div(64, 4, 4, proper, p);
+    var qVarTemp[2][100] = long_div_ecdsa(64, 4, 4, proper, p);
     for (var i = 0; i < 2; i++) {
         q[i] <-- qVarTemp[0][i];
     }
@@ -400,7 +400,7 @@ template CheckQuadraticModPIsZero(m) {
     }
 
     // finally, check that qpProd == reduced
-    component zeroCheck = CheckCarryToZero(64, m + 36, 5);
+    component zeroCheck = CheckCarryToZeroEcdsa(64, m + 36, 5);
     for (var i = 0; i < 5; i++) {
         if (i < 4) { // reduced only has 4 registers
             zeroCheck.in[i] <== qpProd[i] - reduced[i]; // (m + 35) + 1 bits

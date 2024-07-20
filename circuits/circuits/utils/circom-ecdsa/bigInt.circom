@@ -359,12 +359,12 @@ template LongToShortNoEndCarry(n, k) {
     signal runningCarry[k];
     component runningCarryRangeChecks[k];
     runningCarry[0] <-- (in[0] - out[0]) / (1 << n);
-    runningCarryRangeChecks[0] = Num2Bits(n + log_ceil(k));
+    runningCarryRangeChecks[0] = Num2Bits(n + log_ceil_ecdsa(k));
     runningCarryRangeChecks[0].in <== runningCarry[0];
     runningCarry[0] * (1 << n) === in[0] - out[0];
     for (var i = 1; i < k; i++) {
         runningCarry[i] <-- (in[i] - out[i] + runningCarry[i-1]) / (1 << n);
-        runningCarryRangeChecks[i] = Num2Bits(n + log_ceil(k));
+        runningCarryRangeChecks[i] = Num2Bits(n + log_ceil_ecdsa(k));
         runningCarryRangeChecks[i].in <== runningCarry[i];
         runningCarry[i] * (1 << n) === in[i] - out[i] + runningCarry[i-1];
     }
@@ -376,7 +376,7 @@ template BigMult(n, k) {
     signal input b[k];
     signal output out[2 * k];
 
-    var LOGK = log_ceil(k);
+    var LOGK = log_ceil_ecdsa(k);
     component mult = BigMultShortLong(n, k, 2*n + LOGK);
     for (var i = 0; i < k; i++) {
         mult.a[i] <== a[i];
@@ -399,7 +399,7 @@ Inputs:
 Output:
     - out = (a < b) ? 1 : 0
 */
-template BigLessThan(n, k){
+template BigLessThanEcdsa(n, k){
     signal input a[k];
     signal input b[k];
     signal output out;
@@ -454,7 +454,7 @@ template BigMod(n, k) {
     signal output div[k + 1];
     signal output mod[k];
 
-    var longdiv[2][50] = long_div(n, k, a, b);
+    var longdiv[2][50] = long_div_ecdsa(n, k, a, b);
     for (var i = 0; i < k; i++) {
         div[i] <-- longdiv[0][i];
         mod[i] <-- longdiv[1][i];
@@ -507,7 +507,7 @@ template BigMod(n, k) {
     add.out[2 * k] === 0;
     add.out[2 * k + 1] === 0;
 
-    component lt = BigLessThan(n, k);
+    component lt = BigLessThanEcdsa(n, k);
     for (var i = 0; i < k; i++) {
         lt.a[i] <== mod[i];
         lt.b[i] <== b[i];
@@ -524,7 +524,7 @@ template BigMod2(n, k, m) {
     signal output div[m - k + 1];
     signal output mod[k];
 
-    var longdiv[2][50] = long_div2(n, k, m-k, a, b);
+    var longdiv[2][50] = long_div2_ecdsa(n, k, m-k, a, b);
     for (var i = 0; i < k; i++) {
         mod[i] <-- longdiv[1][i];
     }
@@ -573,7 +573,7 @@ template BigMod2(n, k, m) {
     }
     add.out[m] === 0;
 
-    component lt = BigLessThan(n, k);
+    component lt = BigLessThanEcdsa(n, k);
     for (var i = 0; i < k; i++) {
         lt.a[i] <== mod[i];
         lt.b[i] <== b[i];
@@ -598,7 +598,7 @@ template BigAddModP(n, k){
         add.a[i] <== a[i];
         add.b[i] <== b[i];
     }
-    component lt = BigLessThan(n, k+1);
+    component lt = BigLessThanEcdsa(n, k+1);
     for (var i = 0; i < k; i++) {
         lt.a[i] <== add.out[i];
         lt.b[i] <== p[i];
@@ -749,7 +749,7 @@ Input:
 Implements:
     - constrain that in[] evaluated at X = 2^n as a big integer equals zero
 */
-template CheckCarryToZero(n, m, k) {
+template CheckCarryToZeroEcdsa(n, m, k) {
     assert(k >= 2);
     
     var EPSILON = 1; // see below for why 1 is ok

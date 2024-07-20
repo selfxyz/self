@@ -103,14 +103,14 @@ template SignedFp2MultiplyNoCarryCompress(n, k, p, m_in, m_out){
     signal input b[2][k];
     signal output out[2][k];
     
-    var LOGK1 = log_ceil(2*k);
+    var LOGK1 = log_ceil_ecdsa(2*k);
     component ab = SignedFp2MultiplyNoCarry(n, k, 2*m_in + LOGK1);
     for(var i=0; i<2; i++)for(var idx=0; idx<k; idx++){
         ab.a[i][idx] <== a[i][idx];
         ab.b[i][idx] <== b[i][idx]; 
     }
     
-    var LOGK2 = log_ceil(2*k*k);
+    var LOGK2 = log_ceil_ecdsa(2*k*k);
     component compress = Fp2Compress(n, k, k-1, p, 2*m_in + n + LOGK2);
     for(var i=0; i<2; i++)for(var j=0; j<2*k-1; j++)
         compress.in[i][j] <== ab.out[i][j]; 
@@ -126,7 +126,7 @@ template SignedFp2MultiplyNoCarryCompressThree(n, k, p, m_in, m_out){
     signal input c[2][k];
     signal output out[2][k];
     
-    var LOGK = log_ceil(k);
+    var LOGK = log_ceil_ecdsa(k);
     component ab = SignedFp2MultiplyNoCarry(n, k, 2*m_in + LOGK + 1);
     for(var i=0; i<2; i++)for(var idx=0; idx<k; idx++){
         ab.a[i][idx] <== a[i][idx];
@@ -157,7 +157,7 @@ template RangeCheck2D(n, k){
     //component lt[2];
     
     for(var eps=0; eps<2; eps++){
-        //lt[eps] = BigLessThan(n, k);
+        //lt[eps] = BigLessThanEcdsa(n, k);
         for(var i=0; i<k; i++){
             range_checks[eps][i] = Num2Bits(n);
             range_checks[eps][i].in <== in[eps][i];
@@ -199,7 +199,7 @@ template SignedFp2CompressCarry(n, k, m, overflow, p){
     signal input in[2][k+m]; 
     signal output out[2][k];
     
-    var LOGM = log_ceil(m+1);
+    var LOGM = log_ceil_ecdsa(m+1);
     component compress = Fp2Compress(n, k, m, p, overflow + n + LOGM); 
     for(var i=0; i<2; i++)for(var idx=0; idx<k+m; idx++)
         compress.in[i][idx] <== in[i][idx];
@@ -221,7 +221,7 @@ template Fp2Multiply(n, k, p){
     signal input b[2][k];
     signal output out[2][k];
 
-    var LOGK2 = log_ceil(2*k*k);
+    var LOGK2 = log_ceil_ecdsa(2*k*k);
     assert(3*n + LOGK2 < 251);
 
     component c = SignedFp2MultiplyNoCarryCompress(n, k, p, n, 3*n + LOGK2); 
@@ -247,7 +247,7 @@ template Fp2MultiplyThree(n, k, p){
     signal input c[2][k];
     signal output out[2][k];
 
-    var LOGK3 = log_ceil(4*k*k*(2*k-1));
+    var LOGK3 = log_ceil_ecdsa(4*k*k*(2*k-1));
     assert(4*n + LOGK3 < 251);
 
     component compress = SignedFp2MultiplyNoCarryCompressThree(n, k, p, n, 4*n + LOGK3); 
@@ -376,7 +376,7 @@ template SignedFp2Divide(n, k, overflowa, overflowb, p){
     // precompute out * b = p * X' + Y' and a = p * X'' + Y''
     //            should have Y' = Y'' so X = X' - X''
     
-    var LOGK2 = log_ceil(2*k*k);
+    var LOGK2 = log_ceil_ecdsa(2*k*k);
     // out * b, registers overflow in 2*k*k * 2^{2n + overflowb}
     component mult = SignedFp2MultiplyNoCarryCompress(n, k, p, max(n, overflowb), 2*n + overflowb + LOGK2); 
     for(var eps=0; eps<2; eps++)for(var i=0; i<k; i++){
@@ -490,7 +490,7 @@ template Fp2IsZero(n, k, p){
     component isZeros[2][k];
     var total = 2*k;
     for(var j=0; j<2; j++){
-        lt[j] = BigLessThan(n, k);
+        lt[j] = BigLessThanEcdsa(n, k);
         for(var i = 0; i < k; i++) {
             lt[j].a[i] <== in[j][i];
             lt[j].b[i] <== p[i];
@@ -517,8 +517,8 @@ template Fp2IsEqual(n, k, p){
     component isEquals[2][k];
     var total = 2*k;
     for(var j=0; j<2; j++){
-        lta[j] = BigLessThan(n, k);
-        ltb[j] = BigLessThan(n, k);
+        lta[j] = BigLessThanEcdsa(n, k);
+        ltb[j] = BigLessThanEcdsa(n, k);
         for (var i = 0; i < k; i ++) {
             lta[j].a[i] <== a[j][i]; 
             lta[j].b[i] <== p[i]; 

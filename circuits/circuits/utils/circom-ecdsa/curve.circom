@@ -11,8 +11,8 @@ include "bigint_func.circom";
 template PointOnLine(n, k, p) {
     signal input in[3][2][k]; 
 
-    var LOGK = log_ceil(k);
-    var LOGK2 = log_ceil(3*k*k);
+    var LOGK = log_ceil_ecdsa(k);
+    var LOGK2 = log_ceil_ecdsa(3*k*k);
     assert(3*n + LOGK2 < 251);
 
     // AKA check point on line 
@@ -46,8 +46,8 @@ template PointOnLine(n, k, p) {
 template PointOnCurve(n, k, a, b, p){
     signal input in[2][k]; 
 
-    var LOGK = log_ceil(k);
-    var LOGK2 = log_ceil( (2*k-1)*(k*k+1) );
+    var LOGK = log_ceil_ecdsa(k);
+    var LOGK2 = log_ceil_ecdsa( (2*k-1)*(k*k+1) );
     assert(4*n + LOGK2 < 251);
 
     // compute x^3, y^2 
@@ -100,8 +100,8 @@ template PointOnCurve(n, k, a, b, p){
 template PointOnTangent(n, k, a, p){
     signal input in[2][2][k];
     
-    var LOGK = log_ceil(k);
-    var LOGK3 = log_ceil((3*k)*(2*k-1) + 1);
+    var LOGK = log_ceil_ecdsa(k);
+    var LOGK3 = log_ceil_ecdsa((3*k)*(2*k-1) + 1);
     assert(4*n + LOGK3 < 251);
     component x_sq = BigMultShortLong(n, k, 2*n + LOGK); // 2k-1 registers < k*2^{2n}) 
     for(var i=0; i<k; i++){
@@ -160,8 +160,8 @@ template EllipticCurveAddUnequal(n, k, p) {
 
     signal output out[2][k];
 
-    var LOGK = log_ceil(k);
-    var LOGK3 = log_ceil( (3*k*k)*(2*k-1) + 1 ); 
+    var LOGK = log_ceil_ecdsa(k);
+    var LOGK3 = log_ceil_ecdsa( (3*k*k)*(2*k-1) + 1 ); 
     assert(4*n + LOGK3 < 251);
 
     // precompute lambda and x_3 and then y_3
@@ -382,7 +382,7 @@ template EllipticCurveScalarMultiply(n, k, b, x, p){
     signal output out[2][k];
     signal output isInfinity;
 
-    var LOGK = log_ceil(k);
+    var LOGK = log_ceil_ecdsa(k);
         
     var Bits[250]; 
     var BitLength;
@@ -458,7 +458,7 @@ template EllipticCurveScalarMultiplyUnequal(n, k, b, x, p){
     signal input in[2][k];
     signal output out[2][k];
 
-    var LOGK = log_ceil(k);
+    var LOGK = log_ceil_ecdsa(k);
         
     var Bits[250]; 
     var BitLength;

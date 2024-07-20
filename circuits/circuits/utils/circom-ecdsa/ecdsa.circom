@@ -20,8 +20,7 @@ template ECDSAPrivToPub(n, k) {
         n2b[i] = Num2Bits(n);
         n2b[i].in <== privkey[i];
     }
-
-    var num_strides = div_ceil(n * k, stride);
+    var num_strides = div_ceil_ecdsa(n * k, stride);
     // power[i][j] contains: [j * (1 << stride * i) * G] for 1 <= j < (1 << stride)
     var powers[num_strides][2 ** stride][2][k];
     powers = get_g_pow_stride8_table(n, k);

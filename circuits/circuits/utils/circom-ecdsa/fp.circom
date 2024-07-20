@@ -19,7 +19,7 @@ template FpAdd(n, k, p){
         add.a[i] <== a[i];
         add.b[i] <== b[i];
     }
-    component lt = BigLessThan(n, k+1);
+    component lt = BigLessThanEcdsa(n, k+1);
     for (var i = 0; i < k; i++) {
         lt.a[i] <== add.out[i];
         lt.b[i] <== p[i];
@@ -93,7 +93,7 @@ template FpMultiply(n, k, p) {
     signal input b[k];
     signal output out[k];
 
-    var LOGK = log_ceil(k);
+    var LOGK = log_ceil_ecdsa(k);
 
     component nocarry = BigMultShortLong(n, k, 2*n + LOGK);
     for (var i = 0; i < k; i++) {
@@ -134,7 +134,7 @@ template CheckCarryModP(n, k, m, overflow, p){
         pX.b[i] <== X[i];
 
     // in - p*X - Y has registers in (-2^{overflow+1}, 2^{overflow+1})
-    carry_check = CheckCarryToZero(n, overflow+1, k+m-1 ); 
+    carry_check = CheckCarryToZeroEcdsa(n, overflow+1, k+m-1 ); 
     for(var i=0; i<k; i++){
         carry_check.in[i] <== in[i] - pX.out[i] - Y[i]; 
     }
@@ -159,7 +159,7 @@ template SignedFpCarryModP(n, k, overflow, p){
     var Xvar[2][50] = get_signed_Fp_carry_witness(n, k, m, in, p); 
     component X_range_checks[m];
     component range_checks[k]; 
-    //component lt = BigLessThan(n, k); 
+    //component lt = BigLessThanEcdsa(n, k); 
 
     for(var i=0; i<k; i++){
         out[i] <-- Xvar[1][i];
@@ -230,7 +230,7 @@ template FpSgn0(n, k, p){
     signal output out;
 
     // constrain in < p
-    component lt = BigLessThan(n, k);
+    component lt = BigLessThanEcdsa(n, k);
     for(var i=0; i<k; i++){
         lt.a[i] <== in[i];
         lt.b[i] <== p[i];
@@ -252,7 +252,7 @@ template FpIsZero(n, k, p){
     signal output out;
 
     // check that in < p 
-    component lt = BigLessThan(n, k);
+    component lt = BigLessThanEcdsa(n, k);
     component isZero = BigIsZero(k);
     for(var i = 0; i < k; i++) {
         lt.a[i] <== in[i];
@@ -271,7 +271,7 @@ template FpIsEqual(n, k, p){
     // check in[i] < p
     component lt[2];
     for(var i = 0; i < 2; i++){
-        lt[i] = BigLessThan(n, k);
+        lt[i] = BigLessThanEcdsa(n, k);
         for(var idx=0; idx<k; idx++){
             lt[i].a[idx] <== in[i][idx];
             lt[i].b[idx] <== p[idx];
