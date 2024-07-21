@@ -18,11 +18,13 @@ A ballpark number of 6917 individuals (at the time of writing this document) ent
 - For individuals, we parse : 
     - full name (first name, last name), dob(day, month, year) in names.json
     - passports and passport issuing country in passport.json
+- The jsons are stored at ofacdata/inputes to be used furthur by SMT's.
 
 ## Data Usage :
 These jsons are later used to create sparse merkle trees for non-membership proofs. We provide 3 levels of proofs.
 - Match through Passport Number  : level 3 (Absolute Match)
 - Match through Names and Dob combo tree : level 2 (High Probability Match)
 - Match only through Names : level 1 (Partial Match)
+The merkle tree is also exported as json in ofacdata/outputs for time constraint export and import.
 
 Check out src/ofacTree.ts for more details.<br>
