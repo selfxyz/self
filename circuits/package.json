@@ -8,6 +8,7 @@
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn"
   },
   "dependencies": {
+    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@types/chai-as-promised": "^7.1.6",
     "@types/node": "^20.11.19",
     "@types/node-forge": "^1.3.5",

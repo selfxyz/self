@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@ashpect/smt@https://github.com/ashpect/smt#main":
+  version "1.0.0"
+  resolved "https://github.com/ashpect/smt#4f73fd24adb06a7f8efd6fd2d3ed58e9e2f2691a"
+
 "@babel/runtime@^7.23.4":
   version "7.23.4"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.23.4.tgz#36fa1d2b36db873d25ec631dcc4923fdc1cf2e2e"

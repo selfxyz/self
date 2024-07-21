@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@ashpect/smt@https://github.com/ashpect/smt#main":
+  version "1.0.0"
+  resolved "https://github.com/ashpect/smt#4f73fd24adb06a7f8efd6fd2d3ed58e9e2f2691a"
+
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"

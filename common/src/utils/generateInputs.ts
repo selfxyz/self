@@ -17,7 +17,7 @@ import { packBytes } from "../utils/utils";
 import {
   mockPassportDatas,
 } from "./mockPassportData";
-import { SMT } from "@zk-kit/smt"
+import { SMT } from "@ashpect/smt"
 
 export function generateCircuitInputsRegister(
   secret: string,

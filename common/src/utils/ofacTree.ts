@@ -1,6 +1,6 @@
 import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from "poseidon-lite"
 import { stringToAsciiBigIntArray } from "./utils";
-import { ChildNodes,SMT } from "@zk-kit/smt"
+import { ChildNodes,SMT } from "@ashpect/smt"
 import * as fs from 'fs';
 
 // SMT trees for 3 levels :
@@ -8,28 +8,7 @@ import * as fs from 'fs';
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
 
-export function ofac_smt(): [SMT,SMT,SMT] {
-  let startTime = performance.now();
-
-  //Path wrt where it is called from, i.e circuits. Replace when export and import through json
-  const passports = JSON.parse(fs.readFileSync("../common/ofacdata/passport.json") as unknown as string)
-  const tree = buildSMT(passports,"passport");
-  const names = JSON.parse(fs.readFileSync("../common/ofacdata/names.json") as unknown as string)
-  const nameDobTree = buildSMT(names,"name_dob");
-  const nameTree1 = buildSMT(names,"name");
-
-  console.log("Total passports processed are : ",tree[0] ," over ",passports.length )
-  console.log("SMT for passports built in"+ tree[1] + "ms")
-  console.log("Total names&dob processed are : ",nameDobTree[0] ," over ",names.length )
-  console.log("SMT for names&dob built in " + nameDobTree[1] + "ms")
-  console.log("Total names processed are : ",nameTree1[0] ," over ",names.length )
-  console.log("SMT for names built in "+ nameTree1[1] + "ms")
-  console.log('Total Time : ', performance.now() - startTime, 'ms')
-
-  return [tree[2],nameDobTree[2],nameTree1[2]]
-}
-
-function buildSMT(field :any[], treetype:string): [number, number, SMT]{
+export function buildSMT(field :any[], treetype:string): [number, number, SMT]{
     let count = 0
     let startTime = performance.now();
     

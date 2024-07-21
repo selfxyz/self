@@ -2,24 +2,27 @@ import { expect } from 'chai'
 import path from "path";
 const wasm_tester = require("circom_tester").wasm;
 import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
-import { ofac_smt } from '../../common/src/utils/ofacTree';
 import { generateCircuitInputsOfac, generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
-import { SMT } from "@zk-kit/smt"
-import { poseidon1 , poseidon6, poseidon2} from "poseidon-lite";
+import { SMT, ChildNodes } from "@ashpect/smt"
+import { poseidon1, poseidon2, poseidon3, poseidon6} from "poseidon-lite";
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
+import passportNojson from "../../common/ofacdata/outputs/passportNoSMT.json";
+import nameDobjson from "../../common/ofacdata/outputs/passportNoSMT.json";
+import namejson from "../../common/ofacdata/outputs/passportNoSMT.json";
 
 describe("start testing disclose.circom", function () {
     this.timeout(0);
+    const hash = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes))
     let filteredInputs: any;
     let circuit: any;
     let w: any;
-    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
     let attestation_id: string;
-    let passportTree: SMT;
-    let nameDobTree: SMT;
-    let nameTree: SMT;
+    let passportData = mockPassportData_sha256WithRSAEncryption_65537;
+    let passportNoSMT = new SMT(hash, true);
+    let nameDobSMT = new SMT(hash, true);
+    let nameSMT = new SMT(hash, true);
     let tree : any;
 
     before(async () => {
@@ -64,11 +67,9 @@ describe("start testing disclose.circom", function () {
         tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
         tree.insert(BigInt(commitment));
 
-        // smt stuff
-        let smttrees = ofac_smt(); 
-        passportTree = smttrees[0];
-        nameDobTree = smttrees[1];
-        nameTree = smttrees[2];
+        passportNoSMT.import(JSON.stringify(passportNojson));
+        nameDobSMT.import(JSON.stringify(nameDobjson));
+        nameSMT.import(JSON.stringify(namejson));
 
         const val_inputs = generateCircuitInputsDisclose(
             secret,
@@ -83,7 +84,7 @@ describe("start testing disclose.circom", function () {
 
         const smt_inputs = generateCircuitInputsOfac(
             passportData,
-            passportTree,
+            passportNoSMT,
         );
 
         const combinedInputs = { ...val_inputs, ...smt_inputs };
@@ -99,12 +100,11 @@ describe("start testing disclose.circom", function () {
         expect(circuit).to.not.be.undefined;
     });
 
-    it("should give a bool if valid proof", async function () {       
+    it("should return proofValidity == 1 for valid proof", async function () {       
         w = await circuit.calculateWitness(filteredInputs);
-        const isEqual = (await circuit.getOutput(w, ["out"]));
-        const proofType = (await circuit.getOutput(w, ["proofType"]));
-        console.log("Proof (0 is invalid, 1 if valid", isEqual)
-        console.log("ProofType (0 for non-membership, 1 for membership)",proofType )
+        const proofValidity = (await circuit.getOutput(w, ["proofValidity"]));
+        console.log("Proof :", proofValidity)
+        expect(proofValidity).to.equal(1);
     });
 
 });

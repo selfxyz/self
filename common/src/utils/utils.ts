@@ -2,7 +2,7 @@ import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
-import { SMT } from '@zk-kit/smt';
+import { SMT } from '@ashpect/smt';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
