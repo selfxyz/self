@@ -1,7 +1,8 @@
-import { poseidon12, poseidon2, poseidon8 } from "poseidon-lite"
+import { poseidon10, poseidon2, poseidon8 } from "poseidon-lite"
 import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from "../constants/constants";
 import { IMT } from '@zk-kit/imt'
-import { bigIntToChunkedBytes, formatSigAlgNameForCircuit } from "./utils";
+import { splitToWords } from "./utils";
+import { formatSigAlgNameForCircuit } from "./utils";
 import { toStandardName } from "./formatNames";
 
 export function buildPubkeyTree(pubkeys: any[]) {
@@ -38,12 +39,9 @@ export function getLeaf(pubkey: any, i?: number): bigint {
   if (!pubkey?.publicKeyQ && pubkey?.pubKey?.publicKeyQ) {
     pubkey.publicKeyQ = pubkey.pubKey.publicKeyQ
   }
-
   const sigAlgFormatted = toStandardName(pubkey.signatureAlgorithm)
   const sigAlgFormattedForCircuit = formatSigAlgNameForCircuit(sigAlgFormatted, pubkey.exponent)
 
-  // console.log('pubkey', pubkey)
-  // console.log('sigAlgFormatted', sigAlgFormatted)
   if (
     sigAlgFormattedForCircuit === "sha256WithRSAEncryption_65537"
     || sigAlgFormattedForCircuit === "sha256WithRSAEncryption_3"
@@ -52,14 +50,11 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     || sigAlgFormattedForCircuit === "sha256WithRSASSAPSS_3"
     || sigAlgFormattedForCircuit === "sha512WithRSAEncryption_65537"
   ) {
-    // Converting pubkey.modulus into 11 chunks of 192 bits, assuming it is originally 2048 bits.
-    // This is because Poseidon circuit only supports an array of 16 elements, and field size is 254.
-    const pubkeyChunked = bigIntToChunkedBytes(BigInt(pubkey.modulus), 192, 11);
-
-    // console.log('pubkeyChunked', pubkeyChunked.length, pubkeyChunked)
+    const pubkeyChunked = splitToWords(BigInt(pubkey.modulus), BigInt(230), BigInt(9));
+    const leaf = poseidon10([SignatureAlgorithm[sigAlgFormattedForCircuit], ...pubkeyChunked])
     try {
-      // leaf is poseidon(signatureAlgorithm, ...pubkey)
-      return poseidon12([SignatureAlgorithm[sigAlgFormattedForCircuit], ...pubkeyChunked])
+
+      return leaf
     } catch (err) {
       console.log('err', err, i, sigAlgFormattedForCircuit, pubkey)
     }

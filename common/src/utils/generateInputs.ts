@@ -1,34 +1,35 @@
-import { MAX_DATAHASHES_LEN, SignatureAlgorithm, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from "../constants/constants";
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from "../constants/constants";
 import { assert, shaPad } from "./shaPad";
 import { PassportData } from "./types";
 import {
-  arraysAreEqual, bytesToBigDecimal, formatMrz, formatSigAlgNameForCircuit, hash, splitToWords,
+  arraysAreEqual, bytesToBigDecimal, formatMrz, hash, splitToWords,
   toUnsignedByte, getHashLen, getCurrentDateYYMMDD,
   generateMerkleProof, generateSMTProof,
   findSubarrayIndex
 } from "./utils";
 import { LeanIMT } from "@zk-kit/lean-imt";
-import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
 import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
-import serializedTree from "../../pubkeys/serialized_tree.json";
-import { poseidon2, poseidon6 } from "poseidon-lite";
+import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
+import { getCSCAModulusMerkleTree } from "./csca";
 import {
   mockPassportDatas,
-} from "./mockPassportData";
+} from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
 
 export function generateCircuitInputsRegister(
   secret: string,
+  dscSecret: string,
   attestation_id: string,
   passportData: PassportData,
+  n_dsc: number,
+  k_dsc: number,
   mocks: PassportData[] = mockPassportDatas
 ) {
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
 
-  const tree = new IMT(poseidon2, PUBKEY_TREE_DEPTH, 0, 2);
-  tree.setNodes(JSON.parse(JSON.stringify(serializedTree))); //deep copy
+  const tree = getCSCAModulusMerkleTree();
 
   if (DEVELOPMENT_MODE) {
     for (const mockPassportData of mocks) {
@@ -38,8 +39,8 @@ export function generateCircuitInputsRegister(
 
   if (![
     "sha256WithRSAEncryption",
-    // "sha1WithRSAEncryption",
-    // "sha256WithRSASSAPSS"
+    "sha1WithRSAEncryption",
+    "sha256WithRSASSAPSS"
   ].includes(signatureAlgorithm)) {
     console.error(`${signatureAlgorithm} has not been implemented.`);
     throw new Error(`${signatureAlgorithm} has not been implemented.`);
@@ -64,18 +65,18 @@ export function generateCircuitInputsRegister(
     'concatHash is not at the right place in eContent'
   );
 
-  const leaf = getLeaf({
-    signatureAlgorithm: signatureAlgorithm,
-    ...pubKey,
-  }).toString();
+  // const leaf = getLeaf({
+  //   signatureAlgorithm: signatureAlgorithm,
+  //   ...pubKey,
+  // }).toString();
 
-  const index = tree.indexOf(leaf);
-  // console.log(`Index of pubkey in the registry: ${index}`);
-  if (index === -1) {
-    throw new Error("Your public key was not found in the registry");
-  }
+  // const index = tree.indexOf(leaf);
+  // // console.log(`Index of pubkey in the registry: ${index}`);
+  // if (index === -1) {
+  //   throw new Error("Your public key was not found in the registry");
+  // }
 
-  const proof = tree.createProof(index);
+  // const proof = tree.createProof(index);
   // console.log("verifyProof", tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
@@ -92,24 +93,22 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map(byte => String(byte)),
-    // dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     signed_attributes: eContent.map(toUnsignedByte).map(byte => String(byte)),
     signature: splitToWords(
-      BigInt(bytesToBigDecimal(encryptedDigest)),
-      BigInt(64),
-      BigInt(32)
+      BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
+      BigInt(n_dsc),
+      BigInt(k_dsc)
     ),
-    pubkey: splitToWords(
-      BigInt(pubKey.modulus as string),
-      BigInt(64),
-      BigInt(32)
+    dsc_modulus: splitToWords(
+      BigInt(passportData.pubKey.modulus as string),
+      BigInt(n_dsc),
+      BigInt(k_dsc)
     ),
-    merkle_root: [tree.root.toString()],
-    path: proof.pathIndices.map(index => index.toString()),
-    siblings: proof.siblings.flat().map(index => index.toString()),
     attestation_id: [attestation_id],
+    dsc_secret: [dscSecret]
   };
 }
 
@@ -140,7 +139,7 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[2]
   ]);
 
-  console.log('commitment', commitment.toString());
+  //console.log('commitment', commitment.toString());
 
   const index = findIndexInTree(merkletree, commitment);
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
@@ -217,7 +216,7 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   if (index === -1) {
     throw new Error("This commitment was not found in the tree");
   } else {
-    console.log(`Index of commitment in the registry: ${index}`);
+    //  console.log(`Index of commitment in the registry: ${index}`);
   }
   return index;
 }

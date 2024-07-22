@@ -46,7 +46,7 @@ ts-node src/csca/extract_masterlists.ts
 
 Visualize the content of a PEM file:
 ```
-openssl x509 -text -in outputs/unique_cscas/unique_cert_0.pem
+openssl x509 -text -in outputs/pem_unique_masters/unique_cert_0.pem
 ```
 
 Visualize the signature algorithms of each country:

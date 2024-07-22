@@ -5,10 +5,9 @@ import axios from 'axios';
 import { unzip } from 'react-native-zip-archive';
 import useNavigationStore from '../stores/navigationStore';
 
-// this should not change, instead update the zkey on the bucket
 const zkeyZipUrls = {
-  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537.zkey.zip",
-  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose.zkey.zip",
+  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca2.zkey.zip",
+  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose3.zkey.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;
@@ -36,34 +35,34 @@ export type IsZkeyDownloading = {
 export async function downloadZkey(
   circuit: CircuitName,
 ) {
-    const {
-      isZkeyDownloading,
-      update
-    } = useNavigationStore.getState();
+  const {
+    isZkeyDownloading,
+    update
+  } = useNavigationStore.getState();
 
-    const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
-    if (!downloadRequired) {
-      console.log(`zkey for ${circuit} already downloaded`)
-      amplitude.track(`zkey for ${circuit} already downloaded`);
-      return;
-    }
+  const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
+  if (!downloadRequired) {
+    console.log(`zkey for ${circuit} already downloaded`)
+    amplitude.track(`zkey for ${circuit} already downloaded`);
+    return;
+  }
 
-    const networkInfo = await NetInfo.fetch();
-    console.log('Network type:', networkInfo.type)
-    if (networkInfo.type === 'wifi' || circuit === 'disclose') {
-      fetchZkey(circuit);
-    } else {
-      const response = await axios.head(zkeyZipUrls[circuit]);
-      const expectedSize = parseInt(response.headers['content-length'], 10);
+  const networkInfo = await NetInfo.fetch();
+  console.log('Network type:', networkInfo.type)
+  if (networkInfo.type === 'wifi' || circuit === 'disclose') {
+    fetchZkey(circuit);
+  } else {
+    const response = await axios.head(zkeyZipUrls[circuit]);
+    const expectedSize = parseInt(response.headers['content-length'], 10);
 
-      update({
-        showWarningModal: {
-          show: true,
-          circuit: circuit,
-          size: expectedSize,
-        }
-      });
-    }
+    update({
+      showWarningModal: {
+        show: true,
+        circuit: circuit,
+        size: expectedSize,
+      }
+    });
+  }
 }
 
 export async function isDownloadRequired(
@@ -93,7 +92,7 @@ export async function isDownloadRequired(
   const expectedSize = parseInt(response.headers['content-length'], 10);
 
   console.log('expectedSize:', expectedSize)
-  
+
   const isZipComplete = storedZipSize === expectedSize;
 
   console.log('isZipComplete:', isZipComplete)
@@ -145,7 +144,24 @@ export async function fetchZkey(
     .then(async () => {
       console.log('Download complete');
 
-      await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, RNFS.DocumentDirectoryPath);
+      RNFS.readDir(RNFS.DocumentDirectoryPath)
+        .then((result) => {
+          console.log('Directory contents before unzipping:', result);
+        })
+
+      // this trick makes sure the zkey ends up being named <circuit>.zkey
+      const unzipPath = `${RNFS.DocumentDirectoryPath}/${circuit}_temp`;
+      await unzip(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`, unzipPath);
+      const files = await RNFS.readDir(unzipPath);
+      const zkeyFile = files.find(file => file.name.endsWith('.zkey'));
+      if (zkeyFile) {
+        await RNFS.moveFile(zkeyFile.path, `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`);
+        console.log(`File renamed to ${circuit}.zkey`);
+      } else {
+        throw new Error('Zkey file not found in the unzipped directory');
+      }
+      await RNFS.unlink(unzipPath);
+
       console.log('Unzip complete');
 
       update({
@@ -158,11 +174,9 @@ export async function fetchZkey(
       amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
 
       const zipSize = await RNFS.stat(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`);
-
       console.log('zipSize:', zipSize.size);
 
       RNFS.writeFile(`${RNFS.DocumentDirectoryPath}/${circuit}_zip_size.txt`, zipSize.size.toString(), 'utf8');
-
       console.log('zip size written to file');
 
       // delete the zip file
@@ -173,6 +187,12 @@ export async function fetchZkey(
         .catch((error) => {
           console.error(error);
         });
+
+      RNFS.readDir(RNFS.DocumentDirectoryPath)
+        .then((result) => {
+          console.log('Directory contents at the end:', result);
+        })
+
     })
     .catch((error) => {
       console.error(error);

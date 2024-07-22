@@ -5,6 +5,7 @@ include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/mimcsponge.circom";
 include "@zk-email/circuits/lib/fp.circom";
+include "@zk-email/circuits/utils/array.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {

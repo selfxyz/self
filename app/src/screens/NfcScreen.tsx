@@ -1,13 +1,8 @@
 import React from 'react';
-import { YStack, Text, XStack, Button, Image, ScrollView } from 'tamagui';
-import { Steps } from '../utils/utils';
-import { Camera, ExternalLink, Nfc, X, SquarePen } from '@tamagui/lucide-icons';
+import { YStack, Text, XStack, Button, Image } from 'tamagui';
+import { Nfc } from '@tamagui/lucide-icons';
 import { blueColorDark, blueColorLight, borderColor, componentBgColor2, greenColorDark, greenColorLight, redColorDark, redColorLight, textColor1, textColor2 } from '../utils/colors';
-import { useToastController } from '@tamagui/toast'
 import NFCHelp from '../images/nfc_help.png'
-import SCANHelp from '../images/scan_help.png'
-import { Linking } from 'react-native';
-import { startCameraScan } from '../utils/cameraScanner';
 
 interface NfcScreenProps {
   handleNFCScan: () => void;
@@ -25,8 +20,6 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
       />
 
       <YStack f={1} gap="$2">
-
-
         <YStack mt="$2">
           <Text fontSize="$7" fow="bold" mt="$1" color={textColor1}>Scan the NFC chip in your passport.</Text>
           <Text fontSize="$6" color={textColor1} mt="$2">How do I find and scan the NFC chip?</Text>
@@ -56,9 +49,6 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
       <YStack gap="$2" mb="$6">
         <Button borderWidth={1.3} borderColor={borderColor} borderRadius="$10" bg="#3185FC" onPress={handleNFCScan}><Nfc color={textColor1} /></Button>
       </YStack>
-
-
-
 
     </YStack >
   );

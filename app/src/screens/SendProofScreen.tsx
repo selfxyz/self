@@ -4,7 +4,7 @@ import { Copy } from '@tamagui/lucide-icons';
 import { formatDuration } from '../../utils/utils';
 import { Steps } from '../utils/utils';
 import ProofGrid from '../components/ProofGrid';
-import { Platform, Pressable } from 'react-native';
+import { Platform } from 'react-native';
 import { blueColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 import useNavigationStore from '../stores/navigationStore';
 import { AppType } from '../utils/appType';
