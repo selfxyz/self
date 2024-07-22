@@ -10,7 +10,7 @@ import {
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { IMT } from "@zk-kit/imt";
 import { getLeaf } from "./pubkeyTree";
-import { getPassportNumberleaf } from "./ofacTree";
+import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
 import serializedTree from "../../pubkeys/serialized_tree.json";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
@@ -163,16 +163,40 @@ export function generateCircuitInputsDisclose(
 }
 
 export function generateCircuitInputsOfac(
+  secret: string,
+  attestation_id: string,
   passportData: PassportData,
-  merkletree: SMT,
+  merkletree: LeanIMT,
+  majority: string[],
+  bitmap: string[],
+  scope: string,
+  user_identifier: string,
+  sparsemerkletree: SMT,
+  proofLevel : number,
 ) {
 
-  const mrz_bytes = formatMrz(passportData.mrz);
-  const passport_leaf = getPassportNumberleaf(mrz_bytes.slice(49,58))
-  const {root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(merkletree, passport_leaf);
-  let exists = membership ? 1 : 0;
+  const result = generateCircuitInputsDisclose(secret,attestation_id,passportData,merkletree,majority,bitmap,scope,user_identifier);
+  const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
 
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49,58))
+  const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10,49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
+  const name_leaf = getNameLeaf(mrz_bytes.slice(10,49)) // [6-44] + 5 shift
+  
+  let root, depth, closestleaf, indices, exSiblings, membership;  
+  if(proofLevel == 3){
+    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, passport_leaf));
+  } else if(proofLevel == 2){
+    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, namedob_leaf));
+  } else if (proofLevel == 1){
+    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, name_leaf));
+  } else {
+    throw new Error("Invalid proof level")
+  }
+  const exists = membership ? 1 : 0;
+  
   return {
+    ...finalResult,
     leaf_value: [BigInt(closestleaf).toString()],
     smt_root: [root.toString()],
     smt_size: [BigInt(depth).toString()],

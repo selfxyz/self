@@ -54,7 +54,7 @@ function processPassport(passno : string, index: number): bigint {
     }
   }
 
-  const leaf = getPassportNumberleaf(stringToAsciiBigIntArray(passno))
+  const leaf = getPassportNumberLeaf(stringToAsciiBigIntArray(passno))
   if (!leaf) {
     console.log('Error creating leaf value', index, passno)
     return BigInt(0)
@@ -79,7 +79,7 @@ function processNameDob(entry: any, i: number): bigint {
 }
 
 function processName(firstName:string, lastName:string, i: number ): bigint {
-  // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-39)
+  // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-44)
   firstName = firstName.replace(/'/g, '');
   firstName = firstName.replace(/\./g, '');
   firstName = firstName.replace(/[- ]/g, '<');
@@ -93,9 +93,9 @@ function processName(firstName:string, lastName:string, i: number ): bigint {
 
   let arr = lastName + '<<' + firstName
   if (arr.length > 39) {
-    arr = arr.substring(0, 44)
+    arr = arr.substring(0, 39)
   } else {
-    while (arr.length < 44) {
+    while (arr.length < 39) {
       arr += '<'
     }
   }
@@ -127,7 +127,7 @@ function processDob(day: string, month: string, year: string, i : number): bigin
   return getDobLeaf(arr,i)
 }
 
-export function getPassportNumberleaf(passport: (bigint|number)[], i?: number): bigint {
+export function getPassportNumberLeaf(passport: (bigint|number)[], i?: number): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport)
     return
@@ -140,7 +140,7 @@ export function getPassportNumberleaf(passport: (bigint|number)[], i?: number): 
 }
 
 export function getNameDobLeaf(nameMrz : (bigint|number)[], dobMrz : (bigint|number)[], i? : number): bigint {
-  return poseidon2([getNameLeaf(nameMrz), getDobLeaf(dobMrz)])
+  return poseidon2([getDobLeaf(dobMrz), getNameLeaf(nameMrz)])
 }
 
 export function getNameLeaf(nameMrz : (bigint|number)[] , i? : number ) : bigint {

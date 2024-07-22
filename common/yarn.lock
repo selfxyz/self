@@ -38,11 +38,6 @@
   dependencies:
     "@zk-kit/utils" "1.0.0"
 
-"@zk-kit/smt@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@zk-kit/smt/-/smt-1.0.0.tgz#a587d2a4bedb66e163cda0d5818edaeef4220ec4"
-  integrity sha512-ggAbytY98jx4vXNL0FshW3x90e4/CJJYNnNOV4GwJZbNVAr7xbkemeA4vq6PbAHS+H5yikz1j3emKTcMKbPoPA==
-
 "@zk-kit/utils@1.0.0":
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/@zk-kit/utils/-/utils-1.0.0.tgz#db1af01a4e60f5290734a26c2fd9e863bff049e3"
