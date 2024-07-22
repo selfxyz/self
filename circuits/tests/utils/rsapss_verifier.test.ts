@@ -24,7 +24,10 @@ describe('RSAPSS Verifier', function () {
   let circuit;
 
   this.beforeAll(async () => {
-    const circuitPath = path.resolve(__dirname, '../../circuits/tests/utils/rsapss_verifier.circom');
+    const circuitPath = path.resolve(
+      __dirname,
+      '../../circuits/tests/utils/rsapss_verifier.circom'
+    );
     circuit = await wasm_tester(circuitPath, {
       include: [
         'node_modules',
