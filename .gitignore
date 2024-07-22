@@ -2,4 +2,3 @@ contracts/contracts/RegisterASCII.txt
 sdk/.env
 .DS_Store
 dist
-test
