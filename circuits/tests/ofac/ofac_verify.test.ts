@@ -2,9 +2,7 @@ import { expect } from 'chai';
 import path from 'path';
 const wasm_tester = require('circom_tester').wasm;
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
-import {
-  generateCircuitInputsOfac,
-} from '../../../common/src/utils/generateInputs';
+import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT, ChildNodes } from '@ashpect/smt';
 import { poseidon1, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
@@ -125,13 +123,16 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
   let smt_inputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_nameDob_verifier.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/ofac/ofac_nameDob_verifier.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     namedob_smt.import(nameDobjson);
     let proofLevel = 2;
@@ -185,13 +186,16 @@ describe('start testing ofac_name_verifier.circom', function () {
   let smt_inputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_name_verifier.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/ofac/ofac_name_verifier.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     name_smt.import(namejson);
     let proofLevel = 1;
