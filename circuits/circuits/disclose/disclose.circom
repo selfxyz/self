@@ -5,7 +5,7 @@ include "@zk-email/circuits/utils/bytes.circom";
 include "../utils/isOlderThan.circom";
 include "../utils/isValid.circom";
 include "binary-merkle-root.circom";
-include "validatePassport.circom";
+include "../utils/validatePassport.circom";
 
 template Disclose(nLevels) {
     signal input secret;

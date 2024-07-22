@@ -3,8 +3,8 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "binary-merkle-root.circom";
-include "./utils/getCommonLength.circom";
-include "validatePassport.circom";
+include "../utils/getCommonLength.circom";
+include "../utils/validatePassport.circom";
 
 template ProveNameNotInOfac(nLevels) {
     signal input secret;

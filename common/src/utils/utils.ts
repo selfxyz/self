@@ -356,7 +356,6 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
   // the tree depth is actually 3. The missing siblings can be set to 0, as they
   // won't be used to calculate the root in the circuit.
   const merkleProofIndices: number[] = []
-  console.log(depthForThisOne,maxDepth)
   for (let i = 0; i < maxDepth; i += 1) {
     merkleProofIndices.push((index >> i) & 1)
     if (merkleProofSiblings[i] === undefined) {

@@ -2,8 +2,8 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "./utils/isOlderThan.circom";
-include "./utils/isValid.circom";
+include "isOlderThan.circom";
+include "isValid.circom";
 include "binary-merkle-root.circom";
 
 template ValidatePassport(nLevels) {
