@@ -28,6 +28,8 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
           
           var hostingController: UIHostingController<ScannerWithInstructions>? = nil
           var scannerView = QKMRZScannerViewRepresentable()
+          let lottieView = LottieView(animationFileName: "passport", loopMode: .loop)
+
           scannerView.onScanResult = { scanResult in
               let resultDict: [String: Any] = [
                   "documentNumber": scanResult.documentNumber,
@@ -41,7 +43,7 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
           }
           
           // Wrap the scanner view and instruction text in a new SwiftUI view
-          let scannerWithInstructions = ScannerWithInstructions(scannerView: scannerView)
+          let scannerWithInstructions = ScannerWithInstructions(scannerView: scannerView, lottieView: lottieView)
           hostingController = UIHostingController(rootView: scannerWithInstructions)
           rootViewController.present(hostingController!, animated: true, completion: nil)
       }
@@ -55,14 +57,25 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
 // Define a new SwiftUI view that includes the scanner and instruction text
 struct ScannerWithInstructions: View {
     var scannerView: QKMRZScannerViewRepresentable
+    var lottieView: LottieView
     
     var body: some View {
         VStack {
-            scannerView
-            Text("Avoid glare or reflections during scanning.")
-                .font(.title3)
-                .padding()
+            ZStack {
+                scannerView
+                    .mask {
+                        RoundedRectangle(cornerRadius: 15)
+                            .frame(width: 370, height: 270)
+                    }
+              lottieView.frame(width: 360, height: 230)
+            }
+            .frame(height: 320)
+            Text("Scan the main page of your passport")
+                .font(.custom("Inter-Regular", size: 15))
                 .multilineTextAlignment(.center)
+                .frame(width: 300)
+                .opacity(0.5)
+                .padding()
         }
     }
 }
