@@ -19,7 +19,6 @@
     "@zk-kit/circuits": "^1.0.0-beta",
     "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
     "@zk-kit/lean-imt": "^2.0.1",
-    "@zk-kit/smt": "^1.0.0",
     "chai-as-promised": "^7.1.1",
     "circom_tester": "github:Atomic-Buy/circom_tester#main",
     "circomlib": "^2.0.5",
