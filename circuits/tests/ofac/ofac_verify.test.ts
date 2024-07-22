@@ -4,7 +4,6 @@ const wasm_tester = require('circom_tester').wasm;
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import {
   generateCircuitInputsOfac,
-  generateCircuitInputsDisclose,
 } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT, ChildNodes } from '@ashpect/smt';
@@ -64,7 +63,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../circuits/ofac_passportNo_verifier.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_passportNo_verifier.circom'),
       {
         include: [
           'node_modules',
@@ -126,7 +125,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
   let smt_inputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../circuits/ofac_nameDob_verifier.circom'), {
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_nameDob_verifier.circom'), {
       include: [
         'node_modules',
         './node_modules/@zk-kit/binary-merkle-root.circom/src',
@@ -186,7 +185,7 @@ describe('start testing ofac_name_verifier.circom', function () {
   let smt_inputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../circuits/ofac_name_verifier.circom'), {
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_name_verifier.circom'), {
       include: [
         'node_modules',
         './node_modules/@zk-kit/binary-merkle-root.circom/src',

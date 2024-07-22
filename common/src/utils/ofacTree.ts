@@ -1,7 +1,6 @@
 import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from "poseidon-lite"
 import { stringToAsciiBigIntArray } from "./utils";
 import { ChildNodes,SMT } from "@ashpect/smt"
-import * as fs from 'fs';
 
 // SMT trees for 3 levels :
 // 1. Passport tree  : level 3 (Absolute Match)
