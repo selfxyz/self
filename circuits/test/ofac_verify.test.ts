@@ -103,18 +103,6 @@ describe("start testing ofac_passportNo_verifier.circom", function () {
         }
     });
 
-    // Correct path, assertion of non-membership passes, but failing to prove closest sibling
-    // TODO :Give a randomsmt path and siblings
-    // it("should fail to calculate witness with valid paths but failing non-membership assertion , level 2", async function () {
-    //     try {
-    //         await circuit.calculateWitness(smt_inputs);
-    //         expect.fail("Expected an error but none was thrown.");
-    //     } catch (error) {
-    //         expect(error.message).to.include("Assert Failed");
-    //         // expect(error.message).to.include("line: 71");
-    //     }
-    // });;
-
     // Incorrect path
     it("should fail to calculate witness with invalid paths , level 3", async function () {
         try {
@@ -179,18 +167,6 @@ describe("start testing ofac_nameDob_verifier.circom", function () {
         }
     });;
 
-    // Correct path, assertion of non-membership passes, but failing to prove closest sibling
-    // TODO :Give a randomsmt path and siblings
-    // it("should fail to calculate witness with valid paths but failing non-membership assertion , level 2", async function () {
-    //     try {
-    //         await circuit.calculateWitness(smt_inputs);
-    //         expect.fail("Expected an error but none was thrown.");
-    //     } catch (error) {
-    //         expect(error.message).to.include("Assert Failed");
-    //         // expect(error.message).to.include("line: 48");
-    //     }
-    // });;
-
     // Incorrect path
     it("should fail to calculate witness with invalid paths , level 2", async function () {
         try {
@@ -254,18 +230,6 @@ describe("start testing ofac_name_verifier.circom", function () {
             expect(error.message).to.include("line: 48");
         }
     });;
-
-    // Correct path, assertion of non-membership passes, but failing to prove closest sibling
-    // TODO :Give a randomsmt path and siblings
-    // it("should fail to calculate witness with valid paths but failing non-membership assertion , level 2", async function () {
-    //     try {
-    //         await circuit.calculateWitness(smt_inputs);
-    //         expect.fail("Expected an error but none was thrown.");
-    //     } catch (error) {
-    //         expect(error.message).to.include("Assert Failed");
-    //         // expect(error.message).to.include("line: 59");
-    //     }
-    // });;
 
     // Incorrect path
     it("should fail to calculate witness with invalid paths , level 1", async function () {
