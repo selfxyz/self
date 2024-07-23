@@ -88,7 +88,8 @@ const useUserStore = create<UserState>((set, get) => ({
       set({
         passportData: JSON.parse(passportData),
       });
-      useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+      // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+
       return;
     }
 
@@ -97,7 +98,7 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    // useNavigationStore.getState().setStep(Steps.REGISTERED);
+    useNavigationStore.getState().setStep(Steps.REGISTERED);
   },
 
   // When reading passport for the first time:

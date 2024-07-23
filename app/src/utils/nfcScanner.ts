@@ -195,6 +195,7 @@ const handleResponseIOS = async (
     sendCSCARequest(inputs_csca, setModalProofStep);
 
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+    useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
@@ -303,4 +304,5 @@ const handleResponseAndroid = async (
   );
   sendCSCARequest(inputs_csca, setModalProofStep);
   useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+  useNavigationStore.getState().setSelectedTab("next");
 };

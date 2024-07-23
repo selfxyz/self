@@ -4,9 +4,9 @@ import forge from 'node-forge';
 import Dialog from "react-native-dialog";
 import { ethers } from 'ethers';
 // import ressources
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch } from '@tamagui/lucide-icons';
-import X from '../images/x.png'
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, Separator } from 'tamagui'
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X } from '@tamagui/lucide-icons';
+import Xlogo from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
@@ -17,7 +17,7 @@ import { ToastMessage } from '../components/ToastMessage';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 // import utils
-import { bgColor, blueColorLight, borderColor, componentBgColor, componentBgColor2, textColor1, textColor2 } from '../utils/colors';
+import { bgColor, bgGreen, bgWhite, blueColorLight, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { ModalProofSteps, Steps } from '../utils/utils';
 import { scan } from '../utils/nfcScanner';
 import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
@@ -41,6 +41,10 @@ import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/const
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 
 import DatePicker from 'react-native-date-picker'
+import StartScreen from './StartScreen';
+import CustomButton from '../components/CustomButton';
+import StepOneStepTwo from '../components/StepOneStepTwo';
+import SplashScreen from './SplashScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -51,10 +55,11 @@ const MainScreen: React.FC = () => {
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
   const [modalProofStep, setModalProofStep] = useState(0);
-  const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState(new Date())
-  const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState(new Date())
+  const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState<Date | null>(null)
+  const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState<Date | null>(null)
   const [dateOfBirthDatePickerIsOpen, setDateOfBirthDatePickerIsOpen] = useState(false)
   const [dateOfExpiryDatePickerIsOpen, setDateOfExpiryDatePickerIsOpen] = useState(false)
+  const [isFormComplete, setIsFormComplete] = useState(false);
 
   const {
     passportNumber,
@@ -78,6 +83,7 @@ const MainScreen: React.FC = () => {
     step,
     setStep,
     selectedTab,
+    setSelectedTab,
     hideData,
     toast,
     showRegistrationErrorSheet,
@@ -86,8 +92,7 @@ const MainScreen: React.FC = () => {
 
   const handleRestart = () => {
     updateNavigationStore({
-      selectedTab: "scan",
-      selectedApp: null,
+      selectedTab: "start",
       step: Steps.MRZ_SCAN,
     })
     deleteMrzFields();
@@ -145,11 +150,14 @@ const MainScreen: React.FC = () => {
   }
 
   const decrementStep = () => {
-    if (selectedTab === "nfc") {
-      setStep(Steps.MRZ_SCAN);
+    if (selectedTab === "scan") {
+      setSelectedTab("start");
+    }
+    else if (selectedTab === "nfc") {
+      setSelectedTab("scan");
     }
     else if (selectedTab === "next") {
-      setStep(Steps.MRZ_SCAN_COMPLETED);
+      setSelectedTab("nfc");
     }
     else if (selectedTab === "register") {
       setStep(Steps.NEXT_SCREEN);
@@ -218,87 +226,115 @@ const MainScreen: React.FC = () => {
     }
   }, [modalProofStep]);
 
+
   useEffect(() => {
-    if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
-      setStep(Steps.MRZ_SCAN_COMPLETED);
-    }
+    setIsFormComplete(passportNumber?.length === 9 && dateOfBirth?.length === 6 && dateOfExpiry?.length === 6);
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
-  useEffect(() => {
-    if (registered && step < Steps.REGISTERED) {
-      setStep(Steps.REGISTERED);
-    }
-  }, [registered]);
+  // useEffect(() => {
+  //   if (registered && step < Steps.REGISTERED) {
+  //     setStep(Steps.REGISTERED);
+  //   }
+  // }, [registered]);
 
 
-  useEffect(() => {
-    let timeoutId: ReturnType<typeof setTimeout>;
-    if (step == Steps.MRZ_SCAN) {
-      updateNavigationStore({
-        selectedTab: "scan",
-      })
-      timeoutId = setTimeout(() => {
-        setNFCScanIsOpen(false);
-      }, 0);
-    }
-    else if (step == Steps.MRZ_SCAN_COMPLETED) {
-      updateNavigationStore({
-        selectedTab: "nfc",
-      })
-      timeoutId = setTimeout(() => {
-        setNFCScanIsOpen(false);
-      }, 0);
-    }
-    else if (step == Steps.NEXT_SCREEN) {
-      // Set the timeout and store its ID
-      timeoutId = setTimeout(() => {
-        setNFCScanIsOpen(false);
-      }, 700);
-    }
-    else if (step == Steps.PROOF_GENERATED) {
-      updateNavigationStore({
-        selectedTab: "mint",
-      })
-    }
-    if (step == Steps.NEXT_SCREEN) {
-      updateNavigationStore({
-        selectedTab: "next",
-      })
-    }
-    if (step == Steps.REGISTER) {
-      updateNavigationStore({
-        selectedTab: "register",
-      })
-    }
-    if (step == Steps.REGISTERED) {
-      updateNavigationStore({
-        selectedTab: "app",
-      })
-    }
-    return () => {
-      if (timeoutId) {
-        clearTimeout(timeoutId);
-      }
-    };
-  }, [step]);
+  // useEffect(() => {
+  //   let timeoutId: ReturnType<typeof setTimeout>;
+  //   if (step == Steps.START) {
+  //     updateNavigationStore({
+  //       selectedTab: "start",
+  //     })
+  //   }
+
+  //   if (step == Steps.MRZ_SCAN) {
+  //     updateNavigationStore({
+  //       selectedTab: "scan",
+  //     })
+  //     timeoutId = setTimeout(() => {
+  //       setNFCScanIsOpen(false);
+  //     }, 0);
+  //   }
+  //   else if (step == Steps.MRZ_SCAN_COMPLETED) {
+  //     updateNavigationStore({
+  //       selectedTab: "nfc",
+  //     })
+  //     timeoutId = setTimeout(() => {
+  //       setNFCScanIsOpen(false);
+  //     }, 0);
+  //   }
+  //   else if (step == Steps.NEXT_SCREEN) {
+  //     // Set the timeout and store its ID
+  //     timeoutId = setTimeout(() => {
+  //       setNFCScanIsOpen(false);
+  //     }, 700);
+  //   }
+  //   else if (step == Steps.PROOF_GENERATED) {
+  //     updateNavigationStore({
+  //       selectedTab: "mint",
+  //     })
+  //   }
+  //   if (step == Steps.NEXT_SCREEN) {
+  //     updateNavigationStore({
+  //       selectedTab: "next",
+  //     })
+  //   }
+  //   if (step == Steps.REGISTER) {
+  //     updateNavigationStore({
+  //       selectedTab: "register",
+  //     })
+  //   }
+  //   if (step == Steps.REGISTERED) {
+  //     updateNavigationStore({
+  //       selectedTab: "app",
+  //     })
+  //   }
+  //   return () => {
+  //     if (timeoutId) {
+  //       clearTimeout(timeoutId);
+  //     }
+  //   };
+  // }, [step]);
 
   const { height } = useWindowDimensions();
 
   return (
-    <>
-      <YStack f={1} bc="#161616" mt={Platform.OS === 'ios' ? "$8" : "$0"} >
+    <YStack f={1}>
+      <ToastViewport portalToRoot flexDirection="column-reverse" top={85} right={0} left={0} />
+      <ToastMessage />
+      <YStack f={1} mt={Platform.OS === 'ios' ? "$8" : "$0"} mb={Platform.OS === 'ios' ? "$4" : "$2"}>
         <YStack >
-          <XStack jc="space-between" ai="center" px="$3">
-            <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "scan") ? "transparent" : "#a0a0a0"} /></Button>
-
-            <Text fontSize="$6" color="#a0a0a0">
-              {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
-            </Text>
-            <XStack>
-              <Button p="$2" py="$3" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
-              <Button p="$2" py="$3" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
+          <StepOneStepTwo variable={selectedTab} step1="scan" step2="nfc" />
+          {selectedTab !== "app" && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
+          {selectedTab === "app" &&
+            <XStack px="$4" py="$2" mt="$0" ai="center">
+              <Text fontSize="$9"  >Proof of Passport</Text>
+              {/* <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack> */}
+              <XStack f={1} />
+              <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
             </XStack>
-          </XStack>
+
+
+
+
+
+          }
+
+          {/* {selectedTab !== "start" && selectedTab !== "scan" && selectedTab !== "nfc" && selectedTab !== "next" && selectedTab !== "register" && (
+            <YStack>
+              <XStack jc="space-between" ai="center" px="$3">
+                <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "start") ? "transparent" : "#a0a0a0"} /></Button>
+
+                <Text fontSize="$6" color="#a0a0a0">
+                  {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
+                </Text>
+                <XStack>
+                  <Button p="$2" py="$3" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
+                  <Button p="$2" py="$3" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
+                </XStack>
+              </XStack>
+              <Separator borderColor={separatorColor} />
+            </YStack>
+          )} */}
           <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
@@ -464,7 +500,7 @@ const MainScreen: React.FC = () => {
                     </Pressable>
                     <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
                       <Image
-                        source={{ uri: X, width: 24, height: 24 }}
+                        source={{ uri: Xlogo, width: 24, height: 24 }}
                       />
                     </Pressable>
                     <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
@@ -501,28 +537,32 @@ const MainScreen: React.FC = () => {
                   </YStack>
 
                 </YStack>
-                {/* <Button mt="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" alignSelf='center' w="80%" onPress={() => setHelpIsOpen(false)}>
-                  <Text color={textColor1} w="80%" textAlign='center' fow="bold">Close</Text>
-                </Button> */}
 
               </YStack>
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[80]}>
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[60]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9" pt="$2">
+            <Sheet.Frame bg={bgWhite} borderRadius="$9" pt="$2" mb="$3">
               <YStack p="$4" f={1} gap="$3">
-                <Text fontSize="$6" mb="$4" color={textColor1}>Please provide the following information</Text>
+                <XStack>
+                  <Text fontSize="$8" mb="$2">Manual input ✍️</Text>
+                  <XStack f={1} />
+                  <XStack onPress={() => setSheetIsOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
+                  </XStack>
+                </XStack>
+                <Separator borderColor={separatorColor} />
                 <Fieldset gap="$4" horizontal>
-                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                  <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
                     Passport Number
                   </Text>
                   <Input
-                    bg={componentBgColor}
-                    color={textColor1}
+                    bg={bgWhite}
+                    color={textBlack}
                     h="$3.5"
-                    borderColor={passportNumber?.length === 9 ? "green" : "unset"}
+                    borderColor={passportNumber?.length === 9 ? bgGreen : textBlack}
                     flex={1}
                     id="passportnumber"
                     onChangeText={(text) => {
@@ -535,24 +575,22 @@ const MainScreen: React.FC = () => {
 
 
                 <Fieldset gap="$4" horizontal>
-                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                  <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
                     Date of birth
                   </Text>
-                  <Text color={textColor1}>
-                    {dateOfBirthDatePicker.toISOString().slice(0, 10)}
+                  <Text color={textBlack} f={1}>
+                    {dateOfBirthDatePicker ? dateOfBirthDatePicker.toISOString().slice(0, 10) : ''}
                   </Text>
-                  <Button bg="white" onPress={() => setDateOfBirthDatePickerIsOpen(true)}
-                    pressStyle={{
-                      bg: componentBgColor2,
-                      borderColor: componentBgColor2,
-                    }}>
+                  <Button bg={bgGreen} onPress={() => setDateOfBirthDatePickerIsOpen(true)}
+                    borderRadius={"$10"}
+                  >
                     <CalendarSearch />
                   </Button>
                   <DatePicker
                     modal
                     mode='date'
                     open={dateOfBirthDatePickerIsOpen}
-                    date={dateOfBirthDatePicker}
+                    date={dateOfBirthDatePicker || new Date()}
                     onConfirm={(date) => {
                       setDateOfBirthDatePickerIsOpen(false)
                       setDateOfBirthDatePicker(date)
@@ -562,39 +600,24 @@ const MainScreen: React.FC = () => {
                       setDateOfBirthDatePickerIsOpen(false)
                     }}
                   />
-                  {/* <Input
-                    bg={componentBgColor}
-                    color={textColor1}
-                    h="$3.5"
-                    borderColor={dateOfBirth?.length === 6 ? "green" : "unset"}
-                    flex={1}
-                    id="dateofbirth"
-                    onChangeText={(text) => {
-                      update({ dateOfBirth: text })
-                    }}
-                    value={dateOfBirth}
-                    keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
-                  /> */}
                 </Fieldset>
                 <Fieldset gap="$4" horizontal>
-                  <Text color={textColor1} width={160} justifyContent="flex-end" fontSize="$4">
+                  <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
                     Date of expiry
                   </Text>
-                  <Text color={textColor1}>
-                    {dateOfExpiryDatePicker.toISOString().slice(0, 10)}
+                  <Text color={textBlack} f={1}>
+                    {dateOfExpiryDatePicker ? dateOfExpiryDatePicker.toISOString().slice(0, 10) : ''}
                   </Text>
-                  <Button bg="white" onPress={() => setDateOfExpiryDatePickerIsOpen(true)}
-                    pressStyle={{
-                      bg: componentBgColor2,
-                      borderColor: componentBgColor2,
-                    }}>
+                  <Button bg={bgGreen} onPress={() => setDateOfExpiryDatePickerIsOpen(true)}
+                    borderRadius="$10"
+                  >
                     <CalendarSearch />
                   </Button>
                   <DatePicker
                     modal
                     mode='date'
                     open={dateOfExpiryDatePickerIsOpen}
-                    date={dateOfExpiryDatePicker}
+                    date={dateOfExpiryDatePicker || new Date()}
                     onConfirm={(date) => {
                       setDateOfExpiryDatePickerIsOpen(false)
                       setDateOfExpiryDatePicker(date)
@@ -604,53 +627,24 @@ const MainScreen: React.FC = () => {
                       setDateOfExpiryDatePickerIsOpen(false)
                     }}
                   />
-                  {/* <Input
-                    bg={componentBgColor}
-                    color={textColor1}
-                    h="$3.5"
-                    borderColor={dateOfExpiry?.length === 6 ? "green" : "unset"}
-                    flex={1}
-                    id="dateofexpiry"
-                    onChangeText={(text) => {
-                      update({ dateOfExpiry: text })
-                    }}
-                    value={dateOfExpiry}
-                    keyboardType={Platform.OS === "ios" ? "default" : "number-pad"}
-                  /> */}
                 </Fieldset>
                 <XStack f={1} />
-                <YStack mb="$6" gap="$2">
-                  <Button
-                    bg={textColor1}
-                    pressStyle={{
-                      bg: componentBgColor2,
-                      borderColor: componentBgColor2,
-                    }}
+                <YStack gap="$2">
+                  <CustomButton
+                    text="Submit"
                     onPress={() => {
-                      setSheetIsOpen(false)
-                      setStep(Steps.MRZ_SCAN_COMPLETED)
+                      setSelectedTab("nfc");
+                      setSheetIsOpen(false);
                     }}
-                  >
-                    <Text
-                      fontSize="$6"
-                      color={bgColor}
-                    >Submit</Text>
-                  </Button>
-                  <Button
-                    bg="gray"
-                    pressStyle={{
-                      bg: componentBgColor2,
-                      borderColor: componentBgColor2,
-                    }}
-                    onPress={() => {
-                      setSheetIsOpen(false)
-                    }}
-                  >
-                    <Text
-                      fontSize="$6"
-                      color={bgColor}
-                    >Cancel</Text>
-                  </Button>
+                    bgColor={isFormComplete ? bgGreen : separatorColor}
+                    isDisabled={!isFormComplete}
+                    disabledOnPress={() => toast.show('✍️', {
+                      message: "Please fill in all fields.",
+                      customData: {
+                        type: "info",
+                      },
+                    })}
+                  />
                 </YStack>
 
               </YStack>
@@ -686,14 +680,20 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <XStack bc="#343434" h={1.2} />
         </YStack>
+
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
-          <ToastViewport flexDirection="column-reverse" top={15} right={0} left={0} />
-          <ToastMessage />
+          <Tabs.Content value="splash" f={1}>
+            <SplashScreen
+            />
+          </Tabs.Content>
+          <Tabs.Content value="start" f={1}>
+            <StartScreen
+            />
+          </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen
               sheetIsOpen={sheetIsOpen}
@@ -749,7 +749,7 @@ const MainScreen: React.FC = () => {
           </YStack>
         </YStack>
       </Modal>
-    </>
+    </YStack >
   );
 };
 

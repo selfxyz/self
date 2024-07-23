@@ -45,6 +45,7 @@
     "react-native-fs": "^2.20.0",
     "react-native-get-random-values": "^1.11.0",
     "react-native-keychain": "^8.2.0",
+    "react-native-nfc-manager": "^3.15.1",
     "react-native-passport-reader": "^1.0.3",
     "react-native-svg": "13.4.0",
     "react-native-zip-archive": "^6.1.0",

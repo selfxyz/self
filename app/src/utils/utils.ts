@@ -34,6 +34,7 @@ export function formatDateToYYMMDD(inputDate: string) {
 }
 
 export const Steps = {
+  START: 0,
   MRZ_SCAN: 1,
   MRZ_SCAN_COMPLETED: 2,
   NFC_SCANNING: 3,
