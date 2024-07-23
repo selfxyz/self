@@ -26,8 +26,8 @@
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
+		1686F0DA2C4EA0F600841CDE /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 1686F0D92C4EA0F600841CDE /* passport.json */; };
 		16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E083892C4E7AF100CE8DB2 /* LottieView.swift */; };
-		16E0838C2C4E824B00CE8DB2 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E0838B2C4E824B00CE8DB2 /* passport.json */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */; };
 		1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */; };
@@ -92,8 +92,8 @@
 		165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = "<group>"; };
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
+		1686F0D92C4EA0F600841CDE /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = passport.json; path = ../../../FreedomTool/FreedomTools/Resources/Animations/passport.json; sourceTree = "<group>"; };
 		16E083892C4E7AF100CE8DB2 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
-		16E0838B2C4E824B00CE8DB2 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = passport.json; path = ../../../FreedomTool/FreedomTools/Resources/Animations/passport.json; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
 		22FDF2ADA5789E09558ADB4E /* Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; path = "Target Support Files/Pods-ProofOfPassport-ProofOfPassportTests/Pods-ProofOfPassport-ProofOfPassportTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -173,11 +173,11 @@
 				13B07FB61A68108700A75B9A /* Info.plist */,
 				81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */,
 				13B07FB71A68108700A75B9A /* main.m */,
+				1686F0D92C4EA0F600841CDE /* passport.json */,
 				905B70042A72767900AFA232 /* PassportReader.swift */,
 				905B70032A72767800AFA232 /* ProofOfPassport-Bridging-Header.h */,
 				165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */,
 				905B70062A72774000AFA232 /* PassportReader.m */,
-				16E0838B2C4E824B00CE8DB2 /* passport.json */,
 				16E083892C4E7AF100CE8DB2 /* LottieView.swift */,
 				165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */,
 				165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */,
@@ -389,7 +389,7 @@
 				37AF1D1302824FFC83B6D1D2 /* Inter-ThinItalic.otf in Resources */,
 				CC99B59A281C4B6497C14141 /* Luciole-Bold-Italic.ttf in Resources */,
 				05E2174E2E7E48EB80B9C8D8 /* Luciole-Bold.ttf in Resources */,
-				16E0838C2C4E824B00CE8DB2 /* passport.json in Resources */,
+				1686F0DA2C4EA0F600841CDE /* passport.json in Resources */,
 				6959CC40713D4D42AA56850D /* Luciole-Regular-Italic.ttf in Resources */,
 				E4E0715B819049EFACAF2AEE /* Luciole-Regular.ttf in Resources */,
 				98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */,
