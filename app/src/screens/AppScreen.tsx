@@ -13,13 +13,14 @@ import { BadgeCheck, Binary, LockKeyhole, QrCode, ShieldCheck, Smartphone, UserP
 import { bgBlue, bgGreen, separatorColor, textBlack } from '../utils/colors';
 import { orange } from '@tamagui/colors';
 import useUserStore from '../stores/userStore';
-
+import { NativeModules } from 'react-native';
 const AppScreen: React.FC = () => {
   const {
     selectedApp,
     update,
     selectedTab,
-    setSelectedTab
+    setSelectedTab,
+    toast
   } = useNavigationStore();
 
   const {
@@ -110,7 +111,21 @@ const AppScreen: React.FC = () => {
 
       <XStack f={1} minHeight="$1" />
       {registered ? <CustomButton text="Scan QR code" onPress={() => setRegistered(false)} Icon={<QrCode size={18} color={textBlack} />} /> :
-        <CustomButton text="Register" onPress={() => { setSelectedTab("start"); setRegistered(true); }} Icon={<UserPlus size={18} color={textBlack} />} />}
+        <CustomButton text="Scan QR Code" onPress={() => {
+          NativeModules.QRScannerBridge.scanQRCode()
+            .then((result: string) => {
+              toast.show('QR Code result', {
+                message: result,
+                customData: {
+                  type: "success",
+                },
+              });
+              // Handle the scanned QR code result here
+            })
+            .catch((error: any) => {
+              console.error('QR Scanner Error:', error);
+            });
+        }} Icon={<QrCode size={18} color={textBlack} />} />}
       {/* <YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center'>
         {
           cardsData.map(app => (

@@ -27,6 +27,9 @@
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
 		1686F0DA2C4EA0F600841CDE /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 1686F0D92C4EA0F600841CDE /* passport.json */; };
+		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
+		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
+		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
 		16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E083892C4E7AF100CE8DB2 /* LottieView.swift */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */; };
@@ -93,6 +96,9 @@
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
 		1686F0D92C4EA0F600841CDE /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; name = passport.json; path = ../../../FreedomTool/FreedomTools/Resources/Animations/passport.json; sourceTree = "<group>"; };
+		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
+		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
+		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
 		16E083892C4E7AF100CE8DB2 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
@@ -182,6 +188,9 @@
 				165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */,
 				165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */,
 				16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */,
+				1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */,
+				1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */,
+				1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */,
 			);
 			name = ProofOfPassport;
 			sourceTree = "<group>";
@@ -530,7 +539,10 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
+				1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */,
+				1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */,
 				05EDEDC72B52D25D00AA51AD /* Prover.swift in Sources */,
+				1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 				905B70072A72774000AFA232 /* PassportReader.m in Sources */,
 				16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */,
