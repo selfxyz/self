@@ -60,22 +60,26 @@ struct ScannerWithInstructions: View {
     var lottieView: LottieView
     
     var body: some View {
-        VStack {
-            ZStack {
-                scannerView
-                    .mask {
-                        RoundedRectangle(cornerRadius: 15)
-                            .frame(width: 370, height: 270)
-                    }
-              lottieView.frame(width: 360, height: 230)
+        ZStack {
+            Color.white.ignoresSafeArea() // This creates a white background for the entire view
+            
+            VStack {
+                ZStack {
+                    scannerView
+                        .mask {
+                            RoundedRectangle(cornerRadius: 15)
+                                .frame(width: 370, height: 270)
+                        }
+                    lottieView.frame(width: 360, height: 230)
+                }
+                .frame(height: 320)
+                Text("Hold your passport on a flat surface while scanning")
+                    .font(.custom("Inter-Regular", size: 20))
+                    .foregroundColor(.black)
+                    .multilineTextAlignment(.center)
+                    .frame(width: 300)
+                    .padding()
             }
-            .frame(height: 320)
-            Text("Scan the main page of your passport")
-                .font(.custom("Inter-Regular", size: 15))
-                .multilineTextAlignment(.center)
-                .frame(width: 300)
-                .opacity(0.5)
-                .padding()
         }
     }
 }
