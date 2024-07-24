@@ -101,6 +101,7 @@ const NextScreen: React.FC = () => {
           <Info alignSelf='center' size={24} color={textBlack} />
           <Text ml="$3" pr="$6" fontSize="$3" color={textBlack}>Your information will remain confidential and will not be used or shared without your explicit consent.</Text>
         </XStack>
+
         <YStack f={1} />
 
         <CustomButton onPress={() => setSelectedTab("register")} text="Next" Icon={<ArrowRight color={textBlack} />} />

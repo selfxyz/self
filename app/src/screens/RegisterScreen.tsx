@@ -45,7 +45,7 @@ const RegisterScreen: React.FC = () => {
         }}> only </Text>what you want to reveal.</Text>
         <XStack f={1} />
 
-        <XStack mt="$5" bg="white" borderRadius={100} mb="$12" py="$2" px="$3">
+        <XStack mt="$5" bg="white" borderRadius={100} mb="$12" py="$2.5" px="$3">
           <XStack p="$2" >
             <LockKeyhole alignSelf='center' size={24} color={textBlack} />
           </XStack>

@@ -13,6 +13,7 @@ interface NavigationState {
   selectedTab: string
   setSelectedTab: (tab: string) => void
   selectedApp: AppType | null
+  setSelectedApp: (app: AppType | null) => void
   showRegistrationErrorSheet: boolean
   registrationErrorMessage: string
   setToast: (toast: ReturnType<typeof useToastController>) => void;
@@ -42,6 +43,7 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   selectedApp: null,
 
   setToast: (toast) => set({ toast }),
+  setSelectedApp: (app) => set({ selectedApp: app }),
 
   setStep: (step) => set({ step }),
   setSelectedTab: (tab) => set({ selectedTab: tab }),

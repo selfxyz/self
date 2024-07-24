@@ -3,7 +3,7 @@ import { ScrollView, Text, YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
 import { Steps } from '../utils/utils';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType } from '../utils/appType';
+import { AppType, createAppType } from '../utils/appType';
 import sbtApp from '../apps/sbt';
 import zupassApp from '../apps/zupass';
 import gitcoinApp from '../apps/gitcoin';
@@ -17,6 +17,7 @@ import { NativeModules } from 'react-native';
 const AppScreen: React.FC = () => {
   const {
     selectedApp,
+    setSelectedApp,
     update,
     selectedTab,
     setSelectedTab,
@@ -41,6 +42,14 @@ const AppScreen: React.FC = () => {
     zupassApp,
     gitcoinApp
   ];
+
+  const handleQRCodeScan = (result: string) => {
+    console.log(result);
+    const app = createAppType(JSON.parse(result.replace(/'/g, '"')));
+    console.log(app);
+    setSelectedApp(app);
+    setSelectedTab("prove");
+  }
 
   return (
     <YStack f={1} pb="$3" px="$3">
@@ -114,12 +123,7 @@ const AppScreen: React.FC = () => {
         <CustomButton text="Scan QR Code" onPress={() => {
           NativeModules.QRScannerBridge.scanQRCode()
             .then((result: string) => {
-              toast.show('QR Code result', {
-                message: result,
-                customData: {
-                  type: "success",
-                },
-              });
+              handleQRCodeScan(result);
               // Handle the scanned QR code result here
             })
             .catch((error: any) => {
