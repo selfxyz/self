@@ -25,7 +25,7 @@ describe('MODAL PROVER', function () {
     this.timeout(0); // Disable timeout
     describe("SHA256 RSA", async () => {
         it("verify proof", async () => {
-            const circuitInputs = getCSCAInputs(
+            const inputs = getCSCAInputs(
                 BigInt(0).toString(),
                 dscCert_sha256_rsa,
                 cscaCert_sha256_rsa,
@@ -36,10 +36,6 @@ describe('MODAL PROVER', function () {
                 max_cert_bytes,
                 true
             );
-            const inputs = {
-                "signature_algorithm": "sha256_rsa",
-                "inputs": circuitInputs
-            }
             //console.log(JSON.stringify(inputs));
             console.log('\x1b[34msending request to modal server\x1b[0m');
             const response = await sendCSCARequest(inputs);
@@ -57,7 +53,7 @@ describe('MODAL PROVER', function () {
 
     describe("SHA1 RSA", async () => {
         it("verify proof", async () => {
-            const circuitInputs = getCSCAInputs(
+            const inputs = getCSCAInputs(
                 BigInt(0).toString(),
                 dscCert_sha1_rsa,
                 cscaCert_sha1_rsa,
@@ -68,10 +64,6 @@ describe('MODAL PROVER', function () {
                 max_cert_bytes,
                 true
             );
-            const inputs = {
-                "signature_algorithm": "sha1_rsa",
-                "inputs": circuitInputs
-            }
             console.log(JSON.stringify(inputs));
 
             console.log('\x1b[34msending request to modal server\x1b[0m');
