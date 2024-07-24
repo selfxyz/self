@@ -161,7 +161,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       );
 
-      amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+      //amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
       console.log("userStore - inputs - Object.keys(inputs).forEach((key) => {...")
       Object.keys(inputs).forEach((key) => {
         if (Array.isArray(inputs[key as keyof typeof inputs])) {
@@ -185,7 +185,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const end = Date.now();
       console.log('Total proof time from frontend:', end - start);
-      amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+      //amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
 
 
       if ((get().cscaProof !== null) && (get().localProof !== null)) {
@@ -218,7 +218,7 @@ const useUserStore = create<UserState>((set, get) => ({
         registrationErrorMessage: error.message,
       })
       setStep(Steps.NEXT_SCREEN);
-      amplitude.track(error.message);
+      //amplitude.track(error.message);
     }
   },
 
