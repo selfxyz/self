@@ -661,21 +661,25 @@ const MainScreen: React.FC = () => {
             dismissOnSnapToBottom modal animation="medium" snapPoints={[80]}
           >
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9" pt="$2">
-              <YStack p="$4" f={1} gap="$3">
-                <H2 textAlign='center' mb="$6" color={textColor1}>Passport unsupported</H2>
-                <Text fontSize="$6" mb="$4" color={textColor1}>Unfortunately, your passport is currently not supported. Details:</Text>
-                <Text fontSize="$6" mb="$4" textAlign="center" color="#a0a0a0">{registrationErrorMessage} </Text>
+            <Sheet.Frame bg={bgWhite} borderRadius="$9" pt="$2">
+              <YStack p="$4" f={1} gap="$3" pb="$6">
+                <YStack jc="flex-start" >
+                  <Text fontSize="$9" textAlign='left' mb="$2" color={textBlack}>Sorry, an error has occurred</Text>
+                </YStack>
 
-                <Text fontSize="$6" mb="$4" color={textColor1}>To help us add support for it, please consider contributing its data!</Text>
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
-                    Contribute
-                  </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
-                    <Share color={textColor1} />
-                  </Button>
-                </Fieldset>
+                <Text fontSize="$7">Error details:</Text>
+                <Text fontSize="$6" mb="$2" textAlign="center" color="#a0a0a0">{registrationErrorMessage} </Text>
+
+                <Separator borderColor={separatorColor} />
+                <Text mt="$4" fontSize="$6" mb="$4" color={textBlack}>Unfortunately, your passport is currently not supported.</Text>
+
+                <Text fontSize="$6" mb="$4" color={textBlack}>To help us add support for it, please consider contributing its data!</Text>
+                <XStack f={1} />
+                <CustomButton
+                  text="Contribute"
+                  onPress={() => setDialogContributeIsOpen(true)}
+                  Icon={<Share />}
+                />
               </YStack>
             </Sheet.Frame>
           </Sheet>

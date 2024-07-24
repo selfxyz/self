@@ -32,6 +32,11 @@ const StartScreen: React.FC = () => {
             <CustomButton Icon={<ArrowRight />} text="Let's start" onPress={() => {
                 setSelectedTab("scan");
             }} />
+            {/* <Button onPress={() => {
+                setSelectedTab("register");
+            }}>
+                Register
+            </Button> */}
         </YStack >
     );
 };

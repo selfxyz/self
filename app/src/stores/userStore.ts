@@ -117,6 +117,7 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   registerCommitment: async (mockPassportData?: PassportData) => {
+    console.log("registerCommitment")
     const {
       toast,
       setStep,
@@ -129,6 +130,7 @@ const useUserStore = create<UserState>((set, get) => ({
     }
 
     const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
+    console.log("isAlreadyRegistered", isAlreadyRegistered)
     if (isAlreadyRegistered) {
       console.log("commitment is already registered")
       toast.show('Identity already registered, skipping', {

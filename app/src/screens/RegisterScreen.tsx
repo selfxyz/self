@@ -17,6 +17,7 @@ const RegisterScreen: React.FC = () => {
   const handleRegister = async () => {
     setRegistering(true);
     useUserStore.getState().registerCommitment();
+
     setRegisterStep("Generating witness...");
     setTimeout(() => {
       setRegisterStep("Generating proof...");
