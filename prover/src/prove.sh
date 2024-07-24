@@ -2,6 +2,18 @@
 # Read input from stdin
 input=$(cat)
 
+# Extract the signature_algorithm
+signature_algorithm=$(echo "$input" | jq -r '.signature_algorithm // "sha256_rsa"')
+
+# Set the circuit files based on the signature_algorithm
+if [ "$signature_algorithm" == "sha1_rsa" ]; then
+    circuit_wasm="/root/src/circuit/dsc_sha1_rsa_4096.wasm"
+    circuit_zkey="/root/src/circuit/dsc_sha1_rsa_4096_final.zkey"
+else
+    circuit_wasm="/root/src/circuit/dsc_sha256_rsa_4096.wasm"
+    circuit_zkey="/root/src/circuit/dsc_sha256_rsa_4096_final.zkey"
+fi
+
 # Compute the hash of the input data
 hash=$(echo -n "$input" | sha256sum | cut -d ' ' -f 1)
 
@@ -11,13 +23,14 @@ mkdir -p /root/src/data/$hash
 # Write input to the unique directory
 echo "$input" > /root/src/data/$hash/input.json
 
+# Extract only the 'inputs' part of the JSON for the circuit
+jq '.inputs' /root/src/data/$hash/input.json > /root/src/data/$hash/circuit_input.json
+
 # Define paths
-input_path="/root/src/data/$hash/input.json"
+input_path="/root/src/data/$hash/circuit_input.json"
 witness_path="/root/src/data/$hash/witness.wtns"
 proof_path="/root/src/data/$hash/proof.json"
 public_path="/root/src/data/$hash/public.json"
-circuit_wasm="/root/src/circuit/dsc_4096.wasm"
-circuit_zkey="/root/src/circuit/dsc_4096_final.zkey"
 prover_path="/root/rapidsnark/build/prover"
 
 # Calculate the witness
@@ -47,7 +60,7 @@ fi
 echo "ldd $prover_path"
 ldd "$prover_path"
 status_lld=$?
-echo "✓ lld prover dependencies present! ${status_lld}"
+echo "✓ ldd prover dependencies present! ${status_lld}"
 
 echo "$prover_path $circuit_zkey $witness_path $proof_path $public_path"
 "$prover_path" "$circuit_zkey" "$witness_path" "$proof_path" "$public_path" | tee /dev/stderr

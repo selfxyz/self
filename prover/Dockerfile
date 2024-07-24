@@ -5,6 +5,8 @@ RUN apt-get update && apt-get upgrade -y
 # Update the package list and install necessary dependencies
 RUN apt-get update && \
     apt install -y cmake build-essential pkg-config libssl-dev libgmp-dev libsodium-dev nasm git awscli gcc nodejs npm 
+# Install jq
+RUN apt-get update && apt-get install -y jq
 
 # Node install
 RUN npm install -g n 

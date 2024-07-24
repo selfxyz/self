@@ -1,11 +1,12 @@
 import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
 import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH } from "../constants/constants";
+import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
 import { poseidon16, poseidon2, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import { createHash } from "crypto";
+import axios from "axios";
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
@@ -230,4 +231,24 @@ export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 
 }
 
 
-
+export const sendCSCARequest = async (inputs_csca: any): Promise<any> => {
+    try {
+        const response = await axios.post(MODAL_SERVER_ADDRESS, inputs_csca, {
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        return response.data;
+    } catch (error) {
+        if (axios.isAxiosError(error)) {
+            console.error('Axios error:', error.message);
+            if (error.response) {
+                console.error('Response data:', error.response.data);
+                console.error('Response status:', error.response.status);
+            }
+        } else {
+            console.error('Unexpected error:', error);
+        }
+        throw error;
+    }
+};
