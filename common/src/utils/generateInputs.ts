@@ -182,25 +182,25 @@ export function generateCircuitInputsOfac(
   const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10,49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
   const name_leaf = getNameLeaf(mrz_bytes.slice(10,49)) // [6-44] + 5 shift
   
-  let root, depth, closestleaf, indices, exSiblings, membership;  
+  let root, depth, closestleaf, indices, siblings, membership;  
   if(proofLevel == 3){
-    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, passport_leaf));
+    ({root, depth, closestleaf, indices, siblings, membership} = generateSMTProof(sparsemerkletree, passport_leaf));
   } else if(proofLevel == 2){
-    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, namedob_leaf));
+    ({root, depth, closestleaf, indices, siblings, membership} = generateSMTProof(sparsemerkletree, namedob_leaf));
   } else if (proofLevel == 1){
-    ({root, depth, closestleaf, indices, exSiblings, membership} = generateSMTProof(sparsemerkletree, name_leaf));
+    ({root, depth, closestleaf, indices, siblings, membership} = generateSMTProof(sparsemerkletree, name_leaf));
   } else {
     throw new Error("Invalid proof level")
   }
   const exists = membership ? 1 : 0;
-  
+
   return {
     ...finalResult,
     leaf_value: [BigInt(closestleaf).toString()],
-    smt_root: [root.toString()],
+    smt_root: [BigInt(root).toString()],
     smt_size: [BigInt(depth).toString()],
     smt_path : indices.map(index => BigInt(index).toString()),
-    smt_siblings: exSiblings.map(index => BigInt(index).toString()),
+    smt_siblings: siblings.map(index => BigInt(index).toString()),
     membership: [BigInt(exists).toString()],
   };
 }

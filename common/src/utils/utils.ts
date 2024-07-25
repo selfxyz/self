@@ -3,6 +3,7 @@ import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
+import { poseidon2, poseidon3 } from 'poseidon-lite';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -301,38 +302,38 @@ export function packBytes(unpacked) {
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const {entry, matchingEntry, siblings, root, membership} = smt.createProof(leaf);
-  // console.log("entry:",entry)
-  // console.log("entry type",typeof entry)
-  // console.log("entry length",entry.length)
-  // console.log("sibilings length",siblings.length)
-  // console.log("matching entry",matchingEntry)
-
   const depth = siblings.length
-  siblings.reverse()
-  const bits = entry[0].toString(2)
-  const arr = bits.padStart(256, "0").split("").reverse().map(Number)
-  const path = arr.slice(0, depth).reverse()
-  const exSiblings = new Array(256).fill(0n);
-  const indices = new Array(256).fill(0);
-  let closestleaf;
-  if (!matchingEntry){
-    closestleaf = entry[0];
-  } else {
-    closestleaf = matchingEntry[0];
-  }
 
-  for (let i = 0; i < depth; i++) {
-    exSiblings[i] = siblings[i];
-    indices[i] = path[i];
+  let closestleaf;
+  if (!matchingEntry){ // we got the 0 leaf or membership
+    // then check if entry[1] exists
+    if(!entry[1]){
+      // non membership proof
+      console.log("entry[1] is 0")
+      closestleaf = BigInt(0); // 0 leaf
+    } else {
+      closestleaf = poseidon3(entry); // leaf itself (memb proof) 
+    }
+  } else {
+    closestleaf = poseidon3(matchingEntry); // actual closest
   }
+ 
+  const bits = entry[0].toString(2).slice(-depth);
+  let indices = bits.padEnd(256, "0").split("").map(Number)
+  siblings.reverse()
+
+  while(indices.length < 256) indices.push(0);
+  while(siblings.length < 256) siblings.push(BigInt(0)); 
+  // get to 256 for computation in circuit
   
-  // CALCULATED ROOT FOR TESTING --
-  // let calculatedNode = poseidon3(entry)
-  // let calculatedNode = BigInt(0) // 0 node , if entry[1] is 0.
+  // // CALCULATED ROOT FOR TESTING -- // Useful for debugging hence leaving as comments
+  // closestleaf, depth, siblings, indices, root : needed 
+  // let calculatedNode = closestleaf;
   // console.log("Initial node while calculating",calculatedNode)
   // console.log(smt.verifyProof(smt.createProof(leaf)))
-  // for (let i = 0; i < depth ; i++) {
-  //   const childNodes: any = indices[i] ? [exSiblings[i], calculatedNode] : [calculatedNode, exSiblings[i]]
+  // for (let i= 0; i < depth ; i++) {
+  //   const childNodes: any = indices[i] ? [siblings[i], calculatedNode] : [calculatedNode, siblings[i]]
+  //   console.log(indices[i],childNodes)
   //   calculatedNode = poseidon2(childNodes)
   // }
   // console.log("Actual node", root)
@@ -343,7 +344,7 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     depth,
     closestleaf,
     indices,
-    exSiblings,   
+    siblings,   
     membership,
   };
 }
