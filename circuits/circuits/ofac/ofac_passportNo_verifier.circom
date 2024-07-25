@@ -25,7 +25,6 @@ template ProvePassportNotInOfac(nLevels) {
     signal input membership;
     signal output proofType;
     signal output proofLevel;
-    signal out1;
 
     // Validate passport
     ValidatePassport(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings, current_date);
@@ -37,36 +36,40 @@ template ProvePassportNotInOfac(nLevels) {
     } 
 
     // Leaf hash
-    signal smtleaf_hash <== Poseidon(3)([leaf_value, 1,1]);
+    signal smtleaf_hash <== Poseidon(3)([poseidon_hasher.out, 1,1]);
 
-    // Proof Validation
-    signal computedRoot <== BinaryMerkleRoot(256)(smtleaf_hash, smt_size, smt_path, smt_siblings);
+    // If computedRoot != smt_root; the below assertion fails as path and siblings do not compute to root and proof is not generated.
+    // If computedRoot == smt_root; path and siblings are true but the proof could be membership or non-membership and then furthur checks are made.
+    signal computedRoot <== BinaryMerkleRoot(256)(leaf_value, smt_size, smt_path, smt_siblings);
     computedRoot === smt_root;
 
-    // If computedRoot != smt_root; the above assertion fails as path and siblings do not compute to root and proof is not generated.
-    // If computedRoot == smt_root; path and siblings are true but the proof could be membership or non-membership.
-
     // If leaf given = leaf calulated ; then membership proof
-    proofType <== IsEqual()([leaf_value,poseidon_hasher.out]); // 1 for membership proof, 0 for non-membership proof
-
+    proofType <== IsEqual()([leaf_value,smtleaf_hash]); // 1 for membership proof, 0 for non-membership proof
     proofType === 0;  // Comment this line to make circuit handle both membership and non-membership proof and returns the type of proof (0 for non-membership, 1 for membership)
 
-    // If proofType if 0, then the given path and siblings are correct but for closest leaf (non-membership proof)
-    // now we need to prove it is the closest leaf, i.e siblings length < first common bits of hashes
+    // If proofType if 0, then the given path and siblings are correct but for closest leaf (non-membership proof) or a 0 leaf (non-membership proof)
+    // now we need to prove that if it is the closest leaf, than first common bits of hashes >= siblings length 
     // if it is , then proof == true or it is invalid.
-    component lt = LessEqThan(9);
-    lt.in[0] <== smt_size;
-    lt.in[1] <== PoseidonHashesCommonLength()(leaf_value,poseidon_hasher.out);
-    out1 <== lt.out; // true if depth <= matchingbits.length
+
+    signal sibLength <== SiblingsLength()(smt_siblings); //gives the siblings length
+    signal commonLength <== PoseidonHashesCommonLength()(leaf_value,smtleaf_hash); //gives the first common bits of hashes
+    
+    signal closestLeaf <== LessEqThan(9)([sibLength,commonLength]);  // out1 = 1 if first common bits of hashes >= siblings length 
+    // out1 = 1 if first common bits of hashes >= siblings length 
+    // out1 = 0 if first common bits of hashes < siblings length
+
+    // however, if leaf_value is 0 , then we had a real leaf, so no need to check for common bits
+    signal foo <== IsZero()(leaf_value);
 
     // Now assert that 
-    // 1,any(0/1) = valid (membership proof, hence no need of second condition)
-    // 0,1 = valid  (non-membership proof, hence second condition has to be true)
-    // 0,0 = invalid (non-membership proof, but not closest sibling, i.e : user gave a random correct smt_path and smt_siblings)
+    // Membership condn ; leaf is zero ; bits < siblings length
+    // 1,any,any = valid (membership proof, hence no need of other conditions)
+    // 0,1,any = valid  (non-membership proof,leaf is zero is true, no need of third condn)
+    // 0,0,1 = valid (non-membership proof, leaf is zero is true, third condn has to be true)
+    // 0,0,0 = invalid (non-membership proof, but not closest sibling, i.e : user gave a random correct smt_path and smt_siblings)
 
-    signal check;
-    check <== IsZero()(proofType+out1);
-    check === 0; // if 0,0 then invalid
+    signal check <== IsZero()(proofType+closestLeaf+foo); // if 0,0 then invalid
+    check === 0; // Assert the culminated condition
     proofLevel <== 3;
     
 }

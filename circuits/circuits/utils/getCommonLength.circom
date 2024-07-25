@@ -22,10 +22,7 @@ template PoseidonHashesCommonLength() {
     component iseq[256];
     signal pop[256];
 
-    iseq[0] = IsEqual();
-    bits1[0] ==> iseq[0].in[0];
-    bits2[0] ==> iseq[0].in[1];
-    pop[0] <== iseq[0].out;
+    pop[0] <== IsEqual()([bits1[0], bits2[0]]);
 
     for (var i = 1; i < 256; i++) {
         var temp = bits2[i] - bits1[i];
@@ -36,9 +33,7 @@ template PoseidonHashesCommonLength() {
     }   
 
     var added = 0;
-    var mult = 1;
     for(var i = 0; i<256;i++){
-        mult = mult*pop[i];
         added += pop[i];
     }
 
@@ -46,3 +41,31 @@ template PoseidonHashesCommonLength() {
 
 }
 
+template SiblingsLength() {
+    signal input siblings[256];
+    signal output length;
+
+    // Siblings can be like (1,2,3,0,0,4,5,0,0...all 0 till 256[the padded 0 ones])
+    // We need to get the length , i.e 7 in this case
+    var foo[256];
+    for(var i = 256-2; i>=0; i--){
+        foo[i] = foo[i] + foo[i+1];
+    }
+
+    // convert to (15,14,12,9,9,9,5,0,0,0..), this takes out the middle 0's
+    var total = 0;
+    signal pop[256];
+    component iszero[256];
+
+    for(var i = 0; i<256; i++){
+        iszero[i] = IsZero();
+        siblings[i] ==> iszero[i].in;
+        pop[i] <== iszero[i].out;
+    }
+
+    for(var i = 0; i<256; i++){
+        total += pop[i];
+    }
+    
+    256-total ==> length;
+}
