@@ -1,4 +1,4 @@
-import { AppType } from "../utils/appType";
+import { AppType } from "../../../common/src/utils/appType";
 import { Flame } from '@tamagui/lucide-icons';
 import { Text, XStack, YStack } from 'tamagui';
 import { generateProof } from "../utils/prover";

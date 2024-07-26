@@ -1,4 +1,4 @@
-import { AppType } from "../utils/appType";
+import { AppType } from "../../../common/src/utils/appType";
 import { Text, YStack } from 'tamagui';
 import { Coins } from '@tamagui/lucide-icons';
 import GITCOIN from '../images/gitcoin.png';

@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
 import { Steps } from '../utils/utils';
 import { useToastController } from '@tamagui/toast';
-import { AppType } from '../utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 
 interface NavigationState {
   step: number

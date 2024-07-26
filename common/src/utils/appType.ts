@@ -1,4 +1,4 @@
-import { CircuitName } from "./zkeyDownload";
+import { CircuitName } from "../../../app/src/utils/zkeyDownload";
 
 type DisclosureOption = "required" | "optional";
 

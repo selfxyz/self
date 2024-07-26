@@ -11,7 +11,7 @@ import { formatAttribute, Steps } from '../utils/utils';
 import { downloadZkey } from '../utils/zkeyDownload';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType } from '../utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
 

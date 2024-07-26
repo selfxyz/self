@@ -3,7 +3,7 @@ import { ScrollView, Text, YStack } from 'tamagui';
 import AppCard from '../components/AppCard';
 import { Steps } from '../utils/utils';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType, createAppType } from '../utils/appType';
+import { AppType, createAppType } from '../../../common/src/utils/appType';
 import sbtApp from '../apps/sbt';
 import zupassApp from '../apps/zupass';
 import gitcoinApp from '../apps/gitcoin';
