@@ -5,7 +5,7 @@ import Dialog from "react-native-dialog";
 import { ethers } from 'ethers';
 // import ressources
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X, UserPlus } from '@tamagui/lucide-icons';
 import Xlogo from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
@@ -54,6 +54,8 @@ const MainScreen: React.FC = () => {
   const [dialogDeleteSecretIsOpen, setDialogDeleteSecretIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
+  const [sheetAppListOpen, setSheetAppListOpen] = useState(false);
+  const [sheetRegisterIsOpen, setSheetRegisterIsOpen] = useState(false);
   const [modalProofStep, setModalProofStep] = useState(0);
   const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState<Date | null>(null)
   const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState<Date | null>(null)
@@ -212,6 +214,7 @@ const MainScreen: React.FC = () => {
             throw new Error("Transaction failed");
           }
           setRegistered(true);
+          setSelectedTab("app");
           setStep(Steps.REGISTERED);
           toast.show('✅', {
             message: "Registered",
@@ -465,6 +468,14 @@ const MainScreen: React.FC = () => {
                         <Eraser color={textColor2} />
                       </Button>
                     </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        registered = (!registered)
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
+                        <UserPlus color={textColor2} />
+                      </Button>
+                    </Fieldset>
                   </>
                 )}
 
@@ -542,9 +553,9 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[60]}>
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[42]} moveOnKeyboardChange>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgWhite} borderRadius="$9" pt="$2" mb="$3">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
               <YStack p="$4" f={1} gap="$3">
                 <XStack>
                   <Text fontSize="$8" mb="$2">Manual input ✍️</Text>
@@ -554,7 +565,7 @@ const MainScreen: React.FC = () => {
                   </XStack>
                 </XStack>
                 <Separator borderColor={separatorColor} />
-                <Fieldset gap="$4" horizontal>
+                <Fieldset gap="$4" horizontal mt="$2">
                   <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
                     Passport Number
                   </Text>
@@ -651,6 +662,90 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
+          <Sheet open={sheetAppListOpen} onOpenChange={setSheetAppListOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[35]}>
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
+              <YStack p="$4" f={1} gap="$3">
+                <XStack>
+                  <Text fontSize="$8" mb="$2">Applications</Text>
+                  <XStack f={1} />
+                  <XStack onPress={() => setSheetAppListOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
+                  </XStack>
+                </XStack>
+                <Separator borderColor={separatorColor} />
+
+                <XStack f={1} />
+                <YStack gap="$2">
+                  <CustomButton
+                    text="Zupass"
+                    onPress={() => toast.show('😖', {
+                      message: "Work in progress",
+                      customData: {
+                        type: "info",
+                      },
+                    })}
+                  />
+                  <CustomButton
+                    text="Gitcoin passport"
+                    onPress={() => toast.show('😖', {
+                      message: "Work in progress",
+                      customData: {
+                        type: "info",
+                      },
+                    })}
+                  />
+                  <CustomButton
+                    text="SBT"
+                    onPress={() => toast.show('😖', {
+                      message: "Work in progress",
+                      customData: {
+                        type: "info",
+                      },
+                    })}
+                  />
+                </YStack>
+                <XStack f={1} />
+
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+
+          <Sheet open={sheetRegisterIsOpen} onOpenChange={setSheetRegisterIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[35]}>
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" >
+              <YStack p="$4" f={1} gap="$3">
+                <XStack>
+                  <Text fontSize="$8" mb="$2">👋 Not registered yet?</Text>
+                  <XStack f={1} />
+                  <XStack onPress={() => setSheetRegisterIsOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
+                  </XStack>
+                </XStack>
+                <Separator borderColor={separatorColor} />
+                <YStack gap="$2">
+                  <Text fontSize="$7" color={textBlack}>Registering to Proof of Passport does not leak anything about your personal information.</Text>
+                  <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text>
+                </YStack>
+
+                <XStack f={1} />
+                <YStack gap="$2">
+                  <CustomButton
+                    text="Register"
+                    Icon={<UserPlus color={textBlack} />}
+                    onPress={() => {
+                      setSheetRegisterIsOpen(false);
+                      setSelectedTab("start");
+
+                    }}
+                  />
+                </YStack>
+                <XStack f={1} />
+
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+
           <Sheet
             open={showRegistrationErrorSheet}
             onOpenChange={(open: boolean) => {
@@ -716,10 +811,15 @@ const MainScreen: React.FC = () => {
             <RegisterScreen />
           </Tabs.Content>
           <Tabs.Content value="app" f={1}>
-            <AppScreen />
+            <AppScreen
+              setSheetAppListOpen={setSheetAppListOpen}
+              setSheetRegisterIsOpen={setSheetRegisterIsOpen}
+            />
           </Tabs.Content>
           <Tabs.Content value="prove" f={1}>
-            <ProveScreen />
+            <ProveScreen
+              setSheetRegisterIsOpen={setSheetRegisterIsOpen}
+            />
           </Tabs.Content>
           <Tabs.Content value="mint" f={1}>
             <SendProofScreen />

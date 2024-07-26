@@ -15,9 +15,11 @@ import { AppType } from '../utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
 
+interface ProveScreenProps {
+  setSheetRegisterIsOpen: (value: boolean) => void;
+}
 
-
-const ProveScreen: React.FC = () => {
+const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [acknowledged, setAcknowledged] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
   const {
@@ -162,7 +164,7 @@ const ProveScreen: React.FC = () => {
 
 
 
-      <CustomButton text="Prove" onPress={handleProve} isDisabled={!acknowledged} bgColor={acknowledged ? bgGreen : separatorColor} disabledOnPress={() => toast.show('✍️', {
+      <CustomButton text="Prove" onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)} isDisabled={!acknowledged} bgColor={acknowledged ? bgGreen : separatorColor} disabledOnPress={() => toast.show('✍️', {
         message: "Please check all fields",
         customData: {
           type: "info",
