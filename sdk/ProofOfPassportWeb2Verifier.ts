@@ -1,13 +1,14 @@
 import { groth16 } from 'snarkjs';
 import fs from 'fs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
 import dotenv from 'dotenv';
 import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
+import path from 'path';
 
 dotenv.config();
 
-const path_disclose_vkey = "../circuits/build/disclose_vkey.json";
+const path_disclose_vkey = path.join(__dirname, '..', '..', 'circuits', 'disclose_vkey.json');
 const MOCK_MERKLE_ROOT_CHECK = process.env.MOCK_MERKLE_ROOT_CHECK === 'true' ? true : false;
 
 export class ProofOfPassportWeb2Verifier {
@@ -81,7 +82,7 @@ export class ProofOfPassportWeb2Verifier {
         const verified_disclose = await groth16.verify(
             vkey_disclose,
             proofOfPassportWeb2Inputs.publicSignals,
-            proofOfPassportWeb2Inputs.proof
+            proofOfPassportWeb2Inputs.proof as any
         )
         if (!verified_disclose) {
             this.report.exposeAttribute('proof');

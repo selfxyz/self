@@ -1,9 +1,26 @@
 {
   "compilerOptions": {
-    "resolveJsonModule": true,
-    "esModuleInterop": true,
     "target": "ES2020",
-    "moduleResolution": "node",
-    "module": "CommonJS",
-  }
+    "module": "commonjs",
+    "declaration": true,
+    "outDir": "./dist",
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true
+  },
+  "include": [
+    "index.ts",
+    "src/**/*",
+    "common/**/*",
+    "circuits/**/*",
+    "circuits/**/*.json"
+  ],
+  "exclude": [
+    "node_modules",
+    "**/__tests__/*",
+    "dist",
+    "common/src/utils/csca.ts"
+  ]
 }
