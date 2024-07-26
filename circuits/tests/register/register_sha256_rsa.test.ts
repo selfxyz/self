@@ -7,6 +7,7 @@ import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../../common/src/utils/utils';
+import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
 
 describe('Register - SHA256 RSA', function () {
   this.timeout(0);
@@ -63,11 +64,7 @@ describe('Register - SHA256 RSA', function () {
     const commitment_bytes = poseidon6([
       inputs.secret[0],
       attestation_id,
-      getLeaf({
-        signatureAlgorithm: passportData.signatureAlgorithm,
-        modulus: passportData.pubKey.modulus,
-        exponent: passportData.pubKey.exponent,
-      }),
+      computeLeafFromModulusBigInt(BigInt(passportData.pubKey.modulus)),
       mrz_bytes[0],
       mrz_bytes[1],
       mrz_bytes[2],
