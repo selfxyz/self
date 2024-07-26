@@ -9,12 +9,17 @@ import zupassApp from '../apps/zupass';
 import gitcoinApp from '../apps/gitcoin';
 import { XStack } from 'tamagui';
 import CustomButton from '../components/CustomButton';
-import { BadgeCheck, Binary, LockKeyhole, QrCode, ShieldCheck, Smartphone, UserPlus } from '@tamagui/lucide-icons';
+import { BadgeCheck, Binary, LayoutGrid, List, LockKeyhole, QrCode, ShieldCheck, Smartphone, UserPlus } from '@tamagui/lucide-icons';
 import { bgBlue, bgGreen, separatorColor, textBlack } from '../utils/colors';
 import { orange } from '@tamagui/colors';
 import useUserStore from '../stores/userStore';
 import { NativeModules } from 'react-native';
-const AppScreen: React.FC = () => {
+interface AppScreenProps {
+  setSheetAppListOpen: (value: boolean) => void;
+  setSheetRegisterIsOpen: (value: boolean) => void;
+}
+
+const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegisterIsOpen }) => {
   const {
     selectedApp,
     setSelectedApp,
@@ -54,7 +59,7 @@ const AppScreen: React.FC = () => {
   return (
     <YStack f={1} pb="$3" px="$3">
       {/* <XStack h="$0.25" bg={separatorColor} mx="$0" /> */}
-      <ScrollView >
+      <ScrollView showsVerticalScrollIndicator={true} indicatorStyle="black">
         <YStack >
           <Text fontSize="$8" mt="$2" >Account</Text>
           <XStack ml="$2" gap="$2" ai="center">
@@ -66,6 +71,7 @@ const AppScreen: React.FC = () => {
               <XStack bg={'#FFB897'} px="$2.5" py="$2" borderRadius="$10">
                 <Text color={textBlack} fontSize="$4">not registered</Text>
               </XStack>}
+
           </XStack>
           {/* <XStack ml="$2" gap="$2" mt="$1">
             <Text fontSize="$5">userID:</Text>
@@ -119,17 +125,37 @@ const AppScreen: React.FC = () => {
 
 
       <XStack f={1} minHeight="$1" />
-      {registered ? <CustomButton text="Scan QR code" onPress={() => setRegistered(false)} Icon={<QrCode size={18} color={textBlack} />} /> :
+
+      <YStack gap="$2.5">
         <CustomButton text="Scan QR Code" onPress={() => {
-          NativeModules.QRScannerBridge.scanQRCode()
-            .then((result: string) => {
-              handleQRCodeScan(result);
-              // Handle the scanned QR code result here
-            })
-            .catch((error: any) => {
-              console.error('QR Scanner Error:', error);
-            });
-        }} Icon={<QrCode size={18} color={textBlack} />} />}
+
+          {
+            registered ?
+              NativeModules.QRScannerBridge.scanQRCode()
+                .then((result: string) => {
+                  handleQRCodeScan(result);
+                })
+                .catch((error: any) => {
+                  console.error('QR Scanner Error:', error);
+                })
+
+              :
+              setSheetRegisterIsOpen(true)
+
+          }
+
+
+
+
+        }} Icon={<QrCode size={18} color={textBlack} />} />
+        <CustomButton bgColor='white' text="Open app list" onPress={
+          registered ?
+            () => setSheetAppListOpen(true)
+            :
+            () => setSheetRegisterIsOpen(true)} Icon={<List size={18} color={textBlack} />} />
+      </YStack>
+
+
       {/* <YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center'>
         {
           cardsData.map(app => (

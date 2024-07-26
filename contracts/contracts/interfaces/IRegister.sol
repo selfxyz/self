@@ -9,7 +9,9 @@ interface IRegister {
     /// @notice Error thrown when the same nullifier is used more than once
     error Register__YouAreUsingTheSameNullifierTwice();
     /// @notice Error thrown when the proof provided is invalid
-    error Register__InvalidProof();
+    error Register__InvalidProofRegister();
+    /// @notice Error thrown when the proof provided is invalid
+    error Register__InvalidProofCSCA();
     /// @notice Error thrown when the signature algorithm provided is invalid
     error Register__InvalidSignatureAlgorithm();
     /// @notice Error thrown when the verifier address is invalid
@@ -65,10 +67,16 @@ interface IRegister {
     /// @notice Verifies a Register proof
     /// @param proof The Register proof to verify
     /// @return bool Returns true if the proof is valid, false otherwise
-    function verifyProof(
+    function verifyProofRegister(
         RegisterProof calldata proof,
-        CSCAProof calldata proof_csca,
-        uint256 signature_algorithm,
+        uint256 signature_algorithm
+    ) external view returns (bool);
+
+    /// @notice Verifies a Register proof
+    /// @param proof The Register proof to verify
+    /// @return bool Returns true if the proof is valid, false otherwise
+    function verifyProofCSCA(
+        CSCAProof calldata proof,
         uint256 signature_algorithm_csca
     ) external view returns (bool);
 
