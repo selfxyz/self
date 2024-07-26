@@ -11,6 +11,8 @@ include "circomlib/circuits/bitify.circom";
 /// @input in: array of bytes
 /// @output out: array of words
 template SplitSignalsToWords (t,l,n,k) {
+    assert(n*k >= t*l);
+
     signal input in[l];
     signal output out[k];
     component num2bits[l];
