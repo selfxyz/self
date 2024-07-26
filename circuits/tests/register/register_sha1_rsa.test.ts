@@ -21,7 +21,7 @@ describe('Register - SHA1 RSA', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/register/register_sha1WithRSAEncryption_65537.circom'),
+      path.join(__dirname, '../../circuits/register/register_sha1_rsa_65537.circom'),
       {
         include: [
           'node_modules',
