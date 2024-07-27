@@ -32,6 +32,7 @@ interface UserState {
   cscaProof: Proof | null
   localProof: Proof | null
   dscSecret: string | null
+  userLoaded: boolean
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
@@ -42,9 +43,11 @@ interface UserState {
   deleteMrzFields: () => void
   setRegistered: (registered: boolean) => void
   setDscSecret: (dscSecret: string) => void
+  setUserLoaded: (userLoaded: boolean) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
+  userLoaded: false,
   passportNumber: DEFAULT_PNUMBER ?? "",
   dateOfBirth: DEFAULT_DOB ?? "",
   dateOfExpiry: DEFAULT_DOE ?? "",
@@ -61,7 +64,9 @@ const useUserStore = create<UserState>((set, get) => ({
   setDscSecret: (dscSecret: string) => {
     set({ dscSecret });
   },
-
+  setUserLoaded: (userLoaded: boolean) => {
+    set({ userLoaded });
+  },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
   // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
@@ -99,6 +104,7 @@ const useUserStore = create<UserState>((set, get) => ({
       registered: true,
     });
     useNavigationStore.getState().setStep(Steps.REGISTERED);
+    set({ userLoaded: true });
   },
 
   // When reading passport for the first time:

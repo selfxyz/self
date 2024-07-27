@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ScrollView, Fieldset } from 'tamagui';
 import { Check, Plus, Minus, PenTool, ShieldCheck } from '@tamagui/lucide-icons';
 import { getFirstName, maskString } from '../../utils/utils';
-import { attributeToPosition } from '../../../common/src/constants/constants';
+import { attributeToPosition, COMMITMENT_TREE_TRACKER_URL } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { ethers } from 'ethers';
@@ -14,13 +14,21 @@ import useNavigationStore from '../stores/navigationStore';
 import { AppType } from '../../../common/src/utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
-
+import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
+import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
+import axios from 'axios';
+//import { getTreeFromTracker } from '../../../common/src/utils/commitmentTree';
+import { stringToNumber } from '../../../common/src/utils/utils';
+import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
+import { getTreeFromTracker } from '../../../common/src/utils/pubkeyTree';
+import { generateProof } from '../utils/prover';
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [acknowledged, setAcknowledged] = useState(false);
+  const [requestingMerkle, setRequestingMerkle] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
   const {
     hideData,
@@ -30,11 +38,55 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   } = useNavigationStore()
 
   const {
-    fields,
-    handleProve,
-    circuit,
-  } = selectedApp
+    secret,
+  } = useUserStore()
 
+  // const {
+  //   fields,
+  //   handleProve,
+  //   circuit,
+  // } = selectedAp
+  const handleProve = async () => {
+    console.log("handleProve");
+
+    const tree = await getTreeFromTracker(setRequestingMerkle);
+
+    const base_majority = [BigInt(1).toString(), BigInt(8).toString()];
+    const majority = (selectedApp.disclosureOptions?.older_than ? Array.from(selectedApp.disclosureOptions.older_than).map(char => {
+      try {
+        return BigInt(char).toString();
+      } catch (error) {
+        console.error(`Failed to convert ${char} to BigInt:`, error);
+        return null; // or handle the error as needed
+      }
+    }).filter(char => char !== null) : base_majority);
+
+    const inputs = generateCircuitInputsDisclose(
+      secret,
+      PASSPORT_ATTESTATION_ID,
+      passportData,
+      tree as any,
+      [BigInt(49).toString(), BigInt(50).toString()],
+      revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+      selectedApp.scope,
+      stringToNumber(selectedApp.userId).toString()
+
+    )
+    console.log("inputs", inputs);
+    const proof = await generateProof(
+      selectedApp.circuit,
+      inputs,
+    );
+    toast.show('🔥', {
+      message: JSON.stringify(proof),
+      customData: {
+
+        type: "info",
+      },
+    });
+
+
+  }
 
   // const {
   //   address,
@@ -67,7 +119,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   useEffect(() => {
     // this already checks if downloading is required
-    downloadZkey(circuit);
+    // downloadZkey(circuit);
   }, [])
 
   const disclosureFieldsToText = (key: string, value: string = "") => {
@@ -99,7 +151,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       <YStack mt="$6">
 
 
-        {selectedApp && Object.keys(selectedApp.disclosureOptions).map((key) => {
+        {selectedApp && Object.keys(selectedApp.disclosureOptions as any).map((key) => {
           const key_ = key;
           const indexes = attributeToPosition[key_ as keyof typeof attributeToPosition];
           const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0) + word.slice(1)).join(' ');
@@ -147,6 +199,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
 
       <XStack f={1} />
+      {selectedApp && Object.keys(selectedApp as any).map((key) => {
+        const value = selectedApp[key as keyof AppType];
+        return (
+          <Text key={key} fontSize="$6" color={textBlack}>
+            {`${key}: ${value}`}
+          </Text>
+        );
+      })}
       <XStack f={1} />
 
 
@@ -164,7 +224,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
 
 
-      <CustomButton text="Prove" onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)} isDisabled={!acknowledged} bgColor={acknowledged ? bgGreen : separatorColor} disabledOnPress={() => toast.show('✍️', {
+      <CustomButton isDisabled={!acknowledged} text={requestingMerkle ? "Requesting Merkle Tree..." : "Prove"} onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)} bgColor={acknowledged ? bgGreen : separatorColor} disabledOnPress={() => toast.show('✍️', {
         message: "Please check all fields",
         customData: {
           type: "info",
@@ -172,52 +232,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       })} />
 
 
-      {/* {fields.map((Field, index) => (
-          <Field key={index} />
-        ))} */}
-
-
-      {/* <Button
-          // disabled={isZkeyDownloading[selectedApp.circuit] || (address == ethers.ZeroAddress)}
-          borderWidth={1.3}
-          borderColor={borderColor}
-          borderRadius={100}
-          onPress={handleProve}
-          mt="$8"
-          // backgroundColor={address == ethers.ZeroAddress ? "#cecece" : "#3185FC"}
-          alignSelf='center'
-        >
-          {!registered ? (
-            <XStack ai="center" gap="$1">
-              <Spinner />
-              <Text color={textColor1} fow="bold">
-                Registering identity...
-              </Text>
-            </XStack>
-          ) : isZkeyDownloading[selectedApp.circuit] ? (
-            <XStack ai="center" gap="$1">
-              <Spinner />
-              <Text color={textColor1} fow="bold">
-                Downloading ZK proving key
-              </Text>
-            </XStack>
-          ) : step === Steps.GENERATING_PROOF ? (
-            <XStack ai="center" gap="$1">
-              <Spinner />
-              <Text color={textColor2} marginLeft="$2" fow="bold">
-                Generating ZK proof
-              </Text>
-            </XStack>
-          ) : address == ethers.ZeroAddress ? (
-            <Text color={textColor2} fow="bold">
-              Enter address
-            </Text>
-          ) : (
-            <Text color={textColor1} fow="bold">
-              Generate ZK proof
-            </Text>
-          )}
-        </Button> */}
     </YStack >
   );
 };

@@ -307,7 +307,7 @@ const MainScreen: React.FC = () => {
       <YStack f={1} mt={Platform.OS === 'ios' ? "$8" : "$0"} mb={Platform.OS === 'ios' ? "$4" : "$2"}>
         <YStack >
           <StepOneStepTwo variable={selectedTab} step1="scan" step2="nfc" />
-          {selectedTab !== "app" && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
+          {selectedTab !== ("app") && selectedTab !== ("splash") && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
           {selectedTab === "app" &&
             <XStack px="$4" py="$2" mt="$0" ai="center">
               <Text fontSize="$9"  >Proof of Passport</Text>
@@ -781,7 +781,7 @@ const MainScreen: React.FC = () => {
 
         </YStack>
 
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"splash"}
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
