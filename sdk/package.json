@@ -1,6 +1,6 @@
 {
   "name": "@proofofpassport/sdk",
-  "version": "1.3.9",
+  "version": "1.4.7",
   "main": "dist/sdk/index.js",
   "types": "dist/sdk/index.d.ts",
   "license": "MIT",

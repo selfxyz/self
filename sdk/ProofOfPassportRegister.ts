@@ -1,3 +1,4 @@
+/*** 
 import { groth16 } from "snarkjs";
 //import path from 'path';
 import { numberToString } from "./common/src/utils/siv";
@@ -74,3 +75,5 @@ export function parsePublicSignals_csca(publicSignals) {
         merkle_root: publicSignals[1]
     }
 }
+
+****/
