@@ -104,5 +104,5 @@ template PassportVerifier_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes) {
     signal output result <== ecdsa_verify.result;
 
 }
-component main  =  PassportVerifier_ecdsaWithSHA1Encryption(43, 6, 320);
+// component main  =  ;
 

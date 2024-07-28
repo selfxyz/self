@@ -47,10 +47,7 @@ describe('Register - SHA1 WITH ECDSA', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(
-        __dirname,
-        '../../circuits/register/verifier/passport_verifier_ecdsaWithSHA1Encryption.circom'
-      ),
+      path.join(__dirname, '../../circuits/register/register_ecdsaWithSHA1Encryption.circom'),
       {
         include: [
           'node_modules',
@@ -62,9 +59,9 @@ describe('Register - SHA1 WITH ECDSA', function () {
     );
   });
 
-  it('should compile and load the circuit', async function () {
-    expect(circuit).to.not.be.undefined;
-  });
+  // it('should compile and load the circuit', async function () {
+  //   expect(circuit).to.not.be.undefined;
+  // });
 
   it('should verify inputs with ecdsa sha256', async function () {
     let qx = BigInt(hexToDecimal(inputs.dsc_modulus[0]));
@@ -83,14 +80,17 @@ describe('Register - SHA1 WITH ECDSA', function () {
     // console.log('econtent', inputs.econtent);
 
     const witness = await circuit.calculateWitness({
+      secret: inputs.secret,
       mrz: inputs.mrz,
       dg1_hash_offset: inputs.dg1_hash_offset[0],
-      dataHashes: inputs.econtent,
+      econtent: inputs.econtent,
       datahashes_padded_length: inputs.datahashes_padded_length[0],
-      eContentBytes: inputs.signed_attributes,
-      dsc_modulus: dsc_modulus,
+      signed_attributes: inputs.signed_attributes,
       signature_r: signature_r,
       signature_s: signature_s,
+      dsc_modulus: dsc_modulus,
+      dsc_secret: inputs.dsc_secret,
+      attestation_id: inputs.attestation_id,
     });
   });
 });
