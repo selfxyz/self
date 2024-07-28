@@ -3,7 +3,7 @@ import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
-import { poseidon2, poseidon3 } from 'poseidon-lite';
+import { poseidon3 } from 'poseidon-lite';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map(char => char.charCodeAt(0));
@@ -303,7 +303,7 @@ export function packBytes(unpacked) {
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const {entry, matchingEntry, siblings, root, membership} = smt.createProof(leaf);
   const depth = siblings.length
-
+  
   let closestleaf;
   if (!matchingEntry){ // we got the 0 leaf or membership
     // then check if entry[1] exists
@@ -317,14 +317,14 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
   } else {
     closestleaf = poseidon3(matchingEntry); // actual closest
   }
- 
-  const bits = entry[0].toString(2).slice(-depth);
+  const binary = entry[0].toString(2)
+  const bits = binary.slice(-depth);
   let indices = bits.padEnd(256, "0").split("").map(Number)
   siblings.reverse()
+  const pathToMatch = num2Bits(256,BigInt(entry[0])) //no need to pad actually as poseidon hashes are 256 onli
 
   while(indices.length < 256) indices.push(0);
   while(siblings.length < 256) siblings.push(BigInt(0)); 
-  // get to 256 for computation in circuit
   
   // // CALCULATED ROOT FOR TESTING -- // Useful for debugging hence leaving as comments
   // closestleaf, depth, siblings, indices, root : needed 
@@ -345,7 +345,7 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     closestleaf,
     indices,
     siblings,   
-    membership,
+    pathToMatch
   };
 }
 
@@ -386,4 +386,28 @@ export function hexToBin(n: string): string {
       bin += Number(`0x${n[i]}`).toString(2).padStart(4, "0")
   }
   return bin
+}
+
+export function num2Bits(n: number, inValue: bigint): bigint[] {
+  const out: bigint[] = new Array(n).fill(BigInt(0));
+  let lc1: bigint = BigInt(0);
+  let e2: bigint = BigInt(1);
+
+  for (let i = 0; i < n; i++) {
+      out[i] = (inValue >> BigInt(i)) & BigInt(1);
+
+      if (out[i] !== BigInt(0) && out[i] !== BigInt(1)) {
+          throw new Error("Bit value is not binary.");
+      }
+
+      lc1 += out[i] * e2;
+
+      e2 = e2 << BigInt(1);
+  }
+
+  if (lc1 !== inValue) {
+      throw new Error("Reconstructed value does not match the input.");
+  }
+
+  return out;
 }

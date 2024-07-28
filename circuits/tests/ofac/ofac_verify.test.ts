@@ -132,14 +132,14 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       path: smt_inputs.path,
       siblings: smt_inputs.siblings,
       current_date: smt_inputs.current_date,
-      leaf_value: smt_mockInputs.leaf_value,
+      closest_leaf: smt_mockInputs.closest_leaf,
       smt_root: smt_mockInputs.smt_root,
       smt_size: smt_mockInputs.smt_size,
       smt_path: smt_mockInputs.smt_path,
       smt_siblings: smt_mockInputs.smt_siblings,
-      membership: smt_mockInputs.membership,
-    };
-
+      path_to_match: smt_mockInputs.path_to_match,
+    };    
+    
   });
 
   // Compile circuit
@@ -147,12 +147,25 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
     expect(circuit).to.not.be.undefined;
   });
 
-  //Corrct path, assertion of non-membership passes and proof of closest sibling passes : Everything correct as a proof
+  // Corrct path, assertion of non-membership passes and proof of closest sibling passes : Everything correct as a proof
   it('should pass without errors , all conditions satisfied', async function () {
-    // console.log("Inputs : ", smt_mockInputs)
-    let w = await circuit.calculateWitness(smt_mockInputs);
-    console.log("Everything correct as a proof");
+    await circuit.calculateWitness(smt_mockInputs);
+    console.log("Everything correct");
   });
+
+  // Correct path, assertion of non-membership passes, but failing to prove closest sibling
+  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+    try {
+        // Basically user gives a correct path and siblings from the tree but not of his passport, trying to fake non-membership from another passport
+        await circuit.calculateWitness(random_input);
+        expect.fail("Expected an error but none was thrown.");
+    } catch (error) {
+        expect(error.message).to.include("Assert Failed");
+        expect(error.message).to.include("line: 72");
+        expect(error.message).to.not.include('line: 46');
+        expect(error.message).to.not.include('line: 42');
+    }
+  });;
 
   // Correct path, but assertion of non-membership fails
   it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
@@ -161,31 +174,242 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.not.include('line: 44');
-      expect(error.message).to.include('line: 48');
+      expect(error.message).to.include('line: 46');
+      expect(error.message).to.not.include('line: 42');
     }
   });
-
-  //Correct path, assertion of non-membership passes, but failing to prove closest sibling
-  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
-    try {
-        // Basically user gives a correct path and siblings from the tree but not of his passport, trying to fake non-membership from another passport
-        await circuit.calculateWitness(random_input);
-        expect.fail("Expected an error but none was thrown.");
-    } catch (error) {
-        console.log(error.message);
-        expect(error.message).to.include("Assert Failed");
-        expect(error.message).to.not.include('line: 44');
-        expect(error.message).to.not.include('line: 48');
-        expect(error.message).to.include("line: 72");
-    }
-  });;
 
   // Incorrect path
   it('should fail to calculate witness with invalid paths , level 3', async function () {
     try {
       let inputs = smt_inputs;
       inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString(); //flips the first bit to create an invalid path
+      await circuit.calculateWitness(inputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 42');
+    }
+  });
+
+});
+
+describe('start testing ofac_nameDob_verifier.circom', function () {
+  this.timeout(0);
+  let nameDob_smt = new SMT(hash, true);
+  let smt_inputs: any;
+  let smt_mockInputs: any;
+  let random_input: any;
+
+  before(async () => {
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/ofac/ofac_nameDob_verifier.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+
+    nameDob_smt.import(nameDobjson);
+    const proofLevel = 2;
+    smt_inputs = generateCircuitInputsOfac(
+      inputs.secret,
+      inputs.attestation_id,
+      inputs.passportData,
+      tree,
+      inputs.majority,
+      inputs.bitmap,
+      inputs.scope,
+      inputs.user_identifier,
+      nameDob_smt,
+      proofLevel
+    );
+
+    smt_mockInputs = generateCircuitInputsOfac(
+      mockInputs.secret,
+      mockInputs.attestation_id,
+      mockInputs.passportData,
+      tree,
+      mockInputs.majority,
+      mockInputs.bitmap,
+      mockInputs.scope,
+      mockInputs.user_identifier,
+      nameDob_smt,
+      proofLevel
+    );
+
+    random_input = {
+      secret: smt_inputs.secret,
+      attestation_id: smt_inputs.attestation_id,
+      pubkey_leaf: smt_inputs.pubkey_leaf,
+      mrz: smt_inputs.mrz,
+      merkle_root: smt_inputs.merkle_root,
+      merkletree_size: smt_inputs.merkletree_size,
+      path: smt_inputs.path,
+      siblings: smt_inputs.siblings,
+      current_date: smt_inputs.current_date,
+      closest_leaf: smt_mockInputs.closest_leaf,
+      smt_root: smt_mockInputs.smt_root,
+      smt_size: smt_mockInputs.smt_size,
+      smt_path: smt_mockInputs.smt_path,
+      smt_siblings: smt_mockInputs.smt_siblings,
+      path_to_match: smt_mockInputs.path_to_match,
+    };    
+    
+  });
+
+  it('should compile and load the circuit, level 3', async function () {
+    expect(circuit).to.not.be.undefined;
+  });
+
+  it('should pass without errors , all conditions satisfied', async function () {
+    await circuit.calculateWitness(smt_mockInputs);
+    console.log("Everything correct");
+  });
+
+  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+    try {
+        await circuit.calculateWitness(random_input);
+        expect.fail("Expected an error but none was thrown.");
+    } catch (error) {
+        expect(error.message).to.include("Assert Failed");
+        expect(error.message).to.include("line: 69");
+        expect(error.message).to.not.include('line: 56');
+        expect(error.message).to.not.include('line: 53');
+    }
+  });;
+
+  it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
+    try {
+      await circuit.calculateWitness(smt_inputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 56');
+      expect(error.message).to.not.include('line: 53');
+    }
+  });
+
+  it('should fail to calculate witness with invalid paths , level ', async function () {
+    try {
+      let inputs = smt_inputs;
+      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString(); 
+      await circuit.calculateWitness(inputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 53');
+    }
+  });
+
+});
+
+describe('start testing ofac_name_verifier.circom', function () {
+  this.timeout(0);
+  let name_smt = new SMT(hash, true);
+  let smt_inputs: any;
+  let smt_mockInputs: any;
+  let random_input: any;
+
+  before(async () => {
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/ofac/ofac_name_verifier.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+
+    name_smt.import(namejson);
+    const proofLevel = 1;
+    smt_inputs = generateCircuitInputsOfac(
+      inputs.secret,
+      inputs.attestation_id,
+      inputs.passportData,
+      tree,
+      inputs.majority,
+      inputs.bitmap,
+      inputs.scope,
+      inputs.user_identifier,
+      name_smt,
+      proofLevel
+    );
+
+    smt_mockInputs = generateCircuitInputsOfac(
+      mockInputs.secret,
+      mockInputs.attestation_id,
+      mockInputs.passportData,
+      tree,
+      mockInputs.majority,
+      mockInputs.bitmap,
+      mockInputs.scope,
+      mockInputs.user_identifier,
+      name_smt,
+      proofLevel
+    );
+
+    random_input = {
+      secret: smt_inputs.secret,
+      attestation_id: smt_inputs.attestation_id,
+      pubkey_leaf: smt_inputs.pubkey_leaf,
+      mrz: smt_inputs.mrz,
+      merkle_root: smt_inputs.merkle_root,
+      merkletree_size: smt_inputs.merkletree_size,
+      path: smt_inputs.path,
+      siblings: smt_inputs.siblings,
+      current_date: smt_inputs.current_date,
+      closest_leaf: smt_mockInputs.closest_leaf,
+      smt_root: smt_mockInputs.smt_root,
+      smt_size: smt_mockInputs.smt_size,
+      smt_path: smt_mockInputs.smt_path,
+      smt_siblings: smt_mockInputs.smt_siblings,
+      path_to_match: smt_mockInputs.path_to_match,
+    };    
+    
+  });
+
+  it('should compile and load the circuit, level 3', async function () {
+    expect(circuit).to.not.be.undefined;
+  });
+
+  it('should pass without errors , all conditions satisfied', async function () {
+    await circuit.calculateWitness(smt_mockInputs);
+    console.log("Everything correct");
+  });
+
+  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+    try {
+        await circuit.calculateWitness(random_input);
+        expect.fail("Expected an error but none was thrown.");
+    } catch (error) {
+        expect(error.message).to.include("Assert Failed");
+        expect(error.message).to.include("line: 60");
+        expect(error.message).to.not.include('line: 47');
+        expect(error.message).to.not.include('line: 44');
+    }
+  });;
+
+  it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
+    try {
+      await circuit.calculateWitness(smt_inputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 47');
+      expect(error.message).to.not.include('line: 44');
+    }
+  });
+
+  it('should fail to calculate witness with invalid paths , level ', async function () {
+    try {
+      let inputs = smt_inputs;
+      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString(); 
       await circuit.calculateWitness(inputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {

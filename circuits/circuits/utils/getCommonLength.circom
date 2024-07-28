@@ -4,32 +4,23 @@ include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 
 // computes the first n common bits of the hashes
-template PoseidonHashesCommonLength() {
-    signal input hash1;
-    signal input hash2;
+template CommonBitsLengthFromEnd() {
+
+    signal input bits1[256];
+    signal input bits2[256];
     signal output out;
-
-    component converter1 = Num2Bits(256);
-    converter1.in <== hash1;
-    signal bits1[256];
-    bits1 <== converter1.out;
-
-    component converter2 = Num2Bits(256);
-    converter2.in <== hash2;
-    signal bits2[256];
-    bits2 <== converter2.out;
 
     component iseq[256];
     signal pop[256];
 
-    pop[0] <== IsEqual()([bits1[0], bits2[0]]);
+    pop[255] <== IsEqual()([bits1[255], bits2[255]]);
 
-    for (var i = 1; i < 256; i++) {
+    for (var i = 254; i >= 0; i--) {
         var temp = bits2[i] - bits1[i];
         iseq[i] = IsEqual();
         bits1[i] ==> iseq[i].in[0];
         bits2[i] ==> iseq[i].in[1];
-        pop[i] <== iseq[i].out*pop[i-1]; 
+        pop[i] <== iseq[i].out*pop[i+1]; 
     }   
 
     var added = 0;
@@ -52,7 +43,7 @@ template SiblingsLength() {
         foo[i] = foo[i] + foo[i+1];
     }
 
-    // convert to (15,14,12,9,9,9,5,0,0,0..), this takes out the middle 0's
+    // convert to (15,14,12,9,9,9,5,0,0,0..), this takes out the middle 0's 
     var total = 0;
     signal pop[256];
     component iszero[256];
