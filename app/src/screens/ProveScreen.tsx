@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ScrollView, Fieldset } from 'tamagui';
-import { Check, Plus, Minus, PenTool, ShieldCheck } from '@tamagui/lucide-icons';
-import { getFirstName, maskString } from '../../utils/utils';
-import { attributeToPosition, COMMITMENT_TREE_TRACKER_URL } from '../../../common/src/constants/constants';
+import { Check, } from '@tamagui/lucide-icons';
+import { attributeToPosition, } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { ethers } from 'ethers';
@@ -15,13 +14,14 @@ import { AppType } from '../../../common/src/utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
-import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import axios from 'axios';
-//import { getTreeFromTracker } from '../../../common/src/utils/commitmentTree';
 import { stringToNumber } from '../../../common/src/utils/utils';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import { getTreeFromTracker } from '../../../common/src/utils/pubkeyTree';
 import { generateProof } from '../utils/prover';
+import io, { Socket } from 'socket.io-client';
+
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
@@ -41,59 +41,81 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     secret,
   } = useUserStore()
 
-  // const {
-  //   fields,
-  //   handleProve,
-  //   circuit,
-  // } = selectedAp
-  const handleProve = async () => {
-    console.log("handleProve");
+  const [proofStatus, setProofStatus] = useState<string>('');
 
-    const tree = await getTreeFromTracker(setRequestingMerkle);
+  const [socket, setSocket] = useState<Socket | null>(null);
 
-    const base_majority = [BigInt(1).toString(), BigInt(8).toString()];
-    const majority = (selectedApp.disclosureOptions?.older_than ? Array.from(selectedApp.disclosureOptions.older_than).map(char => {
-      try {
-        return BigInt(char).toString();
-      } catch (error) {
-        console.error(`Failed to convert ${char} to BigInt:`, error);
-        return null; // or handle the error as needed
-      }
-    }).filter(char => char !== null) : base_majority);
-
-    const inputs = generateCircuitInputsDisclose(
-      secret,
-      PASSPORT_ATTESTATION_ID,
-      passportData,
-      tree as any,
-      [BigInt(49).toString(), BigInt(50).toString()],
-      revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
-      selectedApp.scope,
-      stringToNumber(selectedApp.userId).toString()
-
-    )
-    console.log("inputs", inputs);
-    const proof = await generateProof(
-      selectedApp.circuit,
-      inputs,
-    );
-    toast.show('🔥', {
-      message: JSON.stringify(proof),
-      customData: {
-
-        type: "info",
-      },
+  useEffect(() => {
+    const newSocket = io('https://proofofpassport-merkle-tree.xyz', {
+      path: '/websocket',
+      transports: ['websocket'],
+      query: { sessionId: selectedApp.userId, clientType: 'mobile' }
     });
 
+    newSocket.on('connect', () => {
+      console.log('Connected to WebSocket server');
+    });
 
-  }
+    newSocket.on('disconnect', () => {
+      console.log('Disconnected from WebSocket server');
+    });
 
-  // const {
-  //   address,
-  //   majority,
-  //   disclosure,
-  //   update
-  // } = useAppStore();
+    newSocket.on('connect_error', (error) => {
+      console.error('Connection error:', error);
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [selectedApp.userId]);
+
+  const handleProve = async () => {
+    try {
+      if (!socket || !socket.connected) {
+        throw new Error('WebSocket not connected');
+      }
+
+      socket.emit('proof_generation_start', { sessionId: selectedApp.userId });
+      setProofStatus('Generating proof...');
+
+      const tree = await getTreeFromTracker(setRequestingMerkle);
+
+      const inputs = generateCircuitInputsDisclose(
+        secret,
+        PASSPORT_ATTESTATION_ID,
+        passportData,
+        tree as any,
+        [BigInt(49).toString(), BigInt(50).toString()],
+        revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+        selectedApp.scope,
+        stringToNumber(selectedApp.userId).toString()
+      );
+
+      console.log("inputs", inputs);
+      const proof = await generateProof(
+        selectedApp.circuit,
+        inputs,
+      );
+
+      setProofStatus('Sending proof to verification...');
+
+      // Send the proof via WebSocket
+      socket.emit('proof_generated', { sessionId: selectedApp.userId, proof });
+
+      // Wait for verification result
+      const verificationResult = await new Promise((resolve) => {
+        socket.once('proof_verification_result', resolve);
+      });
+
+      setProofStatus(`Proof verification result: ${JSON.stringify(verificationResult)}`);
+
+    } catch (error) {
+      console.error('Error in handleProve:', error);
+      setProofStatus(`Error: ${error || 'An unknown error occurred'}`);
+    }
+  };
 
   const {
     registered,
@@ -105,12 +127,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     if (requiredOrOptional === 'required') {
       return;
     }
-    // update({
-    //   disclosure: {
-    //     ...disclosure,
-    //     [field]: !disclosure[field as keyof typeof disclosure]
-    //   }
-    // });
   };
   const handleAcknoledge = () => {
     setAcknowledged(!acknowledged);
@@ -118,8 +134,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   const { height } = useWindowDimensions();
 
   useEffect(() => {
-    // this already checks if downloading is required
-    // downloadZkey(circuit);
   }, [])
 
   const disclosureFieldsToText = (key: string, value: string = "") => {
@@ -145,9 +159,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         </Text>
       </YStack>
 
-      {/* <Text mt="$8" fontSize="$8" color={textBlack}>
-        I want to prove that:
-      </Text> */}
       <YStack mt="$6">
 
 
@@ -178,7 +189,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
                 {key_ === 'older_than' ? (
                   <XStack gap="$1.5" jc='center' ai='center'>
                     <XStack mr="$2">
-                      {/* <Text color={textColor1} w="$1" fontSize={16}>{majority}</Text> */}
                       <Text color={textBlack} fontSize="$6">{disclosureFieldsToText('older_than', (selectedApp.disclosureOptions as any).older_than)}</Text>
                     </XStack>
                   </XStack>
@@ -231,6 +241,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         },
       })} />
 
+
+      {proofStatus && (
+        <Text mt="$4" fontSize="$6" color={textBlack}>
+          {proofStatus}
+        </Text>
+      )}
 
     </YStack >
   );
