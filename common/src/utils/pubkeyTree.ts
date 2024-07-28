@@ -64,8 +64,6 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     sigAlgFormattedForCircuit === 'ecdsa_with_SHA512'
   ) {
     try {
-      // this will be replaced by just X and Y or pubkey in publicKeyQ
-
       if (!pubkey.publicKeyQ) {
         throw new Error('publicKeyQ is undefined');
       }
@@ -79,12 +77,9 @@ export function getLeaf(pubkey: any, i?: number): bigint {
       let qx = BigintToArray(43, 6, BigInt(hexToDecimal(x)));
       let qy = BigintToArray(43, 6, BigInt(hexToDecimal(y)));
 
-      // bigint_to_array();
       let poseidon_hasher_dsc_modules_x = poseidon6(qx);
       let poseidon_hasher_dsc_modules_y = poseidon6(qy);
-      console.log(SignatureAlgorithm[sigAlgFormattedForCircuit], 's');
 
-      // ! @TODO check if this is correct
       return poseidon3([
         SignatureAlgorithm[sigAlgFormattedForCircuit],
         poseidon_hasher_dsc_modules_x, // pub.x
