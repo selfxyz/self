@@ -1,26 +1,17 @@
-import { expect } from 'chai';
 import { describe } from 'mocha';
 import path from 'path';
-import { poseidon1 } from 'poseidon-lite';
+import { poseidon1, poseidon6 } from 'poseidon-lite';
 import { mockPassPortData_sha1_ecdsa } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { extractRSFromSignature, hexToDecimal } from '../../../common/src/utils/utils';
+import {
+  BigintToArray,
+  extractRSFromSignature,
+  hexToDecimal,
+  packBytes,
+} from '../../../common/src/utils/utils';
+import { expect } from 'chai';
+import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 const wasm_tester = require('circom_tester').wasm;
-
-function bigint_to_array(n: number, k: number, x: bigint) {
-  let mod: bigint = 1n;
-  for (var idx = 0; idx < n; idx++) {
-    mod = mod * 2n;
-  }
-
-  let ret: bigint[] = [];
-  var x_temp: bigint = x;
-  for (var idx = 0; idx < k; idx++) {
-    ret.push(x_temp % mod);
-    x_temp = x_temp / mod;
-  }
-  return ret;
-}
 
 describe('Register - SHA1 WITH ECDSA', function () {
   this.timeout(0);
@@ -59,27 +50,21 @@ describe('Register - SHA1 WITH ECDSA', function () {
     );
   });
 
-  // it('should compile and load the circuit', async function () {
-  //   expect(circuit).to.not.be.undefined;
-  // });
+  it('should compile and load the circuit', async function () {
+    expect(circuit).to.not.be.undefined;
+  });
 
-  it('should verify inputs with ecdsa sha256', async function () {
+  it('should calculate the witness with correct inputs', async function () {
     let qx = BigInt(hexToDecimal(inputs.dsc_modulus[0]));
     let qy = BigInt(hexToDecimal(inputs.dsc_modulus[1]));
-    let dsc_modulus = [bigint_to_array(43, 6, qx), bigint_to_array(43, 6, qy)];
+    let dsc_modulus = [BigintToArray(43, 6, qx), BigintToArray(43, 6, qy)];
 
     let signature = inputs.signature;
     let { r, s } = extractRSFromSignature(signature);
-    let signature_r = bigint_to_array(43, 6, BigInt(hexToDecimal(r)));
-    let signature_s = bigint_to_array(43, 6, BigInt(hexToDecimal(s)));
+    let signature_r = BigintToArray(43, 6, BigInt(hexToDecimal(r)));
+    let signature_s = BigintToArray(43, 6, BigInt(hexToDecimal(s)));
 
-    // console.log('dsc_modulus', dsc_modulus);
-    // console.log('signature_r', signature_r);
-    // console.log('signature_s', signature_s);
-    // console.log('dg1_hash', inputs.dg1_hash_offset);
-    // console.log('econtent', inputs.econtent);
-
-    const witness = await circuit.calculateWitness({
+    const w = await circuit.calculateWitness({
       secret: inputs.secret,
       mrz: inputs.mrz,
       dg1_hash_offset: inputs.dg1_hash_offset[0],
@@ -92,5 +77,32 @@ describe('Register - SHA1 WITH ECDSA', function () {
       dsc_secret: inputs.dsc_secret,
       attestation_id: inputs.attestation_id,
     });
+
+    await circuit.checkConstraints(w);
+
+    const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
+    console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
+    const commitment_circom = (await circuit.getOutput(w, ['commitment'])).commitment;
+    console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment_circom);
+    const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
+      .blinded_dsc_commitment;
+    console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
+
+    const mrz_bytes = packBytes(inputs.mrz);
+    const leaf = getLeaf({
+      signatureAlgorithm: passportData.signatureAlgorithm,
+      publicKeyQ: passportData.pubKey.publicKeyQ,
+    }).toString();
+
+    const commitment_bytes = poseidon6([
+      inputs.secret[0],
+      attestation_id,
+      leaf,
+      mrz_bytes[0],
+      mrz_bytes[1],
+      mrz_bytes[2],
+    ]);
+    const commitment_js = commitment_bytes.toString();
+    expect(commitment_circom).to.be.equal(commitment_js);
   });
 });

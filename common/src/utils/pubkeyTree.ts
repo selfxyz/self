@@ -1,7 +1,7 @@
-import { poseidon10, poseidon2, poseidon5, poseidon8 } from 'poseidon-lite';
+import { poseidon10, poseidon2, poseidon3, poseidon5, poseidon6, poseidon8 } from 'poseidon-lite';
 import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from '../constants/constants';
 import { IMT } from '@zk-kit/imt';
-import { hexToDecimal, splitToWords } from './utils';
+import { BigintToArray, hexToDecimal, splitToWords } from './utils';
 import { formatSigAlgNameForCircuit } from './utils';
 import { toStandardName } from './formatNames';
 
@@ -65,14 +65,30 @@ export function getLeaf(pubkey: any, i?: number): bigint {
   ) {
     try {
       // this will be replaced by just X and Y or pubkey in publicKeyQ
+
+      if (!pubkey.publicKeyQ) {
+        throw new Error('publicKeyQ is undefined');
+      }
+
       const [x, y, a, p] = pubkey.publicKeyQ.replace(/[()]/g, '').split(',');
+
+      if (!x || !y) {
+        throw new Error('Invalid publicKeyQ format');
+      }
+
+      let qx = BigintToArray(43, 6, BigInt(hexToDecimal(x)));
+      let qy = BigintToArray(43, 6, BigInt(hexToDecimal(y)));
+
+      // bigint_to_array();
+      let poseidon_hasher_dsc_modules_x = poseidon6(qx);
+      let poseidon_hasher_dsc_modules_y = poseidon6(qy);
+      console.log(SignatureAlgorithm[sigAlgFormattedForCircuit], 's');
+
       // ! @TODO check if this is correct
-      return poseidon5([
+      return poseidon3([
         SignatureAlgorithm[sigAlgFormattedForCircuit],
-        hexToDecimal(x), // pub.x
-        hexToDecimal(y), // pub.y
-        hexToDecimal(p), // prime
-        hexToDecimal(a), // a
+        poseidon_hasher_dsc_modules_x, // pub.x
+        poseidon_hasher_dsc_modules_y, // pub.y
         // pubkey.b ? pubkey.b : BigInt(0), // null then 0
         // pubkey.generator ? pubkey.generator : BigInt(0), // null then 0
         // pubkey.order ? pubkey.order : BigInt(0), // null then 0

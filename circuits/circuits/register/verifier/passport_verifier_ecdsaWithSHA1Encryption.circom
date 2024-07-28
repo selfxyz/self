@@ -7,7 +7,6 @@ include "../../utils/rsaPkcs1.circom";
 include "dmpierre/sha1-circom/circuits/sha1.circom";
 include "../../utils/circom-ecdsa/ecdsa.circom";
 
-// 
 template PassportVerifier_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes) {
     var hashLen = 20;
     var eContentBytesLength = 72 + hashLen; // 92
@@ -18,13 +17,11 @@ template PassportVerifier_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes) {
 
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
-    // pubkey that signed the passport for ecdsa it will be qx and qy on p256 curve need use bigInt.circom 
-    // coz p256 modulus extends 254 bit range in circom
-    signal input dsc_modulus[2][k]; 
 
-    // signature of the passport
-    signal input signature_r[k];
-    signal input signature_s[k];
+    signal input dsc_modulus[2][k]; // Public Key (split into Qx and Qy)
+
+    signal input signature_r[k]; // ECDSA signature component r
+    signal input signature_s[k]; // ECDSA signature component s
 
     // compute sha1 of formatted mrz
     signal mrzSha[160] <== Sha1BytesStatic(93)(mrz);
@@ -100,9 +97,6 @@ template PassportVerifier_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes) {
     ecdsa_verify.msghash <== msgHash;
     ecdsa_verify.pubkey <== dsc_modulus;
 
-    log("ecdsa_verify.result", ecdsa_verify.result);
     signal output result <== ecdsa_verify.result;
-
 }
-// component main  =  ;
 
