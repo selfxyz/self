@@ -92,7 +92,6 @@ export function generateCircuitInputsRegister(
     );
   }
 
-  // ! TODO
   const [messagePadded, messagePaddedLen] = shaPad(
     signatureAlgorithm,
     new Uint8Array(dataGroupHashes),
@@ -117,7 +116,6 @@ export function generateCircuitInputsRegister(
       BigInt(n_dsc),
       BigInt(k_dsc)
     );
-    // eContent = Array.from(messagePadded).map((x) => x.toString());
   }
   return {
     secret: [secret],
