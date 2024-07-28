@@ -1,7 +1,10 @@
 import { expect } from 'chai';
 import path from 'path';
 const wasm_tester = require('circom_tester').wasm;
-import { mockPassportData_sha256_rsa_65537, mockPassportData2_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
+import {
+  mockPassportData_sha256_rsa_65537,
+  mockPassportData2_sha256_rsa_65537,
+} from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT, ChildNodes } from '@ashpect/smt';
@@ -28,12 +31,12 @@ function getPassportInputs(passportData: PassportData) {
   const attestation_id = poseidon1([
     BigInt(Buffer.from(attestation_name).readUIntBE(0, 6)),
   ]).toString();
-  
+
   const majority = ['1', '8'];
   const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
   const bitmap = Array(90).fill('1');
   const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
-  
+
   const pubkey_leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,
     modulus: passportData.pubKey.modulus,
@@ -49,7 +52,7 @@ function getPassportInputs(passportData: PassportData) {
     mrz_bytes[2],
   ]);
 
-  return{
+  return {
     secret: secret,
     attestation_id: attestation_id,
     passportData: passportData,
@@ -58,8 +61,7 @@ function getPassportInputs(passportData: PassportData) {
     bitmap: bitmap,
     scope: scope,
     user_identifier: user_identifier,
-  }
-  
+  };
 }
 const inputs = getPassportInputs(passportData);
 const mockInputs = getPassportInputs(passportData2);
@@ -138,8 +140,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       smt_path: smt_mockInputs.smt_path,
       smt_siblings: smt_mockInputs.smt_siblings,
       path_to_match: smt_mockInputs.path_to_match,
-    };    
-    
+    };
   });
 
   // Compile circuit
@@ -150,22 +151,22 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
   // Corrct path, assertion of non-membership passes and proof of closest sibling passes : Everything correct as a proof
   it('should pass without errors , all conditions satisfied', async function () {
     await circuit.calculateWitness(smt_mockInputs);
-    console.log("Everything correct");
+    console.log('Everything correct');
   });
 
   // Correct path, assertion of non-membership passes, but failing to prove closest sibling
-  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+  it('should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2', async function () {
     try {
-        // Basically user gives a correct path and siblings from the tree but not of his passport, trying to fake non-membership from another passport
-        await circuit.calculateWitness(random_input);
-        expect.fail("Expected an error but none was thrown.");
+      // Basically user gives a correct path and siblings from the tree but not of his passport, trying to fake non-membership from another passport
+      await circuit.calculateWitness(random_input);
+      expect.fail('Expected an error but none was thrown.');
     } catch (error) {
-        expect(error.message).to.include("Assert Failed");
-        expect(error.message).to.include("line: 72");
-        expect(error.message).to.not.include('line: 46');
-        expect(error.message).to.not.include('line: 42');
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 72');
+      expect(error.message).to.not.include('line: 46');
+      expect(error.message).to.not.include('line: 42');
     }
-  });;
+  });
 
   // Correct path, but assertion of non-membership fails
   it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
@@ -191,7 +192,6 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       expect(error.message).to.include('line: 42');
     }
   });
-
 });
 
 describe('start testing ofac_nameDob_verifier.circom', function () {
@@ -257,8 +257,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       smt_path: smt_mockInputs.smt_path,
       smt_siblings: smt_mockInputs.smt_siblings,
       path_to_match: smt_mockInputs.path_to_match,
-    };    
-    
+    };
   });
 
   it('should compile and load the circuit, level 3', async function () {
@@ -267,20 +266,20 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
 
   it('should pass without errors , all conditions satisfied', async function () {
     await circuit.calculateWitness(smt_mockInputs);
-    console.log("Everything correct");
+    console.log('Everything correct');
   });
 
-  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+  it('should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2', async function () {
     try {
-        await circuit.calculateWitness(random_input);
-        expect.fail("Expected an error but none was thrown.");
+      await circuit.calculateWitness(random_input);
+      expect.fail('Expected an error but none was thrown.');
     } catch (error) {
-        expect(error.message).to.include("Assert Failed");
-        expect(error.message).to.include("line: 69");
-        expect(error.message).to.not.include('line: 56');
-        expect(error.message).to.not.include('line: 53');
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 69');
+      expect(error.message).to.not.include('line: 56');
+      expect(error.message).to.not.include('line: 53');
     }
-  });;
+  });
 
   it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
     try {
@@ -296,7 +295,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
   it('should fail to calculate witness with invalid paths , level ', async function () {
     try {
       let inputs = smt_inputs;
-      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString(); 
+      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString();
       await circuit.calculateWitness(inputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
@@ -304,7 +303,6 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       expect(error.message).to.include('line: 53');
     }
   });
-
 });
 
 describe('start testing ofac_name_verifier.circom', function () {
@@ -370,8 +368,7 @@ describe('start testing ofac_name_verifier.circom', function () {
       smt_path: smt_mockInputs.smt_path,
       smt_siblings: smt_mockInputs.smt_siblings,
       path_to_match: smt_mockInputs.path_to_match,
-    };    
-    
+    };
   });
 
   it('should compile and load the circuit, level 3', async function () {
@@ -380,20 +377,20 @@ describe('start testing ofac_name_verifier.circom', function () {
 
   it('should pass without errors , all conditions satisfied', async function () {
     await circuit.calculateWitness(smt_mockInputs);
-    console.log("Everything correct");
+    console.log('Everything correct');
   });
 
-  it("should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2", async function () {
+  it('should fail to calculate witness with valid paths and valid non-membership assertion but not correct closest sibling , level 2', async function () {
     try {
-        await circuit.calculateWitness(random_input);
-        expect.fail("Expected an error but none was thrown.");
+      await circuit.calculateWitness(random_input);
+      expect.fail('Expected an error but none was thrown.');
     } catch (error) {
-        expect(error.message).to.include("Assert Failed");
-        expect(error.message).to.include("line: 60");
-        expect(error.message).to.not.include('line: 47');
-        expect(error.message).to.not.include('line: 44');
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('line: 60');
+      expect(error.message).to.not.include('line: 47');
+      expect(error.message).to.not.include('line: 44');
     }
-  });;
+  });
 
   it('should fail to calculate witness with valid paths but failing non-membership assertion , level 3', async function () {
     try {
@@ -409,7 +406,7 @@ describe('start testing ofac_name_verifier.circom', function () {
   it('should fail to calculate witness with invalid paths , level ', async function () {
     try {
       let inputs = smt_inputs;
-      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString(); 
+      inputs.smt_path[0] = (inputs.smt_path[0] ^ 1).toString();
       await circuit.calculateWitness(inputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
@@ -417,5 +414,4 @@ describe('start testing ofac_name_verifier.circom', function () {
       expect(error.message).to.include('line: 44');
     }
   });
-
 });
