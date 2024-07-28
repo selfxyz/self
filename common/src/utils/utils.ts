@@ -2,6 +2,7 @@ import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
+import forge from 'node-forge';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -318,4 +319,22 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
 
 export function findSubarrayIndex(arr: any[], subarray: any[]): number {
   return arr.findIndex((_, index) => subarray.every((element, i) => element === arr[index + i]));
+}
+
+export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
+  const derSignature = Buffer.from(signatureBytes).toString('binary');
+  const asn1 = forge.asn1.fromDer(derSignature);
+  const signatureAsn1 = asn1.value;
+
+  if (signatureAsn1.length !== 2) {
+    throw new Error('Invalid signature format');
+  }
+
+  if (!Array.isArray(asn1.value) || asn1.value.length !== 2) {
+    throw new Error('Invalid signature format');
+  }
+  const r = forge.util.createBuffer(asn1.value[0].value as string).toHex();
+  const s = forge.util.createBuffer(asn1.value[1].value as string).toHex();
+
+  return { r, s };
 }

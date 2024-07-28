@@ -37,7 +37,6 @@ export function generateCircuitInputsRegister(
 
   if (DEVELOPMENT_MODE) {
     for (const mockPassportData of mocks) {
-      console.log('mockPassportData', mockPassportData);
       tree.insert(getLeaf(mockPassportData).toString());
     }
   }
@@ -93,6 +92,7 @@ export function generateCircuitInputsRegister(
     );
   }
 
+  // ! TODO
   const [messagePadded, messagePaddedLen] = shaPad(
     signatureAlgorithm,
     new Uint8Array(dataGroupHashes),
@@ -100,21 +100,24 @@ export function generateCircuitInputsRegister(
   );
 
   let dsc_modulus: any;
+  let signature: any;
+
   if (signatureAlgorithm === 'ecdsa-with-SHA1') {
-    console.log('pubKey', pubKey);
     const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    let k = hexToDecimal(curve_params[0]);
-    let m = hexToDecimal(curve_params[1]);
-    dsc_modulus = [
-      ...splitToWords(BigInt(k), BigInt(n_dsc), BigInt(k_dsc)),
-      ...splitToWords(BigInt(m), BigInt(n_dsc), BigInt(k_dsc)),
-    ];
+    dsc_modulus = [curve_params[0], curve_params[1]]; // ! TODO REFACTOR SPLIT HERE WHAT IF WORKS
+    signature = passportData.encryptedDigest;
   } else {
     dsc_modulus = splitToWords(
       BigInt(passportData.pubKey.modulus as string),
       BigInt(n_dsc),
       BigInt(k_dsc)
     );
+    signature = splitToWords(
+      BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
+      BigInt(n_dsc),
+      BigInt(k_dsc)
+    );
+    // eContent = Array.from(messagePadded).map((x) => x.toString());
   }
   return {
     secret: [secret],
@@ -123,11 +126,7 @@ export function generateCircuitInputsRegister(
     econtent: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     signed_attributes: eContent.map(toUnsignedByte).map((byte) => String(byte)),
-    signature: splitToWords(
-      BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-      BigInt(n_dsc),
-      BigInt(k_dsc)
-    ),
+    signature: signature,
     dsc_modulus: dsc_modulus,
     attestation_id: [attestation_id],
     dsc_secret: [dscSecret],

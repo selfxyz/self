@@ -68,7 +68,7 @@ export function genMockPassportData_sha1WithECDSA(): PassportData {
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],
     hashLen,
-    33 // ? TODO replace with original dg1HashOffset
+    33
   );
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
