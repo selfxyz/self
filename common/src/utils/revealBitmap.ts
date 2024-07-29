@@ -1,10 +1,10 @@
 import { attributeToPosition } from "../constants/constants";
 
-export function revealBitmapFromMapping(attributeToReveal: { [key: string]: boolean }): string[] {
+export function revealBitmapFromMapping(attributeToReveal: { [key: string]: string }): string[] {
   const reveal_bitmap = Array(90).fill('0');
 
   Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
-    if (reveal) {
+    if (reveal !== "") {
       const [start, end] = attributeToPosition[attribute as keyof typeof attributeToPosition];
       reveal_bitmap.fill('1', start, end + 1);
     }
