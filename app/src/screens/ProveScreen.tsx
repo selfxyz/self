@@ -107,6 +107,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       setIsConnecting(false);
       setProofStatus('Generating proof...');
+      socket.emit('proof_generation_start', { sessionId: selectedApp.userId });
 
       const tree = await getTreeFromTracker();
 
