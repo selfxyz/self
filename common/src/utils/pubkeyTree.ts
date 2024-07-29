@@ -75,14 +75,12 @@ export function getLeaf(pubkey: any, i?: number): bigint {
   }
 }
 
-export async function getTreeFromTracker(setRequestingMerkle: (requestingMerkle: boolean) => void = (bool) => { console.log('requesting merkle tree', bool) }): Promise<LeanIMT> {
-  setRequestingMerkle(true);
+export async function getTreeFromTracker(): Promise<LeanIMT> {
   const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
   const imt = new LeanIMT(
     (a: bigint, b: bigint) => poseidon2([a, b]),
     []
   );
   imt.import(response.data)
-  setRequestingMerkle(false);
   return imt
 }
