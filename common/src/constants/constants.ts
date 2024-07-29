@@ -14,6 +14,7 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEVELOPMENT_MODE = true
+export const DEFAULT_MAJORITY = "18"
 
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,
