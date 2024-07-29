@@ -115,7 +115,7 @@ export function generateCircuitInputsDisclose(
   attestation_id: string,
   passportData: PassportData,
   merkletree: LeanIMT,
-  majority: string[],
+  majority: string,
   bitmap: string[],
   scope: string,
   user_identifier: string,
@@ -143,6 +143,9 @@ export function generateCircuitInputsDisclose(
 
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(merkletree, index, PUBKEY_TREE_DEPTH)
 
+  // format majority to bigints
+
+
   return {
     secret: [secret],
     attestation_id: [attestation_id],
@@ -153,9 +156,9 @@ export function generateCircuitInputsDisclose(
     path: merkleProofIndices.map(index => BigInt(index).toString()),
     siblings: merkleProofSiblings.map(index => BigInt(index).toString()),
     bitmap: bitmap,
-    scope: [scope],
+    scope: [BigInt(scope).toString()],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
-    majority: majority.map(char => BigInt(char.charCodeAt(0)).toString()),
+    majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
     user_identifier: [user_identifier],
   };
 }

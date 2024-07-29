@@ -1,16 +1,16 @@
 export type CircuitName = "register_sha256WithRSAEncryption_65537" | "disclose";
 
-type DisclosureOption = "required" | "optional";
+//type DisclosureOption = "required" | "optional";
 
 interface Disclosure {
-  [key: string]: DisclosureOption;
+  [key: string]: string;
 }
 
 export interface AppType {
-  id: string;
+  id?: string;
   name: string;
   scope: string;
-  callbackEndPoint: string;
+  callbackEndPoint?: string;
   userId: string;
   disclosureOptions: Disclosure;
   circuit: CircuitName;
@@ -23,10 +23,10 @@ export interface AppType {
 
 export function createAppType(data: AppType): AppType {
   return {
-    id: data.id || "",
+    //id: data.id || "",
     name: data.name,
     scope: data.scope,
-    callbackEndPoint: data.callbackEndPoint,
+    //callbackEndPoint: data.callbackEndPoint,
     userId: data.userId,
     disclosureOptions: data.disclosureOptions,
     circuit: data.circuit || "disclose",

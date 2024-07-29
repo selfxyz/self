@@ -20,6 +20,8 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
+import { ProofOfPassportVerifierReport } from '@proofofpassport/sdk';
+
 
 interface UserState {
   passportNumber: string
@@ -44,6 +46,8 @@ interface UserState {
   setRegistered: (registered: boolean) => void
   setDscSecret: (dscSecret: string) => void
   setUserLoaded: (userLoaded: boolean) => void
+  proofVerificationResult: string,
+  setProofVerificationResult: (proofVerificationResult: string) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
@@ -67,6 +71,10 @@ const useUserStore = create<UserState>((set, get) => ({
   setUserLoaded: (userLoaded: boolean) => {
     set({ userLoaded });
   },
+  proofVerificationResult: "null",
+  setProofVerificationResult: (proofVerificationResult: string) => {
+    set({ proofVerificationResult });
+  },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
   // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
@@ -83,6 +91,9 @@ const useUserStore = create<UserState>((set, get) => ({
     const passportData = await loadPassportData();
     if (!passportData) {
       console.log("No passport data found, starting onboarding flow")
+      set({
+        userLoaded: true,
+      });
       return;
     }
 
@@ -92,6 +103,7 @@ const useUserStore = create<UserState>((set, get) => ({
       console.log("not registered but passport data found, skipping to nextScreen")
       set({
         passportData: JSON.parse(passportData),
+        userLoaded: true,
       });
       // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
 
@@ -208,6 +220,7 @@ const useUserStore = create<UserState>((set, get) => ({
         }
         set({ registered: true });
         setStep(Steps.REGISTERED);
+        useNavigationStore.getState().setSelectedTab("app");
         toast.show('✅', {
           message: "Registered",
           customData: {

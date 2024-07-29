@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ScrollView, Fieldset } from 'tamagui';
-import { Check, } from '@tamagui/lucide-icons';
-import { attributeToPosition, } from '../../../common/src/constants/constants';
+import { Check, Share, } from '@tamagui/lucide-icons';
+import { attributeToPosition, DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { ethers } from 'ethers';
@@ -27,23 +27,38 @@ interface ProveScreenProps {
 }
 
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
-  const [acknowledged, setAcknowledged] = useState(false);
-  const [requestingMerkle, setRequestingMerkle] = useState(false);
+  const [generatingProof, setGeneratingProof] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
   const {
     hideData,
     isZkeyDownloading,
     step,
-    toast
+    toast,
+    setSelectedTab
   } = useNavigationStore()
 
   const {
     secret,
+    setProofVerificationResult
   } = useUserStore()
 
   const [proofStatus, setProofStatus] = useState<string>('');
 
   const [socket, setSocket] = useState<Socket | null>(null);
+
+  const [isConnecting, setIsConnecting] = useState(false);
+
+  const waitForSocketConnection = (socket: Socket): Promise<void> => {
+    return new Promise((resolve) => {
+      if (socket.connected) {
+        resolve();
+      } else {
+        socket.once('connect', () => {
+          resolve();
+        });
+      }
+    });
+  };
 
   useEffect(() => {
     const newSocket = io('https://proofofpassport-merkle-tree.xyz', {
@@ -64,6 +79,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       console.error('Connection error:', error);
     });
 
+    newSocket.on('proof_verification_result', (result) => {
+      console.log('Proof verification result:', result);
+      setProofVerificationResult(JSON.parse(result));
+      setProofStatus(`Proof verification result: ${result}`);
+      console.log("result", result);
+      setSelectedTab(JSON.parse(result).valid ? "valid" : "wrong");
+    });
+
     setSocket(newSocket);
 
     return () => {
@@ -73,47 +96,79 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const handleProve = async () => {
     try {
-      if (!socket || !socket.connected) {
-        throw new Error('WebSocket not connected');
+      setIsConnecting(true);
+      setGeneratingProof(true);
+
+      if (!socket) {
+        throw new Error('Socket not initialized');
       }
 
-      socket.emit('proof_generation_start', { sessionId: selectedApp.userId });
+      await waitForSocketConnection(socket);
+
+      setIsConnecting(false);
       setProofStatus('Generating proof...');
 
-      const tree = await getTreeFromTracker(setRequestingMerkle);
+      const tree = await getTreeFromTracker();
 
       const inputs = generateCircuitInputsDisclose(
         secret,
         PASSPORT_ATTESTATION_ID,
         passportData,
         tree as any,
-        [BigInt(49).toString(), BigInt(50).toString()],
+        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
         revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
         selectedApp.scope,
         stringToNumber(selectedApp.userId).toString()
       );
 
       console.log("inputs", inputs);
-      const proof = await generateProof(
+      const localProof = await generateProof(
         selectedApp.circuit,
         inputs,
       );
 
       setProofStatus('Sending proof to verification...');
+      // console.log("localProof", localProof);
 
       // Send the proof via WebSocket
-      socket.emit('proof_generated', { sessionId: selectedApp.userId, proof });
+      const formattedLocalProof = {
+        proof: {
+          pi_a: [
+            localProof.proof.a[0],
+            localProof.proof.a[1],
+            "1"
+          ],
+          pi_b: [
+            [localProof.proof.b[0][0], localProof.proof.b[0][1]],
+            [localProof.proof.b[1][0], localProof.proof.b[1][1]],
+            ["1", "0"]
+          ],
+          pi_c: [
+            localProof.proof.c[0],
+            localProof.proof.c[1],
+            "1"
+          ],
+          protocol: "groth16",
+          curve: "bn128"
+        },
+        publicSignals: (localProof as any).pub_signals
+      };
+      // console.log("formattedLocalProof", formattedLocalProof);
+      socket.emit('proof_generated', { sessionId: selectedApp.userId, proof: formattedLocalProof });
 
       // Wait for verification result
       const verificationResult = await new Promise((resolve) => {
         socket.once('proof_verification_result', resolve);
       });
 
-      setProofStatus(`Proof verification result: ${JSON.stringify(verificationResult)}`);
+      setProofStatus(`Proof verification result: ${(verificationResult)}`);
 
     } catch (error) {
       console.error('Error in handleProve:', error);
       setProofStatus(`Error: ${error || 'An unknown error occurred'}`);
+    } finally {
+      setGeneratingProof(false);
+      setIsConnecting(false);
     }
   };
 
@@ -128,9 +183,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       return;
     }
   };
-  const handleAcknoledge = () => {
-    setAcknowledged(!acknowledged);
-  }
   const { height } = useWindowDimensions();
 
   useEffect(() => {
@@ -149,7 +201,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   return (
     <YStack f={1} p="$3">
 
-      <YStack mt="$4">
+      {Object.keys(selectedApp.disclosureOptions as any).length > 0 ? <YStack mt="$4">
         <Text fontSize="$9">
           <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
         </Text>
@@ -157,7 +209,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
           No <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>other</Text> information than the one selected below will be shared with {selectedApp.name}.
         </Text>
-      </YStack>
+      </YStack> :
+        <Text fontSize="$9">
+          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove you own a valid passport.
+        </Text>
+      }
 
       <YStack mt="$6">
 
@@ -194,9 +250,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
                   </XStack>
                 ) : (
                   <Text fontSize="$6"
+                    w="80%"
                     color={textBlack}
+
                   >
-                    {disclosureFieldsToText(keyFormatted, mrzAttributeFormatted)}
+                    {disclosureFieldsToText(keyFormatted, (selectedApp.disclosureOptions as any).nationality)}
                   </Text>
                 )}
               </Fieldset>
@@ -207,21 +265,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         })}
       </YStack>
 
-
-      <XStack f={1} />
-      {selectedApp && Object.keys(selectedApp as any).map((key) => {
-        const value = selectedApp[key as keyof AppType];
-        return (
-          <Text key={key} fontSize="$6" color={textBlack}>
-            {`${key}: ${value}`}
-          </Text>
-        );
-      })}
       <XStack f={1} />
 
 
 
-      <XStack ai="center" gap="$2" mb="$2.5" ml="$2">
+      {/* <XStack ai="center" gap="$2" mb="$2.5" ml="$2">
         <XStack onPress={handleAcknoledge} p="$2">
           <Checkbox size="$6" checked={acknowledged} onCheckedChange={handleAcknoledge} borderColor={separatorColor}>
             <Checkbox.Indicator>
@@ -230,23 +278,29 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           </Checkbox>
         </XStack>
         <Text style={{ fontStyle: 'italic' }} w="85%">I acknowledge sharing the selected information with {selectedApp.name}</Text>
-      </XStack>
+      </XStack> */}
 
 
+      <CustomButton
+        Icon={isConnecting ? <Spinner /> : generatingProof ? <Spinner /> : <Share />}
+        isDisabled={isConnecting || generatingProof}
+        text={isConnecting ? "Connecting..." : generatingProof ? "Generating Proof..." : "Prove"}
+        onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)}
+        bgColor={isConnecting || generatingProof ? separatorColor : bgGreen}
+        disabledOnPress={() => toast.show('⏳', {
+          message: isConnecting ? "Connecting to server..." : "Proof is generating",
+          customData: {
+            type: "info",
+          },
+        })}
+      />
 
-      <CustomButton isDisabled={!acknowledged} text={requestingMerkle ? "Requesting Merkle Tree..." : "Prove"} onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)} bgColor={acknowledged ? bgGreen : separatorColor} disabledOnPress={() => toast.show('✍️', {
-        message: "Please check all fields",
-        customData: {
-          type: "info",
-        },
-      })} />
 
-
-      {proofStatus && (
+      {/* {proofStatus && (
         <Text mt="$4" fontSize="$6" color={textBlack}>
           {proofStatus}
         </Text>
-      )}
+      )} */}
 
     </YStack >
   );

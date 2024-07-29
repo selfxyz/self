@@ -46,6 +46,8 @@ import CustomButton from '../components/CustomButton';
 import StepOneStepTwo from '../components/StepOneStepTwo';
 import SplashScreen from './SplashScreen';
 import WebSocketTest from './WebSocketTest';
+import ValidProofScreen from './ValidProofScreen';
+import WrongProofScreen from './WrongProofScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -836,7 +838,14 @@ const MainScreen: React.FC = () => {
           <Tabs.Content value="mint" f={1}>
             <SendProofScreen />
           </Tabs.Content>
+          <Tabs.Content value="valid" f={1}>
+            <ValidProofScreen />
+          </Tabs.Content>
+          <Tabs.Content value="wrong" f={1}>
+            <WrongProofScreen />
+          </Tabs.Content>
         </Tabs>
+
       </YStack>
       <Modal visible={showWarningModal.show} animationType="slide" transparent={true}>
         <YStack bc="#161616" p={20} ai="center" jc="center" position="absolute" top={0} bottom={0} left={0} right={0}>
