@@ -23,7 +23,7 @@ describe('Circuit Proving Tests', function () {
         const imt = new LeanIMT((a: bigint, b: bigint) => poseidon2([a, b]), []);
         const bitmap = Array(90).fill("1");
         const scope = BigInt(1).toString();
-        const majority = ["1", "8"];
+        const majority = ["18"];
         const secret = BigInt(0).toString();
         const mrz_bytes = packBytes(formatMrz(passportData.mrz));
         const pubkey_leaf = getLeaf({
