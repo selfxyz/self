@@ -47,6 +47,7 @@ export function generateCircuitInputsRegister(
       'sha1WithRSAEncryption',
       'sha256WithRSASSAPSS',
       'ecdsa-with-SHA1',
+      'ecdsa-with-SHA256',
     ].includes(signatureAlgorithm)
   ) {
     console.error(`${signatureAlgorithm} has not been implemented.`);
@@ -101,7 +102,12 @@ export function generateCircuitInputsRegister(
   let dsc_modulus: any;
   let signature: any;
 
-  if (signatureAlgorithm === 'ecdsa-with-SHA1') {
+  if (
+    signatureAlgorithm === 'ecdsa-with-SHA1' ||
+    signatureAlgorithm === 'ecdsa-with-SHA256' ||
+    signatureAlgorithm === 'ecdsa-with-SHA512' ||
+    signatureAlgorithm === 'ecdsa-with-SHA384'
+  ) {
     const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
     dsc_modulus = [curve_params[0], curve_params[1]]; // ! TODO REFACTOR SPLIT HERE WHAT IF WORKS
     signature = passportData.encryptedDigest;
