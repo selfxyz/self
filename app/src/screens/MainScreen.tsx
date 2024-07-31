@@ -314,8 +314,9 @@ const MainScreen: React.FC = () => {
           {selectedTab === "app" &&
             <XStack px="$4" py="$2" mt="$0" ai="center">
               <Text fontSize="$9"  >Proof of Passport</Text>
-              {/* <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack> */}
               <XStack f={1} />
+
+              <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
               <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
             </XStack>
 
@@ -502,63 +503,65 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
+          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[76]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9">
-              <YStack px="$3" pb="$5" flex={1} >
-                <XStack ml="$2" mt="$3" gap="$2">
-                  <H2 color={textColor1}>Help</H2>
-                  <HelpCircle color={textColor1} mt="$1" alignSelf='center' size="$2" />
-                  <XStack justifyContent="flex-end" f={1} mt="$2" mr="$2" gap="$5">
-                    <Pressable onPress={() => Linking.openURL('https://proofofpassport.com')}>
-                      <Image
-                        source={{ uri: Internet, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
-                      <Image
-                        source={{ uri: Telegram, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
-                      <Image
-                        source={{ uri: Xlogo, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
-                      <Image
-                        tintColor={textColor1}
-                        source={{ uri: Github, width: 24, height: 24 }}
-                      />
-                    </Pressable>
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
+              <YStack p="$4" f={1} gap="$3">
+
+                <XStack>
+                  <Text fontSize="$8" mb="$2">Help 💁</Text>
+                  <XStack f={1} />
+                  <XStack onPress={() => setHelpIsOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
                   </XStack>
                 </XStack>
-                <YStack flex={1} mt="$3" jc="space-evenly">
-                  <YStack >
-                    <H3 color={textColor1}>Security and Privacy</H3>
-                    <Text color={textColor2} ml="$2" mt="$1">Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
+                <Separator borderColor={separatorColor} />
+
+
+
+                <YStack flex={1} jc="space-between">
+                  {/* <YStack >
+                    <H3 color={textBlack}>Security and Privacy</H3>
+                    <Text color={textBlack} ml="$2" mt="$1">Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
                   </YStack>
                   <YStack >
-                    <H3 color={textColor1}>About ZK Proofs</H3>
-                    <Text color={textColor2} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
-                  </YStack>
+                    <H3 color={textBlack}>About ZK Proofs</H3>
+                    <Text color={textBlack} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
+                  </YStack> */}
                   <YStack gap="$1">
-                    <H3 color={textColor1}>FAQ</H3>
+                    <H3 color={textBlack}>FAQ</H3>
                     <YStack ml="$1">
-                      <H4 color={textColor1}>Troubleshoot NFC scanning</H4>
-                      <Text color={textColor2} ml="$2" >Refer to <Text onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>this tutorial</Text> on how to scan your passport using NFC.</Text>
-                    </YStack>
-                    <YStack ml="$1">
-                      <H4 color={textColor1}>My camera is down</H4>
-                      <Text color={textColor2} ml="$2">Go to settings and turn on the broken camera option.</Text>
-                    </YStack>
-                    <YStack ml="$1">
-                      <H4 color={textColor1}>My passport is not supported</H4>
-                      <Text color={textColor2} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
+                      <H4 color={textBlack}>My passport is not supported</H4>
+                      <Text color={textBlack} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
                     </YStack>
                   </YStack>
 
+
+
                 </YStack>
+                <XStack justifyContent="center" mb="$2" gap="$5" mt="$8">
+                  <Pressable onPress={() => Linking.openURL('https://proofofpassport.com')}>
+                    <Image
+                      source={{ uri: Internet, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
+                    <Image
+                      source={{ uri: Telegram, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
+                    <Image
+                      source={{ uri: Xlogo, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
+                    <Image
+                      tintColor={textBlack}
+                      source={{ uri: Github, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                </XStack>
 
               </YStack>
             </Sheet.Frame>
