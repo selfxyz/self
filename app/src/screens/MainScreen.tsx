@@ -45,7 +45,6 @@ import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
 import StepOneStepTwo from '../components/StepOneStepTwo';
 import SplashScreen from './SplashScreen';
-import WebSocketTest from './WebSocketTest';
 import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
 
@@ -482,14 +481,8 @@ const MainScreen: React.FC = () => {
                         <UserPlus color={textColor2} />
                       </Button>
                     </Fieldset>
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        websocket screen
-                      </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('websocket')}>
-                        <Wifi color={textColor2} />
-                      </Button>
-                    </Fieldset>
+
+
                   </>
                 )}
 
@@ -808,9 +801,6 @@ const MainScreen: React.FC = () => {
           <Tabs.Content value="start" f={1}>
             <StartScreen
             />
-          </Tabs.Content>
-          <Tabs.Content value="websocket" f={1}>
-            <WebSocketTest />
           </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen
