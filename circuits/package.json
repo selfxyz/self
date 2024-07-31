@@ -10,6 +10,7 @@
     "lint": "prettier --check ."
   },
   "dependencies": {
+    "@noble/curves": "^1.4.2",
     "@types/chai-as-promised": "^7.1.6",
     "@types/node": "^20.11.19",
     "@types/node-forge": "^1.3.5",
