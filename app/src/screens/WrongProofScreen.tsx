@@ -33,17 +33,17 @@ const WrongProofScreen: React.FC = () => {
 
   return (
     <YStack f={1} p="$3">
-      <YStack f={1} mt="$8">
+      <YStack f={1} mt="$4" >
         <Text ml="$1" fontSize={34} color={textBlack}>
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Oops</Text>, the proof is not valid.
         </Text>
         <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
-          Some of the <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>conditions</Text> have not been satisfied:
+          Some of the <Text >conditions</Text> have not been satisfied:
         </Text>
         <YStack ml="$4" mt="$5">
           {failedConditions.map((condition, index) => (
             <Text key={index} fontSize="$7" color={textBlack} >
-              · {condition}
+              · <Text key={index} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{condition}</Text>
             </Text>
           ))}
         </YStack>
@@ -52,7 +52,7 @@ const WrongProofScreen: React.FC = () => {
         </Text>
         <XStack f={1} />
       </YStack>
-    </YStack>
+    </YStack >
   );
 };
 
