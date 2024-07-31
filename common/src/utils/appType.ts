@@ -13,7 +13,7 @@ export interface AppType {
   callbackEndPoint?: string;
   userId: string;
   disclosureOptions: Disclosure;
-  circuit: CircuitName;
+  circuit: string;
   title?: string;
   description?: string;
   background?: string;

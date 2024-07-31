@@ -9,11 +9,11 @@ const MOCK_MERKLE_ROOT_CHECK = false;
 export class ProofOfPassportWeb2Verifier {
     scope: string;
     attestationId: string;
-    requirements: Array<[string, number | string]>;
+    requirements: string[][];
     rpcUrl: string;
     report: ProofOfPassportVerifierReport;
 
-    constructor(options: { scope: string, attestationId?: string, requirements?: Array<[string, number | string]>, rpcUrl?: string }) {
+    constructor(options: { scope: string, attestationId?: string, requirements?: string[][], rpcUrl?: string }) {
         this.scope = options.scope;
         this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
         this.requirements = options.requirements || [];
