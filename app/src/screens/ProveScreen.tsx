@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Checkbox, Input, Button, Spinner, Image, useWindowDimensions, ScrollView, Fieldset } from 'tamagui';
-import { Check, Share, } from '@tamagui/lucide-icons';
+import { YStack, XStack, Text, Input, Button, Spinner, Image, useWindowDimensions, ScrollView, Fieldset } from 'tamagui';
+import { Check, CheckCircle, CheckCircle2, Share, } from '@tamagui/lucide-icons';
 import { attributeToPosition, DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
@@ -194,7 +194,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       return `I am older than ${value} years old.`;
     }
     if (key === 'nationality') {
-      return `I got a valid passport from ${value}.`;
+      return `I have a valid passport from ${value}.`;
     }
     return '';
   }
@@ -206,7 +206,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         <Text fontSize="$9">
           <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
         </Text>
-        <Text mt="$3" fontSize="$8" color={textBlack} >
+        <Text mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.9 }}>
 
           No <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>other</Text> information than the one selected below will be shared with {selectedApp.name}.
         </Text>
@@ -217,50 +217,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       }
 
       <YStack mt="$6">
-
-
         {selectedApp && Object.keys(selectedApp.disclosureOptions as any).map((key) => {
           const key_ = key;
-          const indexes = attributeToPosition[key_ as keyof typeof attributeToPosition];
-          const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0) + word.slice(1)).join(' ');
-          const mrzAttribute = passportData.mrz.slice(indexes[0], indexes[1] + 1);
-          const mrzAttributeFormatted = formatAttribute(key_, mrzAttribute);
+          const keyFormatted = key_.replace(/_/g, ' ').split(' ').map((word: string) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 
           return (
-            <XStack key={key} gap="$3" alignItems='center'>
-
-              <Fieldset gap="$2.5" horizontal>
-                <XStack p="$2" onPress={() => handleDisclosureChange(key_)} >
-                  <Checkbox
-                    borderColor={separatorColor}
-                    value={key}
-                    onCheckedChange={() => handleDisclosureChange(key_)}
-                    aria-label={keyFormatted}
-                    size="$6"
-                  >
-                    <Checkbox.Indicator >
-                      <Check color={textBlack} />
-                    </Checkbox.Indicator>
-                  </Checkbox>
-                </XStack>
-                {key_ === 'older_than' ? (
-                  <XStack gap="$1.5" jc='center' ai='center'>
-                    <XStack mr="$2">
-                      <Text color={textBlack} fontSize="$6">{disclosureFieldsToText('older_than', (selectedApp.disclosureOptions as any).older_than)}</Text>
-                    </XStack>
-                  </XStack>
-                ) : (
-                  <Text fontSize="$6"
-                    w="80%"
-                    color={textBlack}
-
-                  >
-                    {disclosureFieldsToText(keyFormatted, (selectedApp.disclosureOptions as any).nationality)}
-                  </Text>
-                )}
-              </Fieldset>
-
-
+            <XStack key={key} gap="$3" mb="$3" ml="$3" >
+              <CheckCircle size={16} mt="$1.5" />
+              <Text fontSize="$7" color={textBlack} w="85%">
+                {disclosureFieldsToText(key_, (selectedApp.disclosureOptions as any)[key_])}
+              </Text>
             </XStack>
           );
         })}
@@ -268,24 +234,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       <XStack f={1} />
 
-
-
-      {/* <XStack ai="center" gap="$2" mb="$2.5" ml="$2">
-        <XStack onPress={handleAcknoledge} p="$2">
-          <Checkbox size="$6" checked={acknowledged} onCheckedChange={handleAcknoledge} borderColor={separatorColor}>
-            <Checkbox.Indicator>
-              <Check color={textBlack} />
-            </Checkbox.Indicator>
-          </Checkbox>
-        </XStack>
-        <Text style={{ fontStyle: 'italic' }} w="85%">I acknowledge sharing the selected information with {selectedApp.name}</Text>
-      </XStack> */}
-
-
       <CustomButton
-        Icon={isConnecting ? <Spinner /> : generatingProof ? <Spinner /> : <Share />}
+        Icon={isConnecting ? <Spinner /> : generatingProof ? <Spinner /> : <CheckCircle />}
         isDisabled={isConnecting || generatingProof}
-        text={isConnecting ? "Connecting..." : generatingProof ? "Generating Proof..." : "Prove"}
+        text={isConnecting ? "Connecting..." : generatingProof ? "Generating Proof..." : "Verify"}
         onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)}
         bgColor={isConnecting || generatingProof ? separatorColor : bgGreen}
         disabledOnPress={() => toast.show('⏳', {
