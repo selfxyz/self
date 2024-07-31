@@ -19,6 +19,8 @@ interface NavigationState {
   setToast: (toast: ReturnType<typeof useToastController>) => void;
   setStep: (step: number) => void
   update: (patch: any) => void
+  nfcSheetIsOpen: boolean
+  setNfcSheetIsOpen: (isOpen: boolean) => void
 }
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
@@ -54,6 +56,8 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
       ...patch,
     });
   },
+  nfcSheetIsOpen: false,
+  setNfcSheetIsOpen: (isOpen) => set({ nfcSheetIsOpen: isOpen }),
 }))
 
 export default useNavigationStore

@@ -93,6 +93,8 @@ const MainScreen: React.FC = () => {
     toast,
     showRegistrationErrorSheet,
     registrationErrorMessage,
+    nfcSheetIsOpen,
+    setNfcSheetIsOpen,
   } = useNavigationStore();
 
   const handleRestart = () => {
@@ -342,7 +344,7 @@ const MainScreen: React.FC = () => {
               <Separator borderColor={separatorColor} />
             </YStack>
           )} */}
-          <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
+          <Sheet open={nfcSheetIsOpen} onOpenChange={setNfcSheetIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
               <YStack gap="$5" f={1} pt="$3">
@@ -505,7 +507,7 @@ const MainScreen: React.FC = () => {
 
           <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[76]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
               <YStack p="$4" f={1} gap="$3">
 
                 <XStack>
@@ -567,12 +569,12 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[42]} moveOnKeyboardChange>
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[44]} moveOnKeyboardChange>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
               <YStack p="$4" f={1} gap="$3">
                 <XStack>
-                  <Text fontSize="$8" mb="$2">Manual input ✍️</Text>
+                  <Text fontSize="$8" mb="$">Manual input ✍️</Text>
                   <XStack f={1} />
                   <XStack onPress={() => setSheetIsOpen(false)} p="$2">
                     <X color={borderColor} size="$1.5" mr="$2" />
