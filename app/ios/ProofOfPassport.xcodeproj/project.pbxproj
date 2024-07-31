@@ -728,6 +728,7 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = ProofOfPassport/Info.plist;
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -862,6 +863,8 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = ProofOfPassport/Info.plist;
+				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
 				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
