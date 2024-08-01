@@ -35,7 +35,7 @@ template ProvePassportNotInOfac(nLevels) {
     for (var i = 0; i < 9; i++) {
         poseidon_hasher.inputs[i] <== mrz[49 + i];
     } 
-    signal smtleaf_hash <== Poseidon(3)([poseidon_hasher.out, 1,1]); // REMOVE
+    signal smtleaf_hash <== Poseidon(3)([poseidon_hasher.out, 1,1]);
     // If computedRoot != smt_root; the below assertion fails as path and siblings do not compute to root and proof is not generated.
     // If computedRoot == smt_root; path and siblings are true but the proof could be membership or non-membership and then furthur checks are made.
     signal computedRoot <== BinaryMerkleRoot(256)(closest_leaf, smt_size, smt_path, smt_siblings);
