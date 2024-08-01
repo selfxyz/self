@@ -52,8 +52,8 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
 
   const scanQRCode = () => {
     if (Platform.OS === 'ios') {
-      if (NativeModules.QRScannerModule && NativeModules.QRScannerModule.scanQRCode) {
-        NativeModules.QRScannerModule.scanQRCode()
+      if (NativeModules.QRScannerBridge && NativeModules.QRScannerBridge.scanQRCode) {
+        NativeModules.QRScannerBridge.scanQRCode()
           .then((result: string) => {
             handleQRCodeScan(result);
           })
