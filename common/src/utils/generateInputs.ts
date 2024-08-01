@@ -2,12 +2,19 @@ import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from '../cons
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
-<<<<<<< HEAD
-  arraysAreEqual, bytesToBigDecimal, formatMrz, hash, splitToWords,
-  toUnsignedByte, getHashLen, getCurrentDateYYMMDD,
-  generateMerkleProof, generateSMTProof,
-  findSubarrayIndex
-} from "./utils";
+  arraysAreEqual,
+  bytesToBigDecimal,
+  formatMrz,
+  hash,
+  splitToWords,
+  toUnsignedByte,
+  getHashLen,
+  getCurrentDateYYMMDD,
+  generateMerkleProof,
+  generateSMTProof,
+  findSubarrayIndex,
+  hexToDecimal,
+} from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
 import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
@@ -18,26 +25,6 @@ import {
   mockPassportDatas,
 } from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
-=======
-  arraysAreEqual,
-  bytesToBigDecimal,
-  formatMrz,
-  hash,
-  splitToWords,
-  toUnsignedByte,
-  getHashLen,
-  getCurrentDateYYMMDD,
-  generateMerkleProof,
-  findSubarrayIndex,
-  hexToDecimal,
-} from './utils';
-import { LeanIMT } from '@zk-kit/lean-imt';
-import { getLeaf } from './pubkeyTree';
-import { poseidon6 } from 'poseidon-lite';
-import { packBytes } from '../utils/utils';
-import { getCSCAModulusMerkleTree } from './csca';
-import { mockPassportDatas } from '../constants/mockPassportData';
->>>>>>> ce89661e8145b933ceb235af66f0c12cee7c0242
 
 export function generateCircuitInputsRegister(
   secret: string,

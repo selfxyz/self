@@ -405,7 +405,6 @@ export function BigintToArray(n: number, k: number, x: bigint) {
   return ret;
 }
 
-
 export function stringToAsciiBigIntArray(str: string): bigint[] {
   let asciiBigIntArray = [];
   for (let i = 0; i < str.length; i++) {
@@ -442,6 +441,5 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
   if (lc1 !== inValue) {
       throw new Error("Reconstructed value does not match the input.");
   }
-
   return out;
 }
