@@ -13,13 +13,13 @@ while ((match = regex.exec(fileContent)) !== null) {
   certificates.push(certificate);
 }
 
-if (!fs.existsSync("outputs/certificates/")) {
-  fs.mkdirSync("outputs/certificates/");
+if (!fs.existsSync("outputs/dsc/pem_masterlist")) {
+  fs.mkdirSync("outputs/dsc/pem_masterlist");
 }
 
 for (let i = 0; i < certificates.length; i++) {
   fs.writeFileSync(
-    path.join("outputs/certificates/", `certificate_${i}.pem`),
+    path.join("outputs/dsc/pem_masterlist/", `certificate_${i}.pem`),
     `-----BEGIN CERTIFICATE-----\n${certificates[i]}\n-----END CERTIFICATE-----\n`
   );
 }

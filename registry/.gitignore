@@ -1,6 +1,7 @@
 node_modules/
 certificates
 cscas
+outputs/dsc
 masterlists
 pem_unique_masters
 outputs/unique_cer
