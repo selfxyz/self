@@ -1,7 +1,7 @@
 import { describe } from 'mocha';
 import path from 'path';
 import { poseidon1, poseidon6 } from 'poseidon-lite';
-import { mockPassPortData_sha1_ecdsa } from '../../../common/src/constants/mockPassportData';
+import { mockPassportData_sha1_ecdsa } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import {
   BigintToArray,
@@ -17,7 +17,7 @@ describe('Register - SHA1 WITH ECDSA', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
-  let passportData = mockPassPortData_sha1_ecdsa;
+  let passportData = mockPassportData_sha1_ecdsa;
   let attestation_id: string;
   const attestation_name = 'E-PASSPORT';
   const n_dsc = 43; // 43 * 6 = 258 > 254 Cirom field size

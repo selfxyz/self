@@ -225,7 +225,7 @@ export const mockPassportData_sha384_ecdsa = {
   photoBase64: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIw3...',
 };
 
-export const mockPassPortData_sha1_ecdsa = {
+export const mockPassportData_sha1_ecdsa = {
   mrz: 'P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02',
   signatureAlgorithm: 'ecdsa-with-SHA1',
   pubKey: {
@@ -344,9 +344,10 @@ export const mockPassportData_sha512_ecdsa = {
 
 export const mockPassportDatas = [
   mockPassportData_sha256_rsa_65537,
+  mockPassportData_sha256_sha1MRZ_rsa_65537,
   mockPassportData_sha1_rsa_65537,
   mockPassportData_sha256_rsapss_65537,
-  mockPassPortData_sha1_ecdsa,
+  mockPassportData_sha1_ecdsa,
   mockPassportData_sha256_ecdsa,
   mockPassportData_sha512_ecdsa,
   // mockPassportData_SHA384withECDSA, // temp cause formatting of ecdsa key is not done well now
