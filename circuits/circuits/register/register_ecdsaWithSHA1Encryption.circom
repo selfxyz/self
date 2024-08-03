@@ -83,4 +83,5 @@ template Register_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes, nLevels, s
     signal output commitment <== poseidon_hasher.out;
 }
 
+// We hardcode 7 here for ecdsa_with_SHA1
 component main { public [ attestation_id ] } = Register_ecdsaWithSHA1Encryption(43, 6, 320, 16, 7);
