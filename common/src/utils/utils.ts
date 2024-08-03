@@ -83,6 +83,16 @@ export function formatAndConcatenateDataHashes(
   // // NULL tag + SEQUENCE + long form indicator + length (275 bytes)
   // 5, 0, 48, -126, 1, 19,
 
+  // spain
+  // 48, -127,  -79,
+  // 2,    1, 
+  // 0,  
+  // 48,    7,   6,   5, 
+  // 1.3.14.3.2.26 is sha1
+  // 43,  14, 3,    2,   26,
+  // SEQUENCE + ...
+  // 48, -127, -94, 
+
   // => current conclusion is we should be able to just hardcode indexes
   // => as they shouldn't change must for same sig alg.
   // => wrong: our rsassaPss has less datagroups so the length is different (30 rather then 31)
