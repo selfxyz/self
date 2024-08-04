@@ -138,6 +138,7 @@ const handleResponseIOS = async (
   console.log('residenceAddress', parsed.residenceAddress)
   console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
   console.log('signatureAlgorithm', signatureAlgorithm)
+  console.log('encapsulatedContentDigestAlgorithm', parsed.encapsulatedContentDigestAlgorithm)
   console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
   const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
   const certificate = forge.pki.certificateFromPem(pem);

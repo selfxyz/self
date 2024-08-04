@@ -22,6 +22,11 @@ Extract pem certificates from ldif file:
 ts-node src/dsc/extract_certificates.ts
 ```
 
+Extract pem to txt:
+```
+ts-node src/dsc/pem_to_txt.ts
+```
+
 Extract readable public keys from pem certicates:
 ```
 ts-node src/dsc/extract_pubkeys.ts
