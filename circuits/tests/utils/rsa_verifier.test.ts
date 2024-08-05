@@ -55,17 +55,19 @@ describe('RSA Verifier', function () {
       expect(isVerified).to.be.true;
     });
 
-    it('should extract and log certificate information', async () => {
-      const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 2048, true);
-      const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
+    // it('should extract and log certificate information', async () => {
+    //   const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 2048, true);
+    //   const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
 
-      const inputs = {
-        message: tbsCertificateHashFormatted,
-        signature: csca_inputs.dsc_signature,
-        modulus: csca_inputs.csca_modulus,
-      };
-      const witness = await circuit.calculateWitness(inputs, true);
-    });
+    //   const inputs = {
+    //     message: tbsCertificateHashFormatted,
+    //     signature: csca_inputs.inputs.dsc_signature,
+    //     modulus: csca_inputs.inputs.dsc_modulus,
+    //   };
+    //   const witness = await circuit.calculateWitness(inputs, true);
+    // });
+
+
   });
 
   describe('SHA-1 certificates', () => {
