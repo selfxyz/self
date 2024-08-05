@@ -66,8 +66,6 @@ describe('RSA Verifier', function () {
     //   };
     //   const witness = await circuit.calculateWitness(inputs, true);
     // });
-
-
   });
 
   describe('SHA-1 certificates', () => {
