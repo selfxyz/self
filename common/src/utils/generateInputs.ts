@@ -33,13 +33,13 @@ export function generateCircuitInputsRegister(
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } =
     passportData;
 
-  const tree = getCSCAModulusMerkleTree();
+  // const tree = getCSCAModulusMerkleTree();
 
-  if (DEVELOPMENT_MODE) {
-    for (const mockPassportData of mocks) {
-      tree.insert(getLeaf(mockPassportData).toString());
-    }
-  }
+  // if (DEVELOPMENT_MODE) {
+  //   for (const mockPassportData of mocks) {
+  //     tree.insert(getLeaf(mockPassportData).toString());
+  //   }
+  // }
 
   if (
     ![
@@ -75,14 +75,14 @@ export function generateCircuitInputsRegister(
     ...pubKey,
   }).toString();
 
-  const index = tree.indexOf(leaf);
+  // const index = tree.indexOf(leaf);
   // console.log(`Index of pubkey in the registry: ${index}`);
-  if (index === -1) {
-    throw new Error('Your public key was not found in the registry');
-  }
+  // if (index === -1) {
+  //   throw new Error('Your public key was not found in the registry');
+  // }
 
-  const proof = tree.createProof(index);
-  console.log('verifyProof', tree.verifyProof(proof));
+  // const proof = tree.createProof(index);
+  // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
     console.error(
