@@ -97,7 +97,8 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
 
     passno_smt.import(passportNojson);
     const proofLevel = 3;
-    memSmtInputs = generateCircuitInputsOfac( // proof of membership
+    memSmtInputs = generateCircuitInputsOfac(
+      // proof of membership
       inputs.secret,
       inputs.attestation_id,
       inputs.passportData,
@@ -110,7 +111,8 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       proofLevel
     );
 
-    nonMemSmtInputs = generateCircuitInputsOfac( // proof of non-membership
+    nonMemSmtInputs = generateCircuitInputsOfac(
+      // proof of non-membership
       mockInputs.secret,
       mockInputs.attestation_id,
       mockInputs.passportData,
@@ -122,7 +124,6 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       passno_smt,
       proofLevel
     );
-
   });
 
   // Compile circuit
@@ -163,7 +164,6 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       expect(error.message).to.include('line: 63');
     }
   });
-
 });
 
 // Level 2 : NameDob match in OfacList
@@ -187,7 +187,8 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
 
     namedob_smt.import(nameDobjson);
     const proofLevel = 2;
-    memSmtInputs = generateCircuitInputsOfac( // proof of membership
+    memSmtInputs = generateCircuitInputsOfac(
+      // proof of membership
       inputs.secret,
       inputs.attestation_id,
       inputs.passportData,
@@ -200,7 +201,8 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       proofLevel
     );
 
-    nonMemSmtInputs = generateCircuitInputsOfac( // proof of non-membership
+    nonMemSmtInputs = generateCircuitInputsOfac(
+      // proof of non-membership
       mockInputs.secret,
       mockInputs.attestation_id,
       mockInputs.passportData,
@@ -212,7 +214,6 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       namedob_smt,
       proofLevel
     );
-
   });
 
   // Compile circuit
@@ -253,7 +254,6 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       expect(error.message).to.include('line: 69');
     }
   });
-
 });
 
 // Level 1 : Name match in OfacList
@@ -277,7 +277,8 @@ describe('start testing ofac_name_verifier.circom', function () {
 
     name_smt.import(namejson);
     const proofLevel = 1;
-    memSmtInputs = generateCircuitInputsOfac( // proof of membership
+    memSmtInputs = generateCircuitInputsOfac(
+      // proof of membership
       inputs.secret,
       inputs.attestation_id,
       inputs.passportData,
@@ -290,7 +291,8 @@ describe('start testing ofac_name_verifier.circom', function () {
       proofLevel
     );
 
-    nonMemSmtInputs = generateCircuitInputsOfac( // proof of non-membership
+    nonMemSmtInputs = generateCircuitInputsOfac(
+      // proof of non-membership
       mockInputs.secret,
       mockInputs.attestation_id,
       mockInputs.passportData,
@@ -302,7 +304,6 @@ describe('start testing ofac_name_verifier.circom', function () {
       name_smt,
       proofLevel
     );
-
   });
 
   // Compile circuit
@@ -343,6 +344,4 @@ describe('start testing ofac_name_verifier.circom', function () {
       expect(error.message).to.include('line: 60');
     }
   });
-
 });
-
