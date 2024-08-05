@@ -3,7 +3,6 @@ import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
-import { poseidon3 } from 'poseidon-lite';
 import forge from 'node-forge';
 
 export function formatMrz(mrz: string) {
@@ -310,26 +309,28 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     // then check if entry[1] exists
     if(!entry[1]){
       // non membership proof
-      console.log("entry[1] is 0")
       closestleaf = BigInt(0); // 0 leaf
     } else {
-      closestleaf = poseidon3(entry); // leaf itself (memb proof) 
+      closestleaf = BigInt(entry[0]); // leaf itself (memb proof) 
     }
   } else {
-    closestleaf = poseidon3(matchingEntry); // actual closest
+    // non membership proof
+    closestleaf = BigInt(matchingEntry[0]); // actual closest
   }
-  const binary = entry[0].toString(2)
-  const bits = binary.slice(-depth);
-  let indices = bits.padEnd(256, "0").split("").map(Number)
-  siblings.reverse()
-  const pathToMatch = num2Bits(256,BigInt(entry[0])) //no need to pad actually as poseidon hashes are 256 onli
-
-  while(indices.length < 256) indices.push(0);
-  while(siblings.length < 256) siblings.push(BigInt(0)); 
   
-  // // CALCULATED ROOT FOR TESTING -- // Useful for debugging hence leaving as comments
-  // closestleaf, depth, siblings, indices, root : needed 
-  // let calculatedNode = closestleaf;
+  // PATH, SIBLINGS manipulation as per binary tree in the circuit 
+  siblings.reverse()
+  while(siblings.length < 256) siblings.push(BigInt(0)); 
+
+  // ----- Useful for debugging hence leaving as comments -----
+  // const binary = entry[0].toString(2)
+  // const bits = binary.slice(-depth);
+  // let indices = bits.padEnd(256, "0").split("").map(Number)
+  // const pathToMatch = num2Bits(256,BigInt(entry[0])) 
+  // while(indices.length < 256) indices.push(0);
+  // // CALCULATED ROOT FOR TESTING 
+  // // closestleaf, depth, siblings, indices, root : needed 
+  // let calculatedNode = poseidon3([closestleaf,1,1]);
   // console.log("Initial node while calculating",calculatedNode)
   // console.log(smt.verifyProof(smt.createProof(leaf)))
   // for (let i= 0; i < depth ; i++) {
@@ -339,14 +340,13 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
   // }
   // console.log("Actual node", root)
   // console.log("calculated node", calculatedNode)
+  // -----------------------------------------------------------
 
   return {
     root,
     depth,
     closestleaf,
-    indices,
     siblings,   
-    pathToMatch
   };
 }
 

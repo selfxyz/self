@@ -17,13 +17,10 @@ template ProveNameDobNotInOfac(nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
     signal input current_date[6]; 
-
+    
     signal input closest_leaf;
     signal input smt_root;
-    signal input smt_size;
-    signal input smt_path[256];
     signal input smt_siblings[256];
-    signal input path_to_match[256];
     signal output proofType;
     signal output proofLevel;
 
@@ -49,24 +46,31 @@ template ProveNameDobNotInOfac(nLevels) {
     // NameDob hash
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
     signal smtleaf_hash <== Poseidon(3)([name_dob_hash, 1,1]);
-    signal computedRoot <== BinaryMerkleRoot(256)(closest_leaf, smt_size, smt_path, smt_siblings);
+
+    signal sibLength <== SiblingsLength()(smt_siblings);
+    signal smt_path_new[256];
+    signal path_in_bits_reversed[256] <== Num2Bits(256)(name_dob_hash);
+    var path_in_bits[256];
+    for (var i = 0; i < 256; i++) {
+        path_in_bits[i] = path_in_bits_reversed[255-i];
+    }
+
+    component ct1 = VarShiftLeft(256,256);
+    ct1.in <== path_in_bits;
+    ct1.shift <== (256-sibLength);
+    smt_path_new <== ct1.out;
+
+    signal closest_hash <== Poseidon(3)([closest_leaf, 1,1]);  
+    signal isClosestZero <== IsEqual()([closest_leaf,0]);
+    signal closest <== IsEqual()([isClosestZero,0]); 
+    signal closestleaf_hash <== closest_hash * closest;
+
+    signal computedRoot <== BinaryMerkleRoot(256)(closestleaf_hash, sibLength, smt_path_new, smt_siblings);
     computedRoot === smt_root;
 
-    proofType <== IsEqual()([closest_leaf,smtleaf_hash]); 
+    proofType <== IsEqual()([closestleaf_hash,smtleaf_hash]); 
     proofType === 0;  // Uncomment this line to make circuit handle both membership and non-membership proof and returns the type of proof (0 for non-membership, 1 for membership)
 
-    signal sibLength <== SiblingsLength()(smt_siblings); // If someone tries to bypass the next test by deliberately passing in smt_size < commonLength
-    sibLength === smt_size; 
-
-    // Common length 
-    component ct = CommonBitsLengthFromEnd();
-    ct.bits1 <== path_to_match;
-    ct.bits2 <== Num2Bits(256)(name_dob_hash);
-    signal commonLength <== ct.out;
-    signal closestLeafValid <== LessEqThan(9)([smt_size,commonLength]); 
-
-    signal check <== IsZero()(proofType+closestLeafValid); 
-    check === 0; // Assert the culminated condition
     proofLevel <== 2;
 }
 

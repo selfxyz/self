@@ -217,13 +217,13 @@ export function generateCircuitInputsOfac(
   const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10,49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
   const name_leaf = getNameLeaf(mrz_bytes.slice(10,49)) // [6-44] + 5 shift
   
-  let root, depth, closestleaf, indices, siblings, pathToMatch;  
+  let root,closestleaf,siblings;  
   if(proofLevel == 3){
-    ({root, depth, closestleaf, indices, siblings, pathToMatch} = generateSMTProof(sparsemerkletree, passport_leaf));
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, passport_leaf));
   } else if(proofLevel == 2){
-    ({root, depth, closestleaf, indices, siblings, pathToMatch} = generateSMTProof(sparsemerkletree, namedob_leaf));
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, namedob_leaf));
   } else if (proofLevel == 1){
-    ({root, depth, closestleaf, indices, siblings, pathToMatch} = generateSMTProof(sparsemerkletree, name_leaf));
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, name_leaf));
   } else {
     throw new Error("Invalid proof level")
   }
@@ -232,10 +232,7 @@ export function generateCircuitInputsOfac(
     ...finalResult,
     closest_leaf: [BigInt(closestleaf).toString()],
     smt_root: [BigInt(root).toString()],
-    smt_size: [BigInt(depth).toString()],
-    smt_path : indices.map(index => BigInt(index).toString()),
     smt_siblings: siblings.map(index => BigInt(index).toString()),
-    path_to_match: pathToMatch.map(index => BigInt(index).toString())
   };
 }
 
