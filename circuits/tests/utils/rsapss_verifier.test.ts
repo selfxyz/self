@@ -56,17 +56,17 @@ describe('RSAPSS Verifier', function () {
       expect(isVerified).to.be.true;
     });
 
-    it('should extract and log certificate information', async () => {
-      const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 960, true);
-      // const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
+    // it('should extract and log certificate information', async () => {
+    //   const csca_inputs = getCSCAInputs('0', dscCert_forge, cscaCert_forge, n, k, n, k, 960, true);
+    //   // const tbsCertificateHashFormatted = getTBSHash(dscCert_forge, 'sha256', n, k);
 
-      const inputs = {
-        raw_message: csca_inputs.raw_dsc_cert,
-        raw_message_padded_bytes: csca_inputs.raw_dsc_cert_padded_bytes,
-        signature: csca_inputs.dsc_signature,
-        modulus: csca_inputs.csca_modulus,
-      };
-      //const witness = await circuit.calculateWitness(inputs, true);
-    });
+    //   const inputs = {
+    //     raw_message: csca_inputs.inputs.raw_dsc_cert,
+    //     raw_message_padded_bytes: csca_inputs.inputs.raw_dsc_cert_padded_bytes,
+    //     signature: csca_inputs.inputs.dsc_signature,
+    //     modulus: csca_inputs.inputs.dsc_modulus,
+    //   };
+    //   /const witness = await circuit.calculateWitness(inputs, true);
+    // });
   });
 });
