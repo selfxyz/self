@@ -6,6 +6,6 @@
       "node"
     ],
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
   }
 }
