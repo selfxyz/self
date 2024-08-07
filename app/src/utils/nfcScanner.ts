@@ -22,7 +22,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setStep, nfcSheetIsOpen, setNfcSheetIsOpen } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -57,7 +57,9 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
     dscCertificate
   } = useUserStore.getState()
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setNfcSheetIsOpen } = useNavigationStore.getState();
+  setNfcSheetIsOpen(true);
+
 
   try {
     const response = await PassportReader.scan({
@@ -66,12 +68,13 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
       dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
-    amplitude.track('NFC scan successful');
+    setNfcSheetIsOpen(false);
+    //amplitude.track('NFC scan successful');
     handleResponseAndroid(response, setModalProofStep);
   } catch (e: any) {
     console.log('error during scan:', e);
-    setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
+    setNfcSheetIsOpen(false);
+    //amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -98,11 +101,11 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     );
     console.log('scanned');
     handleResponseIOS(response, setModalProofStep);
-    amplitude.track('NFC scan successful');
+    //amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
+    //amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
       toast.show('Failed to read passport', {
         message: e.message,
@@ -155,7 +158,7 @@ const handleResponseIOS = async (
 
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
-    amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+    //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
     console.log('signatureAlgorithm before conversion', signatureAlgorithm);
     const passportData = {
       mrz,
@@ -196,10 +199,11 @@ const handleResponseIOS = async (
     sendCSCARequest(inputs_csca, setModalProofStep);
 
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+    useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
+    //amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: "Your signature algorithm is not supported at that time. Please try again later.",
       customData: {
@@ -231,7 +235,7 @@ const handleResponseAndroid = async (
     documentSigningCertificate
   } = response;
 
-  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+  //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
 
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
 
@@ -255,7 +259,7 @@ const handleResponseAndroid = async (
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
   };
-  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
+  //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('passportData', JSON.stringify({
     ...passportData,
@@ -304,4 +308,5 @@ const handleResponseAndroid = async (
   );
   sendCSCARequest(inputs_csca, setModalProofStep);
   useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+  useNavigationStore.getState().setSelectedTab("next");
 };

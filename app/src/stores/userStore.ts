@@ -20,6 +20,8 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
+import { ProofOfPassportVerifierReport } from '@proofofpassport/sdk';
+
 
 interface UserState {
   passportNumber: string
@@ -32,6 +34,7 @@ interface UserState {
   cscaProof: Proof | null
   localProof: Proof | null
   dscSecret: string | null
+  userLoaded: boolean
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
@@ -42,9 +45,13 @@ interface UserState {
   deleteMrzFields: () => void
   setRegistered: (registered: boolean) => void
   setDscSecret: (dscSecret: string) => void
+  setUserLoaded: (userLoaded: boolean) => void
+  proofVerificationResult: string,
+  setProofVerificationResult: (proofVerificationResult: string) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
+  userLoaded: false,
   passportNumber: DEFAULT_PNUMBER ?? "",
   dateOfBirth: DEFAULT_DOB ?? "",
   dateOfExpiry: DEFAULT_DOE ?? "",
@@ -61,7 +68,13 @@ const useUserStore = create<UserState>((set, get) => ({
   setDscSecret: (dscSecret: string) => {
     set({ dscSecret });
   },
-
+  setUserLoaded: (userLoaded: boolean) => {
+    set({ userLoaded });
+  },
+  proofVerificationResult: "null",
+  setProofVerificationResult: (proofVerificationResult: string) => {
+    set({ proofVerificationResult });
+  },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
   // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
@@ -78,6 +91,9 @@ const useUserStore = create<UserState>((set, get) => ({
     const passportData = await loadPassportData();
     if (!passportData) {
       console.log("No passport data found, starting onboarding flow")
+      set({
+        userLoaded: true,
+      });
       return;
     }
 
@@ -87,8 +103,10 @@ const useUserStore = create<UserState>((set, get) => ({
       console.log("not registered but passport data found, skipping to nextScreen")
       set({
         passportData: JSON.parse(passportData),
+        userLoaded: true,
       });
-      useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+      // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+
       return;
     }
 
@@ -97,7 +115,8 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    // useNavigationStore.getState().setStep(Steps.REGISTERED);
+    useNavigationStore.getState().setStep(Steps.REGISTERED);
+    set({ userLoaded: true });
   },
 
   // When reading passport for the first time:
@@ -116,6 +135,7 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   registerCommitment: async (mockPassportData?: PassportData) => {
+    console.log("registerCommitment")
     const {
       toast,
       setStep,
@@ -128,6 +148,7 @@ const useUserStore = create<UserState>((set, get) => ({
     }
 
     const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
+    console.log("isAlreadyRegistered", isAlreadyRegistered)
     if (isAlreadyRegistered) {
       console.log("commitment is already registered")
       toast.show('Identity already registered, skipping', {
@@ -160,7 +181,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       );
 
-      amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+      //amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
       console.log("userStore - inputs - Object.keys(inputs).forEach((key) => {...")
       Object.keys(inputs).forEach((key) => {
         if (Array.isArray(inputs[key as keyof typeof inputs])) {
@@ -184,7 +205,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const end = Date.now();
       console.log('Total proof time from frontend:', end - start);
-      amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+      //amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
 
 
       if ((get().cscaProof !== null) && (get().localProof !== null)) {
@@ -199,6 +220,7 @@ const useUserStore = create<UserState>((set, get) => ({
         }
         set({ registered: true });
         setStep(Steps.REGISTERED);
+        useNavigationStore.getState().setSelectedTab("app");
         toast.show('✅', {
           message: "Registered",
           customData: {
@@ -217,7 +239,7 @@ const useUserStore = create<UserState>((set, get) => ({
         registrationErrorMessage: error.message,
       })
       setStep(Steps.NEXT_SCREEN);
-      amplitude.track(error.message);
+      //amplitude.track(error.message);
     }
   },
 

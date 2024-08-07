@@ -1,4 +1,4 @@
-import { AppType } from "../utils/appType";
+import { AppType } from "../../../common/src/utils/appType";
 import { Flame } from '@tamagui/lucide-icons';
 import { Text, XStack, YStack } from 'tamagui';
 import { generateProof } from "../utils/prover";
@@ -159,7 +159,7 @@ export const sbtApp: AppType = {
 
       const end = Date.now();
       console.log('Total proof time from frontend:', end - start);
-      amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+      //amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
       update({
         proof: proof,
         proofTime: end - start,
@@ -174,7 +174,7 @@ export const sbtApp: AppType = {
         },
       })
       setStep(Steps.NEXT_SCREEN);
-      amplitude.track(error.message);
+      //amplitude.track(error.message);
     }
   },
 
@@ -269,7 +269,7 @@ export const sbtApp: AppType = {
           console.log('Failed to parse blockchain error');
         }
       }
-      amplitude.track(error.message);
+      //amplitude.track(error.message);
     }
   }
 }

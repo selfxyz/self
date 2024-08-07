@@ -54,7 +54,3 @@ jobs:
       - name: Run Tests
         working-directory: ./circuits
         run: yarn test
-
-      - name: Run Tests
-        working-directory: ./circuits
-        run: yarn test

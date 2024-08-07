@@ -1,9 +1,10 @@
+import { SignatureAlgorithm, PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL } from "../constants/constants";
+import { IMT, LeanIMT } from '@zk-kit/imt'
+import { formatSigAlgNameForCircuit } from "./utils";
+import { toStandardName } from "./formatNames";
+import axios from "axios";
 import { poseidon10, poseidon2, poseidon3, poseidon5, poseidon6, poseidon8 } from 'poseidon-lite';
-import { SignatureAlgorithm, PUBKEY_TREE_DEPTH } from '../constants/constants';
-import { IMT } from '@zk-kit/imt';
 import { BigintToArray, hexToDecimal, splitToWords } from './utils';
-import { formatSigAlgNameForCircuit } from './utils';
-import { toStandardName } from './formatNames';
 
 export function buildPubkeyTree(pubkeys: any[]) {
   let leaves: bigint[] = [];
@@ -93,4 +94,14 @@ export function getLeaf(pubkey: any, i?: number): bigint {
       console.log('err', err, i, sigAlgFormattedForCircuit, pubkey);
     }
   }
+}
+
+export async function getTreeFromTracker(): Promise<LeanIMT> {
+  const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
+  const imt = new LeanIMT(
+    (a: bigint, b: bigint) => poseidon2([a, b]),
+    []
+  );
+  imt.import(response.data)
+  return imt
 }

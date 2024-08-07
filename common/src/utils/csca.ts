@@ -1,7 +1,7 @@
 import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
 import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
+import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, signatureOidToName } from "../constants/constants";
 import { poseidon16, poseidon2, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
@@ -131,17 +131,22 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
 
 
     return {
-        "raw_dsc_cert": dsc_message_padded_formatted,
-        "raw_dsc_cert_padded_bytes": [dsc_messagePaddedLen_formatted],
-        "csca_modulus": csca_modulus_formatted,
-        "dsc_signature": dsc_signature_formatted,
-        "dsc_modulus": dsc_modulus_formatted,
-        "start_index": [startIndex_formatted],
-        "secret": [dscSecret],
-        "merkle_root": [BigInt(root).toString()],
-        "path": proof.pathIndices.map(index => index.toString()),
-        "siblings": proof.siblings.flat().map(sibling => sibling.toString())
+        "signature_algorithm": signatureOidToName[signatureAlgorithm],
+        "inputs":
+        {
+            "raw_dsc_cert": dsc_message_padded_formatted,
+            "raw_dsc_cert_padded_bytes": [dsc_messagePaddedLen_formatted],
+            "csca_modulus": csca_modulus_formatted,
+            "dsc_signature": dsc_signature_formatted,
+            "dsc_modulus": dsc_modulus_formatted,
+            "start_index": [startIndex_formatted],
+            "secret": [dscSecret],
+            "merkle_root": [BigInt(root).toString()],
+            "path": proof.pathIndices.map(index => index.toString()),
+            "siblings": proof.siblings.flat().map(sibling => sibling.toString())
+        }
     }
+
 }
 
 export function derToBytes(derValue: string) {

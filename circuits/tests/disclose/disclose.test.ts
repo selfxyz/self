@@ -35,7 +35,7 @@ describe('Disclose', function () {
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
 
-    const majority = ['1', '8'];
+    const majority = '18';
     const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
     const bitmap = Array(90).fill('1');
     const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();

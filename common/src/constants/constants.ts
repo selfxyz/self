@@ -1,6 +1,6 @@
 export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
-export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
-
+//export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
+export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/download-merkle-tree"
 export const PUBKEY_TREE_DEPTH = 16
 export const CSCA_TREE_DEPTH = 12
 export const COMMITMENT_TREE_DEPTH = 16
@@ -14,6 +14,7 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEVELOPMENT_MODE = true
+export const DEFAULT_MAJORITY = "18"
 
 export enum SignatureAlgorithm {
   sha256WithRSAEncryption_65537 = 1,
@@ -26,6 +27,11 @@ export enum SignatureAlgorithm {
   ecdsa_with_SHA256 = 8,
   ecdsa_with_SHA512 = 9,
   sha512WithRSAEncryption_65537 = 10
+}
+
+export const signatureOidToName = {
+  "1.2.840.113549.1.1.11": "sha256_rsa",
+  "1.2.840.113549.1.1.5": "sha1_rsa"
 }
 
 export const attributeToPosition = {
@@ -312,7 +318,7 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 -----END RSA PUBLIC KEY-----`;
 
 export const DEFAULT_RPC_URL = "https://mainnet.optimism.io";
-export const REGISTER_CONTRACT_ADDRESS = "0xEd7495516a957dD7d378d8A78846646461cFF25f";
+export const REGISTER_CONTRACT_ADDRESS = "0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909";
 export const SBT_CONTRACT_ADDRESS = "0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6";
 /*** ABI ***/
 
