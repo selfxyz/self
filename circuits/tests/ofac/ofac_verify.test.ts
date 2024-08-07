@@ -139,19 +139,19 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
     console.log('Everything correct, Valid proof of non-membership !!');
   });
 
-  // Correct siblings but membership proof : Fail at line 67 assertion
+  // Correct siblings but membership proof : Fail at line 43 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
     try {
       await circuit.calculateWitness(memSmtInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 67');
-      expect(error.message).to.not.include('line: 63');
+      expect(error.message).to.include('line: 43');
+      expect(error.message).to.not.include('SMTVerify');
     }
   });
 
-  // Give wrong closest leaf but correct siblings array
+  // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
   it('should fail to calculate witness due to wrong closest_leaf provided, level 3', async function () {
     try {
       let wrongSibInputs = nonMemSmtInputs;
@@ -161,7 +161,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 63');
+      expect(error.message).to.include('SMTVerify');
     }
   });
 });
@@ -229,15 +229,15 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
     console.log('Everything correct, Valid proof of non-membership !!');
   });
 
-  // Correct siblings but membership proof : Fail at line 72 assertion
+  // Correct siblings but membership proof : Fail at line 54 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 2', async function () {
     try {
       await circuit.calculateWitness(memSmtInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 72');
-      expect(error.message).to.not.include('line: 69');
+      expect(error.message).to.include('line: 54');
+      expect(error.message).to.not.include('SMTVerify');
     }
   });
 
@@ -251,7 +251,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 69');
+      expect(error.message).to.include('SMTVerify');
     }
   });
 });
@@ -319,15 +319,15 @@ describe('start testing ofac_name_verifier.circom', function () {
     console.log('Everything correct, Valid proof of non-membership !!');
   });
 
-  // Correct siblings but membership proof : Fail at line 63 assertion
+  // Correct siblings but membership proof : Fail at line 46 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 1', async function () {
     try {
       await circuit.calculateWitness(memSmtInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 63');
-      expect(error.message).to.not.include('line: 60');
+      expect(error.message).to.include('line: 46');
+      expect(error.message).to.not.include('SMTVerify');
     }
   });
 
@@ -341,7 +341,7 @@ describe('start testing ofac_name_verifier.circom', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 60');
+      expect(error.message).to.include('SMTVerify');
     }
   });
 });

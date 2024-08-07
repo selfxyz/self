@@ -6,6 +6,7 @@ include "circomlib/circuits/bitify.circom";
 include "binary-merkle-root.circom";
 include "../utils/getCommonLength.circom";
 include "../utils/validatePassport.circom";
+include "../utils/smt.circom";
 
 template ProveNameDobNotInOfac(nLevels) {
     signal input secret;
@@ -21,7 +22,6 @@ template ProveNameDobNotInOfac(nLevels) {
     signal input closest_leaf;
     signal input smt_root;
     signal input smt_siblings[256];
-    signal output proofType;
     signal output proofLevel;
 
     // Validate passport
@@ -47,28 +47,10 @@ template ProveNameDobNotInOfac(nLevels) {
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
     signal smtleaf_hash <== Poseidon(3)([name_dob_hash, 1,1]);
 
-    signal sibLength <== SiblingsLength()(smt_siblings);
-    signal smt_path_new[256];
-    signal path_in_bits_reversed[256] <== Num2Bits(256)(name_dob_hash);
-    var path_in_bits[256];
-    for (var i = 0; i < 256; i++) {
-        path_in_bits[i] = path_in_bits_reversed[255-i];
-    }
+    // SMT Verification
+    signal closestleaf <== SMTVerify(256)(name_dob_hash, 1, closest_leaf, smt_root, smt_siblings);
 
-    component ct1 = VarShiftLeft(256,256);
-    ct1.in <== path_in_bits;
-    ct1.shift <== (256-sibLength);
-    smt_path_new <== ct1.out;
-
-    signal closest_hash <== Poseidon(3)([closest_leaf, 1,1]);  
-    signal isClosestZero <== IsEqual()([closest_leaf,0]);
-    signal closest <== IsEqual()([isClosestZero,0]); 
-    signal closestleaf_hash <== closest_hash * closest;
-
-    signal computedRoot <== BinaryMerkleRoot(256)(closestleaf_hash, sibLength, smt_path_new, smt_siblings);
-    computedRoot === smt_root;
-
-    proofType <== IsEqual()([closestleaf_hash,smtleaf_hash]); 
+    signal proofType <== IsEqual()([closestleaf,smtleaf_hash]); 
     proofType === 0;  // Uncomment this line to make circuit handle both membership and non-membership proof and returns the type of proof (0 for non-membership, 1 for membership)
 
     proofLevel <== 2;
