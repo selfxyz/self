@@ -5,7 +5,7 @@ import Dialog from "react-native-dialog";
 import { ethers } from 'ethers';
 // import ressources
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X, UserPlus, Wifi } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X, UserPlus, Wifi, ArrowRight } from '@tamagui/lucide-icons';
 import Xlogo from '../images/x.png'
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
@@ -475,12 +475,21 @@ const MainScreen: React.FC = () => {
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
                       <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        go to register
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
+                        <ArrowRight color={textColor2} />
+                      </Button>
+                    </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
                         registered = (!registered)
                       </Label>
                       <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
                         <UserPlus color={textColor2} />
                       </Button>
                     </Fieldset>
+
 
 
                   </>
