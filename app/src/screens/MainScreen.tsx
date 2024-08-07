@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3 } from 'tamagui'
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser } from '@tamagui/lucide-icons';
 import X from '../images/x.png'
 import Telegram from '../images/telegram.png'
@@ -8,7 +8,7 @@ import Internet from "../images/internet.png"
 import ProveScreen from './ProveScreen';
 import { Steps } from '../utils/utils';
 import AppScreen from './AppScreen';
-import { Linking, Modal, Platform, Pressable } from 'react-native';
+import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable } from 'react-native';
 import NFC_IMAGE from '../images/nfc.png'
 import { bgColor, blueColorLight, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 import SendProofScreen from './SendProofScreen';
@@ -26,9 +26,12 @@ import Dialog from "react-native-dialog";
 import { contribute } from '../utils/contribute';
 import RegisterScreen from './RegisterScreen';
 
+const { nativeModule } = NativeModules;
+const emitter = new NativeEventEmitter(nativeModule);
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
+  const [scanningMessage, setScanningMessage] = useState(''); 
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
@@ -124,6 +127,18 @@ const MainScreen: React.FC = () => {
   }
 
   useEffect(() => {
+    const handleNativeEvent = (event: string) => {
+      setScanningMessage(event);
+    };
+
+    const subscription = emitter.addListener('NativeEvent', handleNativeEvent);
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
+  useEffect(() => {
     if (passportNumber?.length === 9 && (dateOfBirth?.length === 6 && dateOfExpiry?.length === 6)) {
       setStep(Steps.MRZ_SCAN_COMPLETED);
     }
@@ -207,8 +222,13 @@ const MainScreen: React.FC = () => {
           <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
+              
               <YStack gap="$5" f={1} pt="$3">
-                <H2 textAlign='center'>Ready to scan</H2>
+                <View>
+                  <H2 textAlign='center'>Ready to scan</H2>
+                  <Text textAlign='center'>{scanningMessage}</Text>
+                </View>
+                
                 {step >= Steps.NEXT_SCREEN ?
                   <CheckCircle2
                     size="$8"

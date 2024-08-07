@@ -114,6 +114,15 @@ import com.facebook.react.modules.core.DeviceEventManagerModule
 import com.facebook.react.bridge.LifecycleEventListener
 import com.facebook.react.bridge.Callback
 
+object Messages {
+    const val SCANNING = "Scanning....."
+    const val STOP_MOVING = "Stop moving....." 
+    const val AUTH = "Auth....."
+    const val COMPARING = "Comparing....."
+    const val COMPLETED = "Scanning completed"
+    const val RESET = ""
+}
+
 class Response(json: String) : JSONObject(json) {
     val type: String? = this.optString("type")
     val data = this.optJSONArray("data")
@@ -171,6 +180,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
     @ReactMethod
     fun scan(opts: ReadableMap, promise: Promise) {
+        eventMessageEmitter(Messages.SCANNING)
         val mNfcAdapter = NfcAdapter.getDefaultAdapter(reactApplicationContext)
         // val mNfcAdapter = NfcAdapter.getDefaultAdapter(this.reactContext)
         if (mNfcAdapter == null) {
@@ -261,6 +271,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         override fun doInBackground(vararg params: Void?): Exception? {
             try {
+                eventMessageEmitter(Messages.STOP_MOVING)
                 isoDep.timeout = 10000
                 Log.e("MY_LOGS", "This should obvsly log")
                 val cardService = CardService.getInstance(isoDep)
@@ -349,7 +360,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 //     e.printStackTrace()
                 // }
                 // Log.d(TAG, "============LET'S VERIFY THE SIGNATURE=============")
-
+                eventMessageEmitter(Messages.AUTH)
                 doChipAuth(service)
                 doPassiveAuth()
 
@@ -372,6 +383,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
                 }
             } catch (e: Exception) {
+                eventMessageEmitter(Messages.RESET)
                 return e
             }
             return null
@@ -409,8 +421,11 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 
                 val dataHashes = sodFile.dataGroupHashes
                 
+                eventMessageEmitter("Reading DG14.....")
                 val dg14Hash = if (chipAuthSucceeded) digest.digest(dg14Encoded) else ByteArray(0)
+                eventMessageEmitter("Reading DG1.....")
                 val dg1Hash = digest.digest(dg1File.encoded)
+                eventMessageEmitter("Reading DG2.....")
                 val dg2Hash = digest.digest(dg2File.encoded)
                 
                 // val gson = Gson()
@@ -432,7 +447,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 // Log.d(TAG, "dg2HashjoinToString " + gson.toJson(dg2Hash.joinToString("") { "%02x".format(it) }))
 
                 Log.d(TAG, "Comparing data group hashes...")
-
+                eventMessageEmitter(Messages.COMPARING)
                 if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
                     && (!chipAuthSucceeded || Arrays.equals(dg14Hash, dataHashes[14]))) {
 
@@ -498,6 +513,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     Log.d(TAG, "Passive authentication success: $passiveAuthSuccess")
                 }
             } catch (e: Exception) {
+                eventMessageEmitter(Messages.RESET)
                 Log.w(TAG, "Exception in passive authentication", e)
             }
         }
@@ -538,6 +554,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             val certificateBytes = certificate.encoded
             val certificateBase64 = Base64.encodeToString(certificateBytes, Base64.DEFAULT)
             Log.d(TAG, "certificateBase64: ${certificateBase64}")
+            
 
             passport.putString("documentSigningCertificate", certificateBase64)
 
@@ -609,7 +626,9 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             passport.putMap("photo", photo)
             // passport.putString("dg2File", gson.toJson(dg2File))
             
+            eventMessageEmitter(Messages.COMPLETED)
             scanPromise?.resolve(passport)
+            eventMessageEmitter(Messages.RESET)
             resetState()
         }
     }
@@ -623,6 +642,16 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         } catch (e: ParseException) {
             // Log.w(RNPassportReaderModule::class.java.simpleName, e)
             null
+        }
+    }
+
+    private fun eventMessageEmitter(message: String) {
+        if (reactContext.hasActiveCatalystInstance()) {
+            reactContext
+                .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter::class.java)
+                .emit("NativeEvent", message)
+        } else {
+            Log.d(TAG, "Error")
         }
     }
 

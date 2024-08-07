@@ -213,7 +213,7 @@ const handleResponseAndroid = async (
     encapContent,
     documentSigningCertificate
   } = response;
-
+  
   amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
 
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
