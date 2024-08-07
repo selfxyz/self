@@ -92,15 +92,11 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         if (bytes32(proof.attestation_id) != attestationId) {
             revert("Register__InvalidAttestationId");
         }
-        if (
-            !verifyProof(
-                proof,
-                proof_csca,
-                signature_algorithm,
-                signature_algorithm_csca
-            )
-        ) {
-            revert("Register__InvalidProof");
+        if (!verifyProofRegister(proof, signature_algorithm)) {
+            revert("Register__InvalidProofRegister");
+        }
+        if (!verifyProofCSCA(proof_csca, signature_algorithm_csca)) {
+            revert("Register__InvalidProofCSCA");
         }
         if (
             bytes32(proof.blinded_dsc_commitment) !=
@@ -120,14 +116,12 @@ contract ProofOfPassportRegister is IRegister, Ownable {
         );
     }
 
-    function verifyProof(
+    function verifyProofRegister(
         RegisterProof calldata proof,
-        CSCAProof calldata proof_csca,
-        uint256 signature_algorithm,
-        uint256 signature_algorithm_csca
+        uint256 signature_algorithm
     ) public view override returns (bool) {
-        return
-            IVerifier(verifiers[signature_algorithm]).verifyProof(
+        bool register_proof_result = IVerifier(verifiers[signature_algorithm])
+            .verifyProof(
                 proof.a,
                 proof.b,
                 proof.c,
@@ -137,16 +131,23 @@ contract ProofOfPassportRegister is IRegister, Ownable {
                     uint(proof.commitment),
                     uint(proof.attestation_id)
                 ]
-            ) &&
-            IVerifierCSCA(cscaVerifier[signature_algorithm_csca]).verifyProof(
-                proof_csca.a,
-                proof_csca.b,
-                proof_csca.c,
-                [
-                    uint(proof_csca.blinded_dsc_commitment),
-                    uint(proof_csca.merkle_root)
-                ]
             );
+        return register_proof_result;
+    }
+
+    function verifyProofCSCA(
+        CSCAProof calldata proof,
+        uint256 signature_algorithm_csca
+    ) public view override returns (bool) {
+        bool csca_proof_result = IVerifierCSCA(
+            cscaVerifier[signature_algorithm_csca]
+        ).verifyProof(
+                proof.a,
+                proof.b,
+                proof.c,
+                [uint(proof.blinded_dsc_commitment), uint(proof.merkle_root)]
+            );
+        return csca_proof_result;
     }
 
     function _addCommitment(uint256 commitment) internal {

@@ -1,7 +1,7 @@
-import { DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from '../common/src/constants/constants';
+import { DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from './common/src/constants/constants';
 import { ethers } from 'ethers';
 import { attributeToGetter } from './utils';
-import { ProofOfPassportVerifierReport } from "./ProofOfPassportVerifierReport";
+import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
 
 export class ProofOfPassportWeb3Verifier {
     scope: string;

@@ -84,6 +84,16 @@ export function formatAndConcatenateDataHashes(
   // // NULL tag + SEQUENCE + long form indicator + length (275 bytes)
   // 5, 0, 48, -126, 1, 19,
 
+  // spain
+  // 48, -127,  -79,
+  // 2,    1, 
+  // 0,  
+  // 48,    7,   6,   5, 
+  // 1.3.14.3.2.26 is sha1
+  // 43,  14, 3,    2,   26,
+  // SEQUENCE + ...
+  // 48, -127, -94, 
+
   // => current conclusion is we should be able to just hardcode indexes
   // => as they shouldn't change must for same sig alg.
   // => wrong: our rsassaPss has less datagroups so the length is different (30 rather then 31)
@@ -405,6 +415,31 @@ export function BigintToArray(n: number, k: number, x: bigint) {
   return ret;
 }
 
+/**
+ * Converts a string of maximum 30 characters to a single BigInt.
+ * Each byte is represented by three digits in the resulting BigInt.
+ * @param str The input string (max 30 characters)
+ * @returns A BigInt representing the concatenated byte values
+ */
+export function stringToNumber(str: string): bigint {
+  if (str.length > 30) {
+    throw new Error("Input string must not exceed 30 characters");
+  }
+  return BigInt('1' + Array.from(str)
+    .map(char => char.charCodeAt(0).toString().padStart(3, '0'))
+    .join(''));
+}
+
+/**
+* Converts a BigInt (representing concatenated byte values) back to a string.
+* @param num The input BigInt
+* @returns The reconstructed string
+*/
+export function numberToString(num: bigint): string {
+  const str = num.toString().slice(1); // Remove leading '1'
+  const charCodes = str.match(/.{1,3}/g) || [];
+  return String.fromCharCode(...charCodes.map(code => parseInt(code, 10)));
+}
 export function stringToAsciiBigIntArray(str: string): bigint[] {
   let asciiBigIntArray = [];
   for (let i = 0; i < str.length; i++) {
@@ -434,7 +469,6 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
       }
 
       lc1 += out[i] * e2;
-
       e2 = e2 << BigInt(1);
   }
 

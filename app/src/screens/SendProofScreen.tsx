@@ -7,7 +7,7 @@ import ProofGrid from '../components/ProofGrid';
 import { Platform } from 'react-native';
 import { blueColor, borderColor, componentBgColor, textColor1, textColor2 } from '../utils/colors';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType } from '../utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 import { appStoreMapping } from './ProveScreen';
 
 const SendProofScreen: React.FC = () => {

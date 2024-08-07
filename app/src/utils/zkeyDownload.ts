@@ -43,7 +43,7 @@ export async function downloadZkey(
   const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
   if (!downloadRequired) {
     console.log(`zkey for ${circuit} already downloaded`)
-    amplitude.track(`zkey for ${circuit} already downloaded`);
+    //amplitude.track(`zkey for ${circuit} already downloaded`);
     return;
   }
 
@@ -107,7 +107,7 @@ export async function fetchZkey(
   circuit: CircuitName,
 ) {
   console.log(`fetching zkey for ${circuit} ...`)
-  amplitude.track(`fetching zkey for ${circuit} ...`);
+  //amplitude.track(`fetching zkey for ${circuit} ...`);
 
   const {
     isZkeyDownloading,
@@ -171,7 +171,7 @@ export async function fetchZkey(
         }
       });
 
-      amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
+      //amplitude.track('zkey download succeeded, took ' + ((Date.now() - startTime) / 1000) + ' seconds');
 
       const zipSize = await RNFS.stat(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`);
       console.log('zipSize:', zipSize.size);
@@ -202,7 +202,7 @@ export async function fetchZkey(
           [circuit]: false,
         }
       });
-      amplitude.track('zkey download failed: ' + error.message);
+      //amplitude.track('zkey download failed: ' + error.message);
       toast.show('Error', {
         message: `Error: ${error.message}`,
         customData: {

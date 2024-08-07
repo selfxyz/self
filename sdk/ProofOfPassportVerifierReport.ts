@@ -1,18 +1,18 @@
 export class ProofOfPassportVerifierReport {
-    scope: boolean = false;
-    merkle_root: boolean = false;
-    attestation_id: boolean = false;
-    current_date: boolean = false;
-    issuing_state: boolean = false;
-    name: boolean = false;
-    passport_number: boolean = false;
-    nationality: boolean = false;
-    date_of_birth: boolean = false;
-    gender: boolean = false;
-    expiry_date: boolean = false;
-    older_than: boolean = false;
-    owner_of: boolean = false;
-    proof: boolean = false;
+    scope: boolean = true;
+    merkle_root: boolean = true;
+    attestation_id: boolean = true;
+    current_date: boolean = true;
+    issuing_state: boolean = true;
+    name: boolean = true;
+    passport_number: boolean = true;
+    nationality: boolean = true;
+    date_of_birth: boolean = true;
+    gender: boolean = true;
+    expiry_date: boolean = true;
+    older_than: boolean = true;
+    owner_of: boolean = true;
+    proof: boolean = true;
 
     valid: boolean = true;
 
@@ -21,8 +21,9 @@ export class ProofOfPassportVerifierReport {
 
     constructor() { }
 
-    exposeAttribute(attribute: keyof ProofOfPassportVerifierReport) {
-        (this[attribute] as boolean) = true;
+    exposeAttribute(attribute: keyof ProofOfPassportVerifierReport, value: any = "", expectedValue: any = "") {
+        console.log('exposeAttribute', attribute, "value:", value, "expectedValue:", expectedValue);
+        (this[attribute] as boolean) = false;
         this.valid = false;
     }
 
