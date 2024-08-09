@@ -43,14 +43,8 @@ import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../co
 const { nativeModule } = NativeModules;
 let emitter: NativeEventEmitter | null = null;
 
-if (Platform.OS === 'android' && nativeModule) {
+if (Platform.OS === 'android') {
   emitter = new NativeEventEmitter(nativeModule);
-} else if (Platform.OS === 'ios') {
-  // Use iOS-specific module or alternative implementation
-  // For example:
-  // emitter = new NativeEventEmitter(NativeModules.RNEventEmitter);
-} else {
-  console.warn('Native module not found or not supported on this platform.');
 }
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
@@ -219,14 +213,14 @@ const MainScreen: React.FC = () => {
       setScanningMessage(event);
     };
 
-    if (selectedTab === 'nfc' && emitter && Platform.OS === 'android') {
+    if (Platform.OS === 'android' && emitter) {
       const subscription = emitter.addListener('NativeEvent', handleNativeEvent);
 
       return () => {
         subscription.remove();
       };
     }
-  }, [selectedTab]);
+  }, []);
 
   useEffect(() => {
     if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
