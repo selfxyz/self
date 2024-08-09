@@ -8,7 +8,16 @@ import { formatMrz, packBytes } from "../../../common/src/utils/utils";
 import { findIndexInTree } from "../../../common/src/utils/generateInputs";
 
 export async function isCommitmentRegistered(secret: string, passportData: PassportData) {
-  const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
+
+
+  let response;
+  console.log(COMMITMENT_TREE_TRACKER_URL)
+  try {
+    response = await axios.get(COMMITMENT_TREE_TRACKER_URL);
+  } catch (error) {
+    console.error('Error fetching commitment tree:', error);
+    throw error; // rethrow the error after logging
+  }
   console.log('response.data:', response.data);
 
   const imt = new LeanIMT(
@@ -40,7 +49,7 @@ export async function isCommitmentRegistered(secret: string, passportData: Passp
   try {
     findIndexInTree(imt as any, commitment); // this will throw if not found
     return true
-  } catch(err) {
+  } catch (err) {
     return false;
   }
 }

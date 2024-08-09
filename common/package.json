@@ -3,11 +3,20 @@
     "@babel/runtime": "^7.23.4",
     "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
     "@zk-kit/lean-imt": "^2.0.1",
+    "@zk-kit/utils": "^1.2.0",
+    "asn1.js": "^5.4.1",
+    "axios": "^1.7.2",
+    "elliptic": "^6.5.5",
+    "fs": "^0.0.1-security",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.10.1",
     "js-sha512": "^0.9.0",
-    "node-forge": "^1.3.1",
-    "poseidon-lite": "^0.2.0"
+    "json-to-ts": "^2.1.0",
+    "jsrsasign": "^11.1.0",
+    "node-forge": "https://github.com/remicolin/forge",
+    "path": "^0.12.7",
+    "poseidon-lite": "^0.2.0",
+    "typescript-parser": "^2.6.1"
   },
   "devDependencies": {
     "@types/node-forge": "^1.3.10"

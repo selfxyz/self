@@ -34,6 +34,7 @@ export function formatDateToYYMMDD(inputDate: string) {
 }
 
 export const Steps = {
+  START: 0,
   MRZ_SCAN: 1,
   MRZ_SCAN_COMPLETED: 2,
   NFC_SCANNING: 3,
@@ -45,6 +46,12 @@ export const Steps = {
   PROOF_GENERATED: 9,
   PROOF_SENDING: 10,
   PROOF_SENT: 11
+};
+
+export const ModalProofSteps = {
+  MODAL_REQUEST_SENT: 1,
+  MODAL_SERVER_ERROR: 2,
+  MODAL_SERVER_SUCCESS: 3
 };
 
 export function formatAttribute(key: string, attribute: string) {

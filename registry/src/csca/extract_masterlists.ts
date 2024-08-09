@@ -53,7 +53,7 @@ for (let i = 0; i < masterlists.length; i++) {
   fs.writeFileSync(`outputs/masterlists/masterlist_${i}_asn1_parse_output.txt`, asn1ParseOutput);
 
   const certificateMatches = asn1ParseOutput.matchAll(/(\d+):d=2\s+hl=4\s+l=\s*(\d+)\s+cons:\s+SEQUENCE/g);
-  
+
   if (!fs.existsSync(`outputs/cscas/`)) {
     fs.mkdirSync(`outputs/cscas/`);
   }
@@ -80,13 +80,13 @@ const masterlistDirectories = fs.readdirSync('outputs/cscas/');
 
 masterlistDirectories.forEach((directory) => {
   const files = fs.readdirSync(`outputs/cscas/${directory}`);
-  
+
   files.forEach((file) => {
     const filePath = path.join(`outputs/cscas/${directory}`, file);
     const certContent = fs.readFileSync(filePath);  // Read as binary
-    
+
     const certBase64 = certContent.toString('base64');  // Convert to base64 for comparison
-    
+
     if (!uniqueCertificates.has(certBase64)) {
       uniqueCertificates.add(certBase64);
     }
@@ -94,7 +94,7 @@ masterlistDirectories.forEach((directory) => {
 });
 
 // Write unique certificates to new files
-const uniqueCertsDir = 'outputs/unique_cscas/';
+const uniqueCertsDir = 'outputs/pem_unique_masters/';
 if (!fs.existsSync(uniqueCertsDir)) {
   fs.mkdirSync(uniqueCertsDir);
 }

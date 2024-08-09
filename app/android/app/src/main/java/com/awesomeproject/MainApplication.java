@@ -13,6 +13,7 @@ import io.tradle.nfc.RNPassportReaderPackage;
 import java.util.List;
 import com.proofofpassport.prover.ProverPackage;
 import com.rnfs.RNFSPackage;
+import com.proofofpassport.QRCodeScannerPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 
@@ -32,6 +33,7 @@ public class MainApplication extends Application implements ReactApplication {
       // Add the custom package here
       packages.add(new CameraActivityPackage());
       packages.add(new ProverPackage());
+      packages.add(new QRCodeScannerPackage());
 
     return packages;
 }

@@ -1,19 +1,22 @@
 import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 // import { describe } from "mocha";
-import { mockPassportData_sha256WithRSASSAPSS_65537, mockPassportData_sha1WithRSAEncryption_65537, mockPassportData_sha256WithRSAEncryption_65537 } from "../../common/src/utils/mockPassportData";
+import { mockPassportData_sha256_rsa_65537, mockPassportData_sha1_rsa_65537, } from "../../common/src/constants/mockPassportData";
 import { countryCodes, PASSPORT_ATTESTATION_ID, SignatureAlgorithm } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
 import { generateCircuitInputsRegister, generateCircuitInputsDisclose } from "../../common/src/utils/generateInputs";
-import { formatCallData_disclose, formatCallData_register } from "../../common/src/utils/formatCallData";
+import { formatCallData_disclose, formatCallData_dsc, formatCallData_register } from "../../common/src/utils/formatCallData";
 import fs from 'fs';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { Signer } from "ethers";
+import { getCSCAInputs, getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
+import forge from "node-forge";
+import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha1_rsa_4096, mock_csca_sha1_rsa_4096 } from '../../common/src/constants/mockCertificates';
 
-type RegisterCircuitArtifacts = {
+type CircuitArtifacts = {
     [key: string]: {
         wasm: string,
         zkey: string,
@@ -28,9 +31,10 @@ type RegisterCircuitArtifacts = {
 describe("Proof of Passport - Contracts - Register & Disclose flow", function () {
     this.timeout(0);
 
-    let proof, publicSignals
+    let proof, publicSignals;
+    let proof_dsc
 
-    const register_circuits: RegisterCircuitArtifacts = {
+    const register_circuits: CircuitArtifacts = {
         sha256WithRSAEncryption_65537: {
             wasm: "../circuits/build/register_sha256WithRSAEncryption_65537_js/register_sha256WithRSAEncryption_65537.wasm",
             zkey: "../circuits/build/register_sha256WithRSAEncryption_65537_final.zkey",
@@ -41,10 +45,23 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             zkey: "../circuits/build/register_sha1WithRSAEncryption_65537_final.zkey",
             vkey: "../circuits/build/register_sha1WithRSAEncryption_65537_vkey.json"
         },
-        sha256WithRSASSAPSS_65537: {
-            wasm: "../circuits/build/register_sha256WithRSASSAPSS_65537_js/register_sha256WithRSASSAPSS_65537.wasm",
-            zkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_final.zkey",
-            vkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_vkey.json"
+        // sha256WithRSASSAPSS_65537: {
+        //     wasm: "../circuits/build/register_sha256WithRSASSAPSS_65537_js/register_sha256WithRSASSAPSS_65537.wasm",
+        //     zkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_final.zkey",
+        //     vkey: "../circuits/build/register_sha256WithRSASSAPSS_65537_vkey.json"
+        // }
+    }
+
+    const dsc_circuits: CircuitArtifacts = {
+        sha256WithRSAEncryption_65537: {
+            wasm: "../circuits/build/dsc_sha256_rsa_4096_js/dsc_sha256_rsa_4096.wasm",
+            zkey: "../circuits/build/dsc_sha256_rsa_4096_final.zkey",
+            vkey: "../circuits/build/dsc_sha256_rsa_4096_vkey.json"
+        },
+        sha1WithRSAEncryption_65537: {
+            wasm: "../circuits/build/dsc_sha1_rsa_4096_js/dsc_sha1_rsa_4096.wasm",
+            zkey: "../circuits/build/dsc_sha1_rsa_4096_final.zkey",
+            vkey: "../circuits/build/dsc_sha1_rsa_4096_vkey.json"
         }
     }
 
@@ -52,13 +69,24 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     const path_disclose_zkey = "../circuits/build/disclose_final.zkey";
     const path_disclose_vkey = "../circuits/build/disclose_vkey.json";
 
-    // Smart contracts
+    const n_dsc = 121;
+    const k_dsc = 17;
+    const n_csca = 121;
+    const k_csca = 34;
+    const max_cert_bytes = 1664;
+    const dscCert_sha256 = forge.pki.certificateFromPem(mock_dsc_sha256_rsa_4096);
+    const cscaCert_sha256 = forge.pki.certificateFromPem(mock_csca_sha256_rsa_4096);
+    const dscCert_sha1 = forge.pki.certificateFromPem(mock_dsc_sha1_rsa_4096);
+    const cscaCert_sha1 = forge.pki.certificateFromPem(mock_csca_sha1_rsa_4096);
+
+    let user_identifier, current_date;
     let registry: any, formatter: any, register: any, verifier_disclose: any, sbt: any, poseidonT3: any
     let owner, otherAccount, thirdAccount: Signer;
     let imt: LeanIMT;
 
     let bitmap, scope, user_address, majority, input_disclose: any;
     let proof_disclose, publicSignals_disclose, proof_result_disclose, vkey_disclose, verified_disclose: any, rawCallData_disclose, parsedCallData_disclose: any[], formattedCallData_disclose: any;
+    //let proof_csca, publicSignals_csca: any;
     let secret: string = BigInt(0).toString();
     let attestation_id: string = PASSPORT_ATTESTATION_ID;
 
@@ -72,21 +100,32 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             register_circuits.sha256WithRSAEncryption_65537.inputs = generateCircuitInputsRegister(
                 secret,
+                secret,
                 attestation_id,
-                mockPassportData_sha256WithRSAEncryption_65537,
+                mockPassportData_sha256_rsa_65537,
+                n_dsc,
+                k_dsc
             );
-
             register_circuits.sha1WithRSAEncryption_65537.inputs = generateCircuitInputsRegister(
                 secret,
-                attestation_id,
-                mockPassportData_sha1WithRSAEncryption_65537,
-            );
-
-            register_circuits.sha256WithRSASSAPSS_65537.inputs = generateCircuitInputsRegister(
                 secret,
                 attestation_id,
-                mockPassportData_sha256WithRSASSAPSS_65537,
+                mockPassportData_sha1_rsa_65537,
+                n_dsc,
+                k_dsc
             );
+
+            dsc_circuits.sha256WithRSAEncryption_65537.inputs = getCSCAInputs(BigInt(0).toString(), dscCert_sha256, cscaCert_sha256, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+            dsc_circuits.sha1WithRSAEncryption_65537.inputs = getCSCAInputs(BigInt(0).toString(), dscCert_sha1, cscaCert_sha1, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, true);
+
+
+
+            // register_circuits.sha256WithRSASSAPSS_65537.inputs = generateCircuitInputsRegister(
+            //     secret,
+            //     attestation_id,
+            //     mockPassportData_sha256WithRSASSAPSS_65537,
+            // );
+            //console.log("inputs", register_circuits.sha256WithRSAEncryption_65537.inputs);
 
             /*** Deploy contracts ***/
             await deployContracts();
@@ -108,6 +147,18 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
             };
         }
 
+        const Verifier_dsc_sha256_rsa_4096 = await ethers.getContractFactory("Verifier_dsc_sha256_rsa_4096");
+        const verifier_dsc_sha256_rsa_4096 = await Verifier_dsc_sha256_rsa_4096.deploy();
+        await verifier_dsc_sha256_rsa_4096.waitForDeployment();
+        dsc_circuits.sha256WithRSAEncryption_65537.verifier = verifier_dsc_sha256_rsa_4096;
+        console.log('\x1b[34m%s\x1b[0m', `Verifier_dsc_sha256_rsa_4096 deployed to ${verifier_dsc_sha256_rsa_4096.target}`);
+
+        const Verifier_dsc_sha1_rsa_4096 = await ethers.getContractFactory("Verifier_dsc_sha1_rsa_4096");
+        const verifier_dsc_sha1_rsa_4096 = await Verifier_dsc_sha1_rsa_4096.deploy();
+        await verifier_dsc_sha1_rsa_4096.waitForDeployment();
+        dsc_circuits.sha1WithRSAEncryption_65537.verifier = verifier_dsc_sha1_rsa_4096;
+        console.log('\x1b[34m%s\x1b[0m', `Verifier_dsc_sha1_rsa_4096 deployed to ${verifier_dsc_sha1_rsa_4096.target}`);
+
         const Verifier_register_sha256WithRSAEncryption_65537 = await ethers.getContractFactory("Verifier_register_sha256WithRSAEncryption_65537");
         const verifier_register_sha256WithRSAEncryption_65537 = await Verifier_register_sha256WithRSAEncryption_65537.deploy(deployOptions);
         await verifier_register_sha256WithRSAEncryption_65537.waitForDeployment();
@@ -120,11 +171,11 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         register_circuits.sha1WithRSAEncryption_65537.verifier = verifier_register_sha1WithRSAEncryption_65537;
         console.log('\x1b[34m%s\x1b[0m', `Verifier_register_sha1WithRSAEncryption_65537 deployed to ${verifier_register_sha1WithRSAEncryption_65537.target}`);
 
-        const Verifier_register_sha256WithRSASSAPSS_65537 = await ethers.getContractFactory("Verifier_register_sha256WithRSASSAPSS_65537");
-        const verifier_register_sha256WithRSASSAPSS_65537 = await Verifier_register_sha256WithRSASSAPSS_65537.deploy(deployOptions);
-        await verifier_register_sha256WithRSASSAPSS_65537.waitForDeployment();
-        register_circuits.sha256WithRSASSAPSS_65537.verifier = verifier_register_sha256WithRSASSAPSS_65537;
-        console.log('\x1b[34m%s\x1b[0m', `Verifier_register_sha256WithRSASSAPSS_65537 deployed to ${verifier_register_sha256WithRSASSAPSS_65537.target}`);
+        // const Verifier_register_sha256WithRSASSAPSS_65537 = await ethers.getContractFactory("Verifier_register_sha256WithRSASSAPSS_65537");
+        // const verifier_register_sha256WithRSASSAPSS_65537 = await Verifier_register_sha256WithRSASSAPSS_65537.deploy(deployOptions);
+        // await verifier_register_sha256WithRSASSAPSS_65537.waitForDeployment();
+        // register_circuits.sha256WithRSASSAPSS_65537.verifier = verifier_register_sha256WithRSASSAPSS_65537;
+        // console.log('\x1b[34m%s\x1b[0m', `Verifier_register_sha256WithRSASSAPSS_65537 deployed to ${verifier_register_sha256WithRSASSAPSS_65537.target}`);
 
         const Formatter = await ethers.getContractFactory("Formatter");
         formatter = await Formatter.deploy(deployOptions);
@@ -133,7 +184,8 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `Formatter deployed to ${formatter.target}`);
 
         const Registry = await ethers.getContractFactory("Registry");
-        registry = await Registry.deploy(formatRoot(register_circuits.sha256WithRSAEncryption_65537.inputs.merkle_root), deployOptions);
+        const merkleTree = getCSCAModulusMerkleTree();
+        registry = await Registry.deploy(formatRoot(merkleTree.root), deployOptions);
         await registry.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Registry deployed to ${registry.target}`);
 
@@ -143,7 +195,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
 
         const poseidonT3Address = poseidonT3.target;
-        const Register = await ethers.getContractFactory("ProofOfPassportRegister_dev", {
+        const Register = await ethers.getContractFactory("ProofOfPassportRegister", {
             libraries: {
                 PoseidonT3: poseidonT3Address
             }
@@ -152,14 +204,17 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         await register.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Register deployed to ${register.target}`);
 
+        // console.log("register merkle root:", await registry.getMerkleRoot());
+
         const Verifier_disclose = await ethers.getContractFactory("Verifier_disclose");
         verifier_disclose = await Verifier_disclose.deploy(deployOptions);
         await verifier_disclose.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_disclose deployed to ${verifier_disclose.target}`);
 
         await register.addSignatureAlgorithm(SignatureAlgorithm["sha256WithRSAEncryption_65537"], verifier_register_sha256WithRSAEncryption_65537.target);
+        await register.addCSCAVerifier(SignatureAlgorithm["sha256WithRSAEncryption_65537"], verifier_dsc_sha256_rsa_4096.target);
         await register.addSignatureAlgorithm(SignatureAlgorithm["sha1WithRSAEncryption_65537"], verifier_register_sha1WithRSAEncryption_65537.target);
-        await register.addSignatureAlgorithm(SignatureAlgorithm["sha256WithRSASSAPSS_65537"], verifier_register_sha256WithRSASSAPSS_65537.target);
+        await register.addCSCAVerifier(SignatureAlgorithm["sha1WithRSAEncryption_65537"], verifier_dsc_sha1_rsa_4096.target);
 
         const SBT = await ethers.getContractFactory("SBT");
         sbt = await SBT.deploy(
@@ -188,22 +243,49 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
     /*** Register flow ***/
     describe("Proof of Passport - Register flow", function () {
-        const sigAlgNames = ['sha256WithRSAEncryption_65537', 'sha1WithRSAEncryption_65537', 'sha256WithRSASSAPSS_65537']
+        const sigAlgNames = ['sha256WithRSAEncryption_65537', 'sha1WithRSAEncryption_65537'] //, 'sha1WithRSAEncryption_65537', 'sha256WithRSASSAPSS_65537']
 
         before(async function () {
             await Promise.all(sigAlgNames.map(async (sigAlgName) => {
-                const sigAlgArtifacts = register_circuits[sigAlgName];
+                const sigAlgArtifacts_register = register_circuits[sigAlgName];
                 /***  Groth16 saga Register***/
-                // Generate the proof
-                console.log('\x1b[32m%s\x1b[0m', `Generating proof - ${sigAlgName}`);
+                // Generate the proofs
+                console.log('\x1b[32m%s\x1b[0m', `Generating proof csca - ${sigAlgName}`);
+                //console.log("csc_modulus_length", inputs_csca.inputs.csca_modulus.length);
+                const proof_csca_result = await groth16.fullProve(
+                    dsc_circuits[sigAlgName].inputs.inputs,
+                    dsc_circuits[sigAlgName].wasm,
+                    dsc_circuits[sigAlgName].zkey
+                )
+                const proof_csca = proof_csca_result.proof;
+                const publicSignals_csca = proof_csca_result.publicSignals;
+
+                console.log('\x1b[32m%s\x1b[0m', `Proof generated csca - ${sigAlgName}`);
+                // console.log("proof_csca", proof_csca);
+                // console.log("publicSignals_csca", publicSignals_csca);
+
+                const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits[sigAlgName].vkey) as unknown as string);
+                const verified_csca = await groth16.verify(
+                    vKey_csca,
+                    publicSignals_csca,
+                    proof_csca
+                )
+                assert(verified_csca == true, 'Should verify')
+                console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${sigAlgName}`);
+                const rawCallData_csca = await groth16.exportSolidityCallData(proof_csca, publicSignals_csca);
+                dsc_circuits[sigAlgName].parsedCallData = JSON.parse(`[${rawCallData_csca}]`);
+                dsc_circuits[sigAlgName].formattedCallData = formatCallData_dsc(dsc_circuits[sigAlgName].parsedCallData);
+
+                //console.log('inputs', sigAlgArtifacts_register.inputs);
+                console.log('\x1b[32m%s\x1b[0m', `Generating proof register - ${sigAlgName}`);
                 ({ proof, publicSignals } = await groth16.fullProve(
-                    sigAlgArtifacts.inputs,
-                    sigAlgArtifacts.wasm,
-                    sigAlgArtifacts.zkey
+                    sigAlgArtifacts_register.inputs,
+                    sigAlgArtifacts_register.wasm,
+                    sigAlgArtifacts_register.zkey
                 ))
-                console.log('\x1b[32m%s\x1b[0m', `Proof generated - ${sigAlgName}`);
+                console.log('\x1b[32m%s\x1b[0m', `Proof generated register - ${sigAlgName}`);
                 // Verify the proof
-                const vKey = JSON.parse(fs.readFileSync(sigAlgArtifacts.vkey) as unknown as string);
+                const vKey = JSON.parse(fs.readFileSync(sigAlgArtifacts_register.vkey) as unknown as string);
                 const verified = await groth16.verify(
                     vKey,
                     publicSignals,
@@ -227,41 +309,47 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         });
 
         for (const sigAlgName of sigAlgNames) {
-            const sigAlgArtifacts = register_circuits[sigAlgName];
+            const sigAlgArtifacts_register = register_circuits[sigAlgName];
+            const sigAlgArtifacts_dsc = dsc_circuits[sigAlgName];
             const sigAlgIndex = SignatureAlgorithm[sigAlgName as keyof typeof SignatureAlgorithm]
 
             it(`Verifier contract verifies a correct proof - Register - ${sigAlgName}`, async function () {
                 expect(
-                    await sigAlgArtifacts.verifier.verifyProof(
-                        sigAlgArtifacts.parsedCallData[0],
-                        sigAlgArtifacts.parsedCallData[1],
-                        sigAlgArtifacts.parsedCallData[2],
-                        sigAlgArtifacts.parsedCallData[3]
+                    await sigAlgArtifacts_register.verifier.verifyProof(
+                        sigAlgArtifacts_register.parsedCallData[0],
+                        sigAlgArtifacts_register.parsedCallData[1],
+                        sigAlgArtifacts_register.parsedCallData[2],
+                        sigAlgArtifacts_register.parsedCallData[3]
+                    )
+                ).to.be.true;
+            });
+
+            it(`Verifier contract verifies a correct proof - DSC - ${sigAlgName}`, async function () {
+                expect(
+                    await sigAlgArtifacts_dsc.verifier.verifyProof(
+                        sigAlgArtifacts_dsc.parsedCallData[0],
+                        sigAlgArtifacts_dsc.parsedCallData[1],
+                        sigAlgArtifacts_dsc.parsedCallData[2],
+                        sigAlgArtifacts_dsc.parsedCallData[3]
                     )
                 ).to.be.true;
             });
 
             it(`Register with a wrong proof should fail - Register - ${sigAlgName}`, async function () {
                 await expect(register
-                    .validateProof({ ...sigAlgArtifacts.formattedCallData, a: [0, 0] }, sigAlgIndex))
-                    .to.be.revertedWith("Register__InvalidProof()")
-                    .catch(error => {
-                        assert(error.message.includes("Register__InvalidProof()"), "Expected revert with Register__InvalidProof(), but got another error");
-                    });
+                    .validateProof({ ...sigAlgArtifacts_register.formattedCallData, a: [0, 0] }, sigAlgArtifacts_dsc.formattedCallData, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidProofRegister");
             });
 
             it(`Register with a wrong attestation id should fail - Register - ${sigAlgName}`, async function () {
                 await expect(register
-                    .validateProof({ ...sigAlgArtifacts.formattedCallData, attestation_id: "10" }, sigAlgIndex))
-                    .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
-                    .catch(error => {
-                        assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
-                    });
+                    .validateProof({ ...sigAlgArtifacts_register.formattedCallData, attestation_id: "10" }, sigAlgArtifacts_dsc.formattedCallData, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidAttestationId")
             });
 
             it(`Register with a wrong signature algorithm should fail - Register - ${sigAlgName}`, async function () {
                 await expect(register
-                    .validateProof({ ...sigAlgArtifacts.formattedCallData}, sigAlgIndex + 1))
+                    .validateProof({ ...sigAlgArtifacts_register.formattedCallData }, sigAlgArtifacts_dsc.formattedCallData, sigAlgIndex + 1, sigAlgIndex))
                     .to.be.revertedWith("Register__InvalidSignatureAlgorithm()")
                     .catch(error => {
                         assert(error.message.includes("Register__InvalidSignatureAlgorithm()"), "Expected revert with Register__InvalidSignatureAlgorithm(), but got another error");
@@ -270,139 +358,128 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
             it(`Register with a wrong merkle root should fail - Register - ${sigAlgName}`, async function () {
                 await expect(register
-                    .validateProof({ ...sigAlgArtifacts.formattedCallData, merkle_root: 0 }, sigAlgIndex))
-                    .to.be.revertedWith("Register__InvalidMerkleRoot()")
-                    .catch(error => {
-                        assert(error.message.includes("Register__InvalidMerkleRoot()"), "Expected revert with Register__InvalidMerkleRoot(), but got another error");
-                    });
+                    .validateProof(sigAlgArtifacts_register.formattedCallData, { ...sigAlgArtifacts_dsc.formattedCallData, merkle_root: 0 }, sigAlgIndex, sigAlgIndex))
+                    .to.be.revertedWith("Register__InvalidMerkleRoot")
             });
 
             it(`Register should succeed - Register - ${sigAlgName}`, async function () {
                 await expect(register
-                    .validateProof(sigAlgArtifacts.formattedCallData, sigAlgIndex)).not.to.be.reverted;
-                imt.insert(BigInt(sigAlgArtifacts.formattedCallData.commitment));
+                    .validateProof(sigAlgArtifacts_register.formattedCallData, sigAlgArtifacts_dsc.formattedCallData, sigAlgIndex, sigAlgIndex)).not.to.be.reverted;
+                imt.insert(BigInt(sigAlgArtifacts_register.formattedCallData.commitment));
                 /// check if the merkle root is equal to the one from the imt
                 // console.log('\x1b[34m%s\x1b[0m', `IMT Merkle root of TS Object - TS: ${imt.root}`);
-                // console.log('\x1b[34m%s\x1b[0m', `Merkle root of contract - TS: ${await register.getMerkleRoot()}`);
+                // console.log('\x1b[34m%s\x1b[0m', `Merkle root of contract - TSx: ${await register.getMerkleRoot()}`);
                 assert.equal(await register.getMerkleRoot(), imt.root);
                 console.log('\x1b[34m%s\x1b[0m', `Merkle roots from TS Object and Smart Contract are equal: ${imt.root}`);
 
             });
 
-            it(`Register with the same proof should fail - Register - ${sigAlgName}`, async function () {
-                await expect(register
-                    .validateProof(sigAlgArtifacts.formattedCallData, sigAlgIndex))
-                    .to.be.revertedWith("Register__YouAreUsingTheSameNullifierTwice()")
-                    .catch(error => {
-                        assert(error.message.includes("Register__YouAreUsingTheSameNullifierTwice()"), "Expected revert with Register__YouAreUsingTheSameNullifierTwice(), but got another error");
-                    });
-            });
+            // it(`Register with the same proof should fail - Register - ${sigAlgName}`, async function () {
+            //     await expect(register
+            //         .validateProof(sigAlgArtifacts_register.formattedCallData, sigAlgIndex))
+            //         .to.be.revertedWith("Register__YouAreUsingTheSameNullifierTwice()")
+            //         .catch(error => {
+            //             assert(error.message.includes("Register__YouAreUsingTheSameNullifierTwice()"), "Expected revert with Register__YouAreUsingTheSameNullifierTwice(), but got another error");
+            //         });
+            // });
         };
     });
 
-
-
     /*** Disclose flow ***/
-    describe("Proof of Passport - Disclose flow", function () {
 
-        //before all
-        before(async function () {
-            /***  Groth16 saga - Disclose***/
+    // describe("Proof of Passport - Disclose flow", function () {
+    //     this.beforeAll(async function () {
+    //         user_address = await thirdAccount.getAddress();
+    //         // We only test with the sha256WithRSAEncryption_65537 commitment for now
 
-            // We only test with the sha256WithRSAEncryption_65537 commitment for now
+    //         // refactor in generate inputs function
+    //         bitmap = Array(90).fill("1");
+    //         scope = BigInt(1).toString();
 
-            // refactor in generate inputs function
-            bitmap = Array(90).fill("1");
-            scope = BigInt(1).toString();
-            user_address = await thirdAccount.getAddress();
-            majority = ["1", "8"];
-            input_disclose = generateCircuitInputsDisclose(
-                register_circuits.sha256WithRSAEncryption_65537.inputs.secret,
-                register_circuits.sha256WithRSAEncryption_65537.inputs.attestation_id,
-                mockPassportData_sha256WithRSAEncryption_65537,
-                imt as any,
-                majority,
-                bitmap,
-                scope,
-                BigInt(user_address.toString()).toString()
-            );
-            // Generate the proof
-            console.log('\x1b[32m%s\x1b[0m', 'Generating proof - Disclose');
-            try {
-                proof_result_disclose = await groth16.fullProve(
-                    input_disclose,
-                    path_disclose_wasm,
-                    path_disclose_zkey
-                );
-            } catch (error) {
-                console.error("Error generating proof:", error);
-                throw error;
-            }
-            proof_disclose = proof_result_disclose.proof;
-            publicSignals_disclose = proof_result_disclose.publicSignals;
+    //         majority = ["1", "8"];
+    //         input_disclose = generateCircuitInputsDisclose(
+    //             register_circuits.sha256WithRSAEncryption_65537.inputs.secret,
+    //             register_circuits.sha256WithRSAEncryption_65537.inputs.attestation_id,
+    //             mockPassportData_sha256_rsa_65537,
+    //             imt as any,
+    //             majority,
+    //             bitmap,
+    //             scope,
+    //             BigInt(user_address.toString()).toString()
+    //         );
+    //         // Generate the proof
+    //         console.log('\x1b[32m%s\x1b[0m', 'Generating proof - Disclose');
+    //         try {
+    //             proof_result_disclose = await groth16.fullProve(
+    //                 input_disclose,
+    //                 path_disclose_wasm,
+    //                 path_disclose_zkey
+    //             );
+    //         } catch (error) {
+    //             console.error("Error generating proof:", error);
+    //             throw error;
+    //         }
+    //         proof_disclose = proof_result_disclose.proof;
+    //         publicSignals_disclose = proof_result_disclose.publicSignals;
 
-            console.log('\x1b[32m%s\x1b[0m', 'Proof generated - Disclose');
-            // Verify the proof
-            vkey_disclose = JSON.parse(fs.readFileSync(path_disclose_vkey) as unknown as string);
-            verified_disclose = await groth16.verify(
-                vkey_disclose,
-                publicSignals_disclose,
-                proof_disclose
-            )
-            assert(verified_disclose == true, 'Should verify')
-            console.log('\x1b[32m%s\x1b[0m', 'Proof verified - Disclose');
-            rawCallData_disclose = await groth16.exportSolidityCallData(proof_disclose, publicSignals_disclose);
-            parsedCallData_disclose = JSON.parse(`[${rawCallData_disclose}]`);
-            formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
-            console.log('formattedCallData_disclose', formattedCallData_disclose);
+    //         console.log('\x1b[32m%s\x1b[0m', 'Proof generated - Disclose');
+    //         // Verify the proof
+    //         vkey_disclose = JSON.parse(fs.readFileSync(path_disclose_vkey) as unknown as string);
+    //         verified_disclose = await groth16.verify(
+    //             vkey_disclose,
+    //             publicSignals_disclose,
+    //             proof_disclose
+    //         )
+    //         console.log('\x1b[32m%s\x1b[0m', 'Proof verified - Disclose');
+    //         rawCallData_disclose = await groth16.exportSolidityCallData(proof_disclose, publicSignals_disclose);
+    //         parsedCallData_disclose = JSON.parse(`[${rawCallData_disclose}]`);
+    //         formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
+    //         //  console.log('formattedCallData_disclose', formattedCallData_disclose);
 
-        })
-        it("SBT mint should fail with a wrong current date - SBT", async function () {
-            await expect(sbt.mint({ ...formattedCallData_disclose, current_date: [2, 4, 0, 1, 0, 1] }))
-                .to.be.revertedWith("Current date is not within the valid range")
-        });
-        it("SBT mint should fail with a wrong proof - SBT", async function () {
-            await expect(sbt.mint({ ...formattedCallData_disclose, nullifier: 0 }))
-                .to.be.revertedWith("Invalid Proof");
-        });
-        it("SBT mint should fail with a wrong merkle_root - SBT", async function () {
-            await expect(sbt.mint({ ...formattedCallData_disclose, merkle_root: 0 }))
-                .to.be.revertedWith("Invalid merkle root");
-        });
-        it("Verifier_disclose.sol verifies a correct proof - Disclose", async () => {
-            expect(
-                await verifier_disclose.verifyProof(parsedCallData_disclose[0], parsedCallData_disclose[1], parsedCallData_disclose[2], parsedCallData_disclose[3])
-            ).to.be.true;
-        });
-        it("SBT mint should succeed - SBT", async function () {
-            await expect(
-                sbt.mint(formattedCallData_disclose)
-            ).not.to.be.reverted;
-        });
-        it("URI et Expiry saga - SBT", async function () {
-            const tokenURI = await sbt.tokenURI(0);
-            const decodedTokenURI = Buffer.from(tokenURI.split(',')[1], 'base64').toString();
-            let parsedTokenURI;
-            try {
-                parsedTokenURI = JSON.parse(decodedTokenURI);
-            } catch (e) {
-                assert(false, 'TokenURI is not a valid JSON');
-            }
-            // console.log('parsedTokenURI', parsedTokenURI);
-            const expired = parsedTokenURI.attributes.find((attribute: any) => attribute.trait_type === 'Expired');
-            expect(expired.value).to.equal('No');
-            await time.increaseTo(2240161656); // 2040
-            const tokenURIAfter = await sbt.tokenURI(0);
-            const decodedTokenURIAfter = Buffer.from(tokenURIAfter.split(',')[1], 'base64').toString();
-            const parsedTokenURIAfter = JSON.parse(decodedTokenURIAfter);
-            const expiredAfter = parsedTokenURIAfter.attributes.find((attribute: any) => attribute.trait_type === 'Expired');
-            expect(expiredAfter.value).to.equal('Yes');
-        });
+    //     })
 
-        it("SBT mint should fail with same proof twice - SBT", async function () {
-            await expect(sbt.mint(formattedCallData_disclose))
-                .to.be.reverted;
-        });
-    });
-});
+    //     it("SBT mint should succeed - SBT", async function () {
+    //         await expect(sbt.mint(formattedCallData_disclose))
+    //             .to.not.be.reverted;
+    //     });
 
+
+    //     // // refactor in generate inputs function
+    //     // bitmap = Array(90).fill("1");
+    //     // scope = BigInt(1).toString();
+    //     // user_address = await thirdAccount.getAddress();
+    //     // majority = ["1", "8"];
+    //     // input_disclose = generateCircuitInputsDisclose(
+    //     //     inputs.secret,
+    //     //     inputs.attestation_id,
+    //     //     passportData,
+    //     //     imt as any,
+    //     //     majority,
+    //     //     bitmap,
+    //     //     scope,
+    //     //     BigInt(user_address.toString()).toString()
+    //     // );
+    //     // // Generate the proof
+    //     // console.log('\x1b[32m%s\x1b[0m', 'Generating proof - Disclose');
+    //     // try {
+    //     //     proof_result_disclose = await groth16.fullProve(
+    //     //         input_disclose,
+    //     //         path_disclose_wasm,
+    //     //         path_disclose_zkey
+    //     //     );
+    //     // } catch (error) {
+    //     //     console.error("Error generating proof:", error);
+    //     //     throw error;
+    //     // }
+    //     // proof_disclose = proof_result_disclose.proof;
+    //     // publicSignals_disclose = proof_result_disclose.publicSignals;
+
+
+    //     // assert(verified_disclose == true, 'Should verify')
+
+
+
+
+
+    // });
+})

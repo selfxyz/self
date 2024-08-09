@@ -1,66 +1,99 @@
-import React from 'react';
-import { YStack, Text, XStack, Button, Image, ScrollView } from 'tamagui';
-import { Steps } from '../utils/utils';
-import { Camera, ExternalLink, Nfc, X, SquarePen } from '@tamagui/lucide-icons';
-import { blueColorDark, blueColorLight, borderColor, componentBgColor2, greenColorDark, greenColorLight, redColorDark, redColorLight, textColor1, textColor2 } from '../utils/colors';
-import { useToastController } from '@tamagui/toast'
-import NFCHelp from '../images/nfc_help.png'
-import SCANHelp from '../images/scan_help.png'
-import { Linking } from 'react-native';
-import { startCameraScan } from '../utils/cameraScanner';
+import React, { useState } from 'react';
+import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
+import { Nfc, X } from '@tamagui/lucide-icons';
+import { bgGreen, borderColor, textBlack, textColor1 } from '../utils/colors';
+import { Carousel } from '../components/Carousel';
+import US_PASSPORT from '../images/us-passport.png'
+import REMOVE_CASE from '../images/remove_case.png'
+import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.png'
+import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.png'
+import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.png'
+import PHONE_SCANBUTTON from "../images/phone_scanbutton.png"
+
+import Dialog from "react-native-dialog";
+import NfcManager from 'react-native-nfc-manager';
+import { Platform, Linking, Dimensions } from 'react-native';
 
 interface NfcScreenProps {
   handleNFCScan: () => void;
 }
 
-
 const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
+  const [isLastSlideReached, setIsLastSlideReached] = useState(false);
+  const [dialogVisible, setDialogVisible] = useState(false);
+  const [dialogMessage, setDialogMessage] = useState('');
+  const [isNfcSupported, setIsNfcSupported] = useState(true);
+  const carouselImages = [US_PASSPORT, REMOVE_CASE, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
+  const windowHeight = Dimensions.get('window').height;
+
+  const handleSlideChange = (index: number) => {
+    if (index === carouselImages.length - 1) {
+      setIsLastSlideReached(true);
+    }
+  };
+
+  const openNfcSettings = () => {
+    if (Platform.OS === 'ios') {
+      Linking.openURL('App-Prefs:root=General&path=About');
+    } else {
+      Linking.sendIntent('android.settings.NFC_SETTINGS');
+    }
+    setDialogVisible(false);
+  };
+
+  const checkNfcSupport = async () => {
+    const isSupported = await NfcManager.isSupported();
+    if (isSupported) {
+      const isEnabled = await NfcManager.isEnabled();
+      if (!isEnabled) {
+        setDialogMessage('NFC is not enabled. Would you like to enable it in settings?');
+        setDialogVisible(true);
+        setIsNfcSupported(true);
+        return false;
+      }
+      return true;
+    } else {
+      setDialogMessage("Sorry, your device doesn't seem to have an NFC reader.");
+      setDialogVisible(true);
+      setIsNfcSupported(false);
+      return false;
+    }
+  };
+
+  const handleNfcScan = async () => {
+    const nfcSupported = await checkNfcSupport();
+    if (nfcSupported) {
+      handleNFCScan();
+    }
+  };
+
   return (
-    <YStack f={1} p="$3">
-
-      <Image borderRadius="$5" alignSelf='center'
-        w="$12"
-        h="$14"
-        source={{ uri: NFCHelp }}
-      />
-
-      <YStack f={1} gap="$2">
-
-
-        <YStack mt="$2">
-          <Text fontSize="$7" fow="bold" mt="$1" color={textColor1}>Scan the NFC chip in your passport.</Text>
-          <Text fontSize="$6" color={textColor1} mt="$2">How do I find and scan the NFC chip?</Text>
-          <YStack ml="$3" gap="$2" mt="$1" >
-            <XStack gap="$1">
-              <Text fontSize="$4" color={textColor2}>1.</Text>
-              <Text fontSize="$4" color={textColor2}>Close your passport and hold the middle of the back cover of your passport to the top of the phoneThe passport should touch the phone.</Text>
+    <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }}>
+      <YStack f={1} p="$3" >
+        {/* <Text fontSize="$8" fow="bold" mt="$1.5" mb="$3" color={textColor1} textAlign='center'>Verify your passport using NFC</Text> */}
+        <Text fontSize="$9" mt="$0" color={textBlack} mb="$4" ml="$2">Verify your passport using <Text fontSize="$9" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>NFC</Text></Text>
+        <Carousel
+          images={carouselImages}
+          height={300}
+          onSlideChange={handleSlideChange}
+          handleNfcScan={handleNfcScan}
+        />
+        <Dialog.Container visible={dialogVisible}>
+          <Dialog.Title>NFC Status</Dialog.Title>
+          <Dialog.Description>
+            {dialogMessage}
+          </Dialog.Description>
+          {isNfcSupported ? (
+            <XStack>
+              <XStack f={1} />
+              <Dialog.Button label="Open Settings" onPress={openNfcSettings} />
             </XStack>
-            <XStack gap="$1">
-              <Text fontSize="$4" color={textColor2}>2.</Text>
-              <Text fontSize="$4" color={textColor2}>If that does not work, try using the front cover of your passport.</Text>
-            </XStack>
-            <XStack gap="$1">
-              <Text fontSize="$4" color={textColor2}>3.</Text>
-              <Text fontSize="$4" color={textColor2}>Move your phone slowly up and down until scanning starts.</Text>
-            </XStack>
-            <XStack gap="$1">
-              <Text fontSize="$4" color={textColor2}>4.</Text>
-              <Text fontSize="$4" color={textColor2}>Hold your device still when scanning starts.</Text>
-            </XStack>
-          </YStack>
-
-        </YStack>
-
+          ) : (
+            <Dialog.Button label="OK" onPress={() => setDialogVisible(false)} />
+          )}
+        </Dialog.Container>
       </YStack>
-
-      <YStack gap="$2" mb="$6">
-        <Button borderWidth={1.3} borderColor={borderColor} borderRadius="$10" bg="#3185FC" onPress={handleNFCScan}><Nfc color={textColor1} /></Button>
-      </YStack>
-
-
-
-
-    </YStack >
+    </ScrollView>
   );
 };
 

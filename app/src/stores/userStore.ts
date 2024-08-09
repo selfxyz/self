@@ -4,8 +4,9 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../../common/src/utils/mockPassportData';
-import { PassportData } from '../../../common/src/utils/types';
+import forge from 'node-forge';
+import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
+import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
@@ -19,6 +20,8 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
+import { ProofOfPassportVerifierReport } from '@proofofpassport/sdk';
+
 
 interface UserState {
   passportNumber: string
@@ -27,24 +30,51 @@ interface UserState {
   registered: boolean
   passportData: PassportData
   secret: string
+  dscCertificate: any
+  cscaProof: Proof | null
+  localProof: Proof | null
+  dscSecret: string | null
+  userLoaded: boolean
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
   registerCommitment: (passportData?: PassportData) => void
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
+  clearProofsFromStorage: () => void
   update: (patch: any) => void
   deleteMrzFields: () => void
+  setRegistered: (registered: boolean) => void
+  setDscSecret: (dscSecret: string) => void
+  setUserLoaded: (userLoaded: boolean) => void
+  proofVerificationResult: string,
+  setProofVerificationResult: (proofVerificationResult: string) => void
 }
 
 const useUserStore = create<UserState>((set, get) => ({
+  userLoaded: false,
   passportNumber: DEFAULT_PNUMBER ?? "",
   dateOfBirth: DEFAULT_DOB ?? "",
   dateOfExpiry: DEFAULT_DOE ?? "",
-
+  dscSecret: null,
   registered: false,
-  passportData: mockPassportData_sha256WithRSAEncryption_65537,
+  passportData: mockPassportData_sha256_rsa_65537,
   secret: "",
-
+  dscCertificate: null,
+  cscaProof: null,
+  localProof: null,
+  setRegistered: (registered: boolean) => {
+    set({ registered });
+  },
+  setDscSecret: (dscSecret: string) => {
+    set({ dscSecret });
+  },
+  setUserLoaded: (userLoaded: boolean) => {
+    set({ userLoaded });
+  },
+  proofVerificationResult: "null",
+  setProofVerificationResult: (proofVerificationResult: string) => {
+    set({ proofVerificationResult });
+  },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
   // - If passportData is present, then secret must be here too (they are always set together). Request the tree.
@@ -61,6 +91,9 @@ const useUserStore = create<UserState>((set, get) => ({
     const passportData = await loadPassportData();
     if (!passportData) {
       console.log("No passport data found, starting onboarding flow")
+      set({
+        userLoaded: true,
+      });
       return;
     }
 
@@ -70,8 +103,10 @@ const useUserStore = create<UserState>((set, get) => ({
       console.log("not registered but passport data found, skipping to nextScreen")
       set({
         passportData: JSON.parse(passportData),
+        userLoaded: true,
       });
-      useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+      // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+
       return;
     }
 
@@ -81,6 +116,7 @@ const useUserStore = create<UserState>((set, get) => ({
       registered: true,
     });
     useNavigationStore.getState().setStep(Steps.REGISTERED);
+    set({ userLoaded: true });
   },
 
   // When reading passport for the first time:
@@ -99,6 +135,7 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   registerCommitment: async (mockPassportData?: PassportData) => {
+    console.log("registerCommitment")
     const {
       toast,
       setStep,
@@ -111,6 +148,7 @@ const useUserStore = create<UserState>((set, get) => ({
     }
 
     const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
+    console.log("isAlreadyRegistered", isAlreadyRegistered)
     if (isAlreadyRegistered) {
       console.log("commitment is already registered")
       toast.show('Identity already registered, skipping', {
@@ -123,16 +161,28 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
+    let dsc_secret = get().dscSecret;
+
     try {
+      if (get().dscSecret === null) {
+        console.log("DSC secret is not set, generating a new one");
+        const secretBytes = forge.random.getBytesSync(31);
+        dsc_secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+        console.log('Generated secret:', dsc_secret.toString());
+        get().setDscSecret(dsc_secret);
+      }
       const inputs = generateCircuitInputsRegister(
         secret,
+        dsc_secret as string,
         PASSPORT_ATTESTATION_ID,
         passportData,
-        [mockPassportData_sha256WithRSAEncryption_65537]
+        121,
+        17
+
       );
 
-      amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
-
+      //amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
+      console.log("userStore - inputs - Object.keys(inputs).forEach((key) => {...")
       Object.keys(inputs).forEach((key) => {
         if (Array.isArray(inputs[key as keyof typeof inputs])) {
           console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
@@ -148,29 +198,40 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const proof = await generateProof(
         `register_${sigAlgFormatted}`,
-        inputs,
+        inputs
       );
-
-      console.log('proof:', proof);
+      console.log('localProof:', proof);
+      get().localProof = proof;
 
       const end = Date.now();
       console.log('Total proof time from frontend:', end - start);
-      amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
+      //amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
 
-      const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-      const serverResponse = await sendRegisterTransaction(proof, sigAlgIndex)
-      const txHash = serverResponse?.data.hash;
-
-      const receipt = await provider.waitForTransaction(txHash);
-      console.log('receipt status:', receipt?.status);
-
-      if (receipt?.status === 0) {
-        throw new Error("Transaction failed");
+      if ((get().cscaProof !== null) && (get().localProof !== null)) {
+        console.log("Proof from Modal server already received, sending transaction");
+        const provider = new ethers.JsonRpcProvider(RPC_URL);
+        const serverResponse = await sendRegisterTransaction(proof, get().cscaProof as Proof, sigAlgIndex)
+        const txHash = serverResponse?.data.hash;
+        const receipt = await provider.waitForTransaction(txHash);
+        console.log('receipt status:', receipt?.status);
+        if (receipt?.status === 0) {
+          throw new Error("Transaction failed");
+        }
+        set({ registered: true });
+        setStep(Steps.REGISTERED);
+        useNavigationStore.getState().setSelectedTab("app");
+        toast.show('✅', {
+          message: "Registered",
+          customData: {
+            type: "success",
+          },
+        })
+      }
+      else {
+        console.log("Proof from Modal server not received, waiting for it...");
       }
 
-      set({ registered: true });
-      setStep(Steps.REGISTERED);
     } catch (error: any) {
       console.error(error);
       updateNavigationStore({
@@ -178,12 +239,18 @@ const useUserStore = create<UserState>((set, get) => ({
         registrationErrorMessage: error.message,
       })
       setStep(Steps.NEXT_SCREEN);
-      amplitude.track(error.message);
+      //amplitude.track(error.message);
     }
   },
 
+
   clearPassportDataFromStorage: async () => {
     await Keychain.resetGenericPassword({ service: "passportData" });
+  },
+
+  clearProofsFromStorage: async () => {
+    get().cscaProof = null;
+    get().localProof = null;
   },
 
   clearSecretFromStorage: async () => {

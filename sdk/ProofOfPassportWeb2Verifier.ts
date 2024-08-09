@@ -1,23 +1,19 @@
 import { groth16 } from 'snarkjs';
-import fs from 'fs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
-import dotenv from 'dotenv';
 import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
+import { vkey_disclose } from './common/src/constants/vkey';
 
-dotenv.config();
-
-const path_disclose_vkey = "../circuits/build/disclose_vkey.json";
-const MOCK_MERKLE_ROOT_CHECK = process.env.MOCK_MERKLE_ROOT_CHECK === 'true' ? true : false;
+const MOCK_MERKLE_ROOT_CHECK = false;
 
 export class ProofOfPassportWeb2Verifier {
     scope: string;
     attestationId: string;
-    requirements: Array<[string, number | string]>;
+    requirements: string[][];
     rpcUrl: string;
     report: ProofOfPassportVerifierReport;
 
-    constructor(options: { scope: string, attestationId?: string, requirements?: Array<[string, number | string]>, rpcUrl?: string }) {
+    constructor(options: { scope: string, attestationId?: string, requirements?: string[][], rpcUrl?: string }) {
         this.scope = options.scope;
         this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
         this.requirements = options.requirements || [];
@@ -29,7 +25,7 @@ export class ProofOfPassportWeb2Verifier {
         const parsedPublicSignals = parsePublicSignals(proofOfPassportWeb2Inputs.publicSignals);
         //1. Verify the scope
         if (parsedPublicSignals.scope !== this.scope) {
-            this.report.exposeAttribute('scope');
+            this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
         }
         console.log('\x1b[32m%s\x1b[0m', `- scope verified`);
 
@@ -42,13 +38,13 @@ export class ProofOfPassportWeb2Verifier {
 
         //3. Verify the attestation_id
         if (parsedPublicSignals.attestation_id !== this.attestationId) {
-            this.report.exposeAttribute('attestation_id');
+            this.report.exposeAttribute('attestation_id', parsedPublicSignals.attestation_id, this.attestationId);
         }
         console.log('\x1b[32m%s\x1b[0m', `- attestation_id verified`);
 
         //4. Verify the current_date
         if (parsedPublicSignals.current_date.toString() !== getCurrentDateFormatted().toString()) {
-            this.report.exposeAttribute('current_date');
+            this.report.exposeAttribute('current_date', parsedPublicSignals.current_date, getCurrentDateFormatted());
         }
         console.log('\x1b[32m%s\x1b[0m', `- current_date verified`);
 
@@ -77,11 +73,14 @@ export class ProofOfPassportWeb2Verifier {
         }
 
         //6. Verify the proof
-        const vkey_disclose = JSON.parse(fs.readFileSync(path_disclose_vkey) as unknown as string);
+
+        console.log(vkey_disclose);
+        console.log("publicSignals", proofOfPassportWeb2Inputs.publicSignals);
+        console.log("proof", proofOfPassportWeb2Inputs.proof);
         const verified_disclose = await groth16.verify(
             vkey_disclose,
             proofOfPassportWeb2Inputs.publicSignals,
-            proofOfPassportWeb2Inputs.proof
+            proofOfPassportWeb2Inputs.proof as any
         )
         if (!verified_disclose) {
             this.report.exposeAttribute('proof');

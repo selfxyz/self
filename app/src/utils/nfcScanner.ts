@@ -10,15 +10,19 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
+import { k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
+import { getCSCAInputs } from '../../../common/src/utils/csca';
+import { sendCSCARequest } from './cscaRequest';
 
-export const scan = async () => {
+
+export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry
+    dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setStep, nfcSheetIsOpen, setNfcSheetIsOpen } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -40,19 +44,22 @@ export const scan = async () => {
   setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
-    scanAndroid();
+    scanAndroid(setModalProofStep);
   } else {
-    scanIOS();
+    scanIOS(setModalProofStep);
   }
 };
 
-const scanAndroid = async () => {
+const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
-    dateOfExpiry
+    dateOfExpiry,
+    dscCertificate
   } = useUserStore.getState()
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setNfcSheetIsOpen } = useNavigationStore.getState();
+  setNfcSheetIsOpen(true);
+
 
   try {
     const response = await PassportReader.scan({
@@ -61,12 +68,13 @@ const scanAndroid = async () => {
       dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
-    amplitude.track('NFC scan successful');
-    handleResponseAndroid(response);
+    setNfcSheetIsOpen(false);
+    //amplitude.track('NFC scan successful');
+    handleResponseAndroid(response, setModalProofStep);
   } catch (e: any) {
     console.log('error during scan:', e);
-    setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
+    setNfcSheetIsOpen(false);
+    //amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -77,7 +85,7 @@ const scanAndroid = async () => {
   }
 };
 
-const scanIOS = async () => {
+const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
     passportNumber,
     dateOfBirth,
@@ -92,12 +100,12 @@ const scanIOS = async () => {
       dateOfExpiry
     );
     console.log('scanned');
-    handleResponseIOS(response);
-    amplitude.track('NFC scan successful');
+    handleResponseIOS(response, setModalProofStep);
+    //amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
     setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
+    //amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
       toast.show('Failed to read passport', {
         message: e.message,
@@ -111,6 +119,7 @@ const scanIOS = async () => {
 
 const handleResponseIOS = async (
   response: any,
+  setModalProofStep: (modalProofStep: number) => void
 ) => {
   const { toast } = useNavigationStore.getState();
 
@@ -129,15 +138,15 @@ const handleResponseIOS = async (
   console.log('residenceAddress', parsed.residenceAddress)
   console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
   console.log('signatureAlgorithm', signatureAlgorithm)
+  console.log('encapsulatedContentDigestAlgorithm', parsed.encapsulatedContentDigestAlgorithm)
   console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
   const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
+  const certificate = forge.pki.certificateFromPem(pem);
   console.log('pem', pem)
 
   try {
-    const cert = forge.pki.certificateFromPem(pem);
-    console.log('cert', cert);
-    const publicKey = cert.publicKey;
-    console.log('publicKey', publicKey);
+    const publicKey = certificate.publicKey;
+    //console.log('publicKey', publicKey);
 
     const modulus = (publicKey as any).n.toString(10);
 
@@ -149,7 +158,8 @@ const handleResponseIOS = async (
 
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
-    amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+    //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+    console.log('signatureAlgorithm before conversion', signatureAlgorithm);
     const passportData = {
       mrz,
       signatureAlgorithm: toStandardName(signatureAlgorithm),
@@ -163,27 +173,37 @@ const handleResponseIOS = async (
       encryptedDigest: encryptedDigestArray,
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
-    amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
-
-    console.log('passportData', JSON.stringify({
-      ...passportData,
-      photoBase64: passportData.photoBase64.substring(0, 100) + '...'
-    }, null, 2));
-
-    console.log('mrz', passportData.mrz);
-    console.log('signatureAlgorithm', passportData.signatureAlgorithm);
-    console.log('pubKey', passportData.pubKey);
-    console.log('dataGroupHashes', [...passportData.dataGroupHashes.slice(0, 10), '...']);
-    console.log('eContent', [...passportData.eContent.slice(0, 10), '...']);
-    console.log('encryptedDigest', [...passportData.encryptedDigest.slice(0, 10), '...']);
-    console.log("photoBase64", passportData.photoBase64.substring(0, 100) + '...')
-
     useUserStore.getState().registerPassportData(passportData)
+
+    let secret = useUserStore.getState().dscSecret;
+    if (secret === null) {
+      // Finally, generate CSCA Inputs and request modal server
+      // Generate a cryptographically secure random secret of (31 bytes)
+      const secretBytes = forge.random.getBytesSync(31);
+      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+      console.log('Generated secret:', secret.toString());
+      useUserStore.getState().setDscSecret(secret);
+    }
+    const inputs_csca = getCSCAInputs(
+      secret as string,
+      certificate,
+      null,
+      n_dsc,
+      k_dsc,
+      n_csca,
+      k_csca,
+      max_cert_bytes,
+      false
+    );
+
+    sendCSCARequest(inputs_csca, setModalProofStep);
+
     useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+    useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
-    amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
+    //amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: "Your signature algorithm is not supported at that time. Please try again later.",
       customData: {
@@ -195,6 +215,7 @@ const handleResponseIOS = async (
 
 const handleResponseAndroid = async (
   response: any,
+  setModalProofStep: (modalProofStep: number) => void
 ) => {
   const {
     mrz,
@@ -213,8 +234,8 @@ const handleResponseAndroid = async (
     encapContent,
     documentSigningCertificate
   } = response;
-  
-  amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
+
+  //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
 
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
 
@@ -238,7 +259,7 @@ const handleResponseAndroid = async (
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
   };
-  amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
+  //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
   console.log('passportData', JSON.stringify({
     ...passportData,
@@ -259,7 +280,33 @@ const handleResponseAndroid = async (
   console.log("unicodeVersion", unicodeVersion)
   console.log("encapContent", encapContent)
   console.log("documentSigningCertificate", documentSigningCertificate)
-
   useUserStore.getState().registerPassportData(passportData)
+
+  // Finally request the Modal server to verify the DSC certificate
+  const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
+  useUserStore.getState().dscCertificate = certificate;
+
+  let secret = useUserStore.getState().dscSecret;
+  if (secret === null) {
+    // Finally, generate CSCA Inputs and request modal server
+    // Generate a cryptographically secure random secret of (31 bytes)
+    const secretBytes = forge.random.getBytesSync(31);
+    secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+    console.log('Generated secret:', secret.toString());
+    useUserStore.getState().setDscSecret(secret);
+  }
+  const inputs_csca = getCSCAInputs(
+    secret as string,
+    certificate,
+    null,
+    n_dsc,
+    k_dsc,
+    n_csca,
+    k_csca,
+    max_cert_bytes,
+    false
+  );
+  sendCSCARequest(inputs_csca, setModalProofStep);
   useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+  useNavigationStore.getState().setSelectedTab("next");
 };

@@ -22,6 +22,11 @@ Extract pem certificates from ldif file:
 ts-node src/dsc/extract_certificates.ts
 ```
 
+Extract pem to txt:
+```
+ts-node src/dsc/pem_to_txt.ts
+```
+
 Extract readable public keys from pem certicates:
 ```
 ts-node src/dsc/extract_pubkeys.ts
@@ -46,7 +51,7 @@ ts-node src/csca/extract_masterlists.ts
 
 Visualize the content of a PEM file:
 ```
-openssl x509 -text -in outputs/unique_cscas/unique_cert_0.pem
+openssl x509 -text -in outputs/pem_unique_masters/unique_cert_0.pem
 ```
 
 Visualize the signature algorithms of each country:

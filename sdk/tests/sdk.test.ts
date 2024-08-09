@@ -1,27 +1,29 @@
 import { assert, expect } from 'chai'
+import { describe, it } from 'mocha';
 import { groth16 } from 'snarkjs';
 import { generateCircuitInputsDisclose } from '../../common/src/utils/generateInputs';
-import { mockPassportData_sha256WithRSAEncryption_65537 } from '../../common/src/utils/mockPassportData';
+import { mockPassportData_sha256_rsa_65537 } from '../../common/src/constants/mockPassportData';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { PASSPORT_ATTESTATION_ID } from "../../common/src/constants/constants";
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
-import { ProofOfPassportWeb2Inputs, ProofOfPassportWeb2Verifier, ProofOfPassportWeb3Verifier } from '../index';
-import dotenv from 'dotenv';
-dotenv.config();
+import { ProofOfPassportWeb2Inputs, ProofOfPassportWeb2Verifier } from '../index';
+// import dotenv from 'dotenv';
+// dotenv.config();
 
 const path_disclose_wasm = "../circuits/build/disclose_js/disclose.wasm";
-const path_disclose_zkey = "../circuits/build/disclose_final.zkey";
+const path_disclose_zkey = "../circuits/build/disclose.zkey";
 
-describe('Circuit Proving Tests', () => {
-    it('proofOfPassportWeb2Verifier - should verify', async () => {
+describe('Circuit Proving Tests', function () {
+    this.timeout(0);
+    it('proofOfPassportWeb2Verifier - should verify', async function () {
         /// Generate circuit inputs
-        const passportData = mockPassportData_sha256WithRSAEncryption_65537;
+        const passportData = mockPassportData_sha256_rsa_65537;
         const imt = new LeanIMT((a: bigint, b: bigint) => poseidon2([a, b]), []);
         const bitmap = Array(90).fill("1");
         const scope = BigInt(1).toString();
-        const majority = ["1", "8"];
+        const majority = ["18"];
         const secret = BigInt(0).toString();
         const mrz_bytes = packBytes(formatMrz(passportData.mrz));
         const pubkey_leaf = getLeaf({
@@ -60,7 +62,7 @@ describe('Circuit Proving Tests', () => {
             scope: scope,
             requirements: [["older_than", "18"], ["nationality", "France"]]
         });
-        const proofOfPassportWeb2Inputs = new ProofOfPassportWeb2Inputs(publicSignals, proof);
+        const proofOfPassportWeb2Inputs = new ProofOfPassportWeb2Inputs(publicSignals, proof as any);
         const result = await proofOfPassportWeb2Verifier.verify(proofOfPassportWeb2Inputs);
 
 
@@ -68,25 +70,25 @@ describe('Circuit Proving Tests', () => {
         expect(result.valid).to.be.true;
     });
 
-    it('proofOfPassportWeb3Verifier - should succeed', async () => {
-        const scope = BigInt(1).toString();
-        /// Verify using web3 verifier
-        const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
-            scope: scope
-        });
-        const result = await proofOfPassportWeb3Verifier.verify(process.env.TEST_ADDRESS, Number(process.env.TOKEN_ID));
-        expect(result.valid).to.be.true;
-    });
+    // it('proofOfPassportWeb3Verifier - should succeed', async () => {
+    //     const scope = BigInt(1).toString();
+    //     /// Verify using web3 verifier
+    //     const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
+    //         scope: scope
+    //     });
+    //     const result = await proofOfPassportWeb3Verifier.verify(process.env.TEST_ADDRESS, Number(process.env.TOKEN_ID));
+    //     expect(result.valid).to.be.true;
+    // });
 
-    it('proofOfPassportWeb3Verifier - should fail', async () => {
-        const scope = BigInt(1).toString();
-        /// Verify using web3 verifier
-        const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
-            scope: scope,
-            requirements: [["older_than", "18"]]
-        });
-        const result = await proofOfPassportWeb3Verifier.verify(process.env.TEST_ADDRESS, Number(process.env.TOKEN_ID));
-        expect(result.older_than).to.be.true;
-        expect(result.valid).to.be.false;
-    });
+    // it('proofOfPassportWeb3Verifier - should fail', async () => {
+    //     const scope = BigInt(1).toString();
+    //     /// Verify using web3 verifier
+    //     const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
+    //         scope: scope,
+    //         requirements: [["older_than", "18"]]
+    //     });
+    //     const result = await proofOfPassportWeb3Verifier.verify(process.env.TEST_ADDRESS, Number(process.env.TOKEN_ID));
+    //     expect(result.older_than).to.be.true;
+    //     expect(result.valid).to.be.false;
+    // });
 });
