@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Linking, Modal, Platform, Pressable } from 'react-native';
+import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable } from 'react-native';
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View, Separator } from 'tamagui'
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X } from '@tamagui/lucide-icons';
+import Telegram from '../images/telegram.png'
+import Github from '../images/github.png'
+import Internet from "../images/internet.png"
 import forge from 'node-forge';
 import Dialog from "react-native-dialog";
 import { ethers } from 'ethers';
 // import ressources
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X, UserPlus, Wifi, ArrowRight } from '@tamagui/lucide-icons';
 import Xlogo from '../images/x.png'
-import Telegram from '../images/telegram.png'
-import Github from '../images/github.png'
-import Internet from "../images/internet.png"
 import NFC_IMAGE from '../images/nfc.png'
 import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
@@ -40,6 +40,12 @@ import AppScreen from './AppScreen';
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 
+const { nativeModule } = NativeModules;
+let emitter: NativeEventEmitter | null = null;
+
+if (Platform.OS === 'android') {
+  emitter = new NativeEventEmitter(nativeModule);
+}
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
@@ -50,6 +56,7 @@ import WrongProofScreen from './WrongProofScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
+  const [scanningMessage, setScanningMessage] = useState('');
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
@@ -202,6 +209,20 @@ const MainScreen: React.FC = () => {
   }
 
   useEffect(() => {
+    const handleNativeEvent = (event: string) => {
+      setScanningMessage(event);
+    };
+
+    if (Platform.OS === 'android' && emitter) {
+      const subscription = emitter.addListener('NativeEvent', handleNativeEvent);
+
+      return () => {
+        subscription.remove();
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
       console.log('CSCA Proof received:', cscaProof);
       if ((cscaProof !== null) && (localProof !== null)) {
@@ -346,8 +367,13 @@ const MainScreen: React.FC = () => {
           <Sheet open={nfcSheetIsOpen} onOpenChange={setNfcSheetIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
+
               <YStack gap="$5" f={1} pt="$3">
-                <H2 textAlign='center'>Ready to scan</H2>
+                <View>
+                  <H2 textAlign='center'>Ready to scan</H2>
+                  <Text textAlign='center'>{scanningMessage}</Text>
+                </View>
+
                 {step >= Steps.NEXT_SCREEN ?
                   <CheckCircle2
                     size="$8"
