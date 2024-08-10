@@ -14,15 +14,6 @@
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
-	<key>NSAppTransportSecurity</key>
-    <dict>
-        <key>NSAllowsArbitraryLoads</key>
-        <true/>
-        <key>NSAllowsArbitraryLoadsInWebContent</key>
-        <true/>
-        <key>NSAllowsLocalNetworking</key>
-        <true/>
-    </dict>
 	<key>CFBundleInfoDictionaryVersion</key>
 	<string>6.0</string>
 	<key>CFBundleName</key>
@@ -43,10 +34,10 @@
 	<string>Need NFC to read Passport</string>
 	<key>NSAppTransportSecurity</key>
 	<string></string>
-	<key>NSFaceIDUsageDescription</key>
-	<string>Needed to secure the secret</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Needed to secure the secret</string>
 	<key>NSHumanReadableCopyright</key>
 	<string></string>
 	<key>NSLocationWhenInUseUsageDescription</key>

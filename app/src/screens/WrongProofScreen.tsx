@@ -48,7 +48,7 @@ const WrongProofScreen: React.FC = () => {
           ))}
         </YStack>
         <Text ml="$2" mt="$8" fontSize="$7" color={textBlack} style={{ opacity: 0.7 }}>
-          <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Check again</Text> your eligibility, if you are sure to be eligible to this verification please contact Proof of Passport support.
+          <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Check again</Text> your eligibility, if you are sure to be eligible to this verification please contact OpenPassport support.
         </Text>
         <XStack f={1} />
       </YStack>

@@ -20,7 +20,7 @@ const SplashScreen = () => {
     }, [userLoaded]);
     return (
         <YStack ai="center" f={1} gap="$8" mt="$18" mb="$8">
-            <Text fontSize="$9">Proof of Passport</Text>
+            <Text fontSize="$9">OpenPassport</Text>
             <XStack f={1} />
             <Spinner color={textBlack} />
         </YStack>

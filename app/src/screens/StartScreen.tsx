@@ -19,8 +19,8 @@ const StartScreen: React.FC = () => {
         <YStack f={1} p="$3">
             <YStack f={1} mt="$12">
                 <YStack gap="$0.5" mb="$14">
-                    <Text fontSize="$9" >Welcome to Proof of Passport 👋</Text>
-                    <Text fontSize="$8" mt="$6" color={textBlack}>Proof of Passport allows you to scan your passport, and to prove your identity in a
+                    <Text fontSize="$9" >Welcome to OpenPassport 👋</Text>
+                    <Text fontSize="$8" mt="$6" color={textBlack}>OpenPassport allows you to scan your passport, and to prove your identity in a
                         <Text fontSize="$8" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}> secure </Text>way.
                     </Text>
                     <Text fontSize="$8" mt="$4" color={textBlack} style={{ opacity: 0.7 }}>You can for example prove that you are over 18 yo while staying fully

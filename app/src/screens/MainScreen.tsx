@@ -335,7 +335,7 @@ const MainScreen: React.FC = () => {
           {selectedTab !== ("app") && selectedTab !== ("splash") && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
           {selectedTab === "app" &&
             <XStack px="$4" py="$2" mt="$0" ai="center">
-              <Text fontSize="$9"  >Proof of Passport</Text>
+              <Text fontSize="$9"  >OpenPassport</Text>
               <XStack f={1} />
 
               <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
@@ -552,7 +552,7 @@ const MainScreen: React.FC = () => {
                 <YStack flex={1} jc="space-between">
                   {/* <YStack >
                     <H3 color={textBlack}>Security and Privacy</H3>
-                    <Text color={textBlack} ml="$2" mt="$1">Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
+                    <Text color={textBlack} ml="$2" mt="$1">OpenPassport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
                   </YStack>
                   <YStack >
                     <H3 color={textBlack}>About ZK Proofs</H3>
@@ -768,7 +768,7 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} />
                 <YStack gap="$2">
-                  <Text fontSize="$7" color={textBlack}>Registering to Proof of Passport does not leak anything about your personal information.</Text>
+                  <Text fontSize="$7" color={textBlack}>Registering to OpenPassport does not leak anything about your personal information.</Text>
                   <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text>
                 </YStack>
 

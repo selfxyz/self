@@ -1,4 +1,4 @@
-# Proof of Passport App
+# OpenPassport App
 
 ## Requirements
 

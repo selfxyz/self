@@ -191,7 +191,7 @@ contract SBT is ERC721Enumerable, Ownable {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
         require(
             from == address(0),
-            "Cannot transfer - Proof of Passport is soulbound"
+            "Cannot transfer - SBT is soulbound"
         );
     }
 
@@ -381,7 +381,7 @@ contract SBT is ERC721Enumerable, Ownable {
 
         baseURI = abi.encodePacked(
             baseURI,
-            '],"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://proofofpassport.com","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
+            '],"description": "OpenPassport guarantees possession of a valid passport.","external_url": "https://proofofpassport.com","image": "https://i.imgur.com/9kvetij.png","name": "OpenPassport #',
             _tokenId.toString(),
             '"}'
         );

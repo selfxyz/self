@@ -1,4 +1,4 @@
-name: Proof of Passport CI/CD
+name: OpenPassport CI/CD
 on:
   push:
     branches:
