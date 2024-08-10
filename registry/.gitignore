@@ -8,6 +8,7 @@ outputs/unique_cer
 outputs/unique_pem
 outputs/unique_cscas
 outputs/pem_unique_master
+outputs/unique_pem_masterlist
 outputs/plain_text/*
 outputs/plain_text_master/*
 outputs/plain_text_unique/*

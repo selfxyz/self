@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { processCertificate } from './utils';
 
-const pemDirectory = path.join(__dirname, '..', '..', 'outputs', 'unique_pem');
+const pemDirectory = path.join(__dirname, '..', '..', 'outputs', 'unique_pem_masterlist');
 
 async function main() {
     try {
