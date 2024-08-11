@@ -7,7 +7,7 @@ import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { splitToWords } from '../../../common/src/utils/utils';
 
 async function serialize_old_dsc_modulus_tree() {
-  const pubkeys = JSON.parse(fs.readFileSync("../common/pubkeys/public_keys_parsed.json") as unknown as string)
+  const pubkeys = JSON.parse(fs.readFileSync("../../../common/pubkeys/public_keys_parsed.json") as unknown as string)
   const tree = buildPubkeyTree(pubkeys);
   const serializedTree = tree.nodes.map(layer => layer.map(node => node.toString()));
   fs.writeFileSync("outputs/serialized_tree.json", JSON.stringify(serializedTree));

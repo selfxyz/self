@@ -14,10 +14,11 @@ import {
   generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
+  stringToAsciiBigIntArray,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
-import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
+import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./smtTree";
 import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import { getCSCAModulusMerkleTree } from "./csca";
@@ -234,6 +235,35 @@ export function generateCircuitInputsOfac(
   return {
     ...finalResult,
     closest_leaf: [BigInt(closestleaf).toString()],
+    smt_root: [BigInt(root).toString()],
+    smt_siblings: siblings.map(index => BigInt(index).toString()),
+  };
+}
+
+export function generateCircuitInputsCountryVerifier(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  merkletree: LeanIMT,
+  majority: string,
+  bitmap: string[],
+  scope: string,
+  user_identifier: string,
+  sparsemerkletree: SMT,
+) {
+
+  const result = generateCircuitInputsDisclose(secret,attestation_id,passportData,merkletree,majority,bitmap,scope,user_identifier);
+  const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
+
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const usa_ascii = stringToAsciiBigIntArray("USA")
+  const country_leaf = getCountryLeaf(usa_ascii, mrz_bytes.slice(7, 10))
+  const {root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, country_leaf);
+
+  return {
+    ...finalResult,
+    closest_leaf: [BigInt(closestleaf).toString()],
+    hostCountry: usa_ascii.map(byte => BigInt(byte).toString()),
     smt_root: [BigInt(root).toString()],
     smt_siblings: siblings.map(index => BigInt(index).toString()),
   };

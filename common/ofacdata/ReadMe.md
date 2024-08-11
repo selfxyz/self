@@ -27,4 +27,4 @@ These jsons are later used to create sparse merkle trees for non-membership proo
 - Match only through Names : level 1 (Partial Match)
 The merkle tree is also exported as json in ofacdata/outputs for time constraint export and import.
 
-Check out src/ofacTree.ts for more details.<br>
+Check out src/utils/smtTree.ts for more details.<br>
