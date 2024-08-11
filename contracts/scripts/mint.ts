@@ -8,7 +8,7 @@ import fs from 'fs';
 
 async function main() {
   const proofOfPassportAddress = "0xF3F619aB057E3978204Be68549f9D4a503EAa535"
-  const proofOfPassport = await ethers.getContractAt("ProofOfPassport", proofOfPassportAddress);
+  const proofOfPassport = await ethers.getContractAt("OpenPassport", proofOfPassportAddress);
 
   const passportData = mockPassportData_sha256WithRSAEncryption_65537;
 

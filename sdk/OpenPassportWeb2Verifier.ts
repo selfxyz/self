@@ -1,27 +1,27 @@
 import { groth16 } from 'snarkjs';
 import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
-import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
+import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { vkey_disclose } from './common/src/constants/vkey';
 
 const MOCK_MERKLE_ROOT_CHECK = false;
 
-export class ProofOfPassportWeb2Verifier {
+export class OpenPassportWeb2Verifier {
     scope: string;
     attestationId: string;
     requirements: string[][];
     rpcUrl: string;
-    report: ProofOfPassportVerifierReport;
+    report: OpenPassportVerifierReport;
 
     constructor(options: { scope: string, attestationId?: string, requirements?: string[][], rpcUrl?: string }) {
         this.scope = options.scope;
         this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
         this.requirements = options.requirements || [];
         this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
-        this.report = new ProofOfPassportVerifierReport();
+        this.report = new OpenPassportVerifierReport();
     }
 
-    async verify(proofOfPassportWeb2Inputs: ProofOfPassportWeb2Inputs): Promise<ProofOfPassportVerifierReport> {
+    async verify(proofOfPassportWeb2Inputs: OpenPassportWeb2Inputs): Promise<OpenPassportVerifierReport> {
         const parsedPublicSignals = parsePublicSignals(proofOfPassportWeb2Inputs.publicSignals);
         //1. Verify the scope
         if (parsedPublicSignals.scope !== this.scope) {
@@ -60,12 +60,12 @@ export class ProofOfPassportWeb2Verifier {
             }
             if (requirement[0] === "nationality" || requirement[0] === "issuing_state") {
                 if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
-                    this.report.exposeAttribute(attribute as keyof ProofOfPassportVerifierReport);
+                    this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
                 }
             }
             else {
                 if (attributeValue !== value) {
-                    this.report.exposeAttribute(attribute as keyof ProofOfPassportVerifierReport);
+                    this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
                 }
             }
             console.log('\x1b[32m%s\x1b[0m', `- requirement ${requirement[0]} verified`);
@@ -94,7 +94,7 @@ export class ProofOfPassportWeb2Verifier {
     }
 }
 
-export class ProofOfPassportWeb2Inputs {
+export class OpenPassportWeb2Inputs {
     publicSignals: string[];
     proof: string[];
 

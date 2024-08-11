@@ -1,4 +1,4 @@
-export class ProofOfPassportVerifierReport {
+export class OpenPassportVerifierReport {
     scope: boolean = true;
     merkle_root: boolean = true;
     attestation_id: boolean = true;
@@ -21,7 +21,7 @@ export class ProofOfPassportVerifierReport {
 
     constructor() { }
 
-    exposeAttribute(attribute: keyof ProofOfPassportVerifierReport, value: any = "", expectedValue: any = "") {
+    exposeAttribute(attribute: keyof OpenPassportVerifierReport, value: any = "", expectedValue: any = "") {
         console.log('exposeAttribute', attribute, "value:", value, "expectedValue:", expectedValue);
         (this[attribute] as boolean) = false;
         this.valid = false;

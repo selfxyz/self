@@ -2,7 +2,7 @@ import { ethers } from "ethers";
 import axios from 'axios';
 import groth16ExportSolidityCallData from '../../utils/snarkjs';
 import contractAddresses from "../../deployments/deployed_addresses.json";
-import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#ProofOfPassportRegister.json";
+import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#OpenPassportRegister.json";
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";
 import { CHAIN_NAME, RELAYER_URL, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
@@ -15,7 +15,7 @@ export const sendRegisterTransaction = async (
 ) => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-  if (!contractAddresses["Deploy_Registry#ProofOfPassportRegister"] || !registerArtefacts.abi) {
+  if (!contractAddresses["Deploy_Registry#OpenPassportRegister"] || !registerArtefacts.abi) {
     console.log('contracts addresses or abi not found');
     return;
   }
@@ -37,7 +37,7 @@ export const sendRegisterTransaction = async (
 
   try {
     const registerContract = new ethers.Contract(
-      contractAddresses["Deploy_Registry#ProofOfPassportRegister"],
+      contractAddresses["Deploy_Registry#OpenPassportRegister"],
       registerArtefacts.abi,
       provider
     );

@@ -562,7 +562,7 @@ const MainScreen: React.FC = () => {
                     <H3 color={textBlack}>FAQ</H3>
                     <YStack ml="$1">
                       <H4 color={textBlack}>My passport is not supported</H4>
-                      <Text color={textBlack} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
+                      <Text color={textBlack} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/openpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
                     </YStack>
                   </YStack>
 
@@ -570,17 +570,17 @@ const MainScreen: React.FC = () => {
 
                 </YStack>
                 <XStack justifyContent="center" mb="$2" gap="$5" mt="$8">
-                  <Pressable onPress={() => Linking.openURL('https://proofofpassport.com')}>
+                  <Pressable onPress={() => Linking.openURL('https://openpassport.app')}>
                     <Image
                       source={{ uri: Internet, width: 24, height: 24 }}
                     />
                   </Pressable>
-                  <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
+                  <Pressable onPress={() => Linking.openURL('https://t.me/openpassport')}>
                     <Image
                       source={{ uri: Telegram, width: 24, height: 24 }}
                     />
                   </Pressable>
-                  <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
+                  <Pressable onPress={() => Linking.openURL('https://x.com/openpassportapp')}>
                     <Image
                       source={{ uri: Xlogo, width: 24, height: 24 }}
                     />

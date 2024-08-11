@@ -11,7 +11,7 @@ export default buildModule("Deploy_Registry", (m) => {
     const poseidonT3 = m.contract("PoseidonT3");
     m.call(formatter, "addCountryCodes", [Object.entries(countryCodes)]);
 
-    const register = m.contract("ProofOfPassportRegister", [registry], { libraries: { PoseidonT3: poseidonT3 } });
+    const register = m.contract("OpenPassportRegister", [registry], { libraries: { PoseidonT3: poseidonT3 } });
     const Verifier_register_sha256WithRSAEncryption_65537 = m.contract("Verifier_register_sha256WithRSAEncryption_65537");
     const Verifier_register_sha1WithRSAEncryption_65537 = m.contract("Verifier_register_sha1WithRSAEncryption_65537");
     const Verifier_dsc_sha256_rsa_4096 = m.contract("Verifier_dsc_sha256_rsa_4096");
