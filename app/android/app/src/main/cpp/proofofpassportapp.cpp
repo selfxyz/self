@@ -9,7 +9,7 @@ using namespace std;
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_proofofpassport_prover_ZKPTools_groth16_1prover(JNIEnv *env, jobject thiz,
+Java_com_proofofpassportapp_prover_ZKPTools_groth16_1prover(JNIEnv *env, jobject thiz,
                                                     jbyteArray zkey_buffer, jlong zkey_size,
                                                     jbyteArray wtns_buffer, jlong wtns_size,
                                                     jbyteArray proof_buffer, jlongArray proof_size,
@@ -49,7 +49,7 @@ Java_com_proofofpassport_prover_ZKPTools_groth16_1prover(JNIEnv *env, jobject th
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_proofofpassport_prover_ZKPTools_witnesscalc_1register_1sha256WithRSAEncryption_165537(JNIEnv *env, jobject thiz,
+Java_com_proofofpassportapp_prover_ZKPTools_witnesscalc_1register_1sha256WithRSAEncryption_165537(JNIEnv *env, jobject thiz,
                                                        jbyteArray circuit_buffer,
                                                        jlong circuit_size, jbyteArray json_buffer,
                                                        jlong json_size, jbyteArray wtns_buffer,
@@ -86,7 +86,7 @@ Java_com_proofofpassport_prover_ZKPTools_witnesscalc_1register_1sha256WithRSAEnc
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_com_proofofpassport_prover_ZKPTools_witnesscalc_1disclose(JNIEnv *env, jobject thiz,
+Java_com_proofofpassportapp_prover_ZKPTools_witnesscalc_1disclose(JNIEnv *env, jobject thiz,
                                                        jbyteArray circuit_buffer,
                                                        jlong circuit_size, jbyteArray json_buffer,
                                                        jlong json_size, jbyteArray wtns_buffer,
@@ -122,7 +122,7 @@ Java_com_proofofpassport_prover_ZKPTools_witnesscalc_1disclose(JNIEnv *env, jobj
 }
 
 extern "C"
-JNIEXPORT jint JNICALL Java_com_proofofpassport_prover_ZKPTools_groth16_1prover_1zkey_1file(
+JNIEXPORT jint JNICALL Java_com_proofofpassportapp_prover_ZKPTools_groth16_1prover_1zkey_1file(
         JNIEnv *env, jobject obj,
         jstring zkeyPath,
         jbyteArray wtnsBuffer, jlong wtnsSize,
