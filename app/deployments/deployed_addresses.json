@@ -6,6 +6,6 @@
   "Deploy_Registry#Verifier_dsc_sha256_rsa_4096": "0xFD3AFBb0E0565cc28E99d9e11629c4c20e1e517D",
   "Deploy_Registry#Verifier_register_sha1WithRSAEncryption_65537": "0x434547E86530A583137c9990ffb87682F0d5ca48",
   "Deploy_Registry#Verifier_register_sha256WithRSAEncryption_65537": "0xDc5e3E81b4b3bC22f79C3a90dbb57EBB9aEdAAfF",
-  "Deploy_Registry#ProofOfPassportRegister": "0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909",
+  "Deploy_Registry#OpenPassportRegister": "0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909",
   "Deploy_Registry#SBT": "0x33f41D706587a7AC6c2061B1893e6eb29615822B"
 }

@@ -53,7 +53,7 @@ import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
  
  ***/
 
-contract ProofOfPassportRegister is IRegister, Ownable {
+contract OpenPassportRegister is IRegister, Ownable {
     Registry public immutable registry;
     using Base64 for *;
     using Strings for uint256;

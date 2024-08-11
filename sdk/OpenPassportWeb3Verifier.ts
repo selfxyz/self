@@ -1,24 +1,24 @@
 import { DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from './common/src/constants/constants';
 import { ethers } from 'ethers';
 import { attributeToGetter } from './utils';
-import { ProofOfPassportVerifierReport } from './ProofOfPassportVerifierReport';
+import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 
-export class ProofOfPassportWeb3Verifier {
+export class OpenPassportWeb3Verifier {
     scope: string;
     attestationId: string;
     requirements: Array<[string, number | string]>;
     rpcUrl: string;
-    report: ProofOfPassportVerifierReport;
+    report: OpenPassportVerifierReport;
 
     constructor(options: { scope: string, attestationId?: string, requirements?: Array<[string, number | string]>, rpcUrl?: string }) {
         this.scope = options.scope;
         this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
         this.requirements = options.requirements || [];
         this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
-        this.report = new ProofOfPassportVerifierReport();
+        this.report = new OpenPassportVerifierReport();
     }
 
-    async verify(address: string, tokenID: number): Promise<ProofOfPassportVerifierReport> {
+    async verify(address: string, tokenID: number): Promise<OpenPassportVerifierReport> {
         const provider = new ethers.JsonRpcProvider(this.rpcUrl);
         const contract = new ethers.Contract(SBT_CONTRACT_ADDRESS, SBT_ABI, provider);
 
@@ -39,7 +39,7 @@ export class ProofOfPassportWeb3Verifier {
             }
             const SBTAttribute = await contract[getterName](tokenID);
             if (SBTAttribute !== value) {
-                this.report.exposeAttribute(attribute as keyof ProofOfPassportVerifierReport);
+                this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
             }
         }
         return this.report;

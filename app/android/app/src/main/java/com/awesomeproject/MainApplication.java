@@ -1,4 +1,4 @@
-package com.proofofpassport;
+package com.proofofpassportapp;
 
 import android.app.Application;
 import com.facebook.react.PackageList;
@@ -8,12 +8,12 @@ import com.facebook.react.ReactPackage;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.soloader.SoLoader;
-import com.proofofpassport.CameraActivityPackage;
+import com.proofofpassportapp.CameraActivityPackage;
 import io.tradle.nfc.RNPassportReaderPackage;
 import java.util.List;
-import com.proofofpassport.prover.ProverPackage;
+import com.proofofpassportapp.prover.ProverPackage;
 import com.rnfs.RNFSPackage;
-import com.proofofpassport.QRCodeScannerPackage;
+import com.proofofpassportapp.QRCodeScannerPackage;
 
 public class MainApplication extends Application implements ReactApplication {
 

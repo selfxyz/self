@@ -1,7 +1,7 @@
 {
   "_format": "hh-sol-artifact-1",
-  "contractName": "ProofOfPassportRegister",
-  "sourceName": "contracts/ProofOfPassportRegister.sol",
+  "contractName": "OpenPassportRegister",
+  "sourceName": "contracts/OpenPassportRegister.sol",
   "abi": [
     {
       "inputs": [
