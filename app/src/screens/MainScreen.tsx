@@ -256,7 +256,7 @@ const MainScreen: React.FC = () => {
 
 
   useEffect(() => {
-    setIsFormComplete(passportNumber?.length === 9 && dateOfBirth?.length === 6 && dateOfExpiry?.length === 6);
+    setIsFormComplete(passportNumber?.length >= 3 && dateOfBirth?.length >= 6 && dateOfExpiry?.length >= 6);
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
   // useEffect(() => {
