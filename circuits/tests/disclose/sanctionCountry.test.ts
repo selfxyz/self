@@ -7,12 +7,12 @@ import {
 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsCountryVerifier } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
-import { SMT, ChildNodes } from '@ashpect/smt'
+import { SMT, ChildNodes } from '@ashpect/smt';
 import { poseidon1, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import scSmtJson from '../../../common/sanctionedCountries/outputs/sc_SMT.json';
-import { PassportData } from '../../../common/src/utils/types';;
+import { PassportData } from '../../../common/src/utils/types';
 
 let circuit: any;
 let passportData = mockPassportData_sha256_rsa_65537; // Country is France which is not in us sanctioned list
@@ -97,7 +97,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       validInputs.bitmap,
       validInputs.scope,
       validInputs.user_identifier,
-      sc_smt,
+      sc_smt
     );
 
     memSmtInputs = generateCircuitInputsCountryVerifier(
@@ -110,7 +110,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
       invalidInputs.bitmap,
       invalidInputs.scope,
       invalidInputs.user_identifier,
-      sc_smt,
+      sc_smt
     );
   });
 
