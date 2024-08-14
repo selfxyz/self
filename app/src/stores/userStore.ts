@@ -20,7 +20,7 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
-import { ProofOfPassportVerifierReport } from '@proofofpassport/sdk';
+import { OpenPassportVerifierReport } from '@proofofpassport/sdk';
 
 
 interface UserState {

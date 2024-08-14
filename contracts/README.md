@@ -1,6 +1,6 @@
-# Proof of Passport Contracts
+# OpenPassport Contracts
 
-Contracts for Proof of Passport.
+Contracts for OpenPassport.
 
 Try running some of the following tasks:
 

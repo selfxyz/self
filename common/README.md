@@ -1,3 +1,3 @@
-# Proof of Passport Commons
+# OpenPassport Commons
 
-Constants and utils used in multiple Proof of Passport subdirectories.
+Constants and utils used in multiple OpenPassport subdirectories.

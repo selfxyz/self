@@ -8,7 +8,7 @@ import { poseidon2, poseidon6 } from "poseidon-lite";
 import { PASSPORT_ATTESTATION_ID } from "../../common/src/constants/constants";
 import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
-import { ProofOfPassportWeb2Inputs, ProofOfPassportWeb2Verifier } from '../index';
+import { OpenPassportWeb2Inputs, OpenPassportWeb2Verifier } from '../index';
 // import dotenv from 'dotenv';
 // dotenv.config();
 
@@ -58,11 +58,11 @@ describe('Circuit Proving Tests', function () {
         );
 
         /// Verify using web2 verifier
-        const proofOfPassportWeb2Verifier = new ProofOfPassportWeb2Verifier({
+        const proofOfPassportWeb2Verifier = new OpenPassportWeb2Verifier({
             scope: scope,
             requirements: [["older_than", "18"], ["nationality", "France"]]
         });
-        const proofOfPassportWeb2Inputs = new ProofOfPassportWeb2Inputs(publicSignals, proof as any);
+        const proofOfPassportWeb2Inputs = new OpenPassportWeb2Inputs(publicSignals, proof as any);
         const result = await proofOfPassportWeb2Verifier.verify(proofOfPassportWeb2Inputs);
 
 
@@ -73,7 +73,7 @@ describe('Circuit Proving Tests', function () {
     // it('proofOfPassportWeb3Verifier - should succeed', async () => {
     //     const scope = BigInt(1).toString();
     //     /// Verify using web3 verifier
-    //     const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
+    //     const proofOfPassportWeb3Verifier = new OpenPassportWeb3Verifier({
     //         scope: scope
     //     });
     //     const result = await proofOfPassportWeb3Verifier.verify(process.env.TEST_ADDRESS, Number(process.env.TOKEN_ID));
@@ -83,7 +83,7 @@ describe('Circuit Proving Tests', function () {
     // it('proofOfPassportWeb3Verifier - should fail', async () => {
     //     const scope = BigInt(1).toString();
     //     /// Verify using web3 verifier
-    //     const proofOfPassportWeb3Verifier = new ProofOfPassportWeb3Verifier({
+    //     const proofOfPassportWeb3Verifier = new OpenPassportWeb3Verifier({
     //         scope: scope,
     //         requirements: [["older_than", "18"]]
     //     });

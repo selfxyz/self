@@ -133,13 +133,13 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
           </XStack> */}
         </YStack>
         <YStack>
-          <Text mt="$4" fontSize="$8" >How to use Proof of Passport?</Text>
+          <Text mt="$4" fontSize="$8" >How to use OpenPassport?</Text>
           <YStack>
             <XStack mt="$3" px="$5" gap="$2" >
               <QrCode size={50} color={textBlack} />
               <YStack>
                 <Text fontSize="$5" mb="$1">Scan QR code</Text>
-                <XStack gap="$2"><Text fontSize="$3">1</Text><Text fontSize="$3" maxWidth={220}>Find the QR code on the page of the app that asks for proof of passport.</Text></XStack>
+                <XStack gap="$2"><Text fontSize="$3">1</Text><Text fontSize="$3" maxWidth={220}>Find the QR code on the page of the app that asks for OpenPassport.</Text></XStack>
                 <XStack mt="$1" gap="$2"><Text fontSize="$3">2</Text><Text fontSize="$3" maxWidth={220}>Scan the QR code.</Text></XStack>
               </YStack>
             </XStack>
@@ -160,7 +160,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
               <Binary size={50} color={textBlack} />
               <YStack>
                 <Text fontSize="$5" mb="$1">Strong cryptography</Text>
-                <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>Proof of Passport uses ZK technologies which allows you to prove a statement without revealing why it's true.</Text></XStack>
+                <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>OpenPassport uses ZK technologies which allows you to prove a statement without revealing why it's true.</Text></XStack>
                 <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>You are always anonymous</Text></XStack>
               </YStack>
             </XStack>
@@ -168,7 +168,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
               <Smartphone size={50} color={textBlack} />
               <YStack>
                 <Text fontSize="$5" mb="$1">Serverless</Text>
-                <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>Proof of Passport will never receive your data and will never know who you are.</Text></XStack>
+                <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>OpenPassport will never receive your data and will never know who you are.</Text></XStack>
                 <XStack gap="$2"><Text fontSize="$3">·</Text><Text fontSize="$3" maxWidth={220}>Everything is achieved on your device, even the camera and NFC scanning.</Text></XStack>
 
               </YStack>

@@ -1,6 +1,6 @@
 //
 //  MRZScannerModule.m
-//  ProofOfPassport
+//  OpenPassport
 //
 //  Created by Rémi Colin on 27/02/2024.
 //

@@ -1,4 +1,4 @@
-package com.proofofpassport.prover
+package com.proofofpassportapp.prover
 
 import com.facebook.react.ReactPackage
 import com.facebook.react.bridge.NativeModule

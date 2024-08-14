@@ -1,4 +1,4 @@
-# Proof of Passport Circuits
+# OpenPassport Circuits
 
 ## Requirements
 
@@ -34,11 +34,11 @@ The `disclose` circuit is used for the following:
 4. The output is multiplied by an input bitmap to allow the user to disclose only what they want to disclose.
 5. Final output is packed.
 
-Any application that wants to use Proof of Passport can actually build its own `disclose` circuit.
+Any application that wants to use OpenPassport can actually build its own `disclose` circuit.
 
 ### 🚧 Under development 🚧
 
-Proof of Passport currently supports the following sig/hash algorithms:
+OpenPassport currently supports the following sig/hash algorithms:
 
 - [x] sha256WithRSAEncryption
 - [x] sha1WithRSAEncryption
