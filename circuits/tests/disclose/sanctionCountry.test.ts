@@ -67,7 +67,7 @@ tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
 tree.insert(BigInt(validInputs.commitment));
 tree.insert(BigInt(invalidInputs.commitment));
 
-describe('start testing ofac_passportNo_verifier.circom', function () {
+describe('start testing country_verifier.circom', function () {
   this.timeout(0);
   let sc_smt = new SMT(hash, true);
   let memSmtInputs: any;
@@ -115,7 +115,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
   });
 
   // Compile circuit
-  it('should compile and load the circuit, level 3', async function () {
+  it('should compile and load the circuit', async function () {
     expect(circuit).to.not.be.undefined;
   });
 
@@ -126,7 +126,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
   });
 
   // Correct siblings but membership proof : Fail at proofType == 0(non-mem) assertion
-  it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
+  it('should fail to calculate witness since trying to generate membership proof', async function () {
     try {
       await circuit.calculateWitness(memSmtInputs);
       expect.fail('Expected an error but none was thrown.');
@@ -137,7 +137,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
   });
 
   // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
-  it('should fail to calculate witness due to wrong closest_leaf provided, level 3', async function () {
+  it('should fail to calculate witness due to wrong closest_leaf provided', async function () {
     try {
       let wrongSibInputs = nonMemSmtInputs;
       const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
