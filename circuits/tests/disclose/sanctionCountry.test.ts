@@ -7,7 +7,7 @@ import {
 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsCountryVerifier } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
-import { SMT, ChildNodes } from '@ashpect/smt';
+import { SMT, ChildNodes } from '@ashpect/smt'
 import { poseidon1, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
@@ -88,7 +88,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
     sc_smt.import(scSmtJson);
 
     nonMemSmtInputs = generateCircuitInputsCountryVerifier(
-      // proof of membership
+      // proof of membership, USA-FRA pair (FRA is not in USA sanctioned list)
       validInputs.secret,
       validInputs.attestation_id,
       validInputs.passportData,
@@ -101,7 +101,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
     );
 
     memSmtInputs = generateCircuitInputsCountryVerifier(
-      // proof of non-membership
+      // proof of non-membership, USA-CUB pair (CUB is in USA sanctioned list)
       invalidInputs.secret,
       invalidInputs.attestation_id,
       invalidInputs.passportData,
@@ -121,33 +121,32 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
 
   // Corrct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors , all conditions satisfied', async function () {
-    let w = await circuit.calculateWitness(memSmtInputs);
+    let w = await circuit.calculateWitness(nonMemSmtInputs);
     console.log('Everything correct, Valid proof of non-membership !!');
   });
 
-  // // Correct siblings but membership proof : Fail at line 43 assertion
-  // it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
-  //   try {
-  //     await circuit.calculateWitness(memSmtInputs);
-  //     expect.fail('Expected an error but none was thrown.');
-  //   } catch (error) {
-  //     expect(error.message).to.include('Assert Failed');
-  //     expect(error.message).to.include('line: 43');
-  //     expect(error.message).to.not.include('SMTVerify');
-  //   }
-  // });
+  // Correct siblings but membership proof : Fail at proofType == 0(non-mem) assertion
+  it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
+    try {
+      await circuit.calculateWitness(memSmtInputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.not.include('SMTVerify');
+    }
+  });
 
-  // // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
-  // it('should fail to calculate witness due to wrong closest_leaf provided, level 3', async function () {
-  //   try {
-  //     let wrongSibInputs = nonMemSmtInputs;
-  //     const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
-  //     wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
-  //     await circuit.calculateWitness(wrongSibInputs);
-  //     expect.fail('Expected an error but none was thrown.');
-  //   } catch (error) {
-  //     expect(error.message).to.include('Assert Failed');
-  //     expect(error.message).to.include('SMTVerify');
-  //   }
-  // });
+  // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
+  it('should fail to calculate witness due to wrong closest_leaf provided, level 3', async function () {
+    try {
+      let wrongSibInputs = nonMemSmtInputs;
+      const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
+      wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
+      await circuit.calculateWitness(wrongSibInputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+      expect(error.message).to.include('SMTVerify');
+    }
+  });
 });
