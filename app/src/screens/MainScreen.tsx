@@ -617,7 +617,7 @@ const MainScreen: React.FC = () => {
                     bg={bgWhite}
                     color={textBlack}
                     h="$3.5"
-                    borderColor={passportNumber?.length === 9 ? bgGreen : textBlack}
+                    borderColor={passportNumber?.length >= 3 ? bgGreen : textBlack}
                     flex={1}
                     id="passportnumber"
                     onChangeText={(text) => {
