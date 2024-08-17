@@ -48,7 +48,7 @@ let inputs: any;
 let attestation_id: string;
 import path from "path";
 import { poseidon1 } from "poseidon-lite";
-import { getDSCModulus, getNullifier, getSIV, verifyProofs } from "../ProofOfPassportRegister";
+import { getDSCModulus, getNullifier, getSIV, verifyProofs } from "../OpenPassportRegister";
 let proof: any;
 let publicSignals: any;
 let cscaProof: any;

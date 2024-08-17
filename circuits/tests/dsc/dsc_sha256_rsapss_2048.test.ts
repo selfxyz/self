@@ -94,6 +94,6 @@ describe('DSC chain certificate - SHA256 RSA-PSS', function () {
   });
 
   it('should compute the correct output', async () => {
-    const witness = await circuit.calculateWitness(inputs, true);
+    const witness = await circuit.calculateWitness(inputs.inputs, true);
   });
 });

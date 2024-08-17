@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Linking, Modal, Platform, Pressable } from 'react-native';
+import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable } from 'react-native';
+import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View, Separator } from 'tamagui'
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X } from '@tamagui/lucide-icons';
+import Telegram from '../images/telegram.png'
+import Github from '../images/github.png'
+import Internet from "../images/internet.png"
 import forge from 'node-forge';
 import Dialog from "react-native-dialog";
 import { ethers } from 'ethers';
 // import ressources
-import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, CalendarSearch, Cross, X, UserPlus } from '@tamagui/lucide-icons';
 import Xlogo from '../images/x.png'
-import Telegram from '../images/telegram.png'
-import Github from '../images/github.png'
-import Internet from "../images/internet.png"
 import NFC_IMAGE from '../images/nfc.png'
 import { ToastViewport } from '@tamagui/toast';
 import { ToastMessage } from '../components/ToastMessage';
@@ -40,14 +40,23 @@ import AppScreen from './AppScreen';
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 
+const { nativeModule } = NativeModules;
+let emitter: NativeEventEmitter | null = null;
+
+if (Platform.OS === 'android') {
+  emitter = new NativeEventEmitter(nativeModule);
+}
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
 import StepOneStepTwo from '../components/StepOneStepTwo';
 import SplashScreen from './SplashScreen';
+import ValidProofScreen from './ValidProofScreen';
+import WrongProofScreen from './WrongProofScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
+  const [scanningMessage, setScanningMessage] = useState('');
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
@@ -90,6 +99,8 @@ const MainScreen: React.FC = () => {
     toast,
     showRegistrationErrorSheet,
     registrationErrorMessage,
+    nfcSheetIsOpen,
+    setNfcSheetIsOpen,
   } = useNavigationStore();
 
   const handleRestart = () => {
@@ -198,6 +209,20 @@ const MainScreen: React.FC = () => {
   }
 
   useEffect(() => {
+    const handleNativeEvent = (event: string) => {
+      setScanningMessage(event);
+    };
+
+    if (Platform.OS === 'android' && emitter) {
+      const subscription = emitter.addListener('NativeEvent', handleNativeEvent);
+
+      return () => {
+        subscription.remove();
+      };
+    }
+  }, []);
+
+  useEffect(() => {
     if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
       console.log('CSCA Proof received:', cscaProof);
       if ((cscaProof !== null) && (localProof !== null)) {
@@ -231,7 +256,7 @@ const MainScreen: React.FC = () => {
 
 
   useEffect(() => {
-    setIsFormComplete(passportNumber?.length === 9 && dateOfBirth?.length === 6 && dateOfExpiry?.length === 6);
+    setIsFormComplete(passportNumber?.length >= 3 && dateOfBirth?.length >= 6 && dateOfExpiry?.length >= 6);
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
   // useEffect(() => {
@@ -307,12 +332,13 @@ const MainScreen: React.FC = () => {
       <YStack f={1} mt={Platform.OS === 'ios' ? "$8" : "$0"} mb={Platform.OS === 'ios' ? "$4" : "$2"}>
         <YStack >
           <StepOneStepTwo variable={selectedTab} step1="scan" step2="nfc" />
-          {selectedTab !== "app" && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
+          {selectedTab !== ("app") && selectedTab !== ("splash") && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
           {selectedTab === "app" &&
             <XStack px="$4" py="$2" mt="$0" ai="center">
-              <Text fontSize="$9"  >Proof of Passport</Text>
-              {/* <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack> */}
+              <Text fontSize="$9"  >OpenPassport</Text>
               <XStack f={1} />
+
+              <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
               <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
             </XStack>
 
@@ -338,11 +364,16 @@ const MainScreen: React.FC = () => {
               <Separator borderColor={separatorColor} />
             </YStack>
           )} */}
-          <Sheet open={NFCScanIsOpen} onOpenChange={setNFCScanIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
+          <Sheet open={nfcSheetIsOpen} onOpenChange={setNfcSheetIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
+
               <YStack gap="$5" f={1} pt="$3">
-                <H2 textAlign='center'>Ready to scan</H2>
+                <View>
+                  <H2 textAlign='center'>Ready to scan</H2>
+                  <Text textAlign='center'>{scanningMessage}</Text>
+                </View>
+
                 {step >= Steps.NEXT_SCREEN ?
                   <CheckCircle2
                     size="$8"
@@ -470,12 +501,23 @@ const MainScreen: React.FC = () => {
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
                       <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                        go to register
+                      </Label>
+                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
+                        <ArrowRight color={textColor2} />
+                      </Button>
+                    </Fieldset>
+                    <Fieldset gap="$4" mt="$1" horizontal>
+                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
                         registered = (!registered)
                       </Label>
                       <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
                         <UserPlus color={textColor2} />
                       </Button>
                     </Fieldset>
+
+
+
                   </>
                 )}
 
@@ -491,74 +533,76 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
+          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[76]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9">
-              <YStack px="$3" pb="$5" flex={1} >
-                <XStack ml="$2" mt="$3" gap="$2">
-                  <H2 color={textColor1}>Help</H2>
-                  <HelpCircle color={textColor1} mt="$1" alignSelf='center' size="$2" />
-                  <XStack justifyContent="flex-end" f={1} mt="$2" mr="$2" gap="$5">
-                    <Pressable onPress={() => Linking.openURL('https://proofofpassport.com')}>
-                      <Image
-                        source={{ uri: Internet, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://t.me/proofofpassport')}>
-                      <Image
-                        source={{ uri: Telegram, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://x.com/proofofpassport')}>
-                      <Image
-                        source={{ uri: Xlogo, width: 24, height: 24 }}
-                      />
-                    </Pressable>
-                    <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
-                      <Image
-                        tintColor={textColor1}
-                        source={{ uri: Github, width: 24, height: 24 }}
-                      />
-                    </Pressable>
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
+              <YStack p="$4" f={1} gap="$3">
+
+                <XStack>
+                  <Text fontSize="$8" mb="$2">Help 💁</Text>
+                  <XStack f={1} />
+                  <XStack onPress={() => setHelpIsOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
                   </XStack>
                 </XStack>
-                <YStack flex={1} mt="$3" jc="space-evenly">
-                  <YStack >
-                    <H3 color={textColor1}>Security and Privacy</H3>
-                    <Text color={textColor2} ml="$2" mt="$1">Proof of Passport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
+                <Separator borderColor={separatorColor} />
+
+
+
+                <YStack flex={1} jc="space-between">
+                  {/* <YStack >
+                    <H3 color={textBlack}>Security and Privacy</H3>
+                    <Text color={textBlack} ml="$2" mt="$1">OpenPassport uses zero-knowledge cryptography to allow you to prove facts about yourself like humanity, nationality or age without disclosing sensitive information.</Text>
                   </YStack>
                   <YStack >
-                    <H3 color={textColor1}>About ZK Proofs</H3>
-                    <Text color={textColor2} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
-                  </YStack>
+                    <H3 color={textBlack}>About ZK Proofs</H3>
+                    <Text color={textBlack} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
+                  </YStack> */}
                   <YStack gap="$1">
-                    <H3 color={textColor1}>FAQ</H3>
+                    <H3 color={textBlack}>FAQ</H3>
                     <YStack ml="$1">
-                      <H4 color={textColor1}>Troubleshoot NFC scanning</H4>
-                      <Text color={textColor2} ml="$2" >Refer to <Text onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>this tutorial</Text> on how to scan your passport using NFC.</Text>
-                    </YStack>
-                    <YStack ml="$1">
-                      <H4 color={textColor1}>My camera is down</H4>
-                      <Text color={textColor2} ml="$2">Go to settings and turn on the broken camera option.</Text>
-                    </YStack>
-                    <YStack ml="$1">
-                      <H4 color={textColor1}>My passport is not supported</H4>
-                      <Text color={textColor2} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/proofofpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
+                      <H4 color={textBlack}>My passport is not supported</H4>
+                      <Text color={textBlack} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/openpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
                     </YStack>
                   </YStack>
 
+
+
                 </YStack>
+                <XStack justifyContent="center" mb="$2" gap="$5" mt="$8">
+                  <Pressable onPress={() => Linking.openURL('https://openpassport.app')}>
+                    <Image
+                      source={{ uri: Internet, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://t.me/openpassport')}>
+                    <Image
+                      source={{ uri: Telegram, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://x.com/openpassportapp')}>
+                    <Image
+                      source={{ uri: Xlogo, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                  <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
+                    <Image
+                      tintColor={textBlack}
+                      source={{ uri: Github, width: 24, height: 24 }}
+                    />
+                  </Pressable>
+                </XStack>
 
               </YStack>
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[42]} moveOnKeyboardChange>
+          <Sheet open={sheetIsOpen} onOpenChange={setSheetIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[44]} moveOnKeyboardChange>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" mb="$3">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
               <YStack p="$4" f={1} gap="$3">
                 <XStack>
-                  <Text fontSize="$8" mb="$2">Manual input ✍️</Text>
+                  <Text fontSize="$8" mb="$">Manual input ✍️</Text>
                   <XStack f={1} />
                   <XStack onPress={() => setSheetIsOpen(false)} p="$2">
                     <X color={borderColor} size="$1.5" mr="$2" />
@@ -573,7 +617,7 @@ const MainScreen: React.FC = () => {
                     bg={bgWhite}
                     color={textBlack}
                     h="$3.5"
-                    borderColor={passportNumber?.length === 9 ? bgGreen : textBlack}
+                    borderColor={passportNumber?.length >= 3 ? bgGreen : textBlack}
                     flex={1}
                     id="passportnumber"
                     onChangeText={(text) => {
@@ -724,7 +768,7 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} />
                 <YStack gap="$2">
-                  <Text fontSize="$7" color={textBlack}>Registering to Proof of Passport does not leak anything about your personal information.</Text>
+                  <Text fontSize="$7" color={textBlack}>Registering to OpenPassport does not leak anything about your personal information.</Text>
                   <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text>
                 </YStack>
 
@@ -781,7 +825,7 @@ const MainScreen: React.FC = () => {
 
         </YStack>
 
-        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"scan"}
+        <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"splash"}
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
@@ -824,7 +868,14 @@ const MainScreen: React.FC = () => {
           <Tabs.Content value="mint" f={1}>
             <SendProofScreen />
           </Tabs.Content>
+          <Tabs.Content value="valid" f={1}>
+            <ValidProofScreen />
+          </Tabs.Content>
+          <Tabs.Content value="wrong" f={1}>
+            <WrongProofScreen />
+          </Tabs.Content>
         </Tabs>
+
       </YStack>
       <Modal visible={showWarningModal.show} animationType="slide" transparent={true}>
         <YStack bc="#161616" p={20} ai="center" jc="center" position="absolute" top={0} bottom={0} left={0} right={0}>

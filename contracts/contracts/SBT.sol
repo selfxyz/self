@@ -55,7 +55,7 @@ contract SBT is ERC721Enumerable, Ownable {
         Verifier_disclose v,
         Formatter f,
         IRegister r
-    ) ERC721("ProofOfPassport", "ProofOfPassport") {
+    ) ERC721("OpenPassport", "OpenPassport") {
         verifier = v;
         formatter = f;
         register = r;
@@ -191,7 +191,7 @@ contract SBT is ERC721Enumerable, Ownable {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
         require(
             from == address(0),
-            "Cannot transfer - Proof of Passport is soulbound"
+            "Cannot transfer - SBT is soulbound"
         );
     }
 
@@ -381,7 +381,7 @@ contract SBT is ERC721Enumerable, Ownable {
 
         baseURI = abi.encodePacked(
             baseURI,
-            '],"description": "Proof of Passport guarantees possession of a valid passport.","external_url": "https://proofofpassport.com","image": "https://i.imgur.com/9kvetij.png","name": "Proof of Passport #',
+            '],"description": "OpenPassport guarantees possession of a valid passport.","external_url": "https://openpassport.app","image": "https://i.imgur.com/9kvetij.png","name": "OpenPassport #',
             _tokenId.toString(),
             '"}'
         );

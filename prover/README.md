@@ -1,6 +1,6 @@
-# Proof of Passport Prover
+# OpenPassport Prover
 
-This repository contains the code for the proof of passport DSC/CSCA prover.
+This repository contains the code for the OpenPassport DSC/CSCA prover.
 The prover runs on the [modal](https://modal.com/docs/guide) server and generates a witness with [snarkjs](https://github.com/iden3/snarkjs) and a proof with the [old version of rapidsnark](https://github.com/iden3/rapidsnark-old).
 
 ## Installation

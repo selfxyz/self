@@ -1,4 +1,4 @@
-package com.proofofpassport.prover
+package com.proofofpassportapp.prover
 
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReactContextBaseJavaModule
@@ -18,7 +18,7 @@ import kotlinx.coroutines.withContext
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
 
-import com.proofofpassport.R
+import com.proofofpassportapp.R
 
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
@@ -152,7 +152,7 @@ class ZKPTools(val context: Context) {
 
   init {
       System.loadLibrary("rapidsnark");
-      System.loadLibrary("proofofpassport")
+      System.loadLibrary("proofofpassportapp")
   }
 
   fun openRawResourceAsByteArray(resourceName: Int): ByteArray {

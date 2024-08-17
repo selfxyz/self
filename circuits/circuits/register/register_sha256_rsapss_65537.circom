@@ -62,5 +62,5 @@ template register_sha256WithRSASSAPSS_65537(n, k, max_datahashes_bytes, nLevels,
 
 }
 
-// We hardcode 1 here for sha256WithRSAEncryption_65537
+// We hardcode 4 here for sha256WithRSASSAPSS_65537
 component main { public [ attestation_id ] } = register_sha256WithRSASSAPSS_65537(64, 32, 320, 16, 4);

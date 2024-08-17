@@ -31,17 +31,12 @@ const RegisterScreen: React.FC = () => {
   }
 
   return (
-    <YStack px="$4" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
+    <YStack p="$3" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
       <YStack flex={1} mx="$2" gap="$2">
-        <Text mt="$12" color={textBlack} fontSize="$10" fontWeight="bold">
-          Register
-        </Text>
-        <Text mt="$7" fontSize="$7" color={textBlack}>Join Proof of Passport to start sharing your identity<Text fontSize="$7" style={{
+        <Text mt="$7" fontSize="$9" color={textBlack}>Join OpenPassport to start sharing your identity<Text style={{
           textDecorationLine: "underline", textDecorationColor: bgGreen
         }}> securely. </Text></Text>
-        <Text mt="$0" fontSize="$6" color={textBlack} style={{
-          opacity: 0.7
-        }}>Easily verify your nationality, humanity, or age and share<Text style={{
+        <Text mt="$0" color={textBlack} fontSize="$8">Easily verify your nationality, humanity, or age and share<Text style={{
           textDecorationLine: "underline", textDecorationColor: bgGreen
         }}> only </Text>what you want to reveal.</Text>
         <XStack f={1} />

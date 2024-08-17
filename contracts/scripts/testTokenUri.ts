@@ -56,11 +56,11 @@ async function main() {
   await registry.waitForDeployment();
   console.log(`Registry deployed to ${registry.target}`);
 
-  const ProofOfPassport = await ethers.getContractFactory("ProofOfPassport");
-  const proofOfPassport = await ProofOfPassport.deploy(verifier.target, formatter.target, registry.target);
+  const OpenPassport = await ethers.getContractFactory("OpenPassport");
+  const proofOfPassport = await OpenPassport.deploy(verifier.target, formatter.target, registry.target);
   await proofOfPassport.waitForDeployment();
 
-  console.log(`ProofOfPassport NFT deployed to ${proofOfPassport.target}`);
+  console.log(`OpenPassport NFT deployed to ${proofOfPassport.target}`);
 
   console.log('generating proof...');
   const { proof, publicSignals } = await groth16.fullProve(

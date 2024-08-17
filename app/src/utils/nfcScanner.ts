@@ -22,7 +22,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setStep, nfcSheetIsOpen, setNfcSheetIsOpen } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -57,7 +57,9 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
     dscCertificate
   } = useUserStore.getState()
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast, setNfcSheetIsOpen } = useNavigationStore.getState();
+  setNfcSheetIsOpen(true);
+
 
   try {
     const response = await PassportReader.scan({
@@ -66,11 +68,12 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
       dateOfExpiry: dateOfExpiry
     });
     console.log('scanned');
+    setNfcSheetIsOpen(false);
     //amplitude.track('NFC scan successful');
     handleResponseAndroid(response, setModalProofStep);
   } catch (e: any) {
     console.log('error during scan:', e);
-    setStep(Steps.MRZ_SCAN_COMPLETED);
+    setNfcSheetIsOpen(false);
     //amplitude.track('NFC scan unsuccessful', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: e.message,
@@ -135,6 +138,7 @@ const handleResponseIOS = async (
   console.log('residenceAddress', parsed.residenceAddress)
   console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
   console.log('signatureAlgorithm', signatureAlgorithm)
+  console.log('encapsulatedContentDigestAlgorithm', parsed.encapsulatedContentDigestAlgorithm)
   console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
   const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
   const certificate = forge.pki.certificateFromPem(pem);

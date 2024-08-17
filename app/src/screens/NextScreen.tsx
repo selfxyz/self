@@ -34,7 +34,7 @@ const NextScreen: React.FC = () => {
   const { height } = useWindowDimensions();
 
   return (
-    <YStack px="$4" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
+    <YStack p="$3" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
       <YStack flex={1} mx="$2" gap="$2" mt="$2">
         <YStack alignSelf='center' my="$3">
           {hideData

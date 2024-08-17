@@ -1,19 +1,17 @@
-//import { ProofOfPassportWeb2Verifier } from './ProofOfPassportWeb2Verifier';
-//import { ProofOfPassportWeb2Inputs } from './ProofOfPassportWeb2Verifier';
-//import { ProofOfPassportWeb3Verifier } from './ProofOfPassportWeb3Verifier';
-import { verifyProofs } from './ProofOfPassportRegister';
-import { Proof } from './ProofOfPassportRegister';
-import { check_merkle_root } from './ProofOfPassportRegister';
-import { getNullifier, getDSCModulus, getSIV } from './ProofOfPassportRegister';
+import { OpenPassportWeb2Verifier } from './OpenPassportWeb2Verifier';
+import { OpenPassportWeb2Inputs } from './OpenPassportWeb2Verifier';
+import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
+// import { OpenPassportWeb3Verifier } from './OpenPassportWeb3Verifier';
+import { countryCodes } from './common/src/constants/constants';
+import { QRCodeGenerator } from './QRCodeGenerator';
+import { AppType } from '../common/src/utils/appType';
 
 export {
-    //ProofOfPassportWeb2Verifier,
-    //ProofOfPassportWeb3Verifier,
-    //ProofOfPassportWeb2Inputs,
-    verifyProofs,
-    Proof,
-    check_merkle_root,
-    getNullifier,
-    getDSCModulus,
-    getSIV
-};
+    OpenPassportWeb2Verifier,
+    // OpenPassportWeb3Verifier,
+    OpenPassportWeb2Inputs,
+    OpenPassportVerifierReport,
+    QRCodeGenerator,
+    AppType,
+    countryCodes
+}

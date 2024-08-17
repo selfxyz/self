@@ -62,5 +62,5 @@ template Register_sha1WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLevel
 
 }
 
-// We hardcode 1 here for sha1WithRSAEncryption_65537
+// We hardcode 3 here for sha1WithRSAEncryption_65537
 component main { public [ attestation_id ] } = Register_sha1WithRSAEncryption_65537(121, 17, 320, 16, 3);

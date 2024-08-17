@@ -30,7 +30,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'ProofOfPassport' do
+target 'OpenPassport' do
 
   config = use_native_modules!
 
@@ -58,7 +58,7 @@ target 'ProofOfPassport' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'ProofOfPassportTests' do
+  target 'OpenPassportTests' do
     inherit! :complete
     # Pods for testing
   end

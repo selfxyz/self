@@ -28,7 +28,7 @@ type CircuitArtifacts = {
     }
 }
 
-describe("Proof of Passport - Contracts - Register & Disclose flow", function () {
+describe("OpenPassport - Contracts - Register & Disclose flow", function () {
     this.timeout(0);
 
     let proof, publicSignals;
@@ -195,7 +195,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
 
         const poseidonT3Address = poseidonT3.target;
-        const Register = await ethers.getContractFactory("ProofOfPassportRegister", {
+        const Register = await ethers.getContractFactory("OpenPassportRegister", {
             libraries: {
                 PoseidonT3: poseidonT3Address
             }
@@ -227,7 +227,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
         console.log('\x1b[34m%s\x1b[0m', `SBT deployed to ${sbt.target}`);
     }
 
-    describe("Proof of Passport - Utils flow", function () {
+    describe("OpenPassport - Utils flow", function () {
         it("Should convert ISO dates to unix timestamps correctly", async function () {
             const unix_timestamp = await formatter.dateToUnixTimestamp("230512") // 2023 05 12
             console.log('unix_timestamp', unix_timestamp.toString());
@@ -242,7 +242,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
     })
 
     /*** Register flow ***/
-    describe("Proof of Passport - Register flow", function () {
+    describe("OpenPassport - Register flow", function () {
         const sigAlgNames = ['sha256WithRSAEncryption_65537', 'sha1WithRSAEncryption_65537'] //, 'sha1WithRSAEncryption_65537', 'sha256WithRSASSAPSS_65537']
 
         before(async function () {
@@ -387,7 +387,7 @@ describe("Proof of Passport - Contracts - Register & Disclose flow", function ()
 
     /*** Disclose flow ***/
 
-    // describe("Proof of Passport - Disclose flow", function () {
+    // describe("OpenPassport - Disclose flow", function () {
     //     this.beforeAll(async function () {
     //         user_address = await thirdAccount.getAddress();
     //         // We only test with the sha256WithRSAEncryption_65537 commitment for now
