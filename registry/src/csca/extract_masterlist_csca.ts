@@ -94,15 +94,16 @@ masterlistDirectories.forEach((directory) => {
 });
 
 // Write unique certificates to new files
-const uniqueCertsDir = 'outputs/pem_unique_masters/';
+const uniqueCertsDir = 'outputs/unique_pem_masterlist/';
 if (!fs.existsSync(uniqueCertsDir)) {
   fs.mkdirSync(uniqueCertsDir);
 }
 
 let uniqueCertCount = 0;
 uniqueCertificates.forEach((certBase64) => {
-  const certBuffer = Buffer.from(certBase64, 'base64');  // Convert back to binary
-  fs.writeFileSync(path.join(uniqueCertsDir, `unique_cert_${uniqueCertCount}.pem`), certBuffer);
+  // const certBuffer = Buffer.from(certBase64, 'base64');  // Convert back to binary
+  const pemCert = `-----BEGIN CERTIFICATE-----\n${certBase64}\n-----END CERTIFICATE-----\n`;
+  fs.writeFileSync(path.join(uniqueCertsDir, `unique_cert_${uniqueCertCount}.pem`), pemCert);
   uniqueCertCount++;
 });
 
