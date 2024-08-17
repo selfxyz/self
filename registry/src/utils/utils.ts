@@ -55,7 +55,7 @@ export function parseECParameters(publicKeyInfo: any): PublicKeyDetailsECDSA {
         const algorithmParams = publicKeyInfo.algorithm.algorithmParams;
         if (!algorithmParams) {
             console.log('No algorithm params found');
-            return { curve: 'Unknown', params: {} as StandardCurve };
+            return { curve: 'Unknown', params: {} as StandardCurve, bits: 'Unknown' };
         }
 
         const params = asn1.fromBER(algorithmParams.valueBeforeDecodeView).result;
@@ -100,25 +100,30 @@ export function parseECParameters(publicKeyInfo: any): PublicKeyDetailsECDSA {
             }
 
             const identifiedCurve = identifyCurve(curveParams);
-            return { curve: identifiedCurve, params: curveParams };
+            return { curve: identifiedCurve, params: curveParams, bits: getECDSACurveBits(identifiedCurve) };
         } else {
             if (valueBlock.value) {
-                console.log('value block length:', valueBlock.value.length);
+
                 if (algorithmParams.idBlock.tagNumber === 6) {
+                    console.log('\x1b[33malgorithmParams.idBlock.tagNumber === 6, looking for algorithmParams.valueBlock\x1b[0m');
+
                     const curveOid = algorithmParams.valueBlock.toString();
                     const curveName = getNamedCurve(curveOid);
-                    // console.log('Curve OID:', curveName);
-                    return { curve: curveName, params: {} as StandardCurve };
+                    // console.error('\x1b[33mCurve OID:', curveName, '\x1b[0m');
+                    return { curve: curveName, params: {} as StandardCurve, bits: getECDSACurveBits(curveName) };
+                }
+                else {
+                    console.log('\x1b[31malgorithmParams.idBlock.tagNumber !== 6\x1b[0m');
                 }
             }
             else {
-                console.log('value block is not defined');
+                console.error('\x1b[31mvalue block is not defined\x1b[0m');
             }
-            return { curve: 'Unknown', params: {} as StandardCurve };
+            return { curve: 'Unknown', params: {} as StandardCurve, bits: 'Unknown' };
         }
     } catch (error) {
         console.error('Error parsing EC parameters:', error);
-        return { curve: 'Error', params: {} as StandardCurve };
+        return { curve: 'Error', params: {} as StandardCurve, bits: 'Unknown' };
     }
 }
 
@@ -140,11 +145,13 @@ export interface CertificateData {
 export interface PublicKeyDetailsRSA {
     modulus: string;
     exponent: string;
+    bits: string;
 }
 
 export interface PublicKeyDetailsECDSA {
     curve: string;
     params: StandardCurve;
+    bits: string;
 }
 
 export function processCertificate(pemContent: string, fileName: string): CertificateData {
@@ -216,14 +223,15 @@ export function processCertificate(pemContent: string, fileName: string): Certif
                     new forge.jsbn.BigInteger(modulusHex, 16),
                     new forge.jsbn.BigInteger(exponentHex, 16)
                 );
-                const PublicKeyDetailsRSA = {
+                const PublicKeyDetailsRSA: PublicKeyDetailsRSA = {
                     modulus: publicKeyForge.n.toString(16),
-                    exponent: publicKeyForge.e.toString(10)
+                    exponent: publicKeyForge.e.toString(10),
+                    bits: publicKeyForge.n.bitLength().toString()
                 };
                 certificateData.publicKeyDetails = PublicKeyDetailsRSA;
             }
             else {
-                console.log('\x1b[90mRSA public key not found, probably ECDSA certificate\x1b[0m');
+                console.log('\x1b[33mRSA public key not found, probably ECDSA certificate\x1b[0m');
             }
         }
         if (signatureAlgorithm === 'RSA-PSS') {
@@ -270,4 +278,25 @@ export function processCertificate(pemContent: string, fileName: string): Certif
     } catch (error) {
         console.error(`Error processing ${fileName}:`, error);
     }
+}
+
+function getECDSACurveBits(curveName: string): string {
+    const curveBits: { [key: string]: number } = {
+        'secp256r1': 256,
+        'secp384r1': 384,
+        'secp521r1': 521,
+        'brainpoolP256r1': 256,
+        'brainpoolP384r1': 384,
+        'brainpoolP512r1': 512,
+        'secp256r1 (NIST P-256)': 256,
+        'secp384r1 (NIST P-384)': 384,
+        'secp521r1 (NIST P-521)': 521,
+
+    };
+    if (curveName in curveBits) {
+        return curveBits[curveName].toString();
+    }
+    console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
+    return "unknown";
+
 }
