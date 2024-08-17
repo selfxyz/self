@@ -19,7 +19,7 @@ yarn
 
 Extract pem certificates from ldif file:
 ```
-ts-node src/dsc/extract_certificates.ts
+ts-node src/dsc/extract_masterlist_dsc.ts
 ```
 
 Extract pem to txt:
@@ -42,11 +42,11 @@ Visualize the signature algorithms of each country:
 ts-node src/dsc/extract_sig_algs.ts
 ```
 
-### CSCAs (WIP)
+### CSCAs 
 
 Extract pem certificates from all the masterlists from the ldif file:
 ```
-ts-node src/csca/extract_masterlists.ts
+ts-node src/csca/extract_masterlist_csca.ts
 ```
 
 Visualize the content of a PEM file:
@@ -57,6 +57,14 @@ openssl x509 -text -in outputs/pem_unique_masters/unique_cert_0.pem
 Visualize the signature algorithms of each country:
 ```
 ts-node src/csca/extract_sig_algs.ts
+```
+
+
+### JSON files
+
+Build the JSON files:
+```
+ts-node src/buildJson.ts
 ```
 
 More info: [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx)
