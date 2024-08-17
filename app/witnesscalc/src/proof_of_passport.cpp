@@ -581,8 +581,8 @@ void Bytes2Packed_287_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::
 void Bytes2Packed_287_run(uint ctx_index,Circom_CalcWit* ctx);
 void PackBytes_288_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
 void PackBytes_288_run(uint ctx_index,Circom_CalcWit* ctx);
-void ProofOfPassport_289_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
-void ProofOfPassport_289_run(uint ctx_index,Circom_CalcWit* ctx);
+void OpenPassport_289_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather);
+void OpenPassport_289_run(uint ctx_index,Circom_CalcWit* ctx);
 void POSEIDON_C_0(Circom_CalcWit* ctx,FrElement* lvar,uint componentFather,FrElement* destination,int destination_size);
 void POSEIDON_S_1(Circom_CalcWit* ctx,FrElement* lvar,uint componentFather,FrElement* destination,int destination_size);
 void POSEIDON_M_2(Circom_CalcWit* ctx,FrElement* lvar,uint componentFather,FrElement* destination,int destination_size);
@@ -898,7 +898,7 @@ IsOlderThan_285_run,
 Num2Bits_286_run,
 Bytes2Packed_287_run,
 PackBytes_288_run,
-ProofOfPassport_289_run };
+OpenPassport_289_run };
 Circom_TemplateFunction _functionTableParallel[290] = { 
 NULL,
 NULL,
@@ -971817,9 +971817,9 @@ if (index_subc != 0)release_memory_component(ctx,index_subc);
 }
 }
 
-void ProofOfPassport_289_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather){
+void OpenPassport_289_create(uint soffset,uint coffset,Circom_CalcWit* ctx,std::string componentName,uint componentFather){
 ctx->componentMemory[coffset].templateId = 289;
-ctx->componentMemory[coffset].templateName = "ProofOfPassport";
+ctx->componentMemory[coffset].templateName = "OpenPassport";
 ctx->componentMemory[coffset].signalStart = soffset;
 ctx->componentMemory[coffset].inputCounter = 715;
 ctx->componentMemory[coffset].componentName = componentName;
@@ -971827,7 +971827,7 @@ ctx->componentMemory[coffset].idFather = componentFather;
 ctx->componentMemory[coffset].subcomponents = new uint[5]{0};
 }
 
-void ProofOfPassport_289_run(uint ctx_index,Circom_CalcWit* ctx){
+void OpenPassport_289_run(uint ctx_index,Circom_CalcWit* ctx){
 FrElement* signalValues = ctx->signalValues;
 u64 mySignalStart = ctx->componentMemory[ctx_index].signalStart;
 std::string myTemplateName = ctx->componentMemory[ctx_index].templateName;
@@ -972293,8 +972293,8 @@ if (index_subc != 0)release_memory_component(ctx,index_subc);
 }
 
 void run(Circom_CalcWit* ctx){
-ProofOfPassport_289_create(1,0,ctx,"main",0);
-ProofOfPassport_289_run(0,ctx);
+OpenPassport_289_create(1,0,ctx,"main",0);
+OpenPassport_289_run(0,ctx);
 }
 
 }

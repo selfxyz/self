@@ -1,4 +1,4 @@
-package com.proofofpassport;
+package com.proofofpassportapp;
 
 import android.app.PendingIntent;
 import android.content.Intent;
@@ -28,7 +28,7 @@ public class MainActivity extends ReactActivity {
    */
   @Override
   protected String getMainComponentName() {
-    return "ProofOfPassport";
+    return "OpenPassport";
   }
 
   /**

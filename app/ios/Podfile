@@ -30,7 +30,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'ProofOfPassport' do
+target 'OpenPassport' do
 
   config = use_native_modules!
 
@@ -41,6 +41,8 @@ target 'ProofOfPassport' do
   pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '310ecb519655d9ed8b1afc5eb490b2f51a4d3595'
   pod 'QKMRZScanner'
   pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'lottie-ios'
+  pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -56,7 +58,7 @@ target 'ProofOfPassport' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'ProofOfPassportTests' do
+  target 'OpenPassportTests' do
     inherit! :complete
     # Pods for testing
   end

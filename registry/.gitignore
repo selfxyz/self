@@ -15,6 +15,6 @@ outputs/plain_text_unique/*
 outputs/unique_txt
 outputs/searchable_registry_csca.json
 outputs/searchable_registry_dsc.json
-
+outputs/unique_pem_masterlist
 src/csca/python scripts/__pycache__
 dsc_plain_text

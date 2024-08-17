@@ -11,15 +11,20 @@ import {
   getHashLen,
   getCurrentDateYYMMDD,
   generateMerkleProof,
+  generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
 } from './utils';
-import { LeanIMT } from '@zk-kit/lean-imt';
-import { getLeaf } from './pubkeyTree';
-import { poseidon6 } from 'poseidon-lite';
-import { packBytes } from '../utils/utils';
-import { getCSCAModulusMerkleTree } from './csca';
-import { mockPassportDatas } from '../constants/mockPassportData';
+import { LeanIMT } from "@zk-kit/lean-imt";
+import { getLeaf } from "./pubkeyTree";
+import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
+import { poseidon6 } from "poseidon-lite";
+import { packBytes } from "../utils/utils";
+import { getCSCAModulusMerkleTree } from "./csca";
+import {
+  mockPassportDatas,
+} from "../constants/mockPassportData";
+import { SMT } from "@ashpect/smt"
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -33,13 +38,13 @@ export function generateCircuitInputsRegister(
   const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } =
     passportData;
 
-  const tree = getCSCAModulusMerkleTree();
+  // const tree = getCSCAModulusMerkleTree();
 
-  if (DEVELOPMENT_MODE) {
-    for (const mockPassportData of mocks) {
-      tree.insert(getLeaf(mockPassportData).toString());
-    }
-  }
+  // if (DEVELOPMENT_MODE) {
+  //   for (const mockPassportData of mocks) {
+  //     tree.insert(getLeaf(mockPassportData).toString());
+  //   }
+  // }
 
   if (
     ![
@@ -75,14 +80,14 @@ export function generateCircuitInputsRegister(
     ...pubKey,
   }).toString();
 
-  const index = tree.indexOf(leaf);
+  // const index = tree.indexOf(leaf);
   // console.log(`Index of pubkey in the registry: ${index}`);
-  if (index === -1) {
-    throw new Error('Your public key was not found in the registry');
-  }
+  // if (index === -1) {
+  //   throw new Error('Your public key was not found in the registry');
+  // }
 
-  const proof = tree.createProof(index);
-  console.log('verifyProof', tree.verifyProof(proof));
+  // const proof = tree.createProof(index);
+  // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
     console.error(
@@ -142,7 +147,7 @@ export function generateCircuitInputsDisclose(
   attestation_id: string,
   passportData: PassportData,
   merkletree: LeanIMT,
-  majority: string[],
+  majority: string,
   bitmap: string[],
   scope: string,
   user_identifier: string
@@ -174,6 +179,9 @@ export function generateCircuitInputsDisclose(
     PUBKEY_TREE_DEPTH
   );
 
+  // format majority to bigints
+
+
   return {
     secret: [secret],
     attestation_id: [attestation_id],
@@ -184,10 +192,50 @@ export function generateCircuitInputsDisclose(
     path: merkleProofIndices.map((index) => BigInt(index).toString()),
     siblings: merkleProofSiblings.map((index) => BigInt(index).toString()),
     bitmap: bitmap,
-    scope: [scope],
-    current_date: getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString()),
-    majority: majority.map((char) => BigInt(char.charCodeAt(0)).toString()),
+    scope: [BigInt(scope).toString()],
+    current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
+    majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
     user_identifier: [user_identifier],
+  };
+}
+
+export function generateCircuitInputsOfac(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  merkletree: LeanIMT,
+  majority: string,
+  bitmap: string[],
+  scope: string,
+  user_identifier: string,
+  sparsemerkletree: SMT,
+  proofLevel : number,
+) {
+
+  const result = generateCircuitInputsDisclose(secret,attestation_id,passportData,merkletree,majority,bitmap,scope,user_identifier);
+  const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
+
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49,58))
+  const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10,49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
+  const name_leaf = getNameLeaf(mrz_bytes.slice(10,49)) // [6-44] + 5 shift
+  
+  let root,closestleaf,siblings;  
+  if(proofLevel == 3){
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, passport_leaf));
+  } else if(proofLevel == 2){
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, namedob_leaf));
+  } else if (proofLevel == 1){
+    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, name_leaf));
+  } else {
+    throw new Error("Invalid proof level")
+  }
+
+  return {
+    ...finalResult,
+    closest_leaf: [BigInt(closestleaf).toString()],
+    smt_root: [BigInt(root).toString()],
+    smt_siblings: siblings.map(index => BigInt(index).toString()),
   };
 }
 

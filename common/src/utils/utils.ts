@@ -2,6 +2,7 @@ import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384 } from 'js-sha512';
+import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
 
 export function formatMrz(mrz: string) {
@@ -82,6 +83,16 @@ export function formatAndConcatenateDataHashes(
   // 96, -122, 72, 1, 101, 3, 4, 2, 2,
   // // NULL tag + SEQUENCE + long form indicator + length (275 bytes)
   // 5, 0, 48, -126, 1, 19,
+
+  // spain
+  // 48, -127,  -79,
+  // 2,    1, 
+  // 0,  
+  // 48,    7,   6,   5, 
+  // 1.3.14.3.2.26 is sha1
+  // 43,  14, 3,    2,   26,
+  // SEQUENCE + ...
+  // 48, -127, -94, 
 
   // => current conclusion is we should be able to just hardcode indexes
   // => as they shouldn't change must for same sig alg.
@@ -299,6 +310,56 @@ export function packBytes(unpacked) {
   return packed;
 }
 
+export function generateSMTProof(smt: SMT, leaf: bigint) {
+  const {entry, matchingEntry, siblings, root, membership} = smt.createProof(leaf);
+  const depth = siblings.length
+  
+  let closestleaf;
+  if (!matchingEntry){ // we got the 0 leaf or membership
+    // then check if entry[1] exists
+    if(!entry[1]){
+      // non membership proof
+      closestleaf = BigInt(0); // 0 leaf
+    } else {
+      closestleaf = BigInt(entry[0]); // leaf itself (memb proof) 
+    }
+  } else {
+    // non membership proof
+    closestleaf = BigInt(matchingEntry[0]); // actual closest
+  }
+  
+  // PATH, SIBLINGS manipulation as per binary tree in the circuit 
+  siblings.reverse()
+  while(siblings.length < 256) siblings.push(BigInt(0)); 
+
+  // ----- Useful for debugging hence leaving as comments -----
+  // const binary = entry[0].toString(2)
+  // const bits = binary.slice(-depth);
+  // let indices = bits.padEnd(256, "0").split("").map(Number)
+  // const pathToMatch = num2Bits(256,BigInt(entry[0])) 
+  // while(indices.length < 256) indices.push(0);
+  // // CALCULATED ROOT FOR TESTING 
+  // // closestleaf, depth, siblings, indices, root : needed 
+  // let calculatedNode = poseidon3([closestleaf,1,1]);
+  // console.log("Initial node while calculating",calculatedNode)
+  // console.log(smt.verifyProof(smt.createProof(leaf)))
+  // for (let i= 0; i < depth ; i++) {
+  //   const childNodes: any = indices[i] ? [siblings[i], calculatedNode] : [calculatedNode, siblings[i]]
+  //   console.log(indices[i],childNodes)
+  //   calculatedNode = poseidon2(childNodes)
+  // }
+  // console.log("Actual node", root)
+  // console.log("calculated node", calculatedNode)
+  // -----------------------------------------------------------
+
+  return {
+    root,
+    depth,
+    closestleaf,
+    siblings,   
+  };
+}
+
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
   const { siblings: merkleProofSiblings, index } = imt.generateProof(_index);
   const depthForThisOne = merkleProofSiblings.length;
@@ -352,4 +413,67 @@ export function BigintToArray(n: number, k: number, x: bigint) {
     x_temp = x_temp / mod;
   }
   return ret;
+}
+
+/**
+ * Converts a string of maximum 30 characters to a single BigInt.
+ * Each byte is represented by three digits in the resulting BigInt.
+ * @param str The input string (max 30 characters)
+ * @returns A BigInt representing the concatenated byte values
+ */
+export function stringToNumber(str: string): bigint {
+  if (str.length > 30) {
+    throw new Error("Input string must not exceed 30 characters");
+  }
+  return BigInt('1' + Array.from(str)
+    .map(char => char.charCodeAt(0).toString().padStart(3, '0'))
+    .join(''));
+}
+
+/**
+* Converts a BigInt (representing concatenated byte values) back to a string.
+* @param num The input BigInt
+* @returns The reconstructed string
+*/
+export function numberToString(num: bigint): string {
+  const str = num.toString().slice(1); // Remove leading '1'
+  const charCodes = str.match(/.{1,3}/g) || [];
+  return String.fromCharCode(...charCodes.map(code => parseInt(code, 10)));
+}
+export function stringToAsciiBigIntArray(str: string): bigint[] {
+  let asciiBigIntArray = [];
+  for (let i = 0; i < str.length; i++) {
+      asciiBigIntArray.push(BigInt(str.charCodeAt(i)));
+  }
+  return asciiBigIntArray;
+}
+
+export function hexToBin(n: string): string {
+  let bin = Number(`0x${n[0]}`).toString(2)
+  for (let i = 1; i < n.length; i += 1) {
+      bin += Number(`0x${n[i]}`).toString(2).padStart(4, "0")
+  }
+  return bin
+}
+
+export function num2Bits(n: number, inValue: bigint): bigint[] {
+  const out: bigint[] = new Array(n).fill(BigInt(0));
+  let lc1: bigint = BigInt(0);
+  let e2: bigint = BigInt(1);
+
+  for (let i = 0; i < n; i++) {
+      out[i] = (inValue >> BigInt(i)) & BigInt(1);
+
+      if (out[i] !== BigInt(0) && out[i] !== BigInt(1)) {
+          throw new Error("Bit value is not binary.");
+      }
+
+      lc1 += out[i] * e2;
+      e2 = e2 << BigInt(1);
+  }
+
+  if (lc1 !== inValue) {
+      throw new Error("Reconstructed value does not match the input.");
+  }
+  return out;
 }

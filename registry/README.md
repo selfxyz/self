@@ -1,6 +1,6 @@
 # Public key registry
 
-Public key registry and merkle tree builder for Proof of Passport.
+Public key registry and merkle tree builder for OpenPassport.
 We currently use the DSC list from the ICAO. The latest version can be downloaded [here](https://download.pkd.icao.int/). If you update them, be sure to change the filenames in the scripts!
 As it does not contain all the DSCs used by all countries, we are working on verifying the full certificate chain up to CSCA, see [here](https://github.com/zk-passport/proof-of-passport/issues/37).
 
