@@ -7,7 +7,7 @@ include "../../utils/rsaPkcs1.circom";
 include "dmpierre/sha1-circom/circuits/sha1.circom";
 include "../../utils/circom-ecdsa/ecdsa.circom";
 
-template PassportVerifier_ecdsaWithSHA1Encryption(n, k, max_datahashes_bytes) {
+template PASSPORT_VERIFIER_ECDSA_SHA1(n, k, max_datahashes_bytes) {
     var hashLen = 20;
     var eContentBytesLength = 72 + hashLen; // 92
 

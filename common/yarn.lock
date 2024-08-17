@@ -45,6 +45,13 @@
   dependencies:
     buffer "^6.0.3"
 
+"@zk-kit/utils@^1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@zk-kit/utils/-/utils-1.2.0.tgz#7f5dfadb9512f1a090639c912395a6684b560ba2"
+  integrity sha512-Ut9zfnlBVpopZG/s600Ds/FPSWXiPhO4q8949kmXTzwDXytjnvFbDZIFdWqE/lA7/NZjvykiTnnVwmanMxv2+w==
+  dependencies:
+    buffer "^6.0.3"
+
 array-buffer-byte-length@^1.0.1:
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/array-buffer-byte-length/-/array-buffer-byte-length-1.0.1.tgz#1e5583ec16763540a27ae52eed99ff899223568f"

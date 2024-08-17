@@ -47,7 +47,7 @@ describe('Register - SHA1 WITH ECDSA', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/register/register_ecdsaWithSHA1Encryption.circom'),
+      path.join(__dirname, '../../circuits/register/register_ecdsa_sha1.circom'),
       {
         include: [
           'node_modules',

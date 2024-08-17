@@ -4,14 +4,14 @@ include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "@zk-email/circuits/lib/sha.circom";
-include "@zk-email/circuits/lib/rsa.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitBytesToWords.circom";
 include "../utils/splitSignalsToWords.circom";
-include "../utils/leafHasher.circom";
+include "../utils/RSASSAPSS_padded.circom";
 include "../utils/leafHasher.circom";
 
-template DSC_SHA256_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
+
+template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
     signal input raw_dsc_cert[max_cert_bytes]; 
     signal input raw_dsc_cert_padded_bytes;
     signal input csca_modulus[k_csca];
@@ -26,10 +26,10 @@ template DSC_SHA256_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_le
 
     signal output blinded_dsc_commitment;
 
+    // verify the leaf
     component leafHasher = LeafHasher(n_csca,k_csca);
     leafHasher.in <== csca_modulus;
     signal leaf <== leafHasher.out;
-
 
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
@@ -39,20 +39,17 @@ template DSC_SHA256_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_le
     assert(n_csca * k_csca > max_cert_bytes);
     assert(n_csca <= (255 \ 2));
 
-    // hash raw TBS certificate
-    signal sha[256] <== Sha256Bytes(max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
-    component sstw_1 = SplitSignalsToWords(1,256, n_csca, k_csca);
-    for (var i = 0; i < 256; i++) {
-        sstw_1.in[i] <== sha[255 - i];
-    }
+    // decode signature to get encoded message
+    component rsaDecode = RSASSAPSS_Decode(n_csca, k_csca);
+    rsaDecode.signature <== dsc_signature;
+    rsaDecode.modulus <== csca_modulus;
+    var emLen = div_ceil(n_csca * k_csca, 8);
+    signal encodedMessage[emLen] <== rsaDecode.eM;
 
-    // verify RSA dsc_signature
-    component rsa = RSAVerifier65537(n_csca, k_csca);
-    for (var i = 0; i < k_csca; i++) {
-        rsa.message[i] <== sstw_1.out[i];
-        rsa.modulus[i] <== csca_modulus[i];
-        rsa.signature[i] <== dsc_signature[i];
-    }
+    component rsaVerify = RSASSAPSSVerify_SHA256(n_csca * k_csca, max_cert_bytes);
+    rsaVerify.eM <== encodedMessage;
+    rsaVerify.message <== raw_dsc_cert;
+    rsaVerify.messagePaddedLen <== raw_dsc_cert_padded_bytes;
 
     // verify DSC csca_modulus
     component shiftLeft = VarShiftLeft(max_cert_bytes, dsc_mod_len);
@@ -64,12 +61,12 @@ template DSC_SHA256_RSA(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_le
         dsc_modulus[i] === spbt_1.out[i];
     }
     // generate blinded commitment
-    component sstw_2 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
-    sstw_2.in <== dsc_modulus;
+    component sstw_1 = SplitSignalsToWords(n_dsc,k_dsc, 230, 9);
+    sstw_1.in <== dsc_modulus;
     component poseidon = Poseidon(10);
     poseidon.inputs[0] <== secret;
     for (var i = 0; i < 9; i++) {
-        poseidon.inputs[i+1] <== sstw_2.out[i];
+        poseidon.inputs[i+1] <== sstw_1.out[i];
     }
     blinded_dsc_commitment <== poseidon.out;
 }

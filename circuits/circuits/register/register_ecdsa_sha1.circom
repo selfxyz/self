@@ -2,17 +2,17 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "./verifier/passport_verifier_ecdsaWithSHA256Encryption.circom";
+include "./verifier/passport_verifier_ecdsa_sha1.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
 
-template Register_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
+template REGISTER_ECDSA_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
     signal input mrz[93];
     signal input dg1_hash_offset;
     signal input econtent[max_datahashes_bytes];
     signal input datahashes_padded_length;
-    signal input signed_attributes[104];
+    signal input signed_attributes[92];
 
     signal input signature_r[k]; // ECDSA signature component r
     signal input signature_s[k]; // ECDSA signature component s
@@ -57,7 +57,7 @@ template Register_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes, nLevels,
     signal output nullifier <== nullifier_hasher.out;
     
     // Verify passport validity
-    component PV = PassportVerifier_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes);
+    component PV = PASSPORT_VERIFIER_ECDSA_SHA1(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== econtent;
@@ -83,5 +83,5 @@ template Register_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes, nLevels,
     signal output commitment <== poseidon_hasher.out;
 }
 
-// We hardcode 8 here for ecdsa_with_SHA256
-component main { public [ attestation_id ] } = Register_ecdsaWithSHA256Encryption(43, 6, 320, 16, 8);
+// We hardcode 7 here for ecdsa_with_SHA1
+component main { public [ attestation_id ] } = REGISTER_ECDSA_SHA1(43, 6, 320, 16, 7);

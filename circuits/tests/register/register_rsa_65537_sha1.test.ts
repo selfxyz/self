@@ -3,17 +3,17 @@ import { assert, expect } from 'chai';
 import path from 'path';
 const wasm_tester = require('circom_tester').wasm;
 import { poseidon1, poseidon6 } from 'poseidon-lite';
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
+import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../../common/src/utils/utils';
 import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
 
-describe('Register - SHA256 RSA', function () {
+describe('Register - SHA1 RSA', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
-  let passportData = mockPassportData_sha256_rsa_65537;
+  let passportData = mockPassportData_sha1_rsa_65537;
   let attestation_id: string;
   const attestation_name = 'E-PASSPORT';
   const n_dsc = 121;
@@ -21,19 +21,23 @@ describe('Register - SHA256 RSA', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/register/register_sha256_rsa_65537.circom'),
+      path.join(__dirname, '../../circuits/register/register_rsa_65537_sha1.circom'),
       {
         include: [
           'node_modules',
           './node_modules/@zk-kit/binary-merkle-root.circom/src',
           './node_modules/circomlib/circuits',
+          './node_modules/dmpierre/sha1-circom/circuits',
+          './node_modules/@zk-email/circuits',
         ],
       }
     );
 
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+
     attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
+
     inputs = generateCircuitInputsRegister(
       secret,
       dscSecret,

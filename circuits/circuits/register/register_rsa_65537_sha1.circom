@@ -2,19 +2,19 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "./verifier/passport_verifier_sha256_rsa_65537.circom";
+include "./verifier/passport_verifier_rsa_65537_sha1.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
 include "../utils/leafHasher.circom";
 
-template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
+template REGISTER_RSA_65537_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
 
     signal input mrz[93];
     signal input dg1_hash_offset;
     signal input econtent[max_datahashes_bytes];
     signal input datahashes_padded_length;
-    signal input signed_attributes[104];
+    signal input signed_attributes[92];
     signal input signature[k];
     signal input dsc_modulus[k];
     signal input dsc_secret;
@@ -35,7 +35,7 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
     signal output nullifier <== nullifier_hasher.out;
 
     // Verify passport validity
-    component PV = PassportVerifier_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes);
+    component PV = PASSPORT_VERIFIER_RSA_65537_SHA1(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== econtent;
@@ -62,5 +62,5 @@ template Register_sha256WithRSAEncryption_65537(n, k, max_datahashes_bytes, nLev
 
 }
 
-// We hardcode 1 here for sha256WithRSAEncryption_65537
-component main { public [ attestation_id ] } = Register_sha256WithRSAEncryption_65537(121, 17, 320, 16, 1);
+// We hardcode 3 here for sha1WithRSAEncryption_65537
+component main { public [ attestation_id ] } = REGISTER_RSA_65537_SHA1(121, 17, 320, 16, 3);

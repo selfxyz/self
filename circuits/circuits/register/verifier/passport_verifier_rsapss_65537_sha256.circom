@@ -1,25 +1,28 @@
 pragma circom 2.1.5;
 
+// include "@zk-email/circuits/lib/rsa.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "../../utils/circom-ecdsa/ecdsa.circom";
-include "../../utils/Sha256BytesStatic.circom";
 include "@zk-email/circuits/lib/sha.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "../../utils/Sha256BytesStatic.circom";
+include "../../utils/RSASSAPSS.circom";
+include "@zk-email/circuits/lib/fp.circom";
 
-template PassportVerifier_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes) {
+template PASSPORT_VERIFIER_RSAPSS_65537_SHA256(n, k, max_datahashes_bytes) {
     var hashLen = 32;
     var eContentBytesLength = 72 + hashLen; // 104
 
     signal input mrz[93]; // formatted mrz (5 + 88) chars
     signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
-
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    signal input dsc_modulus[2][k]; // Public Key (split into Qx and Qy)
+    // dsc_modulus that signed the passport
+    signal input dsc_modulus[k];
 
-    signal input signature_r[k]; // ECDSA signature component r
-    signal input signature_s[k]; // ECDSA signature component s
+    // signature of the passport
+    signal input signature[k];
 
     // compute sha256 of formatted mrz
     signal mrzSha[256] <== Sha256BytesStatic(93)(mrz);
@@ -45,7 +48,7 @@ template PassportVerifier_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes) 
     // hash dataHashes dynamically
     signal dataHashesSha[256] <== Sha256Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
 
-    // get output of dataHashes into bytes to check against eContent
+    // get output of dataHashes sha256 into bytes to check against eContent
     component dataHashesSha_bytes[hashLen];
     for (var i = 0; i < hashLen; i++) {
         dataHashesSha_bytes[i] = Bits2Num(8);
@@ -54,46 +57,20 @@ template PassportVerifier_ecdsaWithSHA256Encryption(n, k, max_datahashes_bytes) 
         }
     }
 
-    // assert dataHashesSha is in eContentBytes in range bytes 72 to 92
+    // assert dataHashesSha is in eContentBytes in range bytes 72 to 104
     for(var i = 0; i < hashLen; i++) {
         eContentBytes[eContentBytesLength - hashLen + i] === dataHashesSha_bytes[i].out;
     }
 
-    // hash eContentBytes
-    signal eContentSha[256] <== Sha256BytesStatic(104)(eContentBytes);
+    // decode signature to get encoded message
+    component rsaDecode = RSASSAPSS_Decode(n, k);
+    rsaDecode.signature <== signature;
+    rsaDecode.modulus <== dsc_modulus;
+    var emLen = div_ceil(n*k, 8);
+    signal encodedMessage[emLen] <== rsaDecode.eM;
 
-    // get output of eContentBytes sha256 into k chunks of n bits each
-    var msg_len = (256 + n) \ n;
-
-    //eContentHash: list of length 256/n +1 of components of n bits 
-    component eContentHash[msg_len];
-    for (var i = 0; i < msg_len; i++) {
-        eContentHash[i] = Bits2Num(n);
-    }
-
-    for (var i = 0; i < 256; i++) {
-        eContentHash[i \ n].in[i % n] <== eContentSha[255 - i];
-    }
-
-    for (var i = 256; i < n * msg_len; i++) {
-        eContentHash[i \ n].in[i % n] <== 0;
-    }
-    
-
-    // 43 * 6 = 258;
-    signal msgHash[6];
-    for(var i = 0; i < msg_len; i++) {
-        msgHash[i] <== eContentHash[i].out;
-    }
-
-    // verify eContentHash signature
-    component ecdsa_verify  = ECDSAVerifyNoPubkeyCheck(n,k);
-
-    ecdsa_verify.r <==  signature_r;
-    ecdsa_verify.s <== signature_s;
-    ecdsa_verify.msghash <== msgHash;
-    ecdsa_verify.pubkey <== dsc_modulus;
-
-    signal output result <== ecdsa_verify.result;
+    // verify eContent signature
+    component rsaVerify = RSASSAPSSVerify_SHA256(n*k, eContentBytesLength);
+    rsaVerify.eM <== encodedMessage;
+    rsaVerify.message <== eContentBytes;
 }
-

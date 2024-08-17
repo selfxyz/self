@@ -3,39 +3,36 @@ import { assert, expect } from 'chai';
 import path from 'path';
 const wasm_tester = require('circom_tester').wasm;
 import { poseidon1, poseidon6 } from 'poseidon-lite';
-import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
+import { mockPassportData_sha256_rsapss_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../../common/src/utils/utils';
-import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
 
-describe('Register - SHA1 RSA', function () {
+describe('Register - SHA256 RSASSAPSS', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
-  let passportData = mockPassportData_sha1_rsa_65537;
-  let attestation_id: string;
+  let passportData = mockPassportData_sha256_rsapss_65537;
   const attestation_name = 'E-PASSPORT';
-  const n_dsc = 121;
-  const k_dsc = 17;
+  let attestation_id: string;
+  const n_dsc = 64;
+  const k_dsc = 32;
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/register/register_sha1_rsa_65537.circom'),
+      path.join(__dirname, '../../circuits/register/register_rsapss_65537_sha256.circom'),
       {
         include: [
           'node_modules',
+          'node_modules/@zk-email/circuits/helpers/sha.circom',
           './node_modules/@zk-kit/binary-merkle-root.circom/src',
           './node_modules/circomlib/circuits',
-          './node_modules/dmpierre/sha1-circom/circuits',
-          './node_modules/@zk-email/circuits',
         ],
       }
     );
 
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-
     attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
 
     inputs = generateCircuitInputsRegister(
@@ -53,7 +50,9 @@ describe('Register - SHA1 RSA', function () {
   });
 
   it('should calculate the witness with correct inputs', async function () {
+    console.time('calculateWitness');
     const w = await circuit.calculateWitness(inputs);
+    console.timeEnd('calculateWitness');
     await circuit.checkConstraints(w);
 
     const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
@@ -68,7 +67,11 @@ describe('Register - SHA1 RSA', function () {
     const commitment_bytes = poseidon6([
       inputs.secret[0],
       attestation_id,
-      computeLeafFromModulusBigInt(BigInt(passportData.pubKey.modulus)),
+      getLeaf({
+        signatureAlgorithm: passportData.signatureAlgorithm,
+        modulus: passportData.pubKey.modulus,
+        exponent: passportData.pubKey.exponent,
+      }),
       mrz_bytes[0],
       mrz_bytes[1],
       mrz_bytes[2],
