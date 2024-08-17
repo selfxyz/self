@@ -32,8 +32,8 @@ build_circuit() {
 # name:folder:build_flag
 # set build_flag to false if you want to skip the build
 CIRCUITS=(
-    "register_sha256WithRSAEncryption_65537:register:true"
-    "register_sha1WithRSAEncryption_65537:register:true"
+    "register_rsa_65537_sha256:register:true"
+    "register_rsa_65537_sha1:register:true"
     "disclose:disclose:true"
 )
 
