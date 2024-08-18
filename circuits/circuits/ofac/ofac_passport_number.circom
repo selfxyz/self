@@ -9,7 +9,7 @@ include "../utils/getCommonLength.circom";
 include "../utils/validatePassport.circom";
 include "../utils/smt.circom";
 
-template ProvePassportNotInOfac(nLevels) {
+template OFAC_PASSPORT_NUMBER(nLevels) {
     signal input secret;
     signal input attestation_id;
     signal input pubkey_leaf;
@@ -45,4 +45,4 @@ template ProvePassportNotInOfac(nLevels) {
     proofLevel <== 3;
 }
 
-component main { public [ merkle_root,smt_root ] } = ProvePassportNotInOfac(16);
+component main { public [ merkle_root,smt_root ] } = OFAC_PASSPORT_NUMBER(16);

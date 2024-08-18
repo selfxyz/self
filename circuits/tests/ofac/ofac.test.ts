@@ -77,7 +77,7 @@ tree.insert(BigInt(mockInputs.commitment));
 // 3. Invalid proof : Correct path but wrong corresponding siblings ; fails due to calculatedRoot != smt_root
 
 // Level 3 : Passport match in OfacList
-describe('start testing ofac_passportNo_verifier.circom', function () {
+describe('start testing ofac_passport_number.circom', function () {
   this.timeout(0);
   let passno_smt = new SMT(hash, true);
   let memSmtInputs: any;
@@ -85,7 +85,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_passportNo_verifier.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_passport_number.circom'),
       {
         include: [
           'node_modules',
@@ -167,7 +167,7 @@ describe('start testing ofac_passportNo_verifier.circom', function () {
 });
 
 // Level 2 : NameDob match in OfacList
-describe('start testing ofac_nameDob_verifier.circom', function () {
+describe('start testing ofac_name_dob.circom', function () {
   this.timeout(0);
   let namedob_smt = new SMT(hash, true);
   let memSmtInputs: any;
@@ -175,7 +175,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_nameDob_verifier.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_name_dob.circom'),
       {
         include: [
           'node_modules',
@@ -257,7 +257,7 @@ describe('start testing ofac_nameDob_verifier.circom', function () {
 });
 
 // Level 1 : Name match in OfacList
-describe('start testing ofac_name_verifier.circom', function () {
+describe('start testing ofac_name.circom', function () {
   this.timeout(0);
   let name_smt = new SMT(hash, true);
   let memSmtInputs: any;
@@ -265,7 +265,7 @@ describe('start testing ofac_name_verifier.circom', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_name_verifier.circom'),
+      path.join(__dirname, '../../circuits/ofac/ofac_name.circom'),
       {
         include: [
           'node_modules',
