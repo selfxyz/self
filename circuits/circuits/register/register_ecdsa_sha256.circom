@@ -38,16 +38,15 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     }
 
     component dsc_commitment_hasher = Poseidon(3);
-    component nullifier_hasher = Poseidon(3);
+    component nullifier_hasher = Poseidon(2);
     component leaf_hasher = Poseidon(3);
 
     dsc_commitment_hasher.inputs[0] <== dsc_secret;    
     dsc_commitment_hasher.inputs[1] <== poseidon_hasher_dsc_modules_x.out;
     dsc_commitment_hasher.inputs[2] <== poseidon_hasher_dsc_modules_y.out;
 
-    nullifier_hasher.inputs[0] <== secret;
-    nullifier_hasher.inputs[1] <==  poseidon_hasher_signature_r.out;
-    nullifier_hasher.inputs[2] <==  poseidon_hasher_signature_s.out;
+    nullifier_hasher.inputs[0] <==  poseidon_hasher_signature_r.out;
+    nullifier_hasher.inputs[1] <==  poseidon_hasher_signature_s.out;
 
     leaf_hasher.inputs[0] <== signatureAlgorithm;
     leaf_hasher.inputs[1] <== poseidon_hasher_dsc_modules_x.out;
