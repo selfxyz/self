@@ -174,16 +174,13 @@ describe('start testing ofac_name_dob.circom', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_name_dob.circom'),
-      {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_name_dob.circom'), {
+      include: [
+        'node_modules',
+        './node_modules/@zk-kit/binary-merkle-root.circom/src',
+        './node_modules/circomlib/circuits',
+      ],
+    });
 
     namedob_smt.import(nameDobjson);
     const proofLevel = 2;
@@ -264,16 +261,13 @@ describe('start testing ofac_name.circom', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/ofac_name.circom'),
-      {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
-      }
-    );
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/ofac/ofac_name.circom'), {
+      include: [
+        'node_modules',
+        './node_modules/@zk-kit/binary-merkle-root.circom/src',
+        './node_modules/circomlib/circuits',
+      ],
+    });
 
     name_smt.import(namejson);
     const proofLevel = 1;
