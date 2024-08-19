@@ -24,7 +24,7 @@ describe('Disclose', function () {
   const attestation_name = 'E-PASSPORT';
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/disclose/disclose.circom'), {
+    circuit = await wasm_tester(path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'), {
       include: [
         'node_modules',
         './node_modules/@zk-kit/binary-merkle-root.circom/src',
