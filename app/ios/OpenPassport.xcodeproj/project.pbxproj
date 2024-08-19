@@ -870,7 +870,7 @@
 				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 53;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -889,13 +889,15 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -915,7 +917,7 @@
 				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 1;
+				CURRENT_PROJECT_VERSION = 53;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -934,12 +936,14 @@
 					"@executable_path/Frameworks",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 1.5;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
+				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
 		};
@@ -1052,8 +1056,9 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = OpenPassport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -1187,9 +1192,10 @@
 					"$(PROJECT_DIR)",
 				);
 				INFOPLIST_FILE = OpenPassport/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
 				INFOPLIST_KEY_NSDocumentsFolderUsageDescription = "";
 				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Needed only if you want to upload QRcodes";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
