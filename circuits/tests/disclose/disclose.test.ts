@@ -24,13 +24,16 @@ describe('Disclose', function () {
   const attestation_name = 'E-PASSPORT';
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
