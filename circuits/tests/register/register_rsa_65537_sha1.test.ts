@@ -94,11 +94,11 @@ describe('Register - SHA1 RSA', function () {
     }
   });
 
-  it('should fail to calculate witness with invalid econtent', async function () {
+  it('should fail to calculate witness with invalid dataHashes', async function () {
     try {
       const invalidInputs = {
         ...inputs,
-        econtent: inputs.econtent.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+        dataHashes: inputs.dataHashes.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
       };
       await circuit.calculateWitness(invalidInputs);
       expect.fail('Expected an error but none was thrown.');

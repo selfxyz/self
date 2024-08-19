@@ -1,25 +1,26 @@
 pragma circom 2.1.5;
 
+include "@zk-email/circuits/lib/rsa.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "../../utils/circom-ecdsa/ecdsa.circom";
-include "../../utils/Sha256BytesStatic.circom";
 include "@zk-email/circuits/lib/sha.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "../utils/Sha256BytesStatic.circom";
 
-template PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes) {
+template PASSPORT_VERIFIER_RSA_65537_SHA256(n, k, max_datahashes_bytes) {
     var hashLen = 32;
     var eContentBytesLength = 72 + hashLen; // 104
 
     signal input mrz[93]; // formatted mrz (5 + 88) chars
     signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
-
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    signal input dsc_modulus[2][k]; // Public Key (split into Qx and Qy)
+    // dsc_modulus that signed the passport
+    signal input dsc_modulus[k];
 
-    signal input signature_r[k]; // ECDSA signature component r
-    signal input signature_s[k]; // ECDSA signature component s
+    // signature of the passport
+    signal input signature[k];
 
     // compute sha256 of formatted mrz
     signal mrzSha[256] <== Sha256BytesStatic(93)(mrz);
@@ -45,7 +46,7 @@ template PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes) {
     // hash dataHashes dynamically
     signal dataHashesSha[256] <== Sha256Bytes(max_datahashes_bytes)(dataHashes, datahashes_padded_length);
 
-    // get output of dataHashes into bytes to check against eContent
+    // get output of dataHashes sha256 into bytes to check against eContent
     component dataHashesSha_bytes[hashLen];
     for (var i = 0; i < hashLen; i++) {
         dataHashesSha_bytes[i] = Bits2Num(8);
@@ -54,7 +55,7 @@ template PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes) {
         }
     }
 
-    // assert dataHashesSha is in eContentBytes in range bytes 72 to 92
+    // assert dataHashesSha is in eContentBytes in range bytes 72 to 104
     for(var i = 0; i < hashLen; i++) {
         eContentBytes[eContentBytesLength - hashLen + i] === dataHashesSha_bytes[i].out;
     }
@@ -79,21 +80,17 @@ template PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes) {
         eContentHash[i \ n].in[i % n] <== 0;
     }
     
+    // verify eContentHash signature
+    component rsa = RSAVerifier65537(n, k);
 
-    // 43 * 6 = 258;
-    signal msgHash[6];
-    for(var i = 0; i < msg_len; i++) {
-        msgHash[i] <== eContentHash[i].out;
+    for (var i = 0; i < msg_len; i++) {
+        rsa.message[i] <== eContentHash[i].out;
     }
 
-    // verify eContentHash signature
-    component ecdsa_verify  = ECDSAVerifyNoPubkeyCheck(n,k);
+    for (var i = msg_len; i < k; i++) {
+        rsa.message[i] <== 0;
+    }
 
-    ecdsa_verify.r <==  signature_r;
-    ecdsa_verify.s <== signature_s;
-    ecdsa_verify.msghash <== msgHash;
-    ecdsa_verify.pubkey <== dsc_modulus;
-
-    signal output result <== ecdsa_verify.result;
+    rsa.modulus <== dsc_modulus;
+    rsa.signature <== signature;
 }
-

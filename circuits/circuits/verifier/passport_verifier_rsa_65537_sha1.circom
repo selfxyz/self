@@ -1,27 +1,26 @@
 pragma circom 2.1.5;
 
 include "@zk-email/circuits/utils/bytes.circom";
-include "../../utils/Sha1BytesStatic.circom";
-include "../../utils/Sha1Bytes.circom";
-include "../../utils/rsaPkcs1.circom";
+include "../utils/Sha1BytesStatic.circom";
+include "../utils/Sha1Bytes.circom";
+include "../utils/rsaPkcs1.circom";
 include "dmpierre/sha1-circom/circuits/sha1.circom";
-include "../../utils/circom-ecdsa/ecdsa.circom";
 
-template PASSPORT_VERIFIER_ECDSA_SHA1(n, k, max_datahashes_bytes) {
+template PASSPORT_VERIFIER_RSA_65537_SHA1(n, k, max_datahashes_bytes) {
     var hashLen = 20;
     var eContentBytesLength = 72 + hashLen; // 92
 
     signal input mrz[93]; // formatted mrz (5 + 88) chars
     signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
-
     signal input datahashes_padded_length;
     signal input eContentBytes[eContentBytesLength];
 
-    signal input dsc_modulus[2][k]; // Public Key (split into Qx and Qy)
+    // pubkey that signed the passport
+    signal input dsc_modulus[k];
 
-    signal input signature_r[k]; // ECDSA signature component r
-    signal input signature_s[k]; // ECDSA signature component s
+    // signature of the passport
+    signal input signature[k];
 
     // compute sha1 of formatted mrz
     signal mrzSha[160] <== Sha1BytesStatic(93)(mrz);
@@ -80,23 +79,18 @@ template PASSPORT_VERIFIER_ECDSA_SHA1(n, k, max_datahashes_bytes) {
     for (var i = 160; i < n * msg_len; i++) {
         eContentHash[i \ n].in[i % n] <== 0;
     }
-
-    // 43 * 6 = 258;
-    signal msgHash[6];
-    for(var i = 0; i < 4; i++) {
-        msgHash[i] <== eContentHash[i].out;
-    }
-    msgHash[4] <== 0;
-    msgHash[5] <== 0;
-
+    
     // verify eContentHash signature
-    component ecdsa_verify  = ECDSAVerifyNoPubkeyCheck(n,k);
+    component rsa = RSAVerify65537(n, k);
 
-    ecdsa_verify.r <==  signature_r;
-    ecdsa_verify.s <== signature_s;
-    ecdsa_verify.msghash <== msgHash;
-    ecdsa_verify.pubkey <== dsc_modulus;
+    for (var i = 0; i < msg_len; i++) {
+        rsa.base_message[i] <== eContentHash[i].out;
+    }
 
-    signal output result <== ecdsa_verify.result;
+    for (var i = msg_len; i < k; i++) {
+        rsa.base_message[i] <== 0;
+    }
+
+    rsa.modulus <== dsc_modulus;
+    rsa.signature <== signature;
 }
-

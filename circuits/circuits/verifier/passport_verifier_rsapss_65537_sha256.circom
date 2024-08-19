@@ -4,8 +4,8 @@ pragma circom 2.1.5;
 include "@zk-email/circuits/utils/bytes.circom";
 include "@zk-email/circuits/lib/sha.circom";
 include "@zk-email/circuits/utils/array.circom";
-include "../../utils/Sha256BytesStatic.circom";
-include "../../utils/RSASSAPSS.circom";
+include "../utils/Sha256BytesStatic.circom";
+include "../utils/RSASSAPSS.circom";
 include "@zk-email/circuits/lib/fp.circom";
 
 template PASSPORT_VERIFIER_RSAPSS_65537_SHA256(n, k, max_datahashes_bytes) {

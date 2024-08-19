@@ -2,7 +2,7 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "./verifier/passport_verifier_ecdsa_sha256.circom";
+include "../verifier/passport_verifier_ecdsa_sha256.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
 
@@ -10,9 +10,9 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     signal input secret;
     signal input mrz[93];
     signal input dg1_hash_offset;
-    signal input econtent[max_datahashes_bytes];
+    signal input dataHashes[max_datahashes_bytes];
     signal input datahashes_padded_length;
-    signal input signed_attributes[104];
+    signal input eContent[104];
 
     signal input signature_r[k]; // ECDSA signature component r
     signal input signature_s[k]; // ECDSA signature component s
@@ -59,9 +59,9 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     component PV = PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dg1_hash_offset <== dg1_hash_offset;
-    PV.dataHashes <== econtent;
+    PV.dataHashes <== dataHashes;
     PV.datahashes_padded_length <== datahashes_padded_length;
-    PV.eContentBytes <== signed_attributes;
+    PV.eContentBytes <== eContent;
     PV.dsc_modulus <== dsc_modulus;
     PV.signature_r <== signature_r;
     PV.signature_s <== signature_s;

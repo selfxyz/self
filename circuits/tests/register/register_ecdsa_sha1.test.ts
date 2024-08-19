@@ -77,9 +77,9 @@ describe('Register - SHA1 WITH ECDSA', function () {
       secret: inputs.secret,
       mrz: inputs.mrz,
       dg1_hash_offset: inputs.dg1_hash_offset[0],
-      econtent: inputs.econtent,
+      dataHashes: inputs.dataHashes,
       datahashes_padded_length: inputs.datahashes_padded_length[0],
-      signed_attributes: inputs.signed_attributes,
+      eContent: inputs.eContent,
       signature_r: signature_r,
       signature_s: signature_s,
       dsc_modulus: dsc_modulus,
@@ -115,15 +115,15 @@ describe('Register - SHA1 WITH ECDSA', function () {
     expect(commitment_circom).to.be.equal(commitment_js);
   });
 
-  it('should fail to calculate witness with invalid econtent', async function () {
+  it('should fail to calculate witness with invalid dataHashes', async function () {
     try {
       const invalidInputs = {
         secret: inputs.secret,
         mrz: inputs.mrz,
         dg1_hash_offset: inputs.dg1_hash_offset[0],
-        econtent: inputs.econtent.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+        dataHashes: inputs.dataHashes.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
         datahashes_padded_length: inputs.datahashes_padded_length[0],
-        signed_attributes: inputs.signed_attributes,
+        eContent: inputs.eContent,
         signature_r: signature_r,
         signature_s: signature_s,
         dsc_modulus: dsc_modulus,
@@ -145,9 +145,9 @@ describe('Register - SHA1 WITH ECDSA', function () {
           .fill(0)
           .map((byte) => BigInt(byte).toString()),
         dg1_hash_offset: inputs.dg1_hash_offset[0],
-        econtent: inputs.econtent,
+        dataHashes: inputs.dataHashes,
         datahashes_padded_length: inputs.datahashes_padded_length[0],
-        signed_attributes: inputs.signed_attributes,
+        eContent: inputs.eContent,
         signature_r: signature_r,
         signature_s: signature_s,
         dsc_modulus: dsc_modulus,
@@ -168,9 +168,9 @@ describe('Register - SHA1 WITH ECDSA', function () {
         secret: inputs.secret,
         mrz: inputs.mrz,
         dg1_hash_offset: inputs.dg1_hash_offset[0],
-        econtent: inputs.econtent,
+        dataHashes: inputs.dataHashes,
         datahashes_padded_length: inputs.datahashes_padded_length[0],
-        signed_attributes: inputs.signed_attributes,
+        eContent: inputs.eContent,
         signature_r: signature_r,
         signature_s: wrong_signature_s,
         dsc_modulus: dsc_modulus,
