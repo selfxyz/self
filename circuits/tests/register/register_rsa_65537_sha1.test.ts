@@ -18,7 +18,7 @@ describe('Register - SHA1 RSA', function () {
   const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const n_dsc = 121;
   const k_dsc = 17;
-  
+
   const inputs = generateCircuitInputsRegister(
     secret,
     dscSecret,

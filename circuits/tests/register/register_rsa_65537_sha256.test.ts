@@ -12,7 +12,7 @@ import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants
 describe('Register - SHA256 RSA', function () {
   this.timeout(0);
   let circuit: any;
-  
+
   const passportData = mockPassportData_sha256_rsa_65537;
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();

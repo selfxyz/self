@@ -17,7 +17,7 @@ describe('PROVE - RSA SHA1', function () {
   const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
   const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
   const bitmap = Array(90).fill('1');
-  
+
   const inputs = generateCircuitInputsProve(
     passportData,
     n_dsc,

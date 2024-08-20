@@ -27,7 +27,7 @@ describe('PROVE - RSA SHA256', function () {
     majority,
     user_identifier
   );
-  
+
   before(async () => {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/prove/prove_rsa_65537_sha256.circom'),
