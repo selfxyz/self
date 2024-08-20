@@ -7,8 +7,8 @@ import {
 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
-import { SMT, ChildNodes } from '@ashpect/smt';
-import { poseidon1, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
+import { SMT } from '@ashpect/smt';
+import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
@@ -18,13 +18,10 @@ import { PassportData } from '../../../common/src/utils/types';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 
 let circuit: any;
-let passportData = mockPassportData_sha256_rsa_65537; //Mock passport is ADDED in ofac list to test circuits
-let passportData2 = mockPassportData2_sha256_rsa_65537; //Mock passport is not added in ofac list to test circuits
-let tree: LeanIMT;
-const hash = (childNodes: ChildNodes) =>
-  childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
+const passportData = mockPassportData_sha256_rsa_65537; // Mock passport ADDED in ofac list to test circuits
+const passportData2 = mockPassportData2_sha256_rsa_65537; // Mock passport not added in ofac list to test circuits
 
-// Calculating common validatidy inputs for all 3 ciruits
+// Calculating common validity inputs for all 3 circuits
 function getPassportInputs(passportData: PassportData) {
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
@@ -59,23 +56,24 @@ function getPassportInputs(passportData: PassportData) {
     user_identifier: user_identifier,
   };
 }
+
 const inputs = getPassportInputs(passportData);
 const mockInputs = getPassportInputs(passportData2);
 
-tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
+let tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
 tree.insert(BigInt(inputs.commitment));
 tree.insert(BigInt(mockInputs.commitment));
 
-// POSSIBLE TESTS (for each of 3 circuits) :
+// POSSIBLE TESTS (for each of 3 circuits):
 // 0. Cicuits compiles and loads
 // 1. Valid proof   : Correct path and corresponding closest leaf AND closest_leaf != pasport_hash ; Valid prove of non-membership
 // 2. Invalid proof : Correct path and corresponding closest leaf AND closest_leaf == pasport_hash ; Valid prove of membership ; Hence non-membership proof would fail
 // 3. Invalid proof : Correct path but wrong corresponding siblings ; fails due to calculatedRoot != smt_root
 
-// Level 3 : Passport match in OfacList
-describe('start testing ofac_passport_number.circom', function () {
+// Level 3: Passport number match in OfacList
+describe('OFAC - Passport number match', function () {
   this.timeout(0);
-  let passno_smt = new SMT(hash, true);
+  let passno_smt = new SMT(poseidon2, true);
   let memSmtInputs: any;
   let nonMemSmtInputs: any;
 
@@ -127,8 +125,8 @@ describe('start testing ofac_passport_number.circom', function () {
     expect(circuit).to.not.be.undefined;
   });
 
-  // Corrct siblings and closest leaf : Everything correct as a proof
-  it('should pass without errors , all conditions satisfied', async function () {
+  // Correct siblings and closest leaf : Everything correct as a proof
+  it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     const proofLevel = await circuit.getOutput(w, ['proofLevel']);
     console.log(proofLevel);
@@ -150,10 +148,11 @@ describe('start testing ofac_passport_number.circom', function () {
   // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
   it('should fail to calculate witness due to wrong closest_leaf provided, level 3', async function () {
     try {
-      let wrongSibInputs = nonMemSmtInputs;
-      const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
-      wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
-      await circuit.calculateWitness(wrongSibInputs);
+      const wrongInputs = {
+        ...nonMemSmtInputs,
+        closest_leaf: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      };
+      await circuit.calculateWitness(wrongInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
@@ -162,10 +161,10 @@ describe('start testing ofac_passport_number.circom', function () {
   });
 });
 
-// Level 2 : NameDob match in OfacList
-describe('start testing ofac_name_dob.circom', function () {
+// Level 2: NameDob match in OfacList
+describe('OFAC - Name and DOB match', function () {
   this.timeout(0);
-  let namedob_smt = new SMT(hash, true);
+  let namedob_smt = new SMT(poseidon2, true);
   let memSmtInputs: any;
   let nonMemSmtInputs: any;
 
@@ -214,8 +213,8 @@ describe('start testing ofac_name_dob.circom', function () {
     expect(circuit).to.not.be.undefined;
   });
 
-  // Corrct siblings and closest leaf : Everything correct as a proof
-  it('should pass without errors , all conditions satisfied', async function () {
+  // Correct siblings and closest leaf : Everything correct as a proof
+  it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     const proofLevel = await circuit.getOutput(w, ['proofLevel']);
     console.log(proofLevel);
@@ -237,10 +236,11 @@ describe('start testing ofac_name_dob.circom', function () {
   // Give wrong closest leaf but correct siblings array
   it('should fail to calculate witness due to wrong closest_leaf provided, level 2', async function () {
     try {
-      let wrongSibInputs = nonMemSmtInputs;
-      const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
-      wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
-      await circuit.calculateWitness(wrongSibInputs);
+      const wrongInputs = {
+        ...nonMemSmtInputs,
+        closest_leaf: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      };
+      await circuit.calculateWitness(wrongInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
@@ -249,10 +249,10 @@ describe('start testing ofac_name_dob.circom', function () {
   });
 });
 
-// Level 1 : Name match in OfacList
-describe('start testing ofac_name.circom', function () {
+// Level 1: Name match in OfacList
+describe('OFAC - Name match', function () {
   this.timeout(0);
-  let name_smt = new SMT(hash, true);
+  let name_smt = new SMT(poseidon2, true);
   let memSmtInputs: any;
   let nonMemSmtInputs: any;
 
@@ -301,8 +301,8 @@ describe('start testing ofac_name.circom', function () {
     expect(circuit).to.not.be.undefined;
   });
 
-  // Corrct siblings and closest leaf : Everything correct as a proof
-  it('should pass without errors , all conditions satisfied', async function () {
+  // Correct siblings and closest leaf : Everything correct as a proof
+  it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     const proofLevel = await circuit.getOutput(w, ['proofLevel']);
     console.log(proofLevel);
@@ -324,10 +324,11 @@ describe('start testing ofac_name.circom', function () {
   // Give wrong closest leaf but correct siblings array
   it('should fail to calculate witness due to wrong closest_leaf provided, level 1', async function () {
     try {
-      let wrongSibInputs = nonMemSmtInputs;
-      const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
-      wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
-      await circuit.calculateWitness(wrongSibInputs);
+      const wrongInputs = {
+        ...nonMemSmtInputs,
+        closest_leaf: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      };
+      await circuit.calculateWitness(wrongInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
