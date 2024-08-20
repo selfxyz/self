@@ -18,6 +18,26 @@
 		054340D02C71B2980014B445 /* OpenPassport App Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 054340B42C71B2960014B445 /* OpenPassport App Clip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
 		0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35E2BBC98C9006670BD /* libfq.a */; };
+		0573C4D72C72E6D0006C7386 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CA2C72E6D0006C7386 /* PassportReader.swift */; };
+		0573C4D82C72E6D0006C7386 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CC2C72E6D0006C7386 /* PassportReader.m */; };
+		0573C4D92C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */; };
+		0573C4DA2C72E6D0006C7386 /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */; };
+		0573C4DB2C72E6D0006C7386 /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CF2C72E6D0006C7386 /* Prover.m */; };
+		0573C4DC2C72E6D0006C7386 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */; };
+		0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */; };
+		0573C4DE2C72E6D0006C7386 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */; };
+		0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D32C72E6D0006C7386 /* LottieView.swift */; };
+		0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */; };
+		0573C4E12C72E6D0006C7386 /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D52C72E6D0006C7386 /* Prover.swift */; };
+		0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */; };
+		0573C4E42C72E7F6006C7386 /* libfq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35E2BBC98C9006670BD /* libfq.a */; };
+		0573C4E52C72E7F6006C7386 /* libfr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F32BB331AB00F58EEA /* libfr.a */; };
+		0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
+		0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
+		0573C4E82C72E7F6006C7386 /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
+		0573C4E92C72E7F6006C7386 /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
+		0573C4EE2C72E857006C7386 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4ED2C72E857006C7386 /* passport.json */; };
+		0573C4F02C742FA6006C7386 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4EF2C742FA6006C7386 /* masterList.pem */; };
 		058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
 		058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
@@ -121,6 +141,23 @@
 		054340CD2C71B2980014B445 /* OpenPassport_App_Clip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenPassport_App_Clip.entitlements; sourceTree = "<group>"; };
 		0569F35A2BBC900D006670BD /* librapidsnark.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = librapidsnark.a; sourceTree = "<group>"; };
 		0569F35E2BBC98C9006670BD /* libfq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfq.a; sourceTree = "<group>"; };
+		0573C4CA2C72E6D0006C7386 /* PassportReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = SOURCE_ROOT; };
+		0573C4CB2C72E6D0006C7386 /* OpenPassport-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OpenPassport-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
+		0573C4CC2C72E6D0006C7386 /* PassportReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = SOURCE_ROOT; };
+		0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = SOURCE_ROOT; };
+		0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = SOURCE_ROOT; };
+		0573C4CF2C72E6D0006C7386 /* Prover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Prover.m; sourceTree = SOURCE_ROOT; };
+		0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = SOURCE_ROOT; };
+		0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = SOURCE_ROOT; };
+		0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = SOURCE_ROOT; };
+		0573C4D32C72E6D0006C7386 /* LottieView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = SOURCE_ROOT; };
+		0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = SOURCE_ROOT; };
+		0573C4D52C72E6D0006C7386 /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = SOURCE_ROOT; };
+		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
+		0573C4E32C72E739006C7386 /* OpenPassport App Clip-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OpenPassport App Clip-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
+		0573C4EA2C72E7F6006C7386 /* groth16_prover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = groth16_prover.h; sourceTree = "<group>"; };
+		0573C4ED2C72E857006C7386 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = SOURCE_ROOT; };
+		0573C4EF2C742FA6006C7386 /* masterList.pem */ = {isa = PBXFileReference; lastKnownFileType = file; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = SOURCE_ROOT; };
 		058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_sha256WithRSAEncryption_65537.a; sourceTree = "<group>"; };
 		058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_disclose.a; sourceTree = "<group>"; };
 		05D985F22BB331AB00F58EEA /* libgmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgmp.a; sourceTree = "<group>"; };
@@ -200,6 +237,12 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0573C4E92C72E7F6006C7386 /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */,
+				0573C4E52C72E7F6006C7386 /* libfr.a in Frameworks */,
+				0573C4E42C72E7F6006C7386 /* libfq.a in Frameworks */,
+				0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */,
+				0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */,
+				0573C4E82C72E7F6006C7386 /* libwitnesscalc_disclose.a in Frameworks */,
 				926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -225,7 +268,23 @@
 			isa = PBXGroup;
 			children = (
 				054340B62C71B2960014B445 /* AppDelegate.h */,
+				0573C4ED2C72E857006C7386 /* passport.json */,
 				054340B72C71B2960014B445 /* AppDelegate.m */,
+				0573C4D32C72E6D0006C7386 /* LottieView.swift */,
+				0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */,
+				0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */,
+				0573C4CB2C72E6D0006C7386 /* OpenPassport-Bridging-Header.h */,
+				0573C4E32C72E739006C7386 /* OpenPassport App Clip-Bridging-Header.h */,
+				0573C4CC2C72E6D0006C7386 /* PassportReader.m */,
+				0573C4CA2C72E6D0006C7386 /* PassportReader.swift */,
+				0573C4CF2C72E6D0006C7386 /* Prover.m */,
+				0573C4EF2C742FA6006C7386 /* masterList.pem */,
+				0573C4D52C72E6D0006C7386 /* Prover.swift */,
+				0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */,
+				0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */,
+				0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */,
+				0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */,
+				0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */,
 				054340B92C71B2960014B445 /* SceneDelegate.h */,
 				054340BA2C71B2960014B445 /* SceneDelegate.m */,
 				054340BC2C71B2960014B445 /* ViewController.h */,
@@ -276,6 +335,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0573C4EA2C72E7F6006C7386 /* groth16_prover.h */,
 				058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */,
 				058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */,
 				0569F35E2BBC98C9006670BD /* libfq.a */,
@@ -449,6 +509,7 @@
 					};
 					054340B32C71B2960014B445 = {
 						CreatedOnToolsVersion = 15.2;
+						LastSwiftMigration = 1520;
 					};
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1430;
@@ -488,6 +549,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				054340C92C71B2980014B445 /* LaunchScreen.storyboard in Resources */,
+				0573C4F02C742FA6006C7386 /* masterList.pem in Resources */,
+				0573C4EE2C72E857006C7386 /* passport.json in Resources */,
 				054340C62C71B2980014B445 /* Assets.xcassets in Resources */,
 				054340C12C71B2960014B445 /* Main.storyboard in Resources */,
 			);
@@ -739,9 +802,21 @@
 			files = (
 				054340CC2C71B2980014B445 /* main.m in Sources */,
 				054340BE2C71B2960014B445 /* ViewController.m in Sources */,
+				0573C4DE2C72E6D0006C7386 /* MRZScannerModule.m in Sources */,
+				0573C4D72C72E6D0006C7386 /* PassportReader.swift in Sources */,
+				0573C4D82C72E6D0006C7386 /* PassportReader.m in Sources */,
+				0573C4E12C72E6D0006C7386 /* Prover.swift in Sources */,
+				0573C4DA2C72E6D0006C7386 /* QRScannerBridge.m in Sources */,
+				0573C4D92C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift in Sources */,
 				054340B82C71B2960014B445 /* AppDelegate.m in Sources */,
 				054340BB2C71B2960014B445 /* SceneDelegate.m in Sources */,
+				0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */,
 				054340C42C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld in Sources */,
+				0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */,
+				0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */,
+				0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */,
+				0573C4DB2C72E6D0006C7386 /* Prover.m in Sources */,
+				0573C4DC2C72E6D0006C7386 /* MRZScannerModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -864,6 +939,7 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -888,6 +964,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.5;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
@@ -897,6 +977,9 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport App Clip-Bridging-Header.h";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
@@ -911,6 +994,7 @@
 				CLANG_ANALYZER_NONNULL = YES;
 				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
 				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_WEAK = YES;
 				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
@@ -935,6 +1019,10 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)",
+				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MARKETING_VERSION = 1.5;
 				MTL_FAST_MATH = YES;
@@ -943,6 +1031,8 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport App Clip-Bridging-Header.h";
+				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Release;
@@ -951,6 +1041,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
@@ -1090,6 +1181,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
