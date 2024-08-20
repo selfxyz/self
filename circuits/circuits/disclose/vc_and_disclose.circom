@@ -27,14 +27,15 @@ template VC_AND_DISCLOSE(nLevels) {
     component disclose = DISCLOSE();
     disclose.mrz <== mrz;
     disclose.bitmap <== bitmap;
-    disclose.secret <== secret;
-    disclose.scope <== scope;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
-    disclose.user_identifier <== user_identifier;
     
+    // generate scope nullifier
+    component poseidon_nullifier = Poseidon(2);
+    poseidon_nullifier.inputs[0] <== secret;
+    poseidon_nullifier.inputs[1] <== scope;
+    signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
-    signal output nullifier <== disclose.nullifier;
 }
 
 component main { public [ merkle_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16);

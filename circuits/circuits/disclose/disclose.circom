@@ -12,9 +12,6 @@ template DISCLOSE() {
     signal input bitmap[90]; // 88 for MRZ + 2 for majority
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
-    signal input user_identifier;
-    signal input scope;
-    signal input secret;
     signal output revealedData_packed[3];
     signal output nullifier;
 
@@ -51,10 +48,4 @@ template DISCLOSE() {
     revealedData[88] <== older_than[0] * bitmap[88];
     revealedData[89] <== older_than[1] * bitmap[89];
     revealedData_packed <== PackBytes(90)(revealedData);
-
-    // generate scope nullifier
-    component poseidon_nullifier = Poseidon(2);
-    poseidon_nullifier.inputs[0] <== secret;
-    poseidon_nullifier.inputs[1] <== scope;
-    nullifier <== poseidon_nullifier.out;
 }

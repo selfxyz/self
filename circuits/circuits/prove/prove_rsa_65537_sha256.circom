@@ -9,7 +9,6 @@ include "../utils/leafHasher.circom";
 include "../disclose/disclose.circom";
 
 template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes, signatureAlgorithm) {
-
     /*** CUSTOM IMPLEMENTATION ***/
     signal input mrz[93];
     signal input dg1_hash_offset;
@@ -18,15 +17,6 @@ template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes, signatureAlgorithm) 
     signal input eContent[104];
     signal input signature[k];
     signal input dsc_modulus[k];
-
-    // generate nullifier
-    component splitSignalsToWords_signature = SplitSignalsToWords(n,k,230,9);
-    splitSignalsToWords_signature.in <== signature;
-    component nullifier_hasher = Poseidon(9);
-    for (var i= 0; i < 9; i++) {
-        nullifier_hasher.inputs[i] <== splitSignalsToWords_signature.out[i];
-
-    }
 
     // Verify passport validity
     component PV = PASSPORT_VERIFIER_RSA_65537_SHA256(n, k, max_datahashes_bytes);
@@ -51,12 +41,16 @@ template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes, signatureAlgorithm) 
     disclose.bitmap <== bitmap;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
-    disclose.user_identifier <== user_identifier;
-    disclose.scope <== scope;
-    disclose.secret <== nullifier_hasher.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
-    signal output nullifier <== disclose.nullifier;
 
+    // generate nullifier
+    signal split_signature[9] <== SplitSignalsToWords(n, k, 230, 9)(signature);
+    component nullifier_hasher = Poseidon(10);
+    for (var i = 0; i < 9; i++) {
+        nullifier_hasher.inputs[i] <== split_signature[i];
+    }
+    nullifier_hasher.inputs[9] <== scope;
+    signal output nullifier <== nullifier_hasher.out;
 }
 
-component main { public [dsc_modulus, user_identifier, current_date ]  } = PROVE_RSA_65537_SHA256(121, 17, 320, 1);
+component main { public [ dsc_modulus, user_identifier, current_date ]  } = PROVE_RSA_65537_SHA256(121, 17, 320, 1);
