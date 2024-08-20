@@ -127,7 +127,7 @@ export async function fetchZkey(
   const options = {
     fromUrl: zkeyZipUrls[circuit],
     toFile: `${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`,
-    background: true,
+    background: false,
     begin: () => {
       console.log('Download has begun');
     },
