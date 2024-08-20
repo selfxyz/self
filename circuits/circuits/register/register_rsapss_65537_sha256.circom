@@ -1,9 +1,7 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/utils/bytes.circom";
 include "../verifier/passport_verifier_rsapss_65537_sha256.circom";
-include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
 include "../utils/leafHasher.circom";
 include "../utils/computeCommitment.circom";
