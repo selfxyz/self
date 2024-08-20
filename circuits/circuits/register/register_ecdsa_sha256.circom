@@ -61,9 +61,6 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     PV.signature_r <== signature_r;
     PV.signature_s <== signature_s;
 
-    // signature is valid
-    PV.result === 1; 
-
     // Generate the commitment
     signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf_hasher.out, mrz);
 }

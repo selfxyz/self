@@ -94,6 +94,6 @@ template PASSPORT_VERIFIER_ECDSA_SHA256(n, k, max_datahashes_bytes) {
     ecdsa_verify.msghash <== msgHash;
     ecdsa_verify.pubkey <== dsc_modulus;
 
-    signal output result <== ecdsa_verify.result;
+    1 === ecdsa_verify.result;
 }
 
