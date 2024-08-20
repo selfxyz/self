@@ -2,7 +2,7 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
-include "../verifier/passport_verifier_rsa_65537_sha256.circom";
+include "../verifier/passport_verifier_rsa_65537_sha1.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
 include "../utils/leafHasher.circom";
@@ -14,13 +14,13 @@ template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes) {
     signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
     signal input datahashes_padded_length;
-    signal input eContent[104];
+    signal input eContent[92];
     signal input signature[k];
     signal input dsc_modulus[k];
-    signal output signature_algorithm <== 001;
+    signal output signature_algorithm <== 000;
 
     // Verify passport validity
-    component PV = PASSPORT_VERIFIER_RSA_65537_SHA256(n, k, max_datahashes_bytes);
+    component PV = PASSPORT_VERIFIER_RSA_65537_SHA1(n, k, max_datahashes_bytes);
     PV.mrz <== mrz;
     PV.dg1_hash_offset <== dg1_hash_offset;
     PV.dataHashes <== dataHashes;

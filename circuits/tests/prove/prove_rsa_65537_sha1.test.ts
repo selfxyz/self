@@ -3,14 +3,14 @@ import { assert, expect } from 'chai';
 import path from 'path';
 const wasm_tester = require('circom_tester').wasm;
 import { poseidon1 } from 'poseidon-lite';
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
+import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 
-describe('PROVE - RSA SHA256', function () {
+describe('PROVE - RSA SHA1', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
-  let passportData = mockPassportData_sha256_rsa_65537;
+  let passportData = mockPassportData_sha1_rsa_65537;
   const n_dsc = 121;
   const k_dsc = 17;
   const majority = '18';
@@ -19,7 +19,7 @@ describe('PROVE - RSA SHA256', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/prove/prove_rsa_65537_sha256.circom'),
+      path.join(__dirname, '../../circuits/prove/prove_rsa_65537_sha1.circom'),
       {
         include: [
           'node_modules',
