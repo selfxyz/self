@@ -1,10 +1,7 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/utils/bytes.circom";
 include "../verifier/passport_verifier_ecdsa_sha1.circom";
-include "binary-merkle-root.circom";
-include "../utils/splitSignalsToWords.circom";
 include "../utils/computeCommitment.circom";
 
 template REGISTER_ECDSA_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
