@@ -8,7 +8,6 @@ include "../utils/splitSignalsToWords.circom";
 include "../utils/leafHasher.circom";
 include "../disclose/disclose.circom";
 
-
 template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes, signatureAlgorithm) {
 
     /*** CUSTOM IMPLEMENTATION ***/

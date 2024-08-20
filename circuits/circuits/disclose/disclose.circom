@@ -6,9 +6,10 @@ include "../utils/isOlderThan.circom";
 include "../utils/isValid.circom";
 include "binary-merkle-root.circom";
 include "../utils/isValid.circom";
+
 template DISCLOSE() {
     signal input mrz[93];
-    signal input bitmap[90];
+    signal input bitmap[90]; // 88 for MRZ + 2 for majority
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
     signal input user_identifier;
@@ -16,7 +17,6 @@ template DISCLOSE() {
     signal input secret;
     signal output revealedData_packed[3];
     signal output nullifier;
-
 
     // Verify validity of the passport
     component isValid = IsValid();
@@ -52,14 +52,9 @@ template DISCLOSE() {
     revealedData[89] <== older_than[1] * bitmap[89];
     revealedData_packed <== PackBytes(90)(revealedData);
 
-
     // generate scope nullifier
     component poseidon_nullifier = Poseidon(2);
     poseidon_nullifier.inputs[0] <== secret;
     poseidon_nullifier.inputs[1] <== scope;
     nullifier <== poseidon_nullifier.out;
-
-
 }
-
-// component { public [ user_identifier, current_date] } = DISCLOSE();

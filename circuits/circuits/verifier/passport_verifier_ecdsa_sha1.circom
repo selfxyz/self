@@ -90,9 +90,9 @@ template PASSPORT_VERIFIER_ECDSA_SHA1(n, k, max_datahashes_bytes) {
     msgHash[5] <== 0;
 
     // verify eContentHash signature
-    component ecdsa_verify  = ECDSAVerifyNoPubkeyCheck(n,k);
+    component ecdsa_verify = ECDSAVerifyNoPubkeyCheck(n, k);
 
-    ecdsa_verify.r <==  signature_r;
+    ecdsa_verify.r <== signature_r;
     ecdsa_verify.s <== signature_s;
     ecdsa_verify.msghash <== msgHash;
     ecdsa_verify.pubkey <== dsc_modulus;

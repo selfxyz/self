@@ -5,9 +5,11 @@ include "@zk-email/circuits/utils/bytes.circom";
 include "../verifier/passport_verifier_ecdsa_sha256.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
+include "../utils/computeCommitment.circom";
 
 template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
+
     signal input mrz[93];
     signal input dg1_hash_offset;
     signal input dataHashes[max_datahashes_bytes];
@@ -21,36 +23,29 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     signal input dsc_secret;
     signal input attestation_id;
     
-    // Hash DSC modulus and signature components
-    // Poseidon(dsc_modulus[0][0], dsc_modulus[0][1], ..., dsc_modulus[0][5])
-    component poseidon_hasher_dsc_modules_x = Poseidon(6);
-    component poseidon_hasher_dsc_modules_y = Poseidon(6);
+    // Hash DSC pubkey and signature components
+    // Poseidon(dsc_pubkey[0][0], dsc_pubkey[0][1], ..., dsc_pubkey[0][5])
+    signal dsc_pubkey_x_hash <== Poseidon(k)(dsc_modulus[0]);
+    signal dsc_pubkey_y_hash <== Poseidon(k)(dsc_modulus[1]);
 
     // Poseidon(signature_r[0], signature_r[1], ..., signature_r[5])
-    component poseidon_hasher_signature_r = Poseidon(6);
-    component poseidon_hasher_signature_s = Poseidon(6);
-
-    for (var i = 0; i < k; i++) {
-        poseidon_hasher_dsc_modules_x.inputs[i] <== dsc_modulus[0][i];
-        poseidon_hasher_dsc_modules_y.inputs[i] <== dsc_modulus[1][i];
-        poseidon_hasher_signature_r.inputs[i] <== signature_r[i];
-        poseidon_hasher_signature_s.inputs[i] <== signature_s[i];
-    }
+    signal signature_r_hash <== Poseidon(k)(signature_r);
+    signal signature_s_hash <== Poseidon(k)(signature_s);
 
     component dsc_commitment_hasher = Poseidon(3);
     component nullifier_hasher = Poseidon(2);
     component leaf_hasher = Poseidon(3);
 
     dsc_commitment_hasher.inputs[0] <== dsc_secret;    
-    dsc_commitment_hasher.inputs[1] <== poseidon_hasher_dsc_modules_x.out;
-    dsc_commitment_hasher.inputs[2] <== poseidon_hasher_dsc_modules_y.out;
+    dsc_commitment_hasher.inputs[1] <== dsc_pubkey_x_hash;
+    dsc_commitment_hasher.inputs[2] <== dsc_pubkey_y_hash;
 
-    nullifier_hasher.inputs[0] <==  poseidon_hasher_signature_r.out;
-    nullifier_hasher.inputs[1] <==  poseidon_hasher_signature_s.out;
+    nullifier_hasher.inputs[0] <== signature_r_hash;
+    nullifier_hasher.inputs[1] <== signature_s_hash;
 
     leaf_hasher.inputs[0] <== signatureAlgorithm;
-    leaf_hasher.inputs[1] <== poseidon_hasher_dsc_modules_x.out;
-    leaf_hasher.inputs[2] <== poseidon_hasher_dsc_modules_y.out;
+    leaf_hasher.inputs[1] <== dsc_pubkey_x_hash;
+    leaf_hasher.inputs[2] <== dsc_pubkey_y_hash;
 
     signal output blinded_dsc_commitment <== dsc_commitment_hasher.out;
     signal output nullifier <== nullifier_hasher.out;
@@ -70,16 +65,7 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     PV.result === 1; 
 
     // Generate the commitment
-    component poseidon_hasher = Poseidon(6);
-    poseidon_hasher.inputs[0] <== secret;
-    poseidon_hasher.inputs[1] <== attestation_id;
-    poseidon_hasher.inputs[2] <== leaf_hasher.out;
-
-    signal mrz_packed[3] <== PackBytes(93)(mrz);
-    for (var i = 0; i < 3; i++) {
-        poseidon_hasher.inputs[i + 3] <== mrz_packed[i];
-    }
-    signal output commitment <== poseidon_hasher.out;
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf_hasher.out, mrz);
 }
 
 // We hardcode 8 here for ecdsa_with_SHA256

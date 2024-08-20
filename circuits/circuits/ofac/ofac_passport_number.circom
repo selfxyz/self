@@ -6,7 +6,7 @@ include "circomlib/circuits/bitify.circom";
 include "@zk-email/circuits/utils/array.circom";
 include "binary-merkle-root.circom";
 include "../utils/getCommonLength.circom";
-include "../utils/validatePassport.circom";
+include "../disclose/verify_commitment.circom";
 include "../utils/smt.circom";
 
 template OFAC_PASSPORT_NUMBER(nLevels) {
@@ -25,8 +25,8 @@ template OFAC_PASSPORT_NUMBER(nLevels) {
     signal input smt_siblings[256];
     signal output proofLevel;
 
-    // Validate passport
-    ValidatePassport(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings, current_date);
+    // Verify commitment is part of the merkle tree
+    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings);
 
     // PassportNo Hash
     component poseidon_hasher = Poseidon(9);

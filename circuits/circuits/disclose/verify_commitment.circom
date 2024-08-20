@@ -3,6 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "@zk-email/circuits/utils/bytes.circom";
 include "binary-merkle-root.circom";
+include "../utils/computeCommitment.circom";
 
 template VERIFY_COMMITMENT(nLevels) {
     signal input secret;
@@ -15,17 +16,9 @@ template VERIFY_COMMITMENT(nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    // Compute the commitment
-    component poseidon_hasher = Poseidon(6);
-    poseidon_hasher.inputs[0] <== secret;
-    poseidon_hasher.inputs[1] <== attestation_id;
-    poseidon_hasher.inputs[2] <== pubkey_leaf;
-    signal mrz_packed[3] <== PackBytes(93)(mrz);
-    for (var i = 0; i < 3; i++) {
-        poseidon_hasher.inputs[i + 3] <== mrz_packed[i];
-    }
+    signal commitment <== ComputeCommitment()(secret, attestation_id, pubkey_leaf, mrz);
 
     // Verify commitment inclusion
-    signal computedRoot <== BinaryMerkleRoot(nLevels)(poseidon_hasher.out, merkletree_size, path, siblings);
+    signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;
 }
