@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { X509Certificate } from 'crypto';
 import path from 'path';
 import { getCSCAInputs, getTBSHash } from '../../../common/src/utils/csca';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 import forge from 'node-forge';
 
 import {

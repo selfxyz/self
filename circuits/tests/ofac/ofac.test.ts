@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import path from 'path';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 import {
   mockPassportData_sha256_rsa_65537,
   mockPassportData2_sha256_rsa_65537,
@@ -15,7 +15,7 @@ import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json'
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
-import exp from 'constants';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 
 let circuit: any;
 let passportData = mockPassportData_sha256_rsa_65537; //Mock passport is ADDED in ofac list to test circuits
@@ -27,10 +27,6 @@ const hash = (childNodes: ChildNodes) =>
 // Calculating common validatidy inputs for all 3 ciruits
 function getPassportInputs(passportData: PassportData) {
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-  const attestation_name = 'E-PASSPORT';
-  const attestation_id = poseidon1([
-    BigInt(Buffer.from(attestation_name).readUIntBE(0, 6)),
-  ]).toString();
 
   const majority = '18';
   const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
@@ -45,7 +41,7 @@ function getPassportInputs(passportData: PassportData) {
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
   const commitment = poseidon6([
     secret,
-    attestation_id,
+    PASSPORT_ATTESTATION_ID,
     pubkey_leaf,
     mrz_bytes[0],
     mrz_bytes[1],
@@ -54,7 +50,7 @@ function getPassportInputs(passportData: PassportData) {
 
   return {
     secret: secret,
-    attestation_id: attestation_id,
+    attestation_id: PASSPORT_ATTESTATION_ID,
     passportData: passportData,
     commitment: commitment,
     majority: majority,

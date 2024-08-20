@@ -7,8 +7,10 @@ export const COMMITMENT_TREE_DEPTH = 16
 
 export const MODAL_SERVER_ADDRESS = "https://zk-passport--dsc-prover-generate-dsc-proof.modal.run"
 
-// poseidon("E-PASSPORT")
+export const PASSPORT_ATTESTATION_NAME = "E-PASSPORT"
+// poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
 export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
+
 export const CHAIN_NAME = "optimism"
 export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL"
 
