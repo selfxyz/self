@@ -13,7 +13,7 @@ import useNavigationStore from '../stores/navigationStore';
 import { AppType } from '../../../common/src/utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
-import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
+import { generateCircuitInputsDisclose, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import axios from 'axios';
 import { stringToNumber } from '../../../common/src/utils/utils';
@@ -111,15 +111,25 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       const tree = await getTreeFromTracker();
 
-      const inputs = generateCircuitInputsDisclose(
-        secret,
-        PASSPORT_ATTESTATION_ID,
+      // const inputs = generateCircuitInputsDisclose(
+      //   secret,
+      //   PASSPORT_ATTESTATION_ID,
+      //   passportData,
+      //   tree as any,
+      //   (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
+      //   revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+      //   selectedApp.scope,
+      //   stringToNumber(selectedApp.userId).toString()
+      // );
+
+      const inputs = generateCircuitInputsProve(
         passportData,
-        tree as any,
-        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
-        revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+        121, 17,
         selectedApp.scope,
+        revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
         stringToNumber(selectedApp.userId).toString()
+
       );
 
       console.log("inputs", inputs);

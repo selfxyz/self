@@ -29,7 +29,7 @@ export function createAppType(data: AppType): AppType {
     //callbackEndPoint: data.callbackEndPoint,
     userId: data.userId,
     disclosureOptions: data.disclosureOptions,
-    circuit: data.circuit || "disclose",
+    circuit: data.circuit || "prove_rsa_65537_sha256",
     ...data
   };
 }
