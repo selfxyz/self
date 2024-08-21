@@ -54,4 +54,4 @@ template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes) {
     signal output nullifier <== nullifier_hasher.out;
 }
 
-component main { public [ dsc_modulus, user_identifier, current_date ]  } = PROVE_RSA_65537_SHA256(64, 32, 320);
+component main { public [ dsc_modulus, scope, user_identifier, current_date ]  } = PROVE_RSA_65537_SHA256(64, 32, 320);
