@@ -53,11 +53,15 @@ async function buildAkiModulusMap() {
         console.log(formattedModulus);
 
         if (modulus && skiValue) {
-            const skiHex = typeof skiValue === 'string' ? skiValue : jsrsasign.hextob64(skiValue);
+            let skiHex = typeof skiValue === 'string' ? skiValue : jsrsasign.hextob64(skiValue);
             if (!skiHex) {
                 console.log(`Skipping file ${filePath}: SKI extraction failed`);
                 return;
             }
+
+            // Remove "0414" prefix if present
+            skiHex = skiHex.replace(/^0414/, '');
+
             skiToModulus[skiHex] = formattedModulus;
             console.log(`Processed ${filePath}: SKI ${skiHex}, Key Length ${keyLength} bits`);
         } else {
