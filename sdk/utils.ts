@@ -5,7 +5,7 @@ import { derToBytes } from "./common/src/utils/csca";
 import forge from 'node-forge'
 import { pem1, pem2, pem3, pem4, mock_csca } from './certificates';
 import { fr1pem, fr2pem, fr3pem, fr4pem, mockpem } from './certificates';
-
+import { SKI_PEM, SKI_PEM_DEV } from './skiPem';
 export const attributeToGetter = {
     "nationality": "getNationalityOf",
     "expiry_date": "getExpiryDateOf",
@@ -34,6 +34,19 @@ export function parsePublicSignals(publicSignals) {
     }
 }
 
+export function parsePublicSignalsProve(publicSignals) {
+    return {
+        signature_algorithm: publicSignals[0],
+        revealedData_packed: [publicSignals[1], publicSignals[2], publicSignals[3]],
+        nullifier: publicSignals[4],
+        pubKey: publicSignals.slice(5, 37),
+        scope: publicSignals[37],
+        current_date: publicSignals.slice(38, 44),
+        user_identifier: publicSignals[44],
+    }
+}
+
+
 export function unpackReveal(revealedData_packed: string[]): string[] {
 
     const bytesCount = [31, 31, 28]; // nb of bytes in each of the first three field elements
@@ -56,10 +69,14 @@ export function verifyDSCValidity(dscCertificate: any, dev_mode: boolean = false
     );
     const value = authorityKeyIdentifierExt.value;
     const byteArray = derToBytes(value);
-    const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-    const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
+    const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0')).join('');
+    console.log("formattedValue:", formattedValue);
+    const formattedValueAdjusted = formattedValue.substring(8); // Remove the first '3016' from the formatted string
+    console.log("formattedValueAdjusted:", formattedValueAdjusted);
+    // const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
+    // const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
 
-    const csca_pem = getCscaPem(formattedValueAdjusted, dev_mode);
+    const csca_pem = getCSCAPem2(formattedValueAdjusted, dev_mode);
     console.log("CSCA PEM used:", csca_pem.substring(0, 50) + "..."); // Log the first 50 characters of the PEM
 
     const csca_certificate = forge.pki.certificateFromPem(csca_pem);
@@ -105,6 +122,13 @@ function getCscaPem(formattedValueAdjusted: string, dev_mode: boolean): string {
         default:
             throw new Error(`No matching PEM found for key: ${formattedValueAdjusted}`);
     }
+}
+
+
+function getCSCAPem2(formattedValueAdjusted: string, dev_mode: boolean): string {
+    const skiPem = dev_mode ? { ...SKI_PEM, ...SKI_PEM_DEV } : SKI_PEM;
+    const pem = skiPem[formattedValueAdjusted];
+    return pem;
 }
 
 export const AKI_PEM_DEV = {
