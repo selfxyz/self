@@ -21,6 +21,7 @@ import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitm
 import { getTreeFromTracker } from '../../../common/src/utils/pubkeyTree';
 import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
+import { poseidon1 } from 'poseidon-lite';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -122,13 +123,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       //   stringToNumber(selectedApp.userId).toString()
       // );
 
+      const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
+      const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+
       const inputs = generateCircuitInputsProve(
         passportData,
         121, 17,
-        selectedApp.scope,
+        scope,
         revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
         (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
-        stringToNumber(selectedApp.userId).toString()
+        user_identifier
 
       );
 

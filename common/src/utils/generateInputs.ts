@@ -116,7 +116,7 @@ export function generateCircuitInputsRegister(
     const qx = BigInt(hexToDecimal(curve_params[0]));
     const qy = BigInt(hexToDecimal(curve_params[1]));
     dsc_modulus = [BigintToArray(n_dsc, k_dsc, qx), BigintToArray(n_dsc, k_dsc, qy)];
-  
+
     const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
     signature = [
       BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
@@ -285,7 +285,7 @@ export function generateCircuitInputsProve(
     current_date: current_date,
     bitmap: bitmap,
     majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: user_identifier,
+    user_identifier: [user_identifier],
     scope: [BigInt(scope).toString()]
   };
 
