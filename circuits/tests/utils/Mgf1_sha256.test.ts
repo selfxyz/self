@@ -1,6 +1,6 @@
 import path from 'path';
 import { createHash, randomBytes } from 'node:crypto';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 
 describe('Mgf1_sha256 Circuit Test', function () {
   this.timeout(0); // Disable timeout

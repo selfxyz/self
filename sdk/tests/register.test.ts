@@ -6,7 +6,7 @@ import { getCSCAInputs } from "../../common/src/utils/csca"
 import { describe } from 'mocha'
 import fs from "fs";
 import forge from "node-forge";
-import { MODAL_SERVER_ADDRESS } from "../../common/src/constants/constants";
+import { MODAL_SERVER_ADDRESS, PASSPORT_ATTESTATION_ID } from "../../common/src/constants/constants";
 import { castCSCAProof } from "../../common/src/utils/types";
 const n_dsc = 121;
 const k_dsc = 17;
@@ -45,7 +45,6 @@ async function requestCSCAProof(inputs) {
 }
 let circuit: any;
 let inputs: any;
-let attestation_id: string;
 import path from "path";
 import { poseidon1 } from "poseidon-lite";
 import { getDSCModulus, getNullifier, getSIV, verifyProofs } from "../OpenPassportRegister";
@@ -65,15 +64,10 @@ describe("Testing the register flow", function () {
         const secret = BigInt(0).toString();
         console.log("secret", secret);
 
-        const attestation_name = "E-PASSPORT";
-        attestation_id = poseidon1([
-            BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))
-        ]).toString();
-
         inputs = generateCircuitInputsRegister(
             secret,
             BigInt(0).toString(),
-            attestation_id,
+            PASSPORT_ATTESTATION_ID,
             mockPassportData_sha256WithRSAEncryption_65537,
             "heyXYZ019aA",
             n_dsc,

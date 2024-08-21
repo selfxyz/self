@@ -14,6 +14,8 @@ import {
   generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
+  BigintToArray,
+  extractRSFromSignature,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
@@ -90,9 +92,6 @@ export function generateCircuitInputsRegister(
   // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
-    console.error(
-      `Data hashes too long (${dataGroupHashes.length} bytes). Max length is ${MAX_DATAHASHES_LEN} bytes.`
-    );
     throw new Error(
       `This length of datagroups (${dataGroupHashes.length} bytes) is currently unsupported. Please contact us so we add support!`
     );
@@ -114,8 +113,15 @@ export function generateCircuitInputsRegister(
     signatureAlgorithm === 'ecdsa-with-SHA384'
   ) {
     const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    dsc_modulus = [curve_params[0], curve_params[1]]; // ! TODO REFACTOR SPLIT HERE WHAT IF WORKS
-    signature = passportData.encryptedDigest;
+    const qx = BigInt(hexToDecimal(curve_params[0]));
+    const qy = BigInt(hexToDecimal(curve_params[1]));
+    dsc_modulus = [BigintToArray(n_dsc, k_dsc, qx), BigintToArray(n_dsc, k_dsc, qy)];
+  
+    const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+    signature = [
+      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
+      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
+    ];
   } else {
     dsc_modulus = splitToWords(
       BigInt(passportData.pubKey.modulus as string),
@@ -131,7 +137,7 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map((byte) => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    dg1_hash_offset: [dg1HashOffset.toString()],
     dataHashes: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     eContent: eContent.map(toUnsignedByte).map((byte) => String(byte)),

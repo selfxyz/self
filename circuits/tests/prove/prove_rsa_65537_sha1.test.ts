@@ -1,21 +1,32 @@
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 import { poseidon1 } from 'poseidon-lite';
 import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 
 describe('PROVE - RSA SHA1', function () {
   this.timeout(0);
-  let inputs: any;
   let circuit: any;
-  let passportData = mockPassportData_sha1_rsa_65537;
+
+  const passportData = mockPassportData_sha1_rsa_65537;
   const n_dsc = 64;
   const k_dsc = 32;
   const majority = '18';
   const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
   const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+  const bitmap = Array(90).fill('1');
+
+  const inputs = generateCircuitInputsProve(
+    passportData,
+    n_dsc,
+    k_dsc,
+    scope,
+    bitmap,
+    majority,
+    user_identifier
+  );
 
   before(async () => {
     circuit = await wasm_tester(
@@ -27,17 +38,6 @@ describe('PROVE - RSA SHA1', function () {
           './node_modules/circomlib/circuits',
         ],
       }
-    );
-
-    const bitmap = Array(90).fill('1');
-    inputs = generateCircuitInputsProve(
-      passportData,
-      n_dsc,
-      k_dsc,
-      scope,
-      bitmap,
-      majority,
-      user_identifier
     );
   });
 

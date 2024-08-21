@@ -1,23 +1,32 @@
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
-const wasm_tester = require('circom_tester').wasm;
-import { poseidon1, poseidon6 } from 'poseidon-lite';
+import { wasm as wasm_tester } from 'circom_tester';
+import { poseidon6 } from 'poseidon-lite';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { packBytes } from '../../../common/src/utils/utils';
 import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 
 describe('Register - SHA256 RSA', function () {
   this.timeout(0);
-  let inputs: any;
   let circuit: any;
-  let passportData = mockPassportData_sha256_rsa_65537;
-  let attestation_id: string;
-  const attestation_name = 'E-PASSPORT';
+
+  const passportData = mockPassportData_sha256_rsa_65537;
+  const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
+  const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const n_dsc = 121;
   const k_dsc = 17;
+
+  const inputs = generateCircuitInputsRegister(
+    secret,
+    dscSecret,
+    PASSPORT_ATTESTATION_ID,
+    passportData,
+    n_dsc,
+    k_dsc
+  );
 
   before(async () => {
     circuit = await wasm_tester(
@@ -29,18 +38,6 @@ describe('Register - SHA256 RSA', function () {
           './node_modules/circomlib/circuits',
         ],
       }
-    );
-
-    const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-    const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-    attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
-    inputs = generateCircuitInputsRegister(
-      secret,
-      dscSecret,
-      attestation_id,
-      passportData,
-      n_dsc,
-      k_dsc
     );
   });
 
@@ -63,7 +60,7 @@ describe('Register - SHA256 RSA', function () {
     const mrz_bytes = packBytes(inputs.mrz);
     const commitment_bytes = poseidon6([
       inputs.secret[0],
-      attestation_id,
+      PASSPORT_ATTESTATION_ID,
       computeLeafFromModulusBigInt(BigInt(passportData.pubKey.modulus)),
       mrz_bytes[0],
       mrz_bytes[1],
