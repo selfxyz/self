@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-
+project 'OpenPassport.xcodeproj'
 
 platform :ios, '13.0'
 prepare_react_native_project!
