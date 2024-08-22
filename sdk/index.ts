@@ -5,13 +5,17 @@ import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { countryCodes } from './common/src/constants/constants';
 import { QRCodeGenerator } from './QRCodeGenerator';
 import { AppType } from '../common/src/utils/appType';
+import { OpenPassportProverVerifier, OpenPassportProverInputs } from './OpenPassportProverVerifier';
 
 export {
     OpenPassportWeb2Verifier,
     // OpenPassportWeb3Verifier,
+
     OpenPassportWeb2Inputs,
     OpenPassportVerifierReport,
     QRCodeGenerator,
     AppType,
-    countryCodes
+    countryCodes,
+    OpenPassportProverVerifier,
+    OpenPassportProverInputs
 }
