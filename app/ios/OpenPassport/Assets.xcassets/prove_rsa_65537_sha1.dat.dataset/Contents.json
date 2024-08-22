@@ -1,0 +1,13 @@
+{
+  "data" : [
+    {
+      "filename" : "prove_rsa_65537_sha1.dat",
+      "idiom" : "universal",
+      "universal-type-identifier" : "dyn.ah62d4rv4ge80k2py"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

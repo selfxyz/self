@@ -9,12 +9,24 @@ import Foundation
 import React
 import Security
 
-#if canImport(witnesscalc_register_sha256WithRSAEncryption_65537)
-import witnesscalc_register_sha256WithRSAEncryption_65537
+// #if canImport(witnesscalc_register_sha256WithRSAEncryption_65537)
+// import witnesscalc_register_sha256WithRSAEncryption_65537
+// #endif
+
+// #if canImport(witnesscalc_disclose)
+// import witnesscalc_disclose
+// #endif
+
+#if canImport(witnesscalc_prove_rsa_65537_sha256)
+import witnesscalc_prove_rsa_65537_sha256
 #endif
 
-#if canImport(witnesscalc_disclose)
-import witnesscalc_disclose
+#if canImport(witnesscalc_prove_rsa_65537_sha1)
+import witnesscalc_prove_rsa_65537_sha1
+#endif
+
+#if canImport(witnesscalc_prove_rsapss_65537_sha256)
+import witnesscalc_prove_rsapss_65537_sha256
 #endif
 
 #if canImport(groth16_prover)
@@ -95,15 +107,37 @@ private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) th
     
     let result: Int32
     
-    if witness_calculator == "register_sha256WithRSAEncryption_65537" {
-        result = witnesscalc_register_sha256WithRSAEncryption_65537(
+    // if witness_calculator == "register_sha256WithRSAEncryption_65537" {
+    //     result = witnesscalc_register_sha256WithRSAEncryption_65537(
+    //         (dat as NSData).bytes, datSize,
+    //         (jsonData as NSData).bytes, jsonDataSize,
+    //         wtnsBuffer, wtnsSize,
+    //         errorBuffer, errorSize
+    //     )
+    // } else if witness_calculator == "disclose" {
+    //     result = witnesscalc_disclose(
+    //         (dat as NSData).bytes, datSize,
+    //         (jsonData as NSData).bytes, jsonDataSize,
+    //         wtnsBuffer, wtnsSize,
+    //         errorBuffer, errorSize
+    //     )
+    // } else
+    if witness_calculator == "prove_rsa_65537_sha256" {
+        result = witnesscalc_prove_rsa_65537_sha256(
             (dat as NSData).bytes, datSize,
             (jsonData as NSData).bytes, jsonDataSize,
             wtnsBuffer, wtnsSize,
             errorBuffer, errorSize
         )
-    } else if witness_calculator == "disclose" {
-        result = witnesscalc_disclose(
+    } else if witness_calculator == "prove_rsa_65537_sha1" {
+        result = witnesscalc_prove_rsa_65537_sha1(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } else if witness_calculator == "prove_rsapss_65537_sha256" {
+        result = witnesscalc_prove_rsapss_65537_sha256(
             (dat as NSData).bytes, datSize,
             (jsonData as NSData).bytes, jsonDataSize,
             wtnsBuffer, wtnsSize,

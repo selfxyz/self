@@ -9,6 +9,9 @@
 /* Begin PBXBuildFile section */
 		0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
 		0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35E2BBC98C9006670BD /* libfq.a */; };
+		0573C4F42C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */; };
+		0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */; };
+		0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */; };
 		058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
 		058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
@@ -75,6 +78,9 @@
 		00E356EE1AD99517003FC87E /* OpenPassportTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenPassportTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		0569F35A2BBC900D006670BD /* librapidsnark.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = librapidsnark.a; sourceTree = "<group>"; };
 		0569F35E2BBC98C9006670BD /* libfq.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfq.a; sourceTree = "<group>"; };
+		0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha1.a; sourceTree = "<group>"; };
+		0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsapss_65537_sha256.a; sourceTree = "<group>"; };
+		0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha256.a; sourceTree = "<group>"; };
 		058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_sha256WithRSAEncryption_65537.a; sourceTree = "<group>"; };
 		058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_disclose.a; sourceTree = "<group>"; };
 		05D985F22BB331AB00F58EEA /* libgmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgmp.a; sourceTree = "<group>"; };
@@ -150,13 +156,16 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0573C4F42C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */,
 				058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */,
 				05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */,
 				0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */,
 				0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */,
+				0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
 				058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */,
 				05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */,
 				CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */,
+				0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -198,6 +207,9 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */,
+				0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */,
+				0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */,
 				058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */,
 				058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */,
 				0569F35E2BBC98C9006670BD /* libfq.a */,
