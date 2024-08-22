@@ -5,6 +5,8 @@ import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { vkey_prove_rsa_65537_sha256 } from './common/src/constants/vkey';
 import forge from 'node-forge'
 import { splitToWords } from '../common/src/utils/utils';
+import { getSignatureAlgorithm } from '../common/src/utils/parseCertificate';
+
 
 export class OpenPassportProverVerifier {
     scope: string;
@@ -22,6 +24,12 @@ export class OpenPassportProverVerifier {
     }
 
     async verify(openPassportProverInputs: OpenPassportProverInputs): Promise<OpenPassportVerifierReport> {
+
+        const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassportProverInputs.dsc);
+        console.log("signatureAlgorithm", signatureAlgorithm);
+        console.log("hashFunction", hashFunction);
+
+
         const parsedPublicSignals = parsePublicSignalsProve(openPassportProverInputs.publicSignals);
         //1. Verify the scope
         if (parsedPublicSignals.scope !== this.scope) {
@@ -111,3 +119,5 @@ export class OpenPassportProverInputs {
         this.dsc = dsc;
     }
 }
+
+
