@@ -5,7 +5,7 @@ import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { vkey_prove_rsa_65537_sha256 } from './common/src/constants/vkey';
 import forge from 'node-forge'
 import { splitToWords } from '../common/src/utils/utils';
-import { getSignatureAlgorithm } from '../common/src/utils/parseCertificate';
+import { getSignatureAlgorithm } from '../common/src/utils/handleCertificate';
 
 
 export class OpenPassportProverVerifier {
