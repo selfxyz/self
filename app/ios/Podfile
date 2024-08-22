@@ -63,6 +63,11 @@ target 'OpenPassport' do
     # Pods for testing
   end
 
+  target 'OpenPassport App Clip' do
+    inherit! :search_paths
+    inherit! :complete
+  end
+
   post_install do |installer|
     installer.generated_projects.each do |project|
       project.targets.each do |target|
