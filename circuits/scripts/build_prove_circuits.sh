@@ -29,6 +29,7 @@ build_circuit() {
 CIRCUITS=(
     "prove_rsa_65537_sha256:prove:true"
     "prove_rsa_65537_sha1:prove:true"
+    "prove_rsapss_65537_sha256:prove:true"
 )
 
 TOTAL_START_TIME=$(date +%s)
