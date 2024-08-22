@@ -112,7 +112,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setProofStatus('Generating proof...');
       socket.emit('proof_generation_start', { sessionId: selectedApp.userId });
 
-      const tree = await getTreeFromTracker();
+      // const tree = await getTreeFromTracker();
 
       // const inputs = generateCircuitInputsDisclose(
       //   secret,
@@ -149,6 +149,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       // Send the proof via WebSocket
       const formattedLocalProof = {
+        dsc: passportData.dsc,
         proof: {
           pi_a: [
             localProof.proof.a[0],
@@ -170,7 +171,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         },
         publicSignals: (localProof as any).pub_signals
       };
-      // console.log("formattedLocalProof", formattedLocalProof);
+      console.log("formattedLocalProof", formattedLocalProof);
+
       socket.emit('proof_generated', { sessionId: selectedApp.userId, proof: formattedLocalProof });
 
       // Wait for verification result

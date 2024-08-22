@@ -222,37 +222,37 @@ const MainScreen: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
-      console.log('CSCA Proof received:', cscaProof);
-      if ((cscaProof !== null) && (localProof !== null)) {
-        const sendTransaction = async () => {
-          const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-          const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
-          console.log("local proof already generated, sending transaction");
-          const provider = new ethers.JsonRpcProvider(RPC_URL);
-          const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
-          const txHash = serverResponse?.data.hash;
-          const receipt = await provider.waitForTransaction(txHash);
-          console.log('receipt status:', receipt?.status);
-          if (receipt?.status === 0) {
-            throw new Error("Transaction failed");
-          }
-          setRegistered(true);
-          setSelectedTab("app");
-          setStep(Steps.REGISTERED);
-          toast.show('✅', {
-            message: "Registered",
-            customData: {
-              type: "success",
-            },
-          })
-        }
-        sendTransaction();
-      }
+  // useEffect(() => {
+  //   if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
+  //     console.log('CSCA Proof received:', cscaProof);
+  //     if ((cscaProof !== null) && (localProof !== null)) {
+  //       const sendTransaction = async () => {
+  //         const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+  //         const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
+  //         console.log("local proof already generated, sending transaction");
+  //         const provider = new ethers.JsonRpcProvider(RPC_URL);
+  //         const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
+  //         const txHash = serverResponse?.data.hash;
+  //         const receipt = await provider.waitForTransaction(txHash);
+  //         console.log('receipt status:', receipt?.status);
+  //         if (receipt?.status === 0) {
+  //           throw new Error("Transaction failed");
+  //         }
+  //         setRegistered(true);
+  //         setSelectedTab("app");
+  //         setStep(Steps.REGISTERED);
+  //         toast.show('✅', {
+  //           message: "Registered",
+  //           customData: {
+  //             type: "success",
+  //           },
+  //         })
+  //       }
+  //       sendTransaction();
+  //     }
 
-    }
-  }, [modalProofStep]);
+  //   }
+  // }, [modalProofStep]);
 
 
   useEffect(() => {

@@ -196,10 +196,10 @@ const handleResponseIOS = async (
       false
     );
 
-    sendCSCARequest(inputs_csca, setModalProofStep);
-
-    useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
-    useNavigationStore.getState().setSelectedTab("next");
+    //sendCSCARequest(inputs_csca, setModalProofStep);
+    useNavigationStore.getState().setStep(Steps.REGISTERED);
+    useUserStore.getState().setRegistered(true);
+    useNavigationStore.getState().setSelectedTab("app");
   } catch (e: any) {
     console.log('error during parsing:', e);
     useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
@@ -306,7 +306,8 @@ const handleResponseAndroid = async (
     max_cert_bytes,
     false
   );
-  sendCSCARequest(inputs_csca, setModalProofStep);
-  useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
-  useNavigationStore.getState().setSelectedTab("next");
+  //sendCSCARequest(inputs_csca, setModalProofStep);
+  useUserStore.getState().setRegistered(true);
+  useNavigationStore.getState().setStep(Steps.REGISTERED);
+  useNavigationStore.getState().setSelectedTab("app");
 };
