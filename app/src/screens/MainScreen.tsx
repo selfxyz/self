@@ -123,38 +123,38 @@ const MainScreen: React.FC = () => {
     setStep(Steps.NEXT_SCREEN);
     deleteMrzFields();
 
-    const n_dsc = 121;
-    const k_dsc = 17;
-    const n_csca = 121;
-    const k_csca = 34;
-    const max_cert_bytes = 1664;
-    const dsc = mock_dsc_sha256_rsa_4096;
-    const csca = mock_csca_sha256_rsa_4096;
-    const dscCert = forge.pki.certificateFromPem(dsc);
-    const cscaCert = forge.pki.certificateFromPem(csca);
+    // const n_dsc = 121;
+    // const k_dsc = 17;
+    // const n_csca = 121;
+    // const k_csca = 34;
+    // const max_cert_bytes = 1664;
+    // const dsc = mock_dsc_sha256_rsa_4096;
+    // const csca = mock_csca_sha256_rsa_4096;
+    // const dscCert = forge.pki.certificateFromPem(dsc);
+    // const cscaCert = forge.pki.certificateFromPem(csca);
 
-    let secret = useUserStore.getState().dscSecret;
-    if (secret === null) {
-      // Finally, generate CSCA Inputs and request modal server
-      // Generate a cryptographically secure random secret of (31 bytes)
-      const secretBytes = forge.random.getBytesSync(31);
-      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-      console.log('Generated secret:', secret.toString());
-      useUserStore.getState().setDscSecret(secret);
-    }
+    // let secret = useUserStore.getState().dscSecret;
+    // if (secret === null) {
+    //   // Finally, generate CSCA Inputs and request modal server
+    //   // Generate a cryptographically secure random secret of (31 bytes)
+    //   const secretBytes = forge.random.getBytesSync(31);
+    //   secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+    //   console.log('Generated secret:', secret.toString());
+    //   useUserStore.getState().setDscSecret(secret);
+    // }
 
-    const inputs_csca = getCSCAInputs(
-      secret,
-      dscCert,
-      cscaCert,
-      n_dsc,
-      k_dsc,
-      n_csca,
-      k_csca,
-      max_cert_bytes,
-      true
-    );
-    sendCSCARequest(inputs_csca, setModalProofStep);
+    // const inputs_csca = getCSCAInputs(
+    //   secret,
+    //   dscCert,
+    //   cscaCert,
+    //   n_dsc,
+    //   k_dsc,
+    //   n_csca,
+    //   k_csca,
+    //   max_cert_bytes,
+    //   true
+    // );
+    // sendCSCARequest(inputs_csca, setModalProofStep);
     toast.show("Using mock passport data!", { type: "info" })
   }
 

@@ -23,9 +23,9 @@ const StartScreen: React.FC = () => {
                     <Text fontSize="$8" mt="$6" color={textBlack}>OpenPassport allows you to scan your passport, and to prove your identity in a
                         <Text fontSize="$8" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}> secure </Text>way.
                     </Text>
-                    <Text fontSize="$8" mt="$4" color={textBlack} style={{ opacity: 0.7 }}>You can for example prove that you are over 18 yo while staying fully
+                    {/* <Text fontSize="$8" mt="$4" color={textBlack} style={{ opacity: 0.7 }}>You can for example prove that you are over 18 yo while staying fully
                         <Text fontSize="$8" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}> anonymous.</Text>
-                    </Text>
+                    </Text> */}
                 </YStack>
 
             </YStack>

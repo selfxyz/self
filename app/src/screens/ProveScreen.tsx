@@ -100,6 +100,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(true);
       setGeneratingProof(true);
 
+      console.log("handleProve. selectedApp", selectedApp)
+
       if (!socket) {
         throw new Error('Socket not initialized');
       }
@@ -128,7 +130,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       const inputs = generateCircuitInputsProve(
         passportData,
-        121, 17,
+        64, 32,
         scope,
         revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
         (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
