@@ -2,7 +2,7 @@ import { assert, expect } from 'chai';
 import fs from 'fs';
 const forge = require('node-forge');
 import path from 'path';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 import { getCSCAInputs } from '../../../common/src/utils/csca';
 import {
   mock_dsc_sha256_rsa_2048,

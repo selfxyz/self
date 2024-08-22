@@ -13,7 +13,7 @@ import useNavigationStore from '../stores/navigationStore';
 import { AppType } from '../../../common/src/utils/appType';
 import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
-import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
+import { generateCircuitInputsDisclose, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import axios from 'axios';
 import { stringToNumber } from '../../../common/src/utils/utils';
@@ -21,6 +21,7 @@ import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitm
 import { getTreeFromTracker } from '../../../common/src/utils/pubkeyTree';
 import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
+import { poseidon1 } from 'poseidon-lite';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -99,6 +100,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(true);
       setGeneratingProof(true);
 
+      console.log("handleProve. selectedApp", selectedApp)
+
       if (!socket) {
         throw new Error('Socket not initialized');
       }
@@ -111,15 +114,28 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       const tree = await getTreeFromTracker();
 
-      const inputs = generateCircuitInputsDisclose(
-        secret,
-        PASSPORT_ATTESTATION_ID,
+      // const inputs = generateCircuitInputsDisclose(
+      //   secret,
+      //   PASSPORT_ATTESTATION_ID,
+      //   passportData,
+      //   tree as any,
+      //   (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
+      //   revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
+      //   selectedApp.scope,
+      //   stringToNumber(selectedApp.userId).toString()
+      // );
+
+      const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
+      const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+
+      const inputs = generateCircuitInputsProve(
         passportData,
-        tree as any,
-        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
+        64, 32,
+        scope,
         revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
-        selectedApp.scope,
-        stringToNumber(selectedApp.userId).toString()
+        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
+        user_identifier
+
       );
 
       console.log("inputs", inputs);

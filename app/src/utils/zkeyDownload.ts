@@ -6,8 +6,11 @@ import { unzip } from 'react-native-zip-archive';
 import useNavigationStore from '../stores/navigationStore';
 
 const zkeyZipUrls = {
-  register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca2.zkey.zip",
-  disclose: "https://d8o9bercqupgk.cloudfront.net/disclose3.zkey.zip",
+  prove_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha256.zkey.zip",
+  prove_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha1.zkey.zip",
+  prove_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/prove_rsapss_65537_sha256.zkey.zip",
+  // register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/register_sha256WithRSAEncryption_65537_csca2.zkey.zip",
+  // disclose: "https://d8o9bercqupgk.cloudfront.net/disclose3.zkey.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;
@@ -49,6 +52,7 @@ export async function downloadZkey(
 
   const networkInfo = await NetInfo.fetch();
   console.log('Network type:', networkInfo.type)
+  // @ts-ignore
   if (networkInfo.type === 'wifi' || circuit === 'disclose') {
     fetchZkey(circuit);
   } else {

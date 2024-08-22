@@ -1,11 +1,12 @@
 import { assert, expect } from 'chai';
 import path from 'path';
-const wasm_tester = require('circom_tester').wasm;
+import { wasm as wasm_tester } from 'circom_tester';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   COMMITMENT_TREE_DEPTH,
+  PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
@@ -19,21 +20,21 @@ describe('Disclose', function () {
   let circuit: any;
   let w: any;
   let passportData = mockPassportData_sha256_rsa_65537;
-  let attestation_id: string;
   let tree: any;
-  const attestation_name = 'E-PASSPORT';
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/disclose/disclose.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-    attestation_id = poseidon1([BigInt(Buffer.from(attestation_name).readUIntBE(0, 6))]).toString();
 
     const majority = '18';
     const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
@@ -49,7 +50,7 @@ describe('Disclose', function () {
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
     const commitment = poseidon6([
       secret,
-      attestation_id,
+      PASSPORT_ATTESTATION_ID,
       pubkey_leaf,
       mrz_bytes[0],
       mrz_bytes[1],
@@ -60,7 +61,7 @@ describe('Disclose', function () {
 
     inputs = generateCircuitInputsDisclose(
       secret,
-      attestation_id,
+      PASSPORT_ATTESTATION_ID,
       passportData,
       tree,
       majority,

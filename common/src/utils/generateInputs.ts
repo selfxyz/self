@@ -14,6 +14,8 @@ import {
   generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
+  BigintToArray,
+  extractRSFromSignature,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
@@ -90,9 +92,6 @@ export function generateCircuitInputsRegister(
   // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
-    console.error(
-      `Data hashes too long (${dataGroupHashes.length} bytes). Max length is ${MAX_DATAHASHES_LEN} bytes.`
-    );
     throw new Error(
       `This length of datagroups (${dataGroupHashes.length} bytes) is currently unsupported. Please contact us so we add support!`
     );
@@ -114,8 +113,15 @@ export function generateCircuitInputsRegister(
     signatureAlgorithm === 'ecdsa-with-SHA384'
   ) {
     const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    dsc_modulus = [curve_params[0], curve_params[1]]; // ! TODO REFACTOR SPLIT HERE WHAT IF WORKS
-    signature = passportData.encryptedDigest;
+    const qx = BigInt(hexToDecimal(curve_params[0]));
+    const qy = BigInt(hexToDecimal(curve_params[1]));
+    dsc_modulus = [BigintToArray(n_dsc, k_dsc, qx), BigintToArray(n_dsc, k_dsc, qy)];
+
+    const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+    signature = [
+      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
+      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
+    ];
   } else {
     dsc_modulus = splitToWords(
       BigInt(passportData.pubKey.modulus as string),
@@ -131,10 +137,10 @@ export function generateCircuitInputsRegister(
   return {
     secret: [secret],
     mrz: formattedMrz.map((byte) => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
-    econtent: Array.from(messagePadded).map((x) => x.toString()),
+    dg1_hash_offset: [dg1HashOffset.toString()],
+    dataHashes: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
-    signed_attributes: eContent.map(toUnsignedByte).map((byte) => String(byte)),
+    eContent: eContent.map(toUnsignedByte).map((byte) => String(byte)),
     signature: signature,
     dsc_modulus: dsc_modulus,
     attestation_id: [attestation_id],
@@ -209,24 +215,24 @@ export function generateCircuitInputsOfac(
   scope: string,
   user_identifier: string,
   sparsemerkletree: SMT,
-  proofLevel : number,
+  proofLevel: number,
 ) {
 
-  const result = generateCircuitInputsDisclose(secret,attestation_id,passportData,merkletree,majority,bitmap,scope,user_identifier);
+  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier);
   const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
 
   const mrz_bytes = formatMrz(passportData.mrz);
-  const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49,58))
-  const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10,49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
-  const name_leaf = getNameLeaf(mrz_bytes.slice(10,49)) // [6-44] + 5 shift
-  
-  let root,closestleaf,siblings;  
-  if(proofLevel == 3){
-    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, passport_leaf));
-  } else if(proofLevel == 2){
-    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, namedob_leaf));
-  } else if (proofLevel == 1){
-    ({root, closestleaf, siblings} = generateSMTProof(sparsemerkletree, name_leaf));
+  const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49, 58))
+  const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 68)) // [57-62] + 5 shift
+  const name_leaf = getNameLeaf(mrz_bytes.slice(10, 49)) // [6-44] + 5 shift
+
+  let root, closestleaf, siblings;
+  if (proofLevel == 3) {
+    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, passport_leaf));
+  } else if (proofLevel == 2) {
+    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, namedob_leaf));
+  } else if (proofLevel == 1) {
+    ({ root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, name_leaf));
   } else {
     throw new Error("Invalid proof level")
   }
@@ -253,4 +259,34 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
     //  console.log(`Index of commitment in the registry: ${index}`);
   }
   return index;
+}
+
+
+export function generateCircuitInputsProve(
+  passportData: PassportData,
+  n_dsc: number,
+  k_dsc: number,
+  scope: string,
+  bitmap: string[],
+  majority: string,
+  user_identifier: string,
+) {
+
+  const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData, n_dsc, k_dsc);
+  const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
+  return {
+    mrz: register_inputs.mrz,
+    dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
+    dataHashes: register_inputs.dataHashes,
+    datahashes_padded_length: register_inputs.datahashes_padded_length,
+    eContent: register_inputs.eContent,
+    signature: register_inputs.signature,
+    dsc_modulus: register_inputs.dsc_modulus,
+    current_date: current_date,
+    bitmap: bitmap,
+    majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
+    user_identifier: [user_identifier],
+    scope: [BigInt(scope).toString()]
+  };
+
 }

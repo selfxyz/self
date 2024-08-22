@@ -2,11 +2,11 @@ pragma circom 2.1.6;
 
 include "circomlib/circuits/poseidon.circom";
 
-template LeafHasher (n,k) {
+template LeafHasher(n, k) {
     signal input in[k];
     signal output out;
 
-    component splitSignalsToWords = SplitSignalsToWords(n,k,64,64);
+    component splitSignalsToWords = SplitSignalsToWords(n, k, 64, 64);
     splitSignalsToWords.in <== in;
 
     component hash[4];

@@ -24,12 +24,13 @@ export interface AppType {
 export function createAppType(data: AppType): AppType {
   return {
     //id: data.id || "",
+    ...data,
     name: data.name,
     scope: data.scope,
     //callbackEndPoint: data.callbackEndPoint,
     userId: data.userId,
     disclosureOptions: data.disclosureOptions,
-    circuit: data.circuit || "disclose",
-    ...data
+    // circuit: data.circuit || "prove_rsa_65537_sha256",
+    circuit: "prove_rsa_65537_sha256",
   };
 }

@@ -17,4 +17,4 @@ template RSAPSSVerifier(n,k,max_bytes) {
     rsaVerify.message <== raw_message;
     rsaVerify.messagePaddedLen <== raw_message_padded_bytes;
 }
-component main = RSAPSSVerifier(64,32, 960);
+component main = RSAPSSVerifier(64, 32, 960);

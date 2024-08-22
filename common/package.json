@@ -6,6 +6,7 @@
     "@zk-kit/lean-imt": "^2.0.1",
     "@zk-kit/utils": "^1.2.0",
     "asn1.js": "^5.4.1",
+    "asn1js": "^3.0.5",
     "axios": "^1.7.2",
     "elliptic": "^6.5.5",
     "fs": "^0.0.1-security",
@@ -16,6 +17,7 @@
     "jsrsasign": "^11.1.0",
     "node-forge": "https://github.com/remicolin/forge",
     "path": "^0.12.7",
+    "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
     "typescript-parser": "^2.6.1"
   },
