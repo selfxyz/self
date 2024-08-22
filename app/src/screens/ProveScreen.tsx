@@ -100,6 +100,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(true);
       setGeneratingProof(true);
 
+      console.log("handleProve. selectedApp", selectedApp)
+
       if (!socket) {
         throw new Error('Socket not initialized');
       }
