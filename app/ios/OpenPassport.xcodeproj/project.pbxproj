@@ -154,10 +154,9 @@
 		0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D52C72E6D0006C7386 /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
-		0573C4E32C72E739006C7386 /* OpenPassport App Clip-Bridging-Header.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = "OpenPassport App Clip-Bridging-Header.h"; sourceTree = SOURCE_ROOT; };
 		0573C4EA2C72E7F6006C7386 /* groth16_prover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = groth16_prover.h; sourceTree = "<group>"; };
 		0573C4ED2C72E857006C7386 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = SOURCE_ROOT; };
-		0573C4EF2C742FA6006C7386 /* masterList.pem */ = {isa = PBXFileReference; lastKnownFileType = file; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = SOURCE_ROOT; };
+		0573C4EF2C742FA6006C7386 /* masterList.pem */ = {isa = PBXFileReference; lastKnownFileType = text; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = SOURCE_ROOT; };
 		058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_sha256WithRSAEncryption_65537.a; sourceTree = "<group>"; };
 		058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_disclose.a; sourceTree = "<group>"; };
 		05D985F22BB331AB00F58EEA /* libgmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgmp.a; sourceTree = "<group>"; };
@@ -274,7 +273,6 @@
 				0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */,
 				0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */,
 				0573C4CB2C72E6D0006C7386 /* OpenPassport-Bridging-Header.h */,
-				0573C4E32C72E739006C7386 /* OpenPassport App Clip-Bridging-Header.h */,
 				0573C4CC2C72E6D0006C7386 /* PassportReader.m */,
 				0573C4CA2C72E6D0006C7386 /* PassportReader.swift */,
 				0573C4CF2C72E6D0006C7386 /* Prover.m */,
@@ -978,7 +976,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport App Clip-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
@@ -1033,7 +1031,7 @@
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport App Clip-Bridging-Header.h";
+				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = 1;
 			};
