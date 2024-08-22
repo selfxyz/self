@@ -82,8 +82,8 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     // download zkeys if they are not already downloaded
-    downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
-    downloadZkey("disclose");
+    downloadZkey("prove_rsa_65537_sha256"); // might move after nfc scanning
+    // downloadZkey("disclose");
 
     const secret = await loadSecretOrCreateIt();
     set({ secret });
@@ -97,7 +97,8 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
-    const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
+    // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
+    const isAlreadyRegistered = true
 
     if (!isAlreadyRegistered) {
       console.log("not registered but passport data found, skipping to nextScreen")
