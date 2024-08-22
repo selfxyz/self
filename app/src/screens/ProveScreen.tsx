@@ -126,16 +126,14 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       // );
 
       const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
-      const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
 
       const inputs = generateCircuitInputsProve(
         passportData,
         64, 32,
-        scope,
+        selectedApp.scope,
         revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
         (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
         user_identifier
-
       );
 
       console.log("inputs", inputs);

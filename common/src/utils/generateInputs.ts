@@ -274,6 +274,8 @@ export function generateCircuitInputsProve(
 
   const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData, n_dsc, k_dsc);
   const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
+  // Ensure majority is at least two digits
+  const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   return {
     mrz: register_inputs.mrz,
     dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
@@ -284,7 +286,7 @@ export function generateCircuitInputsProve(
     dsc_modulus: register_inputs.dsc_modulus,
     current_date: current_date,
     bitmap: bitmap,
-    majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
+    majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
     user_identifier: [user_identifier],
     scope: [BigInt(scope).toString()]
   };

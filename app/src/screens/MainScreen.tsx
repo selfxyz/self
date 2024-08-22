@@ -398,23 +398,23 @@ const MainScreen: React.FC = () => {
 
           <Sheet open={SettingsIsOpen} onOpenChange={setSettingsIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3" >
               <YStack p="$3" pb="$5" f={1} gap={height > 750 ? "$3" : "$1"} mb="$1.5">
                 <XStack gap="$2" ml="$2" >
-                  <H2 color={textColor1}>Settings</H2>
-                  <Cog color={textColor1} mt="$1" alignSelf='center' size="$2" />
+                  <H2 color={textBlack}>Settings</H2>
+                  <Cog color={textBlack} mt="$1" alignSelf='center' size="$2" />
                 </XStack>
 
                 <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                  <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
                     Contribute
                   </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
-                    <Share color={textColor1} />
+                  <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textBlack} />
                   </Button>
                 </Fieldset>
                 <Fieldset horizontal>
-                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
+                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
                     Private mode
                   </Label>
                   <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
@@ -422,10 +422,8 @@ const MainScreen: React.FC = () => {
                   </Switch>
                 </Fieldset>
 
-
-
                 <Fieldset horizontal>
-                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
+                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
                     Display other options
                   </Label>
                   <Switch size="$3.5" checked={displayOtherOptions} onCheckedChange={() => setDisplayOtherOptions(!displayOtherOptions)}>
@@ -456,62 +454,62 @@ const MainScreen: React.FC = () => {
                   <>
                     <XStack my="$3" alignSelf='center' h={2} w="80%" bg={componentBgColor} borderRadius={100} />
                     <Fieldset gap="$4" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
                         Restart to step 1
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
-                        <IterationCw color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
+                        <IterationCw color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Use mock passport data
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleSkip}>
-                        <VenetianMask color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleSkip}>
+                        <VenetianMask color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete passport data
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
-                        <Eraser color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                        <Eraser color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete proofs
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
-                        <Eraser color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
+                        <Eraser color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete secret (caution)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
                         <Eraser color={textColor2} />
                       </Button>
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         go to register
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
                         <ArrowRight color={textColor2} />
                       </Button>
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         registered = (!registered)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
                         <UserPlus color={textColor2} />
                       </Button>
                     </Fieldset>
@@ -525,7 +523,7 @@ const MainScreen: React.FC = () => {
 
                 <YStack mb="$0">
                   {/* <Button p="$2.5" borderRadius="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} onPress={() => setSettingsIsOpen(false)} w="80%" alignSelf='center'>
-                    <Text color={textColor1} textAlign='center' fow="bold">Close</Text>
+                    <Text color={textBlack}textAlign='center' fow="bold">Close</Text>
                   </Button> */}
                 </YStack>
               </YStack>
