@@ -120,7 +120,7 @@ const MainScreen: React.FC = () => {
     update({
       passportData: mockPassportData_sha256_rsa_65537
     })
-    setStep(Steps.NEXT_SCREEN);
+    setStep(Steps.REGISTERED);
     deleteMrzFields();
 
     // const n_dsc = 121;

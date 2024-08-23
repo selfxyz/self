@@ -99,10 +99,10 @@ export function Carousel({ images, height = 300, onSlideChange, handleNfcScan }:
                 <Text color={textBlack} fontSize="$5" mt="$2" textAlign='center' style={{ opacity: 0.7 }} fontStyle='italic'>{currentSlide.subtitle}</Text>
             </YStack>
 
-            <XStack justifyContent='center' alignItems='center' gap="$1.5" position="absolute" style={{ bottom: 120, left: 0, right: 0 }}>
+            {/* <XStack justifyContent='center' alignItems='center' gap="$1.5" position="absolute" style={{ bottom: 120, left: 0, right: 0 }}>
                 <ShieldCheck color={textBlack} size={14} />
                 <Text color={textBlack} fontSize="$4" >private and secured</Text>
-            </XStack>
+            </XStack> */}
             <XStack f={1} />
 
             <CustomButton
