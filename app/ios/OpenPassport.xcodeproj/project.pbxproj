@@ -46,6 +46,7 @@
 		0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */; };
 		058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
 		058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
+		05B4DDF72C7850A90067519E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05B4DDF62C7850A80067519E /* Images.xcassets */; };
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
 		05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F32BB331AB00F58EEA /* libfr.a */; };
 		05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05D985FA2BB3344600F58EEA /* Assets.xcassets */; };
@@ -168,6 +169,7 @@
 		0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha256.a; sourceTree = "<group>"; };
 		058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_sha256WithRSAEncryption_65537.a; sourceTree = "<group>"; };
 		058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_disclose.a; sourceTree = "<group>"; };
+		05B4DDF62C7850A80067519E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "OpenPassport App Clip/Images.xcassets"; sourceTree = "<group>"; };
 		05D985F22BB331AB00F58EEA /* libgmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgmp.a; sourceTree = "<group>"; };
 		05D985F32BB331AB00F58EEA /* libfr.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfr.a; sourceTree = "<group>"; };
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
@@ -406,6 +408,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				05B4DDF62C7850A80067519E /* Images.xcassets */,
 				13B07FAE1A68108700A75B9A /* OpenPassport */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				054340B52C71B2960014B445 /* OpenPassport App Clip */,
@@ -568,6 +571,7 @@
 				0573C4F02C742FA6006C7386 /* masterList.pem in Resources */,
 				0573C4EE2C72E857006C7386 /* passport.json in Resources */,
 				054340C62C71B2980014B445 /* Assets.xcassets in Resources */,
+				05B4DDF72C7850A90067519E /* Images.xcassets in Resources */,
 				054340C12C71B2960014B445 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -962,7 +966,7 @@
 				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 53;
+				CURRENT_PROJECT_VERSION = 54;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -986,7 +990,7 @@
 					"$(PROJECT_DIR)",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
@@ -1018,7 +1022,7 @@
 				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 53;
+				CURRENT_PROJECT_VERSION = 54;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -1042,7 +1046,7 @@
 					"$(PROJECT_DIR)",
 				);
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1065,7 +1069,7 @@
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 53;
+				CURRENT_PROJECT_VERSION = 54;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1179,7 +1183,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1203,7 +1207,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
-				CURRENT_PROJECT_VERSION = 53;
+				CURRENT_PROJECT_VERSION = 54;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1316,7 +1320,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 1.5;
+				MARKETING_VERSION = 1.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",

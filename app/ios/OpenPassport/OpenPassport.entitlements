@@ -8,5 +8,9 @@
 	<array>
 		<string>TAG</string>
 	</array>
+	<key>com.apple.developer.associated-appclip-app-identifiers</key>
+	<array>
+		<string>5B29R5LYHQ.com.warroom.proofofpassport.Clip</string>
+	</array>
 </dict>
 </plist>

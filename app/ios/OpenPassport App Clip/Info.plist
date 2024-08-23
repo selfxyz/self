@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>CFBundleDisplayName</key>
+	<string>OpenPassport</string>
+	<key>CFBundleIconName</key>
+	<string>AppIcon</string>
 	<key>NSAppClip</key>
 	<dict>
 		<key>NSAppClipRequestEphemeralUserNotification</key>
@@ -28,13 +32,14 @@
 			</array>
 		</dict>
 	</dict>
-	
-	<key>NSCameraUsageDescription</key>
-	<string>Needed to scan the passport MRZ.</string>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Needed to secure the secret</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string></string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
 	<key>NSAppTransportSecurity</key>
 	<dict>
 			<key>NSAllowsArbitraryLoads</key>
@@ -57,6 +62,8 @@
 					</dict>
 			</dict>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>Needed to scan the passport MRZ.</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
 	<key>UISupportedInterfaceOrientations</key>
