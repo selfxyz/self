@@ -75,7 +75,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen
         /> */}
 
       <YStack gap="$2.5" mt="$5" >
-        <CustomButton text="Use mocke Passport Data" onPress={handleSkip} Icon={<VenetianMask color={textBlack} size={24} />} />
+        <CustomButton text="Use mock Passport Data" onPress={handleSkip} Icon={<VenetianMask color={textBlack} size={24} />} />
         <CustomButton text="Open Camera" onPress={startCameraScan} Icon={<Camera color={textBlack} size={24} />} />
         <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
