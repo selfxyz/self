@@ -13,7 +13,6 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.72.3)
   - fmt (6.2.1)
   - glog (0.3.5)
-  - lottie-ios (4.5.0)
   - NFCPassportReader (2.0.3):
     - OpenSSL-Universal (= 1.1.1100)
   - OpenSSL-Universal (1.1.1100)
@@ -435,7 +434,6 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
-  - lottie-ios
   - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `310ecb519655d9ed8b1afc5eb490b2f51a4d3595`)
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -487,7 +485,6 @@ DEPENDENCIES:
 SPEC REPOS:
   trunk:
     - fmt
-    - lottie-ios
     - OpenSSL-Universal
     - QKMRZParser
     - QKMRZScanner
@@ -616,7 +613,6 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: c6bd9e179757b3c0ecf815864fae8032377903ef
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
-  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
@@ -669,6 +665,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: 7b509982ef9137a67eabe590749f46e630e5c88f
+PODFILE CHECKSUM: 419b0154fbd901d7f4321355e48c496e77deff10
 
 COCOAPODS: 1.15.2

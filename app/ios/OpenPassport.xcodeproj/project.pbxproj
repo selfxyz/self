@@ -29,7 +29,6 @@
 		0573C4DC2C72E6D0006C7386 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */; };
 		0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */; };
 		0573C4DE2C72E6D0006C7386 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */; };
-		0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D32C72E6D0006C7386 /* LottieView.swift */; };
 		0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */; };
 		0573C4E12C72E6D0006C7386 /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D52C72E6D0006C7386 /* Prover.swift */; };
 		0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */; };
@@ -64,7 +63,6 @@
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
-		16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E083892C4E7AF100CE8DB2 /* LottieView.swift */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
 		1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */; };
@@ -157,7 +155,6 @@
 		0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = SOURCE_ROOT; };
-		0573C4D32C72E6D0006C7386 /* LottieView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D52C72E6D0006C7386 /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
@@ -192,7 +189,6 @@
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
-		16E083892C4E7AF100CE8DB2 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
 		1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
@@ -286,7 +282,6 @@
 				054340B62C71B2960014B445 /* AppDelegate.h */,
 				0573C4ED2C72E857006C7386 /* passport.json */,
 				054340B72C71B2960014B445 /* AppDelegate.m */,
-				0573C4D32C72E6D0006C7386 /* LottieView.swift */,
 				0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */,
 				0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */,
 				0573C4CB2C72E6D0006C7386 /* OpenPassport-Bridging-Header.h */,
@@ -336,7 +331,6 @@
 				905B70032A72767800AFA232 /* OpenPassport-Bridging-Header.h */,
 				165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */,
 				905B70062A72774000AFA232 /* PassportReader.m */,
-				16E083892C4E7AF100CE8DB2 /* LottieView.swift */,
 				165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */,
 				165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */,
 				16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */,
@@ -832,7 +826,6 @@
 				054340BB2C71B2960014B445 /* SceneDelegate.m in Sources */,
 				0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */,
 				054340C42C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld in Sources */,
-				0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */,
 				0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */,
 				0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */,
 				0573C4DB2C72E6D0006C7386 /* Prover.m in Sources */,
@@ -856,7 +849,6 @@
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,
 				05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */,
-				16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */,
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
