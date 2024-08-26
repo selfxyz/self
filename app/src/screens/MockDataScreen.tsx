@@ -5,7 +5,6 @@ import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
-import { mockPassportData_sha1_rsa_65537, mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { mock_dsc_sha256_rsa_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsapss_4096 } from '../../../common/src/constants/mockCertificates';
 import DatePicker from 'react-native-date-picker';
 import { genMockPassportData } from '../../../common/scripts/passportData/genMockPassportData';
@@ -17,9 +16,7 @@ const MockDataScreen: React.FC = () => {
   const listOfSignatureAlgorithms = ["rsa sha1", "rsa sha256", "rsapss sha256"];
 
   const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() - 24)))
-  const [dateOfBirthDatePickerFormatted, setDateOfBirthDatePickerFormatted] = useState<string | null>(null)
   const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() + 5)))
-  const [dateOfExpiryDatePickerFormatted, setDateOfExpiryDatePickerFormatted] = useState<string | null>(null)
   const [dateOfBirthDatePickerIsOpen, setDateOfBirthDatePickerIsOpen] = useState(false)
   const [dateOfExpiryDatePickerIsOpen, setDateOfExpiryDatePickerIsOpen] = useState(false)
   const [nationality, setNationality] = useState("FRA")
@@ -35,24 +32,18 @@ const MockDataScreen: React.FC = () => {
         return mock_dsc_sha256_rsa_4096
       case "rsapss sha256":
         return mock_dsc_sha256_rsapss_4096
+      default:
+        return mock_dsc_sha256_rsa_4096
     }
   }
-  // const getPassportData = () => {
-  //   switch (signatureAlgorithm) {
-  //     case "rsa_sha1":
-  //       return mockPassportData_sha1_rsa_65537
-  //     case "rsa_sha256":
-  //       return mockPassportData_sha256_rsa_65537
-  //   }
-  // }
-
   const handleGenerate = () => {
 
-    const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
+    let mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
     const dsc = getDSC()
     console.log(mockPassportData)
+    console.log(dsc)
+    mockPassportData.dsc = dsc
     useUserStore.getState().registerPassportData(mockPassportData)
-    useUserStore.getState().dscCertificate = dsc;
     useUserStore.getState().setRegistered(true);
     useNavigationStore.getState().setSelectedTab("app");
   };
