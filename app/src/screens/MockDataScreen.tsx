@@ -11,6 +11,8 @@ import { genMockPassportData } from '../../../common/scripts/passportData/genMoc
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
+import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { downloadZkey } from '../utils/zkeyDownload';
 const MockDataScreen: React.FC = () => {
   const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa sha256");
   const listOfSignatureAlgorithms = ["rsa sha1", "rsa sha256", "rsapss sha256"];
@@ -45,6 +47,9 @@ const MockDataScreen: React.FC = () => {
     mockPassportData.dsc = dsc
     useUserStore.getState().registerPassportData(mockPassportData)
     useUserStore.getState().setRegistered(true);
+    const sigAlgName = getSignatureAlgorithm(dsc);
+    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+    downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("app");
   };
 
@@ -118,10 +123,10 @@ const MockDataScreen: React.FC = () => {
 
       <XStack ai="center" gap="$2" mt="$4">
         <Text f={1} miw="$12">
-          Issuer country
+          Nationality
         </Text>
         <Select
-          id="signature-algorithm"
+          id="nationality"
           value={nationality}
           onValueChange={setNationality}
           native

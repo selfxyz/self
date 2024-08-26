@@ -11,20 +11,29 @@ export const getSignatureAlgorithm = (pemContent: string) => {
     return { signatureAlgorithm, hashFunction };
 }
 
+export const getCircuitName = (circuitType: string, signatureAlgorithm: string, hashFunction: string) => {
+    if (signatureAlgorithm === 'ecdsa') {
+        return circuitType + "_" + signatureAlgorithm + "_" + hashFunction;
+    }
+    else {
+        return circuitType + "_" + signatureAlgorithm + "_65537_" + hashFunction;
+    }
+}
+
 export function getSignatureAlgorithmDetails(oid: string): { signatureAlgorithm: string, hashFunction: string } {
     const details = {
-        '1.2.840.113549.1.1.5': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-1' },
-        '1.2.840.113549.1.1.11': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-256' },
-        '1.2.840.113549.1.1.12': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-384' },
-        '1.2.840.113549.1.1.13': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-512' },
+        '1.2.840.113549.1.1.5': { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
+        '1.2.840.113549.1.1.11': { signatureAlgorithm: 'rsa', hashFunction: 'sha256' },
+        '1.2.840.113549.1.1.12': { signatureAlgorithm: 'rsa', hashFunction: 'sha384' },
+        '1.2.840.113549.1.1.13': { signatureAlgorithm: 'rsa', hashFunction: 'sha512' },
         // rsapss
-        '1.2.840.113549.1.1.10': { signatureAlgorithm: 'RSA-PSS', hashFunction: 'Variable' },
+        '1.2.840.113549.1.1.10': { signatureAlgorithm: 'rsapss', hashFunction: 'sha256' }, // TODO: detect which hash function is used (not always sha256)
         // ecdsa
-        '1.2.840.10045.4.1': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-1' },
-        '1.2.840.10045.4.3.1': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-224' },
-        '1.2.840.10045.4.3.2': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-256' },
-        '1.2.840.10045.4.3.3': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-384' },
-        '1.2.840.10045.4.3.4': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-512' },
+        '1.2.840.10045.4.1': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha1' },
+        '1.2.840.10045.4.3.1': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha224' },
+        '1.2.840.10045.4.3.2': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha256' },
+        '1.2.840.10045.4.3.3': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha384' },
+        '1.2.840.10045.4.3.4': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha512' },
     };
     return details[oid] || { signatureAlgorithm: `Unknown (${oid})`, hashFunction: 'Unknown' };
 }

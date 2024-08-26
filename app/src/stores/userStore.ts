@@ -82,7 +82,7 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     // download zkeys if they are not already downloaded
-    downloadZkey("prove_rsa_65537_sha256"); // might move after nfc scanning
+    // downloadZkey("prove_rsa_65537_sha256"); // might move after nfc scanning
     // downloadZkey("disclose");
 
     const secret = await loadSecretOrCreateIt();
