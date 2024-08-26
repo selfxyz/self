@@ -71,10 +71,13 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen
           h="$13"
           source={{ uri: SCANHelp }}
         /> */}
-      <Text mt="$5" fontSize="$3" alignSelf='center' w="80%" ai="center" textAlign="center" color={textBlack}>
-        You can also <Text onPress={handleSkip} color={blueColor} style={{ textDecorationLine: 'underline', textDecorationColor: blueColor }}>use mock passport data</Text> and skip this step.
-      </Text>
-      <YStack gap="$2.5" mt="$3" >
+      <XStack p="$3" onPress={handleSkip} ai="center" jc="center">
+        <Text mt="$5" fontSize="$3" alignSelf='center' w="80%" ai="center" textAlign="center" color={textBlack}>
+          You can also <Text color={blueColor} style={{ textDecorationLine: 'underline', textDecorationColor: blueColor }}>use mock passport data</Text> and skip this step.
+        </Text>
+      </XStack>
+
+      <YStack gap="$2.5"  >
         <CustomButton text="Open Camera" onPress={startCameraScan} Icon={<Camera color={textBlack} size={24} />} />
         <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
