@@ -53,6 +53,7 @@ import StepOneStepTwo from '../components/StepOneStepTwo';
 import SplashScreen from './SplashScreen';
 import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
+import MockDataScreen from './MockDataScreen';
 
 const MainScreen: React.FC = () => {
   const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
@@ -784,6 +785,9 @@ const MainScreen: React.FC = () => {
           <Tabs.Content value="start" f={1}>
             <StartScreen
             />
+          </Tabs.Content>
+          <Tabs.Content value="mock" f={1}>
+            <MockDataScreen />
           </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen

@@ -46,12 +46,12 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen
     localProof,
   } = useUserStore()
   const handleSkip = () => {
-    update({
-      passportData: mockPassportData_sha256_rsa_65537
-    })
-    setSelectedTab("next");
-    deleteMrzFields();
-    toast.show("Using mock passport data!", { type: "info" })
+    // update({
+    //   passportData: mockPassportData_sha256_rsa_65537
+    // })
+    setSelectedTab("mock");
+    // deleteMrzFields();
+    // toast.show("Using mock passport data!", { type: "info" })
   }
   return (
     <YStack f={1} p="$3">
