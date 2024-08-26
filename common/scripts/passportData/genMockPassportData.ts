@@ -11,12 +11,8 @@ export function genMockPassportData(
     birthDate: string,
     expiryDate
 ): PassportData {
-    const lastName = 'DUPONT';
-    const firstNames = 'ALPHONSE<HUGUES<ALBERT';
-    const passportNumber = '24HB818324';
-    const sex = 'M';
 
-    const mrz = `P<${nationality}${lastName}<<${firstNames}<<<<<<<<<${passportNumber}${nationality}${birthDate}${sex}${expiryDate}<<<<<<<<<<<<<<02`;
+    const mrz = `P<${nationality}DUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
 
     let signatureAlgorithm: string;
     let hashLen: number;

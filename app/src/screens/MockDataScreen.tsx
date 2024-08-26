@@ -13,7 +13,6 @@ import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
 const MockDataScreen: React.FC = () => {
-  const { update: updateNavigationStore } = useNavigationStore();
   const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa sha256");
   const listOfSignatureAlgorithms = ["rsa sha1", "rsa sha256", "rsapss sha256"];
 
@@ -52,9 +51,7 @@ const MockDataScreen: React.FC = () => {
     const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
     const dsc = getDSC()
     console.log(mockPassportData)
-    updateNavigationStore({
-      passportData: mockPassportData,
-    });
+    useUserStore.getState().registerPassportData(mockPassportData)
     useUserStore.getState().dscCertificate = dsc;
     useUserStore.getState().setRegistered(true);
     useNavigationStore.getState().setSelectedTab("app");
