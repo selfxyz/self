@@ -1,7 +1,7 @@
 import React from 'react';
 import { YStack, Button, Image, Text, ScrollView, XStack, Separator } from 'tamagui';
 import { Camera, ShieldCheck, SquarePen, VenetianMask, X } from '@tamagui/lucide-icons';
-import { bgColor, bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
+import { bgColor, bgGreen, blueColor, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import SCANHelp from '../images/scan_help.png'
 import { startCameraScan } from '../utils/cameraScanner';
 import CustomButton from '../components/CustomButton';
@@ -49,9 +49,7 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen
     update({
       passportData: mockPassportData_sha256_rsa_65537
     })
-    setStep(Steps.REGISTERED);
-    setRegistered(true);
-    setSelectedTab("app");
+    setSelectedTab("next");
     deleteMrzFields();
     toast.show("Using mock passport data!", { type: "info" })
   }
@@ -73,12 +71,14 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen
           h="$13"
           source={{ uri: SCANHelp }}
         /> */}
-
-      <YStack gap="$2.5" mt="$5" >
-        <CustomButton text="Use mock Passport Data" onPress={handleSkip} Icon={<VenetianMask color={textBlack} size={24} />} />
+      <Text mt="$5" fontSize="$3" alignSelf='center' w="80%" ai="center" textAlign="center" color={textBlack}>
+        You can also <Text onPress={handleSkip} color={blueColor} style={{ textDecorationLine: 'underline', textDecorationColor: blueColor }}>use mock passport data</Text> and skip this step.
+      </Text>
+      <YStack gap="$2.5" mt="$3" >
         <CustomButton text="Open Camera" onPress={startCameraScan} Icon={<Camera color={textBlack} size={24} />} />
         <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
+
     </YStack>
   );
 };

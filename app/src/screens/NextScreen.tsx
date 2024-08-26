@@ -32,6 +32,11 @@ const NextScreen: React.FC = () => {
   };
 
   const { height } = useWindowDimensions();
+  const handleNext = () => {
+    useNavigationStore.getState().setStep(Steps.REGISTERED);
+    useUserStore.getState().setRegistered(true);
+    useNavigationStore.getState().setSelectedTab("app");
+  }
 
   return (
     <YStack p="$3" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
@@ -104,7 +109,7 @@ const NextScreen: React.FC = () => {
 
         <YStack f={1} />
 
-        <CustomButton onPress={() => setSelectedTab("register")} text="Next" Icon={<ArrowRight color={textBlack} />} />
+        <CustomButton onPress={handleNext} text="Next" Icon={<ArrowRight color={textBlack} />} />
 
       </YStack >
     </YStack >
