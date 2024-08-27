@@ -22,7 +22,9 @@ interface NavigationState {
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
   isZkeyDownloading: {
-    register_sha256WithRSAEncryption_65537: false,
+    prove_rsa_65537_sha1: false,
+    prove_rsa_65537_sha256: false,
+    prove_rsapss_65537_sha256: false,
     disclose: false,
   },
   showWarningModal: {
