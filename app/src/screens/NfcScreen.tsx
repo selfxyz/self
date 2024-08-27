@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
-import { Nfc, X } from '@tamagui/lucide-icons';
 import { bgGreen, borderColor, textBlack, textColor1 } from '../utils/colors';
 import { Carousel } from '../components/Carousel';
 import US_PASSPORT from '../images/us-passport.png'
@@ -12,25 +11,17 @@ import PHONE_SCANBUTTON from "../images/phone_scanbutton.png"
 
 import Dialog from "react-native-dialog";
 import NfcManager from 'react-native-nfc-manager';
-import { Platform, Linking, Dimensions } from 'react-native';
+import { Platform, Linking } from 'react-native';
 
 interface NfcScreenProps {
   handleNFCScan: () => void;
 }
 
 const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
-  const [isLastSlideReached, setIsLastSlideReached] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const carouselImages = [US_PASSPORT, REMOVE_CASE, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
-  const windowHeight = Dimensions.get('window').height;
-
-  const handleSlideChange = (index: number) => {
-    if (index === carouselImages.length - 1) {
-      setIsLastSlideReached(true);
-    }
-  };
 
   const openNfcSettings = () => {
     if (Platform.OS === 'ios') {
@@ -70,12 +61,10 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
   return (
     <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }}>
       <YStack f={1} p="$3" >
-        {/* <Text fontSize="$8" fow="bold" mt="$1.5" mb="$3" color={textColor1} textAlign='center'>Verify your passport using NFC</Text> */}
         <Text fontSize="$9" mt="$0" color={textBlack} mb="$4" ml="$2">Verify your passport using <Text fontSize="$9" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>NFC</Text></Text>
         <Carousel
           images={carouselImages}
           height={300}
-          onSlideChange={handleSlideChange}
           handleNfcScan={handleNfcScan}
         />
         <Dialog.Container visible={dialogVisible}>

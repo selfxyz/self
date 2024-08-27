@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { AnimatePresence } from '@tamagui/animate-presence'
-import { ArrowLeft, ArrowRight, Nfc, ShieldCheck } from '@tamagui/lucide-icons'
+import { ArrowLeft, Nfc } from '@tamagui/lucide-icons'
 import { Button, Image, XStack, YStack, styled, Text } from 'tamagui'
 import { bgBlue, bgGreen, borderColor, textBlack, textColor1, textColor2 } from '../utils/colors'
 import CustomButton from './CustomButton'
@@ -36,18 +36,16 @@ const wrap = (min: number, max: number, v: number) => {
 interface CarouselProps {
     images: string[];
     height?: number;
-    onSlideChange?: (index: number) => void;
     handleNfcScan?: () => void;
 }
 
-export function Carousel({ images, height = 300, onSlideChange, handleNfcScan }: CarouselProps) {
+export function Carousel({ images, height = 300, handleNfcScan }: CarouselProps) {
     const [[page, going], setPage] = useState([0, 0])
 
     const imageIndex = wrap(0, images.length, page)
     const paginate = (going: number) => {
         const newPage = page + going
         setPage([newPage, going])
-        onSlideChange?.(newPage)
     }
 
     const isLastImage = imageIndex === images.length - 1
@@ -99,10 +97,6 @@ export function Carousel({ images, height = 300, onSlideChange, handleNfcScan }:
                 <Text color={textBlack} fontSize="$5" mt="$2" textAlign='center' style={{ opacity: 0.7 }} fontStyle='italic'>{currentSlide.subtitle}</Text>
             </YStack>
 
-            {/* <XStack justifyContent='center' alignItems='center' gap="$1.5" position="absolute" style={{ bottom: 120, left: 0, right: 0 }}>
-                <ShieldCheck color={textBlack} size={14} />
-                <Text color={textBlack} fontSize="$4" >private and secured</Text>
-            </XStack> */}
             <XStack f={1} />
 
             <CustomButton
