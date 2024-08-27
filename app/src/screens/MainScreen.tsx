@@ -39,13 +39,6 @@ import AppScreen from './AppScreen';
 // import constants
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
-
-const { nativeModule } = NativeModules;
-let emitter: NativeEventEmitter | null = null;
-
-if (Platform.OS === 'android') {
-  emitter = new NativeEventEmitter(nativeModule);
-}
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
@@ -55,8 +48,11 @@ import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
 import MockDataScreen from './MockDataScreen';
 
+const emitter = (Platform.OS === 'android')
+  ? new NativeEventEmitter(NativeModules.nativeModule)
+  : null
+
 const MainScreen: React.FC = () => {
-  const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('');
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
@@ -153,7 +149,6 @@ const MainScreen: React.FC = () => {
     }
     else {
       console.log('android :)');
-      setNFCScanIsOpen(true);
       scan(setModalProofStep);
     }
   }
@@ -239,7 +234,6 @@ const MainScreen: React.FC = () => {
   //       selectedTab: "scan",
   //     })
   //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
   //     }, 0);
   //   }
   //   else if (step == Steps.MRZ_SCAN_COMPLETED) {
@@ -247,13 +241,11 @@ const MainScreen: React.FC = () => {
   //       selectedTab: "nfc",
   //     })
   //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
   //     }, 0);
   //   }
   //   else if (step == Steps.NEXT_SCREEN) {
   //     // Set the timeout and store its ID
   //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
   //     }, 700);
   //   }
   //   else if (step == Steps.PROOF_GENERATED) {
@@ -301,11 +293,6 @@ const MainScreen: React.FC = () => {
               <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
               <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
             </XStack>
-
-
-
-
-
           }
 
           {/* {selectedTab !== "start" && selectedTab !== "scan" && selectedTab !== "nfc" && selectedTab !== "next" && selectedTab !== "register" && (

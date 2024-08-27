@@ -34,10 +34,7 @@ function App(): JSX.Element {
     if (AMPLITUDE_KEY) {
       amplitude.init(AMPLITUDE_KEY);
     }
-    //initUserStore();
   }, []);
-
-  // TODO: when passportData already stored, retrieve and jump to main screen
 
   return (
     <YStack f={1} bc={bgWhite} h="100%" w="100%">
