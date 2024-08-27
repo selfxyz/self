@@ -778,7 +778,6 @@ const MainScreen: React.FC = () => {
           </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen
-              sheetIsOpen={sheetIsOpen}
               setSheetIsOpen={setSheetIsOpen}
             />
           </Tabs.Content>
