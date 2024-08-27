@@ -2,13 +2,11 @@ import React, { useEffect } from 'react';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import { YStack, Text, Spinner, XStack } from 'tamagui';
-import { bgGreen, textBlack } from '../utils/colors';
+import { textBlack } from '../utils/colors';
 
 const SplashScreen = () => {
     const { userLoaded, registered } = useUserStore();
     const { setSelectedTab } = useNavigationStore();
-
-    // once registered is retrieved from zustand, navigate to the appropriate screen
     useEffect(() => {
         if (userLoaded) {
             if (registered) {
@@ -26,6 +24,5 @@ const SplashScreen = () => {
         </YStack>
     );
 };
-
 
 export default SplashScreen;

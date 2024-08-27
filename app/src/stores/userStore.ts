@@ -10,7 +10,6 @@ import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
-import { Steps } from '../utils/utils';
 import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
@@ -20,7 +19,6 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
-import { OpenPassportVerifierReport } from '@proofofpassport/sdk';
 
 
 interface UserState {
@@ -106,7 +104,6 @@ const useUserStore = create<UserState>((set, get) => ({
         passportData: JSON.parse(passportData),
         userLoaded: true,
       });
-      // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
 
       return;
     }
@@ -116,7 +113,6 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.REGISTERED);
     set({ userLoaded: true });
   },
 
@@ -158,7 +154,6 @@ const useUserStore = create<UserState>((set, get) => ({
         },
       })
       set({ registered: true });
-      setStep(Steps.REGISTERED);
       return;
     }
 
@@ -220,7 +215,6 @@ const useUserStore = create<UserState>((set, get) => ({
           throw new Error("Transaction failed");
         }
         set({ registered: true });
-        setStep(Steps.REGISTERED);
         useNavigationStore.getState().setSelectedTab("app");
         toast.show('✅', {
           message: "Registered",
@@ -239,7 +233,6 @@ const useUserStore = create<UserState>((set, get) => ({
         showRegistrationErrorSheet: true,
         registrationErrorMessage: error.message,
       })
-      setStep(Steps.NEXT_SCREEN);
       //amplitude.track(error.message);
     }
   },

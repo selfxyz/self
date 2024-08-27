@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Spinner, useWindowDimensions } from 'tamagui';
+import { YStack, XStack, Text, Spinner } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
 import { DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import { bgGreen, separatorColor, textBlack } from '../utils/colors';

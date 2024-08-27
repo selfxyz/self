@@ -6,14 +6,9 @@ import useUserStore from '../stores/userStore';
 const WrongProofScreen: React.FC = () => {
   const { proofVerificationResult } = useUserStore();
 
-  console.log('Raw proofVerificationResult:', JSON.stringify(proofVerificationResult));
-
   const formatFieldName = (field: string) => {
     return field.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
-
-  // Remove the parsing step
-  const parsedResult = proofVerificationResult;
 
   const fieldsToCheck = [
     'scope', 'merkle_root', 'attestation_id', 'current_date', 'issuing_state',
@@ -23,8 +18,8 @@ const WrongProofScreen: React.FC = () => {
 
   const failedConditions = [];
   for (const field of fieldsToCheck) {
-    console.log(`Checking field ${field}: ${JSON.stringify(parsedResult[field])}`);
-    if (parsedResult[field] === false) {
+    console.log(`Checking field ${field}: ${JSON.stringify((proofVerificationResult as any)[field])}`);
+    if ((proofVerificationResult as any)[field] === false) {
       failedConditions.push(formatFieldName(field));
     }
   }

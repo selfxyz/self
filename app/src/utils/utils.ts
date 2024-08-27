@@ -33,20 +33,6 @@ export function formatDateToYYMMDD(inputDate: string) {
   return year + month + day;
 }
 
-export const Steps = {
-  START: 0,
-  MRZ_SCAN: 1,
-  MRZ_SCAN_COMPLETED: 2,
-  NFC_SCANNING: 3,
-  NEXT_SCREEN: 4,
-  REGISTER: 5,
-  REGISTERED: 6,
-  APP_SELECTED: 7,
-  GENERATING_PROOF: 8,
-  PROOF_GENERATED: 9,
-  PROOF_SENDING: 10,
-  PROOF_SENT: 11
-};
 
 export const ModalProofSteps = {
   MODAL_REQUEST_SENT: 1,

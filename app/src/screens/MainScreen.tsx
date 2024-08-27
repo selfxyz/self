@@ -5,9 +5,7 @@ import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, 
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import forge from 'node-forge';
 import Dialog from "react-native-dialog";
-import { ethers } from 'ethers';
 // import ressources
 import Xlogo from '../images/x.png'
 import NFC_IMAGE from '../images/nfc.png'
@@ -18,23 +16,16 @@ import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 // import utils
 import { bgColor, bgGreen, bgWhite, blueColorLight, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
-import { ModalProofSteps, Steps } from '../utils/utils';
+import { ModalProofSteps } from '../utils/utils';
 import { scan } from '../utils/nfcScanner';
 import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
 import { contribute } from '../utils/contribute';
-import { sendCSCARequest } from '../utils/cscaRequest';
-import { sendRegisterTransaction } from '../utils/transactions';
-// import utils from common
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
-import { getCSCAInputs } from '../../../common/src/utils/csca';
-import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 // import screens
 import ProveScreen from './ProveScreen';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
 import RegisterScreen from './RegisterScreen';
-import SendProofScreen from './SendProofScreen';
 import AppScreen from './AppScreen';
 // import constants
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
@@ -88,8 +79,6 @@ const MainScreen: React.FC = () => {
   const {
     showWarningModal,
     update: updateNavigationStore,
-    step,
-    setStep,
     selectedTab,
     setSelectedTab,
     hideData,
@@ -101,10 +90,7 @@ const MainScreen: React.FC = () => {
   } = useNavigationStore();
 
   const handleRestart = () => {
-    updateNavigationStore({
-      selectedTab: "start",
-      step: Steps.MRZ_SCAN,
-    })
+    setSelectedTab("start");
     deleteMrzFields();
   }
   const handleHideData = () => {
@@ -113,34 +99,9 @@ const MainScreen: React.FC = () => {
     })
   }
 
-
   const castDate = (date: Date) => {
     return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
   }
-
-  const decrementStep = () => {
-    if (selectedTab === "scan") {
-      setSelectedTab("start");
-    }
-    else if (selectedTab === "nfc") {
-      setSelectedTab("scan");
-    }
-    else if (selectedTab === "next") {
-      setSelectedTab("nfc");
-    }
-    else if (selectedTab === "register") {
-      setStep(Steps.NEXT_SCREEN);
-    }
-    else if (selectedTab === "app") {
-      setStep(Steps.REGISTER);
-    }
-    else if (selectedTab === "prove") {
-      setStep(Steps.REGISTERED);
-    }
-    else if (selectedTab === "mint") {
-      setStep(Steps.REGISTERED);
-    }
-  };
 
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
@@ -321,7 +282,7 @@ const MainScreen: React.FC = () => {
                   <Text textAlign='center'>{scanningMessage}</Text>
                 </View>
 
-                {step >= Steps.NEXT_SCREEN ?
+                {selectedTab === "next" ?
                   <CheckCircle2
                     size="$8"
                     alignSelf='center'
@@ -802,9 +763,6 @@ const MainScreen: React.FC = () => {
             <ProveScreen
               setSheetRegisterIsOpen={setSheetRegisterIsOpen}
             />
-          </Tabs.Content>
-          <Tabs.Content value="mint" f={1}>
-            <SendProofScreen />
           </Tabs.Content>
           <Tabs.Content value="valid" f={1}>
             <ValidProofScreen />

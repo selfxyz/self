@@ -1,10 +1,6 @@
 import React from 'react';
-import { YStack, Button, Image, Text, ScrollView, XStack, Separator } from 'tamagui';
-import { Camera, ShieldCheck, SquarePen, X } from '@tamagui/lucide-icons';
-import { bgColor, bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
-import SCANHelp from '../images/scan_help.png'
-import { startCameraScan } from '../utils/cameraScanner';
-import CustomButton from '../components/CustomButton';
+import { YStack, Text, XStack } from 'tamagui';
+import { bgGreen, textBlack } from '../utils/colors';
 
 
 const SuccessScreen: React.FC = () => {

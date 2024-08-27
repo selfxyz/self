@@ -3,7 +3,6 @@ import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../../utils/utils';
-import { Steps } from './utils';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
@@ -23,7 +22,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -42,7 +41,6 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
   }
 
   console.log('scanning...');
-  setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
     scanAndroid(setModalProofStep);
@@ -92,7 +90,7 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     dateOfBirth,
     dateOfExpiry
   } = useUserStore.getState()
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast } = useNavigationStore.getState();
 
   try {
     const response = await NativeModules.PassportReader.scanPassport(
@@ -105,7 +103,6 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     //amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
-    setStep(Steps.MRZ_SCAN_COMPLETED);
     //amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
       toast.show('Failed to read passport', {
@@ -204,7 +201,6 @@ const handleResponseIOS = async (
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
-    useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
     //amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: "Your signature algorithm is not supported at that time. Please try again later.",
