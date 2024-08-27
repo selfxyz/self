@@ -175,66 +175,6 @@ const MainScreen: React.FC = () => {
     setIsFormComplete(passportNumber?.length >= 3 && dateOfBirth?.length >= 6 && dateOfExpiry?.length >= 6);
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
-  // useEffect(() => {
-  //   if (registered && step < Steps.REGISTERED) {
-  //     setStep(Steps.REGISTERED);
-  //   }
-  // }, [registered]);
-
-
-  // useEffect(() => {
-  //   let timeoutId: ReturnType<typeof setTimeout>;
-  //   if (step == Steps.START) {
-  //     updateNavigationStore({
-  //       selectedTab: "start",
-  //     })
-  //   }
-
-  //   if (step == Steps.MRZ_SCAN) {
-  //     updateNavigationStore({
-  //       selectedTab: "scan",
-  //     })
-  //     timeoutId = setTimeout(() => {
-  //     }, 0);
-  //   }
-  //   else if (step == Steps.MRZ_SCAN_COMPLETED) {
-  //     updateNavigationStore({
-  //       selectedTab: "nfc",
-  //     })
-  //     timeoutId = setTimeout(() => {
-  //     }, 0);
-  //   }
-  //   else if (step == Steps.NEXT_SCREEN) {
-  //     // Set the timeout and store its ID
-  //     timeoutId = setTimeout(() => {
-  //     }, 700);
-  //   }
-  //   else if (step == Steps.PROOF_GENERATED) {
-  //     updateNavigationStore({
-  //       selectedTab: "mint",
-  //     })
-  //   }
-  //   if (step == Steps.NEXT_SCREEN) {
-  //     updateNavigationStore({
-  //       selectedTab: "next",
-  //     })
-  //   }
-  //   if (step == Steps.REGISTER) {
-  //     updateNavigationStore({
-  //       selectedTab: "register",
-  //     })
-  //   }
-  //   if (step == Steps.REGISTERED) {
-  //     updateNavigationStore({
-  //       selectedTab: "app",
-  //     })
-  //   }
-  //   return () => {
-  //     if (timeoutId) {
-  //       clearTimeout(timeoutId);
-  //     }
-  //   };
-  // }, [step]);
 
   const { height } = useWindowDimensions();
 
