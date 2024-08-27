@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { processCertificate } from './utils';
-import { mock_csca_sha1_rsa_4096, mock_csca_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
+import { mock_csca_sha1_rsa_4096, mock_csca_sha256_rsa_4096, mock_csca_sha256_rsapss_4096 } from '../../../common/src/constants/mockCertificates';
 
 export async function getSkiPemJson(pemDirectory: string) {
     try {
@@ -34,7 +34,7 @@ export async function getSkiPemJson(pemDirectory: string) {
 export async function getSkiPemDevJson() {
 
     try {
-        const files = [mock_csca_sha1_rsa_4096, mock_csca_sha256_rsa_4096];
+        const files = [mock_csca_sha1_rsa_4096, mock_csca_sha256_rsa_4096, mock_csca_sha256_rsapss_4096];
 
         const skiPemMap: { [ski: string]: string } = {};
 
