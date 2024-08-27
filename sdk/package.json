@@ -41,14 +41,17 @@
     "mocha": "^10.3.0",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "prettier": "^3.3.3"
   },
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassport1Step.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
-    "download-circuits": "cd ../circuits && ./scripts/download_circuits_from_aws.sh && cd ../sdk"
+    "download-circuits": "cd ../circuits && ./scripts/download_circuits_from_aws.sh && cd ../sdk",
+    "format": "prettier --write .",
+    "lint": "prettier --check ."
   },
   "files": [
     "dist",

@@ -7,12 +7,12 @@ import { AppType } from '../../common/src/utils/appType';
 import { OpenPassport1StepVerifier, OpenPassport1StepInputs } from './OpenPassport1Step';
 
 export {
-    OpenPassport2StepVerifier,
-    OpenPassport2StepInputs,
-    OpenPassportVerifierReport,
-    QRCodeGenerator,
-    AppType,
-    countryCodes,
-    OpenPassport1StepVerifier,
-    OpenPassport1StepInputs
-}
+  OpenPassport2StepVerifier,
+  OpenPassport2StepInputs,
+  OpenPassportVerifierReport,
+  QRCodeGenerator,
+  AppType,
+  countryCodes,
+  OpenPassport1StepVerifier,
+  OpenPassport1StepInputs,
+};
