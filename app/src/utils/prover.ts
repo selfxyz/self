@@ -50,7 +50,7 @@ export const generateProof = async (
   }
 };
 
-export const formatProof = (rawProof: any) => {
+export const formatProof = (rawProof: any): any => {
   return {
     proof: {
       pi_a: [

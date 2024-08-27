@@ -11,6 +11,7 @@ import { generateCircuitInputsProve } from '../../../common/src/utils/generateIn
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
+import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -26,7 +27,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   } = useNavigationStore()
 
   const {
-    setProofVerificationResult
+    setProofVerificationResult,
+    registered,
+    passportData,
   } = useUserStore()
 
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -87,9 +90,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       }
 
       await waitForSocketConnection(socket);
-
       setIsConnecting(false);
-      socket.emit('proof_generation_start', { sessionId: selectedApp.userId });
+
+      socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
       const inputs = generateCircuitInputsProve(
         passportData,
         64, 32,
@@ -98,21 +101,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
         selectedApp.userId
       );
-
+      const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
+      const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
       const rawDscProof = await generateProof(
-        selectedApp.circuit,
+        circuitName,
         inputs,
       );
       const dscProof = formatProof(rawDscProof);
-      // Send the proof via WebSocket
-      const response = {
-        dsc: passportData.dsc,
-        dscProof: dscProof
-      };
-
+      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit }
       console.log("response", response);
-
-      socket.emit('proof_generated', { sessionId: selectedApp.userId, proof: response });
+      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
 
     } catch (error) {
       console.error('Error in handleProve:', error);
@@ -122,10 +120,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     }
   };
 
-  const {
-    registered,
-    passportData,
-  } = useUserStore();
+
 
 
   const disclosureFieldsToText = (key: string, value: string = "") => {

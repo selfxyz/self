@@ -1,7 +1,6 @@
 import React from 'react';
 import { ScrollView, Text, YStack } from 'tamagui';
 import useNavigationStore from '../stores/navigationStore';
-import { createAppType } from '../../../common/src/utils/appType';
 import { XStack } from 'tamagui';
 import CustomButton from '../components/CustomButton';
 import { BadgeCheck, Binary, List, QrCode, Smartphone } from '@tamagui/lucide-icons';
@@ -9,6 +8,8 @@ import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import { Platform } from 'react-native';
 import { NativeModules } from 'react-native';
+import { AppType } from '../../../sdk/src';
+import { reconstructAppType } from '../../../common/src/utils/appType';
 
 interface AppScreenProps {
   setSheetAppListOpen: (value: boolean) => void;
@@ -73,16 +74,24 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
   const handleQRCodeScan = (result: string) => {
     try {
       console.log(result);
-      const app = createAppType(JSON.parse(result));
-      console.log(app);
+      const parsedJson = JSON.parse(result);
+      const app: AppType = reconstructAppType(parsedJson);
       setSelectedApp(app);
       setSelectedTab("prove");
+      toast.show('✅', {
+        message: "QR code scanned",
+        customData: {
+          type: "success",
+        },
+      })
     } catch (error) {
       console.error('Error parsing QR code result:', error);
-      toast.show('Error', {
-        message: 'Invalid QR code format',
-        type: 'error',
-      });
+      toast.show('❌', {
+        message: "Error parsing QR code",
+        customData: {
+          type: "error",
+        },
+      })
     }
   };
 
@@ -167,11 +176,6 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
           }}
           Icon={<QrCode size={18} color={textBlack} />}
         />
-        <CustomButton bgColor='white' text="Open app list" onPress={
-          registered ?
-            () => setSheetAppListOpen(true)
-            :
-            () => setSheetRegisterIsOpen(true)} Icon={<List size={18} color={textBlack} />} />
       </YStack>
     </YStack>
   );
