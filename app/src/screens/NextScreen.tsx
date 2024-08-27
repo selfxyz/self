@@ -1,27 +1,33 @@
 import React from 'react';
-import { YStack, XStack, Text, Button, Image, useWindowDimensions, Fieldset } from 'tamagui';
+import { YStack, XStack, Text, Image, useWindowDimensions, Fieldset } from 'tamagui';
 import { ArrowRight, Info } from '@tamagui/lucide-icons';
 import { getFirstName, maskString } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import USER from '../images/user.png'
 import { bgGreen, borderColor, componentBgColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { Platform } from 'react-native';
-import { formatAttribute, Steps } from '../utils/utils';
+import { formatAttribute } from '../utils/utils';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
 
 
 const NextScreen: React.FC = () => {
+
+  const { height } = useWindowDimensions();
+  const handleNext = () => {
+    setRegistered(true);
+    setSelectedTab("app");
+  }
   const {
     hideData,
-    setStep,
     setSelectedTab
 
   } = useNavigationStore()
 
   const {
     passportData,
+    setRegistered
   } = useUserStore();
 
   const disclosureOptions: any = {
@@ -30,13 +36,6 @@ const NextScreen: React.FC = () => {
     expiry_date: "optional",
     date_of_birth: "optional",
   };
-
-  const { height } = useWindowDimensions();
-  const handleNext = () => {
-    useNavigationStore.getState().setStep(Steps.REGISTERED);
-    useUserStore.getState().setRegistered(true);
-    useNavigationStore.getState().setSelectedTab("app");
-  }
 
   return (
     <YStack p="$3" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
@@ -100,6 +99,7 @@ const NextScreen: React.FC = () => {
             );
           })}
         </YStack>
+
         <YStack f={1} />
 
         <XStack bg="#ffff" borderRadius={100} py="$2.5" px="$3">
@@ -110,7 +110,6 @@ const NextScreen: React.FC = () => {
         <YStack f={1} />
 
         <CustomButton onPress={handleNext} text="Next" Icon={<ArrowRight color={textBlack} />} />
-
       </YStack >
     </YStack >
   );
