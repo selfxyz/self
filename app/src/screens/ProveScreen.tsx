@@ -11,7 +11,6 @@ import { downloadZkey } from '../utils/zkeyDownload';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import { AppType } from '../../../common/src/utils/appType';
-import useSbtStore from '../stores/sbtStore';
 import CustomButton from '../components/CustomButton';
 import { generateCircuitInputsDisclose, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
