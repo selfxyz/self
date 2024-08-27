@@ -22,7 +22,7 @@ export class OpenPassportVerifierReport {
     constructor() { }
 
     exposeAttribute(attribute: keyof OpenPassportVerifierReport, value: any = "", expectedValue: any = "") {
-        console.log('exposeAttribute', attribute, "value:", value, "expectedValue:", expectedValue);
+        console.error('%c attributes don\'t match', 'color: red', attribute, "value:", value, "expectedValue:", expectedValue);
         (this[attribute] as boolean) = false;
         this.valid = false;
     }

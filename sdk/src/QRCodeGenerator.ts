@@ -1,5 +1,5 @@
 import QRCode from 'easyqrcodejs';
-import { AppType } from "../common/src/utils/appType";
+import { AppType } from "../../common/src/utils/appType";
 
 export class QRCodeGenerator {
     static async generateQRCode(appData: AppType, size: number = 256): Promise<HTMLElement> {

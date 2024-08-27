@@ -1,19 +1,19 @@
 import { groth16 } from 'snarkjs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
-import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../../common/src/constants/constants';
+import { getCurrentDateFormatted } from '../utils/utils';
+import { unpackReveal } from '../../common/src/utils/revealBitmap';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { vkey_disclose } from '../common/src/constants/vkey';
+import { vkey_disclose } from '../../common/src/constants/vkey';
 
-const MOCK_MERKLE_ROOT_CHECK = false;
-
-export class OpenPassportWeb2Verifier {
+export class OpenPassport2StepVerifier {
     scope: string;
     attestationId: string;
     requirements: string[][];
     rpcUrl: string;
     report: OpenPassportVerifierReport;
+    verifyMerkleRootCall: (merkleRoot: string) => Promise<boolean>;
 
-    constructor(options: { scope: string, attestationId?: string, requirements?: string[][], rpcUrl?: string }) {
+    constructor(options: { scope: string, attestationId?: string, requirements?: string[][], rpcUrl?: string, verifyMerkleRootCall: (merkleRoot: string) => Promise<boolean> }) {
         this.scope = options.scope;
         this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
         this.requirements = options.requirements || [];
@@ -21,8 +21,8 @@ export class OpenPassportWeb2Verifier {
         this.report = new OpenPassportVerifierReport();
     }
 
-    async verify(proofOfPassportWeb2Inputs: OpenPassportWeb2Inputs): Promise<OpenPassportVerifierReport> {
-        const parsedPublicSignals = parsePublicSignals(proofOfPassportWeb2Inputs.publicSignals);
+    async verify(proofOfPassport2StepInputs: OpenPassport2StepInputs): Promise<OpenPassportVerifierReport> {
+        const parsedPublicSignals = parsePublicSignals2Step(proofOfPassport2StepInputs.publicSignals);
         //1. Verify the scope
         if (parsedPublicSignals.scope !== this.scope) {
             this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
@@ -30,8 +30,8 @@ export class OpenPassportWeb2Verifier {
         console.log('\x1b[32m%s\x1b[0m', `- scope verified`);
 
         //2. Verify the merkle_root
-        const merkleRootIsValid = await checkMerkleRoot(this.rpcUrl, parsedPublicSignals.merkle_root);
-        if (!(merkleRootIsValid || MOCK_MERKLE_ROOT_CHECK)) {
+        const merkleRootIsValid = await this.verifyMerkleRootCall(parsedPublicSignals.merkle_root);
+        if (!merkleRootIsValid) {
             this.report.exposeAttribute('merkle_root');
         }
         console.log('\x1b[32m%s\x1b[0m', `- merkle_root verified`);
@@ -73,14 +73,10 @@ export class OpenPassportWeb2Verifier {
         }
 
         //6. Verify the proof
-
-        console.log(vkey_disclose);
-        console.log("publicSignals", proofOfPassportWeb2Inputs.publicSignals);
-        console.log("proof", proofOfPassportWeb2Inputs.proof);
         const verified_disclose = await groth16.verify(
             vkey_disclose,
-            proofOfPassportWeb2Inputs.publicSignals,
-            proofOfPassportWeb2Inputs.proof as any
+            proofOfPassport2StepInputs.publicSignals,
+            proofOfPassport2StepInputs.proof as any
         )
         if (!verified_disclose) {
             this.report.exposeAttribute('proof');
@@ -94,12 +90,24 @@ export class OpenPassportWeb2Verifier {
     }
 }
 
-export class OpenPassportWeb2Inputs {
+export class OpenPassport2StepInputs {
     publicSignals: string[];
     proof: string[];
 
     constructor(publicSignals: string[], proof: string[]) {
         this.publicSignals = publicSignals;
         this.proof = proof;
+    }
+}
+
+export function parsePublicSignals2Step(publicSignals) {
+    return {
+        nullifier: publicSignals[0],
+        revealedData_packed: [publicSignals[1], publicSignals[2], publicSignals[3]],
+        attestation_id: publicSignals[4],
+        merkle_root: publicSignals[5],
+        scope: publicSignals[6],
+        current_date: [publicSignals[7], publicSignals[8], publicSignals[9], publicSignals[10], publicSignals[11], publicSignals[12]],
+        user_identifier: publicSignals[13],
     }
 }

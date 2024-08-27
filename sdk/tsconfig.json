@@ -11,11 +11,12 @@
     "resolveJsonModule": true
   },
   "include": [
-    "index.ts",
+    "src/index.ts",
     "src/**/*",
     "common/**/*",
     "circuits/**/*",
-    "circuits/**/*.json"
+    "circuits/**/*.json",
+    "utils/utils.ts"
   ],
   "exclude": [
     "node_modules",
