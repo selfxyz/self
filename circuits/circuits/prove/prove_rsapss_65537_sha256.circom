@@ -8,7 +8,7 @@ include "../utils/splitSignalsToWords.circom";
 include "../utils/leafHasher.circom";
 include "../disclose/disclose.circom";
 
-template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes) {
+template PROVE_RSAPSS_65537_SHA256(n, k, max_datahashes_bytes) {
     /*** CUSTOM IMPLEMENTATION ***/
     signal input mrz[93];
     signal input dg1_hash_offset;
@@ -54,4 +54,4 @@ template PROVE_RSA_65537_SHA256(n, k, max_datahashes_bytes) {
     signal output nullifier <== nullifier_hasher.out;
 }
 
-component main { public [ dsc_modulus, scope, user_identifier, current_date ]  } = PROVE_RSA_65537_SHA256(64, 32, 320);
+component main { public [ dsc_modulus, scope, user_identifier, current_date ]  } = PROVE_RSAPSS_65537_SHA256(64, 32, 320);
