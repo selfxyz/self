@@ -38,8 +38,6 @@ export const generateProof = async (
     } else {
       const parsedResponse = JSON.parse(response);
       console.log('parsedResponse', parsedResponse);
-      console.log('parsedResponse.proof:', parsedResponse.proof);
-      console.log('parsedResponse.inputs:', parsedResponse.inputs);
 
       return {
         proof: parsedResponse.proof,
@@ -51,3 +49,28 @@ export const generateProof = async (
     throw new Error(err);
   }
 };
+
+export const formatProof = (rawProof: any) => {
+  return {
+    proof: {
+      pi_a: [
+        rawProof.proof.a[0],
+        rawProof.proof.a[1],
+        "1"
+      ],
+      pi_b: [
+        [rawProof.proof.b[0][0], rawProof.proof.b[0][1]],
+        [rawProof.proof.b[1][0], rawProof.proof.b[1][1]],
+        ["1", "0"]
+      ],
+      pi_c: [
+        rawProof.proof.c[0],
+        rawProof.proof.c[1],
+        "1"
+      ],
+      protocol: "groth16",
+      curve: "bn128"
+    },
+    publicSignals: (rawProof as any).pub_signals
+  }
+}

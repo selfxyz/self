@@ -21,11 +21,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
         <Text ml="$2" mt="$8" fontSize="$8" color={textBlack}>Open your passport on the <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>main page</Text> to scan it.</Text>
         <Text ml="$2" mt="$2" fontSize="$8" color={textBlack} style={{ opacity: 0.7 }}>Your data never leaves your device.</Text>
         <XStack f={1} />
-
-        {/* <XStack justifyContent='center' alignItems='center' gap="$1.5">
-          <ShieldCheck color={textBlack} size={14} />
-          <Text color={textBlack} fontSize="$4">private and secured</Text>
-        </XStack> */}
       </YStack>
       <XStack p="$3" onPress={() => setSelectedTab("mock")} ai="center" jc="center">
         <Text mt="$5" fontSize="$3" alignSelf='center' w="80%" ai="center" textAlign="center" color={textBlack}>
