@@ -44,16 +44,15 @@ const result = await verifier.verify(openPassportWeb2Inputs); // OpenPassportWeb
 yarn install-sdk
 ```
 ## Tests
+
 To run the tests, you need to download the circuits and the zkey files from the AWS s3 bucket.
+This script will also compile the circuits to generate the wasm files.
+Make sure that the circuits in the circuits folder are up to date with the AWS zkey files.
 
 ```bash
 yarn download-circuits
 ```
 
-Finally compile the circuits with the following command:
-```bash
-yarn compile-circuits
-```
 Then run the tests with the following command:
 ```bash
 yarn test
