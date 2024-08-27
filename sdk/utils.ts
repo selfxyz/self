@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { getCurrentDateYYMMDD } from "../common/src/utils/utils";
 import { REGISTER_ABI, REGISTER_CONTRACT_ADDRESS } from "../common/src/constants/constants";
-import { derToBytes } from "./common/src/utils/csca";
+import { derToBytes } from '../common/src/utils/csca';
 import forge from 'node-forge'
 import { pem1, pem2, pem3, pem4, mock_csca } from './certificates';
 import { fr1pem, fr2pem, fr3pem, fr4pem, mockpem } from './certificates';

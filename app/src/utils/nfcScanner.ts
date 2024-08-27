@@ -23,7 +23,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep, nfcSheetIsOpen, setNfcSheetIsOpen } = useNavigationStore.getState();
+  const { toast, setStep } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,

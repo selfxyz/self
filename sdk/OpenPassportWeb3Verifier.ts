@@ -1,4 +1,4 @@
-import { DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from './common/src/constants/constants';
+import { DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID, SBT_ABI, SBT_CONTRACT_ADDRESS } from '../common/src/constants/constants';
 import { ethers } from 'ethers';
 import { attributeToGetter } from './utils';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';

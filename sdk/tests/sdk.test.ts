@@ -10,8 +10,8 @@ import { formatMrz, packBytes } from '../../common/src/utils/utils';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { OpenPassportWeb2Inputs, OpenPassportWeb2Verifier } from '../index';
 import { OpenPassportProverInputs, OpenPassportProverVerifier } from '../OpenPassportProverVerifier';
-import { mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../common/src/constants/mockCertificates';
-import { vkey_prove_rsa_65537_sha256 } from '../common/src/constants/vkey';
+import { mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../common/src/constants/mockCertificates';
+import { vkey_prove_rsa_65537_sha256 } from '../../common/src/constants/vkey';
 // import dotenv from 'dotenv';
 // dotenv.config();
 

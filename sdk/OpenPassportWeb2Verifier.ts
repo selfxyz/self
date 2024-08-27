@@ -1,8 +1,8 @@
 import { groth16 } from 'snarkjs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, unpackReveal } from './utils';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { vkey_disclose } from './common/src/constants/vkey';
+import { vkey_disclose } from '../common/src/constants/vkey';
 
 const MOCK_MERKLE_ROOT_CHECK = false;
 

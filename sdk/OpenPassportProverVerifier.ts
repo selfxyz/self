@@ -1,5 +1,5 @@
 import { groth16 } from 'snarkjs';
-import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
+import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from '../common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, parsePublicSignalsProve, unpackReveal, verifyDSCValidity } from './utils';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { vkey_prove_rsa_65537_sha1, vkey_prove_rsa_65537_sha256, vkey_prove_rsapss_65537_sha256 } from './common/src/constants/vkey';
