@@ -1,29 +1,18 @@
 import { PassportData } from "./types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "./utils";
 import * as forge from 'node-forge';
-import * as rs from 'jsrsasign';
 import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_key_sha256_rsapss_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha256_rsapss_2048, mock_dsc_sha256_rsapss_4096 } from "../constants/mockCertificates";
 import { sampleDataHashes_rsa_sha1, sampleDataHashes_rsa_sha256, sampleDataHashes_rsapss_sha256 } from "../constants/sampleDataHashes";
-
+import { countryCodes } from "../constants/constants";
 export function genMockPassportData(
-    signatureType: 'rsa sha1' | 'rsa sha256' | 'rsapss sha256',
-    nationality: string,
+    signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256',
+    nationality: keyof typeof countryCodes,
     birthDate: string,
     expiryDate: string,
 ): PassportData {
-    // checks
     if (birthDate.length !== 6 || expiryDate.length !== 6) {
         throw new Error("birthdate and expiry date have to be in the \"YYMMDD\" format");
     }
-
-    if (nationality.length !== 3) {
-        throw new Error("nationality must be a 3-character code");
-    }
-
-    if (!['rsa sha1', 'rsa sha256', 'rsapss sha256'].includes(signatureType)) {
-        throw new Error("signatureType must be one of 'rsa sha1', 'rsa sha256', or 'rsapss sha256'");
-    }
-
 
     const mrz = `P<${nationality}DUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
     let signatureAlgorithm: string;
@@ -33,21 +22,21 @@ export function genMockPassportData(
     let dsc: string;
 
     switch (signatureType) {
-        case 'rsa sha1':
+        case 'rsa_sha1':
             signatureAlgorithm = 'sha1WithRSAEncryption';
             hashLen = 20;
             sampleDataHashes = sampleDataHashes_rsa_sha1;
             privateKeyPem = mock_dsc_key_sha1_rsa_4096;
             dsc = mock_dsc_sha1_rsa_4096;
             break;
-        case 'rsa sha256':
+        case 'rsa_sha256':
             signatureAlgorithm = 'sha256WithRSAEncryption';
             hashLen = 32;
             sampleDataHashes = sampleDataHashes_rsa_sha256;
             privateKeyPem = mock_dsc_key_sha256_rsa_4096;
             dsc = mock_dsc_sha256_rsa_4096;
             break;
-        case 'rsapss sha256':
+        case 'rsapss_sha256':
             signatureAlgorithm = 'sha256WithRSASSAPSS';
             hashLen = 32;
             sampleDataHashes = sampleDataHashes_rsapss_sha256;
@@ -69,7 +58,7 @@ export function genMockPassportData(
     const modulus = privKey.n.toString(16);
 
     let signature: number[];
-    if (signatureType === 'rsapss sha256') {
+    if (signatureType === 'rsapss_sha256') {
         const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
         const md = forge.md.sha256.create();
         md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
@@ -81,7 +70,7 @@ export function genMockPassportData(
         const signatureBytes = privateKey.sign(md, pss);
         signature = Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
     } else {
-        const md = signatureType === 'rsa sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+        const md = signatureType === 'rsa_sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
         md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
         const forgeSignature = privKey.sign(md);
         signature = Array.from(forgeSignature, (c: string) => c.charCodeAt(0));

@@ -13,8 +13,8 @@ import { flag } from 'country-emoji';
 import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from '../utils/zkeyDownload';
 const MockDataScreen: React.FC = () => {
-  const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa sha256");
-  const listOfSignatureAlgorithms = ["rsa sha1", "rsa sha256", "rsapss sha256"];
+  const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa_sha256");
+  const listOfSignatureAlgorithms = ["rsa_sha1", "rsa_sha256", "rsapss_sha256"];
 
   const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() - 24)))
   const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() + 5)))
@@ -28,7 +28,7 @@ const MockDataScreen: React.FC = () => {
 
   const handleGenerate = () => {
 
-    const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
+    const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256", nationality as keyof typeof countryCodes, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
     useUserStore.getState().registerPassportData(mockPassportData)
     useUserStore.getState().setRegistered(true);
     const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
