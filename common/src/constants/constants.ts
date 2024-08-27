@@ -37,7 +37,20 @@ export const attributeToPosition = {
   older_than: [88, 89]
 };
 
-export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
+// MAX_PADDED_ECONTENT_LEN in bytes
+// Bits (*8) must be multiple of 64, such that b * 8 % 512 == 0
+// Valid values: 64, 128, 192, 256, 320, 384, 448, 512, 576, 640, 704, 768, 832, 896, 960, 1024, ...
+//      In bits: 512,1024,1536,2048,2560,3072,3584,4096,4608,5120,5632,6144,6656,7168,7680,8192, ...
+//
+// The maximum possible byte length of the encapsulated content (eContent) section in an ePassport,
+// assuming all 16 possible data groups are present, using SHA-256 for each data group hash, and
+// including ASN.1 header and encoding overhead
+// Max possible eContent Length = Length of ASN.1 encoding header + ((Length of ASN.1 encoding + Length of SHA-256 hash) * Max possible data groups)
+// Max possible eContent Length = 19                              + ((4                        + 32                    ) * 16)
+// Max possible eContent Length = 595
+export const MAX_PADDED_ECONTENT_LEN = 640;
+
+export const MAX_PADDED_SIGNED_ATTR_LEN = 512;
 
 export const countryCodes = {
   "AFG": "Afghanistan",

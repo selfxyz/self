@@ -69,7 +69,7 @@ export function formatAndConcatenateDataHashes(
   // 96, -122, 72, 1, 101, 3, 4, 2, 1,
   // // NULL tag + SEQUENCE + length (117 bytes)
   // 5, 0, 48, 117,
-  
+
   // SHA384withECDSA (index of mrzhash is 33)
   // // SEQUENCE + long form indicator + length (313 bytes)
   // 48, -126, 1, 57,
@@ -101,37 +101,37 @@ export function formatAndConcatenateDataHashes(
   return concat;
 }
 
-export function assembleEContent(
+export function assembleSignedAttr(
   messageDigest: number[],
 ) {
-  const constructedEContent = [];
+  const constructedSignedAttr = [];
 
   // Detailed description is in private file r&d.ts for now
   // First, the tag and length, assumed to be always the same
-  constructedEContent.push(...[49, 102]);
+  constructedSignedAttr.push(...[49, 102]);
 
   // 1.2.840.113549.1.9.3 is RFC_3369_CONTENT_TYPE_OID
-  constructedEContent.push(
+  constructedSignedAttr.push(
     ...[48, 21, 6, 9, 42, -122, 72, -122, -9, 13, 1, 9, 3],
   );
   // 2.23.136.1.1.1 is ldsSecurityObject
-  constructedEContent.push(...[49, 8, 6, 6, 103, -127, 8, 1, 1, 1]);
+  constructedSignedAttr.push(...[49, 8, 6, 6, 103, -127, 8, 1, 1, 1]);
 
   // 1.2.840.113549.1.9.5 is signing-time
-  constructedEContent.push(
+  constructedSignedAttr.push(
     ...[48, 28, 6, 9, 42, -122, 72, -122, -9, 13, 1, 9, 5],
   );
   // mock time of signature
-  constructedEContent.push(...[49, 15, 23, 13, 49, 57, 49, 50, 49, 54, 49, 55, 50, 50, 51, 56, 90]);
+  constructedSignedAttr.push(...[49, 15, 23, 13, 49, 57, 49, 50, 49, 54, 49, 55, 50, 50, 51, 56, 90]);
   // 1.2.840.113549.1.9.4 is RFC_3369_MESSAGE_DIGEST_OID
-  constructedEContent.push(
+  constructedSignedAttr.push(
     ...[48, 47, 6, 9, 42, -122, 72, -122, -9, 13, 1, 9, 4],
   );
   // TAG and length of the message digest
-  constructedEContent.push(...[49, 34, 4, 32]);
+  constructedSignedAttr.push(...[49, 34, 4, 32]);
 
-  constructedEContent.push(...messageDigest);
-  return constructedEContent;
+  constructedSignedAttr.push(...messageDigest);
+  return constructedSignedAttr;
 }
 
 export function toUnsigned(byte: number) {

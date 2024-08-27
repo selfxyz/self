@@ -1,6 +1,6 @@
 import assert from "assert";
 import { PassportData } from "../../../common/src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
+import { hash, assembleSignedAttr, formatAndConcatenateDataHashes, formatMrz, hexToDecimal, arraysAreEqual, findSubarrayIndex } from "../../../common/src/utils/utils";
 import * as forge from 'node-forge';
 import { writeFileSync } from "fs";
 
@@ -35,21 +35,21 @@ const signatureAlgorithm = 'sha256WithRSAEncryption'
 const hashLen = 32
 
 export function genMockPassportData_sha256WithRSAEncryption_65537(): PassportData {
-  const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  const concatenatedDataHashes = formatAndConcatenateDataHashes(
-    [[1, mrzHash], ...sampleDataHashes],
+  const dg1Hash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
+  const eContent = formatAndConcatenateDataHashes(
+    [[1, dg1Hash], ...sampleDataHashes],
     hashLen,
     31
   );
 
-  const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
+  const signedAttr = assembleSignedAttr(hash(signatureAlgorithm, eContent));
 
   const rsa = forge.pki.rsa;
   const privKey = rsa.generateKeyPair({ bits: 2048 }).privateKey;
   const modulus = privKey.n.toString(16);
 
   const md = forge.md.sha256.create();
-  md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+  md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
 
   const signature = privKey.sign(md)
   const signatureBytes = Array.from(signature, (c: string) => c.charCodeAt(0));
@@ -61,28 +61,28 @@ export function genMockPassportData_sha256WithRSAEncryption_65537(): PassportDat
       modulus: hexToDecimal(modulus),
       exponent: '65537',
     },
-    dataGroupHashes: concatenatedDataHashes,
     eContent: eContent,
+    signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
     photoBase64: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIw3..."
   }
 }
 
 function verify(passportData: PassportData): boolean {
-  const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } = passportData;
+  const { mrz, signatureAlgorithm, pubKey, eContent, signedAttr, encryptedDigest } = passportData;
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
-  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)
+  const dg1HashOffset = findSubarrayIndex(eContent, mrzHash)
   console.log('dg1HashOffset', dg1HashOffset);
-  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
+  assert(dg1HashOffset !== -1, 'MRZ hash index not found in eContent');
 
-  const concatHash = hash(signatureAlgorithm, dataGroupHashes)
+  const concatHash = hash(signatureAlgorithm, eContent)
   assert(
     arraysAreEqual(
       concatHash,
-      eContent.slice(eContent.length - hashLen)
+      signedAttr.slice(signedAttr.length - hashLen)
     ),
-    'concatHash is not at the right place in eContent'
+    'concatHash is not at the right place in signedAttr'
   );
 
   const modulus = new forge.jsbn.BigInteger(pubKey.modulus, 10);
@@ -90,7 +90,7 @@ function verify(passportData: PassportData): boolean {
   const rsaPublicKey = forge.pki.rsa.setPublicKey(modulus, exponent);
 
   const md = forge.md.sha256.create();
-  md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+  md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
 
   const signature = Buffer.from(encryptedDigest).toString(
     'binary',

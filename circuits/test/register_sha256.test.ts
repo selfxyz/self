@@ -54,7 +54,7 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
 
         const commitment_circom = (await circuit.getOutput(w, ["commitment"])).commitment;
 
-        const mrz_bytes = packBytes(inputs.mrz);
+        const dg1_bytes = packBytes(inputs.dg1);
         const commitment_bytes = poseidon6([
             inputs.secret[0],
             attestation_id,
@@ -63,9 +63,9 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
                 modulus: passportData.pubKey.modulus,
                 exponent: passportData.pubKey.exponent
             }),
-            mrz_bytes[0],
-            mrz_bytes[1],
-            mrz_bytes[2]
+            dg1_bytes[0],
+            dg1_bytes[1],
+            dg1_bytes[2]
         ]);
         const commitment_js = commitment_bytes.toString();
         console.log('commitment_js', commitment_js)
@@ -77,7 +77,7 @@ describe("Circuits - sha256WithRSAEncryption_65537 Register flow", function () {
         try {
             const invalidInputs = {
                 ...inputs,
-                mrz: Array(93).fill(0).map(byte => BigInt(byte).toString())
+                dg1: Array(93).fill(0).map(byte => BigInt(byte).toString())
             }
             await circuit.calculateWitness(invalidInputs);
             expect.fail("Expected an error but none was thrown.");

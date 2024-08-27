@@ -3,8 +3,8 @@ export type PassportData = {
   signatureAlgorithm: string;
   dsc?: string;
   pubKey: {modulus?: string, exponent?: string, curveName?: string, publicKeyQ?: string};
-  dataGroupHashes: number[];
   eContent: number[];
+  signedAttr: number[];
   encryptedDigest: number[];
   photoBase64: string;
 };
