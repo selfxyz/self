@@ -9,7 +9,7 @@ on:
       - dev
       - main
 jobs:
-  run_circuit_tests:
+  run_tests:
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -51,6 +51,14 @@ jobs:
         working-directory: ./circuits
         run: yarn lint
 
-      - name: Run Tests
+      - name: Run circuit tests
         working-directory: ./circuits
+        run: yarn test
+
+      - name: Install SDK dependencies
+        working-directory: ./sdk
+        run: yarn
+
+      - name: Run SDK Tests
+        working-directory: ./sdk
         run: yarn test
