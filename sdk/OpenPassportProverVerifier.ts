@@ -2,7 +2,7 @@ import { groth16 } from 'snarkjs';
 import { attributeToPosition, countryCodes, DEFAULT_RPC_URL, PASSPORT_ATTESTATION_ID } from './common/src/constants/constants';
 import { checkMerkleRoot, getCurrentDateFormatted, parsePublicSignals, parsePublicSignalsProve, unpackReveal, verifyDSCValidity } from './utils';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { vkey_prove_rsa_65537_sha256 } from './common/src/constants/vkey';
+import { vkey_prove_rsa_65537_sha1, vkey_prove_rsa_65537_sha256, vkey_prove_rsapss_65537_sha256 } from './common/src/constants/vkey';
 import forge from 'node-forge'
 import { splitToWords } from '../common/src/utils/utils';
 import { getSignatureAlgorithm } from '../common/src/utils/handleCertificate';
@@ -23,13 +23,24 @@ export class OpenPassportProverVerifier {
         this.report = new OpenPassportVerifierReport();
     }
 
-    async verify(openPassportProverInputs: OpenPassportProverInputs): Promise<OpenPassportVerifierReport> {
+    getVkey(signatureAlgorithm: string, hashFunction: string) {
+        switch (signatureAlgorithm + " " + hashFunction) {
+            case "rsa sha256":
+                return vkey_prove_rsa_65537_sha256;
+            case "rsa sha1":
+                return vkey_prove_rsa_65537_sha1;
+            case "rsapss sha256":
+                return vkey_prove_rsapss_65537_sha256;
+            default:
+                throw new Error("Invalid signature algorithm or hash function");
+        }
+    }
 
+    async verify(openPassportProverInputs: OpenPassportProverInputs): Promise<OpenPassportVerifierReport> {
         const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassportProverInputs.dsc);
         console.log("signatureAlgorithm", signatureAlgorithm);
         console.log("hashFunction", hashFunction);
-
-
+        const vkey = this.getVkey(signatureAlgorithm, hashFunction);
         const parsedPublicSignals = parsePublicSignalsProve(openPassportProverInputs.publicSignals);
         //1. Verify the scope
         if (parsedPublicSignals.scope !== this.scope) {
@@ -54,6 +65,9 @@ export class OpenPassportProverVerifier {
                 attributeValue += unpackedReveal[i];
             }
             if (requirement[0] === "nationality" || requirement[0] === "issuing_state") {
+                console.log("attributeValue", attributeValue);
+                console.log("value", value);
+                console.log("countryCodes[attributeValue]", countryCodes[attributeValue]);
                 if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
                     this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
                 }
@@ -70,7 +84,7 @@ export class OpenPassportProverVerifier {
         //6. Verify the proof
 
         const verified_prove = await groth16.verify(
-            vkey_prove_rsa_65537_sha256,
+            vkey,
             openPassportProverInputs.publicSignals,
             openPassportProverInputs.proof as any
         )
