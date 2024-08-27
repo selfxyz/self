@@ -1,17 +1,11 @@
 import React from 'react';
 import { ScrollView, Text, YStack } from 'tamagui';
-import AppCard from '../components/AppCard';
-import { Steps } from '../utils/utils';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType, createAppType } from '../../../common/src/utils/appType';
-import sbtApp from '../apps/sbt';
-import zupassApp from '../apps/zupass';
-import gitcoinApp from '../apps/gitcoin';
+import { createAppType } from '../../../common/src/utils/appType';
 import { XStack } from 'tamagui';
 import CustomButton from '../components/CustomButton';
-import { BadgeCheck, Binary, LayoutGrid, List, LockKeyhole, QrCode, ShieldCheck, Smartphone, UserPlus } from '@tamagui/lucide-icons';
-import { bgBlue, bgGreen, separatorColor, textBlack } from '../utils/colors';
-import { orange } from '@tamagui/colors';
+import { BadgeCheck, Binary, List, QrCode, Smartphone } from '@tamagui/lucide-icons';
+import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import { Platform } from 'react-native';
 import { NativeModules } from 'react-native';
@@ -23,32 +17,14 @@ interface AppScreenProps {
 
 const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegisterIsOpen }) => {
   const {
-    selectedApp,
     setSelectedApp,
-    update,
-    selectedTab,
     setSelectedTab,
     toast
   } = useNavigationStore();
 
   const {
     registered,
-    setRegistered
   } = useUserStore();
-
-  const handleCardSelect = (app: AppType) => {
-    update({
-      selectedTab: "prove",
-      selectedApp: app,
-      step: Steps.APP_SELECTED,
-    })
-  };
-
-  const cardsData = [
-    sbtApp,
-    zupassApp,
-    gitcoinApp
-  ];
 
   const scanQRCode = () => {
     if (Platform.OS === 'ios') {
@@ -112,7 +88,6 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
 
   return (
     <YStack f={1} pb="$3" px="$3">
-      {/* <XStack h="$0.25" bg={separatorColor} mx="$0" /> */}
       <ScrollView showsVerticalScrollIndicator={true} indicatorStyle="black">
         <YStack >
           <Text fontSize="$8" mt="$2" >Account</Text>
@@ -198,25 +173,6 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
             :
             () => setSheetRegisterIsOpen(true)} Icon={<List size={18} color={textBlack} />} />
       </YStack>
-
-
-      {/* <YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center'>
-        {
-          cardsData.map(app => (
-            <AppCard
-              key={app.id}
-              title={app.title}
-              description={app.description}
-              id={app.id}
-              onTouchStart={() => handleCardSelect(app)}
-              selected={selectedApp && selectedApp.id === app.id ? true : false}
-              selectable={app.selectable}
-              icon={app.icon}
-              tags={app.tags}
-            />
-          ))
-        }
-      </YStack> */}
     </YStack>
   );
 }
