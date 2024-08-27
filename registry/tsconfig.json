@@ -2,6 +2,6 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "ES2020",
-    "types": ["node"]
+    "types": ["node","@prisma/client"]
   }
 }
