@@ -2,7 +2,7 @@ import { PassportData } from "../../src/utils/types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "../../src/utils/utils";
 import * as forge from 'node-forge';
 import * as rs from 'jsrsasign';
-import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_sha256_rsapss_2048 } from "../../src/constants/mockCertificates";
+import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_key_sha256_rsapss_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha256_rsapss_2048, mock_dsc_sha256_rsapss_4096 } from "../../src/constants/mockCertificates";
 import { sampleDataHashes_rsa_sha1, sampleDataHashes_rsa_sha256, sampleDataHashes_rsapss_sha256 } from "./sampleDataHashes";
 
 export function genMockPassportData(
@@ -18,6 +18,7 @@ export function genMockPassportData(
     let hashLen: number;
     let sampleDataHashes: [number, number[]][];
     let privateKeyPem: string;
+    let dsc: string;
 
     switch (signatureType) {
         case 'rsa sha1':
@@ -25,18 +26,21 @@ export function genMockPassportData(
             hashLen = 20;
             sampleDataHashes = sampleDataHashes_rsa_sha1;
             privateKeyPem = mock_dsc_key_sha1_rsa_4096;
+            dsc = mock_dsc_sha1_rsa_4096;
             break;
         case 'rsa sha256':
             signatureAlgorithm = 'sha256WithRSAEncryption';
             hashLen = 32;
             sampleDataHashes = sampleDataHashes_rsa_sha256;
             privateKeyPem = mock_dsc_key_sha256_rsa_4096;
+            dsc = mock_dsc_sha256_rsa_4096;
             break;
         case 'rsapss sha256':
             signatureAlgorithm = 'sha256WithRSASSAPSS';
             hashLen = 32;
             sampleDataHashes = sampleDataHashes_rsapss_sha256;
-            privateKeyPem = mock_dsc_key_sha256_rsapss_2048;
+            privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
+            dsc = mock_dsc_sha256_rsapss_4096;
             break;
     }
 
@@ -74,6 +78,7 @@ export function genMockPassportData(
     const signatureBytes = Array.from(signature, byte => byte < 128 ? byte : byte - 256);
 
     return {
+        dsc: dsc,
         mrz: mrz,
         signatureAlgorithm: signatureAlgorithm,
         pubKey: {
@@ -86,3 +91,4 @@ export function genMockPassportData(
         photoBase64: "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIy3..."
     };
 }
+

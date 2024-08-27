@@ -9,9 +9,6 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
-import { getCSCAInputs } from '../../../common/src/utils/csca';
-import { sendCSCARequest } from './cscaRequest';
 import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from './zkeyDownload';
 
@@ -54,7 +51,6 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     passportNumber,
     dateOfBirth,
     dateOfExpiry,
-    dscCertificate
   } = useUserStore.getState()
   const { toast, setNfcSheetIsOpen } = useNavigationStore.getState();
   setNfcSheetIsOpen(true);
@@ -172,32 +168,9 @@ const handleResponseIOS = async (
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     };
     useUserStore.getState().registerPassportData(passportData)
-
-    let secret = useUserStore.getState().dscSecret;
-    if (secret === null) {
-      // Finally, generate CSCA Inputs and request modal server
-      // Generate a cryptographically secure random secret of (31 bytes)
-      const secretBytes = forge.random.getBytesSync(31);
-      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-      console.log('Generated secret:', secret.toString());
-      useUserStore.getState().setDscSecret(secret);
-    }
     const sigAlgName = getSignatureAlgorithm(pem);
     const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
     downloadZkey(circuitName as any);
-    // const inputs_csca = getCSCAInputs(
-    //   secret as string,
-    //   certificate,
-    //   null,
-    //   n_dsc,
-    //   k_dsc,
-    //   n_csca,
-    //   k_csca,
-    //   max_cert_bytes,
-    //   false
-    // );
-
-    //sendCSCARequest(inputs_csca, setModalProofStep);
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
@@ -280,33 +253,8 @@ const handleResponseAndroid = async (
   console.log("documentSigningCertificate", documentSigningCertificate)
   useUserStore.getState().registerPassportData(passportData)
 
-  // Finally request the Modal server to verify the DSC certificate
-  const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
-  useUserStore.getState().dscCertificate = certificate;
-
-  let secret = useUserStore.getState().dscSecret;
-  if (secret === null) {
-    // Finally, generate CSCA Inputs and request modal server
-    // Generate a cryptographically secure random secret of (31 bytes)
-    const secretBytes = forge.random.getBytesSync(31);
-    secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-    console.log('Generated secret:', secret.toString());
-    useUserStore.getState().setDscSecret(secret);
-  }
   const sigAlgName = getSignatureAlgorithm(pem);
   const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
   downloadZkey(circuitName as any);
-  // const inputs_csca = getCSCAInputs(
-  //   secret as string,
-  //   certificate,
-  //   null,
-  //   n_dsc,
-  //   k_dsc,
-  //   n_csca,
-  //   k_csca,
-  //   max_cert_bytes,
-  //   false
-  // );
-  //sendCSCARequest(inputs_csca, setModalProofStep);
   useNavigationStore.getState().setSelectedTab("next");
 };

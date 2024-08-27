@@ -19,6 +19,7 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
+import { generateDscSecret } from '../../../common/src/utils/csca';
 
 
 interface UserState {
@@ -28,7 +29,6 @@ interface UserState {
   registered: boolean
   passportData: PassportData
   secret: string
-  dscCertificate: any
   cscaProof: Proof | null
   localProof: Proof | null
   dscSecret: string | null
@@ -57,7 +57,6 @@ const useUserStore = create<UserState>((set, get) => ({
   registered: false,
   passportData: mockPassportData_sha256_rsa_65537,
   secret: "",
-  dscCertificate: null,
   cscaProof: null,
   localProof: null,
   setRegistered: (registered: boolean) => {
@@ -135,7 +134,6 @@ const useUserStore = create<UserState>((set, get) => ({
     console.log("registerCommitment")
     const {
       toast,
-      setStep,
       update: updateNavigationStore,
     } = useNavigationStore.getState();
     const secret = await loadSecret() as string;
@@ -161,10 +159,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
     try {
       if (get().dscSecret === null) {
-        console.log("DSC secret is not set, generating a new one");
-        const secretBytes = forge.random.getBytesSync(31);
-        dsc_secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-        console.log('Generated secret:', dsc_secret.toString());
+        dsc_secret = generateDscSecret();
         get().setDscSecret(dsc_secret);
       }
       const inputs = generateCircuitInputsRegister(

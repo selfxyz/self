@@ -5,7 +5,6 @@ import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
-import { mock_dsc_sha256_rsa_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsapss_4096 } from '../../../common/src/constants/mockCertificates';
 import DatePicker from 'react-native-date-picker';
 import { genMockPassportData } from '../../../common/scripts/passportData/genMockPassportData';
 import { countryCodes } from '../../../common/src/constants/constants';
@@ -26,28 +25,13 @@ const MockDataScreen: React.FC = () => {
   const castDate = (date: Date) => {
     return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
   }
-  const getDSC = () => {
-    switch (signatureAlgorithm) {
-      case "rsa sha1":
-        return mock_dsc_sha1_rsa_4096
-      case "rsa sha256":
-        return mock_dsc_sha256_rsa_4096
-      case "rsapss sha256":
-        return mock_dsc_sha256_rsapss_4096
-      default:
-        return mock_dsc_sha256_rsa_4096
-    }
-  }
+
   const handleGenerate = () => {
 
-    let mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
-    const dsc = getDSC()
-    console.log(mockPassportData)
-    console.log(dsc)
-    mockPassportData.dsc = dsc
+    const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa sha256" | "rsa sha1" | "rsapss sha256", nationality, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
     useUserStore.getState().registerPassportData(mockPassportData)
     useUserStore.getState().setRegistered(true);
-    const sigAlgName = getSignatureAlgorithm(dsc);
+    const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
     const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
     downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("app");
