@@ -25,9 +25,11 @@ function App(): JSX.Element {
   useEffect(() => {
     setToast(toast);
   }, [toast, setToast]);
+
   useEffect(() => {
     setSelectedTab('splash');
   }, [setSelectedTab]);
+  
   useEffect(() => {
     if (AMPLITUDE_KEY) {
       amplitude.init(AMPLITUDE_KEY);
