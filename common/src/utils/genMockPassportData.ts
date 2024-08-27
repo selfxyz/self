@@ -1,19 +1,31 @@
-import { PassportData } from "../../src/utils/types";
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "../../src/utils/utils";
+import { PassportData } from "./types";
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "./utils";
 import * as forge from 'node-forge';
 import * as rs from 'jsrsasign';
-import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_key_sha256_rsapss_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha256_rsapss_2048, mock_dsc_sha256_rsapss_4096 } from "../../src/constants/mockCertificates";
-import { sampleDataHashes_rsa_sha1, sampleDataHashes_rsa_sha256, sampleDataHashes_rsapss_sha256 } from "./sampleDataHashes";
+import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_key_sha256_rsapss_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha256_rsapss_2048, mock_dsc_sha256_rsapss_4096 } from "../constants/mockCertificates";
+import { sampleDataHashes_rsa_sha1, sampleDataHashes_rsa_sha256, sampleDataHashes_rsapss_sha256 } from "../constants/sampleDataHashes";
 
 export function genMockPassportData(
     signatureType: 'rsa sha1' | 'rsa sha256' | 'rsapss sha256',
     nationality: string,
     birthDate: string,
-    expiryDate
+    expiryDate: string,
 ): PassportData {
+    // checks
+    if (birthDate.length !== 6 || expiryDate.length !== 6) {
+        throw new Error("birthdate and expiry date have to be in the \"YYMMDD\" format");
+    }
+
+    if (nationality.length !== 3) {
+        throw new Error("nationality must be a 3-character code");
+    }
+
+    if (!['rsa sha1', 'rsa sha256', 'rsapss sha256'].includes(signatureType)) {
+        throw new Error("signatureType must be one of 'rsa sha1', 'rsa sha256', or 'rsapss sha256'");
+    }
+
 
     const mrz = `P<${nationality}DUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
-
     let signatureAlgorithm: string;
     let hashLen: number;
     let sampleDataHashes: [number, number[]][];

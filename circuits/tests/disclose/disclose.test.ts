@@ -12,7 +12,7 @@ import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
-import { unpackReveal } from '../../../common/src/utils/revealBitmap';
+import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -145,7 +145,7 @@ describe('Disclose', function () {
 
         const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-        const reveal_unpacked = unpackReveal(revealedData_packed);
+        const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
 
         for (let i = 0; i < reveal_unpacked.length; i++) {
           if (bitmap[i] == '1') {
@@ -171,7 +171,7 @@ describe('Disclose', function () {
 
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = unpackReveal(revealedData_packed);
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
     //console.log("reveal_unpacked", reveal_unpacked)
 
     expect(reveal_unpacked[88]).to.equal('1');
@@ -191,7 +191,7 @@ describe('Disclose', function () {
 
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const reveal_unpacked = unpackReveal(revealedData_packed);
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
     //console.log("reveal_unpacked", reveal_unpacked)
 
     expect(reveal_unpacked[88]).to.equal('\x00');

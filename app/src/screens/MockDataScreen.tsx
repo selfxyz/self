@@ -6,7 +6,7 @@ import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
 import DatePicker from 'react-native-date-picker';
-import { genMockPassportData } from '../../../common/scripts/passportData/genMockPassportData';
+import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
