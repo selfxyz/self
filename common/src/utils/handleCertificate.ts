@@ -37,14 +37,3 @@ export function getSignatureAlgorithmDetails(oid: string): { signatureAlgorithm:
     };
     return details[oid] || { signatureAlgorithm: `Unknown (${oid})`, hashFunction: 'Unknown' };
 }
-
-export const getVKey = (signatureAlgorithm: string, hashFunction: string) => {
-    let vkey: any = '';
-    if (signatureAlgorithm === 'RSA' && hashFunction === 'SHA-256') {
-        vkey = vkey_prove_rsa_65537_sha256;
-    }
-    else if (signatureAlgorithm === 'RSA' && hashFunction === 'SHA-1') {
-        // vkey = vkey_prove_rsa_65537_sha1;
-    }
-    return vkey;
-}

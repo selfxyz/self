@@ -66,7 +66,7 @@ export function generateCircuitInputsRegister(
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
 
   const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash);
-  console.log('dg1HashOffset', dg1HashOffset);
+  // console.log('dg1HashOffset', dg1HashOffset);
 
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 

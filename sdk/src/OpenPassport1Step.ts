@@ -5,14 +5,10 @@ import {
   DEFAULT_RPC_URL,
   PASSPORT_ATTESTATION_ID,
 } from '../../common/src/constants/constants';
-import { getCurrentDateFormatted, verifyDSCValidity } from '../utils/utils';
+import { getCurrentDateFormatted, getVkey, verifyDSCValidity } from '../utils/utils';
 import { unpackReveal } from '../../common/src/utils/revealBitmap';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import {
-  vkey_prove_rsa_65537_sha1,
-  vkey_prove_rsa_65537_sha256,
-  vkey_prove_rsapss_65537_sha256,
-} from '../../common/src/constants/vkey';
+
 import forge from 'node-forge';
 import { splitToWords } from '../../common/src/utils/utils';
 import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
@@ -40,27 +36,14 @@ export class OpenPassport1StepVerifier {
     this.dev_mode = options.dev_mode || false;
   }
 
-  getVkey(signatureAlgorithm: string, hashFunction: string) {
-    switch (signatureAlgorithm + ' ' + hashFunction) {
-      case 'rsa sha256':
-        return vkey_prove_rsa_65537_sha256;
-      case 'rsa sha1':
-        return vkey_prove_rsa_65537_sha1;
-      case 'rsapss sha256':
-        return vkey_prove_rsapss_65537_sha256;
-      default:
-        throw new Error('Invalid signature algorithm or hash function');
-    }
-  }
+
 
   async verify(
     openPassport1StepInputs: OpenPassport1StepInputs
   ): Promise<OpenPassportVerifierReport> {
     const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassport1StepInputs.dsc);
-    console.log('signatureAlgorithm', signatureAlgorithm);
-    console.log('hashFunction', hashFunction);
-    const vkey = this.getVkey(signatureAlgorithm, hashFunction);
-    const parsedPublicSignals = parsePublicSignals1Step(openPassport1StepInputs.publicSignals);
+    const vkey = getVkey(openPassport1StepInputs.circuit, signatureAlgorithm, hashFunction);
+    const parsedPublicSignals = parsePublicSignals1Step(openPassport1StepInputs.dscProof.publicSignals);
     //1. Verify the scope
     if (parsedPublicSignals.scope !== this.scope) {
       this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
@@ -103,8 +86,8 @@ export class OpenPassport1StepVerifier {
 
     const verified_prove = await groth16.verify(
       vkey,
-      openPassport1StepInputs.publicSignals,
-      openPassport1StepInputs.proof as any
+      openPassport1StepInputs.dscProof.publicSignals,
+      openPassport1StepInputs.dscProof.proof as any
     );
     if (!verified_prove) {
       this.report.exposeAttribute('proof');
@@ -117,7 +100,7 @@ export class OpenPassport1StepVerifier {
     //7 Verify the dsc
     const dscCertificate = forge.pki.certificateFromPem(openPassport1StepInputs.dsc);
     const verified_certificate = verifyDSCValidity(dscCertificate, this.dev_mode);
-    console.log('certificate verified:' + verified_certificate);
+    console.log('\x1b[32m%s\x1b[0m', 'certificate verified:' + verified_certificate);
 
     // @ts-ignore
     const dsc_modulus = BigInt(dscCertificate.publicKey.n);
@@ -128,20 +111,33 @@ export class OpenPassport1StepVerifier {
       arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
 
     const verified_modulus = areArraysEqual(dsc_modulus_words, modulus_from_proof);
-    console.log('modulus verified:' + verified_modulus);
+    console.log('\x1b[32m%s\x1b[0m', 'modulus verified:' + verified_modulus);
     return this.report;
   }
 }
 
 export class OpenPassport1StepInputs {
-  publicSignals: string[];
-  proof: string[];
+  dscProof: {
+    publicSignals: string[];
+    proof: string[];
+  }
   dsc: string;
+  circuit: string;
 
-  constructor(publicSignals: string[], proof: string[], dsc: string) {
-    this.publicSignals = publicSignals;
-    this.proof = proof;
-    this.dsc = dsc;
+  constructor(options: {
+    dscProof?: {
+      publicSignals: string[];
+      proof: string[];
+    };
+    dsc?: string;
+    circuit?: string;
+  }) {
+    this.dscProof = options.dscProof || {
+      publicSignals: [],
+      proof: [],
+    };
+    this.dsc = options.dsc || '';
+    this.circuit = options.circuit || '';
   }
 }
 

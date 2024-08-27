@@ -4,7 +4,7 @@ import { groth16 } from 'snarkjs';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
 import { OpenPassport1StepVerifier, OpenPassport1StepInputs } from '../src/OpenPassport1Step';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
-describe('Circuit Proving Tests', function () {
+describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
   this.timeout(0);
 
   it('OpenPassport1Step - rsa sha256', async function () {
@@ -39,11 +39,14 @@ describe('Circuit Proving Tests', function () {
       ],
       dev_mode: true,
     });
-    const openPassportProverInputs = new OpenPassport1StepInputs(
-      publicSignals,
-      proof as any,
-      passportData.dsc as string
-    );
+    const openPassportProverInputs = new OpenPassport1StepInputs({
+      dscProof: {
+        publicSignals: publicSignals,
+        proof: proof as any,
+      },
+      dsc: passportData.dsc as string,
+      circuit: 'prove',
+    });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
     console.log(result);
     expect(result.valid).to.be.true;
@@ -81,11 +84,14 @@ describe('Circuit Proving Tests', function () {
       ],
       dev_mode: true,
     });
-    const openPassportProverInputs = new OpenPassport1StepInputs(
-      publicSignals,
-      proof as any,
-      passportData.dsc as string
-    );
+    const openPassportProverInputs = new OpenPassport1StepInputs({
+      dscProof: {
+        publicSignals: publicSignals,
+        proof: proof as any,
+      },
+      dsc: passportData.dsc as string,
+      circuit: 'prove',
+    });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
     console.log(result);
     expect(result.valid).to.be.true;
@@ -123,11 +129,14 @@ describe('Circuit Proving Tests', function () {
       ],
       dev_mode: true,
     });
-    const openPassportProverInputs = new OpenPassport1StepInputs(
-      publicSignals,
-      proof as any,
-      passportData.dsc as string
-    );
+    const openPassportProverInputs = new OpenPassport1StepInputs({
+      dscProof: {
+        publicSignals: publicSignals,
+        proof: proof as any,
+      },
+      dsc: passportData.dsc as string,
+      circuit: 'prove',
+    });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
     console.log(result);
     expect(result.valid).to.be.true;

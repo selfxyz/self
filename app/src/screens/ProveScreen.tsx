@@ -5,7 +5,7 @@ import { DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import { bgGreen, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType } from '../../../common/src/utils/appType';
+import { AppType, ArgumentsProve } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
@@ -19,6 +19,7 @@ interface ProveScreenProps {
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [generatingProof, setGeneratingProof] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
+  const disclosureOptions = (selectedApp.arguments as ArgumentsProve).disclosureOptions;
   const {
     toast,
     setSelectedTab
@@ -93,8 +94,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         passportData,
         64, 32,
         selectedApp.scope,
-        revealBitmapFromAttributes(selectedApp.disclosureOptions as any),
-        (selectedApp.disclosureOptions && selectedApp.disclosureOptions.older_than) ? selectedApp.disclosureOptions.older_than : DEFAULT_MAJORITY,
+        revealBitmapFromAttributes(disclosureOptions as any),
+        disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
         selectedApp.userId
       );
 
@@ -139,7 +140,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   return (
     <YStack f={1} p="$3">
-      {Object.keys(selectedApp.disclosureOptions as any).length > 0 ? <YStack mt="$4">
+      {Object.keys(disclosureOptions).length > 0 ? <YStack mt="$4">
         <Text fontSize="$9">
           <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
         </Text>
@@ -153,12 +154,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       }
 
       <YStack mt="$6">
-        {selectedApp && Object.keys(selectedApp.disclosureOptions as any).map((key) => {
+        {Object.keys(disclosureOptions).map((key) => {
           return (
             <XStack key={key} gap="$3" mb="$3" ml="$3" >
               <CheckCircle size={16} mt="$1.5" />
               <Text fontSize="$7" color={textBlack} w="85%">
-                {disclosureFieldsToText(key, (selectedApp.disclosureOptions as any)[key])}
+                {disclosureFieldsToText(key, (disclosureOptions as any)[key])}
               </Text>
             </XStack>
           );
