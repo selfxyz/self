@@ -36,14 +36,14 @@ export class OpenPassport1StepVerifier {
     this.dev_mode = options.dev_mode || false;
   }
 
-
-
   async verify(
     openPassport1StepInputs: OpenPassport1StepInputs
   ): Promise<OpenPassportVerifierReport> {
     const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassport1StepInputs.dsc);
     const vkey = getVkey(openPassport1StepInputs.circuit, signatureAlgorithm, hashFunction);
-    const parsedPublicSignals = parsePublicSignals1Step(openPassport1StepInputs.dscProof.publicSignals);
+    const parsedPublicSignals = parsePublicSignals1Step(
+      openPassport1StepInputs.dscProof.publicSignals
+    );
     //1. Verify the scope
     if (parsedPublicSignals.scope !== this.scope) {
       this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
@@ -120,7 +120,7 @@ export class OpenPassport1StepInputs {
   dscProof: {
     publicSignals: string[];
     proof: string[];
-  }
+  };
   dsc: string;
   circuit: string;
 
