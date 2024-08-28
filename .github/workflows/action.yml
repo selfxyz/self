@@ -16,6 +16,7 @@ on:
       - 'common/**'
 jobs:
   run_circuit_tests:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     environment: development
     steps:
