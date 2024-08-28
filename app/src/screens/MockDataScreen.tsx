@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button } from 'tamagui';
+import React, { useState, useCallback } from 'react';
+import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner } from 'tamagui';
 import { CalendarSearch, Check, ChevronDown, ChevronUp, Cpu } from '@tamagui/lucide-icons';
 import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
@@ -21,21 +21,36 @@ const MockDataScreen: React.FC = () => {
   const [dateOfBirthDatePickerIsOpen, setDateOfBirthDatePickerIsOpen] = useState(false)
   const [dateOfExpiryDatePickerIsOpen, setDateOfExpiryDatePickerIsOpen] = useState(false)
   const [nationality, setNationality] = useState("FRA")
+  const [isGenerating, setIsGenerating] = useState(false)
 
   const castDate = (date: Date) => {
     return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
   }
+  const { toast } = useNavigationStore()
 
-  const handleGenerate = () => {
+  const handleGenerate = useCallback(async () => {
+    setIsGenerating(true);
 
-    const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256", nationality as keyof typeof countryCodes, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
-    useUserStore.getState().registerPassportData(mockPassportData)
-    useUserStore.getState().setRegistered(true);
-    const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
-    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
-    downloadZkey(circuitName as any);
+    await new Promise(resolve => setTimeout(() => {
+      const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256", nationality as keyof typeof countryCodes, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
+      useUserStore.getState().registerPassportData(mockPassportData);
+      useUserStore.getState().setRegistered(true);
+      const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
+      const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+      downloadZkey(circuitName as any);
+      resolve(null);
+    }, 0));
+
+    toast.show("🤖", {
+      message: "Passport generated",
+      customData: {
+        type: "success",
+      },
+    });
+
+    await new Promise(resolve => setTimeout(resolve, 1000));
     useNavigationStore.getState().setSelectedTab("next");
-  };
+  }, [signatureAlgorithm, nationality, dateOfBirthDatePicker, dateOfExpiryDatePicker]);
 
   return (
     <YStack p="$3" f={1} gap="$5">
@@ -224,7 +239,7 @@ const MockDataScreen: React.FC = () => {
       </Fieldset>
 
       <YStack f={1} />
-      <CustomButton onPress={handleGenerate} text="Generate passport data" Icon={<Cpu color={textBlack} />} />
+      <CustomButton onPress={handleGenerate} text="Generate passport data" Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />} isDisabled={isGenerating} />
     </YStack>
   );
 };

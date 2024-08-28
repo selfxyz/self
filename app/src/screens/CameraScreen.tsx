@@ -16,10 +16,10 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
 
   return (
     <YStack f={1} p="$3">
-      <YStack f={1} mt="$16">
+      <YStack f={1} mt="$10">
         <Text ml="$1" fontSize={34} color={textBlack}><Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Scan</Text> or type your passport ID</Text>
         <Text ml="$2" mt="$8" fontSize="$8" color={textBlack}>Open your passport on the <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>main page</Text> to scan it.</Text>
-        <Text ml="$2" mt="$2" fontSize="$8" color={textBlack} style={{ opacity: 0.7 }}>Your data never leaves your device.</Text>
+        <Text ml="$2" mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.7 }}>Your data never leaves your device.</Text>
         <XStack f={1} />
       </YStack>
       <XStack p="$3" onPress={() => setSelectedTab("mock")} ai="center" jc="center">

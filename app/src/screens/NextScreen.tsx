@@ -38,7 +38,7 @@ const NextScreen: React.FC = () => {
   };
 
   return (
-    <YStack p="$3" f={1} mb={Platform.OS === 'ios' ? "$5" : "$0"}>
+    <YStack p="$3" f={1}>
       <YStack flex={1} mx="$2" gap="$2" mt="$2">
         <YStack alignSelf='center' my="$3">
           {hideData
@@ -104,9 +104,9 @@ const NextScreen: React.FC = () => {
 
         <YStack f={1} />
 
-        <XStack bg="#ffff" borderRadius={100} py="$2.5" px="$3">
+        <XStack bg="#ffff" borderRadius={100} py="$2.5" px="$3.5" gap="$2">
           <Info alignSelf='center' size={24} color={textBlack} />
-          <Text ml="$3" pr="$6" fontSize="$2" color={textBlack}>Your information will remain confidential and will not be used or shared without your explicit consent.</Text>
+          <Text pr="$6" fontSize="$2" color={textBlack}>Your information will remain confidential and will not be used or shared without your explicit consent.</Text>
         </XStack>
 
         <YStack f={1} />

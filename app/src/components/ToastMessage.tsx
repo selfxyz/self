@@ -18,8 +18,8 @@ export const ToastMessage = () => {
         toast.customData?.type === 'success'
           ? greenColorLight
           : toast.customData?.type === 'error'
-          ? redColorLight
-          : blueColorLight
+            ? redColorLight
+            : blueColorLight
       }
       animation="100ms"
       enterStyle={{ y: -20, opacity: 0 }}
@@ -27,7 +27,7 @@ export const ToastMessage = () => {
       opacity={1}
       x={0}
       key={toast?.id}
-      duration={toast?.duration}
+      duration={3000}
     >
       <YStack ai="center" jc="center">
         <Toast.Title fow="bold" color={'white'}>{toast?.title}</Toast.Title>

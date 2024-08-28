@@ -597,7 +597,7 @@ const MainScreen: React.FC = () => {
             <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" >
               <YStack p="$4" f={1} gap="$3">
                 <XStack>
-                  <Text fontSize="$8" mb="$2">👋 Not registered yet?</Text>
+                  <Text fontSize="$8" mb="$2">👋 Scan your passport</Text>
                   <XStack f={1} />
                   <XStack onPress={() => setSheetRegisterIsOpen(false)} p="$2">
                     <X color={borderColor} size="$1.5" mr="$2" />
@@ -605,22 +605,21 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} />
                 <YStack gap="$2">
-                  <Text fontSize="$7" color={textBlack}>Registering to OpenPassport does not leak anything about your personal information.</Text>
-                  <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text>
+                  <Text fontSize="$7" color={textBlack}>Scan your passport to start using OpenPassport</Text>
+                  <Text fontSize="$6" style={{ opacity: 0.7 }} color={textBlack}>You can also use mock data to test the app.</Text>
+                  {/* <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text> */}
                 </YStack>
 
                 <XStack f={1} />
-                <YStack gap="$2">
-                  <CustomButton
-                    text="Register"
-                    Icon={<UserPlus color={textBlack} />}
-                    onPress={() => {
-                      setSheetRegisterIsOpen(false);
-                      setSelectedTab("start");
+                <CustomButton
+                  text="Let's start"
+                  Icon={<ArrowRight color={textBlack} />}
+                  onPress={() => {
+                    setSheetRegisterIsOpen(false);
+                    setSelectedTab("scan");
 
-                    }}
-                  />
-                </YStack>
+                  }}
+                />
                 <XStack f={1} />
 
               </YStack>

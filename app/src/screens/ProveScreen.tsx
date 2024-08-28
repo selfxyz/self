@@ -70,7 +70,27 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       console.log('Proof verification result:', result);
       setProofVerificationResult(JSON.parse(result));
       console.log("result", result);
-      setSelectedTab(JSON.parse(result).valid ? "valid" : "wrong");
+      if (JSON.parse(result).valid) {
+        toast.show("✅", {
+          message: "Proof verified",
+          customData: {
+            type: "success",
+          },
+        });
+        setTimeout(() => {
+          setSelectedTab("valid");
+        }, 1000);
+      } else {
+        toast.show("❌", {
+          message: "Proof not verified",
+          customData: {
+            type: "error",
+          },
+        });
+        setTimeout(() => {
+          setSelectedTab("wrong");
+        }, 1000);
+      }
     });
 
     setSocket(newSocket);
