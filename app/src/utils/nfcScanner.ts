@@ -166,6 +166,7 @@ const handleResponseIOS = async (
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
+      mockUser: false
     };
     useUserStore.getState().registerPassportData(passportData)
     const sigAlgName = getSignatureAlgorithm(pem);
@@ -229,6 +230,7 @@ const handleResponseAndroid = async (
     eContent: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
+    mockUser: false
   };
   //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 

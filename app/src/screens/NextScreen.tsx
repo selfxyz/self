@@ -3,7 +3,7 @@ import { YStack, XStack, Text, Image, useWindowDimensions, Fieldset } from 'tama
 import { ArrowRight, Info } from '@tamagui/lucide-icons';
 import { getFirstName, maskString } from '../../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
-import USER from '../images/user.png'
+import USER_PROFILE from '../images/user_profile.png'
 import { bgGreen, borderColor, componentBgColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { Platform } from 'react-native';
 import { formatAttribute } from '../utils/utils';
@@ -47,7 +47,7 @@ const NextScreen: React.FC = () => {
               h={height > 750 ? 190 : 80}
               borderRadius={height > 800 ? "$7" : "$6"}
               source={{
-                uri: USER,
+                uri: USER_PROFILE,
               }}
             />
             : <Image
@@ -55,7 +55,7 @@ const NextScreen: React.FC = () => {
               h={height > 750 ? 190 : 130}
               borderRadius={height > 750 ? "$7" : "$6"}
               source={{
-                uri: passportData.photoBase64 ?? USER,
+                uri: passportData.mockUser ? USER_PROFILE : passportData.photoBase64 ?? USER_PROFILE,
               }}
             />
           }
@@ -65,9 +65,11 @@ const NextScreen: React.FC = () => {
           <Text color={textBlack} fontSize="$8" style={{
             textDecorationLine: "underline", textDecorationColor: bgGreen
           }}>{
-              hideData
-                ? maskString(getFirstName(passportData.mrz))
-                : getFirstName(passportData.mrz)
+              passportData.mockUser
+                ? "Anon"
+                : hideData
+                  ? maskString(getFirstName(passportData.mrz))
+                  : getFirstName(passportData.mrz)
             }</Text>
           {" "}👋
         </Text>
@@ -104,7 +106,7 @@ const NextScreen: React.FC = () => {
 
         <XStack bg="#ffff" borderRadius={100} py="$2.5" px="$3">
           <Info alignSelf='center' size={24} color={textBlack} />
-          <Text ml="$3" pr="$6" fontSize="$3" color={textBlack}>Your information will remain confidential and will not be used or shared without your explicit consent.</Text>
+          <Text ml="$3" pr="$6" fontSize="$2" color={textBlack}>Your information will remain confidential and will not be used or shared without your explicit consent.</Text>
         </XStack>
 
         <YStack f={1} />

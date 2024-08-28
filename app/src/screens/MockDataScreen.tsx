@@ -34,7 +34,7 @@ const MockDataScreen: React.FC = () => {
     const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
     const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
     downloadZkey(circuitName as any);
-    useNavigationStore.getState().setSelectedTab("app");
+    useNavigationStore.getState().setSelectedTab("next");
   };
 
   return (

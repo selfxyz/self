@@ -7,6 +7,7 @@ export type PassportData = {
   eContent: number[];
   encryptedDigest: number[];
   photoBase64: string;
+  mockUser?: boolean;
 };
 
 export type Proof = {
