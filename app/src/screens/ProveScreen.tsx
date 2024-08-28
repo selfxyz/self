@@ -21,7 +21,7 @@ interface ProveScreenProps {
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [generatingProof, setGeneratingProof] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
-  const disclosureOptions = selectedApp.getDisclosureOptions();
+  const disclosureOptions = (selectedApp as any).getDisclosureOptions();
   const {
     toast,
     setSelectedTab,

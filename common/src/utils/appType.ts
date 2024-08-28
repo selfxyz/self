@@ -7,7 +7,7 @@ export interface AppType {
   sessionId: string,
   circuit: CircuitName,
   arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose,
-  getDisclosureOptions: () => Record<string, string>
+  getDisclosureOptions?: () => Record<string, string>
 }
 
 export interface ArgumentsProve {
