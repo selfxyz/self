@@ -6,7 +6,8 @@ export interface AppType {
   userId: string,
   sessionId: string,
   circuit: CircuitName,
-  arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose
+  arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose,
+  getDisclosureOptions: () => Record<string, string>
 }
 
 export interface ArgumentsProve {
@@ -102,5 +103,14 @@ export function reconstructAppType(json: any): AppType {
     sessionId: json.sessionId,
     circuit: json.circuit as CircuitName,
     arguments: circuitArgs,
+    getDisclosureOptions: function () {
+      if (this.circuit === 'prove' || this.circuit === 'disclose') {
+        return Object.fromEntries(
+          Object.entries(this.arguments.disclosureOptions)
+            .filter(([_, value]) => value !== '' && value !== undefined)
+        ) as Record<string, string>;
+      }
+      return {};
+    }
   };
 }
