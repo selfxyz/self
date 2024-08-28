@@ -116,7 +116,8 @@ export async function fetchZkey(
   const {
     isZkeyDownloading,
     toast,
-    update
+    update,
+    setZkeyDownloadedPercentage
   } = useNavigationStore.getState();
 
   update({
@@ -140,6 +141,7 @@ export async function fetchZkey(
       if (percentComplete % 5 === 0 && percentComplete !== previousPercentComplete) {
         console.log(`${percentComplete}%`);
         previousPercentComplete = percentComplete;
+        setZkeyDownloadedPercentage(percentComplete);
       }
     }
   };

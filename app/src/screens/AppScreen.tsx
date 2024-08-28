@@ -86,8 +86,8 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
       })
     } catch (error) {
       console.error('Error parsing QR code result:', error);
-      toast.show('❌', {
-        message: "Error parsing QR code",
+      toast.show('Error', {
+        message: "QR code parsing failed",
         customData: {
           type: "error",
         },

@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { YStack, XStack, Text, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
 import { DEFAULT_MAJORITY, WEBSOCKET_URL, } from '../../../common/src/constants/constants';
-import { bgGreen, separatorColor, textBlack } from '../utils/colors';
+import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import { AppType, ArgumentsProve } from '../../../common/src/utils/appType';
@@ -12,6 +12,7 @@ import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitm
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
 import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
+import { CircuitName } from '../utils/zkeyDownload';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -23,7 +24,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   const disclosureOptions = selectedApp.getDisclosureOptions();
   const {
     toast,
-    setSelectedTab
+    setSelectedTab,
+    isZkeyDownloading,
+    zkeyDownloadedPercentage
   } = useNavigationStore()
 
   const {
@@ -34,6 +37,8 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
+  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
+  const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -82,9 +87,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         }, 1000);
       } else {
         toast.show("❌", {
-          message: "Proof not verified",
+          message: "Wrong proof",
           customData: {
-            type: "error",
+            type: "info",
           },
         });
         setTimeout(() => {
@@ -121,8 +126,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
         selectedApp.userId
       );
-      const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
-      const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
       const rawDscProof = await generateProof(
         circuitName,
         inputs,
@@ -133,6 +136,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
 
     } catch (error) {
+      toast.show("Error", {
+        message: "Proof generation failed",
+        customData: {
+          type: "error",
+        },
+      });
       console.error('Error in handleProve:', error);
     } finally {
       setGeneratingProof(false);
@@ -154,7 +163,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   }
 
   return (
-    <YStack f={1} p="$3">
+    <YStack f={1} p="$3" pt="$8">
       {Object.keys(disclosureOptions).length > 0 ? <YStack mt="$4">
         <Text fontSize="$9">
           <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
@@ -182,15 +191,32 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       </YStack>
 
       <XStack f={1} />
+      {/* <Text py="$4" textAlign="center" color={textBlack}>{isZkeyDownloading[circuitName as CircuitName] ? "Downloading zkey..." : "zkey downloaded"}</Text> */}
+
+
+      {isZkeyDownloading[circuitName as CircuitName] && <YStack alignItems='center' gap="$2" mb="$3" mx="$8">
+        <Text style={{ fontStyle: 'italic' }}>downloading files...</Text>
+        <Progress
+          key={circuitName}
+          size="$1"
+          value={zkeyDownloadedPercentage}
+        >
+          <Progress.Indicator
+            animation="bouncy"
+            backgroundColor={greenColorLight}
+          />
+        </Progress>
+      </YStack>}
+
 
       <CustomButton
-        Icon={isConnecting ? <Spinner /> : generatingProof ? <Spinner /> : <CheckCircle />}
-        isDisabled={isConnecting || generatingProof}
-        text={isConnecting ? "Connecting..." : generatingProof ? "Generating Proof..." : "Verify"}
+        Icon={isZkeyDownloading[circuitName as CircuitName] ? <Spinner /> : isConnecting ? <Spinner /> : generatingProof ? <Spinner /> : <CheckCircle />}
+        isDisabled={isZkeyDownloading[circuitName as CircuitName] || isConnecting || generatingProof}
+        text={isZkeyDownloading[circuitName as CircuitName] ? "Downloading files..." : isConnecting ? "Connecting..." : generatingProof ? "Generating Proof..." : "Verify"}
         onPress={registered ? handleProve : () => setSheetRegisterIsOpen(true)}
         bgColor={isConnecting || generatingProof ? separatorColor : bgGreen}
         disabledOnPress={() => toast.show('⏳', {
-          message: isConnecting ? "Connecting to server..." : "Proof is generating",
+          message: isZkeyDownloading[circuitName as CircuitName] ? "⏳ Downloading files..." : isConnecting ? "Connecting to server..." : "Proof is generating",
           customData: {
             type: "info",
           },

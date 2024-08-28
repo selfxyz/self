@@ -18,9 +18,13 @@ interface NavigationState {
   update: (patch: any) => void
   nfcSheetIsOpen: boolean
   setNfcSheetIsOpen: (isOpen: boolean) => void
+  zkeyDownloadedPercentage: number
+  setZkeyDownloadedPercentage: (percentage: number) => void
 }
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
+  zkeyDownloadedPercentage: 100,
+  setZkeyDownloadedPercentage: (percentage: number) => set({ zkeyDownloadedPercentage: percentage }),
   isZkeyDownloading: {
     prove_rsa_65537_sha1: false,
     prove_rsa_65537_sha256: false,
