@@ -4,10 +4,16 @@ on:
     branches:
       - dev
       - main
+    paths:
+      - 'circuits/**'
+      - 'common/**'
   pull_request:
     branches:
       - dev
       - main
+    paths:
+      - 'circuits/**'
+      - 'common/**'
 jobs:
   run_circuit_tests:
     runs-on: ubuntu-latest
