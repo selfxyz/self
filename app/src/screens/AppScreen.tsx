@@ -97,20 +97,19 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
 
   return (
     <YStack f={1} pb="$3" px="$3">
+      <XStack ml="$2" gap="$2" ai="center">
+        {registered ?
+          <XStack bg={bgGreen} px="$2.5" py="$2" borderRadius="$10">
+            <Text color={textBlack} fontSize="$4">scanned</Text>
+          </XStack> :
+          <XStack bg={'#FFB897'} px="$2.5" py="$2" borderRadius="$10">
+            <Text color={textBlack} fontSize="$4">not scanned</Text>
+          </XStack>}
+
+      </XStack>
       <ScrollView showsVerticalScrollIndicator={true} indicatorStyle="black">
         <YStack >
-          <Text fontSize="$8" mt="$2" >Account</Text>
-          <XStack ml="$2" gap="$2" ai="center">
-            <Text fontSize="$5">status:</Text>
-            {registered ?
-              <XStack bg={bgGreen} px="$2.5" py="$2" borderRadius="$10">
-                <Text color={textBlack} fontSize="$4">registered</Text>
-              </XStack> :
-              <XStack bg={'#FFB897'} px="$2.5" py="$2" borderRadius="$10">
-                <Text color={textBlack} fontSize="$4">not registered</Text>
-              </XStack>}
 
-          </XStack>
           {/* <XStack ml="$2" gap="$2" mt="$1">
             <Text fontSize="$5">userID:</Text>
             <Text color={textBlack} fontSize="$5">0x1234567890</Text>
