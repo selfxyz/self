@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import axios from 'axios';
-import groth16ExportSolidityCallData from '../../utils/snarkjs';
+import groth16ExportSolidityCallData from './snarkjs';
 import contractAddresses from "../../deployments/deployed_addresses.json";
 import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#OpenPassportRegister.json";
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";

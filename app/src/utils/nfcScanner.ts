@@ -2,7 +2,7 @@ import { NativeModules, Platform } from 'react-native';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
-import { checkInputs } from '../../utils/utils';
+import { checkInputs } from '../utils/utils';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';

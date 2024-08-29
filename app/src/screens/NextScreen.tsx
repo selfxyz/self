@@ -1,7 +1,7 @@
 import React from 'react';
 import { YStack, XStack, Text, Image, useWindowDimensions, Fieldset } from 'tamagui';
 import { ArrowRight, Info } from '@tamagui/lucide-icons';
-import { getFirstName, maskString } from '../../utils/utils';
+import { getFirstName, maskString } from '../utils/utils';
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import USER_PROFILE from '../images/user_profile.png'
 import { bgGreen, borderColor, componentBgColor, textBlack, textColor1, textColor2 } from '../utils/colors';
@@ -10,7 +10,6 @@ import { formatAttribute } from '../utils/utils';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
-
 
 const NextScreen: React.FC = () => {
 
