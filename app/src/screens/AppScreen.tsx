@@ -1,20 +1,12 @@
 import React from 'react';
 import { ScrollView, Text, YStack } from 'tamagui';
-import AppCard from '../components/AppCard';
-import { Steps } from '../utils/utils';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType, createAppType } from '../../../common/src/utils/appType';
-import sbtApp from '../apps/sbt';
-import zupassApp from '../apps/zupass';
-import gitcoinApp from '../apps/gitcoin';
 import { XStack } from 'tamagui';
 import CustomButton from '../components/CustomButton';
-import { BadgeCheck, Binary, LayoutGrid, List, LockKeyhole, QrCode, ShieldCheck, Smartphone, UserPlus } from '@tamagui/lucide-icons';
-import { bgBlue, bgGreen, separatorColor, textBlack } from '../utils/colors';
-import { orange } from '@tamagui/colors';
+import { BadgeCheck, Binary, List, QrCode, Smartphone } from '@tamagui/lucide-icons';
+import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
-import { Platform } from 'react-native';
-import { NativeModules } from 'react-native';
+import { scanQRCode } from '../utils/qrCode';
 
 interface AppScreenProps {
   setSheetAppListOpen: (value: boolean) => void;
@@ -23,110 +15,26 @@ interface AppScreenProps {
 
 const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegisterIsOpen }) => {
   const {
-    selectedApp,
-    setSelectedApp,
-    update,
-    selectedTab,
-    setSelectedTab,
-    toast
-  } = useNavigationStore();
-
-  const {
     registered,
-    setRegistered
   } = useUserStore();
 
-  const handleCardSelect = (app: AppType) => {
-    update({
-      selectedTab: "prove",
-      selectedApp: app,
-      step: Steps.APP_SELECTED,
-    })
-  };
 
-  const cardsData = [
-    sbtApp,
-    zupassApp,
-    gitcoinApp
-  ];
-
-  const scanQRCode = () => {
-    if (Platform.OS === 'ios') {
-      if (NativeModules.QRScannerBridge && NativeModules.QRScannerBridge.scanQRCode) {
-        NativeModules.QRScannerBridge.scanQRCode()
-          .then((result: string) => {
-            handleQRCodeScan(result);
-          })
-          .catch((error: any) => {
-            console.error('QR Scanner Error:', error);
-            toast.show('Error', {
-              message: 'Failed to scan QR code',
-              type: 'error',
-            });
-          });
-      } else {
-        console.error('QR Scanner module not found for iOS');
-        toast.show('Error', {
-          message: 'QR Scanner not available',
-          type: 'error',
-        });
-      }
-    } else if (Platform.OS === 'android') {
-      if (NativeModules.QRCodeScanner && NativeModules.QRCodeScanner.scanQRCode) {
-        NativeModules.QRCodeScanner.scanQRCode()
-          .then((result: string) => {
-            handleQRCodeScan(result);
-          })
-          .catch((error: any) => {
-            console.error('QR Scanner Error:', error);
-            toast.show('Error', {
-              message: 'Failed to scan QR code',
-              type: 'error',
-            });
-          });
-      } else {
-        console.error('QR Scanner module not found for Android');
-        toast.show('Error', {
-          message: 'QR Scanner not available',
-          type: 'error',
-        });
-      }
-    }
-  };
-
-  const handleQRCodeScan = (result: string) => {
-    try {
-      console.log(result);
-      const app = createAppType(JSON.parse(result));
-      console.log(app);
-      setSelectedApp(app);
-      setSelectedTab("prove");
-    } catch (error) {
-      console.error('Error parsing QR code result:', error);
-      toast.show('Error', {
-        message: 'Invalid QR code format',
-        type: 'error',
-      });
-    }
-  };
 
   return (
     <YStack f={1} pb="$3" px="$3">
-      {/* <XStack h="$0.25" bg={separatorColor} mx="$0" /> */}
+      <XStack ml="$2" gap="$2" ai="center">
+        {registered ?
+          <XStack bg={bgGreen} px="$2.5" py="$2" borderRadius="$10">
+            <Text color={textBlack} fontSize="$4">scanned</Text>
+          </XStack> :
+          <XStack bg={'#FFB897'} px="$2.5" py="$2" borderRadius="$10">
+            <Text color={textBlack} fontSize="$4">not scanned</Text>
+          </XStack>}
+
+      </XStack>
       <ScrollView showsVerticalScrollIndicator={true} indicatorStyle="black">
         <YStack >
-          <Text fontSize="$8" mt="$2" >Account</Text>
-          <XStack ml="$2" gap="$2" ai="center">
-            <Text fontSize="$5">status:</Text>
-            {registered ?
-              <XStack bg={bgGreen} px="$2.5" py="$2" borderRadius="$10">
-                <Text color={textBlack} fontSize="$4">registered</Text>
-              </XStack> :
-              <XStack bg={'#FFB897'} px="$2.5" py="$2" borderRadius="$10">
-                <Text color={textBlack} fontSize="$4">not registered</Text>
-              </XStack>}
 
-          </XStack>
           {/* <XStack ml="$2" gap="$2" mt="$1">
             <Text fontSize="$5">userID:</Text>
             <Text color={textBlack} fontSize="$5">0x1234567890</Text>
@@ -192,31 +100,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
           }}
           Icon={<QrCode size={18} color={textBlack} />}
         />
-        <CustomButton bgColor='white' text="Open app list" onPress={
-          registered ?
-            () => setSheetAppListOpen(true)
-            :
-            () => setSheetRegisterIsOpen(true)} Icon={<List size={18} color={textBlack} />} />
       </YStack>
-
-
-      {/* <YStack my="$8" gap="$5" px="$5" jc="center" alignItems='center'>
-        {
-          cardsData.map(app => (
-            <AppCard
-              key={app.id}
-              title={app.title}
-              description={app.description}
-              id={app.id}
-              onTouchStart={() => handleCardSelect(app)}
-              selected={selectedApp && selectedApp.id === app.id ? true : false}
-              selectable={app.selectable}
-              icon={app.icon}
-              tags={app.tags}
-            />
-          ))
-        }
-      </YStack> */}
     </YStack>
   );
 }

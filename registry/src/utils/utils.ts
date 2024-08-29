@@ -205,7 +205,15 @@ export function processCertificate(pemContent: string, fileName: string): Certif
 
         // Extract Subject Key Identifier
         if (subjectKeyIdentifier) {
-            certificateData.subjectKeyIdentifier = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHex).toString('hex');
+            let skiValue = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHexView).toString('hex');
+
+            // Remove ASN.1 encoding prefixes if present
+            skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
+
+            certificateData.subjectKeyIdentifier = skiValue;
+            certificateData.id = skiValue.slice(0, 8);
+        } else {
+            console.log('Subject Key Identifier not found');
         }
 
         if (signatureAlgorithm === 'RSA') {
@@ -250,13 +258,6 @@ export function processCertificate(pemContent: string, fileName: string): Certif
             } catch (error) {
                 console.error('Error processing ECDSA certificate:', error);
             }
-        }
-
-        if (subjectKeyIdentifier) {
-            certificateData.subjectKeyIdentifier = Buffer.from(subjectKeyIdentifier.extnValue.valueBlock.valueHexView).toString('hex');
-            certificateData.id = certificateData.subjectKeyIdentifier.slice(0, 8);
-        } else {
-            console.log('Subject Key Identifier not found');
         }
 
         certificateData.rawPem = pemContent;

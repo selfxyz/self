@@ -257,3 +257,8 @@ export const sendCSCARequest = async (inputs_csca: any): Promise<any> => {
         throw error;
     }
 };
+
+export const generateDscSecret = () => {
+    const secretBytes = forge.random.getBytesSync(31);
+    return BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
+}

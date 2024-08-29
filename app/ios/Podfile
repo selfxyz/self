@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-
+project 'OpenPassport.xcodeproj'
 
 platform :ios, '13.0'
 prepare_react_native_project!
@@ -61,6 +61,11 @@ target 'OpenPassport' do
   target 'OpenPassportTests' do
     inherit! :complete
     # Pods for testing
+  end
+
+  target 'OpenPassport App Clip' do
+    inherit! :search_paths
+    inherit! :complete
   end
 
   post_install do |installer|

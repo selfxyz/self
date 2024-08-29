@@ -5,5 +5,9 @@
       "dom",
       "esnext"
     ]
-  }
+  },
+  "typeRoots": [
+    "./node_modules/@types",
+    "./src/types"
+  ]
 }

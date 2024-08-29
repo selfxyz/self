@@ -1,5 +1,5 @@
 import { NativeModules, Platform } from 'react-native';
-import { formatDateToYYMMDD, extractMRZInfo, Steps } from './utils';
+import { formatDateToYYMMDD, extractMRZInfo } from './utils';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
@@ -20,8 +20,8 @@ export const startCameraScan = async () => {
       })
 
       setSelectedTab("nfc");
-      toast.show("Scan successful", {
-        message: '✅',
+      toast.show("✅", {
+        message: 'Scan successful',
         customData: {
           type: "success",
         },
@@ -42,8 +42,8 @@ export const startCameraScan = async () => {
           })
 
           setSelectedTab("nfc");
-          toast.show("Scan successful", {
-            message: '✅',
+          toast.show("✅", {
+            message: 'Scan successful',
             customData: {
               type: "success",
             },

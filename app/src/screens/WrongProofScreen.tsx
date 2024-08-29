@@ -2,18 +2,16 @@ import React from 'react';
 import { YStack, Text, XStack } from 'tamagui';
 import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
+import CustomButton from '../components/CustomButton';
+import { QrCode } from '@tamagui/lucide-icons';
+import { scanQRCode } from '../utils/qrCode';
 
 const WrongProofScreen: React.FC = () => {
   const { proofVerificationResult } = useUserStore();
 
-  console.log('Raw proofVerificationResult:', JSON.stringify(proofVerificationResult));
-
   const formatFieldName = (field: string) => {
     return field.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
-
-  // Remove the parsing step
-  const parsedResult = proofVerificationResult;
 
   const fieldsToCheck = [
     'scope', 'merkle_root', 'attestation_id', 'current_date', 'issuing_state',
@@ -23,8 +21,8 @@ const WrongProofScreen: React.FC = () => {
 
   const failedConditions = [];
   for (const field of fieldsToCheck) {
-    console.log(`Checking field ${field}: ${JSON.stringify(parsedResult[field])}`);
-    if (parsedResult[field] === false) {
+    console.log(`Checking field ${field}: ${JSON.stringify((proofVerificationResult as any)[field])}`);
+    if ((proofVerificationResult as any)[field] === false) {
       failedConditions.push(formatFieldName(field));
     }
   }
@@ -51,6 +49,7 @@ const WrongProofScreen: React.FC = () => {
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Check again</Text> your eligibility, if you are sure to be eligible to this verification please contact OpenPassport support.
         </Text>
         <XStack f={1} />
+        <CustomButton Icon={<QrCode size={18} color={textBlack} />} text="Scan another QR code" onPress={() => { scanQRCode() }} />
       </YStack>
     </YStack >
   );

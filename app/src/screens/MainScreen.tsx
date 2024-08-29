@@ -5,9 +5,7 @@ import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, 
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
-import forge from 'node-forge';
 import Dialog from "react-native-dialog";
-import { ethers } from 'ethers';
 // import ressources
 import Xlogo from '../images/x.png'
 import NFC_IMAGE from '../images/nfc.png'
@@ -18,34 +16,20 @@ import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 // import utils
 import { bgColor, bgGreen, bgWhite, blueColorLight, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
-import { ModalProofSteps, Steps } from '../utils/utils';
+import { ModalProofSteps } from '../utils/utils';
 import { scan } from '../utils/nfcScanner';
 import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
 import { contribute } from '../utils/contribute';
-import { sendCSCARequest } from '../utils/cscaRequest';
-import { sendRegisterTransaction } from '../utils/transactions';
-// import utils from common
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
-import { getCSCAInputs } from '../../../common/src/utils/csca';
-import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
 // import screens
 import ProveScreen from './ProveScreen';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
 import RegisterScreen from './RegisterScreen';
-import SendProofScreen from './SendProofScreen';
 import AppScreen from './AppScreen';
 // import constants
 import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
-
-const { nativeModule } = NativeModules;
-let emitter: NativeEventEmitter | null = null;
-
-if (Platform.OS === 'android') {
-  emitter = new NativeEventEmitter(nativeModule);
-}
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
@@ -53,9 +37,13 @@ import StepOneStepTwo from '../components/StepOneStepTwo';
 import SplashScreen from './SplashScreen';
 import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
+import MockDataScreen from './MockDataScreen';
+
+const emitter = (Platform.OS === 'android')
+  ? new NativeEventEmitter(NativeModules.nativeModule)
+  : null
 
 const MainScreen: React.FC = () => {
-  const [NFCScanIsOpen, setNFCScanIsOpen] = useState(false);
   const [scanningMessage, setScanningMessage] = useState('');
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
   const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
@@ -91,8 +79,6 @@ const MainScreen: React.FC = () => {
   const {
     showWarningModal,
     update: updateNavigationStore,
-    step,
-    setStep,
     selectedTab,
     setSelectedTab,
     hideData,
@@ -104,10 +90,7 @@ const MainScreen: React.FC = () => {
   } = useNavigationStore();
 
   const handleRestart = () => {
-    updateNavigationStore({
-      selectedTab: "start",
-      step: Steps.MRZ_SCAN,
-    })
+    setSelectedTab("start");
     deleteMrzFields();
   }
   const handleHideData = () => {
@@ -116,75 +99,9 @@ const MainScreen: React.FC = () => {
     })
   }
 
-  const handleSkip = () => {
-    update({
-      passportData: mockPassportData_sha256_rsa_65537
-    })
-    setStep(Steps.NEXT_SCREEN);
-    deleteMrzFields();
-
-    const n_dsc = 121;
-    const k_dsc = 17;
-    const n_csca = 121;
-    const k_csca = 34;
-    const max_cert_bytes = 1664;
-    const dsc = mock_dsc_sha256_rsa_4096;
-    const csca = mock_csca_sha256_rsa_4096;
-    const dscCert = forge.pki.certificateFromPem(dsc);
-    const cscaCert = forge.pki.certificateFromPem(csca);
-
-    let secret = useUserStore.getState().dscSecret;
-    if (secret === null) {
-      // Finally, generate CSCA Inputs and request modal server
-      // Generate a cryptographically secure random secret of (31 bytes)
-      const secretBytes = forge.random.getBytesSync(31);
-      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-      console.log('Generated secret:', secret.toString());
-      useUserStore.getState().setDscSecret(secret);
-    }
-
-    const inputs_csca = getCSCAInputs(
-      secret,
-      dscCert,
-      cscaCert,
-      n_dsc,
-      k_dsc,
-      n_csca,
-      k_csca,
-      max_cert_bytes,
-      true
-    );
-    sendCSCARequest(inputs_csca, setModalProofStep);
-    toast.show("Using mock passport data!", { type: "info" })
-  }
-
   const castDate = (date: Date) => {
     return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
   }
-
-  const decrementStep = () => {
-    if (selectedTab === "scan") {
-      setSelectedTab("start");
-    }
-    else if (selectedTab === "nfc") {
-      setSelectedTab("scan");
-    }
-    else if (selectedTab === "next") {
-      setSelectedTab("nfc");
-    }
-    else if (selectedTab === "register") {
-      setStep(Steps.NEXT_SCREEN);
-    }
-    else if (selectedTab === "app") {
-      setStep(Steps.REGISTER);
-    }
-    else if (selectedTab === "prove") {
-      setStep(Steps.REGISTERED);
-    }
-    else if (selectedTab === "mint") {
-      setStep(Steps.REGISTERED);
-    }
-  };
 
   const handleNFCScan = () => {
     if ((Platform.OS === 'ios')) {
@@ -193,7 +110,6 @@ const MainScreen: React.FC = () => {
     }
     else {
       console.log('android :)');
-      setNFCScanIsOpen(true);
       scan(setModalProofStep);
     }
   }
@@ -222,106 +138,43 @@ const MainScreen: React.FC = () => {
     }
   }, []);
 
-  useEffect(() => {
-    if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
-      console.log('CSCA Proof received:', cscaProof);
-      if ((cscaProof !== null) && (localProof !== null)) {
-        const sendTransaction = async () => {
-          const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-          const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
-          console.log("local proof already generated, sending transaction");
-          const provider = new ethers.JsonRpcProvider(RPC_URL);
-          const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
-          const txHash = serverResponse?.data.hash;
-          const receipt = await provider.waitForTransaction(txHash);
-          console.log('receipt status:', receipt?.status);
-          if (receipt?.status === 0) {
-            throw new Error("Transaction failed");
-          }
-          setRegistered(true);
-          setSelectedTab("app");
-          setStep(Steps.REGISTERED);
-          toast.show('✅', {
-            message: "Registered",
-            customData: {
-              type: "success",
-            },
-          })
-        }
-        sendTransaction();
-      }
+  // useEffect(() => {
+  //   if (cscaProof && (modalProofStep === ModalProofSteps.MODAL_SERVER_SUCCESS)) {
+  //     console.log('CSCA Proof received:', cscaProof);
+  //     if ((cscaProof !== null) && (localProof !== null)) {
+  //       const sendTransaction = async () => {
+  //         const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+  //         const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
+  //         console.log("local proof already generated, sending transaction");
+  //         const provider = new ethers.JsonRpcProvider(RPC_URL);
+  //         const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)
+  //         const txHash = serverResponse?.data.hash;
+  //         const receipt = await provider.waitForTransaction(txHash);
+  //         console.log('receipt status:', receipt?.status);
+  //         if (receipt?.status === 0) {
+  //           throw new Error("Transaction failed");
+  //         }
+  //         setRegistered(true);
+  //         setSelectedTab("app");
+  //         setStep(Steps.REGISTERED);
+  //         toast.show('✅', {
+  //           message: "Registered",
+  //           customData: {
+  //             type: "success",
+  //           },
+  //         })
+  //       }
+  //       sendTransaction();
+  //     }
 
-    }
-  }, [modalProofStep]);
+  //   }
+  // }, [modalProofStep]);
 
 
   useEffect(() => {
     setIsFormComplete(passportNumber?.length >= 3 && dateOfBirth?.length >= 6 && dateOfExpiry?.length >= 6);
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
-  // useEffect(() => {
-  //   if (registered && step < Steps.REGISTERED) {
-  //     setStep(Steps.REGISTERED);
-  //   }
-  // }, [registered]);
-
-
-  // useEffect(() => {
-  //   let timeoutId: ReturnType<typeof setTimeout>;
-  //   if (step == Steps.START) {
-  //     updateNavigationStore({
-  //       selectedTab: "start",
-  //     })
-  //   }
-
-  //   if (step == Steps.MRZ_SCAN) {
-  //     updateNavigationStore({
-  //       selectedTab: "scan",
-  //     })
-  //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
-  //     }, 0);
-  //   }
-  //   else if (step == Steps.MRZ_SCAN_COMPLETED) {
-  //     updateNavigationStore({
-  //       selectedTab: "nfc",
-  //     })
-  //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
-  //     }, 0);
-  //   }
-  //   else if (step == Steps.NEXT_SCREEN) {
-  //     // Set the timeout and store its ID
-  //     timeoutId = setTimeout(() => {
-  //       setNFCScanIsOpen(false);
-  //     }, 700);
-  //   }
-  //   else if (step == Steps.PROOF_GENERATED) {
-  //     updateNavigationStore({
-  //       selectedTab: "mint",
-  //     })
-  //   }
-  //   if (step == Steps.NEXT_SCREEN) {
-  //     updateNavigationStore({
-  //       selectedTab: "next",
-  //     })
-  //   }
-  //   if (step == Steps.REGISTER) {
-  //     updateNavigationStore({
-  //       selectedTab: "register",
-  //     })
-  //   }
-  //   if (step == Steps.REGISTERED) {
-  //     updateNavigationStore({
-  //       selectedTab: "app",
-  //     })
-  //   }
-  //   return () => {
-  //     if (timeoutId) {
-  //       clearTimeout(timeoutId);
-  //     }
-  //   };
-  // }, [step]);
 
   const { height } = useWindowDimensions();
 
@@ -341,11 +194,6 @@ const MainScreen: React.FC = () => {
               <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
               <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
             </XStack>
-
-
-
-
-
           }
 
           {/* {selectedTab !== "start" && selectedTab !== "scan" && selectedTab !== "nfc" && selectedTab !== "next" && selectedTab !== "register" && (
@@ -374,7 +222,7 @@ const MainScreen: React.FC = () => {
                   <Text textAlign='center'>{scanningMessage}</Text>
                 </View>
 
-                {step >= Steps.NEXT_SCREEN ?
+                {selectedTab === "next" ?
                   <CheckCircle2
                     size="$8"
                     alignSelf='center'
@@ -398,23 +246,23 @@ const MainScreen: React.FC = () => {
 
           <Sheet open={SettingsIsOpen} onOpenChange={setSettingsIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
             <Sheet.Overlay />
-            <Sheet.Frame bg={bgColor} borderRadius="$9">
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3" >
               <YStack p="$3" pb="$5" f={1} gap={height > 750 ? "$3" : "$1"} mb="$1.5">
                 <XStack gap="$2" ml="$2" >
-                  <H2 color={textColor1}>Settings</H2>
-                  <Cog color={textColor1} mt="$1" alignSelf='center' size="$2" />
+                  <H2 color={textBlack}>Settings</H2>
+                  <Cog color={textBlack} mt="$1" alignSelf='center' size="$2" />
                 </XStack>
 
                 <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                  <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
                     Contribute
                   </Label>
-                  <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
-                    <Share color={textColor1} />
+                  <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
+                    <Share color={textBlack} />
                   </Button>
                 </Fieldset>
                 <Fieldset horizontal>
-                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
+                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
                     Private mode
                   </Label>
                   <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
@@ -422,10 +270,8 @@ const MainScreen: React.FC = () => {
                   </Switch>
                 </Fieldset>
 
-
-
                 <Fieldset horizontal>
-                  <Label color={textColor1} width={225} justifyContent="flex-end" htmlFor="restart" >
+                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
                     Display other options
                   </Label>
                   <Switch size="$3.5" checked={displayOtherOptions} onCheckedChange={() => setDisplayOtherOptions(!displayOtherOptions)}>
@@ -456,62 +302,53 @@ const MainScreen: React.FC = () => {
                   <>
                     <XStack my="$3" alignSelf='center' h={2} w="80%" bg={componentBgColor} borderRadius={100} />
                     <Fieldset gap="$4" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="restart">
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
                         Restart to step 1
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
-                        <IterationCw color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
+                        <IterationCw color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        Use mock passport data
-                      </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleSkip}>
-                        <VenetianMask color={textColor1} />
-                      </Button>
-                    </Fieldset>
-
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete passport data
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
-                        <Eraser color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                        <Eraser color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete proofs
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
-                        <Eraser color={textColor1} />
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
+                        <Eraser color={textBlack} />
                       </Button>
                     </Fieldset>
 
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         Delete secret (caution)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
                         <Eraser color={textColor2} />
                       </Button>
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         go to register
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
                         <ArrowRight color={textColor2} />
                       </Button>
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textColor1} width={200} justifyContent="flex-end" htmlFor="skip" >
+                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
                         registered = (!registered)
                       </Label>
-                      <Button bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
+                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
                         <UserPlus color={textColor2} />
                       </Button>
                     </Fieldset>
@@ -525,7 +362,7 @@ const MainScreen: React.FC = () => {
 
                 <YStack mb="$0">
                   {/* <Button p="$2.5" borderRadius="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} onPress={() => setSettingsIsOpen(false)} w="80%" alignSelf='center'>
-                    <Text color={textColor1} textAlign='center' fow="bold">Close</Text>
+                    <Text color={textBlack}textAlign='center' fow="bold">Close</Text>
                   </Button> */}
                 </YStack>
               </YStack>
@@ -760,7 +597,7 @@ const MainScreen: React.FC = () => {
             <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" >
               <YStack p="$4" f={1} gap="$3">
                 <XStack>
-                  <Text fontSize="$8" mb="$2">👋 Not registered yet?</Text>
+                  <Text fontSize="$8" mb="$2">👋 Scan your passport</Text>
                   <XStack f={1} />
                   <XStack onPress={() => setSheetRegisterIsOpen(false)} p="$2">
                     <X color={borderColor} size="$1.5" mr="$2" />
@@ -768,22 +605,21 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} />
                 <YStack gap="$2">
-                  <Text fontSize="$7" color={textBlack}>Registering to OpenPassport does not leak anything about your personal information.</Text>
-                  <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text>
+                  <Text fontSize="$7" color={textBlack}>Scan your passport to start using OpenPassport</Text>
+                  <Text fontSize="$6" style={{ opacity: 0.7 }} color={textBlack}>You can also use mock data to test the app.</Text>
+                  {/* <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text> */}
                 </YStack>
 
                 <XStack f={1} />
-                <YStack gap="$2">
-                  <CustomButton
-                    text="Register"
-                    Icon={<UserPlus color={textBlack} />}
-                    onPress={() => {
-                      setSheetRegisterIsOpen(false);
-                      setSelectedTab("start");
+                <CustomButton
+                  text="Let's start"
+                  Icon={<ArrowRight color={textBlack} />}
+                  onPress={() => {
+                    setSheetRegisterIsOpen(false);
+                    setSelectedTab("scan");
 
-                    }}
-                  />
-                </YStack>
+                  }}
+                />
                 <XStack f={1} />
 
               </YStack>
@@ -837,9 +673,11 @@ const MainScreen: React.FC = () => {
             <StartScreen
             />
           </Tabs.Content>
+          <Tabs.Content value="mock" f={1}>
+            <MockDataScreen />
+          </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen
-              sheetIsOpen={sheetIsOpen}
               setSheetIsOpen={setSheetIsOpen}
             />
           </Tabs.Content>
@@ -864,9 +702,6 @@ const MainScreen: React.FC = () => {
             <ProveScreen
               setSheetRegisterIsOpen={setSheetRegisterIsOpen}
             />
-          </Tabs.Content>
-          <Tabs.Content value="mint" f={1}>
-            <SendProofScreen />
           </Tabs.Content>
           <Tabs.Content value="valid" f={1}>
             <ValidProofScreen />

@@ -1,2 +1,0 @@
-import { QRCodeGenerator } from "./QRCodeGenerator";
-

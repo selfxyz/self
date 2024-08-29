@@ -10,7 +10,6 @@ import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
-import { Steps } from '../utils/utils';
 import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
@@ -20,7 +19,7 @@ import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
-import { OpenPassportVerifierReport } from '@proofofpassport/sdk';
+import { generateDscSecret } from '../../../common/src/utils/csca';
 
 
 interface UserState {
@@ -30,7 +29,6 @@ interface UserState {
   registered: boolean
   passportData: PassportData
   secret: string
-  dscCertificate: any
   cscaProof: Proof | null
   localProof: Proof | null
   dscSecret: string | null
@@ -59,7 +57,6 @@ const useUserStore = create<UserState>((set, get) => ({
   registered: false,
   passportData: mockPassportData_sha256_rsa_65537,
   secret: "",
-  dscCertificate: null,
   cscaProof: null,
   localProof: null,
   setRegistered: (registered: boolean) => {
@@ -82,8 +79,8 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     // download zkeys if they are not already downloaded
-    downloadZkey("register_sha256WithRSAEncryption_65537"); // might move after nfc scanning
-    downloadZkey("disclose");
+    // downloadZkey("prove_rsa_65537_sha256"); // might move after nfc scanning
+    // downloadZkey("disclose");
 
     const secret = await loadSecretOrCreateIt();
     set({ secret });
@@ -97,7 +94,8 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
-    const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
+    // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
+    const isAlreadyRegistered = true
 
     if (!isAlreadyRegistered) {
       console.log("not registered but passport data found, skipping to nextScreen")
@@ -105,7 +103,6 @@ const useUserStore = create<UserState>((set, get) => ({
         passportData: JSON.parse(passportData),
         userLoaded: true,
       });
-      // useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
 
       return;
     }
@@ -115,7 +112,6 @@ const useUserStore = create<UserState>((set, get) => ({
       passportData: JSON.parse(passportData),
       registered: true,
     });
-    useNavigationStore.getState().setStep(Steps.REGISTERED);
     set({ userLoaded: true });
   },
 
@@ -138,7 +134,6 @@ const useUserStore = create<UserState>((set, get) => ({
     console.log("registerCommitment")
     const {
       toast,
-      setStep,
       update: updateNavigationStore,
     } = useNavigationStore.getState();
     const secret = await loadSecret() as string;
@@ -157,7 +152,6 @@ const useUserStore = create<UserState>((set, get) => ({
         },
       })
       set({ registered: true });
-      setStep(Steps.REGISTERED);
       return;
     }
 
@@ -165,10 +159,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
     try {
       if (get().dscSecret === null) {
-        console.log("DSC secret is not set, generating a new one");
-        const secretBytes = forge.random.getBytesSync(31);
-        dsc_secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-        console.log('Generated secret:', dsc_secret.toString());
+        dsc_secret = generateDscSecret();
         get().setDscSecret(dsc_secret);
       }
       const inputs = generateCircuitInputsRegister(
@@ -193,7 +184,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const start = Date.now();
 
-      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey!.exponent);
       const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
 
       const proof = await generateProof(
@@ -219,7 +210,6 @@ const useUserStore = create<UserState>((set, get) => ({
           throw new Error("Transaction failed");
         }
         set({ registered: true });
-        setStep(Steps.REGISTERED);
         useNavigationStore.getState().setSelectedTab("app");
         toast.show('✅', {
           message: "Registered",
@@ -238,7 +228,6 @@ const useUserStore = create<UserState>((set, get) => ({
         showRegistrationErrorSheet: true,
         registrationErrorMessage: error.message,
       })
-      setStep(Steps.NEXT_SCREEN);
       //amplitude.track(error.message);
     }
   },

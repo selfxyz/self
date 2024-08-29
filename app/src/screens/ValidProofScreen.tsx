@@ -1,10 +1,9 @@
 import React from 'react';
-import { YStack, Button, Image, Text, ScrollView, XStack, Separator } from 'tamagui';
-import { Camera, ShieldCheck, SquarePen, X } from '@tamagui/lucide-icons';
-import { bgColor, bgGreen, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
-import SCANHelp from '../images/scan_help.png'
-import { startCameraScan } from '../utils/cameraScanner';
+import { YStack, Text, XStack } from 'tamagui';
+import { bgGreen, textBlack } from '../utils/colors';
 import CustomButton from '../components/CustomButton';
+import { scanQRCode } from '../utils/qrCode';
+import { QrCode } from '@tamagui/lucide-icons';
 
 
 const SuccessScreen: React.FC = () => {
@@ -15,6 +14,7 @@ const SuccessScreen: React.FC = () => {
         <XStack f={1} />
       </YStack>
 
+      <CustomButton Icon={<QrCode size={18} color={textBlack} />} text="Scan another QR code" onPress={() => { scanQRCode() }} />
 
     </YStack>
   );

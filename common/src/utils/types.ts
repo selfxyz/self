@@ -2,11 +2,12 @@ export type PassportData = {
   mrz: string;
   signatureAlgorithm: string;
   dsc?: string;
-  pubKey: { modulus?: string, exponent?: string, curveName?: string, publicKeyQ?: string };
+  pubKey?: { modulus?: string, exponent?: string, curveName?: string, publicKeyQ?: string };
   dataGroupHashes: number[];
   eContent: number[];
   encryptedDigest: number[];
   photoBase64: string;
+  mockUser?: boolean;
 };
 
 export type Proof = {

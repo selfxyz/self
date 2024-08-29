@@ -8,88 +8,43 @@ import {
   arraysAreEqual,
   findSubarrayIndex,
 } from '../../../common/src/utils/utils';
-import * as forge from 'node-forge';
+import * as asn1 from 'asn1js';
+import { Certificate } from 'pkijs';
 import { writeFileSync } from 'fs';
 import elliptic from 'elliptic';
-import * as crypto from 'crypto';
+import { sampleDataHashes_large } from '../../src/constants/sampleDataHashes';
+import { mock_dsc_key_sha256_ecdsa, mock_dsc_sha256_ecdsa } from "../../src/constants/mockCertificates";
 
 const sampleMRZ =
   'P<FRADUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324FRA0402111M3111115<<<<<<<<<<<<<<02';
-const sampleDataHashes = [
-  [
-    2,
-    [
-      -66, 82, -76, -21, -34, 33, 79, 50, -104, -120, -114, 35, 116, -32, 6, -14, -100, -115, -128,
-      -8, 10, 61, 98, 86, -8, 45, -49, -46, 90, -24, -81, 38,
-    ],
-  ],
-  [
-    3,
-    [
-      0, -62, 104, 108, -19, -10, 97, -26, 116, -58, 69, 110, 26, 87, 17, 89, 110, -57, 108, -6, 36,
-      21, 39, 87, 110, 102, -6, -43, -82, -125, -85, -82,
-    ],
-  ],
-  [
-    11,
-    [
-      -120, -101, 87, -112, 111, 15, -104, 127, 85, 25, -102, 81, 20, 58, 51, 75, -63, 116, -22, 0,
-      60, 30, 29, 30, -73, -115, 72, -9, -1, -53, 100, 124,
-    ],
-  ],
-  [
-    12,
-    [
-      41, -22, 106, 78, 31, 11, 114, -119, -19, 17, 92, 71, -122, 47, 62, 78, -67, -23, -55, -42,
-      53, 4, 47, -67, -55, -123, 6, 121, 34, -125, 64, -114,
-    ],
-  ],
-  [
-    13,
-    [
-      91, -34, -46, -63, 62, -34, 104, 82, 36, 41, -118, -3, 70, 15, -108, -48, -100, 45, 105, -85,
-      -15, -61, -71, 43, -39, -94, -110, -55, -34, 89, -18, 38,
-    ],
-  ],
-  [
-    14,
-    [
-      76, 123, -40, 13, 51, -29, 72, -11, 59, -63, -18, -90, 103, 49, 23, -92, -85, -68, -62, -59,
-      -100, -69, -7, 28, -58, 95, 69, 15, -74, 56, 54, 38,
-    ],
-  ],
-] as [number, number[]][];
 const signatureAlgorithm = 'ecdsa-with-SHA256';
 const hashLen = 32;
+const ec = new elliptic.ec('p256');
 
 export function genMockPassportData_sha256WithECDSA(): PassportData {
   const mrzHash = hash(signatureAlgorithm, formatMrz(sampleMRZ));
-  sampleDataHashes.unshift([1, mrzHash]);
+  sampleDataHashes_large.unshift([1, mrzHash]);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
-    [[1, mrzHash], ...sampleDataHashes],
+    [[1, mrzHash], ...sampleDataHashes_large],
     hashLen,
     33
   );
   const eContent = assembleEContent(hash(signatureAlgorithm, concatenatedDataHashes));
 
-  const ec = new elliptic.ec('p256');
-  const keyPair = ec.genKeyPair();
-  const pubKey = keyPair.getPublic();
+  const privateKeyDer = Buffer.from(mock_dsc_key_sha256_ecdsa.replace(/-----BEGIN EC PRIVATE KEY-----|\n|-----END EC PRIVATE KEY-----/g, ''), 'base64');
+  const asn1Data = asn1.fromBER(privateKeyDer);
+  const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
 
-  const md = forge.md.sha256.create();
-  md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-  const signature = keyPair.sign(md.digest().toHex(), 'hex');
-  const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+  const keyPair = ec.keyFromPrivate(privateKeyBuffer);
 
-  const Qx = pubKey.getX().toString(16);
-  const Qy = pubKey.getY().toString(16);
+  const eContentHash = hash(signatureAlgorithm, eContent);
+  const signature = keyPair.sign(eContentHash);
+  const signatureBytes = signature.toDER();
 
   return {
     mrz: sampleMRZ,
     signatureAlgorithm: signatureAlgorithm,
-    pubKey: {
-      publicKeyQ: `(${Qx},${Qy},1,fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffeffffffff0000000000000000fffffffc)`,
-    },
+    dsc: mock_dsc_sha256_ecdsa,
     dataGroupHashes: concatenatedDataHashes,
     eContent: eContent,
     encryptedDigest: signatureBytes,
@@ -98,7 +53,7 @@ export function genMockPassportData_sha256WithECDSA(): PassportData {
 }
 
 function verify(passportData: PassportData): boolean {
-  const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } =
+  const { mrz, signatureAlgorithm, dsc, dataGroupHashes, eContent, encryptedDigest } =
     passportData;
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(signatureAlgorithm, formattedMrz);
@@ -112,21 +67,18 @@ function verify(passportData: PassportData): boolean {
     'concatHash is not at the right place in eContent'
   );
 
-  const cleanPublicKeyQ = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-  const Qx = cleanPublicKeyQ[0];
-  const Qy = cleanPublicKeyQ[1];
+  const certBuffer = Buffer.from(dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''), 'base64');
+  const asn1Data = asn1.fromBER(certBuffer);
+  const cert = new Certificate({ schema: asn1Data.result });
+  const publicKeyInfo = cert.subjectPublicKeyInfo;
+  const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
 
-  const ec = new elliptic.ec('p256');
-  const key = ec.keyFromPublic({ x: Qx, y: Qy }, 'hex');
+  const key = ec.keyFromPublic(publicKeyBuffer);
 
-  const messageBuffer = Buffer.from(eContent);
-  const msgHash = crypto.createHash('sha256').update(messageBuffer).digest();
-
+  const eContentHash = hash(signatureAlgorithm, eContent);
   const signature = Buffer.from(encryptedDigest).toString('hex');
 
-  const isValid = key.verify(msgHash, signature);
-
-  return isValid;
+  return key.verify(eContentHash, signature);
 }
 
 const mockPassportData = genMockPassportData_sha256WithECDSA();

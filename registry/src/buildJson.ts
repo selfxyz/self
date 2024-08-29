@@ -3,6 +3,7 @@ import path from 'path';
 import { getRegistryJson } from './utils/getRegistryJson';
 import { getMapJson } from './utils/getMapJson';
 import { getSkiModulusJson } from './utils/getSkiModulusJson';
+import { getSkiPemDevJson, getSkiPemJson } from './utils/getSkiPem';
 
 const csca_pem_directory_path = path.join(__dirname, '..', 'outputs', 'unique_pem_masterlist');
 const dsc_pem_directory_path = path.join(__dirname, '..', 'outputs', 'dsc', 'pem_masterlist');
@@ -13,7 +14,18 @@ const searchable_registry_dsc_path = path.join(__dirname, '..', 'outputs', 'sear
 const map_csca_path = path.join(__dirname, '..', 'outputs', 'map_csca.json');
 const map_dsc_path = path.join(__dirname, '..', 'outputs', 'map_dsc.json');
 const ski_modulus_path = path.join(__dirname, '..', 'outputs', 'ski_modulus.json');
+const ski_pem_path = path.join(__dirname, '..', 'outputs', 'ski_pem.json');
+const ski_pem_dev_path = path.join(__dirname, '..', 'outputs', 'ski_pem_dev.json');
+
 async function main() {
+
+    console.log('\x1b[32m', 'building SKI Pem JSON', '\x1b[0m');
+    const skiPemJson = await getSkiPemJson(csca_pem_directory_path);
+    fs.writeFileSync(ski_pem_path, JSON.stringify(skiPemJson, null, 2));
+
+    console.log('\x1b[32m', 'building SKI Pem Dev JSON', '\x1b[0m');
+    const skiPemDevJson = await getSkiPemDevJson();
+    fs.writeFileSync(ski_pem_dev_path, JSON.stringify(skiPemDevJson, null, 2));
 
     console.log('\x1b[32m', 'building SKI modulus JSON', '\x1b[0m');
     const skiModulusJson = await getSkiModulusJson(csca_pem_directory_path);

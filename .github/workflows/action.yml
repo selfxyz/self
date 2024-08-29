@@ -4,12 +4,19 @@ on:
     branches:
       - dev
       - main
+    paths:
+      - 'circuits/**'
+      - 'common/**'
   pull_request:
     branches:
       - dev
       - main
+    paths:
+      - 'circuits/**'
+      - 'common/**'
 jobs:
   run_circuit_tests:
+    if: github.event.pull_request.draft == false
     runs-on: ubuntu-latest
     environment: development
     steps:

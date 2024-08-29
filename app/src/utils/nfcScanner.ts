@@ -2,18 +2,15 @@ import { NativeModules, Platform } from 'react-native';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
 import { toStandardName } from '../../../common/src/utils/formatNames';
-import { checkInputs } from '../../utils/utils';
-import { Steps } from './utils';
+import { checkInputs } from '../utils/utils';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
 import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { k_csca, k_dsc, max_cert_bytes, n_csca, n_dsc } from '../../../common/src/constants/constants';
-import { getCSCAInputs } from '../../../common/src/utils/csca';
-import { sendCSCARequest } from './cscaRequest';
-
+import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { downloadZkey } from './zkeyDownload';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
@@ -22,7 +19,7 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
     dateOfExpiry,
   } = useUserStore.getState()
 
-  const { toast, setStep, nfcSheetIsOpen, setNfcSheetIsOpen } = useNavigationStore.getState();
+  const { toast } = useNavigationStore.getState();
 
   const check = checkInputs(
     passportNumber,
@@ -41,7 +38,6 @@ export const scan = async (setModalProofStep: (modalProofStep: number) => void) 
   }
 
   console.log('scanning...');
-  setStep(Steps.NFC_SCANNING);
 
   if (Platform.OS === 'android') {
     scanAndroid(setModalProofStep);
@@ -55,7 +51,6 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     passportNumber,
     dateOfBirth,
     dateOfExpiry,
-    dscCertificate
   } = useUserStore.getState()
   const { toast, setNfcSheetIsOpen } = useNavigationStore.getState();
   setNfcSheetIsOpen(true);
@@ -91,7 +86,7 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     dateOfBirth,
     dateOfExpiry
   } = useUserStore.getState()
-  const { toast, setStep } = useNavigationStore.getState();
+  const { toast } = useNavigationStore.getState();
 
   try {
     const response = await NativeModules.PassportReader.scanPassport(
@@ -104,7 +99,6 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
     //amplitude.track('NFC scan successful');
   } catch (e: any) {
     console.log('error during scan:', e);
-    setStep(Steps.MRZ_SCAN_COMPLETED);
     //amplitude.track(`NFC scan unsuccessful, error ${e.message}`);
     if (!e.message.includes("UserCanceled")) {
       toast.show('Failed to read passport', {
@@ -172,37 +166,15 @@ const handleResponseIOS = async (
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
       photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
+      mockUser: false
     };
     useUserStore.getState().registerPassportData(passportData)
-
-    let secret = useUserStore.getState().dscSecret;
-    if (secret === null) {
-      // Finally, generate CSCA Inputs and request modal server
-      // Generate a cryptographically secure random secret of (31 bytes)
-      const secretBytes = forge.random.getBytesSync(31);
-      secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-      console.log('Generated secret:', secret.toString());
-      useUserStore.getState().setDscSecret(secret);
-    }
-    const inputs_csca = getCSCAInputs(
-      secret as string,
-      certificate,
-      null,
-      n_dsc,
-      k_dsc,
-      n_csca,
-      k_csca,
-      max_cert_bytes,
-      false
-    );
-
-    sendCSCARequest(inputs_csca, setModalProofStep);
-
-    useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+    const sigAlgName = getSignatureAlgorithm(pem);
+    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+    downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
-    useNavigationStore.getState().setStep(Steps.MRZ_SCAN_COMPLETED);
     //amplitude.track('Signature algorithm unsupported (ecdsa not parsed)', { error: JSON.stringify(e) });
     toast.show('Error', {
       message: "Your signature algorithm is not supported at that time. Please try again later.",
@@ -258,6 +230,7 @@ const handleResponseAndroid = async (
     eContent: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
+    mockUser: false
   };
   //amplitude.track('Sig alg after conversion: ' + passportData.signatureAlgorithm);
 
@@ -282,31 +255,8 @@ const handleResponseAndroid = async (
   console.log("documentSigningCertificate", documentSigningCertificate)
   useUserStore.getState().registerPassportData(passportData)
 
-  // Finally request the Modal server to verify the DSC certificate
-  const certificate = forge.pki.certificateFromPem(documentSigningCertificate);
-  useUserStore.getState().dscCertificate = certificate;
-
-  let secret = useUserStore.getState().dscSecret;
-  if (secret === null) {
-    // Finally, generate CSCA Inputs and request modal server
-    // Generate a cryptographically secure random secret of (31 bytes)
-    const secretBytes = forge.random.getBytesSync(31);
-    secret = BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-    console.log('Generated secret:', secret.toString());
-    useUserStore.getState().setDscSecret(secret);
-  }
-  const inputs_csca = getCSCAInputs(
-    secret as string,
-    certificate,
-    null,
-    n_dsc,
-    k_dsc,
-    n_csca,
-    k_csca,
-    max_cert_bytes,
-    false
-  );
-  sendCSCARequest(inputs_csca, setModalProofStep);
-  useNavigationStore.getState().setStep(Steps.NEXT_SCREEN);
+  const sigAlgName = getSignatureAlgorithm(pem);
+  const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+  downloadZkey(circuitName as any);
   useNavigationStore.getState().setSelectedTab("next");
 };

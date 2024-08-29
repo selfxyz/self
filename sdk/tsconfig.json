@@ -8,14 +8,17 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "jsx": "react", // Add this line
+    "moduleResolution": "node" // Add this line if not already present
   },
   "include": [
-    "index.ts",
+    "src/index.ts",
     "src/**/*",
     "common/**/*",
     "circuits/**/*",
-    "circuits/**/*.json"
+    "circuits/**/*.json",
+    "utils/utils.ts"
   ],
   "exclude": [
     "node_modules",
