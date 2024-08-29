@@ -184,7 +184,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
       const start = Date.now();
 
-      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey!.exponent);
       const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
 
       const proof = await generateProof(
