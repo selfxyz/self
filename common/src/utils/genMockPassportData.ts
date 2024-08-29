@@ -2,7 +2,7 @@ import { PassportData } from "./types";
 import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, hexToDecimal } from "./utils";
 import * as forge from 'node-forge';
 import { mock_dsc_key_sha1_rsa_4096, mock_dsc_key_sha256_rsa_4096, mock_dsc_key_sha256_rsapss_2048, mock_dsc_key_sha256_rsapss_4096, mock_dsc_sha1_rsa_4096, mock_dsc_sha256_rsa_4096, mock_dsc_sha256_rsapss_2048, mock_dsc_sha256_rsapss_4096 } from "../constants/mockCertificates";
-import { sampleDataHashes_rsa_sha1, sampleDataHashes_rsa_sha256, sampleDataHashes_rsapss_sha256 } from "../constants/sampleDataHashes";
+import { sampleDataHashes_small, sampleDataHashes_large } from "../constants/sampleDataHashes";
 import { countryCodes } from "../constants/constants";
 export function genMockPassportData(
     signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256',
@@ -25,21 +25,21 @@ export function genMockPassportData(
         case 'rsa_sha1':
             signatureAlgorithm = 'sha1WithRSAEncryption';
             hashLen = 20;
-            sampleDataHashes = sampleDataHashes_rsa_sha1;
+            sampleDataHashes = sampleDataHashes_small;
             privateKeyPem = mock_dsc_key_sha1_rsa_4096;
             dsc = mock_dsc_sha1_rsa_4096;
             break;
         case 'rsa_sha256':
             signatureAlgorithm = 'sha256WithRSAEncryption';
             hashLen = 32;
-            sampleDataHashes = sampleDataHashes_rsa_sha256;
+            sampleDataHashes = sampleDataHashes_large;
             privateKeyPem = mock_dsc_key_sha256_rsa_4096;
             dsc = mock_dsc_sha256_rsa_4096;
             break;
         case 'rsapss_sha256':
             signatureAlgorithm = 'sha256WithRSASSAPSS';
             hashLen = 32;
-            sampleDataHashes = sampleDataHashes_rsapss_sha256;
+            sampleDataHashes = sampleDataHashes_large;
             privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
             dsc = mock_dsc_sha256_rsapss_4096;
             break;
