@@ -443,13 +443,13 @@ export function bigIntToHex(bigInt: bigint): string {
   return bigInt.toString(16).padStart(32, '0');
 }
 
-function hexToUuid(hex: string): string {
+export function hexToUUID(hex: string): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
 export function castToUUID(bigInt: bigint): string {
   const hex = bigIntToHex(bigInt);
-  return hexToUuid(hex);
+  return hexToUUID(hex);
 }
 
 /// scope

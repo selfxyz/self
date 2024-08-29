@@ -1,4 +1,4 @@
-import { bigIntToHex, castToUUID } from '../../common/src/utils/utils';
+import { bigIntToHex, castToUUID, hexToUUID } from '../../common/src/utils/utils';
 
 export class OpenPassportVerifierReport {
   scope: boolean = true;
@@ -18,8 +18,8 @@ export class OpenPassportVerifierReport {
   dsc: boolean = true;
   valid: boolean = true;
 
-  public user_identifier: bigint;
-  public nullifier: bigint;
+  public user_identifier: string;
+  public nullifier: string;
 
   constructor() {}
 
@@ -46,14 +46,14 @@ export class OpenPassportVerifierReport {
   }
 
   getUUID() {
-    return castToUUID(this.user_identifier);
+    return hexToUUID(this.user_identifier);
   }
 
   getHexUUID() {
-    return bigIntToHex(this.user_identifier);
+    return this.user_identifier;
   }
 
   getNullifier() {
-    return bigIntToHex(this.nullifier);
+    return this.nullifier;
   }
 }
