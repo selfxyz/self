@@ -1,5 +1,5 @@
 import QRCode from 'easyqrcodejs';
-import { AppType } from '../../common/src/utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 
 export class QRCodeGenerator {
   static generateQRCode(appData: AppType, size: number = 256): HTMLElement {
@@ -20,3 +20,5 @@ export class QRCodeGenerator {
     return JSON.stringify(appType);
   }
 }
+
+export default QRCodeGenerator;
