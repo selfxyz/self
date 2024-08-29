@@ -98,7 +98,7 @@ const OpenPassportQRcode = ({
           setProofStep(ProofSteps.PROOF_VERIFIED);
           newSocket.emit('proof_verified', {
             sessionId,
-            proofVerified: local_proofVerified.toJson(),
+            proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid && onSuccess) {
             onSuccess(local_proofVerified);

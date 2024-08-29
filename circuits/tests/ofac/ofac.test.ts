@@ -10,7 +10,7 @@ import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT } from '@ashpect/smt';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
-import { formatMrz, packBytes } from '../../../common/src/utils/utils';
+import { castFromUUID, formatMrz, packBytes } from '../../../common/src/utils/utils';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
@@ -26,9 +26,9 @@ function getPassportInputs(passportData: PassportData) {
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
   const majority = '18';
-  const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
+  const user_identifier = crypto.randomUUID();
   const bitmap = Array(90).fill('1');
-  const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+  const scope = "@coboyApp";
 
   const pubkey_leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,

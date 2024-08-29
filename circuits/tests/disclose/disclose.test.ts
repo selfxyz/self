@@ -37,9 +37,9 @@ describe('Disclose', function () {
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
     const majority = '18';
-    const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
+    const user_identifier = crypto.randomUUID();
     const bitmap = Array(90).fill('1');
-    const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+    const scope = "@coboyApp";
 
     // compute the commitment and insert it in the tree
     const pubkey_leaf = getLeaf({

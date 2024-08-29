@@ -98,7 +98,7 @@ const OpenPassportQRcode = ({
           setProofStep(ProofSteps.PROOF_VERIFIED);
           newSocket.emit('proof_verified', {
             sessionId,
-            proofVerified: local_proofVerified.toJson(),
+            proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid && onSuccess) {
             onSuccess(local_proofVerified);
@@ -142,7 +142,9 @@ const OpenPassportQRcode = ({
 
   const renderProofStatus = () => (
     <div className="flex flex-col items-center">
-      <LED connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'} />
+      <LED
+        connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
+      />
       <div className="w-[300px] h-[300px] flex items-center justify-center">
         {(() => {
           switch (proofStep) {

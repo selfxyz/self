@@ -16,6 +16,8 @@ import {
   hexToDecimal,
   BigintToArray,
   extractRSFromSignature,
+  castFromUUID,
+  castFromScope,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
@@ -175,8 +177,6 @@ export function generateCircuitInputsDisclose(
     mrz_bytes[2],
   ]);
 
-  //console.log('commitment', commitment.toString());
-
   const index = findIndexInTree(merkletree, commitment);
 
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(
@@ -184,9 +184,6 @@ export function generateCircuitInputsDisclose(
     index,
     PUBKEY_TREE_DEPTH
   );
-
-  // format majority to bigints
-
 
   return {
     secret: [secret],
@@ -198,10 +195,10 @@ export function generateCircuitInputsDisclose(
     path: merkleProofIndices.map((index) => BigInt(index).toString()),
     siblings: merkleProofSiblings.map((index) => BigInt(index).toString()),
     bitmap: bitmap,
-    scope: [BigInt(scope).toString()],
+    scope: [castFromScope(scope)],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
     majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: [user_identifier],
+    user_identifier: [castFromUUID(user_identifier)],
   };
 }
 
@@ -287,8 +284,8 @@ export function generateCircuitInputsProve(
     current_date: current_date,
     bitmap: bitmap,
     majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: [user_identifier],
-    scope: [BigInt(scope).toString()]
+    user_identifier: [castFromUUID(user_identifier)],
+    scope: [castFromScope(scope)]
   };
 
 }

@@ -1,3 +1,5 @@
+import { bigIntToHex, castToUUID } from '../../common/src/utils/utils';
+
 export class OpenPassportVerifierReport {
   scope: boolean = true;
   merkle_root: boolean = true;
@@ -16,8 +18,8 @@ export class OpenPassportVerifierReport {
   dsc: boolean = true;
   valid: boolean = true;
 
-  public user_identifier: number;
-  public nullifier: number;
+  public user_identifier: bigint;
+  public nullifier: bigint;
 
   constructor() {}
 
@@ -39,7 +41,19 @@ export class OpenPassportVerifierReport {
     this.valid = false;
   }
 
-  toJson() {
+  toString() {
     return JSON.stringify(this);
+  }
+
+  getUUID() {
+    return castToUUID(this.user_identifier);
+  }
+
+  getHexUUID() {
+    return bigIntToHex(this.user_identifier);
+  }
+
+  getNullifier() {
+    return bigIntToHex(this.nullifier);
   }
 }

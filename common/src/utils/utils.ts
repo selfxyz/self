@@ -311,13 +311,13 @@ export function packBytes(unpacked) {
 }
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
-  const {entry, matchingEntry, siblings, root, membership} = smt.createProof(leaf);
+  const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
   const depth = siblings.length
-  
+
   let closestleaf;
-  if (!matchingEntry){ // we got the 0 leaf or membership
+  if (!matchingEntry) { // we got the 0 leaf or membership
     // then check if entry[1] exists
-    if(!entry[1]){
+    if (!entry[1]) {
       // non membership proof
       closestleaf = BigInt(0); // 0 leaf
     } else {
@@ -327,10 +327,10 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     // non membership proof
     closestleaf = BigInt(matchingEntry[0]); // actual closest
   }
-  
+
   // PATH, SIBLINGS manipulation as per binary tree in the circuit 
   siblings.reverse()
-  while(siblings.length < 256) siblings.push(BigInt(0)); 
+  while (siblings.length < 256) siblings.push(BigInt(0));
 
   // ----- Useful for debugging hence leaving as comments -----
   // const binary = entry[0].toString(2)
@@ -356,7 +356,7 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     root,
     depth,
     closestleaf,
-    siblings,   
+    siblings,
   };
 }
 
@@ -415,35 +415,71 @@ export function BigintToArray(n: number, k: number, x: bigint) {
   return ret;
 }
 
-/**
- * Converts a string of maximum 30 characters to a single BigInt.
- * Each byte is represented by three digits in the resulting BigInt.
- * @param str The input string (max 30 characters)
- * @returns A BigInt representing the concatenated byte values
- */
-export function stringToNumber(str: string): bigint {
+/// UUID
+function hexToBigInt(hex: string): bigint {
+  return BigInt(`0x${hex}`);
+}
+
+function checkBigInt(bigInt: bigint) {
+  const max253BitValue = BigInt(2n ** 253n - 1n);
+  if (bigInt > max253BitValue) {
+    throw new Error("Input should be < 2^253 - 1");
+  }
+}
+
+function uuidToBigInt(uuid: string): bigint {
+  const hexString = uuid.replace(/-/g, '');
+  const bigInt = hexToBigInt(hexString);
+  return bigInt;
+}
+
+export function castFromUUID(uuid: string): string {
+  const bigInt = uuidToBigInt(uuid);
+  checkBigInt(bigInt);
+  return bigInt.toString();
+}
+
+export function bigIntToHex(bigInt: bigint): string {
+  return bigInt.toString(16).padStart(32, '0');
+}
+
+function hexToUuid(hex: string): string {
+  return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+}
+
+export function castToUUID(bigInt: bigint): string {
+  const hex = bigIntToHex(bigInt);
+  return hexToUuid(hex);
+}
+
+/// scope
+function checkStringLength(str: string) {
   if (str.length > 30) {
     throw new Error("Input string must not exceed 30 characters");
   }
+}
+
+function stringToBigInt(str: string): bigint {
   return BigInt('1' + Array.from(str)
     .map(char => char.charCodeAt(0).toString().padStart(3, '0'))
     .join(''));
 }
 
-/**
-* Converts a BigInt (representing concatenated byte values) back to a string.
-* @param num The input BigInt
-* @returns The reconstructed string
-*/
-export function numberToString(num: bigint): string {
+export function castFromScope(scope: string): string {
+  checkStringLength(scope);
+  return stringToBigInt(scope).toString();
+}
+
+export function castToScope(num: bigint): string {
   const str = num.toString().slice(1); // Remove leading '1'
   const charCodes = str.match(/.{1,3}/g) || [];
   return String.fromCharCode(...charCodes.map(code => parseInt(code, 10)));
 }
+
 export function stringToAsciiBigIntArray(str: string): bigint[] {
   let asciiBigIntArray = [];
   for (let i = 0; i < str.length; i++) {
-      asciiBigIntArray.push(BigInt(str.charCodeAt(i)));
+    asciiBigIntArray.push(BigInt(str.charCodeAt(i)));
   }
   return asciiBigIntArray;
 }
@@ -451,7 +487,7 @@ export function stringToAsciiBigIntArray(str: string): bigint[] {
 export function hexToBin(n: string): string {
   let bin = Number(`0x${n[0]}`).toString(2)
   for (let i = 1; i < n.length; i += 1) {
-      bin += Number(`0x${n[i]}`).toString(2).padStart(4, "0")
+    bin += Number(`0x${n[i]}`).toString(2).padStart(4, "0")
   }
   return bin
 }
@@ -462,18 +498,18 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
   let e2: bigint = BigInt(1);
 
   for (let i = 0; i < n; i++) {
-      out[i] = (inValue >> BigInt(i)) & BigInt(1);
+    out[i] = (inValue >> BigInt(i)) & BigInt(1);
 
-      if (out[i] !== BigInt(0) && out[i] !== BigInt(1)) {
-          throw new Error("Bit value is not binary.");
-      }
+    if (out[i] !== BigInt(0) && out[i] !== BigInt(1)) {
+      throw new Error("Bit value is not binary.");
+    }
 
-      lc1 += out[i] * e2;
-      e2 = e2 << BigInt(1);
+    lc1 += out[i] * e2;
+    e2 = e2 << BigInt(1);
   }
 
   if (lc1 !== inValue) {
-      throw new Error("Reconstructed value does not match the input.");
+    throw new Error("Reconstructed value does not match the input.");
   }
   return out;
 }

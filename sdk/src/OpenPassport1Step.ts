@@ -10,7 +10,7 @@ import { unpackReveal } from '../../common/src/utils/revealBitmap';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 
 import forge from 'node-forge';
-import { splitToWords } from '../../common/src/utils/utils';
+import { castFromScope, castToScope, castToUUID, splitToWords } from '../../common/src/utils/utils';
 import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
 
 export class OpenPassport1StepVerifier {
@@ -45,7 +45,7 @@ export class OpenPassport1StepVerifier {
       openPassport1StepInputs.dscProof.publicSignals
     );
     //1. Verify the scope
-    if (parsedPublicSignals.scope !== this.scope) {
+    if (parsedPublicSignals.scope !== castFromScope(this.scope)) {
       this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
     }
     console.log('\x1b[32m%s\x1b[0m', `- scope verified`);
@@ -94,8 +94,8 @@ export class OpenPassport1StepVerifier {
     }
     console.log('\x1b[32m%s\x1b[0m', `- proof verified`);
 
-    this.report.nullifier = parsedPublicSignals.nullifier;
-    this.report.user_identifier = parsedPublicSignals.user_identifier;
+    this.report.nullifier = BigInt(parsedPublicSignals.nullifier);
+    this.report.user_identifier = BigInt(parsedPublicSignals.user_identifier);
 
     //7 Verify the dsc
     const dscCertificate = forge.pki.certificateFromPem(openPassport1StepInputs.dsc);

@@ -5,6 +5,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { poseidon1 } from 'poseidon-lite';
 import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
+import { castFromUUID } from '../../../common/src/utils/utils';
 
 describe('PROVE - RSA SHA1', function () {
   this.timeout(0);
@@ -14,8 +15,8 @@ describe('PROVE - RSA SHA1', function () {
   const n_dsc = 64;
   const k_dsc = 32;
   const majority = '18';
-  const user_identifier = '0xE6E4b6a802F2e0aeE5676f6010e0AF5C9CDd0a50';
-  const scope = poseidon1([BigInt(Buffer.from('VOTEEEEE').readUIntBE(0, 6))]).toString();
+  const user_identifier = crypto.randomUUID();
+  const scope = "@coboyApp";
   const bitmap = Array(90).fill('1');
 
   const inputs = generateCircuitInputsProve(
