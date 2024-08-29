@@ -1,4 +1,5 @@
-// utils from snarkjs. If snarkjs is updated and this breaks, might move this to lambda function
+// utils from snarkjs copied here before snarkjs imports node crypto
+
 function unstringifyBigInts(o: any): any {
   if (typeof o == "string" && /^[0-9]+$/.test(o)) {
       return BigInt(o);
