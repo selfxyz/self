@@ -1,6 +1,9 @@
 import React from 'react';
 import { YStack, Text, XStack } from 'tamagui';
 import { bgGreen, textBlack } from '../utils/colors';
+import CustomButton from '../components/CustomButton';
+import { scanQRCode } from '../utils/qrCode';
+import { QrCode } from '@tamagui/lucide-icons';
 
 
 const SuccessScreen: React.FC = () => {
@@ -11,6 +14,7 @@ const SuccessScreen: React.FC = () => {
         <XStack f={1} />
       </YStack>
 
+      <CustomButton Icon={<QrCode size={18} color={textBlack} />} text="Scan another QR code" onPress={() => { scanQRCode() }} />
 
     </YStack>
   );

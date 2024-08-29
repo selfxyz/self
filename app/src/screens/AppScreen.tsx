@@ -6,10 +6,7 @@ import CustomButton from '../components/CustomButton';
 import { BadgeCheck, Binary, List, QrCode, Smartphone } from '@tamagui/lucide-icons';
 import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
-import { Platform } from 'react-native';
-import { NativeModules } from 'react-native';
-import { AppType } from '../../../sdk/src';
-import { reconstructAppType } from '../../../common/src/utils/appType';
+import { scanQRCode } from '../utils/qrCode';
 
 interface AppScreenProps {
   setSheetAppListOpen: (value: boolean) => void;
@@ -18,82 +15,10 @@ interface AppScreenProps {
 
 const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegisterIsOpen }) => {
   const {
-    setSelectedApp,
-    setSelectedTab,
-    toast
-  } = useNavigationStore();
-
-  const {
     registered,
   } = useUserStore();
 
-  const scanQRCode = () => {
-    if (Platform.OS === 'ios') {
-      if (NativeModules.QRScannerBridge && NativeModules.QRScannerBridge.scanQRCode) {
-        NativeModules.QRScannerBridge.scanQRCode()
-          .then((result: string) => {
-            handleQRCodeScan(result);
-          })
-          .catch((error: any) => {
-            console.error('QR Scanner Error:', error);
-            toast.show('Error', {
-              message: 'Failed to scan QR code',
-              type: 'error',
-            });
-          });
-      } else {
-        console.error('QR Scanner module not found for iOS');
-        toast.show('Error', {
-          message: 'QR Scanner not available',
-          type: 'error',
-        });
-      }
-    } else if (Platform.OS === 'android') {
-      if (NativeModules.QRCodeScanner && NativeModules.QRCodeScanner.scanQRCode) {
-        NativeModules.QRCodeScanner.scanQRCode()
-          .then((result: string) => {
-            handleQRCodeScan(result);
-          })
-          .catch((error: any) => {
-            console.error('QR Scanner Error:', error);
-            toast.show('Error', {
-              message: 'Failed to scan QR code',
-              type: 'error',
-            });
-          });
-      } else {
-        console.error('QR Scanner module not found for Android');
-        toast.show('Error', {
-          message: 'QR Scanner not available',
-          type: 'error',
-        });
-      }
-    }
-  };
 
-  const handleQRCodeScan = (result: string) => {
-    try {
-      console.log(result);
-      const parsedJson = JSON.parse(result);
-      const app: AppType = reconstructAppType(parsedJson);
-      setSelectedApp(app);
-      setSelectedTab("prove");
-      toast.show('✅', {
-        message: "QR code scanned",
-        customData: {
-          type: "success",
-        },
-      })
-    } catch (error) {
-      console.error('Error parsing QR code result:', error);
-      toast.show('Error', {
-        message: "QR code parsing failed",
-        customData: {
-          type: "error",
-        },
-      })
-    }
-  };
 
   return (
     <YStack f={1} pb="$3" px="$3">

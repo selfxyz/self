@@ -2,6 +2,9 @@ import React from 'react';
 import { YStack, Text, XStack } from 'tamagui';
 import { bgGreen, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
+import CustomButton from '../components/CustomButton';
+import { QrCode } from '@tamagui/lucide-icons';
+import { scanQRCode } from '../utils/qrCode';
 
 const WrongProofScreen: React.FC = () => {
   const { proofVerificationResult } = useUserStore();
@@ -46,6 +49,7 @@ const WrongProofScreen: React.FC = () => {
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Check again</Text> your eligibility, if you are sure to be eligible to this verification please contact OpenPassport support.
         </Text>
         <XStack f={1} />
+        <CustomButton Icon={<QrCode size={18} color={textBlack} />} text="Scan another QR code" onPress={() => { scanQRCode() }} />
       </YStack>
     </YStack >
   );

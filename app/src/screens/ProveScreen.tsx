@@ -84,7 +84,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         });
         setTimeout(() => {
           setSelectedTab("valid");
-        }, 1000);
+        }, 700);
       } else {
         toast.show("❌", {
           message: "Wrong proof",
@@ -94,7 +94,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         });
         setTimeout(() => {
           setSelectedTab("wrong");
-        }, 1000);
+        }, 700);
       }
     });
 
