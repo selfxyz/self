@@ -5,9 +5,7 @@ import * as path from 'path';
 import { Certificate } from 'pkijs';
 import { fromBER, BitString } from 'asn1js';
 import * as forge from 'node-forge';
-import { PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
 
 
 export function getSignatureAlgorithmDetails(oid: string): { signatureAlgorithm: string, hashFunction: string } {
@@ -213,7 +211,7 @@ export function processCertificate(pemContent: string, fileName: string): Certif
             skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
 
             certificateData.subjectKeyIdentifier = skiValue;
-            certificateData.id = skiValue.slice(0, 8);
+            certificateData.id = skiValue.slice(0, 12);
         } else {
             console.log('Subject Key Identifier not found');
         }
