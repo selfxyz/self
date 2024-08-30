@@ -65,7 +65,7 @@ export async function insertDB(certificateData: CertificateData) {
             return;
         }
 
-        const result = await prisma[tableName].upsert({
+        const result = await (prisma[tableName] as any).upsert({
             where: { id: certificateData.id },
             update: {
                 // Overwrite all fields with new data
