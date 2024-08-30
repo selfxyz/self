@@ -1,8 +1,14 @@
 node_modules/
 certificates
 cscas
+outputs/dsc
 masterlists
-unique_cscas
+pem_unique_masters
+outputs/unique_cer
+outputs/unique_pem
+outputs/unique_cscas
+outputs/pem_unique_master
+outputs/unique_pem_masterlist
 outputs/plain_text/*
 outputs/plain_text_master/*
 outputs/plain_text_unique/*
@@ -12,3 +18,7 @@ dsc_plain_text
 
 .env
 .env.local
+outputs/unique_txt
+outputs/searchable_registry_csca.json
+outputs/searchable_registry_dsc.json
+outputs/unique_pem_masterlist

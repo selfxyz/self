@@ -1,53 +1,39 @@
-import React, { useState } from 'react';
-import { YStack, XStack, Button, Image, ScrollView, Sheet, Fieldset, Text, Input } from 'tamagui';
-import { Camera, ExternalLink, Nfc, X, SquarePen } from '@tamagui/lucide-icons';
-import { bgColor, blueColorDark, blueColorLight, borderColor, componentBgColor, componentBgColor2, greenColorDark, greenColorLight, redColorDark, redColorLight, textColor1, textColor2 } from '../utils/colors';
-import SCANHelp from '../images/scan_help.png'
+import React from 'react';
+import { YStack, Text, XStack } from 'tamagui';
+import { Camera, SquarePen } from '@tamagui/lucide-icons';
+import { bgGreen, blueColor, textBlack } from '../utils/colors';
 import { startCameraScan } from '../utils/cameraScanner';
-import { Platform } from 'react-native';
-import useUserStore from '../stores/userStore';
-
+import CustomButton from '../components/CustomButton';
+import useNavigationStore from '../stores/navigationStore';
 interface CameraScreenProps {
-  sheetIsOpen: boolean
   setSheetIsOpen: (value: boolean) => void
 }
 
-const CameraScreen: React.FC<CameraScreenProps> = ({ sheetIsOpen, setSheetIsOpen }) => {
-
-
+const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
   const {
-    passportNumber,
-    dateOfBirth,
-    dateOfExpiry,
-    deleteMrzFields,
-    update,
-    clearPassportDataFromStorage,
-    clearSecretFromStorage,
-  } = useUserStore()
+    setSelectedTab,
+  } = useNavigationStore();
 
   return (
     <YStack f={1} p="$3">
-      <YStack f={1} jc="center">
-        <Image borderRadius="$5"
-          w="full"
-          h="$13"
-          source={{ uri: SCANHelp }}
-        />
-        <YStack gap="$0.5" mt="$3.5">
-          <Text mt="$1" color={textColor1}>Use your camera to scan the main page of your passport.</Text>
-          <Text fontSize="$2" color={textColor2} mt="$2">You can also enter those data manually.</Text>
-          <Text fontSize="$2" style={{ fontStyle: 'italic' }} color={textColor2}>The app does not take a picture of your passport, it only reads some fields.</Text>
-        </YStack>
+      <YStack f={1} mt="$10">
+        <Text ml="$1" fontSize={34} color={textBlack}><Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Scan</Text> or type your passport ID</Text>
+        <Text ml="$2" mt="$8" fontSize="$8" color={textBlack}>Open your passport on the <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>main page</Text> to scan it.</Text>
+        <Text ml="$2" mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.7 }}>Your data never leaves your device.</Text>
+        <XStack f={1} />
+      </YStack>
+      <XStack p="$3" onPress={() => setSelectedTab("mock")} ai="center" jc="center">
+        <Text mt="$5" fontSize="$3" alignSelf='center' w="80%" ai="center" textAlign="center" color={textBlack}>
+          You can also <Text color={blueColor} style={{ textDecorationLine: 'underline', textDecorationColor: blueColor }}>use mock passport data</Text> and skip this step.
+        </Text>
+      </XStack>
 
+      <YStack gap="$2.5"  >
+        <CustomButton text="Open Camera" onPress={startCameraScan} Icon={<Camera color={textBlack} size={24} />} />
+        <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
 
-      <YStack gap="$2" mb="$6">
-        <Button borderWidth={1.3} borderColor={borderColor} borderRadius="$10" bg="#3185FC" onPress={startCameraScan}><Camera color={textColor1} /></Button>
-        <Button bg={textColor2} borderColor={borderColor} borderRadius="$10" onPress={() => setSheetIsOpen(true)}><SquarePen /></Button>
-      </YStack>
-
-
-    </YStack >
+    </YStack>
   );
 };
 

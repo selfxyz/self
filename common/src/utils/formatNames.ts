@@ -6,7 +6,7 @@
 
 export function toStandardName(jmrtdName: string): string {
   switch (jmrtdName) {
-    
+
     // hash functions
     case "SHA-1":
     case "SHA1":
@@ -51,7 +51,7 @@ export function toStandardName(jmrtdName: string): string {
       return "sha384WithRSAEncryption";
     case "SHA512withRSA":
       return "sha512WithRSAEncryption";
-    
+
     case "SAwithRSA/PSS":
     case "SSAwithRSA/PSS":
     case "RSASSA-PSS":
@@ -74,6 +74,7 @@ export function toStandardName(jmrtdName: string): string {
     case "SHA256withRSA":
     case "sha256withRSA":
     case "sha256withrsa":
+    case "sha256WithRSAEncryption":
     case "SHA256WITHRSAENCRYPTION":
       return "sha256WithRSAEncryption";
     default:

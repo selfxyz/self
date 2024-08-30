@@ -1,28 +1,34 @@
 import { create } from 'zustand'
 import { IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
-import { Steps } from '../utils/utils';
 import { useToastController } from '@tamagui/toast';
-import { AppType } from '../utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 
 interface NavigationState {
-  step: number
   isZkeyDownloading: IsZkeyDownloading
   showWarningModal: ShowWarningModalProps
   hideData: boolean
   toast: ReturnType<typeof useToastController>
   selectedTab: string
+  setSelectedTab: (tab: string) => void
   selectedApp: AppType | null
+  setSelectedApp: (app: AppType | null) => void
   showRegistrationErrorSheet: boolean
   registrationErrorMessage: string
   setToast: (toast: ReturnType<typeof useToastController>) => void;
-  setStep: (step: number) => void
   update: (patch: any) => void
+  nfcSheetIsOpen: boolean
+  setNfcSheetIsOpen: (isOpen: boolean) => void
+  zkeyDownloadedPercentage: number
+  setZkeyDownloadedPercentage: (percentage: number) => void
 }
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
-  step: Steps.MRZ_SCAN,
+  zkeyDownloadedPercentage: 100,
+  setZkeyDownloadedPercentage: (percentage: number) => set({ zkeyDownloadedPercentage: percentage }),
   isZkeyDownloading: {
-    register_sha256WithRSAEncryption_65537: false,
+    prove_rsa_65537_sha1: false,
+    prove_rsa_65537_sha256: false,
+    prove_rsapss_65537_sha256: false,
     disclose: false,
   },
   showWarningModal: {
@@ -41,8 +47,9 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   selectedApp: null,
 
   setToast: (toast) => set({ toast }),
+  setSelectedApp: (app) => set({ selectedApp: app }),
 
-  setStep: (step) => set({ step }),
+  setSelectedTab: (tab) => set({ selectedTab: tab }),
 
   update: (patch) => {
     set({
@@ -50,6 +57,8 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
       ...patch,
     });
   },
+  nfcSheetIsOpen: false,
+  setNfcSheetIsOpen: (isOpen) => set({ nfcSheetIsOpen: isOpen }),
 }))
 
 export default useNavigationStore

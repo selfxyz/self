@@ -1,42 +1,49 @@
 import { ethers } from "ethers";
 import axios from 'axios';
-import groth16ExportSolidityCallData from '../../utils/snarkjs';
+import groth16ExportSolidityCallData from './snarkjs';
 import contractAddresses from "../../deployments/deployed_addresses.json";
-import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#ProofOfPassportRegister.json";
+import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#OpenPassportRegister.json";
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";
 import { CHAIN_NAME, RELAYER_URL, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
-import { formatCallData_disclose, formatCallData_register } from "../../../common/src/utils/formatCallData";
+import { formatCallData_disclose, formatCallData_dsc, formatCallData_register } from "../../../common/src/utils/formatCallData";
 
 export const sendRegisterTransaction = async (
   proof: Proof,
+  cscaProof: Proof,
   sigAlgIndex: SignatureAlgorithm
 ) => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
 
-  if (!contractAddresses["Deploy_Registry#ProofOfPassportRegister"] || !registerArtefacts.abi) {
+  if (!contractAddresses["Deploy_Registry#OpenPassportRegister"] || !registerArtefacts.abi) {
     console.log('contracts addresses or abi not found');
     return;
   }
 
   // Format the proof and publicInputs as calldata for the verifier contract
+  //console.log("exporting local proof:", proof, proof.proof, proof.pub_signals);
   const cd = groth16ExportSolidityCallData(proof.proof, proof.pub_signals);
   const callData = JSON.parse(`[${cd}]`);
-  console.log('callData', callData);
-
+  //console.log('callData', callData);
   const formattedCallData_register = formatCallData_register(callData)
-
   console.log('formattedCallData_register', formattedCallData_register);
+
+  //console.log("exporting csca proof", cscaProof, cscaProof.proof, cscaProof.pub_signals)
+  const cd_csca = groth16ExportSolidityCallData(cscaProof.proof, cscaProof.pub_signals);
+  const callData_csca = JSON.parse(`[${cd_csca}]`);
+  //console.log('callData_csca', callData_csca);
+  const formattedCallData_csca = formatCallData_dsc(callData_csca);
+  console.log('formattedCallData_csca', formattedCallData_csca);
 
   try {
     const registerContract = new ethers.Contract(
-      contractAddresses["Deploy_Registry#ProofOfPassportRegister"],
+      contractAddresses["Deploy_Registry#OpenPassportRegister"],
       registerArtefacts.abi,
       provider
     );
 
     const transactionRequest = await registerContract
-      .validateProof.populateTransaction(formattedCallData_register, sigAlgIndex);
+      .validateProof.populateTransaction(formattedCallData_register, formattedCallData_csca, sigAlgIndex, sigAlgIndex);
     console.log('transactionRequest', transactionRequest);
 
     const response = await axios.post(RELAYER_URL, {
@@ -80,7 +87,7 @@ export const mintSBT = async (
   console.log('parsedCallData_disclose', parsedCallData_disclose);
 
   const formattedCallData_disclose = formatCallData_disclose(parsedCallData_disclose);
-  
+
   try {
     const proofOfPassportContract = new ethers.Contract(
       contractAddresses["Deploy_Registry#SBT"],

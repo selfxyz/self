@@ -1,6 +1,6 @@
 //
 //  Prover.m
-//  ProofOfPassport
+//  OpenPassport
 //
 //  Created by Florent on 13/01/2024.
 //

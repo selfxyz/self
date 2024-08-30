@@ -1,6 +1,6 @@
 //
 //  PassportReader.swift
-//  ProofOfPassport
+//  OpenPassport
 //
 //  Created by Y E on 27/07/2023.
 //
@@ -206,6 +206,7 @@ class PassportReader: NSObject{
           ret["eContentBase64"] = try sod.getEncapsulatedContent().base64EncodedString() // this is what we call concatenatedDataHashes, not the true eContent
 
           ret["signatureAlgorithm"] = try sod.getSignatureAlgorithm()
+          ret["encapsulatedContentDigestAlgorithm"] = try sod.getEncapsulatedContentDigestAlgorithm()
           
           let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
           let signedAttributes = try sod.getSignedAttributes()

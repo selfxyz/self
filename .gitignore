@@ -1,2 +1,7 @@
 contracts/contracts/RegisterASCII.txt
 sdk/.env
+.DS_Store
+dist
+**/node_modules
+**/node_modules/
+showcase

@@ -1,5 +1,10 @@
 {
   "name": "hardhat-project",
+  "scripts": {
+    "test": "npx hardhat test",
+    "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
+    "compile": "npx hardhat compile"
+  },
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
@@ -16,7 +21,7 @@
     "@types/snarkjs": "^0.7.7",
     "chai": "^4.4.1",
     "ethers": "^6.12.1",
-    "hardhat": "^2.22.3",
+    "hardhat": "^2.22.6",
     "hardhat-gas-reporter": "^1.0.10",
     "solidity-coverage": "^0.8.12",
     "ts-node": "^10.9.1",
@@ -37,6 +42,7 @@
     "dotenv": "^16.3.1",
     "hardhat-contract-sizer": "^2.10.0",
     "mocha": "^10.4.0",
+    "node-forge": "^1.3.1",
     "poseidon-lite": "^0.2.0",
     "poseidon-solidity": "^0.0.5",
     "snarkjs": "^0.7.1"
