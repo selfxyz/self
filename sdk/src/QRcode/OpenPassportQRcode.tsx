@@ -125,7 +125,7 @@ const OpenPassportQRcode = ({
     return () => {
       newSocket.disconnect();
     };
-  }, [sessionId, scope, requirements, devMode, onSuccess]);
+  }, [sessionId, scope, requirements, devMode, onSuccess, size]);
 
   useEffect(() => {
     if (qrElement && qrcodeRef.current) {
@@ -146,7 +146,7 @@ const OpenPassportQRcode = ({
       <LED
         connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
       />
-      <div className="w-[300px] h-[300px] flex items-center justify-center">
+      <div style={{ width: `${size}px`, height: `${size}px` }} className="flex items-center justify-center">
         {(() => {
           switch (proofStep) {
             case ProofSteps.WAITING_FOR_MOBILE:

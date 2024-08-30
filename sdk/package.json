@@ -1,12 +1,12 @@
 {
-  "name": "@proofofpassport/sdk",
-  "version": "1.8.3",
+  "name": "@openpassport/sdk",
+  "version": "0.1.0",
   "main": "dist/sdk/src/index.js",
   "types": "dist/sdk/src/index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zk-passport/proof-of-passport"
+    "url": "https://github.com/zk-passport/openpassport"
   },
   "author": "turnoffthiscomputer",
   "dependencies": {
@@ -64,5 +64,8 @@
     "common",
     "circuits/**/*.json",
     "src/QRcode"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
 }
