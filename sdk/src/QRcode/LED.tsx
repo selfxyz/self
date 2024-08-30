@@ -5,7 +5,7 @@ interface LEDProps {
   connectionStatus?: 'disconnected' | 'web_connected' | 'mobile_connected';
 }
 
-const LED: React.FC<LEDProps> = ({ size = 10, connectionStatus = 'disconnected' }) => {
+const LED: React.FC<LEDProps> = ({ size = 8, connectionStatus = 'disconnected' }) => {
   const getColor = () => {
     switch (connectionStatus) {
       case 'web_connected':

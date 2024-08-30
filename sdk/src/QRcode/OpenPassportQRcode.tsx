@@ -23,6 +23,7 @@ const OpenPassportQRcode = ({
   requirements,
   onSuccess,
   devMode = false,
+  size = 300
 }) => {
   const [proofStep, setProofStep] = useState(ProofSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
@@ -55,7 +56,7 @@ const OpenPassportQRcode = ({
           disclosureOptions: Object.fromEntries(requirements),
         },
       };
-      const qr = await QRCodeGenerator.generateQRCode(showCaseApp as AppType);
+      const qr = await QRCodeGenerator.generateQRCode(showCaseApp as AppType, size);
       setQrElement(qr);
     };
     generateQR();
