@@ -13,7 +13,18 @@ datasource db {
   url = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
-model certificatesjs {
+model dsc_masterlist {
+  id                    String   @id
+  issuer                String?
+  hashAlgorithm         String?
+  signatureAlgorithm    String?
+  validity              Json?
+  subjectKeyIdentifier  String?
+  publicKeyDetails      Json?
+  rawPem                String?  @db.Text
+  rawTxt                String?  @db.Text
+}
+model csca_masterlist {
   id                    String   @id
   issuer                String?
   hashAlgorithm         String?

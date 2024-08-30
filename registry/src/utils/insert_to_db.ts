@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { PrismaClient } from '@prisma/client';
 import { processCertificate, CertificateData, PublicKeyDetailsRSA, PublicKeyDetailsECDSA } from './utils';
-
+import { argv } from 'process';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -19,7 +19,23 @@ const prisma = new PrismaClient({
 
 export default prisma;
 
-const pemDirectory = path.join(__dirname, '..', '..', 'outputs', 'unique_pem_masterlist');
+// Modify the pemDirectory and tableName declarations
+let pemDirectory: string;
+let tableName: 'csca_masterlist' | 'dsc_masterlist';
+
+// Parse command-line argument
+const certType = argv[2];
+
+if (certType === 'csca') {
+    pemDirectory = path.join(__dirname, '..', '..', 'outputs', 'unique_csca');
+    tableName = 'csca_masterlist';
+} else if (certType === 'dsc') {
+    pemDirectory = path.join(__dirname, '..', '..', 'outputs', 'unique_dsc');
+    tableName = 'dsc_masterlist';
+} else {
+    console.error('Invalid certificate type. Use "csca" or "dsc".');
+    process.exit(1);
+}
 
 function publicKeyDetailsToJson(details: PublicKeyDetailsRSA | PublicKeyDetailsECDSA | undefined): any {
     if (!details) return null;
@@ -49,7 +65,7 @@ export async function insertDB(certificateData: CertificateData) {
             return;
         }
 
-        const result = await prisma.certificatesjs.upsert({
+        const result = await prisma[tableName].upsert({
             where: { id: certificateData.id },
             update: {
                 // Overwrite all fields with new data
