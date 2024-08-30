@@ -28,6 +28,7 @@
     "circom_tester": "github:Atomic-Buy/circom_tester#main",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
+    "crypto": "^1.0.1",
     "dmpierre/sha1-circom": "https://github.com/dmpierre/sha1-circom/",
     "elliptic": "^6.5.5",
     "js-sha256": "^0.10.1",

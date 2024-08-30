@@ -5,6 +5,8 @@ import { generateCircuitInputsProve } from '../../common/src/utils/generateInput
 import { OpenPassport1StepVerifier, OpenPassport1StepInputs } from '../src/OpenPassport1Step';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { OpenPassportVerifierReport } from '../src/OpenPassportVerifierReport';
+import crypto from 'crypto';
+
 describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
   this.timeout(0);
 

@@ -13,6 +13,7 @@ import { LeanIMT } from '@zk-kit/lean-imt';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
+import crypto from 'crypto';
 
 describe('Disclose', function () {
   this.timeout(0);

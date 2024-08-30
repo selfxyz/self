@@ -16,6 +16,7 @@ import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import crypto from 'crypto';
 
 let circuit: any;
 const passportData = mockPassportData_sha256_rsa_65537; // Mock passport ADDED in ofac list to test circuits

@@ -6,6 +6,7 @@ import { poseidon1 } from 'poseidon-lite';
 import { mockPassportData_sha1_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { castFromUUID } from '../../../common/src/utils/utils';
+import crypto from 'crypto';
 
 describe('PROVE - RSA SHA1', function () {
   this.timeout(0);
