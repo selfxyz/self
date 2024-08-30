@@ -20,6 +20,7 @@ import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData }
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
 import { generateDscSecret } from '../../../common/src/utils/csca';
+import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
 
 
 interface UserState {
@@ -79,14 +80,12 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
     // download zkeys if they are not already downloaded
-    // downloadZkey("prove_rsa_65537_sha256"); // might move after nfc scanning
-    // downloadZkey("disclose");
 
     const secret = await loadSecretOrCreateIt();
     set({ secret });
 
-    const passportData = await loadPassportData();
-    if (!passportData) {
+    const passportDataString = await loadPassportData();
+    if (!passportDataString) {
       console.log("No passport data found, starting onboarding flow")
       set({
         userLoaded: true,
@@ -96,11 +95,12 @@ const useUserStore = create<UserState>((set, get) => ({
 
     // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
     const isAlreadyRegistered = true
+    const passportData: PassportData = JSON.parse(passportDataString)
 
     if (!isAlreadyRegistered) {
       console.log("not registered but passport data found, skipping to nextScreen")
       set({
-        passportData: JSON.parse(passportData),
+        passportData: passportData,
         userLoaded: true,
       });
 
@@ -109,10 +109,14 @@ const useUserStore = create<UserState>((set, get) => ({
 
     console.log("registered and passport data found, skipping to app selection screen")
     set({
-      passportData: JSON.parse(passportData),
+      passportData: passportData,
       registered: true,
     });
     set({ userLoaded: true });
+
+    const sigAlgName = getSignatureAlgorithm(passportData.dsc!);
+    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+    downloadZkey(circuitName as any);
   },
 
   // When reading passport for the first time:
