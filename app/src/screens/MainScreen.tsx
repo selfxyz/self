@@ -605,8 +605,8 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} />
                 <YStack gap="$2">
-                  <Text fontSize="$7" color={textBlack}>Scan your passport to start using OpenPassport</Text>
-                  <Text fontSize="$6" style={{ opacity: 0.7 }} color={textBlack}>You can also use mock data to test the app.</Text>
+                  <Text fontSize="$7" color={textBlack}>Scan your passport to start using OpenPassport.</Text>
+                  <Text fontSize="$6" style={{ opacity: 0.7 }} color={textBlack}>You can also generate a mock passport inside the app to test it.</Text>
                   {/* <Text fontSize="$6" onPress={() => Linking.openURL('https://zk-passport.github.io/posts/how-to-scan-your-passport-using-nfc/')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>Learn more.</Text> */}
                 </YStack>
 

@@ -62,7 +62,7 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
           </YStack>
         </YStack>
         <YStack mb="$4">
-          <Text mt="$5" fontSize="$8" >How does it works?</Text>
+          <Text mt="$5" fontSize="$8" >How does it work?</Text>
           <YStack>
             <XStack mt="$3" px="$5" gap="$2" >
               <Binary size={50} color={textBlack} />
