@@ -15,7 +15,7 @@ describe('PROVE - RSAPSS SHA256', function () {
   const k_dsc = 32;
   const majority = '18';
   const user_identifier = crypto.randomUUID();
-  const scope = "@coboyApp";
+  const scope = '@coboyApp';
   const bitmap = Array(90).fill('1');
 
   const inputs = generateCircuitInputsProve(

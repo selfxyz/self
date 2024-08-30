@@ -28,7 +28,7 @@ function getPassportInputs(passportData: PassportData) {
   const majority = '18';
   const user_identifier = crypto.randomUUID();
   const bitmap = Array(90).fill('1');
-  const scope = "@coboyApp";
+  const scope = '@coboyApp';
 
   const pubkey_leaf = getLeaf({
     signatureAlgorithm: passportData.signatureAlgorithm,

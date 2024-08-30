@@ -39,7 +39,7 @@ describe('Disclose', function () {
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const bitmap = Array(90).fill('1');
-    const scope = "@coboyApp";
+    const scope = '@coboyApp';
 
     // compute the commitment and insert it in the tree
     const pubkey_leaf = getLeaf({
