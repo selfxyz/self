@@ -712,15 +712,37 @@ const MainScreen: React.FC = () => {
         </Tabs>
 
       </YStack>
-      <Modal visible={showWarningModal.show} animationType="slide" transparent={true}>
-        <YStack bc="#161616" p={20} ai="center" jc="center" position="absolute" top={0} bottom={0} left={0} right={0}>
-          <YStack bc="#343434" p={20} borderRadius={10} ai="center" jc="center">
-            <Text fontWeight="bold" fontSize={18} color="#a0a0a0">👋 Hi</Text>
-            <Text mt={10} textAlign="center" color="#a0a0a0">
+      <Sheet
+        open={showWarningModal.show}
+        modal
+        onOpenChange={(isOpen: boolean) => {
+          if (!isOpen) {
+            // download if user closes sheet
+            fetchZkey(showWarningModal.circuit as CircuitName);
+            updateNavigationStore({
+              showWarningModal: {
+                show: false,
+                circuit: '',
+                size: 0,
+              }
+            });
+          }
+        }}
+        animation="medium"
+        snapPoints={[88]}
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame bg="white" borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
+          <YStack p="$3" pb="$5" f={1} gap="$3" ai="center" jc="center">
+            <Text fontWeight="bold" fontSize={18} color="black">👋 Hi</Text>
+            <Text mt="$2" textAlign="center" fontSize={18} color="black">
               The app needs to download a large file ({(showWarningModal.size / 1024 / 1024).toFixed(2)}MB). Please make sure you're connected to a Wi-Fi network before continuing.
             </Text>
-            <XStack mt={20}>
+            <XStack mt="$4">
               <Button
+                bg="black"
+                borderRadius="$3"
+                padding="$2.5"
                 onPress={() => {
                   fetchZkey(showWarningModal.circuit as CircuitName);
                   updateNavigationStore({
@@ -731,15 +753,14 @@ const MainScreen: React.FC = () => {
                     }
                   });
                 }}
-                bc="#4caf50" borderRadius={5} padding={10}
               >
-                <Text color="#ffffff">Continue</Text>
+                <Text color="white">Continue</Text>
               </Button>
             </XStack>
           </YStack>
-        </YStack>
-      </Modal>
-    </YStack >
+        </Sheet.Frame>
+      </Sheet>
+    </YStack>
   );
 };
 
