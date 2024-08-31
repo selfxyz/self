@@ -34,4 +34,10 @@ allprojects {
         google()
         jcenter()
     }
+    configurations.configureEach {
+        resolutionStrategy.dependencySubstitution {
+        substitute(platform(module('com.gemalto.jp2:jp2-android'))) using module('com.github.Tgo1014:JP2ForAndroid:1.0.4')
+        }
+        resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
 }
