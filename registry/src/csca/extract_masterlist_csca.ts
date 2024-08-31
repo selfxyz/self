@@ -5,7 +5,7 @@ import { execSync } from 'child_process';
 export async function extractMasterlistCsca() {
   // Extract masterlists from ICAO ldif file
   const ldif_path = path.join(__dirname, '..', '..', 'inputs', 'icao_download_section', 'icaopkd-002-complete-000243.ldif');
-  const masterlist_path = path.join(__dirname, '..', '..', 'outputs', 'masterlists');
+  const masterlist_path = path.join(__dirname, '..', '..', 'outputs', 'csca', 'masterlists');
   const csca_path = path.join(__dirname, '..', '..', 'outputs', 'csca');
 
   const fileContent = fs.readFileSync(ldif_path, "utf-8");
