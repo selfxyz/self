@@ -19,7 +19,8 @@
     "poseidon-lite": "^0.2.0"
   },
   "scripts": {
-    "extract": "ts-node src/extractMasterList.ts"
+    "extract": "ts-node src/extractMasterList.ts",
+    "push": "ts-node src/pushToDb.ts"
   },
   "license": "MIT"
 }
