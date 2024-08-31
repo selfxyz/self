@@ -17,5 +17,9 @@
     "node-rsa": "^1.1.1",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0"
-  }
+  },
+  "scripts": {
+    "extract": "ts-node src/extractMasterList.ts"
+  },
+  "license": "MIT"
 }

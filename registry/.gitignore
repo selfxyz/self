@@ -13,6 +13,7 @@ outputs/plain_text/*
 outputs/plain_text_master/*
 outputs/plain_text_unique/*
 outputs/unique_pem
+outputs/csca/
 src/csca/python scripts/__pycache__
 dsc_plain_text
 
