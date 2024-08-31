@@ -10,61 +10,67 @@ Here is the certificate chain flow. Basically, CSCA certificates are used to sig
   <img src="https://i.imgur.com/5h0S9Eh.jpeg" width="50%" height="50%">
 </p>
 
-Install:
+
+More info are available on the [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx).
+
+## Install dependencies
+
+Install dependencies:
 ```
-yarn
+yarn install-registry
 ```
 
-### DSCs
+## Extract ICAO Masterlist
 
-Extract pem certificates from ldif file:
-```
-ts-node src/dsc/extract_masterlist_dsc.ts
-```
+Extract the masterlist:
+run the following command to extract the masterlist from the ICAO website as a folder of pem certificates.
 
-Extract pem to txt:
-```
-ts-node src/dsc/pem_to_txt.ts
-```
+| `$arg` | description | output |
+| --- | --- | --- |
+| `dsc` | extract the dsc masterlist | `outputs/dsc/pem_masterlist` |
+| `csca` | extract the csca masterlist | `outputs/csca/pem_masterlist` |
+| `all` | extract both
 
-Extract readable public keys from pem certicates:
-```
-ts-node src/dsc/extract_pubkeys.ts
+```bash
+yarn masterlist-extract $arg
 ```
 
-Build the merkle tree used in the app, serialize it and place it in `common/pubkeys` and `/app/deployments`:
+## Prisma
+This repo is already setup to push the extracted masterlist to a postgres database.
+
+### Setup
+Add a .env file with the POSTGRES .env variables:
+``` shell
+POSTGRES_URL=""
+POSTGRES_PRISMA_URL=""
+POSTGRES_URL_NO_SSL=""
+POSTGRES_URL_NON_POOLING=""
+POSTGRES_USER=""
+POSTGRES_HOST=""
+POSTGRES_PASSWORD=""
+POSTGRES_DATABASE=""
 ```
-ts-node src/dsc/build_merkle_tree.ts
+Init the database:
+```bash
+yarn db-init
 ```
 
-Visualize the signature algorithms of each country:
-```
-ts-node src/dsc/extract_sig_algs.ts
-```
+### Push to database
+Push the extracted masterlist to Postgres database:
 
-### CSCAs 
+| `$arg` | description |
+| --- | --- |
+| `dsc` | parse and push the dsc masterlist |
+| `csca` | parse and push the csca masterlist |
+| `all` | parse and push both
 
-Extract pem certificates from all the masterlists from the ldif file:
+```bash
+yarn db-push $arg
 ```
-ts-node src/csca/extract_masterlist_csca.ts
-```
-
-Visualize the content of a PEM file:
-```
-openssl x509 -text -in outputs/pem_unique_masters/unique_cert_0.pem
-```
-
-Visualize the signature algorithms of each country:
-```
-ts-node src/csca/extract_sig_algs.ts
-```
-
 
 ### JSON files
 
-Build the JSON files:
+Build JSON files:
 ```
 ts-node src/buildJson.ts
 ```
-
-More info: [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx)

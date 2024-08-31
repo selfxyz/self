@@ -7,6 +7,7 @@ import { fromBER, BitString } from 'asn1js';
 import * as forge from 'node-forge';
 
 
+
 export function getSignatureAlgorithmDetails(oid: string): { signatureAlgorithm: string, hashFunction: string } {
     const details = {
         '1.2.840.113549.1.1.5': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-1' },
@@ -48,7 +49,6 @@ export function parseRsaPssParams(params: any): string {
         return 'Unknown';
     }
 }
-
 
 export function parseECParameters(publicKeyInfo: any): PublicKeyDetailsECDSA {
     try {
@@ -211,7 +211,7 @@ export function processCertificate(pemContent: string, fileName: string): Certif
             skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
 
             certificateData.subjectKeyIdentifier = skiValue;
-            certificateData.id = skiValue.slice(0, 8);
+            certificateData.id = skiValue.slice(0, 12);
         } else {
             console.log('Subject Key Identifier not found');
         }
