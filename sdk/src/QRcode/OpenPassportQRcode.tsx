@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppType, OpenPassport1StepVerifier } from '../index';
+import { AppType, OpenPassport1StepVerifier, OpenPassportVerifierReport } from '../index';
 import { QRCodeGenerator } from './QRCodeGenerator';
 import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
@@ -16,7 +16,17 @@ const ProofSteps = {
   PROOF_VERIFIED: 'PROOF_VERIFIED',
 };
 
-const OpenPassportQRcode = ({
+interface OpenPassportQRcodeProps {
+  appName: string;
+  scope: string;
+  userId: string;
+  requirements?: string[][];
+  onSuccess: (report: OpenPassportVerifierReport) => void;
+  devMode?: boolean;
+  size?: number;
+}
+
+const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   scope,
   userId,
@@ -94,7 +104,7 @@ const OpenPassportQRcode = ({
         });
 
         try {
-          const local_proofVerified = await openPassport1StepVerifier.verify(data.proof);
+          const local_proofVerified: OpenPassportVerifierReport = await openPassport1StepVerifier.verify(data.proof);
           setProofVerified({ valid: local_proofVerified.valid });
           setProofStep(ProofSteps.PROOF_VERIFIED);
           newSocket.emit('proof_verified', {
