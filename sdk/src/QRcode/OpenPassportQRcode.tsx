@@ -7,6 +7,7 @@ import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './LED';
+import { WEBSOCKET_URL } from '../../../common/src/constants/constants';
 
 const ProofSteps = {
   WAITING_FOR_MOBILE: 'WAITING_FOR_MOBILE',
@@ -73,7 +74,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   }, [appName, scope, userId, sessionId, requirements]);
 
   useEffect(() => {
-    const newSocket = io('https://proofofpassport-merkle-tree.xyz', {
+    const newSocket = io(WEBSOCKET_URL, {
       path: '/websocket',
       query: { sessionId, clientType: 'web' },
     });
