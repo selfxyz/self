@@ -25,6 +25,7 @@ interface OpenPassportQRcodeProps {
   onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
   devMode?: boolean;
   size?: number;
+  websocketUrl?: string;
 }
 
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
@@ -34,7 +35,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   requirements,
   onSuccess,
   devMode = false,
-  size = 300
+  size = 300,
+  websocketUrl = WEBSOCKET_URL,
 }) => {
   const [proofStep, setProofStep] = useState(ProofSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
@@ -74,7 +76,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   }, [appName, scope, userId, sessionId, requirements]);
 
   useEffect(() => {
-    const newSocket = io(WEBSOCKET_URL, {
+    const newSocket = io(websocketUrl, {
       path: '/websocket',
       query: { sessionId, clientType: 'web' },
     });
