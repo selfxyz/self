@@ -153,11 +153,11 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   }, [proofStep, proofVerified]);
 
   const renderProofStatus = () => (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center w-full">
       <LED
         connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
       />
-      <div style={{ width: `${size}px`, height: `${size}px` }} className="flex items-center justify-center">
+      <div style={{ width: `${size}px`, height: `${size}px` }} className="flex items-center justify-center mt-2">
         {(() => {
           switch (proofStep) {
             case ProofSteps.WAITING_FOR_MOBILE:
@@ -202,7 +202,11 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     </div>
   );
 
-  return renderProofStatus();
+  return (
+    <div className="flex flex-col items-center w-full">
+      {renderProofStatus()}
+    </div>
+  );
 };
 
 export default OpenPassportQRcode;
