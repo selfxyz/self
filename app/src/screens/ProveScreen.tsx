@@ -53,57 +53,78 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   };
 
   useEffect(() => {
-    const newSocket = io(WEBSOCKET_URL, {
-      path: '/websocket',
-      transports: ['websocket'],
-      query: { sessionId: selectedApp.sessionId, clientType: 'mobile' }
-    });
+    let newSocket: Socket | null = null;
 
-    newSocket.on('connect', () => {
-      console.log('Connected to WebSocket server');
-    });
+    try {
+      newSocket = io(WEBSOCKET_URL, {
+        path: '/websocket',
+        transports: ['websocket'],
+        query: { sessionId: selectedApp.sessionId, clientType: 'mobile' }
+      });
 
-    newSocket.on('disconnect', () => {
-      console.log('Disconnected from WebSocket server');
-    });
+      newSocket.on('connect', () => {
+        console.log('Connected to WebSocket server');
+      });
 
-    newSocket.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-    });
+      newSocket.on('disconnect', () => {
+        console.log('Disconnected from WebSocket server');
+      });
 
-    newSocket.on('proof_verification_result', (result) => {
-      console.log('Proof verification result:', result);
-      setProofVerificationResult(JSON.parse(result));
-      console.log("result", result);
-      if (JSON.parse(result).valid) {
-        toast.show("✅", {
-          message: "Proof verified",
+      newSocket.on('connect_error', (error) => {
+        console.error('Connection error:', error);
+        toast.show("Error", {
+          message: "Failed to connect to WebSocket server",
           customData: {
-            type: "success",
+            type: "error",
           },
         });
-        setTimeout(() => {
-          setSelectedTab("valid");
-        }, 700);
-      } else {
-        toast.show("❌", {
-          message: "Wrong proof",
-          customData: {
-            type: "info",
-          },
-        });
-        setTimeout(() => {
-          setSelectedTab("wrong");
-        }, 700);
-      }
-    });
+      });
 
-    setSocket(newSocket);
+      newSocket.on('proof_verification_result', (result) => {
+        console.log('Proof verification result:', result);
+        setProofVerificationResult(JSON.parse(result));
+        console.log("result", result);
+        if (JSON.parse(result).valid) {
+          toast.show("✅", {
+            message: "Proof verified",
+            customData: {
+              type: "success",
+            },
+          });
+          setTimeout(() => {
+            setSelectedTab("valid");
+          }, 700);
+        } else {
+          toast.show("❌", {
+            message: "Wrong proof",
+            customData: {
+              type: "info",
+            },
+          });
+          setTimeout(() => {
+            setSelectedTab("wrong");
+          }, 700);
+        }
+      });
+
+      setSocket(newSocket);
+
+    } catch (error) {
+      console.error('Error setting up WebSocket:', error);
+      toast.show("❌", {
+        message: "Failed to set up connection",
+        customData: {
+          type: "error",
+        },
+      });
+    }
 
     return () => {
-      newSocket.disconnect();
+      if (newSocket) {
+        newSocket.disconnect();
+      }
     };
-  }, [selectedApp.userId]);
+  }, [selectedApp.userId, toast]);
 
   const handleProve = async () => {
     try {

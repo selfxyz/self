@@ -9,27 +9,27 @@ import * as forge from 'node-forge';
 
 export function getSignatureAlgorithmDetails(oid: string): { signatureAlgorithm: string, hashFunction: string } {
     const details = {
-        '1.2.840.113549.1.1.5': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-1' },
-        '1.2.840.113549.1.1.11': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-256' },
-        '1.2.840.113549.1.1.12': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-384' },
-        '1.2.840.113549.1.1.13': { signatureAlgorithm: 'RSA', hashFunction: 'SHA-512' },
+        '1.2.840.113549.1.1.5': { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
+        '1.2.840.113549.1.1.11': { signatureAlgorithm: 'rsa', hashFunction: 'sha256' },
+        '1.2.840.113549.1.1.12': { signatureAlgorithm: 'rsa', hashFunction: 'sha384' },
+        '1.2.840.113549.1.1.13': { signatureAlgorithm: 'rsa', hashFunction: 'sha512' },
         // rsapss
-        '1.2.840.113549.1.1.10': { signatureAlgorithm: 'RSA-PSS', hashFunction: 'Variable' },
+        '1.2.840.113549.1.1.10': { signatureAlgorithm: 'rsa-pss', hashFunction: 'variable' },
         // ecdsa
-        '1.2.840.10045.4.1': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-1' },
-        '1.2.840.10045.4.3.1': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-224' },
-        '1.2.840.10045.4.3.2': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-256' },
-        '1.2.840.10045.4.3.3': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-384' },
-        '1.2.840.10045.4.3.4': { signatureAlgorithm: 'ECDSA', hashFunction: 'SHA-512' },
+        '1.2.840.10045.4.1': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha1' },
+        '1.2.840.10045.4.3.1': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha224' },
+        '1.2.840.10045.4.3.2': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha256' },
+        '1.2.840.10045.4.3.3': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha384' },
+        '1.2.840.10045.4.3.4': { signatureAlgorithm: 'ecdsa', hashFunction: 'sha512' },
     };
     return details[oid] || { signatureAlgorithm: `Unknown (${oid})`, hashFunction: 'Unknown' };
 }
 export function getHashAlgorithmName(oid: string): string {
     const hashAlgorithms = {
-        '1.3.14.3.2.26': 'SHA-1',
-        '2.16.840.1.101.3.4.2.1': 'SHA-256',
-        '2.16.840.1.101.3.4.2.2': 'SHA-384',
-        '2.16.840.1.101.3.4.2.3': 'SHA-512',
+        '1.3.14.3.2.26': 'sha1',
+        '2.16.840.1.101.3.4.2.1': 'sha256',
+        '2.16.840.1.101.3.4.2.2': 'sha384',
+        '2.16.840.1.101.3.4.2.3': 'sha512',
     };
     return hashAlgorithms[oid] || `Unknown (${oid})`;
 }
@@ -211,12 +211,12 @@ export function processCertificate(pemContent: string, fileName: string): Certif
             skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
 
             certificateData.subjectKeyIdentifier = skiValue;
-            certificateData.id = skiValue.slice(0, 8);
+            certificateData.id = skiValue.slice(0, 12);
         } else {
             console.log('Subject Key Identifier not found');
         }
 
-        if (signatureAlgorithm === 'RSA') {
+        if (signatureAlgorithm === 'rsa') {
             const publicKey = subjectPublicKeyInfo.subjectPublicKey;
             const asn1PublicKey = fromBER(publicKey.valueBlock.valueHexView);
             const rsaPublicKey = asn1PublicKey.result.valueBlock;
@@ -242,7 +242,7 @@ export function processCertificate(pemContent: string, fileName: string): Certif
                 console.log('\x1b[33mRSA public key not found, probably ECDSA certificate\x1b[0m');
             }
         }
-        if (signatureAlgorithm === 'RSA-PSS') {
+        if (signatureAlgorithm === 'rsa-pss') {
             const rsaPssParams = cert.signatureAlgorithm.algorithmParams;
             if (rsaPssParams) {
                 const hashAlgorithm = parseRsaPssParams(rsaPssParams);
@@ -250,7 +250,7 @@ export function processCertificate(pemContent: string, fileName: string): Certif
             }
         }
 
-        if (signatureAlgorithm === 'ECDSA') {
+        if (signatureAlgorithm === 'ecdsa') {
             try {
                 const publicKeyInfo = cert.subjectPublicKeyInfo;
                 const publicKeyDetailsECDSA = parseECParameters(publicKeyInfo);

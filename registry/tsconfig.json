@@ -3,7 +3,8 @@
     "module": "commonjs",
     "target": "ES2020",
     "types": [
-      "node"
+      "node",
+      "@prisma/client"
     ],
     "resolveJsonModule": true,
     "esModuleInterop": true,

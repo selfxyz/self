@@ -2,10 +2,10 @@
 
 buildscript {
     ext {
-        buildToolsVersion = "33.0.0"
-        minSdkVersion = 23
-        compileSdkVersion = 33
-        targetSdkVersion = 33
+        buildToolsVersion = "34.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 34
+        targetSdkVersion = 34
 
         kotlin_version = '1.7.20'
         // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
@@ -22,7 +22,7 @@ buildscript {
     dependencies {
         classpath("com.facebook.react:react-native-gradle-plugin")
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
-        classpath 'com.android.tools.build:gradle:7.4.2'
+        classpath 'com.android.tools.build:gradle:8.1.0'
         classpath 'com.google.gms:google-services:4.3.14'
         classpath 'com.google.firebase:firebase-crashlytics-gradle:2.9.2'
         classpath 'org.mozilla.rust-android-gradle:plugin:0.9.3'
@@ -33,5 +33,48 @@ allprojects {
     repositories {
         google()
         jcenter()
+    }
+    configurations.configureEach {
+        resolutionStrategy.dependencySubstitution {
+        substitute(platform(module('com.gemalto.jp2:jp2-android'))) using module('com.github.Tgo1014:JP2ForAndroid:1.0.4')
+        }
+        resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if (project.hasProperty('android')) {
+            android {
+                def manifestFile = project.file('src/main/AndroidManifest.xml')
+                def buildGradleFile = project.file('build.gradle')
+                
+                if (buildGradleFile.exists()) {
+                    def buildGradleText = buildGradleFile.text
+                    def namespaceMatcher = buildGradleText =~ /namespace\s*['"](.+?)['"]/
+                    if (namespaceMatcher.find()) {
+                        namespace = namespaceMatcher[0][1]
+                        println "Set namespace for ${project.name} to ${namespace} from build.gradle"
+                        return
+                    }
+                }
+                
+                if (manifestFile.exists()) {
+                    def manifestText = manifestFile.text
+                    def packageMatcher = manifestText =~ /package="([\w\.]+)"/
+                    if (packageMatcher.find()) {
+                        def packageName = packageMatcher[0][1]
+                        namespace = packageName
+                        println "Set namespace for ${project.name} to ${namespace} from AndroidManifest.xml"
+                    } else {
+                        namespace = project.group
+                        println "No 'package' attribute found. Set namespace for ${project.name} to ${namespace}"
+                    }
+                } else {
+                    namespace = project.group
+                    println "AndroidManifest.xml not found. Set namespace for ${project.name} to ${namespace}"
+                }
+            }
+        }
     }
 }
