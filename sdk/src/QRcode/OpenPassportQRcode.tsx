@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppType, OpenPassport1StepVerifier, OpenPassportVerifierReport } from '../index';
+import { AppType, OpenPassport1StepInputs, OpenPassport1StepVerifier, OpenPassportVerifierReport } from '../index';
 import { QRCodeGenerator } from './QRCodeGenerator';
 import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
@@ -21,7 +21,7 @@ interface OpenPassportQRcodeProps {
   scope: string;
   userId: string;
   requirements?: string[][];
-  onSuccess: (report: OpenPassportVerifierReport) => void;
+  onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
   devMode?: boolean;
   size?: number;
 }
@@ -112,7 +112,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
             proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid && onSuccess) {
-            onSuccess(local_proofVerified);
+            onSuccess(data.proof, local_proofVerified);
           }
         } catch (error) {
           console.error('Error verifying proof:', error);
