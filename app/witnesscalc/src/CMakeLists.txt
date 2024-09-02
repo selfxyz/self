@@ -66,56 +66,114 @@ set(LIB_SOURCES
     )
 
 # authV2
-set(AUTHV2_SOURCES ${LIB_SOURCES}
-    authV2.cpp
-    witnesscalc_authV2.h
-    witnesscalc_authV2.cpp
-    )
+# set(AUTHV2_SOURCES ${LIB_SOURCES}
+#     authV2.cpp
+#     witnesscalc_authV2.h
+#     witnesscalc_authV2.cpp
+#     )
 
-add_library(witnesscalc_authV2 SHARED ${AUTHV2_SOURCES})
-add_library(witnesscalc_authV2Static STATIC ${AUTHV2_SOURCES})
-set_target_properties(witnesscalc_authV2Static PROPERTIES OUTPUT_NAME witnesscalc_authV2)
+# add_library(witnesscalc_authV2 SHARED ${AUTHV2_SOURCES})
+# add_library(witnesscalc_authV2Static STATIC ${AUTHV2_SOURCES})
+# set_target_properties(witnesscalc_authV2Static PROPERTIES OUTPUT_NAME witnesscalc_authV2)
 
-add_executable(authV2 main.cpp)
-target_link_libraries(authV2 witnesscalc_authV2Static)
+# add_executable(authV2 main.cpp)
+# target_link_libraries(authV2 witnesscalc_authV2Static)
 
-target_compile_definitions(witnesscalc_authV2 PUBLIC CIRCUIT_NAME=authV2)
-target_compile_definitions(witnesscalc_authV2Static PUBLIC CIRCUIT_NAME=authV2)
-target_compile_definitions(authV2 PUBLIC CIRCUIT_NAME=authV2)
+# target_compile_definitions(witnesscalc_authV2 PUBLIC CIRCUIT_NAME=authV2)
+# target_compile_definitions(witnesscalc_authV2Static PUBLIC CIRCUIT_NAME=authV2)
+# target_compile_definitions(authV2 PUBLIC CIRCUIT_NAME=authV2)
 
 # register_sha256WithRSAEncryption_65537
-set(register_sha256WithRSAEncryption_65537_SOURCES ${LIB_SOURCES}
-    register_sha256WithRSAEncryption_65537.cpp
-    witnesscalc_register_sha256WithRSAEncryption_65537.h
-    witnesscalc_register_sha256WithRSAEncryption_65537.cpp
-    )
+# set(register_sha256WithRSAEncryption_65537_SOURCES ${LIB_SOURCES}
+#     register_sha256WithRSAEncryption_65537.cpp
+#     witnesscalc_register_sha256WithRSAEncryption_65537.h
+#     witnesscalc_register_sha256WithRSAEncryption_65537.cpp
+#     )
 
-add_library(witnesscalc_register_sha256WithRSAEncryption_65537 SHARED ${register_sha256WithRSAEncryption_65537_SOURCES})
-add_library(witnesscalc_register_sha256WithRSAEncryption_65537Static STATIC ${register_sha256WithRSAEncryption_65537_SOURCES})
-set_target_properties(witnesscalc_register_sha256WithRSAEncryption_65537Static PROPERTIES OUTPUT_NAME witnesscalc_register_sha256WithRSAEncryption_65537)
+# add_library(witnesscalc_register_sha256WithRSAEncryption_65537 SHARED ${register_sha256WithRSAEncryption_65537_SOURCES})
+# add_library(witnesscalc_register_sha256WithRSAEncryption_65537Static STATIC ${register_sha256WithRSAEncryption_65537_SOURCES})
+# set_target_properties(witnesscalc_register_sha256WithRSAEncryption_65537Static PROPERTIES OUTPUT_NAME witnesscalc_register_sha256WithRSAEncryption_65537)
 
-add_executable(register_sha256WithRSAEncryption_65537 main.cpp)
-target_link_libraries(register_sha256WithRSAEncryption_65537 witnesscalc_register_sha256WithRSAEncryption_65537Static)
+# add_executable(register_sha256WithRSAEncryption_65537 main.cpp)
+# target_link_libraries(register_sha256WithRSAEncryption_65537 witnesscalc_register_sha256WithRSAEncryption_65537Static)
 
-target_compile_definitions(witnesscalc_register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
-target_compile_definitions(witnesscalc_register_sha256WithRSAEncryption_65537Static PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
-target_compile_definitions(register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
+# target_compile_definitions(witnesscalc_register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
+# target_compile_definitions(witnesscalc_register_sha256WithRSAEncryption_65537Static PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
+# target_compile_definitions(register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
 
 
 # disclose
-set(disclose_SOURCES ${LIB_SOURCES}
-    disclose.cpp
-    witnesscalc_disclose.h
-    witnesscalc_disclose.cpp
+# set(disclose_SOURCES ${LIB_SOURCES}
+#     disclose.cpp
+#     witnesscalc_disclose.h
+#     witnesscalc_disclose.cpp
+#     )
+
+# add_library(witnesscalc_disclose SHARED ${disclose_SOURCES})
+# add_library(witnesscalc_discloseStatic STATIC ${disclose_SOURCES})
+# set_target_properties(witnesscalc_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_disclose)
+
+# add_executable(disclose main.cpp)
+# target_link_libraries(disclose witnesscalc_discloseStatic)
+
+# target_compile_definitions(witnesscalc_disclose PUBLIC CIRCUIT_NAME=disclose)
+# target_compile_definitions(witnesscalc_discloseStatic PUBLIC CIRCUIT_NAME=disclose)
+# target_compile_definitions(disclose PUBLIC CIRCUIT_NAME=disclose)
+
+
+
+# prove_rsa_65537_sha256
+set(prove_rsa_65537_sha256_SOURCES ${LIB_SOURCES}
+    prove_rsa_65537_sha256.cpp
+    witnesscalc_prove_rsa_65537_sha256.h
+    witnesscalc_prove_rsa_65537_sha256.cpp
     )
 
-add_library(witnesscalc_disclose SHARED ${disclose_SOURCES})
-add_library(witnesscalc_discloseStatic STATIC ${disclose_SOURCES})
-set_target_properties(witnesscalc_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_disclose)
+add_library(witnesscalc_prove_rsa_65537_sha256 SHARED ${prove_rsa_65537_sha256_SOURCES})
+add_library(witnesscalc_prove_rsa_65537_sha256Static STATIC ${prove_rsa_65537_sha256_SOURCES})
+set_target_properties(witnesscalc_prove_rsa_65537_sha256Static PROPERTIES OUTPUT_NAME witnesscalc_prove_rsa_65537_sha256)
 
-add_executable(disclose main.cpp)
-target_link_libraries(disclose witnesscalc_discloseStatic)
+add_executable(prove_rsa_65537_sha256 main.cpp)
+target_link_libraries(prove_rsa_65537_sha256 witnesscalc_prove_rsa_65537_sha256Static)
 
-target_compile_definitions(witnesscalc_disclose PUBLIC CIRCUIT_NAME=disclose)
-target_compile_definitions(witnesscalc_discloseStatic PUBLIC CIRCUIT_NAME=disclose)
-target_compile_definitions(disclose PUBLIC CIRCUIT_NAME=disclose)
+target_compile_definitions(witnesscalc_prove_rsa_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha256)
+target_compile_definitions(witnesscalc_prove_rsa_65537_sha256Static PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha256)
+target_compile_definitions(prove_rsa_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha256)
+
+
+# prove_rsa_65537_sha1
+set(prove_rsa_65537_sha1_SOURCES ${LIB_SOURCES}
+    prove_rsa_65537_sha1.cpp
+    witnesscalc_prove_rsa_65537_sha1.h
+    witnesscalc_prove_rsa_65537_sha1.cpp
+    )
+
+add_library(witnesscalc_prove_rsa_65537_sha1 SHARED ${prove_rsa_65537_sha1_SOURCES})
+add_library(witnesscalc_prove_rsa_65537_sha1Static STATIC ${prove_rsa_65537_sha1_SOURCES})
+set_target_properties(witnesscalc_prove_rsa_65537_sha1Static PROPERTIES OUTPUT_NAME witnesscalc_prove_rsa_65537_sha1)
+
+add_executable(prove_rsa_65537_sha1 main.cpp)
+target_link_libraries(prove_rsa_65537_sha1 witnesscalc_prove_rsa_65537_sha1Static)
+
+target_compile_definitions(witnesscalc_prove_rsa_65537_sha1 PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha1)
+target_compile_definitions(witnesscalc_prove_rsa_65537_sha1Static PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha1)
+target_compile_definitions(prove_rsa_65537_sha1 PUBLIC CIRCUIT_NAME=prove_rsa_65537_sha1)
+
+
+# prove_rsapss_65537_sha256
+set(prove_rsapss_65537_sha256_SOURCES ${LIB_SOURCES}
+    prove_rsapss_65537_sha256.cpp
+    witnesscalc_prove_rsapss_65537_sha256.h
+    witnesscalc_prove_rsapss_65537_sha256.cpp
+    )
+
+add_library(witnesscalc_prove_rsapss_65537_sha256 SHARED ${prove_rsapss_65537_sha256_SOURCES})
+add_library(witnesscalc_prove_rsapss_65537_sha256Static STATIC ${prove_rsapss_65537_sha256_SOURCES})
+set_target_properties(witnesscalc_prove_rsapss_65537_sha256Static PROPERTIES OUTPUT_NAME witnesscalc_prove_rsapss_65537_sha256)
+
+add_executable(prove_rsapss_65537_sha256 main.cpp)
+target_link_libraries(prove_rsapss_65537_sha256 witnesscalc_prove_rsapss_65537_sha256Static)
+
+target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
+target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256Static PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
+target_compile_definitions(prove_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)

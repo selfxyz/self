@@ -1,6 +1,6 @@
 # Public key registry
 
-Public key registry and merkle tree builder for Proof of Passport.
+Public key registry and merkle tree builder for OpenPassport.
 We currently use the DSC list from the ICAO. The latest version can be downloaded [here](https://download.pkd.icao.int/). If you update them, be sure to change the filenames in the scripts!
 As it does not contain all the DSCs used by all countries, we are working on verifying the full certificate chain up to CSCA, see [here](https://github.com/zk-passport/proof-of-passport/issues/37).
 
@@ -10,48 +10,67 @@ Here is the certificate chain flow. Basically, CSCA certificates are used to sig
   <img src="https://i.imgur.com/5h0S9Eh.jpeg" width="50%" height="50%">
 </p>
 
-Install:
+
+More info are available on the [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx).
+
+## Install dependencies
+
+Install dependencies:
 ```
-yarn
+yarn install-registry
 ```
 
-### DSCs
+## Extract ICAO Masterlist
 
-Extract pem certificates from ldif file:
-```
-ts-node src/dsc/extract_certificates.ts
-```
+Extract the masterlist:
+run the following command to extract the masterlist from the ICAO website as a folder of pem certificates.
 
-Extract readable public keys from pem certicates:
-```
-ts-node src/dsc/extract_pubkeys.ts
-```
+| `$arg` | description | output |
+| --- | --- | --- |
+| `dsc` | extract the dsc masterlist | `outputs/dsc/pem_masterlist` |
+| `csca` | extract the csca masterlist | `outputs/csca/pem_masterlist` |
+| `all` | extract both
 
-Build the merkle tree used in the app, serialize it and place it in `common/pubkeys` and `/app/deployments`:
-```
-ts-node src/dsc/build_merkle_tree.ts
+```bash
+yarn masterlist-extract $arg
 ```
 
-Visualize the signature algorithms of each country:
+## Prisma
+This repo is already setup to push the extracted masterlist to a postgres database.
+
+### Setup
+Add a .env file with the POSTGRES .env variables:
+``` shell
+POSTGRES_URL=""
+POSTGRES_PRISMA_URL=""
+POSTGRES_URL_NO_SSL=""
+POSTGRES_URL_NON_POOLING=""
+POSTGRES_USER=""
+POSTGRES_HOST=""
+POSTGRES_PASSWORD=""
+POSTGRES_DATABASE=""
 ```
-ts-node src/dsc/extract_sig_algs.ts
+Init the database:
+```bash
+yarn db-init
 ```
 
-### CSCAs (WIP)
+### Push to database
+Push the extracted masterlist to Postgres database:
 
-Extract pem certificates from all the masterlists from the ldif file:
-```
-ts-node src/csca/extract_masterlists.ts
-```
+| `$arg` | description |
+| --- | --- |
+| `dsc` | parse and push the dsc masterlist |
+| `csca` | parse and push the csca masterlist |
+| `all` | parse and push both
 
-Visualize the content of a PEM file:
-```
-openssl x509 -text -in outputs/unique_cscas/unique_cert_0.pem
-```
-
-Visualize the signature algorithms of each country:
-```
-ts-node src/csca/extract_sig_algs.ts
+```bash
+yarn db-push $arg
 ```
 
-More info: [ICAO website](https://www.icao.int/Security/FAL/PKD/Pages/icao-master-list.aspx)
+### JSON files
+
+Build JSON files:
+```
+ts-node src/buildJson.ts
+```

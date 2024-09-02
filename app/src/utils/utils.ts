@@ -33,18 +33,11 @@ export function formatDateToYYMMDD(inputDate: string) {
   return year + month + day;
 }
 
-export const Steps = {
-  MRZ_SCAN: 1,
-  MRZ_SCAN_COMPLETED: 2,
-  NFC_SCANNING: 3,
-  NEXT_SCREEN: 4,
-  REGISTER: 5,
-  REGISTERED: 6,
-  APP_SELECTED: 7,
-  GENERATING_PROOF: 8,
-  PROOF_GENERATED: 9,
-  PROOF_SENDING: 10,
-  PROOF_SENT: 11
+
+export const ModalProofSteps = {
+  MODAL_REQUEST_SENT: 1,
+  MODAL_SERVER_ERROR: 2,
+  MODAL_SERVER_SUCCESS: 3
 };
 
 export function formatAttribute(key: string, attribute: string) {
@@ -89,3 +82,45 @@ export const parseProofAndroid = (response: string) => {
     pub_signals: pub_signals.split(',').map((n: string) => n.trim())
   } as Proof;
 };
+
+export function getFirstName(mrz: string): string {
+  const names = mrz.split("<<");
+  const firstName = names[1].split("<")[0].trim();
+  const capitalized = firstName.charAt(0) + firstName.slice(1).toLowerCase();
+  return capitalized || "Unknown";
+}
+
+export function checkInputs(
+  passportNumber: string,
+  dateOfBirth: string,
+  dateOfExpiry: string,
+): { success: boolean, message: string } {
+  // if (passportNumber.length !== 9) {
+  //   throw new Error('Passport number must be 9 characters long');
+  // }
+  if (dateOfBirth.length !== 6) {
+    return {
+      success: false,
+      message: 'Complete Step 1 first'
+    };
+  }
+  if (dateOfExpiry.length !== 6) {
+    return {
+      success: false,
+      message: 'Date of expiry must be 6 characters long'
+    };
+  }
+
+  return {
+    success: true,
+    message: ''
+  };
+}
+
+export const maskString = (input: string): string => {
+  if (input.length <= 5) {
+    return input.charAt(0) + '*'.repeat(input.length - 1);
+  } else {
+    return input.charAt(0) + input.charAt(1) + '*'.repeat(input.length - 2);
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "data" : [
+    {
+      "filename" : "register_sha256WithRSAEncryption_65537.dat",
+      "idiom" : "universal",
+      "universal-type-identifier" : "dyn.ah62d4rv4ge80k2py"
+    }
+  ],
+  "info" : {
+    "author" : "xcode",
+    "version" : 1
+  }
+}

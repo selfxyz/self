@@ -13,6 +13,7 @@ PODS:
     - ReactCommon/turbomodule/core (= 0.72.3)
   - fmt (6.2.1)
   - glog (0.3.5)
+  - lottie-ios (4.5.0)
   - NFCPassportReader (2.0.3):
     - OpenSSL-Universal (= 1.1.1100)
   - OpenSSL-Universal (1.1.1100)
@@ -291,9 +292,13 @@ PODS:
   - React-jsinspector (0.72.3)
   - React-logger (0.72.3):
     - glog
+  - react-native-date-picker (5.0.4):
+    - React-Core
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.3.1):
+    - React-Core
+  - react-native-nfc-manager (3.15.1):
     - React-Core
   - React-NativeModulesApple (0.72.3):
     - React-callinvoker
@@ -419,6 +424,7 @@ PODS:
     - SSZipArchive (~> 2.2)
   - SocketRocket (0.6.1)
   - SSZipArchive (2.4.3)
+  - SwiftQRScanner (1.1.6)
   - SwiftyTesseract (3.1.3)
   - Yoga (1.14.0)
 
@@ -429,6 +435,7 @@ DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - FBReactNativeSpec (from `../node_modules/react-native/React/FBReactNativeSpec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
+  - lottie-ios
   - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `310ecb519655d9ed8b1afc5eb490b2f51a4d3595`)
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -447,8 +454,10 @@ DEPENDENCIES:
   - React-jsiexecutor (from `../node_modules/react-native/ReactCommon/jsiexecutor`)
   - React-jsinspector (from `../node_modules/react-native/ReactCommon/jsinspector`)
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
+  - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
+  - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
   - React-RCTActionSheet (from `../node_modules/react-native/Libraries/ActionSheetIOS`)
@@ -472,11 +481,13 @@ DEPENDENCIES:
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNZipArchive (from `../node_modules/react-native-zip-archive`)
+  - SwiftQRScanner (from `https://github.com/vinodiOS/SwiftQRScanner`)
   - Yoga (from `../node_modules/react-native/ReactCommon/yoga`)
 
 SPEC REPOS:
   trunk:
     - fmt
+    - lottie-ios
     - OpenSSL-Universal
     - QKMRZParser
     - QKMRZScanner
@@ -530,10 +541,14 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/jsinspector"
   React-logger:
     :path: "../node_modules/react-native/ReactCommon/logger"
+  react-native-date-picker:
+    :path: "../node_modules/react-native-date-picker"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
+  react-native-nfc-manager:
+    :path: "../node_modules/react-native-nfc-manager"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-perflogger:
@@ -580,6 +595,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-svg"
   RNZipArchive:
     :path: "../node_modules/react-native-zip-archive"
+  SwiftQRScanner:
+    :git: https://github.com/vinodiOS/SwiftQRScanner
   Yoga:
     :path: "../node_modules/react-native/ReactCommon/yoga"
 
@@ -587,6 +604,9 @@ CHECKOUT OPTIONS:
   NFCPassportReader:
     :commit: 310ecb519655d9ed8b1afc5eb490b2f51a4d3595
     :git: https://github.com/0xturboblitz/NFCPassportReader.git
+  SwiftQRScanner:
+    :commit: fddcabcb431cd6110cea0394660082661dbafa7e
+    :git: https://github.com/vinodiOS/SwiftQRScanner
 
 SPEC CHECKSUMS:
   amplitude-react-native: 43098dfcfe1dcd6f0e9426017258ba79289d7a21
@@ -596,6 +616,7 @@ SPEC CHECKSUMS:
   FBReactNativeSpec: c6bd9e179757b3c0ecf815864fae8032377903ef
   fmt: ff9d55029c625d3757ed641535fd4a75fedc7ce9
   glog: 04b94705f318337d7ead9e6d17c019bd9b1f6b1b
+  lottie-ios: a881093fab623c467d3bce374367755c272bdd59
   NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
@@ -615,8 +636,10 @@ SPEC CHECKSUMS:
   React-jsiexecutor: 2c15ba1bace70177492368d5180b564f165870fd
   React-jsinspector: b511447170f561157547bc0bef3f169663860be7
   React-logger: c5b527272d5f22eaa09bb3c3a690fee8f237ae95
+  react-native-date-picker: 6891317e850deae5b53d51355226e07a495aba61
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: bdb108d340cdb41875c9ced535977cac6d2ff321
+  react-native-nfc-manager: 3134770f9afcb586c0ae859e747fda3106ec1f76
   React-NativeModulesApple: 0438665fc7473be6edc496e823e6ea0b0537b46c
   React-perflogger: 6bd153e776e6beed54c56b0847e1220a3ff92ba5
   React-RCTActionSheet: c0b62af44e610e69d9a2049a682f5dba4e9dff17
@@ -642,9 +665,10 @@ SPEC CHECKSUMS:
   RNZipArchive: ef9451b849c45a29509bf44e65b788829ab07801
   SocketRocket: f32cd54efbe0f095c4d7594881e52619cfe80b17
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
+  SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: 8796b55dba14d7004f980b54bcc9833ee45b28ce
 
-PODFILE CHECKSUM: 2e0fb25883367cd333873ac29cbb9f28ba88c30f
+PODFILE CHECKSUM: 7b509982ef9137a67eabe590749f46e630e5c88f
 
 COCOAPODS: 1.15.2

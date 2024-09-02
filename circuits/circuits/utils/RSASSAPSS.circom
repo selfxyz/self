@@ -17,7 +17,8 @@ template RSASSAPSS_Decode(n, k) {
     // signal output eM[k];
     signal encoded[k];
     signal eMsgInBits[n*k];
-    signal output eM[(n*k)\8]; //8 bit words
+    var emLen = div_ceil(n*k, 8);
+    signal output eM[emLen]; //8 bit words
 
     component bigPow = FpPow65537Mod(n, k);
     for (var i = 0; i < k; i++) {
@@ -73,7 +74,7 @@ template RSASSAPSSVerify_SHA256(emBits, messageLen) {
     }
 
     //mHash
-    component sha256 = Sha256(832);
+    component sha256 = Sha256( messageLen* 8);
     sha256.in <== messageBits;
     for (var i = 0; i < 256; i++) {
         mHash[i] <== sha256.out[i];

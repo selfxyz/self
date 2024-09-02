@@ -75,13 +75,13 @@ android {
 
     compileSdkVersion rootProject.ext.compileSdkVersion
 
-    namespace "com.proofofpassport"
+    namespace "com.proofofpassportapp"
     defaultConfig {
-        applicationId "com.proofofpassport"
+        applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 3
-        versionName "1.0"
+        versionCode 12
+        versionName "1.1"
         externalNativeBuild {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"
@@ -139,6 +139,8 @@ dependencies {
     }    
     implementation project(':passportreader')
     implementation 'org.jmrtd:jmrtd:0.7.18'
+
+    implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
 
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}")
     debugImplementation("com.facebook.flipper:flipper-network-plugin:${FLIPPER_VERSION}") {

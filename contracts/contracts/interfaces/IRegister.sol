@@ -9,13 +9,19 @@ interface IRegister {
     /// @notice Error thrown when the same nullifier is used more than once
     error Register__YouAreUsingTheSameNullifierTwice();
     /// @notice Error thrown when the proof provided is invalid
-    error Register__InvalidProof();
+    error Register__InvalidProofRegister();
+    /// @notice Error thrown when the proof provided is invalid
+    error Register__InvalidProofCSCA();
     /// @notice Error thrown when the signature algorithm provided is invalid
     error Register__InvalidSignatureAlgorithm();
     /// @notice Error thrown when the verifier address is invalid
     error Register__InvalidVerifierAddress();
     /// @notice Error thrown when the signature algorithm is already set
     error Register__SignatureAlgorithmAlreadySet();
+    /// @notice Error thrown when the blinded_dsc_commitment don't match between the proofs
+    error Register__BlindedDSCCommitmentDontMatch();
+    /// @notice Error thrown when the attestation id is invalid
+    error Register__InvalidAttestationId();
 
     /// @notice Event emitted when a proof is successfully validated
     /// @param merkle_root The Merkle root used in the proof
@@ -32,10 +38,18 @@ interface IRegister {
     /// @param b The 'b' parameter of the zkSNARK proof
     /// @param c The 'c' parameter of the zkSNARK proof
     struct RegisterProof {
-        uint commitment;
+        uint blinded_dsc_commitment;
         uint nullifier;
-        uint merkle_root;
+        uint commitment;
         uint attestation_id;
+        uint[2] a;
+        uint[2][2] b;
+        uint[2] c;
+    }
+
+    struct CSCAProof {
+        uint blinded_dsc_commitment;
+        uint merkle_root;
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
@@ -43,14 +57,27 @@ interface IRegister {
 
     /// @notice Validates a Register proof
     /// @param proof The Register proof to validate
-    function validateProof(RegisterProof calldata proof, uint256 signature_algorithm) external;
+    function validateProof(
+        RegisterProof calldata proof,
+        CSCAProof calldata proof_csca,
+        uint256 signature_algorithm,
+        uint256 signature_algorithm_csca
+    ) external;
 
     /// @notice Verifies a Register proof
     /// @param proof The Register proof to verify
     /// @return bool Returns true if the proof is valid, false otherwise
-    function verifyProof(
+    function verifyProofRegister(
         RegisterProof calldata proof,
         uint256 signature_algorithm
+    ) external view returns (bool);
+
+    /// @notice Verifies a Register proof
+    /// @param proof The Register proof to verify
+    /// @return bool Returns true if the proof is valid, false otherwise
+    function verifyProofCSCA(
+        CSCAProof calldata proof,
+        uint256 signature_algorithm_csca
     ) external view returns (bool);
 
     /// @notice Checks if a given root is valid
@@ -70,4 +97,7 @@ interface IRegister {
     /// @param commitment The commitment to find
     /// @return uint Returns the index of the commitment
     function indexOf(uint commitment) external view returns (uint);
+
+    /// @notice DEV function
+    function devAddCommitment(uint commitment) external;
 }

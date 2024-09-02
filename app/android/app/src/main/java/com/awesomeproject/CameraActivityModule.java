@@ -1,4 +1,4 @@
-package com.proofofpassport;
+package com.proofofpassportapp;
 
 
 import android.app.Activity;
