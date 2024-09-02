@@ -19,7 +19,7 @@
     "poseidon-lite": "^0.2.0"
   },
   "scripts": {
-    "install-registry": "cd ../app && yarn && cd ../registry && yarn",
+    "install-registry": "cd ../common && yarn && cd ../registry && yarn",
     "db-init": "npx prisma generate",
     "db-push": "ts-node src/pushToDb.ts",
     "masterlist-extract": "ts-node src/extractMasterList.ts"
