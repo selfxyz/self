@@ -21,7 +21,7 @@ const ProofSteps = {
   MOBILE_CONNECTED: 'MOBILE_CONNECTED',
   PROOF_GENERATION_STARTED: 'PROOF_GENERATION_STARTED',
   PROOF_GENERATED: 'PROOF_GENERATED',
-  PROOF_VERIFIED: 'PROOF_VERIFIED',
+  PROOF_VERIFIED: 'PROOF_VERIFIED'
 };
 
 interface OpenPassportQRcodeProps {
@@ -147,6 +147,9 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
       setProofStep(ProofSteps.WAITING_FOR_MOBILE);
     });
     newSocket.on('mobile_status', handleMobileStatus);
+    newSocket.on('proof_generation_failed', (data) => {
+      setProofStep(ProofSteps.WAITING_FOR_MOBILE);
+    });
 
     return () => {
       newSocket.disconnect();

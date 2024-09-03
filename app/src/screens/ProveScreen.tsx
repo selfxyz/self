@@ -164,6 +164,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         },
       });
       console.error('Error in handleProve:', error);
+      if (socket) {
+        socket.emit('proof_generation_failed', { sessionId: selectedApp.sessionId });
+      }
     } finally {
       setGeneratingProof(false);
       setIsConnecting(false);
