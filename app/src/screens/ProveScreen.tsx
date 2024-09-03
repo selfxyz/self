@@ -158,7 +158,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
     } catch (error) {
       toast.show("Error", {
-        message: "Proof generation failed",
+        message: String(error),
         customData: {
           type: "error",
         },
