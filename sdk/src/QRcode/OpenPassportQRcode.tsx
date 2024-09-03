@@ -108,6 +108,10 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
         case 'proof_generated':
           setProofStep(ProofSteps.PROOF_GENERATED);
           break;
+        case 'proof_generation_failed':
+          setSessionId(crypto.randomUUID());
+          setProofStep(ProofSteps.WAITING_FOR_MOBILE);
+          break;
       }
 
       if (data.proof) {
@@ -147,10 +151,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
       setProofStep(ProofSteps.WAITING_FOR_MOBILE);
     });
     newSocket.on('mobile_status', handleMobileStatus);
-    newSocket.on('proof_generation_failed', (data) => {
-      setProofStep(ProofSteps.WAITING_FOR_MOBILE);
-    });
-
     return () => {
       newSocket.disconnect();
     };
