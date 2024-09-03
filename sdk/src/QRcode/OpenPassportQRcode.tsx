@@ -7,8 +7,9 @@ import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './LED';
-import { WEBSOCKET_URL } from '../../../common/src/constants/constants';
+import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
+import { reconstructAppType } from '../../../common/src/utils/appType';
 
 const ProofSteps = {
   WAITING_FOR_MOBILE: 'WAITING_FOR_MOBILE',
@@ -34,7 +35,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   scope,
   userId,
-  userIdType = 'uuid',
+  userIdType = DEFAULT_USER_ID_TYPE,
   requirements,
   onSuccess,
   devMode = false,
@@ -62,7 +63,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
 
   useEffect(() => {
     const generateQR = async () => {
-      const showCaseApp = {
+      const showCaseApp = reconstructAppType({
         name: appName,
         scope,
         userId,
@@ -72,7 +73,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
         arguments: {
           disclosureOptions: Object.fromEntries(requirements),
         },
-      };
+        websocketUrl,
+      });
       const qr = await QRCodeGenerator.generateQRCode(showCaseApp as AppType, size);
       setQrElement(qr);
     };

@@ -5,6 +5,7 @@ export const WEBSOCKET_URL = "https://proofofpassport-merkle-tree.xyz"
 export const PUBKEY_TREE_DEPTH = 16
 export const CSCA_TREE_DEPTH = 12
 export const COMMITMENT_TREE_DEPTH = 16
+export const DEFAULT_USER_ID_TYPE = 'uuid'
 
 export const MODAL_SERVER_ADDRESS = "https://zk-passport--dsc-prover-generate-dsc-proof.modal.run"
 

@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from '../constants/constants';
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
@@ -268,7 +268,7 @@ export function generateCircuitInputsProve(
   bitmap: string[],
   majority: string,
   user_identifier: string,
-  user_identifier_type: 'uuid' | 'hex' | 'ascii' = 'uuid'
+  user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
 
 

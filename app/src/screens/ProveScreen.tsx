@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { DEFAULT_MAJORITY, WEBSOCKET_URL, } from '../../../common/src/constants/constants';
+import { DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
@@ -55,7 +55,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     let newSocket: Socket | null = null;
 
     try {
-      newSocket = io(WEBSOCKET_URL, {
+      newSocket = io(selectedApp.websocketUrl, {
         path: '/websocket',
         transports: ['websocket'],
         query: { sessionId: selectedApp.sessionId, clientType: 'mobile' }
