@@ -29,7 +29,7 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
       scope,
       bitmap,
       majority,
-      user_identifier,
+      user_identifier
     );
     const { proof, publicSignals } = await groth16.fullProve(
       inputs,
@@ -132,7 +132,10 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
     verifyResult(result, openPassportProverInputs);
   });
 
-  const verifyResult = (result: OpenPassportVerifierReport, openPassportProverInputs: OpenPassport1StepInputs) => {
+  const verifyResult = (
+    result: OpenPassportVerifierReport,
+    openPassportProverInputs: OpenPassport1StepInputs
+  ) => {
     if (!result.valid) {
       console.log(result);
     }

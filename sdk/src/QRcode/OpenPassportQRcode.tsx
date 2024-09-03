@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { AppType, OpenPassport1StepInputs, OpenPassport1StepVerifier, OpenPassportVerifierReport } from '../index';
+import {
+  AppType,
+  OpenPassport1StepInputs,
+  OpenPassport1StepVerifier,
+  OpenPassportVerifierReport,
+} from '../index';
 import { QRCodeGenerator } from './QRCodeGenerator';
 import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
@@ -113,7 +118,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
         });
 
         try {
-          const local_proofVerified: OpenPassportVerifierReport = await openPassport1StepVerifier.verify(data.proof);
+          const local_proofVerified: OpenPassportVerifierReport =
+            await openPassport1StepVerifier.verify(data.proof);
           setProofVerified({ valid: local_proofVerified.valid });
           setProofStep(ProofSteps.PROOF_VERIFIED);
           newSocket.emit('proof_verified', {
@@ -184,7 +190,9 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     <div style={containerStyle}>
       <div style={ledContainerStyle}>
         <LED
-          connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
+          connectionStatus={
+            connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'
+          }
         />
       </div>
       <div style={qrContainerStyle}>
@@ -232,11 +240,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     </div>
   );
 
-  return (
-    <div style={containerStyle}>
-      {renderProofStatus()}
-    </div>
-  );
+  return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
 export default OpenPassportQRcode;

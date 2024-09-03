@@ -21,7 +21,7 @@ export class OpenPassportVerifierReport {
   public user_identifier: string;
   public nullifier: string;
 
-  constructor() { }
+  constructor() {}
 
   exposeAttribute(
     attribute: keyof OpenPassportVerifierReport,
