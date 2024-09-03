@@ -29,7 +29,7 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
       scope,
       bitmap,
       majority,
-      user_identifier
+      user_identifier,
     );
     const { proof, publicSignals } = await groth16.fullProve(
       inputs,
@@ -53,7 +53,7 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
       circuit: 'prove',
     });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
-    verifyResult(result);
+    verifyResult(result, openPassportProverInputs);
   });
 
   it('OpenPassport1Step - rsa sha1', async function () {
@@ -91,7 +91,7 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
       circuit: 'prove',
     });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
-    verifyResult(result);
+    verifyResult(result, openPassportProverInputs);
   });
 
   it('OpenPassport1Step - rsapss sha256', async function () {
@@ -129,16 +129,16 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
       circuit: 'prove',
     });
     const result = await openPassport1StepVerifier.verify(openPassportProverInputs);
-    verifyResult(result);
+    verifyResult(result, openPassportProverInputs);
   });
 
-  const verifyResult = (result: OpenPassportVerifierReport) => {
+  const verifyResult = (result: OpenPassportVerifierReport, openPassportProverInputs: OpenPassport1StepInputs) => {
     if (!result.valid) {
       console.log(result);
     }
-    console.log('\x1b[34muser_identifier: \x1b[0m', result.getUUID());
-    console.log('\x1b[34mnullifier: \x1b[0m', result.getNullifier());
-    expect(result.getUUID()).to.equal(user_identifier);
+    console.log('\x1b[34muser_identifier: \x1b[0m', openPassportProverInputs.getUserId());
+    console.log('\x1b[34mnullifier: \x1b[0m', openPassportProverInputs.getNullifier());
+    expect(openPassportProverInputs.getUserId()).to.equal(user_identifier);
     expect(result.valid).to.be.true;
   };
 });

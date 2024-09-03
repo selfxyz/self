@@ -21,7 +21,7 @@ export class OpenPassportVerifierReport {
   public user_identifier: string;
   public nullifier: string;
 
-  constructor() {}
+  constructor() { }
 
   exposeAttribute(
     attribute: keyof OpenPassportVerifierReport,
@@ -43,17 +43,5 @@ export class OpenPassportVerifierReport {
 
   toString() {
     return JSON.stringify(this);
-  }
-
-  getUUID() {
-    return hexToUUID(this.user_identifier);
-  }
-
-  getHexUUID() {
-    return this.user_identifier;
-  }
-
-  getNullifier() {
-    return this.nullifier;
   }
 }

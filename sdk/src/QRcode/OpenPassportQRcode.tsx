@@ -8,6 +8,7 @@ import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './LED';
 import { WEBSOCKET_URL } from '../../../common/src/constants/constants';
+import { UserIdType } from '../../../common/src/utils/utils';
 
 const ProofSteps = {
   WAITING_FOR_MOBILE: 'WAITING_FOR_MOBILE',
@@ -21,6 +22,7 @@ interface OpenPassportQRcodeProps {
   appName: string;
   scope: string;
   userId: string;
+  userIdType?: UserIdType;
   requirements?: string[][];
   onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
   devMode?: boolean;
@@ -32,6 +34,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   scope,
   userId,
+  userIdType = 'uuid',
   requirements,
   onSuccess,
   devMode = false,
@@ -63,6 +66,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
         name: appName,
         scope,
         userId,
+        userIdType,
         sessionId,
         circuit: 'prove',
         arguments: {
@@ -115,7 +119,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
             proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid && onSuccess) {
-            onSuccess(data.proof, local_proofVerified);
+            const openPassport1StepInputs = new OpenPassport1StepInputs(data.proof);
+            onSuccess(openPassport1StepInputs, local_proofVerified);
           }
         } catch (error) {
           console.error('Error verifying proof:', error);
@@ -154,12 +159,33 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     }
   }, [proofStep, proofVerified]);
 
+  const containerStyle: React.CSSProperties = {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    width: '100%',
+  };
+
+  const ledContainerStyle: React.CSSProperties = {
+    marginBottom: '4px',
+  };
+
+  const qrContainerStyle: React.CSSProperties = {
+    width: `${size}px`,
+    height: `${size}px`,
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
   const renderProofStatus = () => (
-    <div className="flex flex-col items-center w-full">
-      <LED
-        connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
-      />
-      <div style={{ width: `${size}px`, height: `${size}px` }} className="flex items-center justify-center mt-2">
+    <div style={containerStyle}>
+      <div style={ledContainerStyle}>
+        <LED
+          connectionStatus={connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'}
+        />
+      </div>
+      <div style={qrContainerStyle}>
         {(() => {
           switch (proofStep) {
             case ProofSteps.WAITING_FOR_MOBILE:
@@ -205,7 +231,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   );
 
   return (
-    <div className="flex flex-col items-center w-full">
+    <div style={containerStyle}>
       {renderProofStatus()}
     </div>
   );

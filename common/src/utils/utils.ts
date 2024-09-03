@@ -416,6 +416,12 @@ export function BigintToArray(n: number, k: number, x: bigint) {
 }
 
 /// UUID
+
+function stringToHex(str: string): string {
+  return Buffer.from(str).toString('hex');
+}
+
+
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);
 }
@@ -454,8 +460,8 @@ export function castToUUID(bigInt: bigint): string {
 
 /// scope
 function checkStringLength(str: string) {
-  if (str.length > 30) {
-    throw new Error("Input string must not exceed 30 characters");
+  if (str.length > 25) {
+    throw new Error("Input string must not exceed 25 characters");
   }
 }
 
@@ -512,4 +518,51 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
     throw new Error("Reconstructed value does not match the input.");
   }
   return out;
+}
+
+// custom user_identifier type validation
+
+export type UserIdType = 'ascii' | 'hex' | 'uuid';
+
+const validateUserId = (userId: string, type: UserIdType): boolean => {
+  switch (type) {
+    case 'ascii':
+      return /^[\x00-\xFF]+$/.test(userId);
+    case 'hex':
+      return /^[0-9A-Fa-f]+$/.test(userId);
+    case 'uuid':
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId);
+    default:
+      return false;
+  }
+}
+
+const getMaxLenght = (idType: UserIdType) => {
+  switch (idType) {
+    case 'ascii':
+      return 25;
+    default:
+      return 63;
+  }
+}
+
+export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: UserIdType): string => {
+
+  if (!validateUserId(user_identifier, user_identifier_type)) {
+    throw new Error(`User identifier of type ${user_identifier_type} is not valid`);
+  }
+
+  const maxLength = getMaxLenght(user_identifier_type);
+  if (user_identifier.length > maxLength) {
+    throw new Error(`User identifier of type ${user_identifier_type} exceeds maximum length of ${maxLength} characters`);
+  }
+
+  switch (user_identifier_type) {
+    case 'ascii':
+      return stringToBigInt(user_identifier).toString();
+    case 'hex':
+      return hexToBigInt(user_identifier).toString();
+    case 'uuid':
+      return uuidToBigInt(user_identifier).toString();
+  }
 }

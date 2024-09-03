@@ -1,9 +1,12 @@
+import { UserIdType } from "./utils";
+
 export type CircuitName = "prove" | "register" | "disclose";
 
 export interface AppType {
   name: string,
   scope: string,
   userId: string,
+  userIdType?: UserIdType,
   sessionId: string,
   circuit: CircuitName,
   arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose,
@@ -100,6 +103,7 @@ export function reconstructAppType(json: any): AppType {
     name: json.name,
     scope: json.scope,
     userId: json.userId,
+    userIdType: json.userIdType,
     sessionId: json.sessionId,
     circuit: json.circuit as CircuitName,
     arguments: circuitArgs,
