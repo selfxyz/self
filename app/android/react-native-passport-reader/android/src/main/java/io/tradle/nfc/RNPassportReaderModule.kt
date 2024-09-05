@@ -446,72 +446,72 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 // Log.d(TAG, "dg2Hash " + gson.toJson(dg2Hash))
                 // Log.d(TAG, "dg2HashjoinToString " + gson.toJson(dg2Hash.joinToString("") { "%02x".format(it) }))
 
-                Log.d(TAG, "Comparing data group hashes...")
-                eventMessageEmitter(Messages.COMPARING)
-                if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
-                    && (!chipAuthSucceeded || Arrays.equals(dg14Hash, dataHashes[14]))) {
+                // Log.d(TAG, "Comparing data group hashes...")
+                // eventMessageEmitter(Messages.COMPARING)
+                // if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
+                //     && (!chipAuthSucceeded || Arrays.equals(dg14Hash, dataHashes[14]))) {
 
-                    Log.d(TAG, "Data group hashes match.")
+                //     Log.d(TAG, "Data group hashes match.")
 
-                    val asn1InputStream = ASN1InputStream(getReactApplicationContext().assets.open("masterList"))
-                    val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
-                    keystore.load(null, null)
-                    val cf = CertificateFactory.getInstance("X.509")
+                //     val asn1InputStream = ASN1InputStream(getReactApplicationContext().assets.open("masterList"))
+                //     val keystore = KeyStore.getInstance(KeyStore.getDefaultType())
+                //     keystore.load(null, null)
+                //     val cf = CertificateFactory.getInstance("X.509")
 
-                    var p: ASN1Primitive?
-                    var obj = asn1InputStream.readObject()
+                //     var p: ASN1Primitive?
+                //     var obj = asn1InputStream.readObject()
 
-                    while (obj != null) {
-                        p = obj
-                        val asn1 = ASN1Sequence.getInstance(p)
-                        if (asn1 == null || asn1.size() == 0) {
-                            throw IllegalArgumentException("Null or empty sequence passed.")
-                        }
+                //     while (obj != null) {
+                //         p = obj
+                //         val asn1 = ASN1Sequence.getInstance(p)
+                //         if (asn1 == null || asn1.size() == 0) {
+                //             throw IllegalArgumentException("Null or empty sequence passed.")
+                //         }
 
-                        if (asn1.size() != 2) {
-                            throw IllegalArgumentException("Incorrect sequence size: " + asn1.size())
-                        }
-                        val certSet = ASN1Set.getInstance(asn1.getObjectAt(1))
-                        for (i in 0 until certSet.size()) {
-                            val certificate = Certificate.getInstance(certSet.getObjectAt(i))
-                            val pemCertificate = certificate.encoded
-                            val javaCertificate = cf.generateCertificate(ByteArrayInputStream(pemCertificate))
-                            keystore.setCertificateEntry(i.toString(), javaCertificate)
-                        }
-                        obj = asn1InputStream.readObject()
+                //         if (asn1.size() != 2) {
+                //             throw IllegalArgumentException("Incorrect sequence size: " + asn1.size())
+                //         }
+                //         val certSet = ASN1Set.getInstance(asn1.getObjectAt(1))
+                //         for (i in 0 until certSet.size()) {
+                //             val certificate = Certificate.getInstance(certSet.getObjectAt(i))
+                //             val pemCertificate = certificate.encoded
+                //             val javaCertificate = cf.generateCertificate(ByteArrayInputStream(pemCertificate))
+                //             keystore.setCertificateEntry(i.toString(), javaCertificate)
+                //         }
+                //         obj = asn1InputStream.readObject()
 
-                    }
+                //     }
 
-                    val docSigningCertificates = sodFile.docSigningCertificates
-                    Log.d(TAG, "Checking document signing certificates for validity...")
-                    for (docSigningCertificate: X509Certificate in docSigningCertificates) {
-                        docSigningCertificate.checkValidity()
-                        Log.d(TAG, "Certificate: ${docSigningCertificate.subjectDN} is valid.")
-                    }
+                //     val docSigningCertificates = sodFile.docSigningCertificates
+                //     Log.d(TAG, "Checking document signing certificates for validity...")
+                //     for (docSigningCertificate: X509Certificate in docSigningCertificates) {
+                //         docSigningCertificate.checkValidity()
+                //         Log.d(TAG, "Certificate: ${docSigningCertificate.subjectDN} is valid.")
+                //     }
 
-                    val cp = cf.generateCertPath(docSigningCertificates)
-                    val pkixParameters = PKIXParameters(keystore)
-                    pkixParameters.isRevocationEnabled = false
-                    val cpv = CertPathValidator.getInstance(CertPathValidator.getDefaultType())
-                    Log.d(TAG, "Validating certificate path...")
-                    cpv.validate(cp, pkixParameters)
-                    var sodDigestEncryptionAlgorithm = sodFile.docSigningCertificate.sigAlgName
-                    var isSSA = false
-                    if ((sodDigestEncryptionAlgorithm == "SSAwithRSA/PSS")) {
-                        sodDigestEncryptionAlgorithm = "SHA256withRSA/PSS"
-                        isSSA = true
+                //     val cp = cf.generateCertPath(docSigningCertificates)
+                //     val pkixParameters = PKIXParameters(keystore)
+                //     pkixParameters.isRevocationEnabled = false
+                //     val cpv = CertPathValidator.getInstance(CertPathValidator.getDefaultType())
+                //     Log.d(TAG, "Validating certificate path...")
+                //     cpv.validate(cp, pkixParameters)
+                //     var sodDigestEncryptionAlgorithm = sodFile.docSigningCertificate.sigAlgName
+                //     var isSSA = false
+                //     if ((sodDigestEncryptionAlgorithm == "SSAwithRSA/PSS")) {
+                //         sodDigestEncryptionAlgorithm = "SHA256withRSA/PSS"
+                //         isSSA = true
 
-                    }
-                    val sign = Signature.getInstance(sodDigestEncryptionAlgorithm)
-                    if (isSSA) {
-                        sign.setParameter(PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1))
-                    }
-                    sign.initVerify(sodFile.docSigningCertificate)
-                    sign.update(sodFile.eContent)
+                //     }
+                //     val sign = Signature.getInstance(sodDigestEncryptionAlgorithm)
+                //     if (isSSA) {
+                //         sign.setParameter(PSSParameterSpec("SHA-256", "MGF1", MGF1ParameterSpec.SHA256, 32, 1))
+                //     }
+                //     sign.initVerify(sodFile.docSigningCertificate)
+                //     sign.update(sodFile.eContent)
 
-                    passiveAuthSuccess = sign.verify(sodFile.encryptedDigest)
-                    Log.d(TAG, "Passive authentication success: $passiveAuthSuccess")
-                }
+                //     passiveAuthSuccess = sign.verify(sodFile.encryptedDigest)
+                //     Log.d(TAG, "Passive authentication success: $passiveAuthSuccess")
+                // }
             } catch (e: Exception) {
                 eventMessageEmitter(Messages.RESET)
                 Log.w(TAG, "Exception in passive authentication", e)
