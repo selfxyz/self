@@ -98,10 +98,30 @@ export function identifyCurve(params: any): string {
 
 export function getNamedCurve(oid: string): string {
     const curves = {
-        '1.2.840.10045.3.1.7': 'secp256r1 (NIST P-256)',
-        '1.3.132.0.34': 'secp384r1 (NIST P-384)',
-        '1.3.132.0.35': 'secp521r1 (NIST P-521)',
+        '1.2.840.10045.3.1.7': 'secp256r1',
+        '1.3.132.0.34': 'secp384r1',
+        '1.3.132.0.35': 'secp521r1',
         // Add more curve OIDs as needed
     };
     return curves[oid] || `Unknown (${oid})`;
+}
+export function getECDSACurveBits(curveName: string): string {
+    const curveBits: { [key: string]: number } = {
+        'secp256r1': 256,
+        'secp384r1': 384,
+        'secp521r1': 521,
+        'brainpoolP256r1': 256,
+        'brainpoolP384r1': 384,
+        'brainpoolP512r1': 512,
+        'secp256r1 (NIST P-256)': 256,
+        'secp384r1 (NIST P-384)': 384,
+        'secp521r1 (NIST P-521)': 521,
+
+    };
+    if (curveName in curveBits) {
+        return curveBits[curveName].toString();
+    }
+    console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
+    return "unknown";
+
 }

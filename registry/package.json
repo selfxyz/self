@@ -22,7 +22,8 @@
     "install-registry": "cd ../common && yarn && cd ../registry && yarn",
     "db-init": "npx prisma generate",
     "db-push": "ts-node src/pushToDb.ts",
-    "masterlist-extract": "ts-node src/extractMasterList.ts"
+    "extract-masterlist": "ts-node src/extractMasterList.ts",
+    "parse-data": "ts-node src/parseData.ts"
   },
   "license": "MIT"
 }
