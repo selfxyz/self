@@ -37,7 +37,6 @@
 		0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
 		0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
 		0573C4EE2C72E857006C7386 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4ED2C72E857006C7386 /* passport.json */; };
-		0573C4F02C742FA6006C7386 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4EF2C742FA6006C7386 /* masterList.pem */; };
 		0573C4F42C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */; };
 		0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */; };
 		0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */; };
@@ -75,7 +74,6 @@
 		8362BCF2197E445C9CAFFD53 /* Inter-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
-		905B700B2A72A5E900AFA232 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 905B700A2A72A5E900AFA232 /* masterList.pem */; };
 		926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */; };
 		9713779CBED04A308A0B2DF2 /* Inter-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */; };
 		98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 110D16BAD3FA4513BEA89A3A /* slkscr.ttf */; };
@@ -156,7 +154,6 @@
 		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
 		0573C4EA2C72E7F6006C7386 /* groth16_prover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = groth16_prover.h; sourceTree = "<group>"; };
 		0573C4ED2C72E857006C7386 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = SOURCE_ROOT; };
-		0573C4EF2C742FA6006C7386 /* masterList.pem */ = {isa = PBXFileReference; lastKnownFileType = text; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = SOURCE_ROOT; };
 		0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha1.a; sourceTree = "<group>"; };
 		0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsapss_65537_sha256.a; sourceTree = "<group>"; };
 		0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha256.a; sourceTree = "<group>"; };
@@ -207,7 +204,6 @@
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
-		905B700A2A72A5E900AFA232 /* masterList.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = "<group>"; };
 		98413C61772F41BD96F279F5 /* slkscr.woff */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.woff; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.woff"; sourceTree = "<group>"; };
 		ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Bold.ttf"; path = "../assets/fonts/Luciole-Bold.ttf"; sourceTree = "<group>"; };
 		AC752CDC19F5CA03C154E950 /* Pods_OpenPassport_OpenPassportTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport_OpenPassportTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -278,7 +274,6 @@
 				0573C4CC2C72E6D0006C7386 /* PassportReader.m */,
 				0573C4CA2C72E6D0006C7386 /* PassportReader.swift */,
 				0573C4CF2C72E6D0006C7386 /* Prover.m */,
-				0573C4EF2C742FA6006C7386 /* masterList.pem */,
 				0573C4D52C72E6D0006C7386 /* Prover.swift */,
 				0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */,
 				0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */,
@@ -306,7 +301,6 @@
 				16E884A42C5BD764003B7125 /* passport.json */,
 				05EDEDC42B52D25D00AA51AD /* Prover.m */,
 				05EDEDC52B52D25D00AA51AD /* Prover.swift */,
-				905B700A2A72A5E900AFA232 /* masterList.pem */,
 				905B70082A729CD400AFA232 /* OpenPassport.entitlements */,
 				05D985F32BB331AB00F58EEA /* libfr.a */,
 				05D985FA2BB3344600F58EEA /* Assets.xcassets */,
@@ -550,7 +544,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				054340C92C71B2980014B445 /* LaunchScreen.storyboard in Resources */,
-				0573C4F02C742FA6006C7386 /* masterList.pem in Resources */,
 				0573C4EE2C72E857006C7386 /* passport.json in Resources */,
 				054340C62C71B2980014B445 /* Assets.xcassets in Resources */,
 				05B4DDF72C7850A90067519E /* Images.xcassets in Resources */,
@@ -562,7 +555,6 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				905B700B2A72A5E900AFA232 /* masterList.pem in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				2FA7C90AFAF5417DAA7BCB1E /* Inter-Black.otf in Resources */,
