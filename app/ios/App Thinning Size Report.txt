@@ -172,5 +172,5 @@ We record the uncompressed size when Archiving with Full App, then selecting App
 - Removing bundled masterList: 68,5 MB
 - Removing some unused dependencies: 68,2 MB
 - Optimizing images: 66,3 MB
+- Removing dat files (4.6 + 4.7 + 6.9 = 16,2): 50,1 MB
 
-dat files: 4.6 + 4.7 + 6.9 = 16,2
