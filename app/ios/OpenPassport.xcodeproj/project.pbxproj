@@ -44,14 +44,11 @@
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
 		05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F32BB331AB00F58EEA /* libfr.a */; };
 		05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05D985FA2BB3344600F58EEA /* Assets.xcassets */; };
-		05E2174E2E7E48EB80B9C8D8 /* Luciole-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */; };
 		05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC42B52D25D00AA51AD /* Prover.m */; };
 		05EDEDC72B52D25D00AA51AD /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC52B52D25D00AA51AD /* Prover.swift */; };
-		0A6918EB0654476189741475 /* Inter-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		15AAF7651FCF40EB993543A3 /* Inter-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */; };
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
@@ -60,33 +57,11 @@
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
-		1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */; };
-		1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */; };
-		2CD45EA0A0A94063935CE7D3 /* Inter-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DF4EC58B331A46F098343757 /* Inter-Regular.otf */; };
-		2FA7C90AFAF5417DAA7BCB1E /* Inter-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 066DD67BD55B4E90941F2B97 /* Inter-Black.otf */; };
-		37AF1D1302824FFC83B6D1D2 /* Inter-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */; };
-		5A0E2800F0C34012B292255B /* Inter-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 449D98322BFA406CBB9E2648 /* Inter-Bold.otf */; };
-		625D35EA2F1643E89F9887CE /* Inter-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */; };
-		6959CC40713D4D42AA56850D /* Luciole-Regular-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */; };
-		6FA6BA98BE3F485982F5E962 /* Inter-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */; };
-		749862C5A266413FBE508618 /* slkscr.woff in Resources */ = {isa = PBXBuildFile; fileRef = 98413C61772F41BD96F279F5 /* slkscr.woff */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		8362BCF2197E445C9CAFFD53 /* Inter-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
 		926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */; };
-		9713779CBED04A308A0B2DF2 /* Inter-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */; };
-		98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 110D16BAD3FA4513BEA89A3A /* slkscr.ttf */; };
-		B7C1F08B40CC4C1985152F72 /* Inter-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */; };
-		B9E3D3D20C9F4863A67B66D3 /* Inter-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 53AEBBB143534D68B7792C46 /* Inter-Medium.otf */; };
-		C9B733B168F84BBA818C6CB8 /* Inter-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */; };
 		CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3521C927F0DD22505739205 /* Pods_OpenPassport.framework */; };
-		CC99B59A281C4B6497C14141 /* Luciole-Bold-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */; };
-		E4BC7CC193684992A11E3135 /* Inter-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */; };
-		E4E0715B819049EFACAF2AEE /* Luciole-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */; };
-		EEC491DF41A44001A577E8C5 /* Inter-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8716F728A49C438396CB79D3 /* Inter-Italic.otf */; };
-		F78FB2FC94E1443A8EE8EEC3 /* Inter-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68457923C3F444388AB85F2 /* Inter-Thin.otf */; };
-		FA58D9C915314CF086BD7FFB /* slkscrb.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0AD24C885D29461481982641 /* slkscrb.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -154,11 +129,7 @@
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
 		05EDEDC42B52D25D00AA51AD /* Prover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Prover.m; sourceTree = "<group>"; };
 		05EDEDC52B52D25D00AA51AD /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = "<group>"; };
-		066DD67BD55B4E90941F2B97 /* Inter-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Black.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Black.otf"; sourceTree = "<group>"; };
-		0AD24C885D29461481982641 /* slkscrb.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscrb.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscrb.ttf"; sourceTree = "<group>"; };
 		0B18C6F4404CC83576C2F36A /* Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig"; sourceTree = "<group>"; };
-		0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BlackItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BlackItalic.otf"; sourceTree = "<group>"; };
-		110D16BAD3FA4513BEA89A3A /* slkscr.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* OpenPassport.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenPassport.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = OpenPassport/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = OpenPassport/AppDelegate.mm; sourceTree = "<group>"; };
@@ -173,39 +144,16 @@
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
-		1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
-		38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-LightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-LightItalic.otf"; sourceTree = "<group>"; };
-		449D98322BFA406CBB9E2648 /* Inter-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Bold.otf"; sourceTree = "<group>"; };
 		453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.debug.xcconfig"; sourceTree = "<group>"; };
-		4B084D2A6DF9460DCA9EE4BE /* Pods-OpenPassport App Clip.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport App Clip.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport App Clip/Pods-OpenPassport App Clip.debug.xcconfig"; sourceTree = "<group>"; };
-		53AEBBB143534D68B7792C46 /* Inter-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Medium.otf"; sourceTree = "<group>"; };
-		568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLight.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLight.otf"; sourceTree = "<group>"; };
-		5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBoldItalic.otf"; sourceTree = "<group>"; };
-		60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-MediumItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-MediumItalic.otf"; sourceTree = "<group>"; };
-		666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBold.otf"; sourceTree = "<group>"; };
-		67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLightItalic.otf"; sourceTree = "<group>"; };
-		6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BoldItalic.otf"; sourceTree = "<group>"; };
-		714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Regular.ttf"; path = "../assets/fonts/Luciole-Regular.ttf"; sourceTree = "<group>"; };
-		780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Light.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Light.otf"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = OpenPassport/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8716F728A49C438396CB79D3 /* Inter-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Italic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Italic.otf"; sourceTree = "<group>"; };
-		8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Regular-Italic.ttf"; path = "../assets/fonts/Luciole-Regular-Italic.ttf"; sourceTree = "<group>"; };
 		905B70032A72767800AFA232 /* OpenPassport-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpenPassport-Bridging-Header.h"; sourceTree = "<group>"; };
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
-		98413C61772F41BD96F279F5 /* slkscr.woff */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.woff; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.woff"; sourceTree = "<group>"; };
-		ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Bold.ttf"; path = "../assets/fonts/Luciole-Bold.ttf"; sourceTree = "<group>"; };
 		B3521C927F0DD22505739205 /* Pods_OpenPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B68457923C3F444388AB85F2 /* Inter-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Thin.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Thin.otf"; sourceTree = "<group>"; };
-		BAD0889E49DD94940404B318 /* Pods-OpenPassport App Clip.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport App Clip.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport App Clip/Pods-OpenPassport App Clip.release.xcconfig"; sourceTree = "<group>"; };
-		C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBoldItalic.otf"; sourceTree = "<group>"; };
-		D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBold.otf"; sourceTree = "<group>"; };
 		DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.release.xcconfig"; sourceTree = "<group>"; };
-		DF4EC58B331A46F098343757 /* Inter-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Regular.otf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport_OpenPassport_App_Clip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Bold-Italic.ttf"; path = "../assets/fonts/Luciole-Bold-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -324,31 +272,6 @@
 		48CFD94B265341A283033375 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				066DD67BD55B4E90941F2B97 /* Inter-Black.otf */,
-				0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */,
-				6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */,
-				D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */,
-				5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */,
-				568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */,
-				67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */,
-				8716F728A49C438396CB79D3 /* Inter-Italic.otf */,
-				780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */,
-				38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */,
-				53AEBBB143534D68B7792C46 /* Inter-Medium.otf */,
-				60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */,
-				DF4EC58B331A46F098343757 /* Inter-Regular.otf */,
-				666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */,
-				C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */,
-				B68457923C3F444388AB85F2 /* Inter-Thin.otf */,
-				1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */,
-				F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */,
-				ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */,
-				8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */,
-				714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */,
-				110D16BAD3FA4513BEA89A3A /* slkscr.ttf */,
-				0AD24C885D29461481982641 /* slkscrb.ttf */,
-				98413C61772F41BD96F279F5 /* slkscr.woff */,
-				449D98322BFA406CBB9E2648 /* Inter-Bold.otf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -391,8 +314,6 @@
 			children = (
 				453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */,
 				DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */,
-				4B084D2A6DF9460DCA9EE4BE /* Pods-OpenPassport App Clip.debug.xcconfig */,
-				BAD0889E49DD94940404B318 /* Pods-OpenPassport App Clip.release.xcconfig */,
 				0B18C6F4404CC83576C2F36A /* Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig */,
 				03D7F2F0EF44EF6300A9E4CD /* Pods-OpenPassport-OpenPassport App Clip.release.xcconfig */,
 			);
@@ -501,33 +422,8 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				2FA7C90AFAF5417DAA7BCB1E /* Inter-Black.otf in Resources */,
-				C9B733B168F84BBA818C6CB8 /* Inter-BlackItalic.otf in Resources */,
-				15AAF7651FCF40EB993543A3 /* Inter-BoldItalic.otf in Resources */,
-				1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */,
-				E4BC7CC193684992A11E3135 /* Inter-ExtraBoldItalic.otf in Resources */,
-				1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */,
 				05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */,
-				625D35EA2F1643E89F9887CE /* Inter-ExtraLightItalic.otf in Resources */,
-				EEC491DF41A44001A577E8C5 /* Inter-Italic.otf in Resources */,
-				0A6918EB0654476189741475 /* Inter-Light.otf in Resources */,
-				9713779CBED04A308A0B2DF2 /* Inter-LightItalic.otf in Resources */,
-				B9E3D3D20C9F4863A67B66D3 /* Inter-Medium.otf in Resources */,
-				8362BCF2197E445C9CAFFD53 /* Inter-MediumItalic.otf in Resources */,
-				2CD45EA0A0A94063935CE7D3 /* Inter-Regular.otf in Resources */,
-				6FA6BA98BE3F485982F5E962 /* Inter-SemiBold.otf in Resources */,
-				B7C1F08B40CC4C1985152F72 /* Inter-SemiBoldItalic.otf in Resources */,
-				F78FB2FC94E1443A8EE8EEC3 /* Inter-Thin.otf in Resources */,
-				37AF1D1302824FFC83B6D1D2 /* Inter-ThinItalic.otf in Resources */,
-				CC99B59A281C4B6497C14141 /* Luciole-Bold-Italic.ttf in Resources */,
-				05E2174E2E7E48EB80B9C8D8 /* Luciole-Bold.ttf in Resources */,
 				16E884A52C5BD764003B7125 /* passport.json in Resources */,
-				6959CC40713D4D42AA56850D /* Luciole-Regular-Italic.ttf in Resources */,
-				E4E0715B819049EFACAF2AEE /* Luciole-Regular.ttf in Resources */,
-				98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */,
-				FA58D9C915314CF086BD7FFB /* slkscrb.ttf in Resources */,
-				749862C5A266413FBE508618 /* slkscr.woff in Resources */,
-				5A0E2800F0C34012B292255B /* Inter-Bold.otf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

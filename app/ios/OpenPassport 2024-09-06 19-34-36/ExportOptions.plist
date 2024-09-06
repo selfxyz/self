@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>compileBitcode</key>
+	<true/>
+	<key>destination</key>
+	<string>export</string>
+	<key>distributionBundleIdentifier</key>
+	<string>com.warroom.proofofpassport.Clip</string>
+	<key>method</key>
+	<string>development</string>
+	<key>signingStyle</key>
+	<string>automatic</string>
+	<key>stripSwiftSymbols</key>
+	<true/>
+	<key>teamID</key>
+	<string>5B29R5LYHQ</string>
+	<key>thinning</key>
+	<string>&lt;thin-for-all-variants&gt;</string>
+</dict>
+</plist>
