@@ -174,8 +174,13 @@ We record the uncompressed size when Archiving with Full App, then selecting App
 - Optimizing images: 66,3 MB
 - Removing dat files (4.6 + 4.7 + 6.9 = 16,2): 50,1 MB
 - Removing fonts: 50,1 MB (still)
-- Compressing images more: 49,8 MB
+- Compressing images more: 49,8 MB (14,6 MB compressed)
 
-path:
+
+
+
+promising path:
 - Removing parts of OpenSSL
 - Removing parts of SwiftyTesseract
+
+- When removing all 3 `.a` witnesscalcs: 9,9 MB compressed, 33 MB uncompressed
