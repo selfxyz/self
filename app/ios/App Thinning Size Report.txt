@@ -36,58 +36,6 @@ App size: 28,9 MB compressed, 82,6 MB uncompressed
 On Demand Resources size: Zero KB compressed, Zero KB uncompressed
 
 
-turboblitz@Florents-MacBook-Air dSYMs % du -sh */ | sort -rh
- 11M    Lottie.framework.dSYM/
-6.8M    React.framework.dSYM/
-4.6M    cxxreact.framework.dSYM/
-3.7M    folly.framework.dSYM/
-3.5M    NFCPassportReader.framework.dSYM/
-3.5M    CoreModules.framework.dSYM/
-3.4M    OpenPassport App Clip.app.dSYM/
-2.3M    RCTImage.framework.dSYM/
-2.1M    fmt.framework.dSYM/
-2.1M    ReactCommon.framework.dSYM/
-2.0M    React_NativeModulesApple.framework.dSYM/
-1.9M    jsireact.framework.dSYM/
-1.9M    RCTAnimation.framework.dSYM/
-1.8M    SwiftyTesseract.framework.dSYM/
-1.8M    SwiftQRScanner.framework.dSYM/
-1.7M    React_Codegen.framework.dSYM/
-1.6M    amplitude_react_native.framework.dSYM/
-1.6M    RNSVG.framework.dSYM/
-1.6M    RNFS.framework.dSYM/
-1.6M    QKMRZScanner.framework.dSYM/
-1.5M    SSZipArchive.framework.dSYM/
-1.5M    React_runtimescheduler.framework.dSYM/
-1.5M    RCTText.framework.dSYM/
-1.3M    react_native_nfc_manager.framework.dSYM/
-1.2M    react_native_date_picker.framework.dSYM/
-1.2M    jsi.framework.dSYM/
-1.2M    SocketRocket.framework.dSYM/
-1.2M    RNZipArchive.framework.dSYM/
-1.1M    React_RCTAppDelegate.framework.dSYM/
-1.1M    RNCClipboard.framework.dSYM/
-1.1M    QKMRZParser.framework.dSYM/
-792K    glog.framework.dSYM/
-776K    yoga.framework.dSYM/
-768K    RCTNetwork.framework.dSYM/
-732K    RCTBlob.framework.dSYM/
-544K    jsinspector.framework.dSYM/
-544K    React_jsc.framework.dSYM/
-504K    RCTLinking.framework.dSYM/
-484K    RCTSettings.framework.dSYM/
-468K    RCTVibration.framework.dSYM/
-328K    DoubleConversion.framework.dSYM/
-292K    react_native_netinfo.framework.dSYM/
-280K    RNKeychain.framework.dSYM/
-240K    react_native_get_random_values.framework.dSYM/
-160K    React_utils.framework.dSYM/
-124K    RNCAsyncStorage.framework.dSYM/
-120K    logger.framework.dSYM/
- 76K    reactperflogger.framework.dSYM/
- 60K    RCTTypeSafety.framework.dSYM/
- 20K    React_debug.framework.dSYM/
-
 
 2024-08-23 06:37:34 +0000  17305600 bytes for ./OpenPassport App Clip
 2024-08-23 06:37:34 +0000  copying file ./Assets.car ... 
@@ -202,7 +150,27 @@ turboblitz@Florents-MacBook-Air OpenPassport App Clip.app % ls -sh | sort -rh
   168 passport.json
    40 embedded.mobileprovision
 
+turboblitz@Florents-Air app % npx depcheck
+Unused dependencies
+* @tamagui/colors
+* @tamagui/core
+* @tamagui/types
+* buffer
+* js-sha256
 
+Removing react-native-svg makes things crash
+@tamagui/toast needs burnt that needs expo-modules-core
 
-# du -sh */ | sort -rh
-# ls -sh | sort -rh
+We record the uncompressed size when Archiving with Full App, then selecting App Clip, Development, etc, as it is the same as the size that counts.
+- Starting from: 82,6 MB
+- Without Lottie (but few stuff got added): 75,8 MB
+- Removing 5,8MB of `.dat` files (register and disclose): 70 MB (compressed 25,2 MB)
+- Removing corresponding witnesscalc: 70 MB (compressed 22,8 MB)
+=> `.dat` files are copied directly (5,8 MB)
+=> but witnesscalcs are compressed (13,94 MB makes it go from 22,8 to 25,2 MB), and do not appear in the uncompressed version.
+=> So they count for users but not for App Clip requirements
+- Removing bundled masterList: 68,5 MB
+- Removing some unused dependencies: 68,2 MB
+- Optimizing images: 66,3 MB
+
+dat files: 4.6 + 4.7 + 6.9 = 16,2
