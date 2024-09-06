@@ -58,11 +58,6 @@ target 'OpenPassport' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'OpenPassportTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
   target 'OpenPassport App Clip' do
     inherit! :search_paths
     inherit! :complete
