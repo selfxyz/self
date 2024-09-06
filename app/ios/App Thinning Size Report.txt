@@ -173,4 +173,9 @@ We record the uncompressed size when Archiving with Full App, then selecting App
 - Removing some unused dependencies: 68,2 MB
 - Optimizing images: 66,3 MB
 - Removing dat files (4.6 + 4.7 + 6.9 = 16,2): 50,1 MB
+- Removing fonts: 50,1 MB (still)
+- Compressing images more: 49,8 MB
 
+path:
+- Removing parts of OpenSSL
+- Removing parts of SwiftyTesseract
