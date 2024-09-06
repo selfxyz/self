@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Scheme
-   LastUpgradeVersion = "1210"
+   LastUpgradeVersion = "1520"
    version = "1.7">
    <BuildAction
       parallelizeBuildables = "YES"
@@ -14,9 +14,9 @@
             buildForAnalyzing = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-               BuildableName = "OpenPassport.app"
-               BlueprintName = "OpenPassport"
+               BlueprintIdentifier = "054340B32C71B2960014B445"
+               BuildableName = "OpenPassport App Clip.app"
+               BlueprintName = "OpenPassport App Clip"
                ReferencedContainer = "container:OpenPassport.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -43,12 +43,19 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "OpenPassport.app"
-            BlueprintName = "OpenPassport"
+            BlueprintIdentifier = "054340B32C71B2960014B445"
+            BuildableName = "OpenPassport App Clip.app"
+            BlueprintName = "OpenPassport App Clip"
             ReferencedContainer = "container:OpenPassport.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "_XCAppClipURL"
+            value = "https://staging.openpassport.app/playground"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+      </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
       buildConfiguration = "Release"
@@ -60,9 +67,9 @@
          runnableDebuggingMode = "0">
          <BuildableReference
             BuildableIdentifier = "primary"
-            BlueprintIdentifier = "13B07F861A680F5B00A75B9A"
-            BuildableName = "OpenPassport.app"
-            BlueprintName = "OpenPassport"
+            BlueprintIdentifier = "054340B32C71B2960014B445"
+            BuildableName = "OpenPassport App Clip.app"
+            BlueprintName = "OpenPassport App Clip"
             ReferencedContainer = "container:OpenPassport.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

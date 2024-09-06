@@ -2,12 +2,12 @@ import React, { useState } from 'react';
 import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
 import { bgGreen, borderColor, textBlack, textColor1 } from '../utils/colors';
 import { Carousel } from '../components/Carousel';
-import US_PASSPORT from '../images/us_passport.png'
-import REMOVE_CASE from '../images/remove_case.png'
-import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.png'
-import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.png'
-import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.png'
-import PHONE_SCANBUTTON from "../images/phone_scanbutton.png"
+import US_PASSPORT from '../images/us_passport.jpeg'
+import REMOVE_CASE from '../images/remove_case.jpeg'
+import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.jpeg'
+import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.jpeg'
+import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.jpeg'
+import PHONE_SCANBUTTON from "../images/phone_scanbutton.jpeg"
 
 import Dialog from "react-native-dialog";
 import NfcManager from 'react-native-nfc-manager';

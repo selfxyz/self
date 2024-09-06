@@ -44,33 +44,6 @@
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
-	<key>UIAppFonts</key>
-	<array>
-		<string>Inter-Black.otf</string>
-		<string>Inter-BlackItalic.otf</string>
-		<string>Inter-BoldItalic.otf</string>
-		<string>Inter-ExtraBold.otf</string>
-		<string>Inter-ExtraBoldItalic.otf</string>
-		<string>Inter-ExtraLight.otf</string>
-		<string>Inter-ExtraLightItalic.otf</string>
-		<string>Inter-Italic.otf</string>
-		<string>Inter-Light.otf</string>
-		<string>Inter-LightItalic.otf</string>
-		<string>Inter-Medium.otf</string>
-		<string>Inter-MediumItalic.otf</string>
-		<string>Inter-Regular.otf</string>
-		<string>Inter-SemiBold.otf</string>
-		<string>Inter-SemiBoldItalic.otf</string>
-		<string>Inter-Thin.otf</string>
-		<string>Inter-ThinItalic.otf</string>
-		<string>Luciole-Bold-Italic.ttf</string>
-		<string>Luciole-Bold.ttf</string>
-		<string>Luciole-Regular-Italic.ttf</string>
-		<string>Luciole-Regular.ttf</string>
-		<string>slkscr.ttf</string>
-		<string>slkscrb.ttf</string>
-		<string>Inter-Bold.otf</string>
-	</array>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>

@@ -18,7 +18,7 @@ import useNavigationStore from '../stores/navigationStore';
 import { bgColor, bgGreen, bgWhite, blueColorLight, borderColor, componentBgColor, componentBgColor2, separatorColor, textBlack, textColor1, textColor2 } from '../utils/colors';
 import { ModalProofSteps } from '../utils/utils';
 import { scan } from '../utils/nfcScanner';
-import { CircuitName, fetchZkey } from '../utils/zkeyDownload';
+import { CircuitName, fetchZkeyAndDat } from '../utils/zkeyDownload';
 import { contribute } from '../utils/contribute';
 // import screens
 import ProveScreen from './ProveScreen';
@@ -718,7 +718,7 @@ const MainScreen: React.FC = () => {
         onOpenChange={(isOpen: boolean) => {
           if (!isOpen) {
             // download if user closes sheet
-            fetchZkey(showWarningModal.circuit as CircuitName);
+            fetchZkeyAndDat(showWarningModal.circuit as CircuitName);
             updateNavigationStore({
               showWarningModal: {
                 show: false,
@@ -744,7 +744,7 @@ const MainScreen: React.FC = () => {
                 borderRadius="$3"
                 padding="$2.5"
                 onPress={() => {
-                  fetchZkey(showWarningModal.circuit as CircuitName);
+                  fetchZkeyAndDat(showWarningModal.circuit as CircuitName);
                   updateNavigationStore({
                     showWarningModal: {
                       show: false,

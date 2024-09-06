@@ -50,8 +50,8 @@ struct Proof: Codable {
 @available(iOS 15, *)
 @objc(Prover)
 class Prover: NSObject {
-    @objc(runProveAction:witness_calculator:dat_file_name:inputs:resolve:reject:)
-    func runProveAction(_ zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
+    @objc(runProveAction:witness_calculator:dat_file_path:inputs:resolve:reject:)
+    func runProveAction(_ zkey_path: String, witness_calculator: String, dat_file_path: String, inputs: [String: [String]], resolve: @escaping RCTPromiseResolveBlock, reject: @escaping RCTPromiseRejectBlock) {
         do {
             let inputsJson = try! JSONEncoder().encode(inputs)
             print("inputs size: \(inputsJson.count) bytes")
@@ -59,7 +59,7 @@ class Prover: NSObject {
             
             let wtns = try! calcWtns(
                 witness_calculator: witness_calculator,
-                dat_file_name: dat_file_name,
+                dat_file_path: dat_file_path,
                 inputsJson: inputsJson
             )
             print("wtns size: \(wtns.count) bytes")
@@ -88,8 +88,15 @@ class Prover: NSObject {
     }
 }
 
-public func calcWtns(witness_calculator: String, dat_file_name: String, inputsJson: Data) throws -> Data {
-    let dat = NSDataAsset(name: dat_file_name + ".dat")!.data
+public func calcWtns(witness_calculator: String, dat_file_path: String, inputsJson: Data) throws -> Data {
+    guard let datURL = URL(string: "file://" + dat_file_path) else {
+        throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Invalid dat file path."])
+    }
+    
+    guard let dat = try? Data(contentsOf: datURL) else {
+        throw NSError(domain: "YourErrorDomain", code: 0, userInfo: [NSLocalizedDescriptionKey: "Failed to load dat file."])
+    }
+    
     return try _calcWtns(witness_calculator: witness_calculator, dat: dat, jsonData: inputsJson)
 }
 
