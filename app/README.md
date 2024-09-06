@@ -71,7 +71,7 @@ If you want to modify the circuits, you'll have to adapt a few things.
 
 First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
 
-Then, upload the zipped zkeys built at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`.
+Then, upload the zipped zkeys and dat files at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`.
 
 Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt and redeploy the contracts.
 
