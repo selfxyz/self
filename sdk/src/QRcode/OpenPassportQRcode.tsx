@@ -15,7 +15,7 @@ import LED from './LED';
 import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
 import { reconstructAppType } from '../../../common/src/utils/appType';
-
+import { v4 as uuidv4 } from 'uuid';
 import dynamic from 'next/dynamic';
 
 const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
@@ -53,7 +53,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
 }) => {
   const [proofStep, setProofStep] = useState(ProofSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
-  const [sessionId, setSessionId] = useState(crypto.randomUUID());
+  const [sessionId, setSessionId] = useState(uuidv4());
   const [showAnimation, setShowAnimation] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
   const [qrElement, setQrElement] = useState(null);
@@ -66,7 +66,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     console.log('Animation completed');
     setShowAnimation(false);
     setProofStep(ProofSteps.WAITING_FOR_MOBILE);
-    const newSessionId = crypto.randomUUID();
+    const newSessionId = uuidv4()
     setSessionId(newSessionId);
   };
 
@@ -113,7 +113,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
           setProofStep(ProofSteps.PROOF_GENERATED);
           break;
         case 'proof_generation_failed':
-          setSessionId(crypto.randomUUID());
+          setSessionId(uuidv4());
           setProofStep(ProofSteps.WAITING_FOR_MOBILE);
           break;
       }

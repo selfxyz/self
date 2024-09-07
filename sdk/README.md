@@ -13,7 +13,7 @@ import { AppType } from '@openpassport/sdk';
 const appName = '🤠 Cowboy App';
 const scope = 'cowboyApp';
 const userID = 'user1234';
-const sessionID = crypto.randomUUID();
+const sessionID = uuidv4():
 
 const cowboyApp: AppType = {
   name: appName,
