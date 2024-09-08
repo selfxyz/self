@@ -12,7 +12,7 @@
 
 RCT_EXTERN_METHOD(runProveAction:(NSString *)zkey_path
                   witness_calculator:(NSString *)witness_calculator
-                  dat_file_name:(NSString *)dat_file_name
+                  dat_file_path:(NSString *)dat_file_path
                   inputs:(NSDictionary *)inputs
                   resolve:(RCTPromiseResolveBlock)resolve
                   reject:(RCTPromiseRejectBlock)reject)

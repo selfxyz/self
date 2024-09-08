@@ -38,10 +38,10 @@ target 'OpenPassport' do
   flags = get_default_flags()
   
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '310ecb519655d9ed8b1afc5eb490b2f51a4d3595'
+  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45'
   pod 'QKMRZScanner'
   pod 'RNFS', :path => '../node_modules/react-native-fs'
-  pod 'lottie-ios'
+  # pod 'lottie-ios'
   pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
 
   use_react_native!(
@@ -57,11 +57,6 @@ target 'OpenPassport' do
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
-
-  target 'OpenPassportTests' do
-    inherit! :complete
-    # Pods for testing
-  end
 
   target 'OpenPassport App Clip' do
     inherit! :search_paths

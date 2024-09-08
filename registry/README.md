@@ -2,7 +2,7 @@
 
 Public key registry and merkle tree builder for OpenPassport.
 We currently use the DSC list from the ICAO. The latest version can be downloaded [here](https://download.pkd.icao.int/). If you update them, be sure to change the filenames in the scripts!
-As it does not contain all the DSCs used by all countries, we are working on verifying the full certificate chain up to CSCA, see [here](https://github.com/zk-passport/proof-of-passport/issues/37).
+As it does not contain all the DSCs used by all countries, we are working on verifying the full certificate chain up to CSCA, see [here](https://github.com/zk-passport/openpassport/issues/37).
 
 Here is the certificate chain flow. Basically, CSCA certificates are used to sign DSC certificates which sign the SOD files contained in passport chips.
 

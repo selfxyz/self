@@ -13,19 +13,20 @@ export const generateProof = async (
 
     const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`
     // Example: "/data/user/0/com.proofofpassportapp/files/register_sha256WithRSAEncryption_65537.zkey" on android
-    const witness_calculator = circuit;
-    const dat_file_name = Platform.OS == "android" ? circuit.toLowerCase() : circuit;
+    const dat_path = `${RNFS.DocumentDirectoryPath}/${circuit}.dat`
 
-    if (!zkey_path || !witness_calculator || !dat_file_name) {
+    const witness_calculator = circuit;
+
+    if (!zkey_path || !witness_calculator || !dat_path) {
       throw new Error('Required parameters are missing');
     }
     console.log('zkey_path', zkey_path);
     console.log('witness_calculator', witness_calculator);
-    console.log('dat_file_name', dat_file_name);
+    console.log('dat_path', dat_path);
     const response = await NativeModules.Prover.runProveAction(
       zkey_path,
       witness_calculator,
-      dat_file_name,
+      dat_path,
       inputs
     );
 
