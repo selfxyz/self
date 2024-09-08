@@ -16,14 +16,8 @@ import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constan
 import { UserIdType } from '../../../common/src/utils/utils';
 import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
+import { ProofSteps } from './utils';
 
-const ProofSteps = {
-  WAITING_FOR_MOBILE: 'WAITING_FOR_MOBILE',
-  MOBILE_CONNECTED: 'MOBILE_CONNECTED',
-  PROOF_GENERATION_STARTED: 'PROOF_GENERATION_STARTED',
-  PROOF_GENERATED: 'PROOF_GENERATED',
-  PROOF_VERIFIED: 'PROOF_VERIFIED'
-};
 
 interface OpenPassportQRcodeProps {
   appName: string;
