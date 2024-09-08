@@ -8,7 +8,7 @@ import {
 import { QRCodeGenerator } from './QRCodeGenerator';
 import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
-// import Lottie from 'lottie-react';
+import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './LED';
@@ -16,9 +16,6 @@ import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constan
 import { UserIdType } from '../../../common/src/utils/utils';
 import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
-import dynamic from 'next/dynamic';
-
-const Lottie = dynamic(() => import('lottie-react'), { ssr: false });
 
 const ProofSteps = {
   WAITING_FOR_MOBILE: 'WAITING_FOR_MOBILE',
