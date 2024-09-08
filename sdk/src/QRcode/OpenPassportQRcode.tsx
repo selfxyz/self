@@ -60,7 +60,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   const lottieRef = useRef(null);
 
   const handleAnimationComplete = () => {
-    console.log('Animation completed');
     setShowAnimation(false);
     setProofStep(ProofSteps.WAITING_FOR_MOBILE);
     const newSessionId = uuidv4()
