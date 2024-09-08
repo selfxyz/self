@@ -17,6 +17,7 @@ import { UserIdType } from '../../../common/src/utils/utils';
 import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { ProofSteps } from './utils';
+import { containerStyle, ledContainerStyle, qrContainerStyle } from './styles';
 
 
 interface OpenPassportQRcodeProps {
@@ -164,24 +165,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     }
   }, [proofStep, proofVerified]);
 
-  const containerStyle: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    width: '100%',
-  };
-
-  const ledContainerStyle: React.CSSProperties = {
-    marginBottom: '4px',
-  };
-
-  const qrContainerStyle: React.CSSProperties = {
-    width: `${size}px`,
-    height: `${size}px`,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  };
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
@@ -192,7 +175,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
           }
         />
       </div>
-      <div style={qrContainerStyle}>
+      <div style={qrContainerStyle(size)}>
         {(() => {
           switch (proofStep) {
             case ProofSteps.WAITING_FOR_MOBILE:
