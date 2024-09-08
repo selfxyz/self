@@ -5,7 +5,6 @@ import {
   OpenPassport1StepVerifier,
   OpenPassportVerifierReport,
 } from '../index.web';
-import { QRCodeGenerator } from './QRCodeGenerator';
 import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
@@ -18,7 +17,7 @@ import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { ProofSteps } from './utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './styles';
-
+import { QRCodeSVG } from 'qrcode.react';
 
 interface OpenPassportQRcodeProps {
   appName: string;
@@ -48,10 +47,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   const [sessionId, setSessionId] = useState(uuidv4());
   const [showAnimation, setShowAnimation] = useState(false);
   const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const [qrElement, setQrElement] = useState(null);
   const [animationKey, setAnimationKey] = useState(0);
 
-  const qrcodeRef = useRef(null);
   const lottieRef = useRef(null);
 
   const handleAnimationComplete = () => {
@@ -61,25 +58,20 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     setSessionId(newSessionId);
   };
 
-  useEffect(() => {
-    const generateQR = async () => {
-      const showCaseApp = reconstructAppType({
-        name: appName,
-        scope,
-        userId,
-        userIdType,
-        sessionId,
-        circuit: 'prove',
-        arguments: {
-          disclosureOptions: Object.fromEntries(requirements),
-        },
-        websocketUrl,
-      });
-      const qr = await QRCodeGenerator.generateQRCode(showCaseApp as AppType, size);
-      setQrElement(qr);
-    };
-    generateQR();
-  }, [appName, scope, userId, sessionId, requirements]);
+  const getAppStringified = () => {
+    return JSON.stringify(reconstructAppType({
+      name: appName,
+      scope: scope,
+      userId: userId,
+      userIdType: userIdType,
+      sessionId: sessionId,
+      circuit: 'prove',
+      arguments: {
+        disclosureOptions: Object.fromEntries(requirements),
+      },
+      websocketUrl: websocketUrl,
+    }));
+  }
 
   useEffect(() => {
     const newSocket = io(websocketUrl, {
@@ -151,12 +143,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     };
   }, [sessionId]);
 
-  useEffect(() => {
-    if (qrElement && qrcodeRef.current) {
-      qrcodeRef.current.innerHTML = '';
-      qrcodeRef.current.appendChild(qrElement);
-    }
-  }, [qrElement]);
 
   useEffect(() => {
     if (proofStep === ProofSteps.PROOF_VERIFIED && proofVerified?.valid === true) {
@@ -180,7 +166,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
           switch (proofStep) {
             case ProofSteps.WAITING_FOR_MOBILE:
             case ProofSteps.MOBILE_CONNECTED:
-              return qrElement ? <div ref={qrcodeRef}></div> : null;
+              return <QRCodeSVG value={getAppStringified()} size={size} />;
             case ProofSteps.PROOF_GENERATION_STARTED:
             case ProofSteps.PROOF_GENERATED:
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
@@ -196,9 +182,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
                     autoplay={true}
                     onComplete={handleAnimationComplete}
                   />
-                ) : qrElement ? (
-                  <div ref={qrcodeRef}></div>
-                ) : null;
+                ) : <QRCodeSVG value={getAppStringified()} size={size} />;
               } else {
                 return (
                   <Lottie
@@ -213,7 +197,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
                 );
               }
             default:
-              return null;
+              return <QRCodeSVG value={getAppStringified()} />;
           }
         })()}
       </div>
