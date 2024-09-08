@@ -149,7 +149,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     return () => {
       newSocket.disconnect();
     };
-  }, [sessionId, scope, requirements, devMode, onSuccess, size]);
+  }, [sessionId]);
 
   useEffect(() => {
     if (qrElement && qrcodeRef.current) {
