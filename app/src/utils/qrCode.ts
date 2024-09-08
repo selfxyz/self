@@ -63,10 +63,10 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         })
     } catch (error) {
         console.error('Error parsing QR code result:', error);
-        toast.show('Error', {
-            message: "QR code parsing failed",
+        toast.show('Try again', {
+            message: "Error reading QR code",
             customData: {
-                type: "error",
+                type: "info",
             },
         })
     }

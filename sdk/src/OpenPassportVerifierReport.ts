@@ -44,16 +44,4 @@ export class OpenPassportVerifierReport {
   toString() {
     return JSON.stringify(this);
   }
-
-  getUUID() {
-    return hexToUUID(this.user_identifier);
-  }
-
-  getHexUUID() {
-    return this.user_identifier;
-  }
-
-  getNullifier() {
-    return this.nullifier;
-  }
 }

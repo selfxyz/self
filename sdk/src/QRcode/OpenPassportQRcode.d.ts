@@ -6,6 +6,7 @@ export interface OpenPassportQRcodeProps {
   userId: string;
   requirements: any[];
   onSuccess: (result: any) => void;
+  size?: number;
   devMode?: boolean;
 }
 

@@ -1,9 +1,14 @@
+import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from "../constants/constants";
+import { UserIdType } from "./utils";
+
 export type CircuitName = "prove" | "register" | "disclose";
 
 export interface AppType {
   name: string,
   scope: string,
   userId: string,
+  userIdType: UserIdType,
+  websocketUrl: string,
   sessionId: string,
   circuit: CircuitName,
   arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose,
@@ -100,9 +105,11 @@ export function reconstructAppType(json: any): AppType {
     name: json.name,
     scope: json.scope,
     userId: json.userId,
+    userIdType: json.userIdType || DEFAULT_USER_ID_TYPE,
     sessionId: json.sessionId,
     circuit: json.circuit as CircuitName,
     arguments: circuitArgs,
+    websocketUrl: json.websocketUrl || WEBSOCKET_URL,
     getDisclosureOptions: function () {
       if (this.circuit === 'prove' || this.circuit === 'disclose') {
         return Object.fromEntries(

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { DEFAULT_MAJORITY, WEBSOCKET_URL, } from '../../../common/src/constants/constants';
+import { DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
@@ -13,7 +13,6 @@ import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
 import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
-
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
@@ -56,7 +55,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     let newSocket: Socket | null = null;
 
     try {
-      newSocket = io(WEBSOCKET_URL, {
+      newSocket = io(selectedApp.websocketUrl, {
         path: '/websocket',
         transports: ['websocket'],
         query: { sessionId: selectedApp.sessionId, clientType: 'mobile' }
@@ -139,31 +138,35 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(false);
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
+      console.log("selectedApp.userIdType", selectedApp.userIdType);
       const inputs = generateCircuitInputsProve(
         passportData,
         64, 32,
         selectedApp.scope,
         revealBitmapFromAttributes(disclosureOptions as any),
         disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
-        selectedApp.userId
+        selectedApp.userId,
+        selectedApp.userIdType
       );
       const rawDscProof = await generateProof(
         circuitName,
         inputs,
       );
       const dscProof = formatProof(rawDscProof);
-      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit }
-      console.log("response", response);
+      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit, userIdType: selectedApp.userIdType };
       socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
 
     } catch (error) {
       toast.show("Error", {
-        message: "Proof generation failed",
+        message: String(error),
         customData: {
           type: "error",
         },
       });
       console.error('Error in handleProve:', error);
+      if (socket) {
+        socket.emit('proof_generation_failed', { sessionId: selectedApp.sessionId });
+      }
     } finally {
       setGeneratingProof(false);
       setIsConnecting(false);

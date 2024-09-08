@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE } from '../constants/constants';
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
@@ -18,6 +18,7 @@ import {
   extractRSFromSignature,
   castFromUUID,
   castFromScope,
+  parseUIDToBigInt,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { getLeaf } from "./pubkeyTree";
@@ -267,7 +268,9 @@ export function generateCircuitInputsProve(
   bitmap: string[],
   majority: string,
   user_identifier: string,
+  user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
+
 
   const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData, n_dsc, k_dsc);
   const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
@@ -284,7 +287,7 @@ export function generateCircuitInputsProve(
     current_date: current_date,
     bitmap: bitmap,
     majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: [castFromUUID(user_identifier)],
+    user_identifier: [parseUIDToBigInt(user_identifier, user_identifier_type)],
     scope: [castFromScope(scope)]
   };
 

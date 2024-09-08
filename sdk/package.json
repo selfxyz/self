@@ -1,17 +1,19 @@
 {
-  "name": "@proofofpassport/sdk",
-  "version": "1.8.1",
-  "main": "dist/sdk/src/index.js",
+  "name": "@openpassport/sdk",
+  "version": "0.1.8",
+  "main": "dist/bundle.node.js",
+  "browser": "dist/bundle.web.js",
   "types": "dist/sdk/src/index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zk-passport/proof-of-passport"
+    "url": "https://github.com/zk-passport/openpassport"
   },
   "author": "turnoffthiscomputer",
   "dependencies": {
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
+    "@types/uuid": "^10.0.0",
     "@zk-kit/imt": "^2.0.0-beta.5",
     "@zk-kit/lean-imt": "^2.0.1",
     "asn1js": "^3.0.5",
@@ -23,6 +25,7 @@
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",
     "lottie-react": "^2.4.0",
+    "next": "^14.2.8",
     "node-forge": "https://github.com/remicolin/forge",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
@@ -30,7 +33,8 @@
     "react-dom": "^18.3.1",
     "react-spinners": "^0.14.1",
     "snarkjs": "^0.7.4",
-    "socket.io-client": "^4.7.5"
+    "socket.io-client": "^4.7.5",
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.6",
@@ -46,12 +50,18 @@
     "dotenv": "^16.4.5",
     "mocha": "^10.3.0",
     "prettier": "^3.3.3",
+    "ts-loader": "^9.5.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5"
+    "typescript": "^5.4.5",
+    "webpack": "^5.94.0",
+    "webpack-cli": "^5.1.4"
   },
   "scripts": {
-    "build": "tsc && tsc -p tsconfig.react.json",
+    "build:ts": "tsc && tsc -p tsconfig.react.json",
+    "build:web": "webpack --config webpack.web.config.js",
+    "build:node": "webpack --config webpack.node.config.js",
+    "build": "npm run build:ts && npm run build:web && npm run build:node",
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassport1Step.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
@@ -64,5 +74,13 @@
     "common",
     "circuits/**/*.json",
     "src/QRcode"
-  ]
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "lottie-react": "^2.4.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  }
 }

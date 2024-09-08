@@ -15,7 +15,9 @@ import {
   castFromScope,
   castToScope,
   castToUUID,
+  hexToUUID,
   splitToWords,
+  UserIdType,
 } from '../../common/src/utils/utils';
 import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
 
@@ -26,7 +28,6 @@ export class OpenPassport1StepVerifier {
   rpcUrl: string;
   report: OpenPassportVerifierReport;
   dev_mode: boolean;
-
   constructor(options: {
     scope: string;
     attestationId?: string;
@@ -100,9 +101,6 @@ export class OpenPassport1StepVerifier {
     }
     console.log('\x1b[32m%s\x1b[0m', `- proof verified`);
 
-    this.report.nullifier = bigIntToHex(BigInt(parsedPublicSignals.nullifier));
-    this.report.user_identifier = bigIntToHex(BigInt(parsedPublicSignals.user_identifier));
-
     //7 Verify the dsc
     const dscCertificate = forge.pki.certificateFromPem(openPassport1StepInputs.dsc);
     const verified_certificate = verifyDSCValidity(dscCertificate, this.dev_mode);
@@ -129,7 +127,7 @@ export class OpenPassport1StepInputs {
   };
   dsc: string;
   circuit: string;
-
+  userIdType?: UserIdType;
   constructor(options: {
     dscProof?: {
       publicSignals: string[];
@@ -137,6 +135,7 @@ export class OpenPassport1StepInputs {
     };
     dsc?: string;
     circuit?: string;
+    userIdType?: UserIdType;
   }) {
     this.dscProof = options.dscProof || {
       publicSignals: [],
@@ -144,6 +143,27 @@ export class OpenPassport1StepInputs {
     };
     this.dsc = options.dsc || '';
     this.circuit = options.circuit || '';
+    this.userIdType = options.userIdType || 'uuid';
+  }
+
+  getParsedPublicSignals() {
+    return parsePublicSignals1Step(this.dscProof.publicSignals);
+  }
+
+  getUserId() {
+    const rawUserId = this.getParsedPublicSignals().user_identifier;
+    switch (this.userIdType) {
+      case 'ascii':
+        return castToScope(BigInt(rawUserId));
+      case 'hex':
+        return bigIntToHex(BigInt(rawUserId));
+      case 'uuid':
+        return castToUUID(BigInt(rawUserId));
+    }
+  }
+
+  getNullifier() {
+    return bigIntToHex(BigInt(this.getParsedPublicSignals().nullifier));
   }
 }
 
