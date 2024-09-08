@@ -41,7 +41,7 @@ Not all signature algorithms are currently supported. To help us add support for
 
 #### Where can I find the countries' public keys ?
 
-You can download the full list of public keys on the [ICAO website](https://download.pkd.icao.int/). Our parsed list is at [`/registry`](https://github.com/zk-passport/proof-of-passport/tree/main/registry).
+You can download the full list of public keys on the [ICAO website](https://download.pkd.icao.int/). Our parsed list is at [`/registry`](https://github.com/zk-passport/openpassport/tree/main/registry).
 
 #### What's the ICAO ?
 
@@ -69,7 +69,7 @@ Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/proof-of-passport/issues) if you don't know were to start! We will offer bounties from $100 to $1000 for any significant progress on these, depending on difficulty.
+We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/openpassport/issues) if you don't know were to start! We will offer bounties from $100 to $1000 for any significant progress on these, depending on difficulty.
 
 ## Contact us
 

@@ -422,7 +422,7 @@ const MainScreen: React.FC = () => {
                       source={{ uri: Xlogo, width: 24, height: 24 }}
                     />
                   </Pressable>
-                  <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/proof-of-passport')}>
+                  <Pressable onPress={() => Linking.openURL('https://github.com/zk-passport/openpassport')}>
                     <Image
                       tintColor={textBlack}
                       source={{ uri: Github, width: 24, height: 24 }}

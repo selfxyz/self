@@ -128,7 +128,7 @@ Don't forget to bump the build number.
 
 If you get something like this:
 ```
-'std::__1::system_error: open: /proof-of-passport/app: Operation not permitted'
+'std::__1::system_error: open: /openpassport/app: Operation not permitted'
 ```
 You might want to try [this](https://stackoverflow.com/questions/49443341/watchman-crawl-failed-retrying-once-with-node-crawler):
 ```
