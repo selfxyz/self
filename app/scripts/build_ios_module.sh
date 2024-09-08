@@ -17,6 +17,7 @@ for circuit in "${CIRCUITS[@]}"; do
       ARCHS="arm64" \
       -destination 'generic/platform=iOS' \
       PRODUCT_BUNDLE_IDENTIFIER=com.warrom.witnesscalc \
+      -allowProvisioningUpdates \
       build
 done
 
