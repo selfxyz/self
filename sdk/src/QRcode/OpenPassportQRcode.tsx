@@ -52,10 +52,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
 
   const openPassport1StepVerifier = new OpenPassport1StepVerifier({ scope: scope, requirements: requirements, dev_mode: devMode });
 
-  const handleAnimationComplete = () => {
-    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-  };
-
   const getAppStringified = () => {
     return JSON.stringify(reconstructAppType({
       name: appName,
@@ -93,14 +89,18 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
                 return <Lottie
                   animationData={CHECK_ANIMATION}
                   style={{ width: 200, height: 200 }}
-                  onComplete={handleAnimationComplete}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
                   loop={false}
                 />
               } else {
                 return <Lottie
                   animationData={X_ANIMATION}
                   style={{ width: 200, height: 200 }}
-                  onComplete={handleAnimationComplete}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
                   loop={false}
                 />
               }
