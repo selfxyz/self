@@ -2,7 +2,6 @@ import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { poseidon1 } from 'poseidon-lite';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import crypto from 'crypto';
