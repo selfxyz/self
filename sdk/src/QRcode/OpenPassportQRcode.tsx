@@ -1,23 +1,22 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  AppType,
   OpenPassport1StepInputs,
   OpenPassport1StepVerifier,
   OpenPassportVerifierReport,
 } from '../index.web';
-import io from 'socket.io-client';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
-import LED from './LED';
+import LED from './components/LED';
 import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
 import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
-import { ProofSteps } from './utils';
-import { containerStyle, ledContainerStyle, qrContainerStyle } from './styles';
+import { QRcodeSteps } from './utils/utils';
+import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
+import { initWebSocket } from './utils/websocket';
 
 const QRCodeSVG = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
@@ -42,25 +41,19 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   userId,
   userIdType = DEFAULT_USER_ID_TYPE,
   requirements,
-  onSuccess,
+  onSuccess = () => { },
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
 }) => {
-  const [proofStep, setProofStep] = useState(ProofSteps.WAITING_FOR_MOBILE);
+  const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
-  const [showAnimation, setShowAnimation] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState('disconnected');
-  const [animationKey, setAnimationKey] = useState(0);
 
-  const lottieRef = useRef(null);
+  const openPassport1StepVerifier = new OpenPassport1StepVerifier({ scope: scope, requirements: requirements, dev_mode: devMode });
 
   const handleAnimationComplete = () => {
-    setShowAnimation(false);
-    setProofStep(ProofSteps.WAITING_FOR_MOBILE);
-    const newSessionId = uuidv4()
-    setSessionId(newSessionId);
+    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
   };
 
   const getAppStringified = () => {
@@ -79,121 +72,40 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   }
 
   useEffect(() => {
-    const newSocket = io(websocketUrl, {
-      path: '/websocket',
-      query: { sessionId, clientType: 'web' },
-    });
-
-    const handleMobileStatus = async (data) => {
-      console.log('Received mobile status:', data.status);
-      switch (data.status) {
-        case 'mobile_connected':
-          setConnectionStatus('mobile_connected');
-          setProofStep(ProofSteps.MOBILE_CONNECTED);
-          break;
-        case 'mobile_disconnected':
-          setConnectionStatus('web_connected');
-          break;
-        case 'proof_generation_started':
-          setProofStep(ProofSteps.PROOF_GENERATION_STARTED);
-          break;
-        case 'proof_generated':
-          setProofStep(ProofSteps.PROOF_GENERATED);
-          break;
-        case 'proof_generation_failed':
-          setSessionId(uuidv4());
-          setProofStep(ProofSteps.WAITING_FOR_MOBILE);
-          break;
-      }
-
-      if (data.proof) {
-        const openPassport1StepVerifier = new OpenPassport1StepVerifier({
-          scope,
-          requirements,
-          dev_mode: devMode,
-        });
-
-        try {
-          const local_proofVerified: OpenPassportVerifierReport =
-            await openPassport1StepVerifier.verify(data.proof);
-          setProofVerified({ valid: local_proofVerified.valid });
-          setProofStep(ProofSteps.PROOF_VERIFIED);
-          newSocket.emit('proof_verified', {
-            sessionId,
-            proofVerified: local_proofVerified.toString(),
-          });
-          if (local_proofVerified.valid && onSuccess) {
-            const openPassport1StepInputs = new OpenPassport1StepInputs(data.proof);
-            onSuccess(openPassport1StepInputs, local_proofVerified);
-          }
-        } catch (error) {
-          console.error('Error verifying proof:', error);
-          setProofVerified({ valid: false, error: error.message });
-          newSocket.emit('proof_verified', {
-            sessionId,
-            proofVerified: { valid: false, error: error.message },
-          });
-        }
-      }
-    };
-
-    newSocket.on('connect', () => setConnectionStatus('web_connected'));
-    newSocket.on('disconnect', () => {
-      setConnectionStatus('disconnected');
-      setProofStep(ProofSteps.WAITING_FOR_MOBILE);
-    });
-    newSocket.on('mobile_status', handleMobileStatus);
-    return () => {
-      newSocket.disconnect();
-    };
+    initWebSocket(websocketUrl, sessionId, setProofStep, setProofVerified, openPassport1StepVerifier, onSuccess);
   }, [sessionId, websocketUrl]);
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
       <div style={ledContainerStyle}>
         <LED
-          connectionStatus={
-            connectionStatus as 'disconnected' | 'web_connected' | 'mobile_connected'
-          }
+          connectionStatus={proofStep}
         />
       </div>
       <div style={qrContainerStyle(size)}>
         {(() => {
           switch (proofStep) {
-            case ProofSteps.WAITING_FOR_MOBILE:
-            case ProofSteps.MOBILE_CONNECTED:
-              return <QRCodeSVG value={getAppStringified()} size={size} />;
-            case ProofSteps.PROOF_GENERATION_STARTED:
-            case ProofSteps.PROOF_GENERATED:
+            case QRcodeSteps.PROOF_GENERATION_STARTED:
+            case QRcodeSteps.PROOF_GENERATED:
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
-            case ProofSteps.PROOF_VERIFIED:
-              if (proofVerified?.valid === true) {
-                return showAnimation ? (
-                  <Lottie
-                    key={animationKey}
-                    lottieRef={lottieRef}
-                    animationData={CHECK_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    loop={false}
-                    autoplay={true}
-                    onComplete={handleAnimationComplete}
-                  />
-                ) : <QRCodeSVG value={getAppStringified()} size={size} />;
+            case QRcodeSteps.PROOF_VERIFIED:
+              if (proofVerified) {
+                return <Lottie
+                  animationData={CHECK_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={handleAnimationComplete}
+                  loop={false}
+                />
               } else {
-                return (
-                  <Lottie
-                    key={animationKey}
-                    lottieRef={lottieRef}
-                    animationData={X_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    loop={false}
-                    autoplay={true}
-                    onComplete={handleAnimationComplete}
-                  />
-                );
+                return <Lottie
+                  animationData={X_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={handleAnimationComplete}
+                  loop={false}
+                />
               }
             default:
-              return <QRCodeSVG value={getAppStringified()} />;
+              return <QRCodeSVG value={getAppStringified()} size={size} />;
           }
         })()}
       </div>
