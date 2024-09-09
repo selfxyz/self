@@ -146,16 +146,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     return () => {
       newSocket.disconnect();
     };
-  }, [sessionId]);
-
-
-  useEffect(() => {
-    if (proofStep === ProofSteps.PROOF_VERIFIED && proofVerified?.valid === true) {
-      setShowAnimation(true);
-      setAnimationKey((prev) => prev + 1);
-    }
-  }, [proofStep, proofVerified]);
-
+  }, [sessionId, websocketUrl]);
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
