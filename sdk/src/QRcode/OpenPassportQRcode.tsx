@@ -17,7 +17,12 @@ import { reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { ProofSteps } from './utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './styles';
-import { QRCodeSVG } from 'qrcode.react';
+import dynamic from 'next/dynamic';
+
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
+  { ssr: false }
+);
 
 interface OpenPassportQRcodeProps {
   appName: string;
