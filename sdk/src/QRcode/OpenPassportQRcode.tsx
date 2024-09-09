@@ -35,6 +35,7 @@ interface OpenPassportQRcodeProps {
   size?: number;
   websocketUrl?: string;
   merkleTreeUrl?: string;
+  attestationId?: string;
 }
 
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
@@ -50,6 +51,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   size = 300,
   websocketUrl = WEBSOCKET_URL,
   merkleTreeUrl,
+  attestationId,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
@@ -71,6 +73,21 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
           disclosureOptions: Object.fromEntries(disclosureOptions),
         },
         websocketUrl: websocketUrl,
+      }));
+    }
+    else if (circuit === 'register') {
+      return JSON.stringify(reconstructAppType({
+        name: appName,
+        scope: scope,
+        userId: userId,
+        userIdType: userIdType,
+        sessionId: sessionId,
+        circuit: circuit,
+        arguments: {
+          attestation_id: attestationId,
+          merkleTreeUrl: merkleTreeUrl,
+        },
+        websocketUrl: websocketUrl
       }));
     }
   }

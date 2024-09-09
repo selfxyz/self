@@ -24,6 +24,7 @@ export interface ArgumentsProve {
 
 export interface ArgumentsRegister {
   attestation_id: string,
+  merkleTreeUrl: string,
 }
 
 export interface ArgumentsDisclose {
@@ -35,6 +36,7 @@ export interface ArgumentsDisclose {
   merkletree_size: string,
 }
 
+
 export function reconstructAppType(json: any): AppType {
   if (typeof json !== 'object' || json === null) {
     throw new Error('Input must be a non-null object');
@@ -44,11 +46,11 @@ export function reconstructAppType(json: any): AppType {
     throw new Error('Invalid or missing name');
   }
 
-  if (!json.scope || typeof json.scope !== 'string') {
+  if (json.circuit !== 'register' && (!json.scope || typeof json.scope !== 'string')) {
     throw new Error('Invalid or missing scope');
   }
 
-  if (!json.userId || typeof json.userId !== 'string') {
+  if (json.circuit !== 'register' && (!json.userId || typeof json.userId !== 'string')) {
     throw new Error('Invalid or missing userId');
   }
 
@@ -91,10 +93,14 @@ export function reconstructAppType(json: any): AppType {
       break;
     case 'register':
       if (!json.arguments.attestation_id || typeof json.arguments.attestation_id !== 'string') {
-        throw new Error('Invalid or missing attestation_id for register');
+        throw new Error('Invalid or missing attestation_id for register circuit');
+      }
+      if (!json.arguments.merkleTreeUrl || typeof json.arguments.merkleTreeUrl !== 'string') {
+        throw new Error('Invalid or missing merkleTreeUrl for register circuit');
       }
       circuitArgs = {
         attestation_id: json.arguments.attestation_id,
+        merkleTreeUrl: json.arguments.merkleTreeUrl,
       };
       break;
     default:
@@ -103,8 +109,8 @@ export function reconstructAppType(json: any): AppType {
 
   return {
     name: json.name,
-    scope: json.scope,
-    userId: json.userId,
+    scope: json.scope || '',
+    userId: json.userId || '',
     userIdType: json.userIdType || DEFAULT_USER_ID_TYPE,
     sessionId: json.sessionId,
     circuit: json.circuit as CircuitName,
