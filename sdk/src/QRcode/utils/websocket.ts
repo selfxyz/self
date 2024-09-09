@@ -27,6 +27,8 @@ const handleWebSocketMessage = (newSocket: Socket, sessionId: string, setProofSt
             setProofStep(QRcodeSteps.PROOF_GENERATED);
             break;
         case 'proof_generation_failed':
+            setProofVerified(false);
+            setProofStep(QRcodeSteps.PROOF_VERIFIED);
             console.log('Proof generation failed');
             break;
     }
