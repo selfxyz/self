@@ -7,7 +7,7 @@ import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { packBytes } from '../../../common/src/utils/utils';
 import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
-import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 
 describe('Register - SHA256 RSA', function () {
   this.timeout(0);
@@ -16,8 +16,6 @@ describe('Register - SHA256 RSA', function () {
   const passportData = mockPassportData_sha256_rsa_65537;
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-  const n_dsc = 121;
-  const k_dsc = 17;
 
   const inputs = generateCircuitInputsRegister(
     secret,

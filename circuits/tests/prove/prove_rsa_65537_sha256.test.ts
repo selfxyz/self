@@ -6,14 +6,13 @@ import { poseidon1 } from 'poseidon-lite';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import crypto from 'crypto';
+import { k_dsc, n_dsc } from '../../../common/src/constants/constants';
 
 describe('PROVE - RSA SHA256', function () {
   this.timeout(0);
   let circuit: any;
 
   const passportData = mockPassportData_sha256_rsa_65537;
-  const n_dsc = 64;
-  const k_dsc = 32;
   const majority = '18';
   const user_identifier = crypto.randomUUID();
   const scope = '@coboyApp';
