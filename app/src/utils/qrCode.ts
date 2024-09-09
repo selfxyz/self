@@ -1,6 +1,9 @@
 import { NativeModules, Platform } from "react-native";
 import { AppType, reconstructAppType } from "../../../common/src/utils/appType";
 import useNavigationStore from '../stores/navigationStore';
+import { getCircuitName, getSignatureAlgorithm } from "../../../common/src/utils/handleCertificate";
+import useUserStore from "../stores/userStore";
+import { downloadZkey } from "./zkeyDownload";
 
 export const scanQRCode = () => {
     const { toast, setSelectedApp, setSelectedTab } = useNavigationStore.getState();
@@ -53,6 +56,10 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         console.log(result);
         const parsedJson = JSON.parse(result);
         const app: AppType = reconstructAppType(parsedJson);
+        const dsc = useUserStore.getState().passportData?.dsc;
+        const sigAlgName = getSignatureAlgorithm(dsc!);
+        const circuitName = getCircuitName(app.circuit, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+        downloadZkey(circuitName as any);
         setSelectedApp(app);
         setSelectedTab("prove");
         toast.show('✅', {

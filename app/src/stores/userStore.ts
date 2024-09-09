@@ -4,13 +4,11 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
-import forge from 'node-forge';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useNavigationStore from './navigationStore';
-import { downloadZkey } from '../utils/zkeyDownload';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
 import { generateProof } from '../utils/prover';
@@ -20,7 +18,6 @@ import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData }
 import { ethers } from 'ethers';
 import { isCommitmentRegistered } from '../utils/registration';
 import { generateDscSecret } from '../../../common/src/utils/csca';
-import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
 
 
 interface UserState {
@@ -113,10 +110,6 @@ const useUserStore = create<UserState>((set, get) => ({
       registered: true,
     });
     set({ userLoaded: true });
-
-    const sigAlgName = getSignatureAlgorithm(passportData.dsc!);
-    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
-    downloadZkey(circuitName as any);
   },
 
   // When reading passport for the first time:
