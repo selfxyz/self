@@ -15,6 +15,7 @@ export interface OpenPassportQRcodeProps {
   size?: number;
   devMode?: boolean;
   websocketUrl?: string;
+  merkleTreeUrl?: string;
 }
 
 declare const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps>;

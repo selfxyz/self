@@ -34,6 +34,7 @@ interface OpenPassportQRcodeProps {
   devMode?: boolean;
   size?: number;
   websocketUrl?: string;
+  merkleTreeUrl?: string;
 }
 
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
@@ -48,6 +49,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
+  merkleTreeUrl,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
