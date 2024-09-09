@@ -17,7 +17,6 @@ import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
-
 const QRCodeSVG = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
   { ssr: false }
@@ -28,8 +27,10 @@ interface OpenPassportQRcodeProps {
   scope: string;
   userId: string;
   userIdType?: UserIdType;
-  requirements?: string[][];
-  onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
+  olderThan?: string;
+  nationality?: string;
+  onSuccess?: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
+  circuit?: string;
   devMode?: boolean;
   size?: number;
   websocketUrl?: string;
@@ -40,8 +41,10 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   scope,
   userId,
   userIdType = DEFAULT_USER_ID_TYPE,
-  requirements,
-  onSuccess = () => { },
+  olderThan = "",
+  nationality = "",
+  onSuccess = (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => { console.log(proof, report) },
+  circuit = 'prove',
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
@@ -50,21 +53,24 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
 
-  const openPassport1StepVerifier = new OpenPassport1StepVerifier({ scope: scope, requirements: requirements, dev_mode: devMode });
+  const openPassport1StepVerifier = new OpenPassport1StepVerifier({ scope: scope, olderThan: olderThan, nationality: nationality, dev_mode: devMode });
 
   const getAppStringified = () => {
-    return JSON.stringify(reconstructAppType({
-      name: appName,
-      scope: scope,
-      userId: userId,
-      userIdType: userIdType,
-      sessionId: sessionId,
-      circuit: 'prove',
-      arguments: {
-        disclosureOptions: Object.fromEntries(requirements),
-      },
-      websocketUrl: websocketUrl,
-    }));
+    if (circuit === 'prove') {
+      const disclosureOptions = [["nationality", nationality], ["older_than", olderThan]]
+      return JSON.stringify(reconstructAppType({
+        name: appName,
+        scope: scope,
+        userId: userId,
+        userIdType: userIdType,
+        sessionId: sessionId,
+        circuit: circuit,
+        arguments: {
+          disclosureOptions: Object.fromEntries(disclosureOptions),
+        },
+        websocketUrl: websocketUrl,
+      }));
+    }
   }
 
   useEffect(() => {
