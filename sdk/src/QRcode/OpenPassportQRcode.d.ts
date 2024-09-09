@@ -2,7 +2,7 @@ import React from 'react';
 import { UserIdType } from '../../../common/src/utils/utils';
 import { countryCodes } from '../../../common/src/constants/constants';
 
-type CountryName = typeof countryCodes[keyof typeof countryCodes];
+type CountryName = (typeof countryCodes)[keyof typeof countryCodes];
 
 export interface OpenPassportQRcodeProps {
   appName: string;

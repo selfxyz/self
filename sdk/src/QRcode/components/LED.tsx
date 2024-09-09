@@ -11,14 +11,11 @@ const gray = '#95a5a6';
 
 const LED: React.FC<LEDProps> = ({ size = 8, connectionStatus = QRcodeSteps.DISCONNECTED }) => {
   const getColor = () => {
-
     if (connectionStatus >= QRcodeSteps.MOBILE_CONNECTED) {
       return green;
-    }
-    else if (connectionStatus >= QRcodeSteps.WAITING_FOR_MOBILE) {
+    } else if (connectionStatus >= QRcodeSteps.WAITING_FOR_MOBILE) {
       return blue;
-    }
-    else {
+    } else {
       return gray;
     }
   };

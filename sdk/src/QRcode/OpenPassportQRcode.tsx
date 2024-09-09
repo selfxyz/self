@@ -17,10 +17,9 @@ import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
-const QRCodeSVG = dynamic(
-  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
-  { ssr: false }
-);
+const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
+  ssr: false,
+});
 
 interface OpenPassportQRcodeProps {
   appName: string;
@@ -43,9 +42,11 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   scope,
   userId,
   userIdType = DEFAULT_USER_ID_TYPE,
-  olderThan = "",
-  nationality = "",
-  onSuccess = (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => { console.log(proof, report) },
+  olderThan = '',
+  nationality = '',
+  onSuccess = (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => {
+    console.log(proof, report);
+  },
   circuit = 'prove',
   devMode = false,
   size = 300,
@@ -57,51 +58,67 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
 
-  const openPassport1StepVerifier = new OpenPassport1StepVerifier({ scope: scope, olderThan: olderThan, nationality: nationality, dev_mode: devMode });
+  const openPassport1StepVerifier = new OpenPassport1StepVerifier({
+    scope: scope,
+    olderThan: olderThan,
+    nationality: nationality,
+    dev_mode: devMode,
+  });
 
   const getAppStringified = () => {
     if (circuit === 'prove') {
-      const disclosureOptions = [["nationality", nationality], ["older_than", olderThan]]
-      return JSON.stringify(reconstructAppType({
-        name: appName,
-        scope: scope,
-        userId: userId,
-        userIdType: userIdType,
-        sessionId: sessionId,
-        circuit: circuit,
-        arguments: {
-          disclosureOptions: Object.fromEntries(disclosureOptions),
-        },
-        websocketUrl: websocketUrl,
-      }));
+      const disclosureOptions = [
+        ['nationality', nationality],
+        ['older_than', olderThan],
+      ];
+      return JSON.stringify(
+        reconstructAppType({
+          name: appName,
+          scope: scope,
+          userId: userId,
+          userIdType: userIdType,
+          sessionId: sessionId,
+          circuit: circuit,
+          arguments: {
+            disclosureOptions: Object.fromEntries(disclosureOptions),
+          },
+          websocketUrl: websocketUrl,
+        })
+      );
+    } else if (circuit === 'register') {
+      return JSON.stringify(
+        reconstructAppType({
+          name: appName,
+          scope: scope,
+          userId: userId,
+          userIdType: userIdType,
+          sessionId: sessionId,
+          circuit: circuit,
+          arguments: {
+            attestation_id: attestationId,
+            merkleTreeUrl: merkleTreeUrl,
+          },
+          websocketUrl: websocketUrl,
+        })
+      );
     }
-    else if (circuit === 'register') {
-      return JSON.stringify(reconstructAppType({
-        name: appName,
-        scope: scope,
-        userId: userId,
-        userIdType: userIdType,
-        sessionId: sessionId,
-        circuit: circuit,
-        arguments: {
-          attestation_id: attestationId,
-          merkleTreeUrl: merkleTreeUrl,
-        },
-        websocketUrl: websocketUrl
-      }));
-    }
-  }
+  };
 
   useEffect(() => {
-    initWebSocket(websocketUrl, sessionId, setProofStep, setProofVerified, openPassport1StepVerifier, onSuccess);
+    initWebSocket(
+      websocketUrl,
+      sessionId,
+      setProofStep,
+      setProofVerified,
+      openPassport1StepVerifier,
+      onSuccess
+    );
   }, [sessionId, websocketUrl]);
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
       <div style={ledContainerStyle}>
-        <LED
-          connectionStatus={proofStep}
-        />
+        <LED connectionStatus={proofStep} />
       </div>
       <div style={qrContainerStyle(size)}>
         {(() => {
@@ -111,23 +128,27 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
             case QRcodeSteps.PROOF_VERIFIED:
               if (proofVerified) {
-                return <Lottie
-                  animationData={CHECK_ANIMATION}
-                  style={{ width: 200, height: 200 }}
-                  onComplete={() => {
-                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                  }}
-                  loop={false}
-                />
+                return (
+                  <Lottie
+                    animationData={CHECK_ANIMATION}
+                    style={{ width: 200, height: 200 }}
+                    onComplete={() => {
+                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                    }}
+                    loop={false}
+                  />
+                );
               } else {
-                return <Lottie
-                  animationData={X_ANIMATION}
-                  style={{ width: 200, height: 200 }}
-                  onComplete={() => {
-                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                  }}
-                  loop={false}
-                />
+                return (
+                  <Lottie
+                    animationData={X_ANIMATION}
+                    style={{ width: 200, height: 200 }}
+                    onComplete={() => {
+                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                    }}
+                    loop={false}
+                  />
+                );
               }
             default:
               return <QRCodeSVG value={getAppStringified()} size={size} />;

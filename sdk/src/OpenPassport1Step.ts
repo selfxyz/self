@@ -25,7 +25,7 @@ export class OpenPassport1StepVerifier {
   scope: string;
   attestationId: string;
   olderThan?: string;
-  nationality?: typeof countryCodes[keyof typeof countryCodes];
+  nationality?: (typeof countryCodes)[keyof typeof countryCodes];
   rpcUrl: string;
   report: OpenPassportVerifierReport;
   dev_mode: boolean;
@@ -33,7 +33,7 @@ export class OpenPassport1StepVerifier {
     scope: string;
     attestationId?: string;
     olderThan?: string;
-    nationality?: typeof countryCodes[keyof typeof countryCodes];
+    nationality?: (typeof countryCodes)[keyof typeof countryCodes];
     rpcUrl?: string;
     dev_mode?: boolean;
   }) {
@@ -73,7 +73,8 @@ export class OpenPassport1StepVerifier {
     //5. Verify requirements
     const unpackedReveal = unpackReveal(parsedPublicSignals.revealedData_packed);
 
-    if (this.olderThan) { // older_than
+    if (this.olderThan) {
+      // older_than
       const attribute = 'older_than';
       const value = this.olderThan;
       const position = attributeToPosition[attribute];
@@ -82,12 +83,17 @@ export class OpenPassport1StepVerifier {
         attributeValue += unpackedReveal[i];
       }
       if (attributeValue !== value) {
-        this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport, attributeValue, value);
+        this.report.exposeAttribute(
+          attribute as keyof OpenPassportVerifierReport,
+          attributeValue,
+          value
+        );
       }
       console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
     }
 
-    if (this.nationality) { // nationality
+    if (this.nationality) {
+      // nationality
       const attribute = 'nationality';
       const value = this.nationality;
       const position = attributeToPosition[attribute];
@@ -96,7 +102,11 @@ export class OpenPassport1StepVerifier {
         attributeValue += unpackedReveal[i];
       }
       if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
-        this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport, attributeValue, value);
+        this.report.exposeAttribute(
+          attribute as keyof OpenPassportVerifierReport,
+          attributeValue,
+          value
+        );
       }
       console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
     }

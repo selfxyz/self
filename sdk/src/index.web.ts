@@ -10,5 +10,5 @@ export {
   OpenPassport1StepInputs,
   OpenPassportVerifierReport,
   countryCodes,
-  OpenPassportQRcode
+  OpenPassportQRcode,
 };
