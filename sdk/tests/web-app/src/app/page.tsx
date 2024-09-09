@@ -1,6 +1,7 @@
 'use client';
 
 import { OpenPassportQRcode } from '../../../../src/QRcode/OpenPassportQRcode';
+// import { OpenPassportQRcode } from '../../../../dist/bundle.web.js'
 import { TextField } from '@mui/material';
 import { useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
