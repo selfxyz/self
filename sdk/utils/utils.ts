@@ -8,6 +8,9 @@ import {
   vkey_prove_rsa_65537_sha1,
   vkey_prove_rsa_65537_sha256,
   vkey_prove_rsapss_65537_sha256,
+  vkey_register_rsa_65537_sha1,
+  vkey_register_rsa_65537_sha256,
+  vkey_register_rsapss_65537_sha256,
 } from '../../common/src/constants/vkey';
 import { getCircuitName } from '../../common/src/utils/handleCertificate';
 
@@ -24,6 +27,12 @@ export function getVkey(circuit: string, signatureAlgorithm: string, hashFunctio
       return vkey_prove_rsa_65537_sha1;
     case 'prove_rsapss_65537_sha256':
       return vkey_prove_rsapss_65537_sha256;
+    case 'register_rsa_65537_sha256':
+      return vkey_register_rsa_65537_sha256;
+    case 'register_rsa_65537_sha1':
+      return vkey_register_rsa_65537_sha1;
+    case 'register_rsapss_65537_sha256':
+      return vkey_register_rsapss_65537_sha256;
     default:
       throw new Error('Invalid signature algorithm or hash function');
   }

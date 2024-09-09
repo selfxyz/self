@@ -38,10 +38,8 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
     );
     const openPassport1StepVerifier = new OpenPassport1StepVerifier({
       scope: scope,
-      requirements: [
-        ['older_than', '18'],
-        ['nationality', 'France'],
-      ],
+      olderThan: '18',
+      nationality: 'France',
       dev_mode: true,
     });
     const openPassportProverInputs = new OpenPassport1StepInputs({
@@ -76,10 +74,8 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
     );
     const openPassport1StepVerifier = new OpenPassport1StepVerifier({
       scope: scope,
-      requirements: [
-        ['older_than', '18'],
-        ['nationality', 'France'],
-      ],
+      olderThan: '18',
+      nationality: 'France',
       dev_mode: true,
     });
     const openPassportProverInputs = new OpenPassport1StepInputs({
@@ -114,10 +110,8 @@ describe('\x1b[95mOpenPassport1Step\x1b[0m', function () {
     );
     const openPassport1StepVerifier = new OpenPassport1StepVerifier({
       scope: scope,
-      requirements: [
-        ['older_than', '18'],
-        ['nationality', 'France'],
-      ],
+      olderThan: '18',
+      nationality: 'France',
       dev_mode: true,
     });
     const openPassportProverInputs = new OpenPassport1StepInputs({

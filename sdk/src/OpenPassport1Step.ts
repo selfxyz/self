@@ -24,20 +24,23 @@ import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate'
 export class OpenPassport1StepVerifier {
   scope: string;
   attestationId: string;
-  requirements: string[][];
+  olderThan?: string;
+  nationality?: (typeof countryCodes)[keyof typeof countryCodes];
   rpcUrl: string;
   report: OpenPassportVerifierReport;
   dev_mode: boolean;
   constructor(options: {
     scope: string;
     attestationId?: string;
-    requirements?: string[][];
+    olderThan?: string;
+    nationality?: (typeof countryCodes)[keyof typeof countryCodes];
     rpcUrl?: string;
     dev_mode?: boolean;
   }) {
     this.scope = options.scope;
     this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
-    this.requirements = options.requirements || [];
+    this.olderThan = options.olderThan || null;
+    this.nationality = options.nationality || null;
     this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
     this.report = new OpenPassportVerifierReport();
     this.dev_mode = options.dev_mode || false;
@@ -69,24 +72,43 @@ export class OpenPassport1StepVerifier {
 
     //5. Verify requirements
     const unpackedReveal = unpackReveal(parsedPublicSignals.revealedData_packed);
-    for (const requirement of this.requirements) {
-      const attribute = requirement[0];
-      const value = requirement[1];
+
+    if (this.olderThan) {
+      // older_than
+      const attribute = 'older_than';
+      const value = this.olderThan;
       const position = attributeToPosition[attribute];
       let attributeValue = '';
       for (let i = position[0]; i <= position[1]; i++) {
         attributeValue += unpackedReveal[i];
       }
-      if (requirement[0] === 'nationality' || requirement[0] === 'issuing_state') {
-        if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
-          this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
-        }
-      } else {
-        if (attributeValue !== value) {
-          this.report.exposeAttribute(attribute as keyof OpenPassportVerifierReport);
-        }
+      if (attributeValue !== value) {
+        this.report.exposeAttribute(
+          attribute as keyof OpenPassportVerifierReport,
+          attributeValue,
+          value
+        );
       }
-      console.log('\x1b[32m%s\x1b[0m', `- requirement ${requirement[0]} verified`);
+      console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
+    }
+
+    if (this.nationality) {
+      // nationality
+      const attribute = 'nationality';
+      const value = this.nationality;
+      const position = attributeToPosition[attribute];
+      let attributeValue = '';
+      for (let i = position[0]; i <= position[1]; i++) {
+        attributeValue += unpackedReveal[i];
+      }
+      if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
+        this.report.exposeAttribute(
+          attribute as keyof OpenPassportVerifierReport,
+          attributeValue,
+          value
+        );
+      }
+      console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
     }
 
     //6. Verify the proof

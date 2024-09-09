@@ -48,4 +48,4 @@ template REGISTER_RSA_65537_SHA256(n, k, max_datahashes_bytes, nLevels, signatur
 }
 
 // We hardcode 1 here for sha256WithRSAEncryption_65537
-component main { public [ attestation_id ] } = REGISTER_RSA_65537_SHA256(121, 17, 320, 16, 1);
+component main { public [ attestation_id ] } = REGISTER_RSA_65537_SHA256(64, 32, 320, 16, 1);

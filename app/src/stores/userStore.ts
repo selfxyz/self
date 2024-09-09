@@ -4,24 +4,12 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
-import forge from 'node-forge';
 import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
-import useNavigationStore from './navigationStore';
-import { downloadZkey } from '../utils/zkeyDownload';
-import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { PASSPORT_ATTESTATION_ID, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
-import { generateProof } from '../utils/prover';
-import { formatSigAlgNameForCircuit } from '../../../common/src/utils/utils';
-import { sendRegisterTransaction } from '../utils/transactions';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
-import { ethers } from 'ethers';
-import { isCommitmentRegistered } from '../utils/registration';
 import { generateDscSecret } from '../../../common/src/utils/csca';
-import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
-
 
 interface UserState {
   passportNumber: string
@@ -36,7 +24,6 @@ interface UserState {
   userLoaded: boolean
   initUserStore: () => void
   registerPassportData: (passportData: PassportData) => void
-  registerCommitment: (passportData?: PassportData) => void
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
   clearProofsFromStorage: () => void
@@ -83,6 +70,8 @@ const useUserStore = create<UserState>((set, get) => ({
 
     const secret = await loadSecretOrCreateIt();
     set({ secret });
+    const dscSecret = await generateDscSecret();
+    set({ dscSecret });
 
     const passportDataString = await loadPassportData();
     if (!passportDataString) {
@@ -113,10 +102,6 @@ const useUserStore = create<UserState>((set, get) => ({
       registered: true,
     });
     set({ userLoaded: true });
-
-    const sigAlgName = getSignatureAlgorithm(passportData.dsc!);
-    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
-    downloadZkey(circuitName as any);
   },
 
   // When reading passport for the first time:
@@ -133,109 +118,6 @@ const useUserStore = create<UserState>((set, get) => ({
     await storePassportData(passportData)
     set({ passportData });
   },
-
-  registerCommitment: async (mockPassportData?: PassportData) => {
-    console.log("registerCommitment")
-    const {
-      toast,
-      update: updateNavigationStore,
-    } = useNavigationStore.getState();
-    const secret = await loadSecret() as string;
-    let passportData = get().passportData
-    if (mockPassportData) {
-      passportData = mockPassportData
-    }
-
-    const isAlreadyRegistered = await isCommitmentRegistered(secret, passportData);
-    console.log("isAlreadyRegistered", isAlreadyRegistered)
-    if (isAlreadyRegistered) {
-      console.log("commitment is already registered")
-      toast.show('Identity already registered, skipping', {
-        customData: {
-          type: "info",
-        },
-      })
-      set({ registered: true });
-      return;
-    }
-
-    let dsc_secret = get().dscSecret;
-
-    try {
-      if (get().dscSecret === null) {
-        dsc_secret = generateDscSecret();
-        get().setDscSecret(dsc_secret);
-      }
-      const inputs = generateCircuitInputsRegister(
-        secret,
-        dsc_secret as string,
-        PASSPORT_ATTESTATION_ID,
-        passportData,
-        121,
-        17
-
-      );
-
-      //amplitude.track(`Sig alg supported: ${passportData.signatureAlgorithm}`);
-      console.log("userStore - inputs - Object.keys(inputs).forEach((key) => {...")
-      Object.keys(inputs).forEach((key) => {
-        if (Array.isArray(inputs[key as keyof typeof inputs])) {
-          console.log(key, inputs[key as keyof typeof inputs].slice(0, 10), '...');
-        } else {
-          console.log(key, inputs[key as keyof typeof inputs]);
-        }
-      });
-
-      const start = Date.now();
-
-      const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey!.exponent);
-      const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
-
-      const proof = await generateProof(
-        `register_${sigAlgFormatted}`,
-        inputs
-      );
-      console.log('localProof:', proof);
-      get().localProof = proof;
-
-      const end = Date.now();
-      console.log('Total proof time from frontend:', end - start);
-      //amplitude.track('Proof generation successful, took ' + ((end - start) / 1000) + ' seconds');
-
-
-      if ((get().cscaProof !== null) && (get().localProof !== null)) {
-        console.log("Proof from Modal server already received, sending transaction");
-        const provider = new ethers.JsonRpcProvider(RPC_URL);
-        const serverResponse = await sendRegisterTransaction(proof, get().cscaProof as Proof, sigAlgIndex)
-        const txHash = serverResponse?.data.hash;
-        const receipt = await provider.waitForTransaction(txHash);
-        console.log('receipt status:', receipt?.status);
-        if (receipt?.status === 0) {
-          throw new Error("Transaction failed");
-        }
-        set({ registered: true });
-        useNavigationStore.getState().setSelectedTab("app");
-        toast.show('✅', {
-          message: "Registered",
-          customData: {
-            type: "success",
-          },
-        })
-      }
-      else {
-        console.log("Proof from Modal server not received, waiting for it...");
-      }
-
-    } catch (error: any) {
-      console.error(error);
-      updateNavigationStore({
-        showRegistrationErrorSheet: true,
-        registrationErrorMessage: error.message,
-      })
-      //amplitude.track(error.message);
-    }
-  },
-
 
   clearPassportDataFromStorage: async () => {
     await Keychain.resetGenericPassword({ service: "passportData" });

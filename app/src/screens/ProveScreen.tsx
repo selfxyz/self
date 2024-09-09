@@ -13,6 +13,7 @@ import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
 import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
+import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
@@ -139,15 +140,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
       console.log("selectedApp.userIdType", selectedApp.userIdType);
-      const inputs = generateCircuitInputsProve(
-        passportData,
-        64, 32,
-        selectedApp.scope,
-        revealBitmapFromAttributes(disclosureOptions as any),
-        disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
-        selectedApp.userId,
-        selectedApp.userIdType
-      );
+
+
+      const inputs = generateCircuitInputsInApp(passportData, selectedApp);
       const rawDscProof = await generateProof(
         circuitName,
         inputs,
