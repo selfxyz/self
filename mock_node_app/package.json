@@ -1,9 +1,0 @@
-{
-  "name": "mock_node_app",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "@proofofpassport/sdk": "^2.0.9"
-  }
-}
