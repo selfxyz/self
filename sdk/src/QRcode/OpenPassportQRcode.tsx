@@ -24,7 +24,7 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
 interface OpenPassportQRcodeProps {
   appName: string;
   scope: string;
-  userId: string;
+  userId?: string;
   userIdType?: UserIdType;
   olderThan?: string;
   nationality?: string;
