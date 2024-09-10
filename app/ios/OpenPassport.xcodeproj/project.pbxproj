@@ -52,6 +52,7 @@
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
+		167D93402C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D933F2C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */; };
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
@@ -139,6 +140,7 @@
 		165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = "<group>"; };
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
+		167D933F2C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_rsa_65537_sha256.a; sourceTree = "<group>"; };
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
@@ -181,6 +183,7 @@
 				0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */,
 				0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */,
 				0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
+				167D93402C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */,
 				05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */,
 				CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */,
 				0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
@@ -256,6 +259,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				167D933F2C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */,
 				0573C4EA2C72E7F6006C7386 /* groth16_prover.h */,
 				0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */,
 				0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */,
