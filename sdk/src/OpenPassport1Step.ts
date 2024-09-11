@@ -47,14 +47,34 @@ export class OpenPassport1StepVerifier {
   }
 
   async verify(
-    openPassport1StepInputs: OpenPassport1StepInputs
+    openPassport1StepInputs: OpenPassport1StepInputs | any
   ): Promise<OpenPassportVerifierReport> {
+    // Ensure openPassport1StepInputs is an instance of OpenPassport1StepInputs
+    if (!(openPassport1StepInputs instanceof OpenPassport1StepInputs)) {
+      openPassport1StepInputs = new OpenPassport1StepInputs(openPassport1StepInputs);
+    }
+
     const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassport1StepInputs.dsc);
     const vkey = getVkey(openPassport1StepInputs.circuit, signatureAlgorithm, hashFunction);
-    const parsedPublicSignals = parsePublicSignals1Step(
-      openPassport1StepInputs.dscProof.publicSignals
+    const parsedPublicSignals: any = openPassport1StepInputs.getParsedPublicSignals();
+
+
+    //0. Verify the proof
+
+    const verified_prove = await groth16.verify(
+      vkey,
+      openPassport1StepInputs.dscProof.publicSignals,
+      openPassport1StepInputs.dscProof.proof as any
     );
+    if (!verified_prove) {
+      this.report.exposeAttribute('proof');
+    }
+    console.log('\x1b[32m%s\x1b[0m', `- proof verified`);
+    if (openPassport1StepInputs.circuit === 'register') {
+      return this.report;
+    }
     //1. Verify the scope
+
     if (castToScope(parsedPublicSignals.scope) !== this.scope) {
       this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
     }
@@ -111,17 +131,7 @@ export class OpenPassport1StepVerifier {
       console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
     }
 
-    //6. Verify the proof
 
-    const verified_prove = await groth16.verify(
-      vkey,
-      openPassport1StepInputs.dscProof.publicSignals,
-      openPassport1StepInputs.dscProof.proof as any
-    );
-    if (!verified_prove) {
-      this.report.exposeAttribute('proof');
-    }
-    console.log('\x1b[32m%s\x1b[0m', `- proof verified`);
 
     //7 Verify the dsc
     const dscCertificate = forge.pki.certificateFromPem(openPassport1StepInputs.dsc);
@@ -169,11 +179,16 @@ export class OpenPassport1StepInputs {
   }
 
   getParsedPublicSignals() {
-    return parsePublicSignals1Step(this.dscProof.publicSignals);
+    switch (this.circuit) {
+      case 'prove':
+        return parsePublicSignalsProve(this.dscProof.publicSignals);
+      case 'register':
+        return parsePublicSignalsRegister(this.dscProof.publicSignals);
+    }
   }
 
   getUserId() {
-    const rawUserId = this.getParsedPublicSignals().user_identifier;
+    const rawUserId = (this.getParsedPublicSignals() as any).user_identifier;
     switch (this.userIdType) {
       case 'ascii':
         return castToScope(BigInt(rawUserId));
@@ -189,7 +204,7 @@ export class OpenPassport1StepInputs {
   }
 }
 
-export function parsePublicSignals1Step(publicSignals) {
+export function parsePublicSignalsProve(publicSignals) {
   return {
     signature_algorithm: publicSignals[0],
     revealedData_packed: [publicSignals[1], publicSignals[2], publicSignals[3]],
@@ -198,5 +213,14 @@ export function parsePublicSignals1Step(publicSignals) {
     scope: publicSignals[37],
     current_date: publicSignals.slice(38, 44),
     user_identifier: publicSignals[44],
+  };
+}
+
+export function parsePublicSignalsRegister(publicSignals) {
+  return {
+    nullifier: publicSignals[0],
+    blinded_dsc_commitment: publicSignals[1],
+    commitment: publicSignals[2],
+    attestation_id: publicSignals[3],
   };
 }
