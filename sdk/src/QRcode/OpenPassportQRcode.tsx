@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import {
-  OpenPassport1StepInputs,
-  OpenPassport1StepVerifier,
+  OpenPassportVerifierInputs,
+  OpenPassportVerifier,
   OpenPassportVerifierReport,
 } from '../index.web';
 import { BounceLoader } from 'react-spinners';
@@ -11,7 +11,7 @@ import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
 import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
-import { reconstructAppType } from '../../../common/src/utils/appType';
+import { CircuitName, reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -28,8 +28,8 @@ interface OpenPassportQRcodeProps {
   userIdType?: UserIdType;
   olderThan?: string;
   nationality?: string;
-  onSuccess?: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void;
-  circuit?: string;
+  onSuccess?: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void;
+  circuit: CircuitName;
   devMode?: boolean;
   size?: number;
   websocketUrl?: string;
@@ -44,10 +44,10 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   userIdType = DEFAULT_USER_ID_TYPE,
   olderThan = '',
   nationality = '',
-  onSuccess = (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => {
+  onSuccess = (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => {
     console.log(proof, report);
   },
-  circuit = 'prove',
+  circuit,
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
@@ -58,11 +58,12 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
 
-  const openPassport1StepVerifier = new OpenPassport1StepVerifier({
+  const openPassportVerifier = new OpenPassportVerifier({
     scope: scope,
     olderThan: olderThan,
     nationality: nationality,
     dev_mode: devMode,
+    circuit: circuit,
   });
 
   const getAppStringified = () => {
@@ -110,7 +111,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
       sessionId,
       setProofStep,
       setProofVerified,
-      openPassport1StepVerifier,
+      openPassportVerifier,
       onSuccess
     );
   }, [sessionId, websocketUrl]);

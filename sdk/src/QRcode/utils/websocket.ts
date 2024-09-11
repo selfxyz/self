@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
-import { OpenPassport1StepInputs, OpenPassport1StepVerifier } from '../../OpenPassport1Step';
+import { OpenPassportVerifierInputs, OpenPassportVerifier } from '../../OpenPassportVerifier';
 import { OpenPassportVerifierReport } from '../../OpenPassportVerifierReport';
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
@@ -17,8 +17,8 @@ const handleWebSocketMessage =
     sessionId: string,
     setProofStep: (step: number) => void,
     setProofVerified: (proofVerified: boolean) => void,
-    openPassport1StepVerifier: OpenPassport1StepVerifier,
-    onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void
+    openPassportVerifier: OpenPassportVerifier,
+    onSuccess: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void
   ) =>
   async (data) => {
     console.log('received mobile status:', data.status);
@@ -44,8 +44,9 @@ const handleWebSocketMessage =
 
     if (data.proof) {
       try {
-        const local_proofVerified: OpenPassportVerifierReport =
-          await openPassport1StepVerifier.verify(data.proof);
+        const local_proofVerified: OpenPassportVerifierReport = await openPassportVerifier.verify(
+          data.proof
+        );
         setProofVerified(local_proofVerified.valid);
         setProofStep(QRcodeSteps.PROOF_VERIFIED);
         setTimeout(() => {
@@ -54,8 +55,8 @@ const handleWebSocketMessage =
             proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid) {
-            const openPassport1StepInputs = new OpenPassport1StepInputs(data.proof);
-            onSuccess(openPassport1StepInputs, local_proofVerified);
+            const openPassportVerifierInputs = new OpenPassportVerifierInputs(data.proof);
+            onSuccess(openPassportVerifierInputs, local_proofVerified);
           }
         }, 1500); // wait for animation to finish before sending the proof to mobile
       } catch (error) {
@@ -74,8 +75,8 @@ export function initWebSocket(
   sessionId: string,
   setProofStep: (step: number) => void,
   setProofVerified: (proofVerified: boolean) => void,
-  openPassport1StepVerifier: OpenPassport1StepVerifier,
-  onSuccess: (proof: OpenPassport1StepInputs, report: OpenPassportVerifierReport) => void
+  openPassportVerifier: OpenPassportVerifier,
+  onSuccess: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void
 ) {
   const socket = newSocket(websocketUrl, sessionId);
   socket.on(
@@ -85,7 +86,7 @@ export function initWebSocket(
       sessionId,
       setProofStep,
       setProofVerified,
-      openPassport1StepVerifier,
+      openPassportVerifier,
       onSuccess
     )
   );

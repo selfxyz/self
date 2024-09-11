@@ -1,27 +1,32 @@
 import { groth16 } from 'snarkjs';
 import {
-  attributeToPosition,
   countryCodes,
   DEFAULT_RPC_URL,
+  k_dsc,
+  n_dsc,
   PASSPORT_ATTESTATION_ID,
 } from '../../common/src/constants/constants';
-import { getCurrentDateFormatted, getVkey, verifyDSCValidity } from '../utils/utils';
+import {
+  areArraysEqual,
+  getAttributeFromUnpackedReveal,
+  getCurrentDateFormatted,
+  getVkeyFromArtifacts,
+  verifyDSCValidity,
+} from '../utils/utils';
 import { unpackReveal } from '../../common/src/utils/revealBitmap';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 
 import forge from 'node-forge';
 import {
   bigIntToHex,
-  castFromScope,
   castToScope,
   castToUUID,
-  hexToUUID,
   splitToWords,
   UserIdType,
 } from '../../common/src/utils/utils';
 import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
 
-export class OpenPassport1StepVerifier {
+export class OpenPassportVerifier {
   scope: string;
   attestationId: string;
   olderThan?: string;
@@ -29,6 +34,8 @@ export class OpenPassport1StepVerifier {
   rpcUrl: string;
   report: OpenPassportVerifierReport;
   dev_mode: boolean;
+  parsedPublicSignals: any;
+  circuit: string;
   constructor(options: {
     scope: string;
     attestationId?: string;
@@ -36,6 +43,7 @@ export class OpenPassport1StepVerifier {
     nationality?: (typeof countryCodes)[keyof typeof countryCodes];
     rpcUrl?: string;
     dev_mode?: boolean;
+    circuit: string;
   }) {
     this.scope = options.scope;
     this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
@@ -44,115 +52,105 @@ export class OpenPassport1StepVerifier {
     this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
     this.report = new OpenPassportVerifierReport();
     this.dev_mode = options.dev_mode || false;
+    this.circuit = options.circuit;
   }
 
   async verify(
-    openPassport1StepInputs: OpenPassport1StepInputs | any
+    openPassportVerifierInputs: OpenPassportVerifierInputs | any
   ): Promise<OpenPassportVerifierReport> {
-    // Ensure openPassport1StepInputs is an instance of OpenPassport1StepInputs
-    if (!(openPassport1StepInputs instanceof OpenPassport1StepInputs)) {
-      openPassport1StepInputs = new OpenPassport1StepInputs(openPassport1StepInputs);
+    if (!(openPassportVerifierInputs instanceof OpenPassportVerifierInputs)) {
+      openPassportVerifierInputs = new OpenPassportVerifierInputs(openPassportVerifierInputs);
     }
 
-    const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassport1StepInputs.dsc);
-    const vkey = getVkey(openPassport1StepInputs.circuit, signatureAlgorithm, hashFunction);
-    const parsedPublicSignals: any = openPassport1StepInputs.getParsedPublicSignals();
+    this.parsedPublicSignals = openPassportVerifierInputs.getParsedPublicSignals();
 
+    await this.verifyProof(openPassportVerifierInputs);
+    switch (this.circuit) {
+      case 'prove':
+        await this.verifyProve(openPassportVerifierInputs);
+        break;
+      case 'register':
+        await this.verifyRegister();
+        break;
+      case 'disclose':
+        await this.verifyDisclose();
+        break;
+    }
+    return this.report;
+  }
 
-    //0. Verify the proof
-
+  private async verifyProof(openPassportVerifierInputs: OpenPassportVerifierInputs) {
+    const vkey = this.getVkey(openPassportVerifierInputs);
     const verified_prove = await groth16.verify(
       vkey,
-      openPassport1StepInputs.dscProof.publicSignals,
-      openPassport1StepInputs.dscProof.proof as any
+      openPassportVerifierInputs.dscProof.publicSignals,
+      openPassportVerifierInputs.dscProof.proof as any
     );
-    if (!verified_prove) {
-      this.report.exposeAttribute('proof');
-    }
-    console.log('\x1b[32m%s\x1b[0m', `- proof verified`);
-    if (openPassport1StepInputs.circuit === 'register') {
-      return this.report;
-    }
-    //1. Verify the scope
+    this.verifyAttribute('proof', verified_prove.toString(), 'true');
+  }
 
-    if (castToScope(parsedPublicSignals.scope) !== this.scope) {
-      this.report.exposeAttribute('scope', parsedPublicSignals.scope, this.scope);
-    }
-    console.log('\x1b[32m%s\x1b[0m', `- scope verified`);
+  private async verifyProve(openPassportVerifierInputs: OpenPassportVerifierInputs) {
+    this.verifyAttribute('scope', castToScope(this.parsedPublicSignals.scope), this.scope);
+    this.verifyAttribute(
+      'current_date',
+      this.parsedPublicSignals.current_date.toString(),
+      getCurrentDateFormatted().toString()
+    );
 
-    //4. Verify the current_date
-    if (parsedPublicSignals.current_date.toString() !== getCurrentDateFormatted().toString()) {
-      this.report.exposeAttribute(
-        'current_date',
-        parsedPublicSignals.current_date,
-        getCurrentDateFormatted()
-      );
-    }
-    console.log('\x1b[32m%s\x1b[0m', `- current_date verified`);
-
-    //5. Verify requirements
-    const unpackedReveal = unpackReveal(parsedPublicSignals.revealedData_packed);
-
+    // requirements
+    const unpackedReveal = unpackReveal(this.parsedPublicSignals.revealedData_packed);
     if (this.olderThan) {
-      // older_than
-      const attribute = 'older_than';
-      const value = this.olderThan;
-      const position = attributeToPosition[attribute];
-      let attributeValue = '';
-      for (let i = position[0]; i <= position[1]; i++) {
-        attributeValue += unpackedReveal[i];
+      const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'older_than');
+      if (attributeValue > this.olderThan) {
+        this.report.exposeAttribute('older_than', attributeValue, this.olderThan);
       }
-      if (attributeValue !== value) {
-        this.report.exposeAttribute(
-          attribute as keyof OpenPassportVerifierReport,
-          attributeValue,
-          value
-        );
-      }
-      console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
     }
-
     if (this.nationality) {
-      // nationality
-      const attribute = 'nationality';
-      const value = this.nationality;
-      const position = attributeToPosition[attribute];
-      let attributeValue = '';
-      for (let i = position[0]; i <= position[1]; i++) {
-        attributeValue += unpackedReveal[i];
-      }
-      if (!countryCodes[attributeValue] || countryCodes[attributeValue] !== value) {
-        this.report.exposeAttribute(
-          attribute as keyof OpenPassportVerifierReport,
-          attributeValue,
-          value
-        );
-      }
-      console.log('\x1b[32m%s\x1b[0m', `- requirement ${attribute} verified`);
+      const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
+      this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality);
     }
 
-
-
-    //7 Verify the dsc
-    const dscCertificate = forge.pki.certificateFromPem(openPassport1StepInputs.dsc);
+    const dscCertificate = forge.pki.certificateFromPem(openPassportVerifierInputs.dsc);
     const verified_certificate = verifyDSCValidity(dscCertificate, this.dev_mode);
     console.log('\x1b[32m%s\x1b[0m', 'certificate verified:' + verified_certificate);
 
-    // @ts-ignore
-    const dsc_modulus = BigInt(dscCertificate.publicKey.n);
-    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(64), BigInt(32));
-    const modulus_from_proof = parsedPublicSignals.pubKey;
-
-    const areArraysEqual = (arr1: string[], arr2: string[]) =>
-      arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
+    const dsc_modulus = BigInt((dscCertificate.publicKey as any).n);
+    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(n_dsc), BigInt(k_dsc));
+    const modulus_from_proof = this.parsedPublicSignals.pubKey;
 
     const verified_modulus = areArraysEqual(dsc_modulus_words, modulus_from_proof);
     console.log('\x1b[32m%s\x1b[0m', 'modulus verified:' + verified_modulus);
     return this.report;
   }
+
+  private async verifyRegister() {}
+
+  private async verifyDisclose() {}
+
+  private verifyAttribute(
+    attribute: keyof OpenPassportVerifierReport,
+    value: string,
+    expectedValue: string
+  ) {
+    if (value !== expectedValue) {
+      this.report.exposeAttribute(attribute, this.parsedPublicSignals[attribute], expectedValue);
+    }
+    console.log('\x1b[34m%s\x1b[0m', `- attribute ${attribute} verified`);
+  }
+
+  private getVkey(openPassportVerifierInputs: OpenPassportVerifierInputs) {
+    if (this.circuit === 'prove' || this.circuit === 'register') {
+      const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(
+        openPassportVerifierInputs.dsc
+      );
+      return getVkeyFromArtifacts(this.circuit, signatureAlgorithm, hashFunction);
+    } else {
+      throw new Error('vkey of ' + this.circuit + ' not found');
+    }
+  }
 }
 
-export class OpenPassport1StepInputs {
+export class OpenPassportVerifierInputs {
   dscProof: {
     publicSignals: string[];
     proof: string[];
@@ -174,7 +172,7 @@ export class OpenPassport1StepInputs {
       proof: [],
     };
     this.dsc = options.dsc || '';
-    this.circuit = options.circuit || '';
+    this.circuit = options.circuit || ''; // useless
     this.userIdType = options.userIdType || 'uuid';
   }
 

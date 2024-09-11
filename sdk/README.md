@@ -53,11 +53,11 @@ const qrCode: HTMLElement = await QRCodeGenerator.generateQRCode(cowboyApp);
 
 ## 1 Step flow
 
-To use the `OpenPassport1StepVerifier`, import and initialize it as follows:
+To use the `OpenPassportVerifier`, import and initialize it as follows:
 
 ```typescript
-import { OpenPassport1StepVerifier } from '@openpassport/sdk';
-const verifier = new OpenPassport1StepVerifier({
+import { OpenPassportVerifier } from '@openpassport/sdk';
+const verifier = new OpenPassportVerifier({
   scope: 'cowboyApp',
   requirements: [
     ['older_than', '18'],
@@ -66,7 +66,7 @@ const verifier = new OpenPassport1StepVerifier({
 });
 ```
 
-### Parameters for `OpenPassport1StepVerifier`
+### Parameters for `OpenPassportVerifier`
 
 | Parameter       | Optional | Description                                                                       |
 | --------------- | -------- | --------------------------------------------------------------------------------- |
@@ -78,10 +78,10 @@ const verifier = new OpenPassport1StepVerifier({
 
 ### Verify the proof
 
-The function fired from the OpenPassport app will send a `OpenPassport1StepInputs` object.
+The function fired from the OpenPassport app will send a `OpenPassportVerifierInputs` object.
 
 ```typescript
-const result: OpenPassportVerifierReport = await verifier.verify(openPassport1StepInputs);
+const result: OpenPassportVerifierReport = await verifier.verify(openPassportVerifierInputs);
 ```
 
 From the `result` object, you can inspect the validity of any submitted attribute.
