@@ -20,7 +20,8 @@ const datZipUrls = {
   prove_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha256.dat.zip",
   prove_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha1.dat.zip",
   prove_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/prove_rsapss_65537_sha256.dat.zip",
-  register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/register_rsa_65537_sha256.dat.zip",
+  // register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/register_rsa_65537_sha256.dat.zip",
+  register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/register_rsa_65537_sha256_test_fix_witnesscalc.dat.zip",
   register_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/register_rsa_65537_sha1.dat.zip",
   register_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/register_rsapss_65537_sha256.dat.zip",
 };
