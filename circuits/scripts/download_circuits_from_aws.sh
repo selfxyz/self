@@ -1,20 +1,26 @@
 #!/bin/sh
 
-# Define the circuit names, URLs, download flags, and circuit types
-circuits="prove_rsa_65537_sha256 prove_rsa_65537_sha1 prove_rsapss_65537_sha256"
-urls="https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha256.zkey.zip https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha1.zkey.zip https://d8o9bercqupgk.cloudfront.net/prove_rsapss_65537_sha256.zkey.zip"
+# Define the AWS URL prefix
+awsUrl="https://d8o9bercqupgk.cloudfront.net"
+
+# Define the circuit names, download flags, and circuit types
+# circuits="prove_rsa_65537_sha256:prove_rsa_65537_sha256 prove_rsa_65537_sha1:prove_rsa_65537_sha1 prove_rsapss_65537_sha256:prove_rsapss_65537_sha256"
+circuits="register_rsa_65537_sha256:register_rsa_65537_sha256 register_rsa_65537_sha1:register_rsa_65537_sha1 register_rsapss_65537_sha256:register_rsapss_65537_sha256"
 flags="true true true"
-circuit_types="prove prove prove"
+circuit_types="register register register"
 
 # Create the download directory
 mkdir -p build/fromAWS
 
 # Function to download, unzip, and compile a circuit
 download_and_compile_circuit() {
-    circuit_name=$1
-    url=$2
-    should_download=$3
-    circuit_type=$4
+    circuit_info=$1
+    should_download=$2
+    circuit_type=$3
+
+    circuit_name=$(echo $circuit_info | cut -d':' -f1)
+    circuit_url=$(echo $circuit_info | cut -d':' -f2)
+    url="${awsUrl}/${circuit_url}.zkey.zip"
 
     if [ "$should_download" = "true" ]; then
         echo "Downloading $circuit_name..."
@@ -54,10 +60,9 @@ download_and_compile_circuit() {
 # Download, unzip, and compile each circuit
 i=1
 for circuit in $circuits; do
-    url=$(echo $urls | cut -d' ' -f$i)
     flag=$(echo $flags | cut -d' ' -f$i)
     circuit_type=$(echo $circuit_types | cut -d' ' -f$i)
-    download_and_compile_circuit $circuit $url $flag $circuit_type
+    download_and_compile_circuit $circuit $flag $circuit_type
     i=$((i+1))
 done
 
