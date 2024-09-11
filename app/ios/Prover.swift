@@ -33,6 +33,14 @@ import witnesscalc_prove_rsapss_65537_sha256
 import witnesscalc_register_rsa_65537_sha256
 #endif
 
+#if canImport(witnesscalc_register_rsa_65537_sha1)
+import witnesscalc_register_rsa_65537_sha1
+#endif
+
+#if canImport(witnesscalc_register_rsapss_65537_sha256)
+import witnesscalc_register_rsapss_65537_sha256
+#endif
+
 #if canImport(groth16_prover)
 import groth16_prover
 #endif
@@ -161,7 +169,23 @@ private func _calcWtns(witness_calculator: String, dat: Data, jsonData: Data) th
             wtnsBuffer, wtnsSize,
             errorBuffer, errorSize
         )
-    } else {
+    } else if witness_calculator == "register_rsa_65537_sha1" {
+        result = witnesscalc_register_rsa_65537_sha1(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } else if witness_calculator == "register_rsapss_65537_sha256" {
+        result = witnesscalc_register_rsapss_65537_sha256(
+            (dat as NSData).bytes, datSize,
+            (jsonData as NSData).bytes, jsonDataSize,
+            wtnsBuffer, wtnsSize,
+            errorBuffer, errorSize
+        )
+    } 
+    
+    else {
         fatalError("Invalid witness calculator name")
     }
     
