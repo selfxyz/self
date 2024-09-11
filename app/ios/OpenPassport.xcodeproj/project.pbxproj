@@ -53,6 +53,7 @@
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
 		167D93402C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D933F2C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */; };
+		167D93412C90B6C000530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D933F2C9090ED00530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */; };
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
@@ -168,6 +169,7 @@
 				0573C4E42C72E7F6006C7386 /* libfq.a in Frameworks */,
 				0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */,
 				05527D5E2C7743010077C942 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
+				167D93412C90B6C000530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */,
 				0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */,
 				926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */,
 				05527D5D2C7743010077C942 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
