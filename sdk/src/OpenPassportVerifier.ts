@@ -67,13 +67,15 @@ export class OpenPassportVerifier {
     await this.verifyProof(openPassportVerifierInputs);
     switch (this.circuit) {
       case 'prove':
-        await this.verifyProve(openPassportVerifierInputs);
+        await this.verifyProveArguments(openPassportVerifierInputs);
+        await this.verifyDsc(openPassportVerifierInputs);
         break;
       case 'register':
-        await this.verifyRegister();
+        await this.verifyRegisterArguments();
+        // await this.verifyDsc(openPassportVerifierInputs);
         break;
       case 'disclose':
-        await this.verifyDisclose();
+        await this.verifyDiscloseArguments();
         break;
     }
     return this.report;
@@ -89,7 +91,7 @@ export class OpenPassportVerifier {
     this.verifyAttribute('proof', verified_prove.toString(), 'true');
   }
 
-  private async verifyProve(openPassportVerifierInputs: OpenPassportVerifierInputs) {
+  private async verifyProveArguments(openPassportVerifierInputs: OpenPassportVerifierInputs) {
     this.verifyAttribute('scope', castToScope(this.parsedPublicSignals.scope), this.scope);
     this.verifyAttribute(
       'current_date',
@@ -110,22 +112,12 @@ export class OpenPassportVerifier {
       this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality);
     }
 
-    const dscCertificate = forge.pki.certificateFromPem(openPassportVerifierInputs.dsc);
-    const verified_certificate = verifyDSCValidity(dscCertificate, this.dev_mode);
-    console.log('\x1b[32m%s\x1b[0m', 'certificate verified:' + verified_certificate);
-
-    const dsc_modulus = BigInt((dscCertificate.publicKey as any).n);
-    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(n_dsc), BigInt(k_dsc));
-    const modulus_from_proof = this.parsedPublicSignals.pubKey;
-
-    const verified_modulus = areArraysEqual(dsc_modulus_words, modulus_from_proof);
-    console.log('\x1b[32m%s\x1b[0m', 'modulus verified:' + verified_modulus);
     return this.report;
   }
 
-  private async verifyRegister() {}
+  private async verifyRegisterArguments() {}
 
-  private async verifyDisclose() {}
+  private async verifyDiscloseArguments() {}
 
   private verifyAttribute(
     attribute: keyof OpenPassportVerifierReport,
@@ -147,6 +139,19 @@ export class OpenPassportVerifier {
     } else {
       throw new Error('vkey of ' + this.circuit + ' not found');
     }
+  }
+
+  private verifyDsc(openPassportVerifierInputs: OpenPassportVerifierInputs) {
+    const dscCertificate = forge.pki.certificateFromPem(openPassportVerifierInputs.dsc);
+    const verified_certificate = verifyDSCValidity(dscCertificate, this.dev_mode);
+    console.log('\x1b[32m%s\x1b[0m', 'certificate verified:' + verified_certificate);
+
+    const dsc_modulus = BigInt((dscCertificate.publicKey as any).n);
+    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(n_dsc), BigInt(k_dsc));
+    const modulus_from_proof = this.parsedPublicSignals.pubKey;
+
+    const verified_modulus = areArraysEqual(dsc_modulus_words, modulus_from_proof);
+    console.log('\x1b[32m%s\x1b[0m', 'modulus verified:' + verified_modulus);
   }
 }
 
