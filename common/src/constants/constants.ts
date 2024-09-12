@@ -52,8 +52,8 @@ export const attributeToPosition = {
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
 export const k_dsc = 32;
-export const n_csca = 121;
-export const k_csca = 34;
+export const n_csca = 120;
+export const k_csca = 35;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   "AFG": "Afghanistan",
