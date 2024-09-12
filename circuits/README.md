@@ -10,46 +10,51 @@
 
 ## Overview of the circuits
 
-Circom circuits are located in the `circuits/` folder.
-The circuits are split into two parts: `register` and `disclose`.
-This design is close to that of [semaphore](https://semaphore.pse.dev/).
+Circom circuits are located in the `circuits` folder.
 
-The `register` circuit is used for the following:
+There is a one-step flow and a two step flow.
 
-1. Verify the signature of the passport
-2. Verify that the public key which signed the passport is part of the registry merkle tree (a check of the merkle roots will be performed on-chain)
-3. Generate commitment = H (secret + passportData + some other data)
+The one-step flow allows a user to prove their passport is valid and disclose attributes at the same time. With the zk proof, they send the DSC (intermediate certificate) that signed their passport with to the verifier, who checks their DSC has been signed by a CSCA (top certificate). This is ideal if the verification is done server-side, there is no need for onchain verification, and if it's fine for the server to learn the nationality of the user, as it's leaked by the DSC. The circuits for the one-step flow are located in the `prove` directory. They are currently in use on the [playground](https://www.openpassport.app/playground).
 
-Once the proof is generated, the user can register on-chain and their commitment will be added to the Lean merkle tree.
+The `prove` circuits do the following:
+- Prove the passport has been signed by the DSC.
+- Optionally disclose attributes such as age.
 
-As the hash function and signature algorithm is different upon the issuer country, there will be different `register` circuits for each of those set-ups.
-The `register` will follow the `register_<hash>With<signature>.circom` naming convention.
-One verifier for each register circuit will be deployed on-chain, all of them committing to the same merkle tree.
+The two-step flow allows a user to register an identity in a merkle tree, proving they have a valid passport, then do selective disclosure proofs using the commitment they registered. This design is akin to [Semaphore](https://semaphore.pse.dev/). It's ideal for applications that need onchain verification or need the server to never learn the nationality of the user. The circuits are split into two parts: `register`, `dsc` and `disclose`.
 
-The `disclose` circuit is used for the following:
+The `register` circuits do the following:
+- Prove the passport has been signed by the DSC.
+- Do a blinded commitment of the DSC public key
+- Generate the user's commitment = H(secret + passportData)
 
-1. Verify that a user knows a secret e.g., he is able to reconstruct one leaf of the merkle tree (a check of the merkle roots will be performed on-chain)
-2. Passport expiry is verified
-3. A range check is performed over the age of the user
-4. The output is multiplied by an input bitmap to allow the user to disclose only what they want to disclose.
-5. Final output is packed.
+The `dsc` circuits do the following:
+- Prove the DSC has been signed by a CSCA.
+- Prove the CSCA is part of a merkle tree of CSCA.
+- Do a blinded commitment of the DSC public key.
 
-Any application that wants to use OpenPassport can actually build its own `disclose` circuit.
+The check that the two blinded commitments are equal and that the root of the CSCA merkle tree is valid can be performed onchain or offchain.
+The different `register` and `dsc` circuits correspond to the hash functions and signature algorithms countries use.
+
+The `disclose` circuit do the following:
+- Verify the user knows the secret corresponding to a commitment in the tree.
+- Check the passport is not expired
+- Optionally disclose attributes such as age.
 
 ### 🚧 Under development 🚧
 
 OpenPassport currently supports the following sig/hash algorithms:
 
-- [x] sha256WithRSAEncryption
-- [x] sha1WithRSAEncryption
-- [x] sha256WithRSASSAPSS
-- [ ] ecdsa-with-SHA384
-- [ ] ecdsa-with-SHA1
-- [ ] ecdsa-with-SHA256
-- [ ] ecdsa-with-SHA512
-- [ ] sha512WithRSAEncryption
+- [x] rsa_65537_sha256
+- [x] rsa_65537_sha1
+- [x] rsapss_65537_sha256
+- [x] ecdsa_sha1
+- [x] ecdsa_sha256
+- [ ] ecdsa_sha384
+- [ ] ecdsa_sha512
+- [ ] rsa_65537_sha512
 
-> 💡 We currently have a bounty program if you implement a sig/hash setup.
+For more details on signature algorithm support, see [this issue](https://github.com/zk-passport/openpassport/issues/38) and [the map](https://map.openpassport.app/)
+> 💡 We currently have a bounty program for implementing the remaining hash functions/signature algorithms.
 
 ## Installation
 
@@ -60,7 +65,8 @@ yarn install-circuits
 ## Build circuits (dev only)
 
 ```bash
-./scripts/build_circuits.sh
+./scripts/build_prove_circuits.sh
+./scripts/build_register_circuits.sh
 ```
 
 ## Run tests
@@ -68,5 +74,3 @@ yarn install-circuits
 ```bash
 yarn test
 ```
-
-This will run tests with sample data generated on the fly.
