@@ -6,7 +6,7 @@ import { poseidon6 } from 'poseidon-lite';
 import { mockPassportData_sha256_rsapss_65537 } from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
 import { packBytes } from '../../../common/src/utils/utils';
-import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
+import { computeLeafFromPubKey } from '../../../common/src/utils/csca';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 
 describe('Register - SHA256 RSASSAPSS', function () {
@@ -64,7 +64,7 @@ describe('Register - SHA256 RSASSAPSS', function () {
     const commitment_bytes = poseidon6([
       inputs.secret[0],
       PASSPORT_ATTESTATION_ID,
-      computeLeafFromModulusBigInt(BigInt(passportData.pubKey.modulus)),
+      computeLeafFromPubKey(BigInt(passportData.pubKey.modulus), n_dsc, k_dsc),
       mrz_bytes[0],
       mrz_bytes[1],
       mrz_bytes[2],

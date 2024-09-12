@@ -5,7 +5,6 @@ include "@zk-email/circuits/utils/bytes.circom";
 include "../verifier/passport_verifier_rsapss_65537_sha256.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitSignalsToWords.circom";
-include "../utils/leafHasher.circom";
 include "../disclose/disclose.circom";
 
 template PROVE_RSAPSS_65537_SHA256(n, k, max_datahashes_bytes) {

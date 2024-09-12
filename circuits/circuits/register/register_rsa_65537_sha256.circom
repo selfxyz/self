@@ -3,7 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "../verifier/passport_verifier_rsa_65537_sha256.circom";
 include "../utils/splitSignalsToWords.circom";
-include "../utils/leafHasher.circom";
+include "../utils/LeafHasherLight.circom";
 include "../utils/computeCommitment.circom";
 
 template REGISTER_RSA_65537_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
@@ -41,7 +41,7 @@ template REGISTER_RSA_65537_SHA256(n, k, max_datahashes_bytes, nLevels, signatur
     PV.signature <== signature;
 
     // Generate the leaf
-    signal leaf <== LeafHasher(n, k)(dsc_modulus);
+    signal leaf <== LeafHasherLight(k)(dsc_modulus);
 
     // Generate the commitment
     signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, mrz);

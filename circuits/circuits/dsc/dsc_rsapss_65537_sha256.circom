@@ -8,7 +8,7 @@ include "binary-merkle-root.circom";
 include "../utils/splitBytesToWords.circom";
 include "../utils/splitSignalsToWords.circom";
 include "../utils/RSASSAPSS_padded.circom";
-include "../utils/leafHasher.circom";
+include "../utils/leafHasherLight.circom";
 
 
 template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
@@ -27,9 +27,9 @@ template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, d
     signal output blinded_dsc_commitment;
 
     // verify the leaf
-    component leafHasher = LeafHasher(n_csca,k_csca);
-    leafHasher.in <== csca_modulus;
-    signal leaf <== leafHasher.out;
+    component leafHasherLight = LeafHasherLight(k_csca);
+    leafHasherLight.in <== csca_modulus;
+    signal leaf <== leafHasherLight.out;
 
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
