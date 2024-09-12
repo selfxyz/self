@@ -1,14 +1,15 @@
 pragma circom 2.1.6;
-
+include "@zk-email/circuits/lib/fp.circom";
 include "circomlib/circuits/poseidon.circom";
+include "../utils/splitSignalsToWords.circom";
 
 template LeafHasher(n, k) {
     signal input in[k];
     signal output out;
-
-    component splitSignalsToWords = SplitSignalsToWords(n, k, 64, 64);
+    var wordsSize =  div_ceil(n * k, 64);
+    component splitSignalsToWords = SplitSignalsToWords(n, k, wordsSize, 64);
     splitSignalsToWords.in <== in;
-
+    
     component hash[4];
     for (var i = 0; i < 4 ; i ++){
        hash[i] = Poseidon(16);

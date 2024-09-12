@@ -7,7 +7,7 @@ import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import { createHash } from "crypto";
 import axios from "axios";
-
+import { flexiblePoseidon } from "./poseidon";
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
     for (let i = 0; i < modulus.length; i += 2) {
@@ -166,29 +166,26 @@ export function getCSCAModulusMerkleTree() {
 
 export function computeLeafFromModulusFormatted(modulus_formatted: string[]) {
     if (modulus_formatted.length <= 64) {
-        const hashInputs = new Array(4);
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = new Array(16).fill(BigInt(0));
+        const hashInputs = new Array(4).fill(null).map(() => new Array(16).fill(BigInt(0)));
+
+        for (let i = 0; i < Math.min(modulus_formatted.length, 64); i++) {
+            hashInputs[Math.floor(i / 16)][i % 16] = BigInt(modulus_formatted[i]);
         }
-        for (let i = 0; i < 64; i++) {
-            if (i < modulus_formatted.length) {
-                hashInputs[i % 4][Math.floor(i / 4)] = BigInt(modulus_formatted[i]);
-            }
-        }
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
-        }
-        const finalHash = poseidon4(hashInputs.map(h => h));
+
+        const intermediateHashes = hashInputs.map(inputs => poseidon16(inputs));
+        const finalHash = poseidon4(intermediateHashes);
+
         console.log(finalHash);
         return finalHash.toString();
-    }
-    else {
+    } else {
         throw new Error("Modulus length is too long");
     }
 }
 export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
+    const bitsSize = getBitsSize(modulus_bigint);
+    const wordsSize = Math.ceil(bitsSize / 64);
     if (modulus_bigint <= BigInt(2n ** 4096n - 1n)) {
-        const modulus_formatted = splitToWords(modulus_bigint, BigInt(64), BigInt(64));
+        const modulus_formatted = splitToWords(modulus_bigint, BigInt(wordsSize), BigInt(64));
         const hashInputs = new Array(4);
         for (let i = 0; i < 4; i++) {
             hashInputs[i] = new Array(16).fill(BigInt(0));
@@ -208,6 +205,35 @@ export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
     else {
         throw new Error("Modulus length is too long");
     }
+}
+
+export function computeLeafFromPubKey(pubkey, n, k) {
+    const pubKeyFormatted = splitToWords(pubkey, BigInt(n), BigInt(k));
+    return leafHasherLight(pubKeyFormatted);
+}
+
+export function leafHasherLight(pubKeyFormatted: string[]) {
+    const rounds = Math.ceil(pubKeyFormatted.length / 16);
+    const hash = new Array(rounds);
+    for (let i = 0; i < rounds; i++) {
+        // Initialize each element of hash as an object with an inputs array
+        hash[i] = { inputs: new Array(16).fill(BigInt(0)) };
+    }
+    for (let i = 0; i < rounds; i++) {
+        for (let j = 0; j < 16; j++) {
+            if (i * 16 + j < pubKeyFormatted.length) {
+                hash[i].inputs[j] = BigInt(pubKeyFormatted[i * 16 + j]);
+            }
+        }
+    }
+    // Use the inputs array for poseidon4
+    const finalHash = flexiblePoseidon(hash.map(h => poseidon16(h.inputs)));
+    return finalHash.toString();
+}
+
+function getBitsSize(modulus_bigint: bigint) {
+    const i = (modulus_bigint.toString(16).length - 1) * 4
+    return i + 32 - Math.clz32(Number(modulus_bigint >> BigInt(i)))
 }
 
 export function getCSCAModulusProof(leaf, n, k) {
