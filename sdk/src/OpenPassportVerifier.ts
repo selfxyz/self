@@ -72,7 +72,6 @@ export class OpenPassportVerifier {
         break;
       case 'register':
         await this.verifyRegisterArguments();
-        // await this.verifyDsc(openPassportVerifierInputs);
         break;
       case 'disclose':
         await this.verifyDiscloseArguments();
@@ -115,9 +114,9 @@ export class OpenPassportVerifier {
     return this.report;
   }
 
-  private async verifyRegisterArguments() {}
+  private async verifyRegisterArguments() { }
 
-  private async verifyDiscloseArguments() {}
+  private async verifyDiscloseArguments() { }
 
   private verifyAttribute(
     attribute: keyof OpenPassportVerifierReport,
