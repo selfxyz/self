@@ -5,8 +5,9 @@ include "./mgf1.circom";
 include "./xor2.circom";
 include "../sha2/sha256/sha256_hash_bits.circom";
 include "../sha2/sha384/sha384_hash_bits.circom";
+include "../splitSignalsToWords.circom";
 
-template VerifyRsaPssSig (n, k, e_bits, ALGO){
+template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
 
     assert(ALGO == 256 || ALGO == 384);
 
@@ -15,16 +16,18 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO){
     signal input signature[k];
     signal input hashed[ALGO]; //message hash
 
-    var emLen = (n*k)\8; //in bytes
+    var emLen = modulus_bits_size\8;//(n*k)\8; //in bytes
     var hLen = ALGO\8; //in bytes
     var sLen = ALGO\8; //in bytes
     var hLenBits = ALGO; //in bits
     var sLenBits = ALGO; //in bits
-    var emLenBits = n * k; //in bits
+
+    var k2 = 64; // final split in array of 64 words (avoiding n2 overflow)
+    var n2 = modulus_bits_size \ k2;
 
 
     signal eM[emLen]; 
-    signal eMsgInBits[emLenBits];
+    signal eMsgInBits[modulus_bits_size];
     
     //computing encoded message
     component powmod = PowerMod(n, k, e_bits);
@@ -34,14 +37,19 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO){
    
     signal encoded[k];
     encoded <== powmod.out;
+    signal encoded_k2[k2];
+    component split = SplitSignalsToWordsUnsafe(n, k,n2,k2);
+    split.in <== encoded;
+    encoded_k2 <== split.out;
 
-    component num2Bits[k];
-    for (var i = 0; i < k; i++) {
-        num2Bits[i] = Num2Bits(n);
-        num2Bits[i].in <== encoded[k-1-i];
+
+    component num2Bits[k2];
+    for (var i = 0; i < k2; i++) {
+        num2Bits[i] = Num2Bits(n2);
+        num2Bits[i].in <== encoded_k2[k2-1-i];
         
-        for (var j = 0; j < n; j++) {
-            eMsgInBits[i * n + j] <== num2Bits[i].out[n-j-1];
+        for (var j = 0; j < n2; j++) {
+            eMsgInBits[i * n2 + j] <== num2Bits[i].out[n2-j-1];
         }
     }
 
@@ -76,7 +84,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO){
 
     //inserting hash
     for (var i=0; i<hLenBits; i++) {
-        hash[i] <== eMsgInBits[(emLenBits) - hLenBits-8 + i];
+        hash[i] <== eMsgInBits[(modulus_bits_size) - hLenBits-8 + i];
     }
 
     //getting mask
