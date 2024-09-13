@@ -1,6 +1,6 @@
 export type PassportData = {
   mrz: string;
-  signatureAlgorithm: string;
+  signatureAlgorithm?: string;
   dsc?: string;
   pubKey?: { modulus?: string, exponent?: string, curveName?: string, publicKeyQ?: string };
   dataGroupHashes: number[];

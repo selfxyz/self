@@ -1,4 +1,11 @@
 {
+  "name": "openpassport-common",
+  "version": "0.0.1",
+  "author": "",
+"license": "MIT",
+  "scripts": {
+    "test": "yarn ts-mocha tests/**/*.test.ts --exit"
+  },
   "dependencies": {
     "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@babel/runtime": "^7.23.4",
@@ -8,6 +15,7 @@
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
     "axios": "^1.7.2",
+    "chai": "^4.3.8",
     "elliptic": "^6.5.5",
     "fs": "^0.0.1-security",
     "js-sha1": "^0.7.0",
@@ -15,10 +23,12 @@
     "js-sha512": "^0.9.0",
     "json-to-ts": "^2.1.0",
     "jsrsasign": "^11.1.0",
+    "mocha": "^10.7.3",
     "node-forge": "https://github.com/remicolin/forge",
     "path": "^0.12.7",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
+    "ts-mocha": "^10.0.0",
     "typescript-parser": "^2.6.1"
   },
   "devDependencies": {

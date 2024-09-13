@@ -12,6 +12,7 @@ import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
 import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from '../utils/zkeyDownload';
+
 const MockDataScreen: React.FC = () => {
   const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa_sha256");
   const listOfSignatureAlgorithms = ["rsa_sha1", "rsa_sha256", "rsapss_sha256"];

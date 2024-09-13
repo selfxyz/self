@@ -1,7 +1,7 @@
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
-import { sha384 } from 'js-sha512';
+import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
 
@@ -184,26 +184,22 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-
-export function hash(signatureAlgorithm: string, bytesArray: number[]): number[] {
+export function hash(hasFunction: string, bytesArray: number[]): number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
+  switch (hasFunction) {
+    case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
-    case 'SHA384withECDSA':
+    case 'sha256':
+      hashResult = sha256(unsignedBytesArray);
+      break;
+    case 'sha384':
       hashResult = sha384(unsignedBytesArray);
       break;
-    case 'sha256WithRSAEncryption':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'sha256WithRSASSAPSS':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'ecdsa-with-SHA1':
-      hashResult = sha1(unsignedBytesArray);
+    case 'sha512':
+      hashResult = sha512_256(unsignedBytesArray);
       break;
     default:
       hashResult = sha256(unsignedBytesArray); // Default to sha256
@@ -273,23 +269,18 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   return Array.from(yymmdd).map((char) => parseInt(char));
 }
 
-export function getHashLen(signatureAlgorithm: string) {
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
-    case 'ecdsa-with-SHA1':
+export function getHashLen(hashFunction: string) {
+  switch (hashFunction) {
+    case 'sha1':
       return 20;
-    case 'sha256WithRSAEncryption':
-    case 'rsassaPss':
-    case 'ecdsa-with-SHA256':
+    case 'sha256':
       return 32;
-    case 'sha384WithRSAEncryption':
-    case 'ecdsa-with-SHA384':
+    case 'sha384':
       return 48;
-    case 'sha512WithRSAEncryption':
-    case 'ecdsa-with-SHA512':
+    case 'sha512':
       return 64;
     default:
-      console.log(`${signatureAlgorithm} not found in getHashLen`);
+      console.log(`${hashFunction} not found in getHashLen`);
       return 32;
   }
 }

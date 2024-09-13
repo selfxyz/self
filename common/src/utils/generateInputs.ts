@@ -30,6 +30,7 @@ import {
   mockPassportDatas,
 } from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
+import { getSignatureAlgorithm } from './handleCertificate';
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -40,8 +41,11 @@ export function generateCircuitInputsRegister(
   k_dsc: number,
   mocks: PassportData[] = mockPassportDatas
 ) {
-  const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } =
-    passportData;
+    const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
+      passportData;
+
+    const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = getSignatureAlgorithm(dsc);
+
 
   // const tree = getCSCAModulusMerkleTree();
 
@@ -51,39 +55,40 @@ export function generateCircuitInputsRegister(
   //   }
   // }
 
-  if (
-    ![
-      'sha256WithRSAEncryption',
-      'sha1WithRSAEncryption',
-      'sha256WithRSASSAPSS',
-      'ecdsa-with-SHA1',
-      'ecdsa-with-SHA256',
-    ].includes(signatureAlgorithm)
-  ) {
-    console.error(`${signatureAlgorithm} has not been implemented.`);
-    throw new Error(`${signatureAlgorithm} has not been implemented.`);
+
+  const supportedAlgorithms = [
+    { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
+    { signatureAlgorithm: 'rsa', hashFunction: 'sha256' },
+    { signatureAlgorithm: 'rsapss', hashFunction: 'sha256' },
+    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha1' },
+    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha256' },
+  ];
+
+  const isSupported = supportedAlgorithms.some(
+    (alg) => alg.signatureAlgorithm === signatureAlgorithm && alg.hashFunction === hashFunction
+  );
+
+  if (!isSupported) {
+    throw new Error(`Verification of ${signatureAlgorithm} with ${hashFunction} has not been implemented.`);
   }
 
-  const hashLen = getHashLen(signatureAlgorithm);
   const formattedMrz = formatMrz(mrz);
-  const mrzHash = hash(signatureAlgorithm, formattedMrz);
+  const mrzHash = hash(hashFunction, formattedMrz);
 
   const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash);
-  // console.log('dg1HashOffset', dg1HashOffset);
-
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
-  const concatHash = hash(signatureAlgorithm, dataGroupHashes);
+  const concatHash = hash(hashFunction, dataGroupHashes);
 
   assert(
     arraysAreEqual(concatHash, eContent.slice(eContent.length - hashLen)),
     'concatHash is not at the right place in eContent'
   );
 
-  const leaf = getLeaf({
-    signatureAlgorithm: signatureAlgorithm,
-    ...pubKey,
-  }).toString();
+  // const leaf = getLeaf({
+  //   signatureAlgorithm: signatureAlgorithm,
+  //   ...pubKey,
+  // }).toString();
 
   // const index = tree.indexOf(leaf);
   // console.log(`Index of pubkey in the registry: ${index}`);
@@ -109,9 +114,8 @@ export function generateCircuitInputsRegister(
   let signatureComponents: any;
   let dscModulusComponents: any;
 
-  if (signatureAlgorithm.startsWith('ecdsa-with-')) {
-    const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+  if (signatureAlgorithm === 'ecdsa') {
+    const { r, s } = extractRSFromSignature(encryptedDigest);
 
     signatureComponents = {
       signature_r: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
@@ -119,13 +123,13 @@ export function generateCircuitInputsRegister(
     };
 
     dscModulusComponents = {
-      dsc_modulus_x: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[0]))),
-      dsc_modulus_y: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[1])))
+      dsc_modulus_x: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(x))),
+      dsc_modulus_y: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(y)))
     };
   } else {
     signatureComponents = {
       signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
+        BigInt(bytesToBigDecimal(encryptedDigest)),
         BigInt(n_dsc),
         BigInt(k_dsc)
       )
@@ -133,13 +137,15 @@ export function generateCircuitInputsRegister(
 
     dscModulusComponents = {
       dsc_modulus: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
+        BigInt(hexToDecimal(modulus as string)),
         BigInt(n_dsc),
         BigInt(k_dsc)
       )
     };
   }
 
+  console.log(signatureComponents);
+  console.log(dscModulusComponents);
   return {
     secret: [secret],
     mrz: formattedMrz.map((byte) => String(byte)),
