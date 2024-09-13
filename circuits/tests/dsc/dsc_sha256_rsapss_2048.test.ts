@@ -92,7 +92,6 @@ describe('DSC chain certificate - SHA256 RSA-PSS', function () {
 
   it('should compute the correct output', async () => {
     const witness = await circuit.calculateWitness(inputs.inputs, true);
-
   });
   it('should fail to calculate witness with invalid inputs', async function () {
     try {

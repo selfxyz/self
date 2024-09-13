@@ -1,6 +1,4 @@
-
-SHA2-256 implementation in circom
----------------------------------
+## SHA2-256 implementation in circom
 
 - `sha256_compress.circom`: inner loop of the compression functions
 - `sha256_schedule.circom`: the "message schedule", where the message chunk is 1024 bits

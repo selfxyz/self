@@ -1,6 +1,4 @@
-
-SHA2-512 implementation in circom
----------------------------------
+## SHA2-512 implementation in circom
 
 - `sha512_compress.circom`: inner loop of the compression functions
 - `sha512_schedule.circom`: the "message schedule", where the message chunk is 1024 bits
