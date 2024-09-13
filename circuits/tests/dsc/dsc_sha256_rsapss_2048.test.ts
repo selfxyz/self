@@ -9,7 +9,7 @@ import {
   mock_dsc_sha256_rsapss_2048,
   mock_csca_sha256_rsapss_2048,
 } from '../../../common/src/constants/mockCertificates';
-import { k_csca, k_dsc, n_csca, n_dsc } from '../../../common/src/constants/constants';
+import { k_dsc, n_dsc } from '../../../common/src/constants/constants';
 
 describe('DSC chain certificate - SHA256 RSA-PSS', function () {
   this.timeout(0); // Disable timeout
@@ -24,8 +24,8 @@ describe('DSC chain certificate - SHA256 RSA-PSS', function () {
     cscaCert,
     n_dsc,
     k_dsc,
-    n_csca,
-    k_csca,
+    n_dsc,
+    k_dsc,
     max_cert_bytes,
     true
   );
@@ -92,5 +92,20 @@ describe('DSC chain certificate - SHA256 RSA-PSS', function () {
 
   it('should compute the correct output', async () => {
     const witness = await circuit.calculateWitness(inputs.inputs, true);
+
+  });
+  it('should fail to calculate witness with invalid inputs', async function () {
+    try {
+      const invalidInputs = {
+        ...inputs.inputs,
+        dsc_signature: Array(k_dsc)
+          .fill(0)
+          .map((byte) => BigInt(byte).toString()),
+      };
+      await circuit.calculateWitness(invalidInputs);
+      expect.fail('Expected an error but none was thrown.');
+    } catch (error) {
+      expect(error.message).to.include('Assert Failed');
+    }
   });
 });
