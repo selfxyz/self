@@ -9,10 +9,20 @@ signature_algorithm=$(echo "$input" | jq -r '.signature_algorithm // "sha256_rsa
 if [ "$signature_algorithm" == "sha1_rsa" ]; then
     circuit_wasm="/root/src/circuit/dsc_sha1_rsa_4096.wasm"
     circuit_zkey="/root/src/circuit/dsc_sha1_rsa_4096_final.zkey"
-else
+elif [ "$signature_algorithm" == "sha256_rsa" ]; then
     circuit_wasm="/root/src/circuit/dsc_sha256_rsa_4096.wasm"
     circuit_zkey="/root/src/circuit/dsc_sha256_rsa_4096_final.zkey"
+elif [ "$signature_algorithm" == "sha256_rsapss" ]; then
+    circuit_wasm="/root/src/circuit/dsc_sha256_rsapss_4096.wasm"
+    circuit_zkey="/root/src/circuit/dsc_sha256_rsapss_4096_final.zkey"
+else
+    echo "Invalid signature algorithm: $signature_algorithm"
+    exit 1
 fi
+
+# echo the size of the circuit wasm file and the circuit zkey file
+echo "Circuit WASM size: $(du -sh $circuit_wasm)"
+echo "Circuit ZKEY size: $(du -sh $circuit_zkey)"
 
 # Compute the hash of the input data
 hash=$(echo -n "$input" | sha256sum | cut -d ' ' -f 1)
