@@ -35,7 +35,8 @@ export enum SignatureAlgorithm {
 
 export const signatureOidToName = {
   "1.2.840.113549.1.1.11": "sha256_rsa",
-  "1.2.840.113549.1.1.5": "sha1_rsa"
+  "1.2.840.113549.1.1.5": "sha1_rsa",
+  "1.2.840.113549.1.1.10": "sha256_rsapss"
 }
 
 export const attributeToPosition = {
