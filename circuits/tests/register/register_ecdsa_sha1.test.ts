@@ -109,7 +109,7 @@ describe('Register - SHA1 WITH ECDSA', function () {
     try {
       const invalidInputs = {
         ...inputs,
-        signature: [inputs.signature[0], wrong_signature_s],
+        signature_s: wrong_signature_s,
       };
       await circuit.calculateWitness(invalidInputs);
       expect.fail('Expected an error but none was thrown.');

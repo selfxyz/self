@@ -106,37 +106,40 @@ export function generateCircuitInputsRegister(
     MAX_DATAHASHES_LEN
   );
 
-  let dsc_modulus: any;
-  let signature: any;
+  let signatureComponents: any;
+  let dscModulusComponents: any;
 
-  if (
-    signatureAlgorithm === 'ecdsa-with-SHA1' ||
-    signatureAlgorithm === 'ecdsa-with-SHA256' ||
-    signatureAlgorithm === 'ecdsa-with-SHA512' ||
-    signatureAlgorithm === 'ecdsa-with-SHA384'
-  ) {
+  if (signatureAlgorithm.startsWith('ecdsa-with-')) {
     const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    const qx = BigInt(hexToDecimal(curve_params[0]));
-    const qy = BigInt(hexToDecimal(curve_params[1]));
-    dsc_modulus = [BigintToArray(n_dsc, k_dsc, qx), BigintToArray(n_dsc, k_dsc, qy)];
-
     const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
-    signature = [
-      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
-      BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
-    ];
+
+    signatureComponents = {
+      signature_r: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
+      signature_s: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
+    };
+
+    dscModulusComponents = {
+      dsc_modulus_x: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[0]))),
+      dsc_modulus_y: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[1])))
+    };
   } else {
-    dsc_modulus = splitToWords(
-      BigInt(passportData.pubKey.modulus as string),
-      BigInt(n_dsc),
-      BigInt(k_dsc)
-    );
-    signature = splitToWords(
-      BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-      BigInt(n_dsc),
-      BigInt(k_dsc)
-    );
+    signatureComponents = {
+      signature: splitToWords(
+        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
+        BigInt(n_dsc),
+        BigInt(k_dsc)
+      )
+    };
+
+    dscModulusComponents = {
+      dsc_modulus: splitToWords(
+        BigInt(passportData.pubKey.modulus as string),
+        BigInt(n_dsc),
+        BigInt(k_dsc)
+      )
+    };
   }
+
   return {
     secret: [secret],
     mrz: formattedMrz.map((byte) => String(byte)),
@@ -144,8 +147,8 @@ export function generateCircuitInputsRegister(
     dataHashes: Array.from(messagePadded).map((x) => x.toString()),
     datahashes_padded_length: [messagePaddedLen.toString()],
     eContent: eContent.map(toUnsignedByte).map((byte) => String(byte)),
-    signature: signature,
-    dsc_modulus: dsc_modulus,
+    ...signatureComponents,
+    ...dscModulusComponents,
     attestation_id: [attestation_id],
     dsc_secret: [dscSecret],
   };
