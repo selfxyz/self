@@ -81,7 +81,6 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     }
 
     const signatureAlgorithm = dscCertificate.signatureOid;;
-    //console.log('signatureAlgorithm', signatureAlgorithm);
 
     //dsc modulus
     const dsc_modulus = dscCertificate.publicKey.n.toString(16).toLowerCase();
@@ -124,11 +123,8 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
-    const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
+    const leaf = computeLeafFromPubKey(csca_modulus_bigint, n_csca, k_csca);
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
-
-
-
 
     return {
         "signature_algorithm": signatureOidToName[signatureAlgorithm],
