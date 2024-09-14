@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
-import { n_dsc, k_dsc } from '../../common/src/constants/constants';
+import { n_dsc, k_dsc, k_dsc_ecdsa, n_dsc_ecdsa } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName } from '../../common/src/utils/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
@@ -27,8 +27,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     const inputs = generateCircuitInputsProve(
       passportData,
-      n_dsc,
-      k_dsc,
+      sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc,
+      sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc,
       scope,
       bitmap,
       majority,
