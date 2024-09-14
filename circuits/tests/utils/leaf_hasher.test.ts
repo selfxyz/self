@@ -9,7 +9,7 @@ import {
   mock_csca_sha256_rsa_2048,
   mock_dsc_sha1_rsa_2048,
   mock_csca_sha1_rsa_2048,
-  mock_dsc_sha1_ecdsa
+  mock_dsc_sha1_ecdsa,
 } from '../../../common/src/constants/mockCertificates';
 import { hexToDecimal, splitToWords } from '../../../common/src/utils/utils';
 import { getLeaf, leafHasherLight } from '../../../common/src/utils/pubkeyTree';
@@ -63,7 +63,7 @@ describe('LeafHasher Light', function () {
         in: splitToWords(BigInt(hexToDecimal(modulus)), n_dsc, k_dsc),
         sigAlg:
           SignatureAlgorithmIndex[
-          `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`
+            `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`
           ],
       };
       const witness = await circuit.calculateWitness(inputs, true);
