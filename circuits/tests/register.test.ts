@@ -13,7 +13,7 @@ import {
   PASSPORT_ATTESTATION_ID,
 } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
-import { getCircuitName, parseDSC } from '../../common/src/utils/handleCertificate';
+import { getCircuitName, parseDSC } from '../../common/src/utils/certificates/handleCertificate';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 

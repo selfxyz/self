@@ -21,17 +21,12 @@ export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
 export enum SignatureAlgorithmIndex {
-  rsa_sha256 = 1,
-  rsa_sha1 = 3,
-  rsapss_sha256 = 4,
-  ecdsa_sha1 = 7,
-  ecdsa_sha256 = 8,
-  ecdsa_sha384 = 9,
-}
-export const signatureOidToName = {
-  "1.2.840.113549.1.1.11": "sha256_rsa",
-  "1.2.840.113549.1.1.5": "sha1_rsa",
-  "1.2.840.113549.1.1.10": "sha256_rsapss"
+  rsa_65537_sha256_2048 = 1,
+  rsa_65537_sha1_2048 = 3,
+  rsapss_65537_sha256_2048 = 4,
+  ecdsa_secp256r1_sha1_256 = 7,
+  ecdsa_secp256r1_sha256_256 = 8,
+  ecdsa_secp384r1_sha384_384 = 9,
 }
 
 export const attributeToPosition = {

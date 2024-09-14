@@ -25,7 +25,7 @@ import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import { getCSCAModulusMerkleTree } from "./csca";
 import { SMT } from "@ashpect/smt"
-import { parseDSC } from './handleCertificate';
+import { parseCertificate } from './certificates/handleCertificate';
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -40,7 +40,7 @@ export function generateCircuitInputsRegister(
   const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
     passportData;
 
-  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
+  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseCertificate(dsc);
 
   // const tree = getCSCAModulusMerkleTree(DEVELOPMENT_MODE);
 

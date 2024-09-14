@@ -6,7 +6,7 @@ import { DEFAULT_MAJORITY, k_dsc, k_dsc_ecdsa, n_dsc, n_dsc_ecdsa, PASSPORT_ATTE
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import useUserStore from '../stores/userStore';
 import { ArgumentsProve } from '../../../common/src/utils/appType'
-import { parseDSC } from '../../../common/src/utils/handleCertificate';
+import { parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
 
 export const generateCircuitInputsInApp = (
     passportData: PassportData,

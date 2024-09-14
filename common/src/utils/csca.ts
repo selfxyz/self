@@ -8,7 +8,7 @@ import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import { createHash } from "crypto";
 import axios from "axios";
 import { flexiblePoseidon } from "./poseidon";
-import { getSignatureAlgorithmDetails } from "./handleCertificate";
+import { getSignatureAlgorithmDetails } from "./certificates/handleCertificate";
 import { getLeaf } from "./pubkeyTree";
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
@@ -180,10 +180,10 @@ export function getCSCAModulusProof(leaf, n, k) {
     return [tree.root, proof];
 }
 
-export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 'sha256', n: number, k: number): string[] {
+export function getTBSHash(cert: forge.pki.Certificate, hashFunction: 'sha1' | 'sha256', n: number, k: number): string[] {
     const tbsCertAsn1 = forge.pki.certificateToAsn1(cert).value[0];
     const tbsCertDer = forge.asn1.toDer(tbsCertAsn1 as any).getBytes();
-    const md = hashAlgorithm === 'sha256' ? forge.md.sha256.create() : forge.md.sha1.create();
+    const md = hashFunction === 'sha256' ? forge.md.sha256.create() : forge.md.sha1.create();
     md.update(tbsCertDer);
     const tbsCertificateHash = md.digest();
     const tbsCertificateHashString = tbsCertificateHash.data;

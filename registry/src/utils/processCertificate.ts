@@ -80,3 +80,4 @@ export function processCertificate(pemContent: string, fileName: string): Certif
     }
     return certificateData;
 }
+

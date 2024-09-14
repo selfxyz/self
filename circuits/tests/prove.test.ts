@@ -5,7 +5,7 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
 import { n_dsc, k_dsc, k_dsc_ecdsa, n_dsc_ecdsa } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
-import { getCircuitName } from '../../common/src/utils/handleCertificate';
+import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 
 const sigAlgs = [

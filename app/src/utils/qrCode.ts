@@ -1,7 +1,7 @@
 import { NativeModules, Platform } from "react-native";
 import { AppType, reconstructAppType } from "../../../common/src/utils/appType";
 import useNavigationStore from '../stores/navigationStore';
-import { getCircuitName, parseDSC } from "../../../common/src/utils/handleCertificate";
+import { getCircuitName, parseDSC } from "../../../common/src/utils/certificates/handleCertificate";
 import useUserStore from "../stores/userStore";
 import { downloadZkey } from "./zkeyDownload";
 

@@ -8,7 +8,7 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { parseDSC, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { parseDSC, getCircuitName } from '../../../common/src/utils/certificates/handleCertificate';
 import { downloadZkey } from './zkeyDownload';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {

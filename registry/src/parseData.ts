@@ -15,21 +15,27 @@ function main(arg: string) {
         const files = fs.readdirSync(csca_pem_directory_path);
         for (const file of files) {
             const pemContent = fs.readFileSync(path.join(csca_pem_directory_path, file), 'utf8');
-            const certificate = processCertificate(pemContent, file);
-            if (certificate) {
-                const notAfterDate = new Date(certificate.validity.notAfter);
-                if (notAfterDate > new Date()) {
-                    csca_certificates[file] = certificate;
+            try {
+                const certificate = processCertificate(pemContent, file);
+                if (certificate) {
+                    const notAfterDate = new Date(certificate.validity.notAfter);
+                    if (notAfterDate > new Date()) {
+                        csca_certificates[file] = certificate;
 
-                } else {
-                    console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
+                    } else {
+                        console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
+                    }
                 }
             }
+            catch (error) {
+                console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is invalid.`);
+            }
+
         }
 
-        // Get list of exponents
-        // const exponents = getListOfExponents(csca_certificates);
-        // console.log(exponents);
+        //Get list of exponents
+        const exponents = getListOfExponents(csca_certificates);
+        console.log(exponents);
 
         // Get map json
         // const mapJson = getMapJson(csca_certificates);
@@ -46,10 +52,22 @@ function main(arg: string) {
         const files = fs.readdirSync(dsc_pem_directory_path);
         for (const file of files) {
             const pemContent = fs.readFileSync(path.join(dsc_pem_directory_path, file), 'utf8');
-            const certificate = processCertificate(pemContent, file);
-            if (certificate) {
-                dsc_certificates[certificate.id] = certificate;
+            try {
+                const certificate = processCertificate(pemContent, file);
+                if (certificate) {
+                    const notAfterDate = new Date(certificate.validity.notAfter);
+                    if (notAfterDate > new Date()) {
+                        dsc_certificates[file] = certificate;
+
+                    } else {
+                        console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
+                    }
+                }
             }
+            catch (error) {
+                console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is invalid.`);
+            }
+
         }
 
         const exponents = getListOfExponents(dsc_certificates);

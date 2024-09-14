@@ -3,7 +3,7 @@ import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
 import { poseidon16, poseidon2 } from 'poseidon-lite';
 import { hexToDecimal, splitToWords } from './utils';
-import { parseDSC } from "./handleCertificate";
+import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
 export function leafHasherLight(pubKeyFormatted: string[]) {
@@ -24,8 +24,12 @@ export function leafHasherLight(pubKeyFormatted: string[]) {
 }
 
 export function getLeaf(dsc: string, n: number, k: number): string {
-  const { signatureAlgorithm, hashFunction, modulus, x, y } = parseDSC(dsc);
-  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
+  const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
+  console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
+  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`]
+  if (sigAlgIndex === undefined) {
+    throw new Error(`Signature algorithm not found: ${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
+  }
 
   if (signatureAlgorithm === 'ecdsa') {
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
