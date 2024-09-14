@@ -7,8 +7,9 @@ import { PassportData } from "./types";
 import { getSignatureAlgorithm } from "./handleCertificate";
 
 export function getLeaf(passportData: PassportData): bigint {
-  const { signatureAlgorithm, modulus, x, y } = getSignatureAlgorithm(passportData.dsc);
-  
+  const { signatureAlgorithm, hashFunction, modulus, x, y } = getSignatureAlgorithm(passportData.dsc);
+  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
+
   if (signatureAlgorithm === 'ecdsa') {
     let qx = splitToWords(BigInt(hexToDecimal(x)), 43, 6);
     let qy = splitToWords(BigInt(hexToDecimal(y)), 43, 6);
@@ -17,15 +18,17 @@ export function getLeaf(passportData: PassportData): bigint {
     let y_hash = poseidon6(qy);
 
     return poseidon3([
-      SignatureAlgorithmIndex[signatureAlgorithm],
+      sigAlgIndex,
       x_hash,
       y_hash,
     ]);
   } else {
-    const pubkeyChunked = splitToWords(BigInt(modulus), 230, 9);
-    return poseidon10(
-      [SignatureAlgorithmIndex[signatureAlgorithm], ...pubkeyChunked]
-    );
+    const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), 230, 9);
+
+    return poseidon10([
+      sigAlgIndex,
+      ...pubkeyChunked
+    ]);
   }
 }
 

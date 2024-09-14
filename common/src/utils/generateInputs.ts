@@ -132,7 +132,7 @@ export function generateCircuitInputsRegister(
 
     dscModulusComponents = {
       dsc_modulus: splitToWords(
-        BigInt(hexToDecimal(modulus as string)),
+        BigInt(hexToDecimal(modulus)),
         n_dsc,
         k_dsc
       )
