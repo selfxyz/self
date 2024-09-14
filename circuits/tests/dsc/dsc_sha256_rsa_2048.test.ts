@@ -8,7 +8,7 @@ import {
   mock_dsc_sha256_rsa_2048,
   mock_csca_sha256_rsa_2048,
 } from '../../../common/src/constants/mockCertificates';
-import { k_csca, k_dsc, n_csca, n_dsc } from '../../../common/src/constants/constants';
+import { k_dsc, n_dsc } from '../../../common/src/constants/constants';
 
 describe('DSC chain certificate - SHA256 RSA', function () {
   this.timeout(0); // Disable timeout
@@ -23,8 +23,8 @@ describe('DSC chain certificate - SHA256 RSA', function () {
     cscaCert,
     n_dsc,
     k_dsc,
-    n_csca,
-    k_csca,
+    n_dsc,
+    k_dsc,
     max_cert_bytes,
     true
   );

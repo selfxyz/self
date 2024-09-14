@@ -126,7 +126,9 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
-    const leaf = getLeaf(cscaCertificate, n_csca, k_csca);
+    const pemContent = forge.pki.certificateToPem(cscaCertificate);
+    const leaf = getLeaf(pemContent, n_csca, k_csca);
+    console.log('leaf', leaf);
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
     const { signatureAlgorithm: signatureAlgorithmName, hashFunction } = getSignatureAlgorithmDetails(signatureAlgorithm);
 
