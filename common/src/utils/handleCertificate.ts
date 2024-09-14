@@ -19,21 +19,12 @@ export const getSignatureAlgorithm = (pemContent: string) => {
         const curveOid = asn1.fromBER(algorithmParams.valueBeforeDecode).result.valueBlock.toString();
         const curve = getNamedCurve(curveOid);
 
-        // const publicKeyBuffer = subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHex;
-        // console.log("publicKeyBuffer", publicKeyBuffer);
-        // const x = publicKeyBuffer.slice(2, 34); // Adjusted to slice correctly for x
-        // const y = publicKeyBuffer.slice(34, 66); // Adjusted to slice correctly for y
-        // publicKeyDetails = { curve, x: Buffer.from(x).toString('hex'), y: Buffer.from(y).toString('hex') };
-
         const publicKeyBuffer = subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
         const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
         const ec = new elliptic.ec(curveForElliptic);
         const key = ec.keyFromPublic(publicKeyBuffer);
-        console.log(key);
         const x = key.getPublic().getX().toString('hex');
         const y = key.getPublic().getY().toString('hex');
-        console.log(`Size of x: ${Buffer.byteLength(x, 'hex')} bytes`);
-        console.log(`Size of y: ${Buffer.byteLength(y, 'hex')} bytes`);
         publicKeyDetails = { curve, x, y };
     } else {
         const publicKey = cert.subjectPublicKeyInfo.subjectPublicKey;

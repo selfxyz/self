@@ -8,6 +8,7 @@ import { getSignatureAlgorithm } from '../src/utils/handleCertificate';
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
+import * as crypto from 'crypto';
 
 export type SignatureAlgorithm = 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384';
 
@@ -59,9 +60,11 @@ function verify(passportData: PassportData): boolean {
         const ec = new elliptic.ec(curveForElliptic);
 
         const key = ec.keyFromPublic(publicKeyBuffer);
-        const eContentHash = hash(hashFunction, eContent);
-        const signature = Buffer.from(encryptedDigest).toString('hex');
-        return key.verify(eContentHash, signature);
+        const messageBuffer = Buffer.from(eContent);
+        const msgHash = crypto.createHash('sha256').update(messageBuffer).digest();
+        const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
+        
+        return key.verify(msgHash, signature_crypto);
     } else {
         const cert = forge.pki.certificateFromPem(dsc);
         const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;

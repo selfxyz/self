@@ -133,11 +133,10 @@ function sign(
         
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
 
-    console.log('privateKeyBuffer', privateKeyBuffer);
-
-    const eContentHash = hash(hashFunction, eContent);
-    const signature = keyPair.sign(eContentHash);
-    const signatureBytes = signature.toDER();
+    const md = forge.md.sha256.create();
+    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const signature = keyPair.sign(md.digest().toHex(), 'hex');
+    const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 
     return signatureBytes;
   } else {
