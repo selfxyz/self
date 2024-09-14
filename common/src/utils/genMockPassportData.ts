@@ -32,13 +32,15 @@ export function genMockPassportData(
   signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384',
   nationality: keyof typeof countryCodes,
   birthDate: string,
-  expiryDate: string
+  expiryDate: string,
+  passportNumber: string = "24HB81832",
+  lastName: string = "DUPONT"
 ): PassportData {
   if (birthDate.length !== 6 || expiryDate.length !== 6) {
     throw new Error('birthdate and expiry date have to be in the "YYMMDD" format');
   }
 
-  const mrz = `P<${nationality}DUPONT<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<24HB818324${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
+  const mrz = `P<${nationality}${lastName}<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<${passportNumber}4${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
 
   let privateKeyPem: string;
   let dsc: string;
