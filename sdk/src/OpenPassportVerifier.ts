@@ -24,7 +24,7 @@ import {
   splitToWords,
   UserIdType,
 } from '../../common/src/utils/utils';
-import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
+import { parseDSC } from '../../common/src/utils/handleCertificate';
 
 export class OpenPassportVerifier {
   scope: string;
@@ -131,7 +131,7 @@ export class OpenPassportVerifier {
 
   private getVkey(openPassportVerifierInputs: OpenPassportVerifierInputs) {
     if (this.circuit === 'prove' || this.circuit === 'register') {
-      const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(
+      const { signatureAlgorithm, hashFunction } = parseDSC(
         openPassportVerifierInputs.dsc
       );
       return getVkeyFromArtifacts(this.circuit, signatureAlgorithm, hashFunction);
@@ -146,7 +146,7 @@ export class OpenPassportVerifier {
     console.log('\x1b[32m%s\x1b[0m', 'certificate verified:' + verified_certificate);
 
     const dsc_modulus = BigInt((dscCertificate.publicKey as any).n);
-    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(n_dsc), BigInt(k_dsc));
+    const dsc_modulus_words = splitToWords(dsc_modulus, n_dsc, k_dsc);
     const modulus_from_proof = this.parsedPublicSignals.pubKey;
 
     const verified_modulus = areArraysEqual(dsc_modulus_words, modulus_from_proof);
