@@ -53,14 +53,14 @@ describe('LeafHasher Light', function () {
       mock_csca_sha256_rsa_2048
     );
     const { signatureAlgorithm, hashFunction, modulus, x, y } = parseDSC(dscCert.toString());
-    const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
+    const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`];
     const leaf_light = getLeaf(dscCert.toString(), n_dsc, k_dsc);
     console.log('\x1b[34m', 'leafHasherLight: ', leaf_light, '\x1b[0m');
 
     it('should extract and log certificate information', async () => {
       const inputs = {
         in: splitToWords(BigInt(hexToDecimal(modulus)), n_dsc, k_dsc),
-        sigAlg: SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
+        sigAlg: SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`],
       };
       const witness = await circuit.calculateWitness(inputs, true);
       const output = await circuit.getOutput(witness, ['out']);
