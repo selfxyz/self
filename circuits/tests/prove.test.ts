@@ -7,6 +7,7 @@ import { n_dsc, k_dsc, k_dsc_ecdsa, n_dsc_ecdsa } from '../../common/src/constan
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
+import crypto from 'crypto';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
