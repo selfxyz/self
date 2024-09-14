@@ -19,7 +19,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     this.timeout(0);
     let circuit: any;
 
-    const passportData = genMockPassportData(`${sigAlg}_${hashFunction}` as SignatureAlgorithm, 'FRA', '000101', '300101');
+    const passportData = genMockPassportData(
+      `${sigAlg}_${hashFunction}` as SignatureAlgorithm,
+      'FRA',
+      '000101',
+      '300101'
+    );
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
@@ -37,7 +42,10 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(__dirname, `../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`),
+        path.join(
+          __dirname,
+          `../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
+        ),
         {
           include: [
             'node_modules',
@@ -55,7 +63,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     it('should calculate the witness with correct inputs', async function () {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
-  
+
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
       expect(nullifier).to.be.not.null;
     });
@@ -79,7 +87,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          dataHashes: inputs.dataHashes.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+          dataHashes: inputs.dataHashes.map((byte: string) =>
+            String((parseInt(byte, 10) + 1) % 256)
+          ),
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');

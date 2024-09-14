@@ -6,7 +6,13 @@ import { poseidon6 } from 'poseidon-lite';
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { hexToDecimal, packBytes } from '../../common/src/utils/utils';
 import { computeLeafFromModulusBigInt } from '../../common/src/utils/csca';
-import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../common/src/constants/constants';
+import {
+  n_dsc,
+  k_dsc,
+  n_dsc_ecdsa,
+  k_dsc_ecdsa,
+  PASSPORT_ATTESTATION_ID,
+} from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName, parseDSC } from '../../common/src/utils/handleCertificate';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
@@ -25,7 +31,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     this.timeout(0);
     let circuit: any;
 
-    const passportData = genMockPassportData(`${sigAlg}_${hashFunction}` as SignatureAlgorithm, 'FRA', '000101', '300101');
+    const passportData = genMockPassportData(
+      `${sigAlg}_${hashFunction}` as SignatureAlgorithm,
+      'FRA',
+      '000101',
+      '300101'
+    );
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
@@ -42,7 +53,10 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(__dirname, `../circuits/register/${getCircuitName('register', sigAlg, hashFunction)}.circom`),
+        path.join(
+          __dirname,
+          `../circuits/register/${getCircuitName('register', sigAlg, hashFunction)}.circom`
+        ),
         {
           include: [
             'node_modules',
@@ -71,7 +85,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
       const mrz_bytes = packBytes(inputs.mrz);
       const leaf = getLeaf(passportData).toString();
-    
+
       const commitment_bytes = poseidon6([
         inputs.secret[0],
         PASSPORT_ATTESTATION_ID,
@@ -81,8 +95,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         mrz_bytes[2],
       ]);
       const commitment_js = commitment_bytes.toString();
-      console.log('commitment_js', commitment_js)
-      console.log('commitment_circom', commitment_circom)
+      console.log('commitment_js', commitment_js);
+      console.log('commitment_circom', commitment_circom);
       // TODO: fix with new leaf hasher
       // expect(commitment_circom).to.be.equal(commitment_js);
     });
@@ -106,7 +120,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          dataHashes: inputs.dataHashes.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+          dataHashes: inputs.dataHashes.map((byte: string) =>
+            String((parseInt(byte, 10) + 1) % 256)
+          ),
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');
@@ -119,8 +135,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          signature: inputs.signature ? inputs.signature.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)) : undefined,
-          signature_s: inputs.signature_s ? inputs.signature_s.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)) : undefined,
+          signature: inputs.signature
+            ? inputs.signature.map((byte: string) => String((parseInt(byte, 10) + 1) % 256))
+            : undefined,
+          signature_s: inputs.signature_s
+            ? inputs.signature_s.map((byte: string) => String((parseInt(byte, 10) + 1) % 256))
+            : undefined,
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');

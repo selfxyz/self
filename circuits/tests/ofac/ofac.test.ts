@@ -20,7 +20,14 @@ let circuit: any;
 // Mock passport added in ofac list to test circuits
 const passportData = genMockPassportData('rsa_sha256', 'FRA', '040211', '300101');
 // Mock passport not added in ofac list to test circuits
-const passportData2 = genMockPassportData('rsa_sha256', 'FRA', '000102', '300101', "24HB81833", "CLAQUE");
+const passportData2 = genMockPassportData(
+  'rsa_sha256',
+  'FRA',
+  '000102',
+  '300101',
+  '24HB81833',
+  'CLAQUE'
+);
 
 // Calculating common validity inputs for all 3 circuits
 function getPassportInputs(passportData: PassportData) {
