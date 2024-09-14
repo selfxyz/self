@@ -53,7 +53,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
         const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
         //console.log('csca_modulus', csca_modulus);
         csca_modulus_bigint = BigInt(`0x${csca_modulus}`);
-        csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
+        csca_modulus_formatted = splitToWords(csca_modulus_bigint, n_csca, k_csca);
         //console.log('csca_modulus_formatted', csca_modulus_formatted);
 
 
@@ -75,7 +75,7 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
         const csca_modulus = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
         const csca_modulus_cleaned = csca_modulus.replace(/:/g, '');
         csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
-        csca_modulus_formatted = splitToWords(csca_modulus_bigint, BigInt(n_csca), BigInt(k_csca));
+        csca_modulus_formatted = splitToWords(csca_modulus_bigint, n_csca, k_csca);
         //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
         //console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
     }
@@ -90,12 +90,12 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     //console.log('dsc_modulus_bytes_array', dsc_modulus_bytes_array);
     const dsc_modulus_bytes_array_formatted = dsc_modulus_bytes_array.map(byte => byte.toString());
     const dsc_modulus_number = BigInt(`0x${dsc_modulus}`);
-    const dsc_modulus_formatted = splitToWords(dsc_modulus_number, BigInt(n_dsc), BigInt(k_dsc));
+    const dsc_modulus_formatted = splitToWords(dsc_modulus_number, n_dsc, k_dsc);
 
     const dsc_signature = dscCertificate.signature;
     const dsc_signature_hex = Buffer.from(dsc_signature, 'binary').toString('hex');
     const dsc_signature_bigint = BigInt('0x' + dsc_signature_hex);
-    const dsc_signature_formatted = splitToWords(dsc_signature_bigint, BigInt(n_csca), BigInt(k_csca));
+    const dsc_signature_formatted = splitToWords(dsc_signature_bigint, n_csca, k_csca);
 
 
     //const formatted_dsc_signature = dsc_signature.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
@@ -188,7 +188,7 @@ export function computeLeafFromModulusFormatted(modulus_formatted: string[]) {
 }
 export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
     if (modulus_bigint <= BigInt(2n ** 4096n - 1n)) {
-        const modulus_formatted = splitToWords(modulus_bigint, BigInt(64), BigInt(64));
+        const modulus_formatted = splitToWords(modulus_bigint, 64, 64);
         const hashInputs = new Array(4);
         for (let i = 0; i < 4; i++) {
             hashInputs[i] = new Array(16).fill(BigInt(0));
@@ -232,7 +232,7 @@ export function getTBSHash(cert: forge.pki.Certificate, hashAlgorithm: 'sha1' | 
     const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
     const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
     console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
-    return splitToWords(tbsCertificateHashBigint, BigInt(n), BigInt(k));
+    return splitToWords(tbsCertificateHashBigint, n, k);
 }
 
 

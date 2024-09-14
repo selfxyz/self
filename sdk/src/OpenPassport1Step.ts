@@ -130,7 +130,7 @@ export class OpenPassport1StepVerifier {
 
     // @ts-ignore
     const dsc_modulus = BigInt(dscCertificate.publicKey.n);
-    const dsc_modulus_words = splitToWords(dsc_modulus, BigInt(64), BigInt(32));
+    const dsc_modulus_words = splitToWords(dsc_modulus, 64, 32);
     const modulus_from_proof = parsedPublicSignals.pubKey;
 
     const areArraysEqual = (arr1: string[], arr2: string[]) =>

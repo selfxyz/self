@@ -4,7 +4,7 @@ import { formatSigAlgNameForCircuit } from "./utils";
 import { toStandardName } from "./formatNames";
 import axios from "axios";
 import { poseidon10, poseidon2, poseidon3, poseidon5, poseidon6, poseidon8 } from 'poseidon-lite';
-import { BigintToArray, hexToDecimal, splitToWords } from './utils';
+import { hexToDecimal, splitToWords } from './utils';
 
 export function buildPubkeyTree(pubkeys: any[]) {
   let leaves: bigint[] = [];
@@ -50,7 +50,7 @@ export function getLeaf(pubkey: any, i?: number): bigint {
     sigAlgFormattedForCircuit === 'sha256WithRSASSAPSS_3' ||
     sigAlgFormattedForCircuit === 'sha512WithRSAEncryption_65537'
   ) {
-    const pubkeyChunked = splitToWords(BigInt(pubkey.modulus), BigInt(230), BigInt(9));
+    const pubkeyChunked = splitToWords(BigInt(pubkey.modulus), 230, 9);
     const leaf = poseidon10([SignatureAlgorithm[sigAlgFormattedForCircuit], ...pubkeyChunked]);
     try {
       return leaf;
@@ -75,8 +75,8 @@ export function getLeaf(pubkey: any, i?: number): bigint {
         throw new Error('Invalid publicKeyQ format');
       }
 
-      let qx = BigintToArray(43, 6, BigInt(hexToDecimal(x)));
-      let qy = BigintToArray(43, 6, BigInt(hexToDecimal(y)));
+      let qx = splitToWords(BigInt(hexToDecimal(x)), 43, 6);
+      let qy = splitToWords(BigInt(hexToDecimal(y)), 43, 6);
 
       let poseidon_hasher_dsc_modules_x = poseidon6(qx);
       let poseidon_hasher_dsc_modules_y = poseidon6(qy);

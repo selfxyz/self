@@ -8,13 +8,11 @@ import {
   hash,
   splitToWords,
   toUnsignedByte,
-  getHashLen,
   getCurrentDateYYMMDD,
   generateMerkleProof,
   generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
-  BigintToArray,
   extractRSFromSignature,
   castFromUUID,
   castFromScope,
@@ -118,28 +116,28 @@ export function generateCircuitInputsRegister(
     const { r, s } = extractRSFromSignature(encryptedDigest);
 
     signatureComponents = {
-      signature_r: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
-      signature_s: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
+      signature_r: splitToWords(BigInt(hexToDecimal(r)), n_dsc, k_dsc),
+      signature_s: splitToWords(BigInt(hexToDecimal(s)), n_dsc, k_dsc)
     };
 
     dscModulusComponents = {
-      dsc_modulus_x: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(x))),
-      dsc_modulus_y: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(y)))
+      dsc_modulus_x: splitToWords(BigInt(hexToDecimal(x)), n_dsc, k_dsc),
+      dsc_modulus_y: splitToWords(BigInt(hexToDecimal(y)), n_dsc, k_dsc)
     };
   } else {
     signatureComponents = {
       signature: splitToWords(
         BigInt(bytesToBigDecimal(encryptedDigest)),
-        BigInt(n_dsc),
-        BigInt(k_dsc)
+        n_dsc,
+        k_dsc
       )
     };
 
     dscModulusComponents = {
       dsc_modulus: splitToWords(
         BigInt(hexToDecimal(modulus as string)),
-        BigInt(n_dsc),
-        BigInt(k_dsc)
+        n_dsc,
+        k_dsc
       )
     };
   }

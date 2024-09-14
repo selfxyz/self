@@ -156,14 +156,14 @@ export const toBinaryString = (byte: any) => {
   return binary;
 };
 
-export function splitToWords(number: bigint, wordsize: bigint, numberElement: bigint) {
+export function splitToWords(number: bigint, wordsize: number, numberElement: number) {
   let t = number;
   const words: string[] = [];
-  for (let i = BigInt(0); i < numberElement; ++i) {
+  for (let i = 0; i < numberElement; ++i) {
     const baseTwo = BigInt(2);
 
-    words.push(`${t % BigInt(Math.pow(Number(baseTwo), Number(wordsize)))}`);
-    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), Number(wordsize))));
+    words.push(`${t % BigInt(Math.pow(Number(baseTwo), wordsize))}`);
+    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), wordsize)));
   }
   if (!(t == BigInt(0))) {
     throw `Number ${number} does not fit in ${(wordsize * numberElement).toString()} bits`;
@@ -389,21 +389,6 @@ export function extractRSFromSignature(signatureBytes: number[]): { r: string; s
   const s = forge.util.createBuffer(asn1.value[1].value as string).toHex();
 
   return { r, s };
-}
-
-export function BigintToArray(n: number, k: number, x: bigint) {
-  let mod: bigint = 1n;
-  for (var idx = 0; idx < n; idx++) {
-    mod = mod * 2n;
-  }
-
-  let ret: bigint[] = [];
-  var x_temp: bigint = x;
-  for (var idx = 0; idx < k; idx++) {
-    ret.push(x_temp % mod);
-    x_temp = x_temp / mod;
-  }
-  return ret;
 }
 
 /// UUID
