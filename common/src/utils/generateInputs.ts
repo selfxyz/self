@@ -24,9 +24,6 @@ import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
 import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import { getCSCAModulusMerkleTree } from "./csca";
-import {
-  mockPassportDatas,
-} from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
 import { parseDSC } from './handleCertificate';
 
@@ -45,15 +42,7 @@ export function generateCircuitInputsRegister(
 
     const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
 
-
-  // const tree = getCSCAModulusMerkleTree();
-
-  // if (DEVELOPMENT_MODE) {
-  //   for (const mockPassportData of mocks) {
-  //     tree.insert(getLeaf(mockPassportData).toString());
-  //   }
-  // }
-
+  // const tree = getCSCAModulusMerkleTree(DEVELOPMENT_MODE);
 
   const supportedAlgorithms = [
     { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
@@ -83,17 +72,6 @@ export function generateCircuitInputsRegister(
     arraysAreEqual(concatHash, eContent.slice(eContent.length - hashLen)),
     'concatHash is not at the right place in eContent'
   );
-
-  // const leaf = getLeaf(passportData).toString();
-
-  // const index = tree.indexOf(leaf);
-  // console.log(`Index of pubkey in the registry: ${index}`);
-  // if (index === -1) {
-  //   throw new Error('Your public key was not found in the registry');
-  // }
-
-  // const proof = tree.createProof(index);
-  // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
     throw new Error(
