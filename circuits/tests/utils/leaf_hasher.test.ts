@@ -1,12 +1,6 @@
 import { expect } from 'chai';
 import { X509Certificate } from 'crypto';
 import path from 'path';
-import {
-  computeLeafFromModulusBigInt,
-  getCSCAInputs,
-  getTBSHash,
-  leafHasherLight,
-} from '../../../common/src/utils/csca';
 import { wasm as wasm_tester } from 'circom_tester';
 import forge from 'node-forge';
 
@@ -16,7 +10,10 @@ import {
   mock_dsc_sha1_rsa_2048,
   mock_csca_sha1_rsa_2048,
 } from '../../../common/src/constants/mockCertificates';
-import { splitToWords } from '../../../common/src/utils/utils';
+import { hexToDecimal, splitToWords } from '../../../common/src/utils/utils';
+import { getLeaf, leafHasherLight } from '../../../common/src/utils/pubkeyTree';
+import { k_dsc, n_dsc, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
+import { parseDSC } from '../../../common/src/utils/handleCertificate';
 
 function loadCertificates(dscCertContent: string, cscaCertContent: string) {
   const dscCert = new X509Certificate(dscCertContent);
@@ -50,23 +47,20 @@ describe('LeafHasher Light', function () {
     });
   });
 
-  describe('SHA-256 certificates', async () => {
+  describe('LeafHasherLight - getLeaf', async () => {
     const { dscCert, cscaCert, dscCert_forge, cscaCert_forge } = loadCertificates(
       mock_dsc_sha256_rsa_2048,
       mock_csca_sha256_rsa_2048
     );
-    const bigInt = BigInt(2n ** 4096n - 1n);
-    const leaf = computeLeafFromModulusBigInt(bigInt);
-    const n = 120;
-    const k = 35;
-    const bigInt_formatted = splitToWords(bigInt, BigInt(n), BigInt(k));
-    const leaf_light = leafHasherLight(bigInt_formatted);
-    console.log('\x1b[34m', 'leafHasher: ', leaf, '\x1b[0m');
+    const { signatureAlgorithm, hashFunction, modulus, x, y } = parseDSC(dscCert.toString());
+    const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
+    const leaf_light = getLeaf(dscCert.toString(), n_dsc, k_dsc);
     console.log('\x1b[34m', 'leafHasherLight: ', leaf_light, '\x1b[0m');
 
     it('should extract and log certificate information', async () => {
       const inputs = {
-        in: splitToWords(bigInt, BigInt(n), BigInt(k)),
+        in: splitToWords(BigInt(hexToDecimal(modulus)), n_dsc, k_dsc),
+        sigAlg: SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
       };
       const witness = await circuit.calculateWitness(inputs, true);
       const output = await circuit.getOutput(witness, ['out']);

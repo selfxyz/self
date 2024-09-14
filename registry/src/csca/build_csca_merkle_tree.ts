@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { computeLeafFromModulusBigInt, computeLeafFromPubKey } from '../../../common/src/utils/csca'
 import { getPublicKey, isRsaPublicKey, readCertificate } from '../../../common/src/utils/certificates'
+import { getLeaf } from '../../../common/src/utils/pubkeyTree'
 import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { IMT } from '@zk-kit/imt';
 import { poseidon2 } from 'poseidon-lite';
@@ -56,10 +56,23 @@ function processCertificate(certificate: jsrsasign.X509, filePath: string) {
     console.log(`Key Type: ${publicKey.type}`);
     console.log(`Signature Algorithm: ${signatureAlgorithm}`);
 
-    const finalPoseidonHash = computeLeafFromPubKey(modulus_bigint, n_csca, k_csca); //TODO Update this function to use computeLeafFromPubKey
-    console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
 
-    return finalPoseidonHash.toString();
+    if (certificate.hex) {
+        try {
+            const pemString = jsrsasign.hextopem(certificate.hex, 'CERTIFICATE');
+            const finalPoseidonHash = getLeaf(pemString, n_csca, k_csca);
+            console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
+
+            return finalPoseidonHash.toString();
+        } catch (error) {
+            console.error('Error reconstructing PEM:', error);
+        }
+    } else {
+        console.error('\x1b[31m%s\x1b[0m', 'hex data not available in the certificate object');
+    }
+
+    return null;
+
 }
 
 async function buildCscaMerkleTree() {

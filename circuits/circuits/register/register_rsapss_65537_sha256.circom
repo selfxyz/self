@@ -41,7 +41,10 @@ template REGISTER_RSAPSS_65537_SHA256(n, k, max_datahashes_bytes, nLevels, signa
     PV.signature <== signature;
 
     // Generate the leaf
-    signal leaf <== LeafHasherLight(k)(dsc_modulus);
+    component leafHasher = LeafHasherLightWithSigAlg(k);
+    leafHasher.sigAlg <== signatureAlgorithm;
+    leafHasher.in <== dsc_modulus;
+    signal leaf <== leafHasher.out;
 
     // Generate the commitment
     signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, mrz);

@@ -4,7 +4,6 @@ include "circomlib/circuits/poseidon.circom";
 
 template LeafHasherLight(k) {
     signal input in[k];
-    signal output out;
     var rounds =  div_ceil(k, 16);
     
     component hash[rounds];
@@ -26,5 +25,29 @@ template LeafHasherLight(k) {
     for (var i = 0 ; i < rounds ; i++){
         finalHash.inputs[i] <== hash[i].out;
     }
-    out <== finalHash.out;
+    signal output out <== finalHash.out;
+}
+
+template LeafHasherLightWithSigAlg(k) {
+    signal input in[k];
+    signal input sigAlg;
+    component leafHasher = LeafHasherLight(k+1);
+    leafHasher.in[0] <== sigAlg;
+    for (var i = 0; i < k; i++){
+        leafHasher.in[i+1] <== in[i];
+    }
+    signal output out <== leafHasher.out;
+}
+
+template LeafHasherLightWithSigAlgECDSA(k) {
+    signal input x[k];
+    signal input y[k];
+    signal input sigAlg;
+    component leafHasher = LeafHasherLight(2*k+1);
+    leafHasher.in[0] <== sigAlg;
+    for (var i = 0; i < k; i++){
+        leafHasher.in[i+1] <== x[i];
+        leafHasher.in[i+1+k] <== y[i];
+    }
+    signal output out <== leafHasher.out;
 }
