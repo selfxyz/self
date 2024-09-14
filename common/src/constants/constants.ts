@@ -29,11 +29,6 @@ export enum SignatureAlgorithmIndex {
   ecdsa_sha384 = 6,
 }
 
-export const signatureOidToName = {
-  "1.2.840.113549.1.1.11": "sha256_rsa",
-  "1.2.840.113549.1.1.5": "sha1_rsa"
-}
-
 export const attributeToPosition = {
   issuing_state: [2, 4],
   name: [5, 43],

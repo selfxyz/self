@@ -1,12 +1,13 @@
 import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
 import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, signatureOidToName } from "../constants/constants";
+import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
 import { poseidon16, poseidon2, poseidon4 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import { createHash } from "crypto";
 import axios from "axios";
+import { getSignatureAlgorithmDetails } from "./handleCertificate";
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
@@ -126,12 +127,10 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     // merkle tree saga
     const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
-
-
-
+    const { signatureAlgorithm: signatureAlgorithmName, hashFunction } = getSignatureAlgorithmDetails(signatureAlgorithm);
 
     return {
-        "signature_algorithm": signatureOidToName[signatureAlgorithm],
+        "signature_algorithm": `${hashFunction}_${signatureAlgorithmName}`, // this is the opposite order as in the other files?
         "inputs":
         {
             "raw_dsc_cert": dsc_message_padded_formatted,
