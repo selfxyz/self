@@ -2,15 +2,12 @@ import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 import { genMockPassportData } from '../src/utils/genMockPassportData';
 import * as forge from 'node-forge';
-import { PassportData } from '../src/utils/types';
+import { PassportData, SignatureAlgorithm } from '../src/utils/types';
 import { formatMrz, hash, arraysAreEqual, findSubarrayIndex } from '../src/utils/utils';
 import { parseDSC } from '../src/utils/handleCertificate';
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
-import * as crypto from 'crypto';
-
-export type SignatureAlgorithm = 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384';
 
 const sigAlgs: SignatureAlgorithm[] = [
   'rsa_sha1',

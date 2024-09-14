@@ -8,6 +8,8 @@ export type PassportData = {
   mockUser?: boolean;
 };
 
+export type SignatureAlgorithm = 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384';
+
 export type Proof = {
   proof: {
     a: [string, string],

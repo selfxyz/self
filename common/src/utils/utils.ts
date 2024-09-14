@@ -369,11 +369,6 @@ export function extractRSFromSignature(signatureBytes: number[]): { r: string; s
 
 /// UUID
 
-function stringToHex(str: string): string {
-  return Buffer.from(str).toString('hex');
-}
-
-
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);
 }
@@ -499,7 +494,6 @@ const getMaxLenght = (idType: UserIdType) => {
 }
 
 export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: UserIdType): string => {
-
   if (!validateUserId(user_identifier, user_identifier_type)) {
     throw new Error(`User identifier of type ${user_identifier_type} is not valid`);
   }

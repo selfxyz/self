@@ -6,7 +6,7 @@ import { generateCircuitInputsProve } from '../../common/src/utils/generateInput
 import { n_dsc, k_dsc } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName } from '../../common/src/utils/handleCertificate';
-import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
+import { SignatureAlgorithm } from '../../common/src/utils/types';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },

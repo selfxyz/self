@@ -9,8 +9,8 @@ import { computeLeafFromModulusBigInt } from '../../common/src/utils/csca';
 import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName, parseDSC } from '../../common/src/utils/handleCertificate';
-import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
 import { getLeaf } from '../../common/src/utils/pubkeyTree';
+import { SignatureAlgorithm } from '../../common/src/utils/types';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
