@@ -10,7 +10,7 @@ import { genMockPassportData } from '../../../common/src/utils/genMockPassportDa
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
-import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { parseDSC, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from '../utils/zkeyDownload';
 
 const MockDataScreen: React.FC = () => {
@@ -36,8 +36,8 @@ const MockDataScreen: React.FC = () => {
       const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256", nationality as keyof typeof countryCodes, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
       useUserStore.getState().registerPassportData(mockPassportData);
       useUserStore.getState().setRegistered(true);
-      const sigAlgName = getSignatureAlgorithm(mockPassportData.dsc as string);
-      const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+      const { signatureAlgorithm: sigAlg, hashFunction } = parseDSC(mockPassportData.dsc);
+      const circuitName = getCircuitName("prove", sigAlg, hashFunction);
       downloadZkey(circuitName as any);
       resolve(null);
     }, 0));

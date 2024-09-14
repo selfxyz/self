@@ -8,7 +8,7 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { parseDSC, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from './zkeyDownload';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
@@ -154,7 +154,7 @@ const handleResponseIOS = async (
       mockUser: false
     };
     useUserStore.getState().registerPassportData(passportData)
-    const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(pem);
+    const { signatureAlgorithm, hashFunction } = parseDSC(pem);
     const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
     downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("next");
@@ -221,7 +221,7 @@ const handleResponseAndroid = async (
   console.log("documentSigningCertificate", documentSigningCertificate)
   useUserStore.getState().registerPassportData(passportData)
 
-  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(pem);
+  const { signatureAlgorithm, hashFunction } = parseDSC(pem);
   const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
   downloadZkey(circuitName as any);
   useNavigationStore.getState().setSelectedTab("next");

@@ -8,7 +8,7 @@ import { hexToDecimal, packBytes } from '../../common/src/utils/utils';
 import { computeLeafFromModulusBigInt } from '../../common/src/utils/csca';
 import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
-import { getCircuitName, getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
+import { getCircuitName, parseDSC } from '../../common/src/utils/handleCertificate';
 import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
 
 const sigAlgs = [
@@ -28,7 +28,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
-    const { modulus, x, y } = getSignatureAlgorithm(passportData.dsc);
+    const { modulus, x, y } = parseDSC(passportData.dsc);
 
     const inputs = generateCircuitInputsRegister(
       secret,
@@ -41,7 +41,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(__dirname, `../../circuits/register/${getCircuitName('register', sigAlg, hashFunction)}.circom`),
+        path.join(__dirname, `../circuits/register/${getCircuitName('register', sigAlg, hashFunction)}.circom`),
         {
           include: [
             'node_modules',

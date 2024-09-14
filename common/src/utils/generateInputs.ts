@@ -28,7 +28,7 @@ import {
   mockPassportDatas,
 } from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
-import { getSignatureAlgorithm } from './handleCertificate';
+import { parseDSC } from './handleCertificate';
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -43,7 +43,7 @@ export function generateCircuitInputsRegister(
     const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
       passportData;
 
-    const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = getSignatureAlgorithm(dsc);
+    const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
 
 
   // const tree = getCSCAModulusMerkleTree();

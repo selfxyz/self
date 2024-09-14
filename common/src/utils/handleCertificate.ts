@@ -4,7 +4,7 @@ import { getHashLen } from './utils';
 import { getNamedCurve } from '../../../registry/src/utils/curves';
 import elliptic from 'elliptic';
 
-export const getSignatureAlgorithm = (pemContent: string) => {
+export const parseDSC = (pemContent: string) => {
     const certBuffer = Buffer.from(pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''), 'base64');
     const asn1Data = asn1.fromBER(certBuffer);
     const cert = new Certificate({ schema: asn1Data.result });

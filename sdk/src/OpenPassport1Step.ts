@@ -19,7 +19,7 @@ import {
   splitToWords,
   UserIdType,
 } from '../../common/src/utils/utils';
-import { getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
+import { parseDSC } from '../../common/src/utils/handleCertificate';
 
 export class OpenPassport1StepVerifier {
   scope: string;
@@ -49,7 +49,7 @@ export class OpenPassport1StepVerifier {
   async verify(
     openPassport1StepInputs: OpenPassport1StepInputs
   ): Promise<OpenPassportVerifierReport> {
-    const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(openPassport1StepInputs.dsc);
+    const { signatureAlgorithm, hashFunction } = parseDSC(openPassport1StepInputs.dsc);
     const vkey = getVkey(openPassport1StepInputs.circuit, signatureAlgorithm, hashFunction);
     const parsedPublicSignals = parsePublicSignals1Step(
       openPassport1StepInputs.dscProof.publicSignals

@@ -1,7 +1,7 @@
 import { NativeModules, Platform } from "react-native";
 import { AppType, reconstructAppType } from "../../../common/src/utils/appType";
 import useNavigationStore from '../stores/navigationStore';
-import { getCircuitName, getSignatureAlgorithm } from "../../../common/src/utils/handleCertificate";
+import { getCircuitName, parseDSC } from "../../../common/src/utils/handleCertificate";
 import useUserStore from "../stores/userStore";
 import { downloadZkey } from "./zkeyDownload";
 
@@ -57,7 +57,7 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         const parsedJson = JSON.parse(result);
         const app: AppType = reconstructAppType(parsedJson);
         const dsc = useUserStore.getState().passportData.dsc;
-        const sigAlgName = getSignatureAlgorithm(dsc!);
+        const sigAlgName = parseDSC(dsc!);
         const circuitName = getCircuitName(app.circuit, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
         downloadZkey(circuitName as any);
         setSelectedApp(app);

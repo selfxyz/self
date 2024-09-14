@@ -4,7 +4,7 @@ import { genMockPassportData } from '../src/utils/genMockPassportData';
 import * as forge from 'node-forge';
 import { PassportData } from '../src/utils/types';
 import { formatMrz, hash, arraysAreEqual, findSubarrayIndex } from '../src/utils/utils';
-import { getSignatureAlgorithm } from '../src/utils/handleCertificate';
+import { parseDSC } from '../src/utils/handleCertificate';
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
@@ -35,7 +35,7 @@ describe('Mock Passport Data Generator', function () {
 
 function verify(passportData: PassportData): boolean {
     const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } = passportData;
-    const { signatureAlgorithm, hashFunction, hashLen, curve } = getSignatureAlgorithm(dsc);
+    const { signatureAlgorithm, hashFunction, hashLen, curve } = parseDSC(dsc);
     const formattedMrz = formatMrz(mrz);
     const mrzHash = hash(hashFunction, formattedMrz);
     const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)

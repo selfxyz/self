@@ -26,7 +26,7 @@ import {
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
-import { getSignatureAlgorithm } from './handleCertificate';
+import { parseDSC } from './handleCertificate';
 
 export function genMockPassportData(
   signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384',
@@ -77,7 +77,7 @@ export function genMockPassportData(
       break;
   }
 
-  const { hashFunction, hashLen } = getSignatureAlgorithm(dsc);
+  const { hashFunction, hashLen } = parseDSC(dsc);
 
   const mrzHash = hash(hashFunction, formatMrz(mrz));
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
@@ -107,7 +107,7 @@ function sign(
   dsc: string,
   eContent: number[]
 ): number[] {
-  const { signatureAlgorithm, hashFunction, curve } = getSignatureAlgorithm(dsc);
+  const { signatureAlgorithm, hashFunction, curve } = parseDSC(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);

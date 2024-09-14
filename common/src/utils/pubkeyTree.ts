@@ -4,10 +4,10 @@ import axios from "axios";
 import { poseidon10, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
 import { hexToDecimal, splitToWords } from './utils';
 import { PassportData } from "./types";
-import { getSignatureAlgorithm } from "./handleCertificate";
+import { parseDSC } from "./handleCertificate";
 
 export function getLeaf(passportData: PassportData): bigint {
-  const { signatureAlgorithm, hashFunction, modulus, x, y } = getSignatureAlgorithm(passportData.dsc);
+  const { signatureAlgorithm, hashFunction, modulus, x, y } = parseDSC(passportData.dsc);
   const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashFunction}`]
 
   if (signatureAlgorithm === 'ecdsa') {

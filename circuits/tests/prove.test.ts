@@ -37,7 +37,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     before(async () => {
       circuit = await wasm_tester(
-        path.join(__dirname, `../../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`),
+        path.join(__dirname, `../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`),
         {
           include: [
             'node_modules',
