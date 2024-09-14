@@ -20,17 +20,13 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
-export enum SignatureAlgorithm {
-  sha256WithRSAEncryption_65537 = 1,
-  sha256WithRSAEncryption_3 = 2,
-  sha1WithRSAEncryption_65537 = 3,
-  sha256WithRSASSAPSS_65537 = 4,
-  sha256WithRSASSAPSS_3 = 5,
-  ecdsa_with_SHA384 = 6,
-  ecdsa_with_SHA1 = 7,
-  ecdsa_with_SHA256 = 8,
-  ecdsa_with_SHA512 = 9,
-  sha512WithRSAEncryption_65537 = 10
+export enum SignatureAlgorithmIndex {
+  rsa_sha1 = 1,
+  rsa_sha256 = 2,
+  rsapss_sha256 = 3,
+  ecdsa_sha256 = 4,
+  ecdsa_sha1 = 5,
+  ecdsa_sha384 = 6,
 }
 
 export const signatureOidToName = {

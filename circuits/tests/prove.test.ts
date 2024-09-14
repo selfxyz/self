@@ -2,11 +2,11 @@ import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
-import { n_dsc, k_dsc } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { getCircuitName } from '../../../common/src/utils/handleCertificate';
-import { SignatureAlgorithm } from '../../../common/tests/genMockPassportData.test';
+import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
+import { n_dsc, k_dsc } from '../../common/src/constants/constants';
+import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
+import { getCircuitName } from '../../common/src/utils/handleCertificate';
+import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },

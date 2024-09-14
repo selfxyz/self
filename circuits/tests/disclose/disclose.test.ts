@@ -43,11 +43,7 @@ describe('Disclose', function () {
     const scope = '@coboyApp';
 
     // compute the commitment and insert it in the tree
-    const pubkey_leaf = getLeaf({
-      signatureAlgorithm: passportData.signatureAlgorithm,
-      modulus: passportData.pubKey.modulus,
-      exponent: passportData.pubKey.exponent,
-    }).toString();
+    const pubkey_leaf = getLeaf(passportData).toString();
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
     const commitment = poseidon6([
       secret,

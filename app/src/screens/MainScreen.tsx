@@ -28,7 +28,7 @@ import NextScreen from './NextScreen';
 import RegisterScreen from './RegisterScreen';
 import AppScreen from './AppScreen';
 // import constants
-import { RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
+import { RPC_URL, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
 import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
@@ -144,7 +144,7 @@ const MainScreen: React.FC = () => {
   //     if ((cscaProof !== null) && (localProof !== null)) {
   //       const sendTransaction = async () => {
   //         const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
-  //         const sigAlgIndex = SignatureAlgorithm[sigAlgFormatted as keyof typeof SignatureAlgorithm]
+  //         const sigAlgIndex = SignatureAlgorithmIndex[sigAlgFormatted as keyof typeof SignatureAlgorithmIndex]
   //         console.log("local proof already generated, sending transaction");
   //         const provider = new ethers.JsonRpcProvider(RPC_URL);
   //         const serverResponse = await sendRegisterTransaction(localProof, cscaProof, sigAlgIndex)

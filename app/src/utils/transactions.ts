@@ -4,14 +4,14 @@ import groth16ExportSolidityCallData from './snarkjs';
 import contractAddresses from "../../deployments/deployed_addresses.json";
 import registerArtefacts from "../../deployments/artifacts/Deploy_Registry#OpenPassportRegister.json";
 import sbtArtefacts from "../../deployments/artifacts/Deploy_Registry#SBT.json";
-import { CHAIN_NAME, RELAYER_URL, RPC_URL, SignatureAlgorithm } from '../../../common/src/constants/constants';
+import { CHAIN_NAME, RELAYER_URL, RPC_URL, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
 import { Proof } from "../../../common/src/utils/types";
 import { formatCallData_disclose, formatCallData_dsc, formatCallData_register } from "../../../common/src/utils/formatCallData";
 
 export const sendRegisterTransaction = async (
   proof: Proof,
   cscaProof: Proof,
-  sigAlgIndex: SignatureAlgorithm
+  sigAlgIndex: SignatureAlgorithmIndex
 ) => {
   const provider = new ethers.JsonRpcProvider(RPC_URL);
 

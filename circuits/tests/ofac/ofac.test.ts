@@ -1,10 +1,6 @@
 import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import {
-  mockPassportData_sha256_rsa_65537,
-  mockPassportData2_sha256_rsa_65537,
-} from '../../../common/src/constants/mockPassportData';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
 import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT } from '@ashpect/smt';
@@ -17,10 +13,14 @@ import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import crypto from 'crypto';
+import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
 let circuit: any;
-const passportData = mockPassportData_sha256_rsa_65537; // Mock passport ADDED in ofac list to test circuits
-const passportData2 = mockPassportData2_sha256_rsa_65537; // Mock passport not added in ofac list to test circuits
+
+// Mock passport added in ofac list to test circuits
+const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
+// Mock passport not added in ofac list to test circuits
+const passportData2 = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
 
 // Calculating common validity inputs for all 3 circuits
 function getPassportInputs(passportData: PassportData) {
@@ -31,11 +31,7 @@ function getPassportInputs(passportData: PassportData) {
   const bitmap = Array(90).fill('1');
   const scope = '@coboyApp';
 
-  const pubkey_leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    modulus: passportData.pubKey.modulus,
-    exponent: passportData.pubKey.exponent,
-  }).toString();
+  const pubkey_leaf = getLeaf(passportData).toString();
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
   const commitment = poseidon6([
     secret,

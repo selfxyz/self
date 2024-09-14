@@ -3,13 +3,13 @@ import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { poseidon6 } from 'poseidon-lite';
-import { generateCircuitInputsRegister } from '../../../common/src/utils/generateInputs';
-import { hexToDecimal, packBytes } from '../../../common/src/utils/utils';
-import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca';
-import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
-import { SignatureAlgorithm } from '../../../common/tests/genMockPassportData.test';
+import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
+import { hexToDecimal, packBytes } from '../../common/src/utils/utils';
+import { computeLeafFromModulusBigInt } from '../../common/src/utils/csca';
+import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../common/src/constants/constants';
+import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
+import { getCircuitName, getSignatureAlgorithm } from '../../common/src/utils/handleCertificate';
+import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
@@ -72,10 +72,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
       // for ecdsa:
 
-      // const leaf = getLeaf({
-      //   signatureAlgorithm: passportData.signatureAlgorithm,
-      //   publicKeyQ: passportData.pubKey.publicKeyQ,
-      // }).toString();
+      // const leaf = getLeaf(passportData).toString();
     
       // const commitment_bytes = poseidon6([
       //   inputs.secret[0],

@@ -83,10 +83,7 @@ export function generateCircuitInputsRegister(
     'concatHash is not at the right place in eContent'
   );
 
-  // const leaf = getLeaf({
-  //   signatureAlgorithm: signatureAlgorithm,
-  //   ...pubKey,
-  // }).toString();
+  // const leaf = getLeaf(passportData).toString();
 
   // const index = tree.indexOf(leaf);
   // console.log(`Index of pubkey in the registry: ${index}`);
@@ -166,11 +163,7 @@ export function generateCircuitInputsDisclose(
   scope: string,
   user_identifier: string
 ) {
-  const pubkey_leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    modulus: passportData.pubKey.modulus,
-    exponent: passportData.pubKey.exponent,
-  });
+  const pubkey_leaf = getLeaf(passportData);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
