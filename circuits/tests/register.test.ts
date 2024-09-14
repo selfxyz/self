@@ -28,7 +28,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
-    const { modulus, x, y } = getSignatureAlgorithm(passportData.dsc as string);
+    const { modulus, x, y } = getSignatureAlgorithm(passportData.dsc);
 
     const inputs = generateCircuitInputsRegister(
       secret,

@@ -37,7 +37,8 @@ export function generateCircuitInputsRegister(
   passportData: PassportData,
   n_dsc: number,
   k_dsc: number,
-  mocks: PassportData[] = mockPassportDatas
+  // mocks: PassportData[] = mockPassportDatas
+  mocks?: PassportData[]
 ) {
     const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
       passportData;

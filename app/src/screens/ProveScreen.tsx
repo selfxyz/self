@@ -37,7 +37,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
+  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc);
   const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {

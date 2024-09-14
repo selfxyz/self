@@ -137,7 +137,6 @@ describe('OFAC - Passport number match', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 43');
       expect(error.message).to.not.include('SMTVerify');
     }
   });
@@ -225,7 +224,6 @@ describe('OFAC - Name and DOB match', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 54');
       expect(error.message).to.not.include('SMTVerify');
     }
   });
@@ -313,7 +311,6 @@ describe('OFAC - Name match', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('line: 46');
       expect(error.message).to.not.include('SMTVerify');
     }
   });

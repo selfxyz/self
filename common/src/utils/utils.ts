@@ -16,23 +16,6 @@ export function formatMrz(mrz: string) {
   return mrzCharcodes;
 }
 
-export function parsePubKeyString(pubKeyString: string) {
-  const modulusMatch = pubKeyString.match(/modulus: ([\w\d]+)\s*public/);
-  const publicExponentMatch = pubKeyString.match(/public exponent: (\w+)/);
-
-  const modulus = modulusMatch ? modulusMatch[1] : null;
-  const exponent = publicExponentMatch ? publicExponentMatch[1] : null;
-
-  if (!modulus || !exponent) {
-    throw new Error('Could not parse public key string');
-  }
-
-  return {
-    modulus,
-    exponent,
-  };
-}
-
 export function formatAndConcatenateDataHashes(
   dataHashes: [number, number[]][],
   hashLen: number,
@@ -218,13 +201,6 @@ export function hexToSignedBytes(hexString: string): number[] {
 
 export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
-}
-
-export function formatSigAlgNameForCircuit(sigAlg: string, exponent?: string) {
-  // replace - by _, for instance for ecdsa-with-SHA256
-  sigAlg = sigAlg.replace(/-/g, '_');
-  // add exponent, for instance for sha256WithRSAEncryption
-  return exponent ? `${sigAlg}_${exponent}` : sigAlg;
 }
 
 export function bigIntToChunkedBytes(

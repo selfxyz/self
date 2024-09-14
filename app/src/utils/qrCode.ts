@@ -56,7 +56,7 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         console.log(result);
         const parsedJson = JSON.parse(result);
         const app: AppType = reconstructAppType(parsedJson);
-        const dsc = useUserStore.getState().passportData?.dsc;
+        const dsc = useUserStore.getState().passportData.dsc;
         const sigAlgName = getSignatureAlgorithm(dsc!);
         const circuitName = getCircuitName(app.circuit, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
         downloadZkey(circuitName as any);

@@ -143,7 +143,7 @@ const MainScreen: React.FC = () => {
   //     console.log('CSCA Proof received:', cscaProof);
   //     if ((cscaProof !== null) && (localProof !== null)) {
   //       const sendTransaction = async () => {
-  //         const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent);
+  //         const sigAlgFormatted = formatSigAlgNameForCircuit(passportData.signatureAlgorithm, passportData.pubKey.exponent); // this is old formatting
   //         const sigAlgIndex = SignatureAlgorithmIndex[sigAlgFormatted as keyof typeof SignatureAlgorithmIndex]
   //         console.log("local proof already generated, sending transaction");
   //         const provider = new ethers.JsonRpcProvider(RPC_URL);
