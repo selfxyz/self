@@ -4,12 +4,12 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { generateDscSecret } from '../../../common/src/utils/csca';
+import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
 interface UserState {
   passportNumber: string
@@ -43,7 +43,7 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfExpiry: DEFAULT_DOE ?? "",
   dscSecret: null,
   registered: false,
-  passportData: mockPassportData_sha256_rsa_65537,
+  passportData: genMockPassportData("rsa_sha256", "FRA", "19900101", "20300101"),
   secret: "",
   cscaProof: null,
   localProof: null,

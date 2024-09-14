@@ -1,14 +1,40 @@
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
-import { vkey_prove_rsa_65537_sha256 } from '../constants/vkey';
+import { getHashLen } from './utils';
+import { getNamedCurve } from '../../../registry/src/utils/curves';
+import elliptic from 'elliptic';
 
-export const getSignatureAlgorithm = (pemContent: string) => {
+export const parseDSC = (pemContent: string) => {
     const certBuffer = Buffer.from(pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''), 'base64');
     const asn1Data = asn1.fromBER(certBuffer);
     const cert = new Certificate({ schema: asn1Data.result });
     const signatureAlgorithmOid = cert.signatureAlgorithm.algorithmId;
     const { signatureAlgorithm, hashFunction } = getSignatureAlgorithmDetails(signatureAlgorithmOid);
-    return { signatureAlgorithm, hashFunction };
+    const hashLen = getHashLen(hashFunction);
+
+    let publicKeyDetails;
+    if (signatureAlgorithm === 'ecdsa') {
+        const subjectPublicKeyInfo = cert.subjectPublicKeyInfo;
+        const algorithmParams = subjectPublicKeyInfo.algorithm.algorithmParams;
+        const curveOid = asn1.fromBER(algorithmParams.valueBeforeDecode).result.valueBlock.toString();
+        const curve = getNamedCurve(curveOid);
+
+        const publicKeyBuffer = subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
+        const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
+        const ec = new elliptic.ec(curveForElliptic);
+        const key = ec.keyFromPublic(publicKeyBuffer);
+        const x = key.getPublic().getX().toString('hex');
+        const y = key.getPublic().getY().toString('hex');
+        publicKeyDetails = { curve, x, y };
+    } else {
+        const publicKey = cert.subjectPublicKeyInfo.subjectPublicKey;
+        const asn1PublicKey = asn1.fromBER(publicKey.valueBlock.valueHexView);
+        const rsaPublicKey = asn1PublicKey.result.valueBlock;
+        const modulus = Buffer.from((rsaPublicKey as any).value[0].valueBlock.valueHexView).toString('hex');
+        const exponent = Buffer.from((rsaPublicKey as any).value[1].valueBlock.valueHexView).toString('hex');
+        publicKeyDetails = { modulus, exponent };
+    }
+    return { signatureAlgorithm, hashFunction, hashLen, ...publicKeyDetails };
 }
 
 export const getCircuitName = (circuitType: string, signatureAlgorithm: string, hashFunction: string) => {

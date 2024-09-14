@@ -37,7 +37,6 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
@@ -58,6 +57,10 @@ jobs:
         working-directory: ./circuits
         run: yarn lint
 
-      - name: Run Tests
+      - name: Run Tests (Circuits)
         working-directory: ./circuits
+        run: yarn test
+
+      - name: Run Tests (Common)
+        working-directory: ./common
         run: yarn test

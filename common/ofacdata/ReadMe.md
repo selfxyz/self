@@ -18,7 +18,7 @@ A ballpark number of 6917 individuals (at the time of writing this document) ent
 - For individuals, we parse:
     - full name (first name, last name), dob(day, month, year) in names.json
     - passports and passport issuing country in passport.json
-- The jsons are stored at ofacdata/inputes to be used by SMT's.
+- The jsons are stored at ofacdata/inputs to be used by SMT's.
 
 ## Data Usage
 These jsons are later used to create sparse merkle trees for non-membership proofs. We provide 3 levels of proofs.

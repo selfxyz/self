@@ -13,20 +13,22 @@ template REGISTER_ECDSA_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgor
     signal input datahashes_padded_length;
     signal input eContent[92];
 
-    signal input signature[2][k]; // ECDSA signature component r and s
-    signal input dsc_modulus[2][k]; // Public Key (split into Qx and Qy)
+    signal input signature_r[k]; // ECDSA signature component r
+    signal input signature_s[k]; // ECDSA signature component s
+    signal input dsc_modulus_x[k]; // Public Key x-coordinate
+    signal input dsc_modulus_y[k]; // Public Key y-coordinate
 
     signal input dsc_secret;
     signal input attestation_id;
     
     // Hash DSC pubkey and signature components
     // Poseidon(dsc_pubkey[0][0], dsc_pubkey[0][1], ..., dsc_pubkey[0][5])
-    signal dsc_pubkey_x_hash <== Poseidon(k)(dsc_modulus[0]);
-    signal dsc_pubkey_y_hash <== Poseidon(k)(dsc_modulus[1]);
+    signal dsc_pubkey_x_hash <== Poseidon(k)(dsc_modulus_x);
+    signal dsc_pubkey_y_hash <== Poseidon(k)(dsc_modulus_y);
 
     // Poseidon(signature_r[0], signature_r[1], ..., signature_r[5])
-    signal signature_r_hash <== Poseidon(k)(signature[0]);
-    signal signature_s_hash <== Poseidon(k)(signature[1]);
+    signal signature_r_hash <== Poseidon(k)(signature_r);
+    signal signature_s_hash <== Poseidon(k)(signature_s);
 
     component dsc_commitment_hasher = Poseidon(3);
     component nullifier_hasher = Poseidon(2);
@@ -53,9 +55,9 @@ template REGISTER_ECDSA_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgor
     PV.dataHashes <== dataHashes;
     PV.datahashes_padded_length <== datahashes_padded_length;
     PV.eContentBytes <== eContent;
-    PV.dsc_modulus <== dsc_modulus;
-    PV.signature_r <== signature[0];
-    PV.signature_s <== signature[1];
+    PV.dsc_modulus <== [dsc_modulus_x, dsc_modulus_y];
+    PV.signature_r <== signature_r;
+    PV.signature_s <== signature_s;
 
     // Generate the commitment
     signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf_hasher.out, mrz);
