@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE } from '../constants/constants';
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, n_dsc, k_dsc } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
@@ -37,10 +37,10 @@ export function generateCircuitInputsRegister(
   // mocks: PassportData[] = mockPassportDatas
   mocks?: PassportData[]
 ) {
-    const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
-      passportData;
+  const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
+    passportData;
 
-    const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
+  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
 
   // const tree = getCSCAModulusMerkleTree(DEVELOPMENT_MODE);
 
@@ -142,7 +142,7 @@ export function generateCircuitInputsDisclose(
   scope: string,
   user_identifier: string
 ) {
-  const pubkey_leaf = getLeaf(passportData);
+  const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
