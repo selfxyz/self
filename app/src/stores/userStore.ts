@@ -4,7 +4,6 @@ import {
   DEFAULT_DOB,
   DEFAULT_DOE,
 } from '@env';
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import * as amplitude from '@amplitude/analytics-react-native';
