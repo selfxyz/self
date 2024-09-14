@@ -10,6 +10,7 @@ import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from 
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName, parseDSC } from '../../common/src/utils/handleCertificate';
 import { SignatureAlgorithm } from '../../common/tests/genMockPassportData.test';
+import { getLeaf } from '../../common/src/utils/pubkeyTree';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
@@ -68,23 +69,21 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
-      // const mrz_bytes = packBytes(inputs.mrz);
-
-      // for ecdsa:
-
-      // const leaf = getLeaf(passportData).toString();
+      const mrz_bytes = packBytes(inputs.mrz);
+      const leaf = getLeaf(passportData).toString();
     
-      // const commitment_bytes = poseidon6([
-      //   inputs.secret[0],
-      //   PASSPORT_ATTESTATION_ID,
-      //   computeLeafFromModulusBigInt(BigInt(hexToDecimal(modulus as string))),
-      //   mrz_bytes[0],
-      //   mrz_bytes[1],
-      //   mrz_bytes[2],
-      // ]);
-      // const commitment_js = commitment_bytes.toString();
-      // //console.log('commitment_js', commitment_js)
-      // //console.log('commitment_circom', commitment_circom)
+      const commitment_bytes = poseidon6([
+        inputs.secret[0],
+        PASSPORT_ATTESTATION_ID,
+        leaf,
+        mrz_bytes[0],
+        mrz_bytes[1],
+        mrz_bytes[2],
+      ]);
+      const commitment_js = commitment_bytes.toString();
+      console.log('commitment_js', commitment_js)
+      console.log('commitment_circom', commitment_circom)
+      // TODO: fix with new leaf hasher
       // expect(commitment_circom).to.be.equal(commitment_js);
     });
 
