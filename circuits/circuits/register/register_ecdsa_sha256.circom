@@ -3,7 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "../verifier/passport_verifier_ecdsa_sha256.circom";
 include "../utils/computeCommitment.circom";
-include "../utils/LeafHasherLight.circom";
+include "../utils/leafHasherLight.circom";
 
 template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;

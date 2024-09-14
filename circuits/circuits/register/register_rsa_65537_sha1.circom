@@ -3,7 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "../verifier/passport_verifier_rsa_65537_sha1.circom";
 include "../utils/splitSignalsToWords.circom";
-include "../utils/LeafHasherLight.circom";
+include "../utils/leafHasherLight.circom";
 include "../utils/computeCommitment.circom";
 
 template REGISTER_RSA_65537_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
