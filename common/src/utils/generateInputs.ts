@@ -8,13 +8,11 @@ import {
   hash,
   splitToWords,
   toUnsignedByte,
-  getHashLen,
   getCurrentDateYYMMDD,
   generateMerkleProof,
   generateSMTProof,
   findSubarrayIndex,
   hexToDecimal,
-  BigintToArray,
   extractRSFromSignature,
   castFromUUID,
   castFromScope,
@@ -26,10 +24,8 @@ import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
 import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
 import { getCSCAModulusMerkleTree } from "./csca";
-import {
-  mockPassportDatas,
-} from "../constants/mockPassportData";
 import { SMT } from "@ashpect/smt"
+import { parseDSC } from './handleCertificate';
 
 export function generateCircuitInputsRegister(
   secret: string,
@@ -38,61 +34,44 @@ export function generateCircuitInputsRegister(
   passportData: PassportData,
   n_dsc: number,
   k_dsc: number,
-  mocks: PassportData[] = mockPassportDatas
+  // mocks: PassportData[] = mockPassportDatas
+  mocks?: PassportData[]
 ) {
-  const { mrz, signatureAlgorithm, pubKey, dataGroupHashes, eContent, encryptedDigest } =
-    passportData;
+    const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
+      passportData;
 
-  // const tree = getCSCAModulusMerkleTree();
+    const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseDSC(dsc);
 
-  // if (DEVELOPMENT_MODE) {
-  //   for (const mockPassportData of mocks) {
-  //     tree.insert(getLeaf(mockPassportData).toString());
-  //   }
-  // }
+  // const tree = getCSCAModulusMerkleTree(DEVELOPMENT_MODE);
 
-  if (
-    ![
-      'sha256WithRSAEncryption',
-      'sha1WithRSAEncryption',
-      'sha256WithRSASSAPSS',
-      'ecdsa-with-SHA1',
-      'ecdsa-with-SHA256',
-    ].includes(signatureAlgorithm)
-  ) {
-    console.error(`${signatureAlgorithm} has not been implemented.`);
-    throw new Error(`${signatureAlgorithm} has not been implemented.`);
+  const supportedAlgorithms = [
+    { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
+    { signatureAlgorithm: 'rsa', hashFunction: 'sha256' },
+    { signatureAlgorithm: 'rsapss', hashFunction: 'sha256' },
+    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha1' },
+    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha256' },
+  ];
+
+  const isSupported = supportedAlgorithms.some(
+    (alg) => alg.signatureAlgorithm === signatureAlgorithm && alg.hashFunction === hashFunction
+  );
+
+  if (!isSupported) {
+    throw new Error(`Verification of ${signatureAlgorithm} with ${hashFunction} has not been implemented.`);
   }
 
-  const hashLen = getHashLen(signatureAlgorithm);
   const formattedMrz = formatMrz(mrz);
-  const mrzHash = hash(signatureAlgorithm, formattedMrz);
+  const mrzHash = hash(hashFunction, formattedMrz);
 
   const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash);
-  // console.log('dg1HashOffset', dg1HashOffset);
-
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
 
-  const concatHash = hash(signatureAlgorithm, dataGroupHashes);
+  const concatHash = hash(hashFunction, dataGroupHashes);
 
   assert(
     arraysAreEqual(concatHash, eContent.slice(eContent.length - hashLen)),
     'concatHash is not at the right place in eContent'
   );
-
-  const leaf = getLeaf({
-    signatureAlgorithm: signatureAlgorithm,
-    ...pubKey,
-  }).toString();
-
-  // const index = tree.indexOf(leaf);
-  // console.log(`Index of pubkey in the registry: ${index}`);
-  // if (index === -1) {
-  //   throw new Error('Your public key was not found in the registry');
-  // }
-
-  // const proof = tree.createProof(index);
-  // console.log('verifyProof', tree.verifyProof(proof));
 
   if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
     throw new Error(
@@ -109,33 +88,32 @@ export function generateCircuitInputsRegister(
   let signatureComponents: any;
   let dscModulusComponents: any;
 
-  if (signatureAlgorithm.startsWith('ecdsa-with-')) {
-    const curve_params = pubKey.publicKeyQ.replace(/[()]/g, '').split(',');
-    const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+  if (signatureAlgorithm === 'ecdsa') {
+    const { r, s } = extractRSFromSignature(encryptedDigest);
 
     signatureComponents = {
-      signature_r: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(r))),
-      signature_s: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(s)))
+      signature_r: splitToWords(BigInt(hexToDecimal(r)), n_dsc, k_dsc),
+      signature_s: splitToWords(BigInt(hexToDecimal(s)), n_dsc, k_dsc)
     };
 
     dscModulusComponents = {
-      dsc_modulus_x: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[0]))),
-      dsc_modulus_y: BigintToArray(n_dsc, k_dsc, BigInt(hexToDecimal(curve_params[1])))
+      dsc_modulus_x: splitToWords(BigInt(hexToDecimal(x)), n_dsc, k_dsc),
+      dsc_modulus_y: splitToWords(BigInt(hexToDecimal(y)), n_dsc, k_dsc)
     };
   } else {
     signatureComponents = {
       signature: splitToWords(
-        BigInt(bytesToBigDecimal(passportData.encryptedDigest)),
-        BigInt(n_dsc),
-        BigInt(k_dsc)
+        BigInt(bytesToBigDecimal(encryptedDigest)),
+        n_dsc,
+        k_dsc
       )
     };
 
     dscModulusComponents = {
       dsc_modulus: splitToWords(
-        BigInt(passportData.pubKey.modulus as string),
-        BigInt(n_dsc),
-        BigInt(k_dsc)
+        BigInt(hexToDecimal(modulus)),
+        n_dsc,
+        k_dsc
       )
     };
   }
@@ -164,11 +142,7 @@ export function generateCircuitInputsDisclose(
   scope: string,
   user_identifier: string
 ) {
-  const pubkey_leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    modulus: passportData.pubKey.modulus,
-    exponent: passportData.pubKey.exponent,
-  });
+  const pubkey_leaf = getLeaf(passportData);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);

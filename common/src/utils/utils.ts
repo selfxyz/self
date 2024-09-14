@@ -1,7 +1,7 @@
 import { LeanIMT } from '@zk-kit/lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
-import { sha384 } from 'js-sha512';
+import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
 
@@ -14,23 +14,6 @@ export function formatMrz(mrz: string) {
   mrzCharcodes.unshift(97); // the tag for DG1
 
   return mrzCharcodes;
-}
-
-export function parsePubKeyString(pubKeyString: string) {
-  const modulusMatch = pubKeyString.match(/modulus: ([\w\d]+)\s*public/);
-  const publicExponentMatch = pubKeyString.match(/public exponent: (\w+)/);
-
-  const modulus = modulusMatch ? modulusMatch[1] : null;
-  const exponent = publicExponentMatch ? publicExponentMatch[1] : null;
-
-  if (!modulus || !exponent) {
-    throw new Error('Could not parse public key string');
-  }
-
-  return {
-    modulus,
-    exponent,
-  };
 }
 
 export function formatAndConcatenateDataHashes(
@@ -156,14 +139,14 @@ export const toBinaryString = (byte: any) => {
   return binary;
 };
 
-export function splitToWords(number: bigint, wordsize: bigint, numberElement: bigint) {
+export function splitToWords(number: bigint, wordsize: number, numberElement: number) {
   let t = number;
   const words: string[] = [];
-  for (let i = BigInt(0); i < numberElement; ++i) {
+  for (let i = 0; i < numberElement; ++i) {
     const baseTwo = BigInt(2);
 
-    words.push(`${t % BigInt(Math.pow(Number(baseTwo), Number(wordsize)))}`);
-    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), Number(wordsize))));
+    words.push(`${t % BigInt(Math.pow(Number(baseTwo), wordsize))}`);
+    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), wordsize)));
   }
   if (!(t == BigInt(0))) {
     throw `Number ${number} does not fit in ${(wordsize * numberElement).toString()} bits`;
@@ -184,26 +167,22 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-
-export function hash(signatureAlgorithm: string, bytesArray: number[]): number[] {
+export function hash(hasFunction: string, bytesArray: number[]): number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
+  switch (hasFunction) {
+    case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
-    case 'SHA384withECDSA':
+    case 'sha256':
+      hashResult = sha256(unsignedBytesArray);
+      break;
+    case 'sha384':
       hashResult = sha384(unsignedBytesArray);
       break;
-    case 'sha256WithRSAEncryption':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'sha256WithRSASSAPSS':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'ecdsa-with-SHA1':
-      hashResult = sha1(unsignedBytesArray);
+    case 'sha512':
+      hashResult = sha512_256(unsignedBytesArray);
       break;
     default:
       hashResult = sha256(unsignedBytesArray); // Default to sha256
@@ -222,13 +201,6 @@ export function hexToSignedBytes(hexString: string): number[] {
 
 export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
-}
-
-export function formatSigAlgNameForCircuit(sigAlg: string, exponent?: string) {
-  // replace - by _, for instance for ecdsa-with-SHA256
-  sigAlg = sigAlg.replace(/-/g, '_');
-  // add exponent, for instance for sha256WithRSAEncryption
-  return exponent ? `${sigAlg}_${exponent}` : sigAlg;
 }
 
 export function bigIntToChunkedBytes(
@@ -273,23 +245,18 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   return Array.from(yymmdd).map((char) => parseInt(char));
 }
 
-export function getHashLen(signatureAlgorithm: string) {
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
-    case 'ecdsa-with-SHA1':
+export function getHashLen(hashFunction: string) {
+  switch (hashFunction) {
+    case 'sha1':
       return 20;
-    case 'sha256WithRSAEncryption':
-    case 'rsassaPss':
-    case 'ecdsa-with-SHA256':
+    case 'sha256':
       return 32;
-    case 'sha384WithRSAEncryption':
-    case 'ecdsa-with-SHA384':
+    case 'sha384':
       return 48;
-    case 'sha512WithRSAEncryption':
-    case 'ecdsa-with-SHA512':
+    case 'sha512':
       return 64;
     default:
-      console.log(`${signatureAlgorithm} not found in getHashLen`);
+      console.log(`${hashFunction} not found in getHashLen`);
       return 32;
   }
 }
@@ -400,27 +367,7 @@ export function extractRSFromSignature(signatureBytes: number[]): { r: string; s
   return { r, s };
 }
 
-export function BigintToArray(n: number, k: number, x: bigint) {
-  let mod: bigint = 1n;
-  for (var idx = 0; idx < n; idx++) {
-    mod = mod * 2n;
-  }
-
-  let ret: bigint[] = [];
-  var x_temp: bigint = x;
-  for (var idx = 0; idx < k; idx++) {
-    ret.push(x_temp % mod);
-    x_temp = x_temp / mod;
-  }
-  return ret;
-}
-
 /// UUID
-
-function stringToHex(str: string): string {
-  return Buffer.from(str).toString('hex');
-}
-
 
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);
@@ -547,7 +494,6 @@ const getMaxLenght = (idType: UserIdType) => {
 }
 
 export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: UserIdType): string => {
-
   if (!validateUserId(user_identifier, user_identifier_type)) {
     throw new Error(`User identifier of type ${user_identifier_type} is not valid`);
   }

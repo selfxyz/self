@@ -1,7 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 // @ts-ignore
 import PassportReader from 'react-native-passport-reader';
-import { toStandardName } from '../../../common/src/utils/formatNames';
 import { checkInputs } from '../utils/utils';
 import { PassportData } from '../../../common/src/utils/types';
 import forge from 'node-forge';
@@ -9,7 +8,7 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { getSignatureAlgorithm, getCircuitName } from '../../../common/src/utils/handleCertificate';
+import { parseDSC, getCircuitName } from '../../../common/src/utils/handleCertificate';
 import { downloadZkey } from './zkeyDownload';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
@@ -121,7 +120,6 @@ const handleResponseIOS = async (
 
   const eContentBase64 = parsed.eContentBase64; // this is what we call concatenatedDataHashes in android world
   const signedAttributes = parsed.signedAttributes; // this is what we call eContent in android world
-  const signatureAlgorithm = parsed.signatureAlgorithm;
   const mrz = parsed.passportMRZ;
   const signatureBase64 = parsed.signatureBase64;
   console.log('dataGroupsPresent', parsed.dataGroupsPresent)
@@ -131,19 +129,12 @@ const handleResponseIOS = async (
   console.log('isChipAuthenticationSupported', parsed.isChipAuthenticationSupported)
   console.log('residenceAddress', parsed.residenceAddress)
   console.log('passportPhoto', parsed.passportPhoto.substring(0, 100) + '...')
-  console.log('signatureAlgorithm', signatureAlgorithm)
   console.log('encapsulatedContentDigestAlgorithm', parsed.encapsulatedContentDigestAlgorithm)
   console.log('parsed.documentSigningCertificate', parsed.documentSigningCertificate)
   const pem = JSON.parse(parsed.documentSigningCertificate).PEM.replace(/\n/g, '');
-  const certificate = forge.pki.certificateFromPem(pem);
   console.log('pem', pem)
 
   try {
-    const publicKey = certificate.publicKey;
-    //console.log('publicKey', publicKey);
-
-    const modulus = (publicKey as any).n.toString(10);
-
     const eContentArray = Array.from(Buffer.from(signedAttributes, 'base64'));
     const signedEContentArray = eContentArray.map(byte => byte > 127 ? byte - 256 : byte);
 
@@ -153,15 +144,9 @@ const handleResponseIOS = async (
     const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
     //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
-    console.log('signatureAlgorithm before conversion', signatureAlgorithm);
     const passportData = {
       mrz,
-      signatureAlgorithm: toStandardName(signatureAlgorithm),
       dsc: pem,
-      pubKey: {
-        modulus: modulus,
-        exponent: (publicKey as any).e.toString(10),
-      },
       dataGroupHashes: concatenatedDataHashesArraySigned,
       eContent: signedEContentArray,
       encryptedDigest: encryptedDigestArray,
@@ -169,8 +154,8 @@ const handleResponseIOS = async (
       mockUser: false
     };
     useUserStore.getState().registerPassportData(passportData)
-    const sigAlgName = getSignatureAlgorithm(pem);
-    const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+    const { signatureAlgorithm, hashFunction } = parseDSC(pem);
+    const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
     downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
@@ -191,10 +176,6 @@ const handleResponseAndroid = async (
 ) => {
   const {
     mrz,
-    signatureAlgorithm,
-    modulus,
-    curveName,
-    publicKeyQ,
     eContent,
     encryptedDigest,
     photo,
@@ -210,22 +191,9 @@ const handleResponseAndroid = async (
   //amplitude.track('Sig alg before conversion: ' + signatureAlgorithm);
 
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
-
-  const cert = forge.pki.certificateFromPem(pem);
-  console.log('cert', cert);
-  const publicKey = cert.publicKey;
-  console.log('publicKey', publicKey);
-
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
-    signatureAlgorithm: toStandardName(signatureAlgorithm),
     dsc: pem,
-    pubKey: {
-      modulus: modulus,
-      exponent: (publicKey as any).e.toString(10),
-      curveName: curveName,
-      publicKeyQ: publicKeyQ,
-    },
     dataGroupHashes: JSON.parse(encapContent),
     eContent: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
@@ -240,8 +208,6 @@ const handleResponseAndroid = async (
   }, null, 2));
 
   console.log('mrz', passportData.mrz);
-  console.log('signatureAlgorithm', passportData.signatureAlgorithm);
-  console.log('pubKey', passportData.pubKey);
   console.log('dataGroupHashes', passportData.dataGroupHashes);
   console.log('eContent', passportData.eContent);
   console.log('encryptedDigest', passportData.encryptedDigest);
@@ -255,8 +221,8 @@ const handleResponseAndroid = async (
   console.log("documentSigningCertificate", documentSigningCertificate)
   useUserStore.getState().registerPassportData(passportData)
 
-  const sigAlgName = getSignatureAlgorithm(pem);
-  const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+  const { signatureAlgorithm, hashFunction } = parseDSC(pem);
+  const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
   downloadZkey(circuitName as any);
   useNavigationStore.getState().setSelectedTab("next");
 };

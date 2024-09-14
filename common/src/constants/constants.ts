@@ -20,22 +20,13 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
-export enum SignatureAlgorithm {
-  sha256WithRSAEncryption_65537 = 1,
-  sha256WithRSAEncryption_3 = 2,
-  sha1WithRSAEncryption_65537 = 3,
-  sha256WithRSASSAPSS_65537 = 4,
-  sha256WithRSASSAPSS_3 = 5,
-  ecdsa_with_SHA384 = 6,
-  ecdsa_with_SHA1 = 7,
-  ecdsa_with_SHA256 = 8,
-  ecdsa_with_SHA512 = 9,
-  sha512WithRSAEncryption_65537 = 10
-}
-
-export const signatureOidToName = {
-  "1.2.840.113549.1.1.11": "sha256_rsa",
-  "1.2.840.113549.1.1.5": "sha1_rsa"
+export enum SignatureAlgorithmIndex {
+  rsa_sha256 = 1,
+  rsa_sha1 = 3,
+  rsapss_sha256 = 4,
+  ecdsa_sha1 = 7,
+  ecdsa_sha256 = 8,
+  ecdsa_sha384 = 9,
 }
 
 export const attributeToPosition = {
@@ -52,6 +43,8 @@ export const attributeToPosition = {
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
 export const k_dsc = 32;
+export const n_dsc_ecdsa = 43; // 43 * 6 = 258 > 254 Cirom field size
+export const k_dsc_ecdsa = 6;
 export const n_csca = 121;
 export const k_csca = 34;
 export const max_cert_bytes = 1664;

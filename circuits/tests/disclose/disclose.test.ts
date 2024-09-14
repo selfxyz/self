@@ -1,11 +1,9 @@
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { mockPassportData_sha256_rsa_65537 } from '../../../common/src/constants/mockPassportData';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
-  COMMITMENT_TREE_DEPTH,
   PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
@@ -14,13 +12,14 @@ import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';
+import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
 describe('Disclose', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
   let w: any;
-  let passportData = mockPassportData_sha256_rsa_65537;
+  const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
   let tree: any;
 
   before(async () => {
@@ -43,11 +42,7 @@ describe('Disclose', function () {
     const scope = '@coboyApp';
 
     // compute the commitment and insert it in the tree
-    const pubkey_leaf = getLeaf({
-      signatureAlgorithm: passportData.signatureAlgorithm,
-      modulus: passportData.pubKey.modulus,
-      exponent: passportData.pubKey.exponent,
-    }).toString();
+    const pubkey_leaf = getLeaf(passportData).toString();
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
     const commitment = poseidon6([
       secret,

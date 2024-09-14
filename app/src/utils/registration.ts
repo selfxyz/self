@@ -27,11 +27,7 @@ export async function isCommitmentRegistered(secret: string, passportData: Passp
 
   imt.import(response.data);
 
-  const pubkey_leaf = getLeaf({
-    signatureAlgorithm: passportData.signatureAlgorithm,
-    modulus: passportData.pubKey!.modulus,
-    exponent: passportData.pubKey!.exponent,
-  });
+  const pubkey_leaf = getLeaf(passportData);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);

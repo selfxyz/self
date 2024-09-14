@@ -2,7 +2,7 @@ import { expect, assert } from "chai";
 import { ethers } from "hardhat";
 // import { describe } from "mocha";
 import { mockPassportData_sha256_rsa_65537, mockPassportData_sha1_rsa_65537, } from "../../common/src/constants/mockPassportData";
-import { countryCodes, PASSPORT_ATTESTATION_ID, SignatureAlgorithm } from "../../common/src/constants/constants";
+import { countryCodes, PASSPORT_ATTESTATION_ID, SignatureAlgorithmIndex } from "../../common/src/constants/constants";
 import { formatRoot } from "../../common/src/utils/utils";
 import { groth16 } from 'snarkjs'
 import { time } from "@nomicfoundation/hardhat-toolbox/network-helpers";
@@ -211,10 +211,10 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
         await verifier_disclose.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `Verifier_disclose deployed to ${verifier_disclose.target}`);
 
-        await register.addSignatureAlgorithm(SignatureAlgorithm["sha256WithRSAEncryption_65537"], verifier_register_sha256WithRSAEncryption_65537.target);
-        await register.addCSCAVerifier(SignatureAlgorithm["sha256WithRSAEncryption_65537"], verifier_dsc_sha256_rsa_4096.target);
-        await register.addSignatureAlgorithm(SignatureAlgorithm["sha1WithRSAEncryption_65537"], verifier_register_sha1WithRSAEncryption_65537.target);
-        await register.addCSCAVerifier(SignatureAlgorithm["sha1WithRSAEncryption_65537"], verifier_dsc_sha1_rsa_4096.target);
+        await register.addSignatureAlgorithm(SignatureAlgorithmIndex.rsa_sha256, verifier_register_sha256WithRSAEncryption_65537.target);
+        await register.addCSCAVerifier(SignatureAlgorithmIndex.rsa_sha256, verifier_dsc_sha256_rsa_4096.target);
+        await register.addSignatureAlgorithm(SignatureAlgorithmIndex.rsa_sha1, verifier_register_sha1WithRSAEncryption_65537.target);
+        await register.addCSCAVerifier(SignatureAlgorithmIndex.rsa_sha1, verifier_dsc_sha1_rsa_4096.target);
 
         const SBT = await ethers.getContractFactory("SBT");
         sbt = await SBT.deploy(
@@ -311,7 +311,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
         for (const sigAlgName of sigAlgNames) {
             const sigAlgArtifacts_register = register_circuits[sigAlgName];
             const sigAlgArtifacts_dsc = dsc_circuits[sigAlgName];
-            const sigAlgIndex = SignatureAlgorithm[sigAlgName as keyof typeof SignatureAlgorithm]
+            const sigAlgIndex = SignatureAlgorithmIndex[sigAlgName as keyof typeof SignatureAlgorithmIndex]
 
             it(`Verifier contract verifies a correct proof - Register - ${sigAlgName}`, async function () {
                 expect(

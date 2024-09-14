@@ -11,7 +11,7 @@ import { generateCircuitInputsProve } from '../../../common/src/utils/generateIn
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
+import { getCircuitName, parseDSC } from '../../../common/src/utils/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 interface ProveScreenProps {
@@ -37,7 +37,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
+  const { signatureAlgorithm, hashFunction } = parseDSC(passportData.dsc);
   const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
