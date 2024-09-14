@@ -12,11 +12,11 @@ import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils
 import { SignatureAlgorithm } from '../../../common/tests/genMockPassportData.test';
 
 const sigAlgs = [
-  // { sigAlg: 'rsa', hashFunction: 'sha1' },
-  // { sigAlg: 'rsa', hashFunction: 'sha256' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'rsa', hashFunction: 'sha1' },
+  { sigAlg: 'rsa', hashFunction: 'sha256' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  // { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -69,6 +69,14 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
       // const mrz_bytes = packBytes(inputs.mrz);
+
+      // for ecdsa:
+
+      // const leaf = getLeaf({
+      //   signatureAlgorithm: passportData.signatureAlgorithm,
+      //   publicKeyQ: passportData.pubKey.publicKeyQ,
+      // }).toString();
+    
       // const commitment_bytes = poseidon6([
       //   inputs.secret[0],
       //   PASSPORT_ATTESTATION_ID,
@@ -115,7 +123,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          signature: inputs.signature.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
+          signature: inputs.signature ? inputs.signature.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)) : undefined,
+          signature_s: inputs.signature_s ? inputs.signature_s.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)) : undefined,
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');

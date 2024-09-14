@@ -133,7 +133,7 @@ function sign(
         
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
 
-    const md = forge.md.sha256.create();
+    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));

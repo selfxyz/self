@@ -144,8 +144,6 @@ export function generateCircuitInputsRegister(
     };
   }
 
-  console.log(signatureComponents);
-  console.log(dscModulusComponents);
   return {
     secret: [secret],
     mrz: formattedMrz.map((byte) => String(byte)),

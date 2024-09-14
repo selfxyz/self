@@ -34,7 +34,6 @@ export const getSignatureAlgorithm = (pemContent: string) => {
         const exponent = Buffer.from((rsaPublicKey as any).value[1].valueBlock.valueHexView).toString('hex');
         publicKeyDetails = { modulus, exponent };
     }
-    console.log(publicKeyDetails);
     return { signatureAlgorithm, hashFunction, hashLen, ...publicKeyDetails };
 }
 

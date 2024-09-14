@@ -60,8 +60,9 @@ function verify(passportData: PassportData): boolean {
         const ec = new elliptic.ec(curveForElliptic);
 
         const key = ec.keyFromPublic(publicKeyBuffer);
-        const messageBuffer = Buffer.from(eContent);
-        const msgHash = crypto.createHash('sha256').update(messageBuffer).digest();
+        const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+        md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+        const msgHash = md.digest().toHex()
         const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
         
         return key.verify(msgHash, signature_crypto);
