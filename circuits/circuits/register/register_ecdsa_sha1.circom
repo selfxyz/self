@@ -58,7 +58,7 @@ template REGISTER_ECDSA_SHA1(n, k, max_datahashes_bytes, nLevels, signatureAlgor
     PV.signature_s <== signature_s;
 
     // Generate the commitment
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf_hasher.out, mrz);
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, mrz);
 }
 
 // We hardcode 7 here for ecdsa_with_SHA1
