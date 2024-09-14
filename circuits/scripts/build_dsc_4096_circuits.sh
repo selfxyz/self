@@ -22,7 +22,7 @@ build_circuit() {
     circom circuits/tests/dsc/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
 
     echo -e "\033[34mbuilding zkey\033[0m"
-    yarn snarkjs groth16 setup build/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/${CIRCUIT_NAME}.zkey
+    NODE_OPTIONS="--max-old-space-size=8192" yarn snarkjs groth16 setup build/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/${CIRCUIT_NAME}.zkey
 
     if command -v openssl &> /dev/null
     then
@@ -51,6 +51,7 @@ build_circuit() {
 # Define circuits and their deployment flags
 # name:deploy_flag
 CIRCUITS=(
+    "dsc_sha256_rsapss_4096:true"
     "dsc_sha256_rsa_4096:false"
     "dsc_sha1_rsa_4096:false"
 )

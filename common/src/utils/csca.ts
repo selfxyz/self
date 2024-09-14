@@ -7,7 +7,9 @@ import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import { createHash } from "crypto";
 import axios from "axios";
+import { flexiblePoseidon } from "./poseidon";
 import { getSignatureAlgorithmDetails } from "./handleCertificate";
+import { getLeaf } from "./pubkeyTree";
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
@@ -82,7 +84,6 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     }
 
     const signatureAlgorithm = dscCertificate.signatureOid;;
-    //console.log('signatureAlgorithm', signatureAlgorithm);
 
     //dsc modulus
     const dsc_modulus = dscCertificate.publicKey.n.toString(16).toLowerCase();
@@ -125,7 +126,9 @@ export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertif
     // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
     // merkle tree saga
-    const leaf = computeLeafFromModulusBigInt(csca_modulus_bigint);
+    const pemContent = forge.pki.certificateToPem(cscaCertificate);
+    const leaf = getLeaf(pemContent, n_csca, k_csca);
+    console.log('leaf', leaf);
     const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
     const { signatureAlgorithm: signatureAlgorithmName, hashFunction } = getSignatureAlgorithmDetails(signatureAlgorithm);
 
@@ -163,51 +166,7 @@ export function getCSCAModulusMerkleTree() {
 
 }
 
-export function computeLeafFromModulusFormatted(modulus_formatted: string[]) {
-    if (modulus_formatted.length <= 64) {
-        const hashInputs = new Array(4);
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = new Array(16).fill(BigInt(0));
-        }
-        for (let i = 0; i < 64; i++) {
-            if (i < modulus_formatted.length) {
-                hashInputs[i % 4][Math.floor(i / 4)] = BigInt(modulus_formatted[i]);
-            }
-        }
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
-        }
-        const finalHash = poseidon4(hashInputs.map(h => h));
-        console.log(finalHash);
-        return finalHash.toString();
-    }
-    else {
-        throw new Error("Modulus length is too long");
-    }
-}
-export function computeLeafFromModulusBigInt(modulus_bigint: bigint) {
-    if (modulus_bigint <= BigInt(2n ** 4096n - 1n)) {
-        const modulus_formatted = splitToWords(modulus_bigint, 64, 64);
-        const hashInputs = new Array(4);
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = new Array(16).fill(BigInt(0));
-        }
-        for (let i = 0; i < 64; i++) {
-            if (i < modulus_formatted.length) {
-                hashInputs[i % 4][Math.floor(i / 4)] = BigInt(modulus_formatted[i]);
-            }
-        }
-        for (let i = 0; i < 4; i++) {
-            hashInputs[i] = poseidon16(hashInputs[i].map(input => input.toString()));
-        }
-        const finalHash = poseidon4(hashInputs.map(h => h));
-        //console.log(finalHash);
-        return finalHash.toString();
-    }
-    else {
-        throw new Error("Modulus length is too long");
-    }
-}
+
 
 export function getCSCAModulusProof(leaf, n, k) {
     let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);

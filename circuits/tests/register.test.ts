@@ -5,7 +5,6 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { poseidon6 } from 'poseidon-lite';
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
 import { hexToDecimal, packBytes } from '../../common/src/utils/utils';
-import { computeLeafFromModulusBigInt } from '../../common/src/utils/csca';
 import {
   n_dsc,
   k_dsc,
@@ -40,8 +39,6 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
     const dscSecret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
 
-    const { modulus, x, y } = parseDSC(passportData.dsc);
-
     const inputs = generateCircuitInputsRegister(
       secret,
       dscSecret,
@@ -72,6 +69,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     });
 
     it('should calculate the witness with correct inputs', async function () {
+      console.log('inputs', inputs);
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
 
@@ -83,8 +81,10 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
+      const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
+      const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
       const mrz_bytes = packBytes(inputs.mrz);
-      const leaf = getLeaf(passportData).toString();
+      const leaf = getLeaf(passportData.dsc, n, k).toString();
 
       const commitment_bytes = poseidon6([
         inputs.secret[0],
@@ -97,8 +97,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       const commitment_js = commitment_bytes.toString();
       console.log('commitment_js', commitment_js);
       console.log('commitment_circom', commitment_circom);
-      // TODO: fix with new leaf hasher
-      // expect(commitment_circom).to.be.equal(commitment_js);
+      expect(commitment_circom).to.be.equal(commitment_js);
     });
 
     it('should fail to calculate witness with invalid mrz', async function () {

@@ -34,7 +34,8 @@ build_circuit() {
 CIRCUITS=(
     "register_rsa_65537_sha256:register:true"
     "register_rsa_65537_sha1:register:true"
-    "disclose:disclose:true"
+    "register_rsapss_65537_sha256:register:true"
+    "disclose:disclose:false"
 )
 
 TOTAL_START_TIME=$(date +%s)

@@ -4,6 +4,8 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
+  k_dsc,
+  n_dsc,
   PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
@@ -42,7 +44,7 @@ describe('Disclose', function () {
     const scope = '@coboyApp';
 
     // compute the commitment and insert it in the tree
-    const pubkey_leaf = getLeaf(passportData).toString();
+    const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc).toString();
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
     const commitment = poseidon6([
       secret,

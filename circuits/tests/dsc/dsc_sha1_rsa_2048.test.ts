@@ -8,14 +8,11 @@ import {
   mock_dsc_sha1_rsa_2048,
   mock_csca_sha1_rsa_2048,
 } from '../../../common/src/constants/mockCertificates';
+import { k_dsc, n_dsc } from '../../../common/src/constants/constants';
 
 describe('DSC chain certificate - SHA1 RSA', function () {
   this.timeout(0); // Disable timeout
   let circuit;
-  const n_dsc = 121;
-  const k_dsc = 17;
-  const n_csca = 121;
-  const k_csca = 17;
   const max_cert_bytes = 960;
   const dscCert = forge.pki.certificateFromPem(mock_dsc_sha1_rsa_2048);
   const cscaCert = forge.pki.certificateFromPem(mock_csca_sha1_rsa_2048);
@@ -26,8 +23,8 @@ describe('DSC chain certificate - SHA1 RSA', function () {
     cscaCert,
     n_dsc,
     k_dsc,
-    n_csca,
-    k_csca,
+    n_dsc,
+    k_dsc,
     max_cert_bytes,
     true
   );

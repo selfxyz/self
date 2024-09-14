@@ -11,7 +11,7 @@ import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json'
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
-import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
@@ -38,7 +38,7 @@ function getPassportInputs(passportData: PassportData) {
   const bitmap = Array(90).fill('1');
   const scope = '@coboyApp';
 
-  const pubkey_leaf = getLeaf(passportData);
+  const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
   const commitment = poseidon6([
     secret,

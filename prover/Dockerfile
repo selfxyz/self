@@ -3,6 +3,7 @@ FROM python:3.10
 WORKDIR /root
 RUN apt-get update && apt-get upgrade -y 
 # Update the package list and install necessary dependencies
+RUN apt-get update && apt-get install -y bash
 RUN apt-get update && \
     apt install -y cmake build-essential pkg-config libssl-dev libgmp-dev libsodium-dev nasm git awscli gcc nodejs npm 
 # Install jq

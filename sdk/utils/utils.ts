@@ -1,6 +1,10 @@
 import { ethers } from 'ethers';
 import { getCurrentDateYYMMDD } from '../../common/src/utils/utils';
-import { REGISTER_ABI, REGISTER_CONTRACT_ADDRESS } from '../../common/src/constants/constants';
+import {
+  attributeToPosition,
+  REGISTER_ABI,
+  REGISTER_CONTRACT_ADDRESS,
+} from '../../common/src/constants/constants';
 import { derToBytes } from '../../common/src/utils/csca';
 import forge from 'node-forge';
 import { SKI_PEM, SKI_PEM_DEV } from './skiPem';
@@ -18,8 +22,13 @@ export function getCurrentDateFormatted() {
   return getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString());
 }
 
-export function getVkey(circuit: string, signatureAlgorithm: string, hashFunction: string) {
+export function getVkeyFromArtifacts(
+  circuit: string,
+  signatureAlgorithm: string,
+  hashFunction: string
+) {
   const circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
+  console.log('Circuit name:', circuitName);
   switch (circuitName) {
     case 'prove_rsa_65537_sha256':
       return vkey_prove_rsa_65537_sha256;
@@ -85,3 +94,15 @@ export function verifyDSCValidity(dscCertificate: forge.pki.Certificate, dev_mod
     return false;
   }
 }
+
+export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribute: string) {
+  const position = attributeToPosition[attribute];
+  let attributeValue = '';
+  for (let i = position[0]; i <= position[1]; i++) {
+    attributeValue += unpackedReveal[i];
+  }
+  return attributeValue;
+}
+
+export const areArraysEqual = (arr1: string[], arr2: string[]) =>
+  arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);

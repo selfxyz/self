@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { computeLeafFromModulusBigInt } from '../../../common/src/utils/csca'
 import { getPublicKey, isRsaPublicKey, readCertificate } from '../../../common/src/utils/certificates'
+import { getLeaf } from '../../../common/src/utils/pubkeyTree'
 import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { IMT } from '@zk-kit/imt';
 import { poseidon2 } from 'poseidon-lite';
@@ -46,8 +46,8 @@ function processCertificate(certificate: jsrsasign.X509, filePath: string) {
         k_csca = 32;
     }
     else {
-        n_csca = 64;
-        k_csca = 64;
+        n_csca = 120;
+        k_csca = 35;
     }
 
     console.log(`File: ${filePath}`);
@@ -56,16 +56,29 @@ function processCertificate(certificate: jsrsasign.X509, filePath: string) {
     console.log(`Key Type: ${publicKey.type}`);
     console.log(`Signature Algorithm: ${signatureAlgorithm}`);
 
-    const finalPoseidonHash = computeLeafFromModulusBigInt(modulus_bigint);
-    console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
 
-    return finalPoseidonHash.toString();
+    if (certificate.hex) {
+        try {
+            const pemString = jsrsasign.hextopem(certificate.hex, 'CERTIFICATE');
+            const finalPoseidonHash = getLeaf(pemString, n_csca, k_csca);
+            console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
+
+            return finalPoseidonHash.toString();
+        } catch (error) {
+            console.error('Error reconstructing PEM:', error);
+        }
+    } else {
+        console.error('\x1b[31m%s\x1b[0m', 'hex data not available in the certificate object');
+    }
+
+    return null;
+
 }
 
 async function buildCscaMerkleTree() {
     const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
 
-    const path_to_pem_files = "outputs/unique_pem";
+    const path_to_pem_files = "outputs/csca/pem_masterlist";
     for (const file of fs.readdirSync(path_to_pem_files)) {
         const file_path = path.join(path_to_pem_files, file);
         try {
@@ -85,8 +98,8 @@ async function buildCscaMerkleTree() {
             '../common/src/mock_certificates/sha256_rsa_2048/mock_csca.pem',
             '../common/src/mock_certificates/sha256_rsapss_4096/mock_csca.pem',
             '../common/src/mock_certificates/sha256_rsapss_2048/mock_csca.pem',
-            '../common/src/mock_certificates/sha1_rsa_4096/mock_csca.crt',
-            '../common/src/mock_certificates/sha1_rsa_2048/mock_csca.crt'
+            '../common/src/mock_certificates/sha1_rsa_4096/mock_csca.pem',
+            '../common/src/mock_certificates/sha1_rsa_2048/mock_csca.pem'
         ];
 
         for (const mockCscaFile of mockCscaList) {

@@ -28,6 +28,11 @@ export enum SignatureAlgorithmIndex {
   ecdsa_sha256 = 8,
   ecdsa_sha384 = 9,
 }
+export const signatureOidToName = {
+  "1.2.840.113549.1.1.11": "sha256_rsa",
+  "1.2.840.113549.1.1.5": "sha1_rsa",
+  "1.2.840.113549.1.1.10": "sha256_rsapss"
+}
 
 export const attributeToPosition = {
   issuing_state: [2, 4],
@@ -43,10 +48,10 @@ export const attributeToPosition = {
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
 export const k_dsc = 32;
-export const n_dsc_ecdsa = 43; // 43 * 6 = 258 > 254 Cirom field size
+export const n_csca = 120;
+export const k_csca = 35;
+export const n_dsc_ecdsa = 43;
 export const k_dsc_ecdsa = 6;
-export const n_csca = 121;
-export const k_csca = 34;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   "AFG": "Afghanistan",

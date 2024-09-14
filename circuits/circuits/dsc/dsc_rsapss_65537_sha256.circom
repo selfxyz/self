@@ -7,11 +7,10 @@ include "@zk-email/circuits/lib/sha.circom";
 include "binary-merkle-root.circom";
 include "../utils/splitBytesToWords.circom";
 include "../utils/splitSignalsToWords.circom";
-include "../utils/RSASSAPSS_padded.circom";
-include "../utils/leafHasher.circom";
+include "../utils/leafHasherLight.circom";
+include "../utils/rsapss/rsapss.circom";
 
-
-template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels ) {
+template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, modulus_bits_size, dsc_mod_len, nLevels, signatureAlgorithm) {
     signal input raw_dsc_cert[max_cert_bytes]; 
     signal input raw_dsc_cert_padded_bytes;
     signal input csca_modulus[k_csca];
@@ -26,8 +25,9 @@ template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, d
 
     signal output blinded_dsc_commitment;
 
-    // verify the leaf
-    component leafHasher = LeafHasher(n_csca,k_csca);
+    //verify the leaf
+    component leafHasher = LeafHasherLightWithSigAlg(k_csca);
+    leafHasher.sigAlg <== signatureAlgorithm;
     leafHasher.in <== csca_modulus;
     signal leaf <== leafHasher.out;
 
@@ -39,17 +39,13 @@ template DSC_RSAPSS_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, d
     assert(n_csca * k_csca > max_cert_bytes);
     assert(n_csca <= (255 \ 2));
 
-    // decode signature to get encoded message
-    component rsaDecode = RSASSAPSS_Decode(n_csca, k_csca);
-    rsaDecode.signature <== dsc_signature;
-    rsaDecode.modulus <== csca_modulus;
-    var emLen = div_ceil(n_csca * k_csca, 8);
-    signal encodedMessage[emLen] <== rsaDecode.eM;
-
-    component rsaVerify = RSASSAPSSVerify_SHA256(n_csca * k_csca, max_cert_bytes);
-    rsaVerify.eM <== encodedMessage;
-    rsaVerify.message <== raw_dsc_cert;
-    rsaVerify.messagePaddedLen <== raw_dsc_cert_padded_bytes;
+    // verify rsapss signature
+    signal dsc_cert_hash[256];
+    dsc_cert_hash <== Sha256Bytes(max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
+    component rsaPssSha256Verification = VerifyRsaPssSig(n_csca, k_csca, 17, 256, modulus_bits_size);
+    rsaPssSha256Verification.pubkey <== csca_modulus;
+    rsaPssSha256Verification.signature <== dsc_signature;
+    rsaPssSha256Verification.hashed <== dsc_cert_hash;
 
     // verify DSC csca_modulus
     component shiftLeft = VarShiftLeft(max_cert_bytes, dsc_mod_len);

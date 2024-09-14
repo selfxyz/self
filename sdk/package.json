@@ -63,7 +63,7 @@
     "build:node": "webpack --config webpack.node.config.js",
     "build": "npm run build:ts && npm run build:web && npm run build:node",
     "prepublishOnly": "npm run build",
-    "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassport1Step.test.ts --exit",
+    "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
     "download-circuits": "cd ../circuits && ./scripts/download_circuits_from_aws.sh && cd ../sdk",
     "format": "prettier --write .",

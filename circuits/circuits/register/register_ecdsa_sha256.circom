@@ -3,6 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "../verifier/passport_verifier_ecdsa_sha256.circom";
 include "../utils/computeCommitment.circom";
+include "../utils/LeafHasherLight.circom";
 
 template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlgorithm) {
     signal input secret;
@@ -21,31 +22,27 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     signal input dsc_secret;
     signal input attestation_id;
     
-    // Hash DSC pubkey and signature components
-    // Poseidon(dsc_pubkey[0][0], dsc_pubkey[0][1], ..., dsc_pubkey[0][5])
-    signal dsc_pubkey_x_hash <== Poseidon(k)(dsc_modulus_x);
-    signal dsc_pubkey_y_hash <== Poseidon(k)(dsc_modulus_y);
+    // hash the dsc pubkey to generate the leaf
+    component leafHasher = LeafHasherLightWithSigAlgECDSA(k);
+    leafHasher.sigAlg <== signatureAlgorithm;
+    leafHasher.x <== dsc_modulus_x;
+    leafHasher.y <== dsc_modulus_y;
+    signal leaf <== leafHasher.out;
+
+    component dsc_commitment_hasher = Poseidon(2);
+    component nullifier_hasher = Poseidon(2);
+
+    dsc_commitment_hasher.inputs[0] <== dsc_secret;
+    dsc_commitment_hasher.inputs[1] <== leaf;
+
+    signal output blinded_dsc_commitment <== dsc_commitment_hasher.out;
 
     // Poseidon(signature_r[0], signature_r[1], ..., signature_r[5])
     signal signature_r_hash <== Poseidon(k)(signature_r);
     signal signature_s_hash <== Poseidon(k)(signature_s);
 
-    component dsc_commitment_hasher = Poseidon(3);
-    component nullifier_hasher = Poseidon(2);
-    component leaf_hasher = Poseidon(3);
-
-    dsc_commitment_hasher.inputs[0] <== dsc_secret;    
-    dsc_commitment_hasher.inputs[1] <== dsc_pubkey_x_hash;
-    dsc_commitment_hasher.inputs[2] <== dsc_pubkey_y_hash;
-
     nullifier_hasher.inputs[0] <== signature_r_hash;
     nullifier_hasher.inputs[1] <== signature_s_hash;
-
-    leaf_hasher.inputs[0] <== signatureAlgorithm;
-    leaf_hasher.inputs[1] <== dsc_pubkey_x_hash;
-    leaf_hasher.inputs[2] <== dsc_pubkey_y_hash;
-
-    signal output blinded_dsc_commitment <== dsc_commitment_hasher.out;
     signal output nullifier <== nullifier_hasher.out;
     
     // Verify passport validity
@@ -60,7 +57,7 @@ template REGISTER_ECDSA_SHA256(n, k, max_datahashes_bytes, nLevels, signatureAlg
     PV.signature_s <== signature_s;
 
     // Generate the commitment
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf_hasher.out, mrz);
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, mrz);
 }
 
 // We hardcode 8 here for ecdsa_with_SHA256
