@@ -24,7 +24,7 @@ import {
   splitToWords,
   UserIdType,
 } from '../../common/src/utils/utils';
-import { parseDSC } from '../../common/src/utils/handleCertificate';
+import { parseDSC } from '../../common/src/utils/certificates/handleCertificate';
 
 export class OpenPassportVerifier {
   scope: string;

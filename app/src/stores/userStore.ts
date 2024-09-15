@@ -43,7 +43,7 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfExpiry: DEFAULT_DOE ?? "",
   dscSecret: null,
   registered: false,
-  passportData: genMockPassportData("rsa_sha256", "FRA", "19900101", "20300101"),
+  passportData: genMockPassportData("rsa_sha256", "FRA", "900101", "300101"),
   secret: "",
   cscaProof: null,
   localProof: null,
