@@ -19,6 +19,7 @@ import { SignatureAlgorithm } from '../../common/src/utils/types';
 
 const sigAlgs = [
     { sigAlg: 'rsa', hashFunction: 'sha256' },
+    { sigAlg: 'rsa', hashFunction: 'sha1' },
     { sigAlg: 'ecdsa', hashFunction: 'sha256' },
 ];
 
@@ -73,8 +74,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
             const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
             console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
 
-            // const commitment_circom = (await circuit.getOutput(w, ['commitment'])).commitment;
-            // console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment_circom);
+            const commitment_circom = (await circuit.getOutput(w, ['commitment'])).commitment;
+            console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment_circom);
 
             const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
                 .blinded_dsc_commitment;
