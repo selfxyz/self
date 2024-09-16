@@ -5,6 +5,7 @@ include "circomlib/circuits/poseidon.circom";
 template LeafHasherLight(k) {
     signal input in[k];
     var rounds =  div_ceil(k, 16);
+    assert(rounds < 17);
     
     component hash[rounds];
     for (var i = 0; i < rounds ; i ++){

@@ -20,6 +20,10 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
+export const MAX_PADDED_ECONTENT_LEN = 640;
+
+export const MAX_PADDED_SIGNED_ATTR_LEN = 512;
+
 export enum SignatureAlgorithmIndex {
   rsa_65537_sha256_2048 = 1,
   rsa_65537_sha1_2048 = 3,

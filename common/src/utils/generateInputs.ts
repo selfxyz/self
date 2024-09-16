@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, n_dsc, k_dsc } from '../constants/constants';
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, MAX_PADDED_ECONTENT_LEN, MAX_PADDED_SIGNED_ATTR_LEN } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
@@ -27,7 +27,97 @@ import { getCSCAModulusMerkleTree } from "./csca";
 import { SMT } from "@ashpect/smt"
 import { parseCertificate } from './certificates/handleCertificate';
 
+
 export function generateCircuitInputsRegister(
+  secret: string,
+  dscSecret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  n_dsc: number,
+  k_dsc: number
+) {
+  const { mrz, eContent, signedAttr, encryptedDigest, dsc } = passportData;
+  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseCertificate(passportData.dsc);
+
+
+
+
+  let pubKey: any;
+  let signature: any;
+
+  if (signatureAlgorithm === 'ecdsa') {
+    const { r, s } = extractRSFromSignature(encryptedDigest);
+
+    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_dsc, k_dsc)
+    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_dsc, k_dsc)
+
+    signature = [...signature_r, ...signature_s]
+    const dsc_modulus_x = splitToWords(BigInt(hexToDecimal(x)), n_dsc, k_dsc)
+    const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n_dsc, k_dsc)
+    pubKey = [...dsc_modulus_x, ...dsc_modulus_y]
+  } else {
+
+    signature = splitToWords(
+      BigInt(bytesToBigDecimal(encryptedDigest)),
+      n_dsc,
+      k_dsc
+    )
+
+    pubKey = splitToWords(
+      BigInt(hexToDecimal(modulus)),
+      n_dsc,
+      k_dsc
+    )
+  }
+
+
+  const dg1 = formatMrz(mrz);
+  const dg1Hash = hash(signatureAlgorithm, dg1);
+
+  const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash)
+  console.log('dg1HashOffset', dg1HashOffset);
+  assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
+
+  const eContentHash = hash(signatureAlgorithm, eContent);
+  const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash)
+  console.log('eContentHashOffset', eContentHashOffset);
+  assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
+
+
+  if (eContent.length > MAX_PADDED_ECONTENT_LEN) {
+    console.error(`Data hashes too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN} bytes.`);
+    throw new Error(`This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`);
+  }
+
+  const [eContentPadded, eContentLen] = shaPad(
+    signatureAlgorithm,
+    new Uint8Array(eContent),
+    MAX_PADDED_ECONTENT_LEN
+  );
+  const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
+    signatureAlgorithm,
+    new Uint8Array(signedAttr),
+    MAX_PADDED_SIGNED_ATTR_LEN
+  );
+
+  return {
+    secret: [secret],
+    dsc_secret: [dscSecret],
+    dg1: dg1.map(byte => String(byte)),
+    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    econtent: Array.from(eContentPadded).map((x) => x.toString()),
+    econtent_padded_length: [eContentLen.toString()],
+    signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
+    signed_attr_padded_length: [signedAttrPaddedLen.toString()],
+    signed_attr_econtent_hash_offset: [eContentHashOffset.toString()],
+    signature: signature,
+    pubkey: pubKey,
+    attestation_id: [attestation_id],
+  };
+}
+
+
+export function generateCircuitInputsRegisterOld(
   secret: string,
   dscSecret: string,
   attestation_id: string,
