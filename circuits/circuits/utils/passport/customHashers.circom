@@ -2,7 +2,7 @@ pragma circom 2.1.6;
 include "@zk-email/circuits/lib/fp.circom";
 include "circomlib/circuits/poseidon.circom";
 
-template LeafHasherLight(k) {
+template CustomHasher(k) {
     signal input in[k];
     var rounds =  div_ceil(k, 16);
     assert(rounds < 17);
@@ -29,26 +29,13 @@ template LeafHasherLight(k) {
     signal output out <== finalHash.out;
 }
 
-template LeafHasherLightWithSigAlg(k) {
+template LeafHasher(k) {
     signal input in[k];
     signal input sigAlg;
-    component leafHasher = LeafHasherLight(k+1);
+    component leafHasher = CustomHasher(k+1);
     leafHasher.in[0] <== sigAlg;
     for (var i = 0; i < k; i++){
         leafHasher.in[i+1] <== in[i];
-    }
-    signal output out <== leafHasher.out;
-}
-
-template LeafHasherLightWithSigAlgECDSA(k) {
-    signal input x[k];
-    signal input y[k];
-    signal input sigAlg;
-    component leafHasher = LeafHasherLight(2*k+1);
-    leafHasher.in[0] <== sigAlg;
-    for (var i = 0; i < k; i++){
-        leafHasher.in[i+1] <== x[i];
-        leafHasher.in[i+1+k] <== y[i];
     }
     signal output out <== leafHasher.out;
 }

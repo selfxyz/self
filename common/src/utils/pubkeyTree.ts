@@ -6,7 +6,7 @@ import { hexToDecimal, splitToWords } from './utils';
 import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
-export function leafHasherLight(pubKeyFormatted: string[]) {
+export function customHasher(pubKeyFormatted: string[]) {
   const rounds = Math.ceil(pubKeyFormatted.length / 16);
   const hash = new Array(rounds);
   for (let i = 0; i < rounds; i++) {
@@ -26,19 +26,22 @@ export function leafHasherLight(pubKeyFormatted: string[]) {
 export function getLeaf(dsc: string, n: number, k: number): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
   console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`]
-  if (sigAlgIndex === undefined) {
-    throw new Error(`Signature algorithm not found: ${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  }
+  const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
+  console.log("sigAlgIndex", sigAlgIndex)
+  if (sigAlgIndex == undefined) {
+    console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
+    throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
+  }
   if (signatureAlgorithm === 'ecdsa') {
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    return leafHasherLight([sigAlgIndex, ...qx, ...qy])
+    return customHasher([sigAlgIndex, ...qx, ...qy])
 
   } else {
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-    return leafHasherLight([sigAlgIndex, ...pubkeyChunked]);
+    return customHasher([sigAlgIndex, ...pubkeyChunked]);
   }
 }
 
