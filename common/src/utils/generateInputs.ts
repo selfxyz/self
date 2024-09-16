@@ -39,9 +39,6 @@ export function generateCircuitInputsRegister(
   const { mrz, eContent, signedAttr, encryptedDigest, dsc } = passportData;
   const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseCertificate(passportData.dsc);
 
-
-
-
   let pubKey: any;
   let signature: any;
 
@@ -72,13 +69,15 @@ export function generateCircuitInputsRegister(
 
 
   const dg1 = formatMrz(mrz);
-  const dg1Hash = hash(signatureAlgorithm, dg1);
+
+  const formattedMrz = formatMrz(mrz);
+  const dg1Hash = hash(hashFunction, formattedMrz);
 
   const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash)
   console.log('dg1HashOffset', dg1HashOffset);
   assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
 
-  const eContentHash = hash(signatureAlgorithm, eContent);
+  const eContentHash = hash(hashFunction, eContent);
   const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash)
   console.log('eContentHashOffset', eContentHashOffset);
   assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
@@ -111,7 +110,7 @@ export function generateCircuitInputsRegister(
     signed_attr_padded_length: [signedAttrPaddedLen.toString()],
     signed_attr_econtent_hash_offset: [eContentHashOffset.toString()],
     signature: signature,
-    pubkey: pubKey,
+    pubKey: pubKey,
     attestation_id: [attestation_id],
   };
 }
