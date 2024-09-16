@@ -1,9 +1,7 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/bitify.circom";
-include "dmpierre/sha1-circom/circuits/sha1.circom";
-
-
+include "../../sha1/sha1.circom";
 // Static length sha160 bytes, adapted from zk-email
 template Sha1BytesStatic(max_num_bytes) {
     signal input in_padded[max_num_bytes];
@@ -13,7 +11,7 @@ template Sha1BytesStatic(max_num_bytes) {
     var num_bits = max_num_bytes * 8;
 
     // sha: component used to hash all bits from input signal
-    component sha = Sha1(num_bits);
+    component sha = Sha1(num_bits); 
 
     // bytes: list of component used to convert bytes from input signal to bits
     component bytes[max_num_bytes];
