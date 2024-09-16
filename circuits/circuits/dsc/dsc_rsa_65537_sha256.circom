@@ -26,7 +26,7 @@ template DSC_RSA_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_
     signal output blinded_dsc_commitment;
 
     //verify the leaf
-    component leafHasher = LeafHasherLightWithSigAlg(k_csca);
+    component leafHasher = LeafHasher(k_csca);
     leafHasher.sigAlg <== signatureAlgorithm;
     leafHasher.in <== csca_modulus;
     signal leaf <== leafHasher.out;
