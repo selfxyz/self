@@ -167,11 +167,11 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(hasFunction: string, bytesArray: number[]): number[] {
+export function hash(hashFunction: string, bytesArray: number[]): number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
-  switch (hasFunction) {
+  switch (hashFunction) {
     case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
@@ -185,6 +185,7 @@ export function hash(hasFunction: string, bytesArray: number[]): number[] {
       hashResult = sha512_256(unsignedBytesArray);
       break;
     default:
+      console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red
       hashResult = sha256(unsignedBytesArray); // Default to sha256
   }
   return hexToSignedBytes(hashResult);
