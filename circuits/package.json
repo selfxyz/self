@@ -25,7 +25,7 @@
     "asn1": "^0.2.6",
     "asn1js": "^3.0.5",
     "chai-as-promised": "^7.1.1",
-    "circom_tester": "github:Atomic-Buy/circom_tester#main",
+    "circom_tester": "github:remicolin/circom_tester#main",
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
     "crypto": "^1.0.1",
