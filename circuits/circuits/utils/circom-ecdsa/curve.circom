@@ -173,15 +173,15 @@ template EllipticCurveAddUnequal(n, k, p) {
     assert(4*n + LOGK3 < 251);
 
     // precompute lambda and x_3 and then y_3
-    var dy[50] = long_sub_mod(n, k, b[1], a[1], p);
-    var dx[50] = long_sub_mod(n, k, b[0], a[0], p); 
-    var dx_inv[50] = mod_inv(n, k, dx, p);
-    var lambda[50] = prod_mod(n, k, dy, dx_inv, p);
-    var lambda_sq[50] = prod_mod(n, k, lambda, lambda, p);
+    var dy[50] = long_sub_mod_ecdsa(n, k, b[1], a[1], p);
+    var dx[50] = long_sub_mod_ecdsa(n, k, b[0], a[0], p); 
+    var dx_inv[50] = mod_inv_ecdsa(n, k, dx, p);
+    var lambda[50] = prod_mod_ecdsa(n, k, dy, dx_inv, p);
+    var lambda_sq[50] = prod_mod_ecdsa(n, k, lambda, lambda, p);
     // out[0] = x_3 = lamb^2 - a[0] - b[0] % p
     // out[1] = y_3 = lamb * (a[0] - x_3) - a[1] % p
-    var x3[50] = long_sub_mod(n, k, long_sub_mod(n, k, lambda_sq, a[0], p), b[0], p);
-    var y3[50] = long_sub_mod(n, k, prod_mod(n, k, lambda, long_sub_mod(n, k, a[0], x3, p), p), a[1], p);
+    var x3[50] = long_sub_mod_ecdsa(n, k, long_sub_mod_ecdsa(n, k, lambda_sq, a[0], p), b[0], p);
+    var y3[50] = long_sub_mod_ecdsa(n, k, prod_mod_ecdsa(n, k, lambda, long_sub_mod_ecdsa(n, k, a[0], x3, p), p), a[1], p);
 
     for(var i = 0; i < k; i++){
         out[0][i] <-- x3[i];
@@ -265,13 +265,13 @@ template EllipticCurveDouble(n, k, a, b, p) {
     }
 
     // precompute lambda 
-    var lamb_num[50] = long_add_mod(n, k, a, prod_mod(n, k, long_3, prod_mod(n, k, in[0], in[0], p), p), p);
-    var lamb_denom[50] = long_add_mod(n, k, in[1], in[1], p);
-    var lamb[50] = prod_mod(n, k, lamb_num, mod_inv(n, k, lamb_denom, p), p);
+    var lamb_num[50] = long_add_mod_ecdsa(n, k, a, prod_mod_ecdsa(n, k, long_3, prod_mod_ecdsa(n, k, in[0], in[0], p), p), p);
+    var lamb_denom[50] = long_add_mod_ecdsa(n, k, in[1], in[1], p);
+    var lamb[50] = prod_mod_ecdsa(n, k, lamb_num, mod_inv_ecdsa(n, k, lamb_denom, p), p);
 
     // precompute x_3, y_3
-    var x3[50] = long_sub_mod(n, k, prod_mod(n, k, lamb, lamb, p), long_add_mod(n, k, in[0], in[0], p), p);
-    var y3[50] = long_sub_mod(n, k, prod_mod(n, k, lamb, long_sub_mod(n, k, in[0], x3, p), p), in[1], p);
+    var x3[50] = long_sub_mod_ecdsa(n, k, prod_mod_ecdsa(n, k, lamb, lamb, p), long_add_mod_ecdsa(n, k, in[0], in[0], p), p);
+    var y3[50] = long_sub_mod_ecdsa(n, k, prod_mod_ecdsa(n, k, lamb, long_sub_mod_ecdsa(n, k, in[0], x3, p), p), in[1], p);
     
     for(var i=0; i<k; i++){
         out[0][i] <-- x3[i];
