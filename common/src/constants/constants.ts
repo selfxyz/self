@@ -22,7 +22,9 @@ export const DEFAULT_MAJORITY = "18"
 
 export const MAX_PADDED_ECONTENT_LEN = 640;
 
-export const MAX_PADDED_SIGNED_ATTR_LEN = 512;
+export const MAX_PADDED_SIGNED_ATTR_LEN = 576;
+// targetted value : 512
+// possible values because of sha1 constaints: 448, 576, 640
 
 export enum SignatureAlgorithmIndex {
   rsa_65537_sha256_2048 = 1,
