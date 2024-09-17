@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/utils/bytes.circom";
+include "../other/bytes.circom";
 template ComputeCommitment() {
     signal input secret;
     signal input attestation_id;

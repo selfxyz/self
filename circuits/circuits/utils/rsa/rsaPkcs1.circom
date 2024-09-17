@@ -1,11 +1,12 @@
 pragma circom 2.1.5;
 
-include "@zk-email/circuits/lib/fp.circom";
+//include "@zk-email/circuits/lib/fp.circom";
+include "../other/fp.circom";
 
 // Computes base^65537 mod modulus
 // Does not necessarily reduce fully mod modulus (the answer could be
 // too big by a multiple of modulus)
-template FpPow65537Mod_pkcs1(n, k) {
+template FpPow65537ModPkcs1(n, k) {
     signal input base[k];
     // Exponent is hardcoded at 65537
     signal input modulus[k];
@@ -42,7 +43,7 @@ template FpPow65537Mod_pkcs1(n, k) {
     }
 }
 
-template RSAPad_pkcs1(n, k) {
+template RSAPadPkcs1(n, k) {
     signal input modulus[k];
     signal input message[k];
     signal output padded_message[k];
@@ -121,12 +122,12 @@ template RSAPad_pkcs1(n, k) {
     }
 }
 
-template RSAVerifier65537_pkcs1(n, k) {
+template RSAVerifier65537Pkcs1(n, k) {
     signal input signature[k];
     signal input modulus[k];
     signal input message[k];
 
-    component padder = RSAPad_pkcs1(n, k);
+    component padder = RSAPadPkcs1(n, k);
     for (var i = 0; i < k; i++) {
         padder.modulus[i] <== modulus[i];
         padder.message[i] <== message[i];
@@ -143,7 +144,7 @@ template RSAVerifier65537_pkcs1(n, k) {
     }
     bigLessThan.out === 1;
 
-    component bigPow = FpPow65537Mod_pkcs1(n, k);
+    component bigPow = FpPow65537ModPkcs1(n, k);
     for (var i = 0; i < k; i++) {
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];

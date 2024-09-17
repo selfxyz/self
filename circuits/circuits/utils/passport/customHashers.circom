@@ -1,5 +1,5 @@
 pragma circom 2.1.6;
-include "@zk-email/circuits/lib/fp.circom";
+include "../other/fp.circom";
 include "circomlib/circuits/poseidon.circom";
 
 template CustomHasher(k) {

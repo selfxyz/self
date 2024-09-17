@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
-include "@zk-email/circuits/utils/bytes.circom";
-include "@zk-email/circuits/utils/array.circom";
+include "../other/array.circom";
+include "../other/bytes.circom";
 include "../shaBytes/shaBytesStatic.circom";
 include "../shaBytes/shaBytesDynamic.circom";
 include "./signatureAlgorithm.circom";
