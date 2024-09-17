@@ -8,7 +8,7 @@ build_circuit() {
     local START_TIME=$(date +%s)
 
     echo "compiling circuit: $CIRCUIT_NAME"
-    circom circuits/${CIRCUIT_TYPE}/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
+    circom circuits/${CIRCUIT_TYPE}/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
 
     echo "building zkey"
     yarn snarkjs groth16 setup build/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_20.ptau build/${CIRCUIT_NAME}.zkey
@@ -35,7 +35,6 @@ CIRCUITS=(
     "register_rsa_65537_sha256:register:true"
     "register_rsa_65537_sha1:register:true"
     "register_rsapss_65537_sha256:register:true"
-    "disclose:disclose:false"
 )
 
 TOTAL_START_TIME=$(date +%s)
