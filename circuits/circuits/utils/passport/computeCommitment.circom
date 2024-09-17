@@ -19,5 +19,4 @@ template ComputeCommitment() {
         poseidon_hasher.inputs[i + 3] <== dg1_packed[i];
     }
     out <== poseidon_hasher.out;
-    //  out <== leaf;
 }

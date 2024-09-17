@@ -69,11 +69,15 @@ function getKLengthFactor(signatureAlgorithm) {
 }
 
 function getExponentBits(signatureAlgorithm) {
+    // returns the amounts of bits of the exponent of type 2^n +1
     if (signatureAlgorithm == 1 ) {
-        return 16;
+        return 17; // 65537
     }
-    if (signatureAlgorithm == 3) {
-        return 1;
+    if (signatureAlgorithm == 3 ) {
+        return 17;
+    }
+    if (signatureAlgorithm == 4 ) {
+        return 17;
     }
 
     return 0;

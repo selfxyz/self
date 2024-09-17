@@ -5,7 +5,7 @@ include "@zk-email/circuits/lib/fp.circom";
 // Computes base^65537 mod modulus
 // Does not necessarily reduce fully mod modulus (the answer could be
 // too big by a multiple of modulus)
-template FpPow65537Mod(n, k) {
+template FpPow65537Mod_pkcs1(n, k) {
     signal input base[k];
     // Exponent is hardcoded at 65537
     signal input modulus[k];
@@ -42,9 +42,9 @@ template FpPow65537Mod(n, k) {
     }
 }
 
-template RSAPad(n, k) {
+template RSAPad_pkcs1(n, k) {
     signal input modulus[k];
-    signal input base_message[k];
+    signal input message[k];
     signal output padded_message[k];
 
     var base_len = 280;
@@ -58,7 +58,7 @@ template RSAPad(n, k) {
     signal base_message_bits[n*k];
     for (var i = 0; i < k; i++) {
         base_message_n2b[i] = Num2Bits(n);
-        base_message_n2b[i].in <== base_message[i];
+        base_message_n2b[i].in <== message[i];
         for (var j = 0; j < n; j++) {
             base_message_bits[i*n+j] <== base_message_n2b[i].out[j];
         }
@@ -121,15 +121,15 @@ template RSAPad(n, k) {
     }
 }
 
-template RSAVerify65537(n, k) {
+template RSAVerifier65537_pkcs1(n, k) {
     signal input signature[k];
     signal input modulus[k];
-    signal input base_message[k];
+    signal input message[k];
 
-    component padder = RSAPad(n, k);
+    component padder = RSAPad_pkcs1(n, k);
     for (var i = 0; i < k; i++) {
         padder.modulus[i] <== modulus[i];
-        padder.base_message[i] <== base_message[i];
+        padder.message[i] <== message[i];
     }
 
     // Check that the signature is in proper form and reduced mod modulus.
@@ -143,7 +143,7 @@ template RSAVerify65537(n, k) {
     }
     bigLessThan.out === 1;
 
-    component bigPow = FpPow65537Mod(n, k);
+    component bigPow = FpPow65537Mod_pkcs1(n, k);
     for (var i = 0; i < k; i++) {
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
