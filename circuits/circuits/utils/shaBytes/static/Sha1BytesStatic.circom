@@ -2,6 +2,7 @@ pragma circom 2.1.5;
 
 include "circomlib/circuits/bitify.circom";
 include "../../sha1/sha1.circom";
+// include "dmpierre/sha1-circom/circuits/sha1.circom";
 // Static length sha160 bytes, adapted from zk-email
 template Sha1BytesStatic(max_num_bytes) {
     signal input in_padded[max_num_bytes];

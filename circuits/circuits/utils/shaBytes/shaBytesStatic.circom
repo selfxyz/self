@@ -1,4 +1,5 @@
-include "@zk-email/circuits/lib/sha.circom";
+pragma circom 2.1.6;
+
 include "./static/Sha256BytesStatic.circom";
 include "./static/Sha1BytesStatic.circom";
 

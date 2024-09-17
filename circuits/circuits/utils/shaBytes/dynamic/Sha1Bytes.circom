@@ -1,6 +1,6 @@
 pragma circom 2.1.5;
 
-include "dmpierre/sha1-circom/circuits/sha1compression.circom";
+include "../../sha1/sha1compression.circom";
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/mimcsponge.circom";
@@ -61,11 +61,11 @@ template Sha1General(maxBitsPadded) {
     bitLengthVerifier.in[1] <== maxBitsPadded;
     bitLengthVerifier.out === 1;
 
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
 
     component sha1compression[maxBlocks];
     
