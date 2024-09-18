@@ -1,11 +1,10 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/utils/bytes.circom";
-include "../utils/isOlderThan.circom";
-include "../utils/isValid.circom";
+include "../utils/other/bytes.circom";
+include "../utils/passport/date/isOlderThan.circom";
+include "../utils/passport/date/isValid.circom";
 include "binary-merkle-root.circom";
-include "../utils/isValid.circom";
 
 template DISCLOSE() {
     signal input mrz[93];
