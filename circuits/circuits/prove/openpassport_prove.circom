@@ -5,6 +5,7 @@ include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../disclose/disclose.circom";
+
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
@@ -14,7 +15,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
 
     signal input dg1[93];
     signal input dg1_hash_offset;
-    signal input dg2_hash[HASH_LEN_BYTES];
+    signal input dg2_hash[64];
     signal input econtent[MAX_ECONTENT_PADDED_LEN];
     signal input econtent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_PADDED_LEN];
@@ -36,7 +37,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input user_identifier; 
 
     component disclose = DISCLOSE();
-    disclose.mrz <== dg1;
+    disclose.dg1 <== dg1;
     disclose.bitmap <== bitmap;
     disclose.current_date <== current_date;
     disclose.majority <== majority;

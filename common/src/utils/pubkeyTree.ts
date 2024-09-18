@@ -2,7 +2,7 @@ import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex
 import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
 import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
-import { hexToDecimal, splitToWords } from './utils';
+import { formatDg2Hash, hexToDecimal, splitToWords } from './utils';
 import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
@@ -56,8 +56,7 @@ export async function getTreeFromTracker(): Promise<LeanIMT> {
 }
 
 export function generateCommitment(secret: string, attestation_id: string, pubkey_leaf: string, mrz_bytes: any[], dg2Hash: any[]) {
-  const dg2Hash2 = customHasher(dg2Hash);
-  console.log("dg2Hash in js", dg2Hash2);
+  const dg2Hash2 = customHasher(formatDg2Hash(dg2Hash).map(x => x.toString()));
   const commitment = poseidon7([
     secret,
     attestation_id,

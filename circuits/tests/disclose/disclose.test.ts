@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { formatMrz, packBytes, toUnsignedByte } from '../../../common/src/utils/utils';
+import { formatDg2Hash, formatMrz, packBytes, toUnsignedByte } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   k_dsc,
@@ -46,8 +46,8 @@ describe('Disclose', function () {
     // compute the commitment and insert it in the tree
     const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc).toString();
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-    const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
-    console.log("commitment", commitment);
+    const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
+    console.log("commitment in js ", commitment);
     tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
     tree.insert(BigInt(commitment));
 

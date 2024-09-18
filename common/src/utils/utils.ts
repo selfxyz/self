@@ -16,6 +16,14 @@ export function formatMrz(mrz: string) {
   return mrzCharcodes;
 }
 
+export function formatDg2Hash(dg2Hash: number[]) {
+  const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
+  while (unsignedBytesDg2Hash.length < 64) { // pad it to 64 bytes to correspond to the hash length of sha512 and avoid multiplying circuits
+    unsignedBytesDg2Hash.push(0);
+  }
+  return unsignedBytesDg2Hash;
+}
+
 export function formatAndConcatenateDataHashes(
   dataHashes: [number, number[]][],
   hashLen: number,

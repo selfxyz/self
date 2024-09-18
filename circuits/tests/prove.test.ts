@@ -13,6 +13,8 @@ const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
   { sigAlg: 'rsa', hashFunction: 'sha256' },
   { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -45,7 +47,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       circuit = await wasm_tester(
         path.join(
           __dirname,
-          `../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
+          `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
         ),
         {
           include: [
@@ -64,8 +66,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     it('should calculate the witness with correct inputs', async function () {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
-
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
+      console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
       expect(nullifier).to.be.not.null;
     });
 
@@ -73,7 +75,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          mrz: Array(93)
+          dg1: Array(93)
             .fill(0)
             .map((byte) => BigInt(byte).toString()),
         };
@@ -84,11 +86,11 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       }
     });
 
-    it('should fail to calculate witness with invalid dataHashes', async function () {
+    it('should fail to calculate witness with invalid econtent', async function () {
       try {
         const invalidInputs = {
           ...inputs,
-          dataHashes: inputs.dataHashes.map((byte: string) =>
+          econtent: inputs.econtent.map((byte: string) =>
             String((parseInt(byte, 10) + 1) % 256)
           ),
         };
@@ -111,5 +113,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         expect(error.message).to.include('Assert Failed');
       }
     });
+
+
   });
 });

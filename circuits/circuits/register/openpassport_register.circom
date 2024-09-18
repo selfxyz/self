@@ -16,7 +16,7 @@ template OPENPASSPORT_REGISTER(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN
     signal input dsc_secret;
     signal input dg1[93];
     signal input dg1_hash_offset;
-    signal input dg2_hash[HASH_LEN_BYTES];
+    signal input dg2_hash[64];
     signal input econtent[MAX_ECONTENT_PADDED_LEN];
     signal input econtent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_PADDED_LEN];
@@ -35,8 +35,7 @@ template OPENPASSPORT_REGISTER(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN
     signal leaf  <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
 
     // commitment
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1);
-
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
     // blinded dsc commitment
     signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, leaf]);
 

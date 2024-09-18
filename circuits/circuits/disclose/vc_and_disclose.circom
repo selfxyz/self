@@ -2,17 +2,14 @@ pragma circom 2.1.5;
 
 include "./verify_commitment.circom";
 include "./disclose.circom";
-include "../utils/passport/signatureAlgorithm.circom";
 
-template VC_AND_DISCLOSE(signatureAlgorithm, nLevels) {
-    var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
-    var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
+template VC_AND_DISCLOSE( nLevels) {
 
     signal input secret;
     signal input attestation_id;
     signal input pubkey_leaf;
     signal input dg1[93];
-    signal input dg2_hash[HASH_LEN_BYTES];
+    signal input dg2_hash[64];
 
     signal input merkle_root;
     signal input merkletree_size;
@@ -26,7 +23,7 @@ template VC_AND_DISCLOSE(signatureAlgorithm, nLevels) {
     signal input user_identifier;
 
     // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(signatureAlgorithm, nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
+    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
 
     // verify passport validity and disclose optional data
     component disclose = DISCLOSE();
@@ -43,4 +40,4 @@ template VC_AND_DISCLOSE(signatureAlgorithm, nLevels) {
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
 }
 
-component main { public [ merkle_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(1,16);
+component main { public [ merkle_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16);

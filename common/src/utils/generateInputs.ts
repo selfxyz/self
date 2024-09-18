@@ -17,6 +17,7 @@ import {
   castFromUUID,
   castFromScope,
   parseUIDToBigInt,
+  formatDg2Hash,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { generateCommitment, getLeaf } from "./pubkeyTree";
@@ -104,7 +105,7 @@ export function generateCircuitInputsRegister(
     dsc_secret: [dscSecret],
     dg1: dg1.map(byte => String(byte)),
     dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
-    dg2_hash: dg2Hash.map((x) => toUnsignedByte(x).toString()),
+    dg2_hash: formatDg2Hash(dg2Hash),
     econtent: Array.from(eContentPadded).map((x) => x.toString()),
     econtent_padded_length: [eContentLen.toString()],
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
@@ -133,7 +134,7 @@ export function generateCircuitInputsDisclose(
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
 
-  const commitment = generateCommitment(secret, attestation_id, pubkey_leaf, mrz_bytes, passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
+  const commitment = generateCommitment(secret, attestation_id, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
 
   const index = findIndexInTree(merkletree, commitment);
 
@@ -148,7 +149,7 @@ export function generateCircuitInputsDisclose(
     attestation_id: [attestation_id],
     pubkey_leaf: [pubkey_leaf.toString()],
     dg1: formattedMrz.map((byte) => String(byte)),
-    dg2_hash: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
+    dg2_hash: formatDg2Hash(passportData.dg2Hash),
     merkle_root: [merkletree.root.toString()],
     merkletree_size: [BigInt(depthForThisOne).toString()],
     path: merkleProofIndices.map((index) => BigInt(index).toString()),

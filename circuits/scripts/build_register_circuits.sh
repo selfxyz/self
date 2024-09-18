@@ -32,9 +32,11 @@ build_circuit() {
 # name:folder:build_flag
 # set build_flag to false if you want to skip the build
 CIRCUITS=(
-    "register_rsa_65537_sha256:register:true"
+    "register_rsa_65537_sha256:register:false"
     "register_rsa_65537_sha1:register:true"
-    "register_rsapss_65537_sha256:register:true"
+    "register_rsapss_65537_sha256:register:false"
+    "register_ecdsa_sha256:register:false"
+    "register_ecdsa_sha1:register:false"
 )
 
 TOTAL_START_TIME=$(date +%s)

@@ -16,7 +16,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     signal input dg1[93];
     signal input dg1_hash_offset;
-    signal input dg2_hash[HASH_LEN_BYTES];
+    signal input dg2_hash[64];
     signal input econtent[MAX_ECONTENT_LEN];
     signal input econtent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_LEN];
