@@ -1,3 +1,5 @@
+import { SignatureAlgorithm } from "../utils/types"
+
 export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 //export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
 export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/download-merkle-tree"
@@ -20,10 +22,23 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
-export const MAX_PADDED_ECONTENT_LEN = 640;
+export const MAX_PADDED_ECONTENT_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
+  rsa_65537_sha256_2048: 640,
+  rsa_65537_sha1_2048: 448,
+  rsapss_65537_sha256_2048: 640,
+  ecdsa_secp256r1_sha1_256: 448,
+  ecdsa_secp256r1_sha256_256: 640,
+  ecdsa_secp384r1_sha384_384: 640,
+}
 
-export const MAX_PADDED_SIGNED_ATTR_LEN = 576;
-// targetted value : 512
+export const MAX_PADDED_SIGNED_ATTR_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
+  rsa_65537_sha256_2048: 512,
+  rsa_65537_sha1_2048: 448,
+  rsapss_65537_sha256_2048: 512,
+  ecdsa_secp256r1_sha1_256: 448,
+  ecdsa_secp256r1_sha256_256: 512,
+  ecdsa_secp384r1_sha384_384: 512,
+}
 // possible values because of sha1 constaints: 448, 576, 640
 
 export enum SignatureAlgorithmIndex {

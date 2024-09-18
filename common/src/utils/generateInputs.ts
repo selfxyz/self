@@ -1,4 +1,4 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, MAX_PADDED_ECONTENT_LEN, MAX_PADDED_SIGNED_ATTR_LEN } from '../constants/constants';
+import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, MAX_PADDED_ECONTENT_LEN, MAX_PADDED_SIGNED_ATTR_LEN, SignatureAlgorithmIndex } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
@@ -37,8 +37,9 @@ export function generateCircuitInputsRegister(
   k_dsc: number
 ) {
   const { mrz, eContent, signedAttr, encryptedDigest, dsc } = passportData;
-  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseCertificate(passportData.dsc);
+  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } = parseCertificate(passportData.dsc);
 
+  const signatureAlgorithmFullName = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
   let pubKey: any;
   let signature: any;
 
@@ -82,21 +83,20 @@ export function generateCircuitInputsRegister(
   console.log('eContentHashOffset', eContentHashOffset);
   assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
 
-
-  if (eContent.length > MAX_PADDED_ECONTENT_LEN) {
-    console.error(`Data hashes too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN} bytes.`);
+  if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
+    console.error(`Data hashes too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`);
     throw new Error(`This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`);
   }
 
   const [eContentPadded, eContentLen] = shaPad(
     signatureAlgorithm,
     new Uint8Array(eContent),
-    MAX_PADDED_ECONTENT_LEN
+    MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
   );
   const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
     signatureAlgorithm,
     new Uint8Array(signedAttr),
-    MAX_PADDED_SIGNED_ATTR_LEN
+    MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
   );
 
   return {
