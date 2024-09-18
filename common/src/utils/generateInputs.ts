@@ -36,7 +36,7 @@ export function generateCircuitInputsRegister(
   n_dsc: number,
   k_dsc: number
 ) {
-  const { mrz, eContent, signedAttr, encryptedDigest, dsc } = passportData;
+  const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
   const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } = parseCertificate(passportData.dsc);
 
   const signatureAlgorithmFullName = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
@@ -104,6 +104,7 @@ export function generateCircuitInputsRegister(
     dsc_secret: [dscSecret],
     dg1: dg1.map(byte => String(byte)),
     dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    dg2_hash: dg2Hash.map((x) => toUnsignedByte(x).toString()),
     econtent: Array.from(eContentPadded).map((x) => x.toString()),
     econtent_padded_length: [eContentLen.toString()],
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
@@ -239,6 +240,7 @@ export function generateCircuitInputsProve(
   return {
     dg1: register_inputs.dg1,
     dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
+    dg2_hash: register_inputs.dg2_hash,
     econtent: register_inputs.econtent,
     econtent_padded_length: register_inputs.econtent_padded_length,
     signed_attr: register_inputs.signed_attr,

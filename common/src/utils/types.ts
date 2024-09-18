@@ -1,5 +1,6 @@
 export type PassportData = {
   mrz: string;
+  dg2Hash?: number[];
   dsc: string;
   eContent: number[];
   signedAttr: number[];

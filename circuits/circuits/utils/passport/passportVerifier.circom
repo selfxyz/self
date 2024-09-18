@@ -16,6 +16,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     signal input dg1[93];
     signal input dg1_hash_offset;
+    signal input dg2_hash[HASH_LEN_BYTES];
     signal input econtent[MAX_ECONTENT_LEN];
     signal input econtent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_LEN];
@@ -35,10 +36,11 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         }
     }
 
-    // assert DG1 hash matches the one in econtent input
-    signal dg1Hash[HASH_LEN_BYTES] <== SelectSubArray(MAX_ECONTENT_LEN, HASH_LEN_BYTES)(econtent, dg1_hash_offset, HASH_LEN_BYTES); // TODO: use varShifLeft instead
+    // assert DG1 and DG2 hashes match the ones in econtent input
+    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES] <== SelectSubArray(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES)(econtent, dg1_hash_offset, 2 * HASH_LEN_BYTES); // TODO: use varShifLeft instead
     for(var i = 0; i < HASH_LEN_BYTES; i++) {
-        dg1Hash[i] === dg1ShaBytes[i].out;
+        dg1AndDg2Hash[i] === dg1ShaBytes[i].out;
+        dg1AndDg2Hash[i + HASH_LEN_BYTES] === dg2_hash[i];
     }
 
     // compute hash of econtent

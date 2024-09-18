@@ -96,6 +96,7 @@ export function genMockPassportData(
   return {
     dsc: dsc,
     mrz: mrz,
+    dg2Hash: sampleDataHashes[0][1],
     eContent: concatenatedDataHashes,
     signedAttr: eContent,
     encryptedDigest: signatureBytes,
