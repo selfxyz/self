@@ -115,112 +115,6 @@ export function generateCircuitInputsRegister(
   };
 }
 
-
-export function generateCircuitInputsRegisterOld(
-  secret: string,
-  dscSecret: string,
-  attestation_id: string,
-  passportData: PassportData,
-  n_dsc: number,
-  k_dsc: number,
-  // mocks: PassportData[] = mockPassportDatas
-  mocks?: PassportData[]
-) {
-  const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } =
-    passportData;
-
-  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus } = parseCertificate(dsc);
-
-  // const tree = getCSCAModulusMerkleTree(DEVELOPMENT_MODE);
-
-  const supportedAlgorithms = [
-    { signatureAlgorithm: 'rsa', hashFunction: 'sha1' },
-    { signatureAlgorithm: 'rsa', hashFunction: 'sha256' },
-    { signatureAlgorithm: 'rsapss', hashFunction: 'sha256' },
-    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha1' },
-    { signatureAlgorithm: 'ecdsa', hashFunction: 'sha256' },
-  ];
-
-  const isSupported = supportedAlgorithms.some(
-    (alg) => alg.signatureAlgorithm === signatureAlgorithm && alg.hashFunction === hashFunction
-  );
-
-  if (!isSupported) {
-    throw new Error(`Verification of ${signatureAlgorithm} with ${hashFunction} has not been implemented.`);
-  }
-
-  const formattedMrz = formatMrz(mrz);
-  const mrzHash = hash(hashFunction, formattedMrz);
-
-  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash);
-  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
-
-  const concatHash = hash(hashFunction, dataGroupHashes);
-
-  assert(
-    arraysAreEqual(concatHash, eContent.slice(eContent.length - hashLen)),
-    'concatHash is not at the right place in eContent'
-  );
-
-  if (dataGroupHashes.length > MAX_DATAHASHES_LEN) {
-    throw new Error(
-      `This length of datagroups (${dataGroupHashes.length} bytes) is currently unsupported. Please contact us so we add support!`
-    );
-  }
-
-  const [messagePadded, messagePaddedLen] = shaPad(
-    signatureAlgorithm,
-    new Uint8Array(dataGroupHashes),
-    MAX_DATAHASHES_LEN
-  );
-
-  let signatureComponents: any;
-  let dscModulusComponents: any;
-
-  if (signatureAlgorithm === 'ecdsa') {
-    const { r, s } = extractRSFromSignature(encryptedDigest);
-
-    signatureComponents = {
-      signature_r: splitToWords(BigInt(hexToDecimal(r)), n_dsc, k_dsc),
-      signature_s: splitToWords(BigInt(hexToDecimal(s)), n_dsc, k_dsc)
-    };
-
-    dscModulusComponents = {
-      dsc_modulus_x: splitToWords(BigInt(hexToDecimal(x)), n_dsc, k_dsc),
-      dsc_modulus_y: splitToWords(BigInt(hexToDecimal(y)), n_dsc, k_dsc)
-    };
-  } else {
-    signatureComponents = {
-      signature: splitToWords(
-        BigInt(bytesToBigDecimal(encryptedDigest)),
-        n_dsc,
-        k_dsc
-      )
-    };
-
-    dscModulusComponents = {
-      dsc_modulus: splitToWords(
-        BigInt(hexToDecimal(modulus)),
-        n_dsc,
-        k_dsc
-      )
-    };
-  }
-
-  return {
-    secret: [secret],
-    mrz: formattedMrz.map((byte) => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()],
-    dataHashes: Array.from(messagePadded).map((x) => x.toString()),
-    datahashes_padded_length: [messagePaddedLen.toString()],
-    eContent: eContent.map(toUnsignedByte).map((byte) => String(byte)),
-    ...signatureComponents,
-    ...dscModulusComponents,
-    attestation_id: [attestation_id],
-    dsc_secret: [dscSecret],
-  };
-}
-
 export function generateCircuitInputsDisclose(
   secret: string,
   attestation_id: string,
@@ -343,13 +237,15 @@ export function generateCircuitInputsProve(
   // Ensure majority is at least two digits
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   return {
-    mrz: register_inputs.mrz,
+    dg1: register_inputs.dg1,
     dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
-    dataHashes: register_inputs.dataHashes,
-    datahashes_padded_length: register_inputs.datahashes_padded_length,
-    eContent: register_inputs.eContent,
+    econtent: register_inputs.econtent,
+    econtent_padded_length: register_inputs.econtent_padded_length,
+    signed_attr: register_inputs.signed_attr,
+    signed_attr_padded_length: register_inputs.signed_attr_padded_length,
+    signed_attr_econtent_hash_offset: register_inputs.signed_attr_econtent_hash_offset,
     signature: register_inputs.signature,
-    dsc_modulus: register_inputs.dsc_modulus,
+    pubKey: register_inputs.pubKey,
     current_date: current_date,
     bitmap: bitmap,
     majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
