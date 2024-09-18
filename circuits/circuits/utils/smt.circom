@@ -3,7 +3,7 @@ pragma circom 2.1.5;
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@zk-email/circuits/utils/array.circom";
+include "./other/array.circom";
 include "binary-merkle-root.circom";
 include "getCommonLength.circom";
 

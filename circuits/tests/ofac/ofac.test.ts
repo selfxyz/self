@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
-import { getLeaf } from '../../../common/src/utils/pubkeyTree';
+import { generateCommitment, getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT } from '@ashpect/smt';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
@@ -40,14 +40,7 @@ function getPassportInputs(passportData: PassportData) {
 
   const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-  const commitment = poseidon6([
-    secret,
-    PASSPORT_ATTESTATION_ID,
-    pubkey_leaf,
-    mrz_bytes[0],
-    mrz_bytes[1],
-    mrz_bytes[2],
-  ]);
+  const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
 
   return {
     secret: secret,
@@ -106,7 +99,9 @@ describe('OFAC - Passport number match', function () {
       inputs.scope,
       inputs.user_identifier,
       passno_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -120,7 +115,9 @@ describe('OFAC - Passport number match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       passno_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
   });
 
@@ -193,7 +190,9 @@ describe('OFAC - Name and DOB match', function () {
       inputs.scope,
       inputs.user_identifier,
       namedob_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -207,7 +206,9 @@ describe('OFAC - Name and DOB match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       namedob_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
   });
 
@@ -280,7 +281,9 @@ describe('OFAC - Name match', function () {
       inputs.scope,
       inputs.user_identifier,
       name_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -294,7 +297,9 @@ describe('OFAC - Name match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       name_smt,
-      proofLevel
+      proofLevel,
+      n_dsc,
+      k_dsc
     );
   });
 

@@ -173,9 +173,11 @@ export function generateCircuitInputsOfac(
   user_identifier: string,
   sparsemerkletree: SMT,
   proofLevel: number,
+  n_dsc: number,
+  k_dsc: number,
 ) {
 
-  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier);
+  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier, n_dsc, k_dsc);
   const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
 
   const mrz_bytes = formatMrz(passportData.mrz);
