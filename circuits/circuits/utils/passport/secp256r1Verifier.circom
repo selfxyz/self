@@ -14,11 +14,16 @@ template Secp256r1Verifier(signatureAlgorithm, n, k) {
     signal input pubKey[kScaled];
     signal input hashParsed[msg_len];
 
-     // 43 * 6 = 258;
     signal msgHash[6];
-    for(var i = 0; i < msg_len; i++) {
-        msgHash[i] <== hashParsed[i];
+
+    for(var i = 0; i < 6; i++) {
+        if (i < msg_len) {
+            msgHash[i] <== hashParsed[i];
+        } else {
+            msgHash[i] <== 0;
+        }
     }
+
 
     signal signature_r[k]; // ECDSA signature component r
     signal signature_s[k]; // ECDSA signature component s
