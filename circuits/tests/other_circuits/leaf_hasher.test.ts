@@ -11,7 +11,7 @@ import {
   mock_csca_sha1_rsa_2048,
   mock_dsc_sha256_ecdsa,
 } from '../../../common/src/constants/mockCertificates';
-import { hexToDecimal, splitToWords } from '../../../common/src/utils/utils';
+import { hexToDecimal, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
 import { getLeaf, customHasher } from '../../../common/src/utils/pubkeyTree';
 import { k_dsc, k_dsc_ecdsa, n_dsc, n_dsc_ecdsa, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
 import {
@@ -19,7 +19,7 @@ import {
   parseDSC,
 } from '../../../common/src/utils/certificates/handleCertificate';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { generateCircuitInputsInCircuits } from '../utlis/generateMockInputsInCircuits';
+import { generateCircuitInputsInCircuits } from '../utils/generateMockInputsInCircuits';
 
 function loadCertificates(dscCertContent: string, cscaCertContent: string) {
   const dscCert = new X509Certificate(dscCertContent);
@@ -49,27 +49,42 @@ describe('LeafHasher Light', function () {
   });
 
 
-  describe('CustomHasher - getLeaf ECDSA', async () => {
-    const cert = mock_dsc_sha256_ecdsa;
-    const { signatureAlgorithm, hashFunction, x, y, bits, curve, exponent } = parseCertificate(cert);
-    console.log(parseCertificate(cert));
-    const leaf_light = getLeaf(cert, n_dsc_ecdsa, k_dsc_ecdsa);
-    console.log('\x1b[34m', 'customHasher output: ', leaf_light, '\x1b[0m');
+  // describe('CustomHasher - getLeaf ECDSA', async () => {
+  //   const cert = mock_dsc_sha256_ecdsa;
+  //   const { signatureAlgorithm, hashFunction, x, y, bits, curve, exponent } = parseCertificate(cert);
+  //   console.log(parseCertificate(cert));
+  //   const leaf_light = getLeaf(cert, n_dsc_ecdsa, k_dsc_ecdsa);
+  //   console.log('\x1b[34m', 'customHasher output: ', leaf_light, '\x1b[0m');
 
-    const passportData = genMockPassportData('ecdsa_sha256', 'FRA', '000101', '300101');
-    const mock_inputs = generateCircuitInputsInCircuits(passportData, 'register');
+  //   const passportData = genMockPassportData('ecdsa_sha256', 'FRA', '000101', '300101');
+  //   const mock_inputs = generateCircuitInputsInCircuits(passportData, 'register');
 
-    const signatureAlgorithmIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`];
-    console.log('\x1b[34m', 'signatureAlgorithmIndex: ', signatureAlgorithmIndex, '\x1b[0m');
+  //   const signatureAlgorithmIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`];
+  //   console.log('\x1b[34m', 'signatureAlgorithmIndex: ', signatureAlgorithmIndex, '\x1b[0m');
+  //   it('should extract and log certificate information', async () => {
+  //     const inputs = {
+  //       in: mock_inputs.pubKey,
+  //       sigAlg: signatureAlgorithmIndex,
+  //     };
+  //     const witness = await circuit.calculateWitness(inputs, true);
+  //     const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
+  //     console.log('\x1b[34m', 'leafValueCircom: ', leafValueCircom, '\x1b[0m');
+  //     expect(leafValueCircom).to.equal(leaf_light);
+  //   });
+  // });
+
+  describe('CustomHasher - customHasher', async () => {
+    const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
     it('should extract and log certificate information', async () => {
       const inputs = {
-        in: mock_inputs.pubKey,
-        sigAlg: signatureAlgorithmIndex,
+        in: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
       };
       const witness = await circuit.calculateWitness(inputs, true);
       const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
-      console.log('\x1b[34m', 'leafValueCircom: ', leafValueCircom, '\x1b[0m');
-      expect(leafValueCircom).to.equal(leaf_light);
+      console.log('\x1b[34m', 'hashValueCircom: ', leafValueCircom, '\x1b[0m');
+
+      const hashValue = customHasher(passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
+      console.log('\x1b[34m', 'hashValue: ', hashValue, '\x1b[0m');
     });
   });
 

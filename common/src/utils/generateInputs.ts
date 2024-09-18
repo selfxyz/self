@@ -19,7 +19,7 @@ import {
   parseUIDToBigInt,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
-import { getLeaf } from "./pubkeyTree";
+import { generateCommitment, getLeaf } from "./pubkeyTree";
 import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
 import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
@@ -124,20 +124,16 @@ export function generateCircuitInputsDisclose(
   majority: string,
   bitmap: string[],
   scope: string,
-  user_identifier: string
+  user_identifier: string,
+  n_dsc: number,
+  k_dsc: number
 ) {
   const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
-  const commitment = poseidon6([
-    secret,
-    attestation_id,
-    pubkey_leaf,
-    mrz_bytes[0],
-    mrz_bytes[1],
-    mrz_bytes[2],
-  ]);
+
+  const commitment = generateCommitment(secret, attestation_id, pubkey_leaf, mrz_bytes, passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
 
   const index = findIndexInTree(merkletree, commitment);
 
@@ -151,7 +147,8 @@ export function generateCircuitInputsDisclose(
     secret: [secret],
     attestation_id: [attestation_id],
     pubkey_leaf: [pubkey_leaf.toString()],
-    mrz: formattedMrz.map((byte) => String(byte)),
+    dg1: formattedMrz.map((byte) => String(byte)),
+    dg2_hash: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
     merkle_root: [merkletree.root.toString()],
     merkletree_size: [BigInt(depthForThisOne).toString()],
     path: merkleProofIndices.map((index) => BigInt(index).toString()),
