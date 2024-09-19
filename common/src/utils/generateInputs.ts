@@ -99,8 +99,8 @@ export function generateCircuitInputsRegister(
     dg1: dg1.map(byte => String(byte)),
     dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
     dg2_hash: formatDg2Hash(dg2Hash),
-    econtent: Array.from(eContentPadded).map((x) => x.toString()),
-    econtent_padded_length: [eContentLen.toString()],
+    eContent: Array.from(eContentPadded).map((x) => x.toString()),
+    eContent_padded_length: [eContentLen.toString()],
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
     signed_attr_padded_length: [signedAttrPaddedLen.toString()],
     signed_attr_econtent_hash_offset: [eContentHashOffset.toString()],
@@ -228,8 +228,8 @@ export function generateCircuitInputsProve(
     dg1: register_inputs.dg1,
     dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
     dg2_hash: register_inputs.dg2_hash,
-    econtent: register_inputs.econtent,
-    econtent_padded_length: register_inputs.econtent_padded_length,
+    eContent: register_inputs.eContent,
+    eContent_padded_length: register_inputs.eContent_padded_length,
     signed_attr: register_inputs.signed_attr,
     signed_attr_padded_length: register_inputs.signed_attr_padded_length,
     signed_attr_econtent_hash_offset: register_inputs.signed_attr_econtent_hash_offset,

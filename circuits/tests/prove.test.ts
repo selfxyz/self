@@ -83,11 +83,11 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       }
     });
 
-    it('should fail to calculate witness with invalid econtent', async function () {
+    it('should fail to calculate witness with invalid eContent', async function () {
       try {
         const invalidInputs = {
           ...inputs,
-          econtent: inputs.econtent.map((byte: string) =>
+          eContent: inputs.eContent.map((byte: string) =>
             String((parseInt(byte, 10) + 1) % 256)
           ),
         };
