@@ -1,11 +1,10 @@
 pragma circom 2.1.6;
 
-// include "@zk-email/circuits/lib/rsa.circom";
 include "../rsa/rsaPkcs1.circom";
-include "../rsa/rsaPkcs1v15.circom";
-// include "../circom-ecdsa/ecdsa.circom";
+// include "../rsa/rsaPkcs1v15.circom";
 include "secp256r1Verifier.circom";
 include "../rsapss/rsapss.circom";
+include "../rsa/rsa.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -22,11 +21,21 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
     if (signatureAlgorithm == 1) { 
-        var exponentBits = getExponentBits(signatureAlgorithm);
-        component rsa = RsaVerifierPkcs1v15(n, k, exponentBits, HASH_LEN_BITS);
-        rsa.hashed <== hash;
-        rsa.pubkey <== pubKey;
+        // var exponentBits = getExponentBits(signatureAlgorithm);
+        // component rsa = RsaVerifierPkcs1v15(n, k, exponentBits, HASH_LEN_BITS);
+        // rsa.hashed <== hash;
+        // rsa.pubkey <== pubKey;
+        // rsa.signature <== signature;
+        component rsa = RSAVerifier65537(n, k);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
         rsa.signature <== signature;
+
     }
     if (signatureAlgorithm == 3 ) {
         component rsa_pkcs1 = RSAVerifier65537Pkcs1(n, k);

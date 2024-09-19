@@ -84,7 +84,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
     let owner, otherAccount, thirdAccount: Signer;
     let imt: LeanIMT;
 
-    let bitmap, scope, user_address, majority, input_disclose: any;
+    let selector_dg1, scope, user_address, majority, input_disclose: any;
     let proof_disclose, publicSignals_disclose, proof_result_disclose, vkey_disclose, verified_disclose: any, rawCallData_disclose, parsedCallData_disclose: any[], formattedCallData_disclose: any;
     //let proof_csca, publicSignals_csca: any;
     let secret: string = BigInt(0).toString();
@@ -393,7 +393,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
     //         // We only test with the sha256WithRSAEncryption_65537 commitment for now
 
     //         // refactor in generate inputs function
-    //         bitmap = Array(90).fill("1");
+    //         selector_dg1 = Array(90).fill("1");
     //         scope = BigInt(1).toString();
 
     //         majority = ["1", "8"];
@@ -403,7 +403,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
     //             mockPassportData_sha256_rsa_65537,
     //             imt as any,
     //             majority,
-    //             bitmap,
+    //             selector_dg1,
     //             scope,
     //             BigInt(user_address.toString()).toString()
     //         );
@@ -445,7 +445,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
 
 
     //     // // refactor in generate inputs function
-    //     // bitmap = Array(90).fill("1");
+    //     // selector_dg1 = Array(90).fill("1");
     //     // scope = BigInt(1).toString();
     //     // user_address = await thirdAccount.getAddress();
     //     // majority = ["1", "8"];
@@ -455,7 +455,7 @@ describe("OpenPassport - Contracts - Register & Disclose flow", function () {
     //     //     passportData,
     //     //     imt as any,
     //     //     majority,
-    //     //     bitmap,
+    //     //     selector_dg1,
     //     //     scope,
     //     //     BigInt(user_address.toString()).toString()
     //     // );

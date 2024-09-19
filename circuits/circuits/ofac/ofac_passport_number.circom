@@ -5,7 +5,7 @@ include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 include "../utils/other/array.circom";
 include "binary-merkle-root.circom";
-include "../utils/getCommonLength.circom";
+include "../utils/other/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
 include "../utils/other/smt.circom";
 

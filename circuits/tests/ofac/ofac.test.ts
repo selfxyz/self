@@ -35,7 +35,8 @@ function getPassportInputs(passportData: PassportData) {
 
   const majority = '18';
   const user_identifier = crypto.randomUUID();
-  const bitmap = Array(90).fill('1');
+  const selector_dg1 = Array(88).fill('1');
+  const selector_older_than = '1';
   const scope = '@coboyApp';
 
   const pubkey_leaf = getLeaf(passportData.dsc);
@@ -48,7 +49,8 @@ function getPassportInputs(passportData: PassportData) {
     passportData: passportData,
     commitment: commitment,
     majority: majority,
-    bitmap: bitmap,
+    selector_dg1: selector_dg1,
+    selector_older_than: selector_older_than,
     scope: scope,
     user_identifier: user_identifier,
   };
@@ -95,7 +97,8 @@ describe('OFAC - Passport number match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       passno_smt,
@@ -109,7 +112,8 @@ describe('OFAC - Passport number match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       passno_smt,
@@ -182,7 +186,8 @@ describe('OFAC - Name and DOB match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       namedob_smt,
@@ -196,7 +201,8 @@ describe('OFAC - Name and DOB match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       namedob_smt,
@@ -269,7 +275,8 @@ describe('OFAC - Name match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       name_smt,
@@ -283,7 +290,8 @@ describe('OFAC - Name match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       name_smt,

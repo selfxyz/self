@@ -34,20 +34,18 @@ export const generateCircuitInputsInCircuits = (
                 secret,
                 dscSecret,
                 attestationId,
-                passportData,
-                signatureAlgorithm === 'ecdsa' ? n_dsc_ecdsa : n_dsc,
-                signatureAlgorithm === 'ecdsa' ? k_dsc_ecdsa : k_dsc
+                passportData
             );
         }
         case 'prove': {
-            // const bitmap = Array(90).fill('1');
+            // const selector_dg1 = Array(90).fill('1');
             // const user_identifier = crypto.randomUUID();
             // return generateCircuitInputsProve(
             //     passportData,
             //     n_dsc,
             //     k_dsc,
             //     scope,
-            //     bitmap,
+            //     selector_dg1,
             //     majority,
             //     user_identifier
             // );

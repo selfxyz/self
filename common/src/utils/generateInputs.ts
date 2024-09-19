@@ -116,7 +116,8 @@ export function generateCircuitInputsDisclose(
   passportData: PassportData,
   merkletree: LeanIMT,
   majority: string,
-  bitmap: string[],
+  selector_dg1: string[],
+  selector_older_than: string,
   scope: string,
   user_identifier: string
 ) {
@@ -146,7 +147,8 @@ export function generateCircuitInputsDisclose(
     merkletree_size: [BigInt(depthForThisOne).toString()],
     path: merkleProofIndices.map((index) => BigInt(index).toString()),
     siblings: merkleProofSiblings.map((index) => BigInt(index).toString()),
-    bitmap: bitmap,
+    selector_dg1: selector_dg1,
+    selector_older_than: [BigInt(selector_older_than).toString()],
     scope: [castFromScope(scope)],
     current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
     majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
@@ -160,15 +162,16 @@ export function generateCircuitInputsOfac(
   passportData: PassportData,
   merkletree: LeanIMT,
   majority: string,
-  bitmap: string[],
+  selector_dg1: string[],
+  selector_older_than: string,
   scope: string,
   user_identifier: string,
   sparsemerkletree: SMT,
   proofLevel: number,
 ) {
 
-  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier);
-  const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
+  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, selector_dg1, selector_older_than, scope, user_identifier);
+  const { majority: _, scope: __, selector_dg1: ___, selector_older_than: _____, user_identifier: ______, ...finalResult } = result;
 
   const mrz_bytes = formatMrz(passportData.mrz);
   const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49, 58))
@@ -214,7 +217,8 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 export function generateCircuitInputsProve(
   passportData: PassportData,
   scope: string,
-  bitmap: string[],
+  selector_dg1: string[],
+  selector_older_than: string,
   majority: string,
   user_identifier: string,
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
@@ -236,7 +240,8 @@ export function generateCircuitInputsProve(
     signature: register_inputs.signature,
     pubKey: register_inputs.pubKey,
     current_date: current_date,
-    bitmap: bitmap,
+    selector_dg1: selector_dg1,
+    selector_older_than: [BigInt(selector_older_than).toString()],
     majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
     user_identifier: [parseUIDToBigInt(user_identifier, user_identifier_type)],
     scope: [castFromScope(scope)]

@@ -9,11 +9,11 @@ import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
 
 const sigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha1' },
+  // { sigAlg: 'rsa', hashFunction: 'sha1' },
   { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha256' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -30,12 +30,14 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
-    const bitmap = Array(90).fill('1');
+    const selector_dg1 = Array(88).fill('1');
+    const selector_older_than = '1';
 
     const inputs = generateCircuitInputsProve(
       passportData,
       scope,
-      bitmap,
+      selector_dg1,
+      selector_older_than,
       majority,
       user_identifier
     );

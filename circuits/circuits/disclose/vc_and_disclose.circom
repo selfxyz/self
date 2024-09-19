@@ -16,7 +16,8 @@ template VC_AND_DISCLOSE( nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal input bitmap[90]; // 88 for MRZ + 2 for majority
+    signal input selector_dg1[88]; // 88 for MRZ
+    signal input selector_older_than;
     signal input scope;
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
@@ -28,7 +29,8 @@ template VC_AND_DISCLOSE( nLevels) {
     // verify passport validity and disclose optional data
     component disclose = DISCLOSE();
     disclose.dg1 <== dg1;
-    disclose.bitmap <== bitmap;
+    disclose.selector_dg1 <== selector_dg1;
+    disclose.selector_older_than <== selector_older_than;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
     
@@ -38,6 +40,7 @@ template VC_AND_DISCLOSE( nLevels) {
     poseidon_nullifier.inputs[1] <== scope;
     signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
+    signal output older_than[2] <== disclose.older_than;
 }
 
 component main { public [ merkle_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16);

@@ -8,10 +8,12 @@ include "binary-merkle-root.circom";
 
 template DISCLOSE() {
     signal input dg1[93];
-    signal input bitmap[90]; // 88 for MRZ + 2 for majority
+    signal input selector_dg1[88]; // 88 for MRZ
+    signal input selector_older_than;
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
     signal output revealedData_packed[3];
+    signal output older_than[2];
     signal output nullifier;
 
     // Verify validity of the passport
@@ -31,20 +33,21 @@ template DISCLOSE() {
         isOlderThan.birthDateASCII[i] <== dg1[62 + i];
     }
 
-    signal older_than[2];
-    older_than[0] <== isOlderThan.out * majority[0];
-    older_than[1] <== isOlderThan.out * majority[1];
+    signal older_than_verified[2];
+    older_than_verified[0] <== isOlderThan.out * majority[0];
+    older_than_verified[1] <== isOlderThan.out * majority[1];
 
-    // constrain bitmap to be 0s or 1s
-    for (var i = 0; i < 90; i++) {
-        bitmap[i] * (bitmap[i] - 1) === 0;
-    }
-
-    signal revealedData[90];
+    // constrain selector_dg1 to be 0s or 1s
     for (var i = 0; i < 88; i++) {
-        revealedData[i] <== dg1[5+i] * bitmap[i];
+        selector_dg1[i] * (selector_dg1[i] - 1) === 0;
     }
-    revealedData[88] <== older_than[0] * bitmap[88];
-    revealedData[89] <== older_than[1] * bitmap[89];
-    revealedData_packed <== PackBytes(90)(revealedData);
+
+    signal revealedData[88];
+    for (var i = 0; i < 88; i++) {
+        revealedData[i] <== dg1[5+i] * selector_dg1[i];
+    }
+    older_than[0] <== older_than_verified[0] * selector_older_than;
+    older_than[1] <== older_than_verified[1] * selector_older_than;
+
+    revealedData_packed <== PackBytes(88)(revealedData);
 }

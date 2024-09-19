@@ -38,7 +38,8 @@ describe('Disclose', function () {
 
     const majority = '18';
     const user_identifier = crypto.randomUUID();
-    const bitmap = Array(90).fill('1');
+    const selector_dg1 = Array(88).fill('1');
+    const selector_older_than = '1';
     const scope = '@coboyApp';
 
     // compute the commitment and insert it in the tree
@@ -55,7 +56,8 @@ describe('Disclose', function () {
       passportData,
       tree,
       majority,
-      bitmap,
+      selector_dg1,
+      selector_older_than,
       scope,
       user_identifier,
     );
@@ -118,18 +120,18 @@ describe('Disclose', function () {
           return acc;
         }, {});
 
-        const bitmap = Array(90).fill('0');
+        const selector_dg1 = Array(88).fill('0');
 
         Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
           if (reveal) {
             const [start, end] = attributeToPosition[attribute];
-            bitmap.fill('1', start, end + 1);
+            selector_dg1.fill('1', start, end + 1);
           }
         });
 
         inputs = {
           ...inputs,
-          bitmap: bitmap.map(String),
+          selector_dg1: selector_dg1.map(String),
         };
 
         w = await circuit.calculateWitness(inputs);
@@ -139,7 +141,7 @@ describe('Disclose', function () {
         const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
 
         for (let i = 0; i < reveal_unpacked.length; i++) {
-          if (bitmap[i] == '1') {
+          if (selector_dg1[i] == '1') {
             const char = String.fromCharCode(Number(inputs.dg1[i + 5]));
             assert(reveal_unpacked[i] == char, 'Should reveal the right character');
           } else {
@@ -151,33 +153,27 @@ describe('Disclose', function () {
   });
 
   it('should allow disclosing majority', async function () {
-    const bitmap = Array(90).fill('0');
-    bitmap[88] = '1';
-    bitmap[89] = '1';
+    const selector_dg1 = Array(88).fill('0');
 
     w = await circuit.calculateWitness({
       ...inputs,
-      bitmap: bitmap.map(String),
+      selector_dg1: selector_dg1.map(String),
     });
 
-    const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
+    const older_than = formatOlderThan(await circuit.getOutput(w, ['older_than[2]']));
 
-    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-    //console.log("reveal_unpacked", reveal_unpacked)
 
-    expect(reveal_unpacked[88]).to.equal('1');
-    expect(reveal_unpacked[89]).to.equal('8');
+    expect(older_than[0]).to.equal(1);
+    expect(older_than[1]).to.equal(8);
   });
 
   it("shouldn't allow disclosing wrong majority", async function () {
-    const bitmap = Array(90).fill('0');
-    bitmap[88] = '1';
-    bitmap[89] = '1';
+    const selector_dg1 = Array(88).fill('0');
 
     w = await circuit.calculateWitness({
       ...inputs,
       majority: ['5', '0'].map((char) => BigInt(char.charCodeAt(0)).toString()),
-      bitmap: bitmap.map(String),
+      selector_dg1: selector_dg1.map(String),
     });
 
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
@@ -189,3 +185,8 @@ describe('Disclose', function () {
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
 });
+
+
+const formatOlderThan = (older_than: any) => {
+  return Object.values(older_than).map((value: any) => parseInt(value) - 48);
+};

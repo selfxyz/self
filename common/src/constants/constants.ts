@@ -23,7 +23,7 @@ export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
 export const MAX_PADDED_ECONTENT_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
-  rsa_65537_sha256_2048: 640,
+  rsa_65537_sha256_2048: 384,
   rsa_65537_sha1_2048: 448,
   rsapss_65537_sha256_2048: 640,
   ecdsa_secp256r1_sha1_256: 448,
@@ -32,7 +32,7 @@ export const MAX_PADDED_ECONTENT_LEN: Record<keyof typeof SignatureAlgorithmInde
 }
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
-  rsa_65537_sha256_2048: 512,
+  rsa_65537_sha256_2048: 320,
   rsa_65537_sha1_2048: 448,
   rsapss_65537_sha256_2048: 512,
   ecdsa_secp256r1_sha1_256: 448,

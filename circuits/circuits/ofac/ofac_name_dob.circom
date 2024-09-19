@@ -4,7 +4,7 @@ include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 include "binary-merkle-root.circom";
-include "../utils/getCommonLength.circom";
+include "../utils/other/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
 include "../utils/other/smt.circom";
 

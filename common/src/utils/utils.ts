@@ -44,7 +44,7 @@ export function formatAndConcatenateDataHashes(
     () => Math.floor(Math.random() * 256) - 128
   );
 
-  // sha256 with rsa (index of mrzhash is 31)
+  // // sha256 with rsa (index of mrzhash is 31)
   // const startingSequence = [
   //   // SEQUENCE + long form indicator + length (293 bytes)
   //   48, -126, 1, 37,

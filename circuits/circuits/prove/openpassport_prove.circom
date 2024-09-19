@@ -25,14 +25,16 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input pubKey[kScaled];
 
     // dislose related inputs
-    signal input bitmap[90];
+    signal input selector_dg1[88];
+    signal input selector_older_than;
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
     signal input user_identifier; 
     signal input scope;
 
 
-    signal output nullifier <== CustomHasher(kScaled)(signature); // generate nullifier
+    signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
+    signal output nullifier <== Poseidon(2)([signatureHashed, scope]);
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
@@ -40,10 +42,11 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     // optionally disclose data
     component disclose = DISCLOSE();
     disclose.dg1 <== dg1;
-    disclose.bitmap <== bitmap;
+    disclose.selector_dg1 <== selector_dg1;
+    disclose.selector_older_than <== selector_older_than;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
 
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
-    
+    signal output older_than[2] <== disclose.older_than;
 }
