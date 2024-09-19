@@ -16,7 +16,7 @@ import {
   vkey_register_rsa_65537_sha256,
   vkey_register_rsapss_65537_sha256,
 } from '../../common/src/constants/vkey';
-import { getCircuitName } from '../../common/src/utils/handleCertificate';
+import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 
 export function getCurrentDateFormatted() {
   return getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString());
