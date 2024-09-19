@@ -5,7 +5,7 @@ include "circomlib/circuits/comparators.circom";
 include "binary-merkle-root.circom";
 include "../utils/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
-include "../utils/smt.circom";
+include "../utils/other/smt.circom";
 
 template OFAC_NAME(nLevels) {
     signal input secret;

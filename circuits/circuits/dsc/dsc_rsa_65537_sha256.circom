@@ -6,8 +6,7 @@ include "circomlib/circuits/comparators.circom";
 include "@zk-email/circuits/lib/sha.circom";
 include "@zk-email/circuits/lib/rsa.circom";
 include "binary-merkle-root.circom";
-include "../utils/splitBytesToWords.circom";
-include "../utils/splitSignalsToWords.circom";
+include "../utils/other/bytes.circom";
 include "../utils/leafHasherLight.circom";
 
 template DSC_RSA_65537_SHA256(max_cert_bytes, n_dsc, k_dsc, n_csca, k_csca, dsc_mod_len, nLevels, signatureAlgorithm) {

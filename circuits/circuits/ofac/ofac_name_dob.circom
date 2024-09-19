@@ -6,7 +6,7 @@ include "circomlib/circuits/bitify.circom";
 include "binary-merkle-root.circom";
 include "../utils/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
-include "../utils/smt.circom";
+include "../utils/other/smt.circom";
 
 template OFAC_NAME_DOB(nLevels) {
     signal input secret;

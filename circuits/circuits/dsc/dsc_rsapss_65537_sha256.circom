@@ -5,8 +5,7 @@ include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "@zk-email/circuits/lib/sha.circom";
 include "binary-merkle-root.circom";
-include "../utils/splitBytesToWords.circom";
-include "../utils/splitSignalsToWords.circom";
+include "../utils/other/bytes.circom";
 include "../utils/leafHasherLight.circom";
 include "../utils/rsapss/rsapss.circom";
 

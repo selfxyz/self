@@ -7,7 +7,7 @@ include "../utils/other/array.circom";
 include "binary-merkle-root.circom";
 include "../utils/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
-include "../utils/smt.circom";
+include "../utils/other/smt.circom";
 
 template OFAC_PASSPORT_NUMBER(nLevels) {
     signal input secret;
