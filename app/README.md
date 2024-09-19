@@ -50,6 +50,8 @@ Press `a` to open the app on Android.
 
 To see the Android logs you'll have to use the Android Studio Logcat.
 
+**EDIT**: to test the app on android, see [this issue](https://github.com/zk-passport/openpassport/issues/191) temporarily
+
 ### iOS
 
 > :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
