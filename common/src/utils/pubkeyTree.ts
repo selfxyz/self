@@ -2,7 +2,7 @@ import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex
 import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
 import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
-import { formatDg2Hash, hexToDecimal, splitToWords } from './utils';
+import { formatDg2Hash, getNAndK, hexToDecimal, splitToWords } from './utils';
 import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
@@ -23,8 +23,9 @@ export function customHasher(pubKeyFormatted: string[]) {
   return finalHash.toString();
 }
 
-export function getLeaf(dsc: string, n: number, k: number): string {
+export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
+  const { n, k } = getNAndK(signatureAlgorithm);
   console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
   const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
   const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];

@@ -4,14 +4,14 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
 import { generateCommitment, getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT } from '@ashpect/smt';
-import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
+import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
-import { castFromUUID, formatMrz, packBytes } from '../../../common/src/utils/utils';
+import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
-import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
@@ -38,7 +38,7 @@ function getPassportInputs(passportData: PassportData) {
   const bitmap = Array(90).fill('1');
   const scope = '@coboyApp';
 
-  const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
+  const pubkey_leaf = getLeaf(passportData.dsc);
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
   const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
 
@@ -99,9 +99,7 @@ describe('OFAC - Passport number match', function () {
       inputs.scope,
       inputs.user_identifier,
       passno_smt,
-      proofLevel,
-      n_dsc,
-      k_dsc
+      proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -115,9 +113,7 @@ describe('OFAC - Passport number match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       passno_smt,
-      proofLevel,
-      n_dsc,
-      k_dsc
+      proofLevel
     );
   });
 
@@ -191,8 +187,6 @@ describe('OFAC - Name and DOB match', function () {
       inputs.user_identifier,
       namedob_smt,
       proofLevel,
-      n_dsc,
-      k_dsc
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -206,9 +200,7 @@ describe('OFAC - Name and DOB match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       namedob_smt,
-      proofLevel,
-      n_dsc,
-      k_dsc
+      proofLevel
     );
   });
 
@@ -281,9 +273,7 @@ describe('OFAC - Name match', function () {
       inputs.scope,
       inputs.user_identifier,
       name_smt,
-      proofLevel,
-      n_dsc,
-      k_dsc
+      proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
@@ -297,9 +287,7 @@ describe('OFAC - Name match', function () {
       mockInputs.scope,
       mockInputs.user_identifier,
       name_smt,
-      proofLevel,
-      n_dsc,
-      k_dsc
+      proofLevel
     );
   });
 

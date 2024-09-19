@@ -2,14 +2,10 @@ import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { poseidon6 } from 'poseidon-lite';
+import { } from 'poseidon-lite';
 import { generateCircuitInputsRegister } from '../../common/src/utils/generateInputs';
-import { formatMrz, hexToDecimal, packBytes } from '../../common/src/utils/utils';
+import { packBytes } from '../../common/src/utils/utils';
 import {
-    n_dsc,
-    k_dsc,
-    n_dsc_ecdsa,
-    k_dsc_ecdsa,
     PASSPORT_ATTESTATION_ID,
 } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
@@ -43,9 +39,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
             secret,
             dscSecret,
             PASSPORT_ATTESTATION_ID,
-            passportData,
-            sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc,
-            sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc
+            passportData
+
         );
 
         before(async () => {
@@ -85,10 +80,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
                 .blinded_dsc_commitment;
             console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
-            const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
-            const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
             const mrz_bytes = packBytes(inputs.dg1);
-            const leaf = getLeaf(passportData.dsc, n, k).toString();
+            const leaf = getLeaf(passportData.dsc).toString();
             const commitment_bytes = generateCommitment(secret, PASSPORT_ATTESTATION_ID, leaf, mrz_bytes, passportData.dg2Hash);
             const commitment_js = commitment_bytes.toString();
             console.log('commitment_js', commitment_js);

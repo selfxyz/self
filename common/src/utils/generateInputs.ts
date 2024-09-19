@@ -1,13 +1,11 @@
-import { MAX_DATAHASHES_LEN, PUBKEY_TREE_DEPTH, DEVELOPMENT_MODE, DEFAULT_USER_ID_TYPE, MAX_PADDED_ECONTENT_LEN, MAX_PADDED_SIGNED_ATTR_LEN, SignatureAlgorithmIndex } from '../constants/constants';
+import { PUBKEY_TREE_DEPTH, DEFAULT_USER_ID_TYPE, MAX_PADDED_ECONTENT_LEN, MAX_PADDED_SIGNED_ATTR_LEN } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
 import { PassportData } from './types';
 import {
-  arraysAreEqual,
   bytesToBigDecimal,
   formatMrz,
   hash,
   splitToWords,
-  toUnsignedByte,
   getCurrentDateYYMMDD,
   generateMerkleProof,
   generateSMTProof,
@@ -18,13 +16,12 @@ import {
   castFromScope,
   parseUIDToBigInt,
   formatDg2Hash,
+  getNAndK,
 } from './utils';
 import { LeanIMT } from "@zk-kit/lean-imt";
 import { generateCommitment, getLeaf } from "./pubkeyTree";
 import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
-import { poseidon6 } from "poseidon-lite";
 import { packBytes } from "../utils/utils";
-import { getCSCAModulusMerkleTree } from "./csca";
 import { SMT } from "@ashpect/smt"
 import { parseCertificate } from './certificates/handleCertificate';
 
@@ -33,9 +30,7 @@ export function generateCircuitInputsRegister(
   secret: string,
   dscSecret: string,
   attestation_id: string,
-  passportData: PassportData,
-  n_dsc: number,
-  k_dsc: number
+  passportData: PassportData
 ) {
   const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
   const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } = parseCertificate(passportData.dsc);
@@ -44,34 +39,32 @@ export function generateCircuitInputsRegister(
   let pubKey: any;
   let signature: any;
 
+  const { n, k } = getNAndK(signatureAlgorithm);
+
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(encryptedDigest);
-
-    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_dsc, k_dsc)
-    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_dsc, k_dsc)
-
+    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k)
+    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k)
     signature = [...signature_r, ...signature_s]
-    const dsc_modulus_x = splitToWords(BigInt(hexToDecimal(x)), n_dsc, k_dsc)
-    const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n_dsc, k_dsc)
+    const dsc_modulus_x = splitToWords(BigInt(hexToDecimal(x)), n, k)
+    const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k)
     pubKey = [...dsc_modulus_x, ...dsc_modulus_y]
   } else {
 
     signature = splitToWords(
       BigInt(bytesToBigDecimal(encryptedDigest)),
-      n_dsc,
-      k_dsc
+      n,
+      k
     )
 
     pubKey = splitToWords(
       BigInt(hexToDecimal(modulus)),
-      n_dsc,
-      k_dsc
+      n,
+      k
     )
   }
 
-
   const dg1 = formatMrz(mrz);
-
   const formattedMrz = formatMrz(mrz);
   const dg1Hash = hash(hashFunction, formattedMrz);
 
@@ -125,11 +118,10 @@ export function generateCircuitInputsDisclose(
   majority: string,
   bitmap: string[],
   scope: string,
-  user_identifier: string,
-  n_dsc: number,
-  k_dsc: number
+  user_identifier: string
 ) {
-  const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
+
+  const pubkey_leaf = getLeaf(passportData.dsc);
 
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
@@ -173,11 +165,9 @@ export function generateCircuitInputsOfac(
   user_identifier: string,
   sparsemerkletree: SMT,
   proofLevel: number,
-  n_dsc: number,
-  k_dsc: number,
 ) {
 
-  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier, n_dsc, k_dsc);
+  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, bitmap, scope, user_identifier);
   const { majority: _, scope: __, bitmap: ___, user_identifier: ____, ...finalResult } = result;
 
   const mrz_bytes = formatMrz(passportData.mrz);
@@ -223,8 +213,6 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 
 export function generateCircuitInputsProve(
   passportData: PassportData,
-  n_dsc: number,
-  k_dsc: number,
   scope: string,
   bitmap: string[],
   majority: string,
@@ -232,8 +220,7 @@ export function generateCircuitInputsProve(
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
 
-
-  const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData, n_dsc, k_dsc);
+  const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData);
   const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
   // Ensure majority is at least two digits
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
