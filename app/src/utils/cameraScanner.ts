@@ -28,6 +28,7 @@ export const startCameraScan = async () => {
       })
     } catch (e) {
       console.error(e);
+      amplitude.track('camera_scan_error', { error: e });
     }
   } else {
     NativeModules.CameraActivityModule.startCameraActivity()
@@ -50,10 +51,12 @@ export const startCameraScan = async () => {
           })
         } catch (error: any) {
           console.error('Invalid MRZ format:', error.message);
+          amplitude.track('invalid_mrz_format', { error: error.message });
         }
       })
       .catch((error: any) => {
         console.error('Camera Activity Error:', error);
+        amplitude.track('camera_scan_error', { error: error.message });
       });
   }
 };

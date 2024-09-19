@@ -6,7 +6,6 @@ import {
 } from '@env';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
-import * as amplitude from '@amplitude/analytics-react-native';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { generateDscSecret } from '../../../common/src/utils/csca';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
@@ -111,8 +110,7 @@ const useUserStore = create<UserState>((set, get) => ({
     const alreadyStoredPassportData = await loadPassportData();
 
     if (alreadyStoredPassportData) {
-      console.log("passportData is already stored, this should never happen in prod")
-      console.log("replacing it with the new one")
+      console.log("a passportData is already stored, replacing it with the new one")
     }
 
     await storePassportData(passportData)

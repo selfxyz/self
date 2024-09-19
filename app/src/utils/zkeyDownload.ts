@@ -58,7 +58,7 @@ export async function downloadZkey(
   const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
   if (!downloadRequired) {
     console.log(`zkey and dat for ${circuit} already downloaded`)
-    //amplitude.track(`zkey for ${circuit} already downloaded`);
+    amplitude.track('zkey_already_downloaded', { circuit: circuit });
     return;
   }
 
@@ -117,7 +117,7 @@ export async function fetchZkeyAndDat(
   circuit: CircuitName,
 ) {
   console.log(`fetching zkey and dat for ${circuit} ...`)
-  //amplitude.track(`fetching zkey and dat for ${circuit} ...`);
+  amplitude.track('fetching_zkey_and_dat', { circuit: circuit });
 
   const {
     isZkeyDownloading,
