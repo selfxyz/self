@@ -148,6 +148,7 @@ const handleResponseIOS = async (
   amplitude.track('nfc_response_parsed', {
     dataGroupsPresent: parsed?.dataGroupsPresent,
     eContentLength: signedEContentArray?.length,
+    concatenatedDataHashesLength: concatenatedDataHashesArraySigned?.length,
     encryptedDigestLength: encryptedDigestArray?.length,
     activeAuthenticationPassed: parsed?.activeAuthenticationPassed,
     isPACESupported: parsed?.isPACESupported,
