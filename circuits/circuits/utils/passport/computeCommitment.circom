@@ -2,7 +2,7 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
 include "../other/bytes.circom";
-include "./CustomHashers.circom";
+include "./customHashers.circom";
 
 template ComputeCommitment() {
 
