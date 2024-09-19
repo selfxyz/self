@@ -6,6 +6,10 @@ import { parseRsaPublicKey, parseRsaPssPublicKey, parseECParameters } from './pu
 import { PublicKeyDetailsRSAPSS } from './dataStructure';
 import { getNamedCurve } from './curves';
 
+if (typeof global.Buffer === 'undefined') {
+    global.Buffer = require('buffer').Buffer;
+}
+
 export function parseCertificate(pem: string) {
     const cert = getCertificateFromPem(pem);
     let { signatureAlgorithm, hashFunction } = getSignatureAlgorithmDetails(cert.signatureAlgorithm.algorithmId);
