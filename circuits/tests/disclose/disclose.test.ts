@@ -45,8 +45,14 @@ describe('Disclose', function () {
     // compute the commitment and insert it in the tree
     const pubkey_leaf = getLeaf(passportData.dsc).toString();
     const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-    const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
-    console.log("commitment in js ", commitment);
+    const commitment = generateCommitment(
+      secret,
+      PASSPORT_ATTESTATION_ID,
+      pubkey_leaf,
+      mrz_bytes,
+      passportData.dg2Hash
+    );
+    console.log('commitment in js ', commitment);
     tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
     tree.insert(BigInt(commitment));
 
@@ -59,7 +65,7 @@ describe('Disclose', function () {
       selector_dg1,
       selector_older_than,
       scope,
-      user_identifier,
+      user_identifier
     );
   });
 
@@ -73,8 +79,8 @@ describe('Disclose', function () {
     const nullifier_js = poseidon2([inputs.secret, inputs.scope]).toString();
     const nullifier_circom = (await circuit.getOutput(w, ['nullifier'])).nullifier;
 
-    console.log("nullifier_circom", nullifier_circom);
-    console.log("nullifier_js", nullifier_js);
+    console.log('nullifier_circom', nullifier_circom);
+    console.log('nullifier_js', nullifier_js);
     expect(nullifier_circom).to.equal(nullifier_js);
   });
 
@@ -162,7 +168,6 @@ describe('Disclose', function () {
 
     const older_than = formatOlderThan(await circuit.getOutput(w, ['older_than[2]']));
 
-
     expect(older_than[0]).to.equal(1);
     expect(older_than[1]).to.equal(8);
   });
@@ -185,7 +190,6 @@ describe('Disclose', function () {
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
 });
-
 
 const formatOlderThan = (older_than: any) => {
   return Object.values(older_than).map((value: any) => parseInt(value) - 48);

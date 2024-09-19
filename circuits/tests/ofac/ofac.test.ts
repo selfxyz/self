@@ -41,7 +41,13 @@ function getPassportInputs(passportData: PassportData) {
 
   const pubkey_leaf = getLeaf(passportData.dsc);
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-  const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
+  const commitment = generateCommitment(
+    secret,
+    PASSPORT_ATTESTATION_ID,
+    pubkey_leaf,
+    mrz_bytes,
+    passportData.dg2Hash
+  );
 
   return {
     secret: secret,
@@ -191,7 +197,7 @@ describe('OFAC - Name and DOB match', function () {
       inputs.scope,
       inputs.user_identifier,
       namedob_smt,
-      proofLevel,
+      proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(

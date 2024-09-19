@@ -13,7 +13,13 @@ import {
 } from '../../../common/src/constants/mockCertificates';
 import { hexToDecimal, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
 import { getLeaf, customHasher } from '../../../common/src/utils/pubkeyTree';
-import { k_dsc, k_dsc_ecdsa, n_dsc, n_dsc_ecdsa, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
+import {
+  k_dsc,
+  k_dsc_ecdsa,
+  n_dsc,
+  n_dsc_ecdsa,
+  SignatureAlgorithmIndex,
+} from '../../../common/src/constants/constants';
 import {
   parseCertificate,
   parseDSC,
@@ -47,7 +53,6 @@ describe('LeafHasher Light', function () {
       ],
     });
   });
-
 
   // describe('CustomHasher - getLeaf ECDSA', async () => {
   //   const cert = mock_dsc_sha256_ecdsa;
@@ -87,7 +92,6 @@ describe('LeafHasher Light', function () {
       console.log('\x1b[34m', 'hashValue: ', hashValue, '\x1b[0m');
     });
   });
-
 
   // describe('CustomHasher - getLeaf RSA', async () => {
   //   const cert = mock_dsc_sha1_rsa_2048;

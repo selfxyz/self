@@ -89,9 +89,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          eContent: inputs.eContent.map((byte: string) =>
-            String((parseInt(byte, 10) + 1) % 256)
-          ),
+          eContent: inputs.eContent.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');
@@ -112,7 +110,5 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         expect(error.message).to.include('Assert Failed');
       }
     });
-
-
   });
 });
