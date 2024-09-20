@@ -103,6 +103,9 @@ export function formatAndConcatenateDataHashes(
   for (const dataHash of dataHashes) {
     // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
 
+    //push 7 padding bytes
+    concat.push(...[0, 0, 0, 0, 0, 0, 0]);
+
     concat.push(...dataHash[1]);
     // concat.push(...[48, hashLen + 5, 2, 1, dataHash[0], 4, hashLen, ...dataHash[1]])
     // 48, 37, 2, 1, 1, 4, 32,

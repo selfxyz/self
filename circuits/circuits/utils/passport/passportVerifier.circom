@@ -13,6 +13,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
     var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
+    var DG_PADDING_BYTES_LEN = 7;
 
     signal input dg1[93];
     signal input dg1_hash_offset;
@@ -37,10 +38,10 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     // assert DG1 and DG2 hashes match the ones in eContent input
-    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES)(eContent, dg1_hash_offset);
+    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN)(eContent, dg1_hash_offset);
     for(var i = 0; i < HASH_LEN_BYTES; i++) {
         dg1AndDg2Hash[i] === dg1ShaBytes[i].out;
-        dg1AndDg2Hash[i + HASH_LEN_BYTES] === dg2_hash[i];
+        dg1AndDg2Hash[i + HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] === dg2_hash[i];
     }
 
     // compute hash of eContent
