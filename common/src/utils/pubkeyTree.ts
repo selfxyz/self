@@ -30,7 +30,6 @@ export function getLeaf(dsc: string): string {
   const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
   const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
-  console.log("sigAlgIndex", sigAlgIndex)
   if (sigAlgIndex == undefined) {
     console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
     throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);

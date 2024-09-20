@@ -22,7 +22,7 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
-export const MAX_PADDED_ECONTENT_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
+export const MAX_PADDED_ECONTENT_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
   rsa_65537_sha256_2048: 384,
   rsa_65537_sha1_2048: 448,
   rsapss_65537_sha256_2048: 640,
@@ -31,13 +31,19 @@ export const MAX_PADDED_ECONTENT_LEN: Record<keyof typeof SignatureAlgorithmInde
   ecdsa_secp384r1_sha384_384: 640,
 }
 
-export const MAX_PADDED_SIGNED_ATTR_LEN: Record<keyof typeof SignatureAlgorithmIndex, number> = {
+export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
   rsa_65537_sha256_2048: 320,
   rsa_65537_sha1_2048: 448,
   rsapss_65537_sha256_2048: 512,
   ecdsa_secp256r1_sha1_256: 448,
   ecdsa_secp256r1_sha256_256: 512,
   ecdsa_secp384r1_sha384_384: 512,
+}
+
+export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
+  rsa_65537_sha256_4096: 512,
+  rsa_65537_sha1_4096: 640,
+  rsapss_65537_sha256_4096: 768,
 }
 // possible values because of sha1 constaints: 448, 576, 640
 
@@ -48,6 +54,9 @@ export enum SignatureAlgorithmIndex {
   ecdsa_secp256r1_sha1_256 = 7,
   ecdsa_secp256r1_sha256_256 = 8,
   ecdsa_secp384r1_sha384_384 = 9,
+  rsa_65537_sha256_4096 = 10,
+  rsa_65537_sha1_4096 = 11,
+  rsapss_65537_sha256_4096 = 12,
 }
 
 export const attributeToPosition = {
