@@ -1,4 +1,4 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 function get_g_pow_stride8_table(n, k) {
     assert(n == 43 && k == 6);

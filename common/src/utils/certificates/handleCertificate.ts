@@ -137,7 +137,13 @@ export const parseDSC = (pemContent: string) => {
         const key = ec.keyFromPublic(publicKeyBuffer);
         const x = key.getPublic().getX().toString('hex');
         const y = key.getPublic().getY().toString('hex');
-        const bits = key.getPublic().getX().bitLength();
+
+        const fieldSizeMap: { [key: string]: number } = {
+            'secp256r1': 256,
+            'secp384r1': 384,
+        };
+        const bits = fieldSizeMap[curve]
+
         publicKeyDetails = { curve, x, y, bits };
     } else {
         const publicKey = cert.subjectPublicKeyInfo.subjectPublicKey;

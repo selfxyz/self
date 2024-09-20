@@ -1,17 +1,18 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "binary-merkle-root.circom";
-include "../utils/getCommonLength.circom";
+include "../utils/other/getCommonLength.circom";
 include "../disclose/verify_commitment.circom";
-include "../utils/smt.circom";
+include "../utils/other/smt.circom";
 
 template OFAC_NAME(nLevels) {
     signal input secret;
     signal input attestation_id;
     signal input pubkey_leaf;
-    signal input mrz[93];
+    signal input dg1[93];
+    signal input dg2_hash[64];
     signal input merkle_root;
     signal input merkletree_size;
     signal input path[nLevels];
@@ -25,14 +26,14 @@ template OFAC_NAME(nLevels) {
     signal output proofLevel;
 
     // Verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings);
+    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
 
     // Name Hash
     component poseidon_hasher[3];
     for (var j = 0; j < 3; j++) {
         poseidon_hasher[j] = Poseidon(13);
         for (var i = 0; i < 13; i++) {
-            poseidon_hasher[j].inputs[i] <== mrz[10 + 13 * j + i];
+            poseidon_hasher[j].inputs[i] <== dg1[10 + 13 * j + i];
         }
     }
 

@@ -1,8 +1,9 @@
 export type PassportData = {
   mrz: string;
+  dg2Hash?: number[];
   dsc: string;
-  dataGroupHashes: number[];
   eContent: number[];
+  signedAttr: number[];
   encryptedDigest: number[];
   photoBase64: string;
   mockUser?: boolean;

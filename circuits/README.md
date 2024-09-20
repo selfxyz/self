@@ -31,7 +31,7 @@ The `disclose` circuit is used for the following:
 1. Verify that a user knows a secret e.g., he is able to reconstruct one leaf of the merkle tree (a check of the merkle roots will be performed on-chain)
 2. Passport expiry is verified
 3. A range check is performed over the age of the user
-4. The output is multiplied by an input bitmap to allow the user to disclose only what they want to disclose.
+4. The output is multiplied by an input selector_dg1 to allow the user to disclose only what they want to disclose.
 5. Final output is packed.
 
 Any application that wants to use OpenPassport can actually build its own `disclose` circuit.

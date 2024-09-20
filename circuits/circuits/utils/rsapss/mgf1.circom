@@ -1,4 +1,4 @@
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
 include "../sha2/sha256/sha256_hash_bits.circom";

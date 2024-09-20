@@ -2,16 +2,16 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
-import { getLeaf } from '../../../common/src/utils/pubkeyTree';
+import { generateCommitment, getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { SMT } from '@ashpect/smt';
-import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
+import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/lean-imt';
-import { castFromUUID, formatMrz, packBytes } from '../../../common/src/utils/utils';
+import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { PassportData } from '../../../common/src/utils/types';
-import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
@@ -35,19 +35,19 @@ function getPassportInputs(passportData: PassportData) {
 
   const majority = '18';
   const user_identifier = crypto.randomUUID();
-  const bitmap = Array(90).fill('1');
+  const selector_dg1 = Array(88).fill('1');
+  const selector_older_than = '1';
   const scope = '@coboyApp';
 
-  const pubkey_leaf = getLeaf(passportData.dsc, n_dsc, k_dsc);
+  const pubkey_leaf = getLeaf(passportData.dsc);
   const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-  const commitment = poseidon6([
+  const commitment = generateCommitment(
     secret,
     PASSPORT_ATTESTATION_ID,
     pubkey_leaf,
-    mrz_bytes[0],
-    mrz_bytes[1],
-    mrz_bytes[2],
-  ]);
+    mrz_bytes,
+    passportData.dg2Hash
+  );
 
   return {
     secret: secret,
@@ -55,7 +55,8 @@ function getPassportInputs(passportData: PassportData) {
     passportData: passportData,
     commitment: commitment,
     majority: majority,
-    bitmap: bitmap,
+    selector_dg1: selector_dg1,
+    selector_older_than: selector_older_than,
     scope: scope,
     user_identifier: user_identifier,
   };
@@ -102,7 +103,8 @@ describe('OFAC - Passport number match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       passno_smt,
@@ -116,7 +118,8 @@ describe('OFAC - Passport number match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       passno_smt,
@@ -189,7 +192,8 @@ describe('OFAC - Name and DOB match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       namedob_smt,
@@ -203,7 +207,8 @@ describe('OFAC - Name and DOB match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       namedob_smt,
@@ -276,7 +281,8 @@ describe('OFAC - Name match', function () {
       inputs.passportData,
       tree,
       inputs.majority,
-      inputs.bitmap,
+      inputs.selector_dg1,
+      inputs.selector_older_than,
       inputs.scope,
       inputs.user_identifier,
       name_smt,
@@ -290,7 +296,8 @@ describe('OFAC - Name match', function () {
       mockInputs.passportData,
       tree,
       mockInputs.majority,
-      mockInputs.bitmap,
+      mockInputs.selector_dg1,
+      mockInputs.selector_older_than,
       mockInputs.scope,
       mockInputs.user_identifier,
       name_smt,

@@ -4,6 +4,7 @@ import { sha1 } from 'js-sha1';
 import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
+import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa } from '../constants/constants';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -14,6 +15,20 @@ export function formatMrz(mrz: string) {
   mrzCharcodes.unshift(97); // the tag for DG1
 
   return mrzCharcodes;
+}
+
+export function getNAndK(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
+  const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
+  const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
+  return { n, k };
+}
+
+export function formatDg2Hash(dg2Hash: number[]) {
+  const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
+  while (unsignedBytesDg2Hash.length < 64) { // pad it to 64 bytes to correspond to the hash length of sha512 and avoid multiplying circuits
+    unsignedBytesDg2Hash.push(0);
+  }
+  return unsignedBytesDg2Hash;
 }
 
 export function formatAndConcatenateDataHashes(
@@ -29,7 +44,7 @@ export function formatAndConcatenateDataHashes(
     () => Math.floor(Math.random() * 256) - 128
   );
 
-  // sha256 with rsa (index of mrzhash is 31)
+  // // sha256 with rsa (index of mrzhash is 31)
   // const startingSequence = [
   //   // SEQUENCE + long form indicator + length (293 bytes)
   //   48, -126, 1, 37,
@@ -167,11 +182,11 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(hasFunction: string, bytesArray: number[]): number[] {
+export function hash(hashFunction: string, bytesArray: number[]): number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
-  switch (hasFunction) {
+  switch (hashFunction) {
     case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
@@ -185,6 +200,7 @@ export function hash(hasFunction: string, bytesArray: number[]): number[] {
       hashResult = sha512_256(unsignedBytesArray);
       break;
     default:
+      console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red
       hashResult = sha256(unsignedBytesArray); // Default to sha256
   }
   return hexToSignedBytes(hashResult);

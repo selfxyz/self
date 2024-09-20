@@ -31,20 +31,20 @@ describe('Mock Passport Data Generator', function () {
 });
 
 function verify(passportData: PassportData): boolean {
-  const { mrz, dsc, dataGroupHashes, eContent, encryptedDigest } = passportData;
+  const { mrz, dsc, eContent, signedAttr, encryptedDigest } = passportData;
   const { signatureAlgorithm, hashFunction, hashLen, curve } = parseCertificate(dsc);
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(hashFunction, formattedMrz);
-  const dg1HashOffset = findSubarrayIndex(dataGroupHashes, mrzHash)
-  assert(dg1HashOffset !== -1, 'MRZ hash index not found in dataGroupHashes');
-
-  const concatHash = hash(hashFunction, dataGroupHashes)
+  const dg1HashOffset = findSubarrayIndex(eContent, mrzHash)
+  assert(dg1HashOffset !== -1, 'MRZ hash index not found in eContent');
+  console.error("\x1b[32m", "signatureAlgorithm", signatureAlgorithm, " hashFunction", hashFunction, "eContent size", eContent.length, "signedAttr size", signedAttr.length, "\x1b[0m");
+  const concatHash = hash(hashFunction, eContent)
   assert(
     arraysAreEqual(
       concatHash,
-      eContent.slice(eContent.length - hashLen)
+      signedAttr.slice(signedAttr.length - hashLen)
     ),
-    'concatHash is not at the right place in eContent'
+    'concatHash is not at the right place in signedAttr'
   );
 
   if (signatureAlgorithm === 'ecdsa') {
@@ -58,7 +58,7 @@ function verify(passportData: PassportData): boolean {
 
     const key = ec.keyFromPublic(publicKeyBuffer);
     const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
     const msgHash = md.digest().toHex()
     const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
 
@@ -68,7 +68,7 @@ function verify(passportData: PassportData): boolean {
     const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
 
     const md = forge.md[hashFunction].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
 
     const signature = Buffer.from(encryptedDigest).toString('binary');
 

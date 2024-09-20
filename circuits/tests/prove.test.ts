@@ -3,16 +3,19 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
-import { n_dsc, k_dsc, k_dsc_ecdsa, n_dsc_ecdsa } from '../../common/src/constants/constants';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
+import { customHasher } from '../../common/src/utils/pubkeyTree';
+import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
   { sigAlg: 'rsa', hashFunction: 'sha256' },
   { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -29,14 +32,20 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
-    const bitmap = Array(90).fill('1');
+    const selector_dg1 = Array(88).fill('1');
+    const selector_older_than = '1';
+    const secret = 0;
+    const dsc_secret = 0;
+    const selector_mode = 1;
 
     const inputs = generateCircuitInputsProve(
+      selector_mode,
+      secret,
+      dsc_secret,
       passportData,
-      sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc,
-      sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc,
       scope,
-      bitmap,
+      selector_dg1,
+      selector_older_than,
       majority,
       user_identifier
     );
@@ -45,7 +54,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       circuit = await wasm_tester(
         path.join(
           __dirname,
-          `../circuits/prove/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
+          `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
         ),
         {
           include: [
@@ -64,8 +73,15 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     it('should calculate the witness with correct inputs', async function () {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
-
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
+      console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
+      const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
+      console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
+      const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
+        .blinded_dsc_commitment;
+      console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
+
+      expect(blinded_dsc_commitment).to.be.not.null;
       expect(nullifier).to.be.not.null;
     });
 
@@ -73,7 +89,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       try {
         const invalidInputs = {
           ...inputs,
-          mrz: Array(93)
+          dg1: Array(93)
             .fill(0)
             .map((byte) => BigInt(byte).toString()),
         };
@@ -84,13 +100,11 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       }
     });
 
-    it('should fail to calculate witness with invalid dataHashes', async function () {
+    it('should fail to calculate witness with invalid eContent', async function () {
       try {
         const invalidInputs = {
           ...inputs,
-          dataHashes: inputs.dataHashes.map((byte: string) =>
-            String((parseInt(byte, 10) + 1) % 256)
-          ),
+          eContent: inputs.eContent.map((byte: string) => String((parseInt(byte, 10) + 1) % 256)),
         };
         await circuit.calculateWitness(invalidInputs);
         expect.fail('Expected an error but none was thrown.');

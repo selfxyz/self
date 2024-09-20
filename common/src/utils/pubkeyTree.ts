@@ -1,12 +1,12 @@
 import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex } from "../constants/constants";
 import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
-import { poseidon16, poseidon2 } from 'poseidon-lite';
-import { hexToDecimal, splitToWords } from './utils';
+import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
+import { formatDg2Hash, getNAndK, hexToDecimal, splitToWords } from './utils';
 import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
-export function leafHasherLight(pubKeyFormatted: string[]) {
+export function customHasher(pubKeyFormatted: string[]) {
   const rounds = Math.ceil(pubKeyFormatted.length / 16);
   const hash = new Array(rounds);
   for (let i = 0; i < rounds; i++) {
@@ -23,22 +23,25 @@ export function leafHasherLight(pubKeyFormatted: string[]) {
   return finalHash.toString();
 }
 
-export function getLeaf(dsc: string, n: number, k: number): string {
+export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
+  const { n, k } = getNAndK(signatureAlgorithm);
   console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`]
-  if (sigAlgIndex === undefined) {
-    throw new Error(`Signature algorithm not found: ${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  }
+  const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
+  if (sigAlgIndex == undefined) {
+    console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
+    throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
+  }
   if (signatureAlgorithm === 'ecdsa') {
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    return leafHasherLight([sigAlgIndex, ...qx, ...qy])
+    return customHasher([sigAlgIndex, ...qx, ...qy])
 
   } else {
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-    return leafHasherLight([sigAlgIndex, ...pubkeyChunked]);
+    return customHasher([sigAlgIndex, ...pubkeyChunked]);
   }
 }
 
@@ -50,4 +53,18 @@ export async function getTreeFromTracker(): Promise<LeanIMT> {
   );
   imt.import(response.data)
   return imt
+}
+
+export function generateCommitment(secret: string, attestation_id: string, pubkey_leaf: string, mrz_bytes: any[], dg2Hash: any[]) {
+  const dg2Hash2 = customHasher(formatDg2Hash(dg2Hash).map(x => x.toString()));
+  const commitment = poseidon7([
+    secret,
+    attestation_id,
+    pubkey_leaf,
+    mrz_bytes[0],
+    mrz_bytes[1],
+    mrz_bytes[2],
+    dg2Hash2
+  ]);
+  return commitment;
 }

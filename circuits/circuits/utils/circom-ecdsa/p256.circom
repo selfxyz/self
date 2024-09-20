@@ -1,4 +1,4 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 include "curve.circom";
 include "p256_func.circom";

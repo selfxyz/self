@@ -1,11 +1,11 @@
 pragma circom  2.1.6;
 
-include "./powMod.circom";
+include "../rsa/powMod.circom";
 include "./mgf1.circom";
 include "./xor2.circom";
 include "../sha2/sha256/sha256_hash_bits.circom";
 include "../sha2/sha384/sha384_hash_bits.circom";
-include "../splitSignalsToWords.circom";
+include "../other/bytes.circom";
 
 template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
 
