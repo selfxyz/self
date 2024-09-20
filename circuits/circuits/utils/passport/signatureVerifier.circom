@@ -1,7 +1,6 @@
 pragma circom 2.1.9;
 
 include "../rsa/rsaPkcs1.circom";
-// include "../rsa/rsaPkcs1v15.circom";
 include "secp256r1Verifier.circom";
 include "../rsapss/rsapss.circom";
 include "../rsa/rsa.circom";
@@ -21,11 +20,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
     if (signatureAlgorithm == 1) { 
-        // var exponentBits = getExponentBits(signatureAlgorithm);
-        // component rsa = RsaVerifierPkcs1v15(n, k, exponentBits, HASH_LEN_BITS);
-        // rsa.hashed <== hash;
-        // rsa.pubkey <== pubKey;
-        // rsa.signature <== signature;
         component rsa = RSAVerifier65537(n, k);
         for (var i = 0; i < msg_len; i++) {
             rsa.message[i] <== hashParsed[i];
@@ -50,10 +44,9 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
        
     }
     if (signatureAlgorithm == 4) {
-        var exponentBits = getExponentBits(signatureAlgorithm);
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
 
-        component rsaPssSha256Verification = VerifyRsaPssSig(n, k, exponentBits, HASH_LEN_BITS, pubKeyBitsLength);
+        component rsaPssSha256Verification = VerifyRsaPssSig(n, k, HASH_LEN_BITS, pubKeyBitsLength);
         rsaPssSha256Verification.pubkey <== pubKey;
         rsaPssSha256Verification.signature <== signature;
         rsaPssSha256Verification.hashed <== hash; // send the raw hash

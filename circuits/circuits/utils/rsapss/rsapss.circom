@@ -1,26 +1,26 @@
 pragma circom  2.1.6;
 
-include "../rsa/powMod.circom";
+include "../rsa/rsa.circom";
 include "./mgf1.circom";
 include "./xor2.circom";
 include "../sha2/sha256/sha256_hash_bits.circom";
 include "../sha2/sha384/sha384_hash_bits.circom";
 include "../other/bytes.circom";
 
-template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
+template VerifyRsaPssSig (n, k, HASH_LEN_BITS, modulus_bits_size){
 
-    assert(ALGO == 256 || ALGO == 384);
+    assert(HASH_LEN_BITS == 256 || HASH_LEN_BITS == 384);
 
 
     signal input pubkey[k]; //aka modulus
     signal input signature[k];
-    signal input hashed[ALGO]; //message hash
+    signal input hashed[HASH_LEN_BITS]; //message hash
 
     var emLen = modulus_bits_size\8;//(n*k)\8; //in bytes
-    var hLen = ALGO\8; //in bytes
-    var sLen = ALGO\8; //in bytes
-    var hLenBits = ALGO; //in bits
-    var sLenBits = ALGO; //in bits
+    var hLen = HASH_LEN_BITS\8; //in bytes
+    var sLen = HASH_LEN_BITS\8; //in bytes
+    var hLenBits = HASH_LEN_BITS; //in bits
+    var sLenBits = HASH_LEN_BITS; //in bits
 
     var k2 = 64; // final split in array of 64 words (avoiding n2 overflow)
     var n2 = modulus_bits_size \ k2;
@@ -30,7 +30,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
     signal eMsgInBits[modulus_bits_size];
     
     //computing encoded message
-    component powmod = PowerMod(n, k, e_bits);
+    component powmod = FpPow65537Mod(n, k); 
     powmod.base <== signature;
     powmod.modulus <== pubkey;
 
@@ -88,7 +88,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
     }
 
     //getting mask
-    if (ALGO == 256){
+    if (HASH_LEN_BITS == 256){
         component MGF1_256 = Mgf1Sha256(hLen, dbMaskLen);
         for (var i = 0; i < (hLenBits); i++) {
             MGF1_256.seed[i] <== hash[i];
@@ -97,7 +97,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
             dbMask[i] <== MGF1_256.out[i];
         }
     }
-    if (ALGO == 384){
+    if (HASH_LEN_BITS == 384){
         component MGF1_384 = Mgf1Sha384(hLen, dbMaskLen);
         for (var i = 0; i < (hLenBits); i++) {
             MGF1_384.seed[i] <== hash[i];
@@ -144,7 +144,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
 
     }
 
-    if (ALGO == 256){
+    if (HASH_LEN_BITS == 256){
         
         //adding padding
         //len = 64+512 = 576 = 1001000000
@@ -168,7 +168,7 @@ template VerifyRsaPssSig (n, k, e_bits, ALGO, modulus_bits_size){
         hDash256.in <== mDash;
         hDash256.out === hash;
     }
-    if (ALGO == 384){
+    if (HASH_LEN_BITS == 384){
 
         //padding
         //len = 64+48*16 = 832 = 1101000000
