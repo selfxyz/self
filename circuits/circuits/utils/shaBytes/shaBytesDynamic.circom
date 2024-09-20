@@ -1,8 +1,7 @@
 pragma circom 2.1.6;
 
 include "./dynamic/sha1Bytes.circom";
-//include "@zk-email/circuits/lib/sha.circom";
-include "./dynamic/Sha256Bytes.circom";
+include "./dynamic/sha256Bytes.circom";
 
 template ShaBytesDynamic(hashLen, max_num_bytes) {
     signal input in_padded[max_num_bytes];
