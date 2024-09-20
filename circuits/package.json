@@ -4,7 +4,7 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "test": "yarn ts-mocha 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",
+    "test": "yarn ts-mocha --max-old-space-size=8192 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
     "format": "prettier --write .",
     "lint": "prettier --check ."
