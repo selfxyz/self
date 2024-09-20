@@ -37,7 +37,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     // assert DG1 and DG2 hashes match the ones in eContent input
-    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES] <== SelectSubArray(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES)(eContent, dg1_hash_offset, 2 * HASH_LEN_BYTES); // TODO: use varShifLeft instead
+    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES)(eContent, dg1_hash_offset);
     for(var i = 0; i < HASH_LEN_BYTES; i++) {
         dg1AndDg2Hash[i] === dg1ShaBytes[i].out;
         dg1AndDg2Hash[i + HASH_LEN_BYTES] === dg2_hash[i];
@@ -54,7 +54,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     // assert eContent hash matches the one in signedAttr
-    signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== SelectSubArray(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset, HASH_LEN_BYTES); // TODO: use varShifLeft instead
+    signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
     for(var i = 0; i < HASH_LEN_BYTES; i++) {
         eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
     }
