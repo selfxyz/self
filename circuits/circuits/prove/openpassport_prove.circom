@@ -23,7 +23,8 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input signed_attr_econtent_hash_offset;
     signal input pubKey[kScaled];
     signal input signature[kScaled];
-    // diclose related inputs
+    signal input selector_mode; // 0 - disclose, 1 - registration
+    // disclose related inputs
     signal input selector_dg1[88];
     signal input selector_older_than;
     signal input current_date[6]; // YYMMDD - num
@@ -35,6 +36,9 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input dsc_secret;
 
     signal attestation_id <== 1;
+
+    // assert selector_mode is 0 or 1
+    selector_mode * (selector_mode - 1) === 0;
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
@@ -57,9 +61,11 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     // REGISTRATION (optional)
     // generate the commitment
     signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    signal commitmentPrivate <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    signal output commitment <== commitmentPrivate * selector_mode;
     // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, pubkeyHash]);
+    signal blindedDscCommitmenPrivate <== Poseidon(2)([dsc_secret, pubkeyHash]);
+    signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selector_mode;
 
 }

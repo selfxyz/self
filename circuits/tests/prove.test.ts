@@ -34,10 +34,14 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const scope = '@coboyApp';
     const selector_dg1 = Array(88).fill('1');
     const selector_older_than = '1';
+    const secret = 0;
+    const dsc_secret = 0;
+    const selector_mode = 1;
 
     const inputs = generateCircuitInputsProve(
-      BigInt(0).toString(),
-      BigInt(0).toString(),
+      selector_mode,
+      secret,
+      dsc_secret,
       passportData,
       scope,
       selector_dg1,

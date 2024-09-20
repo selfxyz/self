@@ -130,8 +130,9 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 
 
 export function generateCircuitInputsProve(
-  secret: string,
-  dsc_secret: string,
+  selector_mode: number | string,
+  secret: number | string,
+  dsc_secret: number | string,
   passportData: PassportData,
   scope: string,
   selector_dg1: string[],
@@ -173,7 +174,6 @@ export function generateCircuitInputsProve(
     )
   }
 
-  const dg1 = formatMrz(mrz);
   const formattedMrz = formatMrz(mrz);
   const dg1Hash = hash(hashFunction, formattedMrz);
 
@@ -202,28 +202,36 @@ export function generateCircuitInputsProve(
     MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
   );
 
-  const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
-  // Ensure majority is at least two digits
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
+  const majority_ascii = formattedMajority.split('').map(char => char.charCodeAt(0))
   return {
-    dg1: dg1.map(byte => String(byte)),
-    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    selector_mode: formatInput(selector_mode),
+    dg1: formatInput(formattedMrz),
+    dg1_hash_offset: formatInput(dg1HashOffset),
     dg2_hash: formatDg2Hash(dg2Hash),
     eContent: Array.from(eContentPadded).map((x) => x.toString()),
-    eContent_padded_length: [eContentLen.toString()],
+    eContent_padded_length: formatInput(eContentLen),
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
-    signed_attr_padded_length: [signedAttrPaddedLen.toString()],
-    signed_attr_econtent_hash_offset: [eContentHashOffset.toString()],
+    signed_attr_padded_length: formatInput(signedAttrPaddedLen),
+    signed_attr_econtent_hash_offset: formatInput(eContentHashOffset),
     signature: signature,
     pubKey: pubKey,
-    current_date: current_date,
-    selector_dg1: selector_dg1,
-    selector_older_than: [BigInt(selector_older_than).toString()],
-    majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: [parseUIDToBigInt(user_identifier, user_identifier_type)],
-    scope: [castFromScope(scope)],
-    secret: [secret],
-    dsc_secret: [dsc_secret],
+    current_date: formatInput(getCurrentDateYYMMDD()),
+    selector_dg1: formatInput(selector_dg1),
+    selector_older_than: formatInput(selector_older_than),
+    majority: formatInput(majority_ascii),
+    user_identifier: formatInput(parseUIDToBigInt(user_identifier, user_identifier_type)),
+    scope: formatInput(castFromScope(scope)),
+    secret: formatInput(secret),
+    dsc_secret: formatInput(dsc_secret),
   };
 
+}
+
+function formatInput(input: any) {
+  if (Array.isArray(input)) {
+    return input.map(item => BigInt(item).toString());
+  } else {
+    return [BigInt(input).toString()];
+  }
 }
