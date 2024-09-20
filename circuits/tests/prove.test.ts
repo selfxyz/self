@@ -11,11 +11,11 @@ import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
-  // { sigAlg: 'rsa', hashFunction: 'sha1' },
+  { sigAlg: 'rsa', hashFunction: 'sha1' },
   { sigAlg: 'rsa', hashFunction: 'sha256' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
-  // { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  // { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {

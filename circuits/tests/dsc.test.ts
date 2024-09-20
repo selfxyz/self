@@ -19,8 +19,8 @@ import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha256' },
-  // { sigAlg: 'rsa', hashFunction: 'sha1' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'rsa', hashFunction: 'sha1' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
