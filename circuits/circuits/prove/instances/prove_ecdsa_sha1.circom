@@ -2,4 +2,4 @@ pragma circom 2.1.9;
 
 include "../openpassport_prove.circom";
 
-component main { public [ user_identifier, scope ] } = OPENPASSPORT_PROVE(7, 43, 6, 256, 192);
+component main { public [ user_identifier, scope ] } = OPENPASSPORT_PROVE(7, 43, 6, 320, 192);

@@ -24,9 +24,9 @@ export const DEFAULT_MAJORITY = "18"
 
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
   rsa_65537_sha256_2048: 384,
-  rsa_65537_sha1_2048: 256,
+  rsa_65537_sha1_2048: 320,
   rsapss_65537_sha256_2048: 384,
-  ecdsa_secp256r1_sha1_256: 256,
+  ecdsa_secp256r1_sha1_256: 320,
   ecdsa_secp256r1_sha256_256: 384,
   ecdsa_secp384r1_sha384_384: 512,
 }
@@ -45,7 +45,7 @@ export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex
   rsa_65537_sha1_4096: 640,
   rsapss_65537_sha256_4096: 768,
 }
-// possible values because of sha1 constaints: 448, 576, 640
+// possible values because of sha1 constaints: 192,320,384, 448, 576, 640
 
 export enum SignatureAlgorithmIndex {
   rsa_65537_sha256_2048 = 1,
