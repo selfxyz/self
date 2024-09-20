@@ -23,23 +23,24 @@ template OPENPASSPORT_REGISTER(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN
     signal input signed_attr_padded_length;
     signal input signed_attr_econtent_hash_offset;
     signal input signature[kScaled];
-
     signal input pubKey[kScaled];
 
-    signal input attestation_id;
-
-    // passport verifier
-    PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
-
-    // leaf
-    signal leaf  <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
-
-    // commitment
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
-    // blinded dsc commitment
-    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, leaf]);
+    signal attestation_id = 1;
 
     // nullifier
     signal output nullifier <== CustomHasher(kScaled)(signature);
+
+    // verify passport signature
+    PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+
+    // commitment
+    signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    
+    // blinded dsc commitment
+    signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
+    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, pubkeyHash]);
+
+
     
 }
