@@ -215,6 +215,8 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 
 
 export function generateCircuitInputsProve(
+  secret: string,
+  dsc_secret: string,
   passportData: PassportData,
   scope: string,
   selector_dg1: string[],
@@ -224,27 +226,89 @@ export function generateCircuitInputsProve(
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
 
-  const register_inputs = generateCircuitInputsRegister('0', '0', '0', passportData);
+  const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
+  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } = parseCertificate(passportData.dsc);
+
+  const signatureAlgorithmFullName = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  let pubKey: any;
+  let signature: any;
+
+  const { n, k } = getNAndK(signatureAlgorithm);
+
+  if (signatureAlgorithm === 'ecdsa') {
+    const { r, s } = extractRSFromSignature(encryptedDigest);
+    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k)
+    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k)
+    signature = [...signature_r, ...signature_s]
+    const dsc_modulus_x = splitToWords(BigInt(hexToDecimal(x)), n, k)
+    const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k)
+    pubKey = [...dsc_modulus_x, ...dsc_modulus_y]
+  } else {
+
+    signature = splitToWords(
+      BigInt(bytesToBigDecimal(encryptedDigest)),
+      n,
+      k
+    )
+
+    pubKey = splitToWords(
+      BigInt(hexToDecimal(modulus)),
+      n,
+      k
+    )
+  }
+
+  const dg1 = formatMrz(mrz);
+  const formattedMrz = formatMrz(mrz);
+  const dg1Hash = hash(hashFunction, formattedMrz);
+
+  const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash)
+  console.log('dg1HashOffset', dg1HashOffset);
+  assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
+
+  const eContentHash = hash(hashFunction, eContent);
+  const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash)
+  console.log('eContentHashOffset', eContentHashOffset);
+  assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
+
+  if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
+    console.error(`Data hashes too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`);
+    throw new Error(`This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`);
+  }
+
+  const [eContentPadded, eContentLen] = shaPad(
+    signatureAlgorithm,
+    new Uint8Array(eContent),
+    MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
+  );
+  const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
+    signatureAlgorithm,
+    new Uint8Array(signedAttr),
+    MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
+  );
+
   const current_date = getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString());
   // Ensure majority is at least two digits
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   return {
-    dg1: register_inputs.dg1,
-    dg1_hash_offset: register_inputs.dg1_hash_offset, // uncomment when adding new circuits
-    dg2_hash: register_inputs.dg2_hash,
-    eContent: register_inputs.eContent,
-    eContent_padded_length: register_inputs.eContent_padded_length,
-    signed_attr: register_inputs.signed_attr,
-    signed_attr_padded_length: register_inputs.signed_attr_padded_length,
-    signed_attr_econtent_hash_offset: register_inputs.signed_attr_econtent_hash_offset,
-    signature: register_inputs.signature,
-    pubKey: register_inputs.pubKey,
+    dg1: dg1.map(byte => String(byte)),
+    dg1_hash_offset: [dg1HashOffset.toString()], // uncomment when adding new circuits
+    dg2_hash: formatDg2Hash(dg2Hash),
+    eContent: Array.from(eContentPadded).map((x) => x.toString()),
+    eContent_padded_length: [eContentLen.toString()],
+    signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
+    signed_attr_padded_length: [signedAttrPaddedLen.toString()],
+    signed_attr_econtent_hash_offset: [eContentHashOffset.toString()],
+    signature: signature,
+    pubKey: pubKey,
     current_date: current_date,
     selector_dg1: selector_dg1,
     selector_older_than: [BigInt(selector_older_than).toString()],
     majority: formattedMajority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
     user_identifier: [parseUIDToBigInt(user_identifier, user_identifier_type)],
-    scope: [castFromScope(scope)]
+    scope: [castFromScope(scope)],
+    secret: [secret],
+    dsc_secret: [dsc_secret],
   };
 
 }

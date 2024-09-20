@@ -7,6 +7,8 @@ import { genMockPassportData } from '../../common/src/utils/genMockPassportData'
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
+import { customHasher } from '../../common/src/utils/pubkeyTree';
+import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
   // { sigAlg: 'rsa', hashFunction: 'sha1' },
@@ -34,6 +36,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const selector_older_than = '1';
 
     const inputs = generateCircuitInputsProve(
+      BigInt(0).toString(),
+      BigInt(0).toString(),
       passportData,
       scope,
       selector_dg1,
@@ -67,6 +71,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       await circuit.checkConstraints(w);
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
       console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
+      const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
+      console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
+      const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment'])).blinded_dsc_commitment;
+      console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
+
+      expect(blinded_dsc_commitment).to.be.not.null;
       expect(nullifier).to.be.not.null;
     });
 

@@ -21,24 +21,29 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input signed_attr[MAX_SIGNED_ATTR_PADDED_LEN];
     signal input signed_attr_padded_length;
     signal input signed_attr_econtent_hash_offset;
-    signal input signature[kScaled];
     signal input pubKey[kScaled];
-
-    // dislose related inputs
+    signal input signature[kScaled];
+    // diclose related inputs
     signal input selector_dg1[88];
     signal input selector_older_than;
     signal input current_date[6]; // YYMMDD - num
     signal input majority[2]; // YY - ASCII
     signal input user_identifier; 
     signal input scope;
+    // registration related inputs
+    signal input secret;
+    signal input dsc_secret;
 
-
-    signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
-    signal output nullifier <== Poseidon(2)([signatureHashed, scope]);
+    signal attestation_id <== 1;
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
 
+    // nulifier
+    signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
+    signal output nullifier <== Poseidon(2)([signatureHashed, scope]);
+
+    // DISCLOSE (optional)
     // optionally disclose data
     component disclose = DISCLOSE();
     disclose.dg1 <== dg1;
@@ -46,7 +51,15 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     disclose.selector_older_than <== selector_older_than;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
-
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;
+
+    // REGISTRATION (optional)
+    // generate the commitment
+    signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
+    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    // blinded dsc commitment
+    signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
+    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, pubkeyHash]);
+
 }
