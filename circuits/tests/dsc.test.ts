@@ -107,7 +107,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     it('should compute the correct output', async () => {
       const witness = await circuit.calculateWitness(inputs.inputs, true);
-      const blinded_dsc_commitment = (await circuit.getOutput(witness, ['blinded_dsc_commitment'])).blinded_dsc_commitment;
+      const blinded_dsc_commitment = (await circuit.getOutput(witness, ['blinded_dsc_commitment']))
+        .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment: ', blinded_dsc_commitment);
       expect(blinded_dsc_commitment).to.be.not.null;
     });

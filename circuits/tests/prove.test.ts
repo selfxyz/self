@@ -73,7 +73,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
       const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
       console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
-      const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment'])).blinded_dsc_commitment;
+      const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
+        .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
       expect(blinded_dsc_commitment).to.be.not.null;
