@@ -1,4 +1,4 @@
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../utils/passport/customHashers.circom";
 include "../utils/passport/computeCommitment.circom";

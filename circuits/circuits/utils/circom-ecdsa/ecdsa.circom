@@ -1,6 +1,6 @@
 /// This file implements the ECDSA verification algorithm along with public key generation (xG)
 
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 include "../../../node_modules/circomlib/circuits/multiplexer.circom";
 
 include "p256.circom";

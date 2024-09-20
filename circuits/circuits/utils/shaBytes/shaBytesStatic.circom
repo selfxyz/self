@@ -1,4 +1,4 @@
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "./static/Sha256BytesStatic.circom";
 include "./static/Sha1BytesStatic.circom";

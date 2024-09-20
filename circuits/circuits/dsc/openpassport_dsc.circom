@@ -1,4 +1,4 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/poseidon.circom";

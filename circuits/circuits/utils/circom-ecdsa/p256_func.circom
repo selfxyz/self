@@ -1,6 +1,6 @@
 /// This file provides methods to grab curve parameter based on various representations
 
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 function get_A(n, k) {
     assert((n == 86 && k == 3) || (n == 64 && k == 4) || (n == 43 && k ==6));

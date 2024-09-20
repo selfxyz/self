@@ -1,4 +1,4 @@
-pragma circom 2.1.3;
+pragma circom 2.1.9;
 
 include "constants.circom";
 include "sha1compression.circom";

@@ -1,4 +1,4 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 // Converts data into chunk_size chunks of 192 bits, assuming original n, k are 64 and 32.
 // This is because Poseidon circuit only supports an array of 16 elements.

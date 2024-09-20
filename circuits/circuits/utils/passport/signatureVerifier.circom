@@ -1,4 +1,4 @@
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 include "../rsa/rsaPkcs1.circom";
 // include "../rsa/rsaPkcs1v15.circom";

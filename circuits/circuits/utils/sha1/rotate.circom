@@ -1,4 +1,4 @@
-pragma circom 2.1.3;
+pragma circom 2.1.9;
 
 template RotL(n, l) {
     signal input in[n];
