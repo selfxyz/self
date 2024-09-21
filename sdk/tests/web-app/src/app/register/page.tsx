@@ -5,9 +5,10 @@ import { OpenPassportQRcode } from '../../../../../src/QRcode/OpenPassportQRcode
 import { TextField } from '@mui/material';
 import { useState } from 'react';
 import { COMMITMENT_TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
-
+import { v4 as uuidv4 } from 'uuid';
 export default function Register() {
     const [appName, setAppName] = useState('🌐 OpenPassport');
+    const userId = uuidv4();
     return (
         <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-12">
             <div className="text-4xl text-black ">Register circuit</div>
@@ -18,6 +19,7 @@ export default function Register() {
                 circuit="register"
                 attestationId="PASSPORT"
                 merkleTreeUrl={COMMITMENT_TREE_TRACKER_URL}
+                userId={userId}
             />
 
             <TextField
