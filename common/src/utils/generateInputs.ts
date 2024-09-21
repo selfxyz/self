@@ -136,7 +136,7 @@ export function generateCircuitInputsProve(
   passportData: PassportData,
   scope: string,
   selector_dg1: string[],
-  selector_older_than: string,
+  selector_older_than: string | number,
   majority: string,
   user_identifier: string,
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
@@ -208,7 +208,7 @@ export function generateCircuitInputsProve(
     selector_mode: formatInput(selector_mode),
     dg1: formatInput(formattedMrz),
     dg1_hash_offset: formatInput(dg1HashOffset),
-    dg2_hash: formatDg2Hash(dg2Hash),
+    dg2_hash: formatInput(formatDg2Hash(dg2Hash)),
     eContent: Array.from(eContentPadded).map((x) => x.toString()),
     eContent_padded_length: formatInput(eContentLen),
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
