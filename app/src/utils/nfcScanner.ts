@@ -160,13 +160,13 @@ const handleResponseIOS = async (
   const passportData = {
     mrz,
     dsc: pem,
-    dataGroupHashes: concatenatedDataHashesArraySigned,
-    eContent: signedEContentArray,
+    eContent: concatenatedDataHashesArraySigned,
+    signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
     photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     mockUser: false
   };
-  
+
   try {
     useUserStore.getState().registerPassportData(passportData)
     const { signatureAlgorithm, hashFunction } = parseDSC(pem);
@@ -209,8 +209,8 @@ const handleResponseAndroid = async (
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     dsc: pem,
-    dataGroupHashes: JSON.parse(encapContent),
-    eContent: JSON.parse(eContent),
+    eContent: JSON.parse(encapContent),
+    signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
     mockUser: false
@@ -222,7 +222,7 @@ const handleResponseAndroid = async (
   }, null, 2));
 
   console.log('mrz', passportData?.mrz);
-  console.log('dataGroupHashes', passportData?.dataGroupHashes);
+  console.log('dataGroupHashes', passportData?.eContent);
   console.log('eContent', passportData?.eContent);
   console.log('encryptedDigest', passportData?.encryptedDigest);
   console.log("photoBase64", passportData?.photoBase64.substring(0, 100) + '...')
@@ -235,7 +235,7 @@ const handleResponseAndroid = async (
   console.log("documentSigningCertificate", documentSigningCertificate)
 
   amplitude.track('nfc_response_parsed', {
-    dataGroupHashesLength: passportData?.dataGroupHashes?.length,
+    dataGroupHashesLength: passportData?.eContent?.length,
     eContentLength: passportData?.eContent?.length,
     encryptedDigestLength: passportData?.encryptedDigest?.length,
     digestAlgorithm: digestAlgorithm,
@@ -243,7 +243,7 @@ const handleResponseAndroid = async (
     digestEncryptionAlgorithm: digestEncryptionAlgorithm,
     dsc: pem,
   });
-  
+
   try {
     useUserStore.getState().registerPassportData(passportData)
     const { signatureAlgorithm, hashFunction } = parseDSC(pem);
