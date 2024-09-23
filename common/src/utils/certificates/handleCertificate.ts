@@ -48,7 +48,7 @@ export function parseCertificate(pem: string) {
 
 export const getCircuitName = (circuitType: string, signatureAlgorithm: string, hashFunction: string) => {
     if (signatureAlgorithm === 'ecdsa') {
-        return circuitType + "_" + signatureAlgorithm + "_" + hashFunction;
+        return circuitType + "_" + signatureAlgorithm + "_secp256r1_" + hashFunction;
     }
     else {
         return circuitType + "_" + signatureAlgorithm + "_65537_" + hashFunction;
