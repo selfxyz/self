@@ -42,6 +42,9 @@ template DISCLOSE() {
         selector_dg1[i] * (selector_dg1[i] - 1) === 0;
     }
 
+    // assert selector_older_than is 0 or 1
+    selector_older_than * (selector_older_than - 1) === 0;
+
     signal revealedData[88];
     for (var i = 0; i < 88; i++) {
         revealedData[i] <== dg1[5+i] * selector_dg1[i];
