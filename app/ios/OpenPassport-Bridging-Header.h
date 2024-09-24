@@ -7,6 +7,8 @@
 #include "witnesscalc_prove_rsa_65537_sha256.h"
 #include "witnesscalc_prove_rsa_65537_sha1.h"
 #include "witnesscalc_prove_rsapss_65537_sha256.h"
+#include "witnesscalc_prove_ecdsa_secp256r1_sha1.h"
+#include "witnesscalc_prove_ecdsa_secp256r1_sha256.h"
 #include "witnesscalc_register_rsa_65537_sha256.h"
 #include "witnesscalc_register_rsa_65537_sha1.h"
 #include "witnesscalc_register_rsapss_65537_sha256.h"
