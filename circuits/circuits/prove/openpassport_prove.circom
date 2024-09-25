@@ -57,6 +57,11 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     disclose.majority <== majority;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;
+    signal output pubKey_disclosed[kScaled];
+    for (var i = 0; i < kScaled; i++) {
+        pubKey_disclosed[i] <== pubKey[i] * (1 - selector_mode);
+    }
+
 
     // REGISTRATION (optional)
     // generate the commitment
