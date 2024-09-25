@@ -178,43 +178,6 @@ target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256 PUBLIC CIRCUIT_
 target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256Static PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
 target_compile_definitions(prove_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
 
-
-# prove_ecdsa_secp256r1_sha256
-set(prove_ecdsa_secp256r1_sha256_SOURCES ${LIB_SOURCES}
-    prove_ecdsa_secp256r1_sha256.cpp
-    witnesscalc_prove_ecdsa_secp256r1_sha256.h
-    witnesscalc_prove_ecdsa_secp256r1_sha256.cpp
-    )
-
-add_library(witnesscalc_prove_ecdsa_secp256r1_sha256 SHARED ${prove_ecdsa_secp256r1_sha256_SOURCES})
-add_library(witnesscalc_prove_ecdsa_secp256r1_sha256Static STATIC ${prove_ecdsa_secp256r1_sha256_SOURCES})
-set_target_properties(witnesscalc_prove_ecdsa_secp256r1_sha256Static PROPERTIES OUTPUT_NAME witnesscalc_prove_ecdsa_secp256r1_sha256)
-
-add_executable(prove_ecdsa_secp256r1_sha256 main.cpp)
-target_link_libraries(prove_ecdsa_secp256r1_sha256 witnesscalc_prove_ecdsa_secp256r1_sha256Static)
-
-target_compile_definitions(witnesscalc_prove_ecdsa_secp256r1_sha256 PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha256)
-target_compile_definitions(witnesscalc_prove_ecdsa_secp256r1_sha256Static PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha256)
-target_compile_definitions(prove_ecdsa_secp256r1_sha256 PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha256)
-
-# prove_ecdsa_secp256r1_sha1
-set(prove_ecdsa_secp256r1_sha1_SOURCES ${LIB_SOURCES}
-    prove_ecdsa_secp256r1_sha1.cpp
-    witnesscalc_prove_ecdsa_secp256r1_sha1.h
-    witnesscalc_prove_ecdsa_secp256r1_sha1.cpp
-    )
-
-add_library(witnesscalc_prove_ecdsa_secp256r1_sha1 SHARED ${prove_ecdsa_secp256r1_sha1_SOURCES})
-add_library(witnesscalc_prove_ecdsa_secp256r1_sha1Static STATIC ${prove_ecdsa_secp256r1_sha1_SOURCES})
-set_target_properties(witnesscalc_prove_ecdsa_secp256r1_sha1Static PROPERTIES OUTPUT_NAME witnesscalc_prove_ecdsa_secp256r1_sha1)
-
-add_executable(prove_ecdsa_secp256r1_sha1 main.cpp)
-target_link_libraries(prove_ecdsa_secp256r1_sha1 witnesscalc_prove_ecdsa_secp256r1_sha1Static)
-
-target_compile_definitions(witnesscalc_prove_ecdsa_secp256r1_sha1 PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha1)
-target_compile_definitions(witnesscalc_prove_ecdsa_secp256r1_sha1Static PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha1)
-target_compile_definitions(prove_ecdsa_secp256r1_sha1 PUBLIC CIRCUIT_NAME=prove_ecdsa_secp256r1_sha1)
-
 # register_rsa_65537_sha256
 set(register_rsa_65537_sha256_SOURCES ${LIB_SOURCES}
     register_rsa_65537_sha256.cpp

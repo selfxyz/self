@@ -9,11 +9,9 @@ const zkeyZipUrls = {
   prove_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsa_65537_sha256.zkey.zip",
   prove_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsa_65537_sha1.zkey.zip",
   prove_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsapss_65537_sha256.zkey.zip",
-  prove_ecdsa_secp256r1_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_ecdsa_secp256r1_sha256.zkey.zip",
-  prove_ecdsa_secp256r1_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/prove_ecdsa_secp256r1_sha1.zkey.zip",
-  // register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha256.zkey.zip",
-  // register_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha1.zkey.zip",
-  // register_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsapss_65537_sha256.zkey.zip",
+  register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha256.zkey.zip",
+  register_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha1.zkey.zip",
+  register_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsapss_65537_sha256.zkey.zip",
   // register_sha256WithRSAEncryption_65537: "https://d8o9bercqupgk.cloudfront.net/staging/register_sha256WithRSAEncryption_65537_csca2.zkey.zip",
   // disclose: "https://d8o9bercqupgk.cloudfront.net/staging/disclose3.zkey.zip",
 };
@@ -22,11 +20,9 @@ const datZipUrls = {
   prove_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsa_65537_sha256.dat.zip",
   prove_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsa_65537_sha1.dat.zip",
   prove_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_rsapss_65537_sha256.dat.zip",
-  prove_ecdsa_secp256r1_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/prove_ecdsa_secp256r1_sha256.dat.zip",
-  prove_ecdsa_secp256r1_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/prove_ecdsa_secp256r1_sha1.dat.zip",
-  // register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha256.dat.zip",
-  // register_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha1.dat.zip",
-  // register_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsapss_65537_sha256.dat.zip",
+  register_rsa_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha256.dat.zip",
+  register_rsa_65537_sha1: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsa_65537_sha1.dat.zip",
+  register_rsapss_65537_sha256: "https://d8o9bercqupgk.cloudfront.net/staging/register_rsapss_65537_sha256.dat.zip",
 };
 
 export type CircuitName = keyof typeof zkeyZipUrls;

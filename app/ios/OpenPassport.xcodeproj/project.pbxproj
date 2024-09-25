@@ -29,8 +29,6 @@
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
-		16AB2E942CA2BA30006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 16AB2E922CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha1.a */; };
-		16AB2E952CA2BA30006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 16AB2E932CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha256.a */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
@@ -108,8 +106,6 @@
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
-		16AB2E922CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_ecdsa_secp256r1_sha1.a; sourceTree = "<group>"; };
-		16AB2E932CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_ecdsa_secp256r1_sha256.a; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
 		453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.debug.xcconfig"; sourceTree = "<group>"; };
@@ -137,9 +133,7 @@
 				0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */,
 				0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
 				05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */,
-				16AB2E952CA2BA30006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha256.a in Frameworks */,
 				167D934A2C91D2EA00530E6B /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
-				16AB2E942CA2BA30006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha1.a in Frameworks */,
 				CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */,
 				167D93462C91B1E100530E6B /* libwitnesscalc_register_rsa_65537_sha1.a in Frameworks */,
 			);
@@ -214,8 +208,6 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				16AB2E922CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha1.a */,
-				16AB2E932CA2BA01006DA979 /* libwitnesscalc_prove_ecdsa_secp256r1_sha256.a */,
 				167D93482C91D28500530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */,
 				167D93422C91AE0F00530E6B /* libwitnesscalc_register_rsa_65537_sha1.a */,
 				167D93432C91AE0F00530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a */,
