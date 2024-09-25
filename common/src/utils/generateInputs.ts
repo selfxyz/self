@@ -176,14 +176,13 @@ export function generateCircuitInputsProve(
 
   const formattedMrz = formatMrz(mrz);
   const dg1Hash = hash(hashFunction, formattedMrz);
-
   const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash)
-  console.log('dg1HashOffset', dg1HashOffset);
+  console.log('\x1b[90m%s\x1b[0m', 'dg1HashOffset', dg1HashOffset);
   assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
 
   const eContentHash = hash(hashFunction, eContent);
   const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash)
-  console.log('eContentHashOffset', eContentHashOffset);
+  console.log('\x1b[90m%s\x1b[0m', 'eContentHashOffset', eContentHashOffset);
   assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {

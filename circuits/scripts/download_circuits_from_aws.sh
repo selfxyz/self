@@ -1,13 +1,16 @@
 #!/bin/sh
 
 # Define the AWS URL prefix
-awsUrl="https://d8o9bercqupgk.cloudfront.net"
+awsUrl="https://d8o9bercqupgk.cloudfront.net/staging"
+
+# Define environment variables
+ENVIRONMENT="staging"
+BUCKET_NAME="proofofpassport-us"
 
 # Define the circuit names, download flags, and circuit types
-# circuits="prove_rsa_65537_sha256:prove_rsa_65537_sha256 prove_rsa_65537_sha1:prove_rsa_65537_sha1 prove_rsapss_65537_sha256:prove_rsapss_65537_sha256"
-circuits="register_rsa_65537_sha256:register_rsa_65537_sha256 register_rsa_65537_sha1:register_rsa_65537_sha1 register_rsapss_65537_sha256:register_rsapss_65537_sha256"
+circuits="prove_rsa_65537_sha256:prove_rsa_65537_sha256 prove_rsa_65537_sha1:prove_rsa_65537_sha1 prove_rsapss_65537_sha256:prove_rsapss_65537_sha256"
 flags="true true true"
-circuit_types="register register register"
+circuit_types="prove prove prove"
 
 # Create the download directory
 mkdir -p build/fromAWS
@@ -24,7 +27,7 @@ download_and_compile_circuit() {
 
     if [ "$should_download" = "true" ]; then
         echo "Downloading $circuit_name..."
-        wget -q -O build/fromAWS/${circuit_name}.zkey.zip $url
+        aws s3 cp s3://${BUCKET_NAME}/${ENVIRONMENT}/${circuit_name}.zkey.zip build/fromAWS/${circuit_name}.zkey.zip --no-sign-request
         if [ $? -eq 0 ]; then
             echo "Unzipping $circuit_name..."
             unzip -q -o build/fromAWS/${circuit_name}.zkey.zip -d build/fromAWS
@@ -32,7 +35,7 @@ download_and_compile_circuit() {
             echo "Successfully downloaded and unzipped $circuit_name"
 
             echo "Compiling circuit: $circuit_name"
-            circom circuits/${circuit_type}/${circuit_name}.circom \
+            circom circuits/${circuit_type}/instances/${circuit_name}.circom \
                 -l node_modules \
                 -l ./node_modules/@zk-kit/binary-merkle-root.circom/src \
                 -l ./node_modules/circomlib/circuits \
