@@ -14,6 +14,8 @@ import io, { Socket } from 'socket.io-client';
 import { getCircuitName, parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
+import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
+
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
@@ -143,13 +145,20 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
 
       const inputs = generateCircuitInputsInApp(passportData, selectedApp);
-      const rawDscProof = await generateProof(
+      const proof = await generateProof(
         circuitName,
         inputs,
       );
-      const dscProof = formatProof(rawDscProof);
-      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit, userIdType: selectedApp.userIdType };
-      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
+      const formattedProof = formatProof(proof);
+      // const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit, userIdType: selectedApp.userIdType };
+      const attestation = buildAttestation({
+        proof: formattedProof.proof,
+        publicSignals: formattedProof.publicSignals,
+        dsc: passportData.dsc,
+        userIdType: selectedApp.userIdType,
+      });
+      console.log(attestation);
+      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
 
     } catch (error) {
       toast.show("Error", {
@@ -247,3 +256,4 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 };
 
 export default ProveScreen;
+

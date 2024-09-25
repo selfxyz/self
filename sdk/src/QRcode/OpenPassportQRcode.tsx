@@ -30,6 +30,7 @@ interface OpenPassportQRcodeProps {
   nationality?: string;
   onSuccess?: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void;
   circuit: CircuitName;
+  circuitMode?: 'prove' | 'register' | '';
   devMode?: boolean;
   size?: number;
   websocketUrl?: string;
@@ -48,6 +49,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     console.log(proof, report);
   },
   circuit,
+  circuitMode = 'prove',
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
@@ -80,29 +82,32 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
           userIdType: userIdType,
           sessionId: sessionId,
           circuit: circuit,
+          circuitMode: circuitMode,
           arguments: {
             disclosureOptions: Object.fromEntries(disclosureOptions),
           },
           websocketUrl: websocketUrl,
         })
       );
-    } else if (circuit === 'register') {
-      return JSON.stringify(
-        reconstructAppType({
-          name: appName,
-          scope: scope,
-          userId: userId,
-          userIdType: userIdType,
-          sessionId: sessionId,
-          circuit: circuit,
-          arguments: {
-            attestation_id: attestationId,
-            merkleTreeUrl: merkleTreeUrl,
-          },
-          websocketUrl: websocketUrl,
-        })
-      );
     }
+    // } else if (circuit === 'prove' && circuitMode === 'register') {
+    //   return JSON.stringify(
+    //     reconstructAppType({
+    //       name: appName,
+    //       scope: scope,
+    //       userId: userId,
+    //       userIdType: userIdType,
+    //       sessionId: sessionId,
+    //       circuit: circuit,
+    //       circuitMode: circuitMode,
+    //       arguments: {
+    //         attestation_id: attestationId,
+    //         merkleTreeUrl: merkleTreeUrl,
+    //       },
+    //       websocketUrl: websocketUrl,
+    //     })
+    //   );
+    // }
   };
 
   useEffect(() => {

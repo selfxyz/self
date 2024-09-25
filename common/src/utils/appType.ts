@@ -1,7 +1,8 @@
 import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from "../constants/constants";
 import { UserIdType } from "./utils";
 
-export type CircuitName = "prove" | "register" | "disclose";
+export type CircuitName = "prove" | "disclose";
+export type CircuitMode = "prove" | "register" | '';
 
 export interface AppType {
   name: string,
@@ -11,6 +12,7 @@ export interface AppType {
   websocketUrl: string,
   sessionId: string,
   circuit: CircuitName,
+  circuitMode: CircuitMode,
   arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose,
   getDisclosureOptions?: () => Record<string, string>
 }
@@ -60,6 +62,10 @@ export function reconstructAppType(json: any): AppType {
 
   if (!json.circuit || !['prove', 'register', 'disclose'].includes(json.circuit)) {
     throw new Error('Invalid or missing circuit');
+  }
+
+  if (!json.circuitMode || !['prove', 'register', ''].includes(json.circuitMode)) {
+    throw new Error('Invalid or missing circuitMode');
   }
 
   if (!json.arguments || typeof json.arguments !== 'object') {
@@ -114,6 +120,7 @@ export function reconstructAppType(json: any): AppType {
     userIdType: json.userIdType || DEFAULT_USER_ID_TYPE,
     sessionId: json.sessionId,
     circuit: json.circuit as CircuitName,
+    circuitMode: json.circuitMode as CircuitMode,
     arguments: circuitArgs,
     websocketUrl: json.websocketUrl || WEBSOCKET_URL,
     getDisclosureOptions: function () {

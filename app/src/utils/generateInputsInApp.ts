@@ -15,7 +15,7 @@ export const generateCircuitInputsInApp = (
 
     const disclosureOptions = (app.arguments as ArgumentsProve).disclosureOptions || {};
     const { secret, dscSecret } = useUserStore.getState();
-    const selector_mode = app.circuit === 'register' ? 1 : 0;
+    const selector_mode = app.circuitMode === 'register' ? 1 : 0;
     const selector_older_than = 1;
     const selector_dg1 = revealBitmapFromAttributes(disclosureOptions as any).slice(0, -2) // have been moved to selector older_than
     return generateCircuitInputsProve(

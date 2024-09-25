@@ -28,7 +28,7 @@ export function getVkeyFromArtifacts(
   hashFunction: string
 ) {
   const circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
-  console.log('Circuit name:', circuitName);
+  console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
   switch (circuitName) {
     case 'prove_rsa_65537_sha256':
       return vkey_prove_rsa_65537_sha256;
