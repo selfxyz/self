@@ -30,16 +30,16 @@ export const testCases: TestCase[] = [
     wasmPath: '../circuits/build/fromAWS/prove_rsa_65537_sha256.wasm',
     zkeyPath: '../circuits/build/fromAWS/prove_rsa_65537_sha256.zkey',
   },
-  // {
-  //   circuitType: 'prove',
-  //   algorithm: 'rsa_sha1',
-  //   wasmPath: '../circuits/build/fromAWS/prove_rsa_65537_sha1.wasm',
-  //   zkeyPath: '../circuits/build/fromAWS/prove_rsa_65537_sha1.zkey',
-  // },
-  // {
-  //   circuitType: 'prove',
-  //   algorithm: 'rsapss_sha256',
-  //   wasmPath: '../circuits/build/fromAWS/prove_rsapss_65537_sha256.wasm',
-  //   zkeyPath: '../circuits/build/fromAWS/prove_rsapss_65537_sha256.zkey',
-  // },
+  {
+    circuitType: 'prove',
+    algorithm: 'rsa_sha1',
+    wasmPath: '../circuits/build/fromAWS/prove_rsa_65537_sha1.wasm',
+    zkeyPath: '../circuits/build/fromAWS/prove_rsa_65537_sha1.zkey',
+  },
+  {
+    circuitType: 'prove',
+    algorithm: 'rsapss_sha256',
+    wasmPath: '../circuits/build/fromAWS/prove_rsapss_65537_sha256.wasm',
+    zkeyPath: '../circuits/build/fromAWS/prove_rsapss_65537_sha256.zkey',
+  },
 ];

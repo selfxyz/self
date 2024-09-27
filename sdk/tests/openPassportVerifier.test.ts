@@ -17,7 +17,6 @@ import {
 import { generateCircuitInputsInSdk } from './utils/generateInputsInSdk';
 import {
   buildAttestation,
-  OpenPassportAttestation,
   OpenPassportDynamicAttestation,
 } from '../../common/src/utils/openPassportAttestation';
 
