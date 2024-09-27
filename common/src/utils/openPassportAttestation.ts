@@ -18,6 +18,7 @@ export interface OpenPassportAttestation {
             proof: string[];
             publicSignals: string[];
         };
+        vkey: string;
     };
     dscProof: {
         type: string;
@@ -26,6 +27,7 @@ export interface OpenPassportAttestation {
             proof: string[];
             publicSignals: string[];
         };
+        vkey: string;
     };
     dsc: {
         type: string;
@@ -98,6 +100,7 @@ export function buildAttestation(options: {
                 proof: proof,
                 publicSignals: publicSignals,
             },
+            vkey: "",
         },
         dscProof: {
             type: 'ZeroKnowledgeProof',
@@ -106,6 +109,7 @@ export function buildAttestation(options: {
                 proof: dscProof || [],
                 publicSignals: dscPublicSignals || [],
             },
+            vkey: "",
         },
         dsc: {
             type: 'X509Certificate',
@@ -135,6 +139,7 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
             proof: string[];
             publicSignals: string[];
         };
+        vkey;
     };
     dscProof: {
         type: string;
@@ -143,6 +148,7 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
             proof: string[];
             publicSignals: string[];
         };
+        vkey;
     };
     dsc: {
         type: string;
