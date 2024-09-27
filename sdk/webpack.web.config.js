@@ -18,6 +18,7 @@ module.exports = {
     ],
   },
   resolve: {
+    mainFields: ['browser', 'module', 'main'],
     extensions: ['.tsx', '.ts', '.js', '.jsx'],
     fallback: {
       bufferutil: false,

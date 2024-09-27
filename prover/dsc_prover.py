@@ -20,7 +20,7 @@ async def generate_dsc_proof(request: Request):
     
     # Extract the signature_algorithm
     signature_algorithm = data.get("signature_algorithm")
-    if signature_algorithm not in ["sha256_rsa", "sha1_rsa", "sha256_rsapss"]:
+    if signature_algorithm not in ["rsa_65537_sha256_4096", "rsa_65537_sha1_4096", "rsapss_65537_sha256_4096"]:
         return PlainTextResponse("Invalid or missing signature_algorithm", status_code=400)
     
     # Ensure 'inputs' key exists

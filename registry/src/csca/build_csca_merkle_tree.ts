@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { getPublicKey, isRsaPublicKey, readCertificate } from '../../../common/src/utils/certificates'
-import { getLeaf } from '../../../common/src/utils/pubkeyTree'
+import { getPublicKey, isRsaPublicKey, readCertificate } from '../utils/certificates'
+import { getLeaf, getLeafCSCA } from '../../../common/src/utils/pubkeyTree'
 import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { IMT } from '@zk-kit/imt';
 import { poseidon2 } from 'poseidon-lite';
@@ -60,7 +60,7 @@ function processCertificate(certificate: jsrsasign.X509, filePath: string) {
     if (certificate.hex) {
         try {
             const pemString = jsrsasign.hextopem(certificate.hex, 'CERTIFICATE');
-            const finalPoseidonHash = getLeaf(pemString, n_csca, k_csca);
+            const finalPoseidonHash = getLeafCSCA(pemString);
             console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
 
             return finalPoseidonHash.toString();

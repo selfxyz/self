@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
-import { OpenPassportVerifierInputs, OpenPassportVerifier } from '../../OpenPassportVerifier';
+import { OpenPassportVerifier } from '../../OpenPassportVerifier';
+import { OpenPassportAttestation } from '../../../../common/src/utils/openPassportAttestation';
 import { OpenPassportVerifierReport } from '../../OpenPassportVerifierReport';
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
@@ -18,7 +17,7 @@ const handleWebSocketMessage =
     setProofStep: (step: number) => void,
     setProofVerified: (proofVerified: boolean) => void,
     openPassportVerifier: OpenPassportVerifier,
-    onSuccess: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void
+    onSuccess: (proof: OpenPassportAttestation, report: OpenPassportVerifierReport) => void
   ) =>
   async (data) => {
     console.log('received mobile status:', data.status);
@@ -43,6 +42,7 @@ const handleWebSocketMessage =
     }
 
     if (data.proof) {
+      console.log(data.proof);
       try {
         const local_proofVerified: OpenPassportVerifierReport = await openPassportVerifier.verify(
           data.proof
@@ -55,8 +55,7 @@ const handleWebSocketMessage =
             proofVerified: local_proofVerified.toString(),
           });
           if (local_proofVerified.valid) {
-            const openPassportVerifierInputs = new OpenPassportVerifierInputs(data.proof);
-            onSuccess(openPassportVerifierInputs, local_proofVerified);
+            onSuccess(data.proof, local_proofVerified);
           }
         }, 1500); // wait for animation to finish before sending the proof to mobile
       } catch (error) {
@@ -76,7 +75,7 @@ export function initWebSocket(
   setProofStep: (step: number) => void,
   setProofVerified: (proofVerified: boolean) => void,
   openPassportVerifier: OpenPassportVerifier,
-  onSuccess: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void
+  onSuccess: (proof: OpenPassportAttestation, report: OpenPassportVerifierReport) => void
 ) {
   const socket = newSocket(websocketUrl, sessionId);
   socket.on(

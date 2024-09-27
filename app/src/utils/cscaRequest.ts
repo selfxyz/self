@@ -1,12 +1,11 @@
-import { MODAL_SERVER_ADDRESS } from "../../../common/src/constants/constants";
 import { castCSCAProof } from "../../../common/src/utils/types";
 import useUserStore from "../stores/userStore";
 import { ModalProofSteps } from "./utils";
 
-export const sendCSCARequest = async (inputs_csca: any, setModalProofStep: (modalProofStep: number) => void) => {
+export const sendCSCARequest = async (inputs_csca: any, modalServerUrl: string, setModalProofStep: (modalProofStep: number) => void) => {
     try {
         console.log("inputs_csca before requesting modal server - cscaRequest.ts");
-        fetch(MODAL_SERVER_ADDRESS, {
+        fetch(modalServerUrl, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
