@@ -23,13 +23,7 @@ import {
 } from '../../common/src/utils/openPassportAttestation';
 
 import forge from 'node-forge';
-import {
-  bigIntToHex,
-  castToScope,
-  castToUUID,
-  splitToWords,
-  UserIdType,
-} from '../../common/src/utils/utils';
+import { castToScope, splitToWords } from '../../common/src/utils/utils';
 import { parseDSC } from '../../common/src/utils/certificates/handleCertificate';
 
 export class OpenPassportVerifier {
@@ -42,6 +36,7 @@ export class OpenPassportVerifier {
   dev_mode: boolean;
   parsedPublicSignals: any;
   circuit: string;
+  circuitMode?: string;
   constructor(options: {
     scope: string;
     attestationId?: string;
@@ -50,6 +45,7 @@ export class OpenPassportVerifier {
     rpcUrl?: string;
     dev_mode?: boolean;
     circuit: string;
+    circuitMode?;
   }) {
     this.scope = options.scope;
     this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
@@ -59,6 +55,7 @@ export class OpenPassportVerifier {
     this.report = new OpenPassportVerifierReport();
     this.dev_mode = options.dev_mode || false;
     this.circuit = options.circuit;
+    this.circuitMode = options.circuitMode || 'prove';
   }
 
   async verify(attestation: OpenPassportAttestation): Promise<OpenPassportVerifierReport> {
@@ -67,6 +64,9 @@ export class OpenPassportVerifier {
         value: { proof, publicSignals },
       },
       dsc: { value: dsc },
+      dscProof: {
+        value: { proof: dscProof, publicSignals: dscPublicSignals },
+      },
     } = attestation;
 
     const { signatureAlgorithm, hashFunction } = parseDSC(dsc);
@@ -76,8 +76,13 @@ export class OpenPassportVerifier {
     await this.verifyProof(proof, publicSignals, dsc);
     switch (this.circuit) {
       case 'prove':
-        await this.verifyProveArguments();
-        await this.verifyDsc(dsc);
+        if (this.circuitMode === 'prove') {
+          await this.verifyProveArguments();
+          await this.verifyDsc(dsc);
+        } else if (this.circuitMode === 'register') {
+          await this.verifyRegisterArguments();
+          await this.verifyDscProof(dscProof, dscPublicSignals, dsc);
+        }
         break;
       case 'disclose':
         await this.verifyDiscloseArguments();
@@ -131,11 +136,16 @@ export class OpenPassportVerifier {
 
   private getVkey(dsc: string) {
     const { signatureAlgorithm, hashFunction } = parseDSC(dsc);
-    if (this.circuit === 'prove' || this.circuit === 'register') {
+    if (this.circuit === 'prove') {
       return getVkeyFromArtifacts(this.circuit, signatureAlgorithm, hashFunction);
     } else {
       throw new Error('vkey of ' + this.circuit + ' not found');
     }
+  }
+
+  private getVkeyDsc(dsc: string) {
+    const { signatureAlgorithm, hashFunction } = parseDSC(dsc);
+    return getVkeyFromArtifacts('dsc', signatureAlgorithm, hashFunction);
   }
 
   private verifyDsc(dsc: string) {
@@ -155,5 +165,17 @@ export class OpenPassportVerifier {
     if (!verified_modulus) {
       this.report.exposeAttribute('pubKey', pubKeyFromProof, dsc_modulus_words);
     }
+  }
+
+  private async verifyDscProof(proof: string[], publicSignals: string[], dsc: string) {
+    console.log('verifyDscProof', publicSignals, proof);
+    const vkey = this.getVkeyDsc(dsc);
+    const verified_dscProof = await groth16.verify(vkey, publicSignals, proof as any);
+    this.verifyAttribute('dscProof', verified_dscProof.toString(), 'true');
+  }
+
+  private verifyRegisterArguments() {
+    // verify that the blindedDscCommitment is the same in both proofs
+    const blindedPubKeyCommitmentFromLocalProof = this.parsedPublicSignals.blinded_dsc_commitment;
   }
 }

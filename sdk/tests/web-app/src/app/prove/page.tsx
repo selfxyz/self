@@ -17,9 +17,10 @@ export default function Prove() {
         scope="test"
         userId={userId}
         olderThan="18"
+        circuit="prove"
+        circuitMode="prove"
         nationality="France"
         devMode={true}
-        circuit="prove"
       />
 
       <TextField

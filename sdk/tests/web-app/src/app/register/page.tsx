@@ -18,7 +18,6 @@ export default function Register() {
         devMode={true}
         circuit="prove"
         circuitMode="register"
-        attestationId="PASSPORT"
         merkleTreeUrl={COMMITMENT_TREE_TRACKER_URL}
         userId={userId}
       />

@@ -25,8 +25,8 @@ export interface ArgumentsProve {
 }
 
 export interface ArgumentsRegister {
-  attestation_id: string,
   merkleTreeUrl: string,
+  modalServerUrl: string,
 }
 
 export interface ArgumentsDisclose {
@@ -48,7 +48,7 @@ export function reconstructAppType(json: any): AppType {
     throw new Error('Invalid or missing name');
   }
 
-  if (json.circuit !== 'register' && (!json.scope || typeof json.scope !== 'string')) {
+  if (!json.scope || typeof json.scope !== 'string') {
     throw new Error('Invalid or missing scope');
   }
 
@@ -75,7 +75,6 @@ export function reconstructAppType(json: any): AppType {
   let circuitArgs: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose;
 
   switch (json.circuit) {
-    case 'prove':
     case 'disclose':
       if (!json.arguments.disclosureOptions || typeof json.arguments.disclosureOptions !== 'object') {
         throw new Error('Invalid or missing disclosureOptions for prove/disclose');
@@ -97,17 +96,33 @@ export function reconstructAppType(json: any): AppType {
         (circuitArgs as ArgumentsDisclose).merkletree_size = json.arguments.merkletree_size;
       }
       break;
-    case 'register':
-      if (!json.arguments.attestation_id || typeof json.arguments.attestation_id !== 'string') {
-        throw new Error('Invalid or missing attestation_id for register circuit');
+    case 'prove':
+      if (json.circuitMode === 'register') {
+        // if (!json.arguments.attestation_id || typeof json.arguments.attestation_id !== 'string') {
+        //   throw new Error('Invalid or missing attestation_id for register circuit');
+        // }
+        // if (!json.arguments.merkleTreeUrl || typeof json.arguments.merkleTreeUrl !== 'string') {
+        //   throw new Error('Invalid or missing merkleTreeUrl for register circuit');
+        // }
+        if (!json.arguments.modalServerUrl) {
+          throw new Error('Invalid or missing modalServerUrl');
+        }
+        circuitArgs = {
+          merkleTreeUrl: json.arguments.merkleTreeUrl,
+          modalServerUrl: json.arguments.modalServerUrl,
+        };
       }
-      if (!json.arguments.merkleTreeUrl || typeof json.arguments.merkleTreeUrl !== 'string') {
-        throw new Error('Invalid or missing merkleTreeUrl for register circuit');
+      else {
+        if (!json.arguments.disclosureOptions || typeof json.arguments.disclosureOptions !== 'object') {
+          throw new Error('Invalid or missing disclosureOptions for prove/disclose');
+        }
+        circuitArgs = {
+          disclosureOptions: {
+            older_than: json.arguments.disclosureOptions.older_than,
+            nationality: json.arguments.disclosureOptions.nationality,
+          },
+        }
       }
-      circuitArgs = {
-        attestation_id: json.arguments.attestation_id,
-        merkleTreeUrl: json.arguments.merkleTreeUrl,
-      };
       break;
     default:
       throw new Error('Unexpected circuit type');

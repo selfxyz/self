@@ -15,6 +15,7 @@ export class OpenPassportVerifierReport {
   older_than: boolean = true;
   owner_of: boolean = true;
   proof: boolean = true;
+  dscProof: boolean = true;
   dsc: boolean = true;
   pubKey: boolean = true;
   valid: boolean = true;

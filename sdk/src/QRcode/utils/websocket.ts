@@ -1,5 +1,3 @@
-import React, { useEffect, useRef, useState } from 'react';
-
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
 import { OpenPassportVerifier } from '../../OpenPassportVerifier';

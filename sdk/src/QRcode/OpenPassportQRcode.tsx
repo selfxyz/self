@@ -9,7 +9,11 @@ import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
-import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../../../common/src/constants/constants';
+import {
+  DEFAULT_USER_ID_TYPE,
+  MODAL_SERVER_ADDRESS,
+  WEBSOCKET_URL,
+} from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
 import { CircuitName, reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
@@ -35,7 +39,7 @@ interface OpenPassportQRcodeProps {
   size?: number;
   websocketUrl?: string;
   merkleTreeUrl?: string;
-  attestationId?: string;
+  modalServerUrl?: string;
 }
 
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
@@ -53,8 +57,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
+  modalServerUrl = MODAL_SERVER_ADDRESS,
   merkleTreeUrl,
-  attestationId,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
@@ -66,29 +70,49 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     nationality: nationality,
     dev_mode: devMode,
     circuit: circuit,
+    circuitMode: circuitMode,
   });
 
   const getAppStringified = () => {
     if (circuit === 'prove') {
-      const disclosureOptions = [
-        ['nationality', nationality],
-        ['older_than', olderThan],
-      ];
-      return JSON.stringify(
-        reconstructAppType({
-          name: appName,
-          scope: scope,
-          userId: userId,
-          userIdType: userIdType,
-          sessionId: sessionId,
-          circuit: circuit,
-          circuitMode: circuitMode,
-          arguments: {
-            disclosureOptions: Object.fromEntries(disclosureOptions),
-          },
-          websocketUrl: websocketUrl,
-        })
-      );
+      if (circuitMode == 'register') {
+        return JSON.stringify(
+          reconstructAppType({
+            name: appName,
+            scope: scope,
+            userId: userId,
+            userIdType: userIdType,
+            sessionId: sessionId,
+            circuit: circuit,
+            circuitMode: circuitMode,
+            arguments: {
+              modalServerUrl: modalServerUrl,
+              merkleTreeUrl: merkleTreeUrl,
+            },
+            websocketUrl: websocketUrl,
+          })
+        );
+      } else {
+        const disclosureOptions = [
+          ['nationality', nationality],
+          ['older_than', olderThan],
+        ];
+        return JSON.stringify(
+          reconstructAppType({
+            name: appName,
+            scope: scope,
+            userId: userId,
+            userIdType: userIdType,
+            sessionId: sessionId,
+            circuit: circuit,
+            circuitMode: circuitMode,
+            arguments: {
+              disclosureOptions: Object.fromEntries(disclosureOptions),
+            },
+            websocketUrl: websocketUrl,
+          })
+        );
+      }
     }
     // } else if (circuit === 'prove' && circuitMode === 'register') {
     //   return JSON.stringify(
