@@ -7,12 +7,12 @@ import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitm
 import useUserStore from '../stores/userStore';
 import { ArgumentsProve } from '../../../common/src/utils/appType'
 import { parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
+import { generateCircuitInputsDSC } from '../../../common/src/utils/csca';
 
 export const generateCircuitInputsInApp = (
     passportData: PassportData,
     app: AppType
 ): any => {
-
     const disclosureOptions = (app.arguments as ArgumentsProve).disclosureOptions || {};
     const { secret, dscSecret } = useUserStore.getState();
     const selector_mode = app.circuitMode === 'register' ? 1 : 0;
@@ -26,7 +26,7 @@ export const generateCircuitInputsInApp = (
         app.scope,
         selector_dg1,
         selector_older_than,
-        disclosureOptions.older_than ?? DEFAULT_MAJORITY,
+        disclosureOptions.older_than && disclosureOptions.older_than.length > 2 ? disclosureOptions.older_than : DEFAULT_MAJORITY,
         app.userId,
         app.userIdType
     );
