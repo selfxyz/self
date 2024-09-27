@@ -1,7 +1,7 @@
 import * as fs from 'fs';
-import { buildSMT } from '../../../common/src/utils/ofacTree'
+import { buildSMT } from '../../../common/src/utils/smtTree'
 
-async function main() {
+async function build_ofac_smt() {
     let startTime = performance.now();
   
     const passports = JSON.parse(fs.readFileSync("../../../common/ofacdata/inputs/passports.json") as unknown as string)
@@ -28,4 +28,4 @@ async function main() {
     fs.writeFileSync("../../../common/ofacdata/outputs/nameSMT.json", JSON.stringify(nameOfacJSON));
 }
   
-main()
+build_ofac_smt()

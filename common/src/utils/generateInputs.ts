@@ -17,10 +17,11 @@ import {
   parseUIDToBigInt,
   formatDg2Hash,
   getNAndK,
+  stringToAsciiBigIntArray,
 } from './utils';
-import { LeanIMT } from "@zk-kit/lean-imt";
 import { generateCommitment, getLeaf } from "./pubkeyTree";
-import { getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./ofacTree";
+import { LeanIMT } from "@zk-kit/lean-imt";
+import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./smtTree";
 import { packBytes } from "../utils/utils";
 import { SMT } from "@ashpect/smt"
 import { parseCertificate } from './certificates/handleCertificate';
@@ -107,6 +108,36 @@ export function generateCircuitInputsOfac(
   return {
     ...finalResult,
     closest_leaf: [BigInt(closestleaf).toString()],
+    smt_root: [BigInt(root).toString()],
+    smt_siblings: siblings.map(index => BigInt(index).toString()),
+  };
+}
+
+export function generateCircuitInputsCountryVerifier(
+  secret: string,
+  attestation_id: string,
+  passportData: PassportData,
+  merkletree: LeanIMT,
+  majority: string,
+  selector_dg1,
+  selector_older_than,
+  scope: string,
+  user_identifier: string,
+  sparsemerkletree: SMT,
+) {
+
+  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, selector_dg1, selector_older_than, scope, user_identifier);
+  const { majority: _, scope: __, selector_dg1: ___, selector_older_than: ____, user_identifier: _____, ...finalResult } = result;
+
+  const mrz_bytes = formatMrz(passportData.mrz);
+  const usa_ascii = stringToAsciiBigIntArray("USA")
+  const country_leaf = getCountryLeaf(usa_ascii, mrz_bytes.slice(7, 10))
+  const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, country_leaf);
+
+  return {
+    ...finalResult,
+    closest_leaf: [BigInt(closestleaf).toString()],
+    hostCountry: usa_ascii.map(byte => BigInt(byte).toString()),
     smt_root: [BigInt(root).toString()],
     smt_siblings: siblings.map(index => BigInt(index).toString()),
   };

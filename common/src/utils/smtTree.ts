@@ -28,6 +28,9 @@ export function buildSMT(field :any[], treetype:string): [number, number, SMT]{
           leaf = processNameDob(entry, i)
         } else if (treetype == "name"){
           leaf = processName(entry.First_Name, entry.Last_Name, i)
+        } else if (treetype == "country"){
+          const keys = Object.keys(entry);
+          leaf = processCountry(keys[0],entry[keys[0]],i)
         }
        
         if( leaf==BigInt(0) || tree.createProof(leaf).membership){
@@ -126,6 +129,31 @@ function processDob(day: string, month: string, year: string, i : number): bigin
   return getDobLeaf(arr,i)
 }
 
+function processCountry(country1 : string, country2 : string, i : number){
+  let arr = stringToAsciiBigIntArray(country1)
+  let arr2 = stringToAsciiBigIntArray(country2)
+
+  const leaf = getCountryLeaf(arr,arr2,i)
+  if (!leaf) {
+    console.log('Error creating leaf value', i, country1, country2)
+    return BigInt(0)
+  }
+  return leaf
+}
+
+export function getCountryLeaf(country_by: (bigint|number)[], country_to: (bigint|number)[], i?: number): bigint{
+  if (country_by.length !== 3 || country_to.length !== 3) {
+    console.log('parsed passport length is not 3:', i, country_to, country_by)
+    return
+  }
+  try {
+    const country = country_by.concat(country_to)
+    return poseidon6(country)
+  } catch (err) {
+    console.log('err : sanc_country hash', err, i, country_by,country_to)
+  }
+}
+
 export function getPassportNumberLeaf(passport: (bigint|number)[], i?: number): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport)
@@ -170,3 +198,4 @@ export function getDobLeaf(dobMrz : (bigint|number)[], i? : number): bigint {
     console.log('err : Dob', err, i, dobMrz)
   }
 }
+
