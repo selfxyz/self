@@ -1,18 +1,17 @@
 import { assert, expect } from 'chai';
 import fs from 'fs';
-const forge = require('node-forge');
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { getCSCAInputs } from '../../common/src/utils/csca';
+import { generateCircuitInputsDSC } from '../../common/src/utils/csca';
 import {
-  mock_dsc_sha1_rsa_2048,
-  mock_dsc_sha256_rsa_2048,
-  mock_dsc_sha256_rsapss_2048,
-  mock_csca_sha1_rsa_2048,
-  mock_csca_sha256_rsa_2048,
-  mock_csca_sha256_rsapss_2048,
+  mock_dsc_sha1_rsa_4096,
+  mock_dsc_sha256_rsa_4096,
+  mock_dsc_sha256_rsapss_4096,
+  mock_csca_sha1_rsa_4096,
+  mock_csca_sha256_rsa_4096,
+  mock_csca_sha256_rsapss_4096,
 } from '../../common/src/constants/mockCertificates';
-import { k_dsc, n_dsc } from '../../common/src/constants/constants';
+import { max_cert_bytes } from '../../common/src/constants/constants';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
@@ -27,7 +26,6 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
   describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
-    const max_cert_bytes = 960;
 
     // Mock certificates based on signature algorithm and hash function
     let dscCertPem;
@@ -35,40 +33,28 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
 
     switch (`${sigAlg}_${hashFunction}`) {
       case 'rsa_sha256':
-        dscCertPem = mock_dsc_sha256_rsa_2048;
-        cscaCertPem = mock_csca_sha256_rsa_2048;
+        dscCertPem = mock_dsc_sha256_rsa_4096;
+        cscaCertPem = mock_csca_sha256_rsa_4096;
         break;
       case 'rsa_sha1':
-        dscCertPem = mock_dsc_sha1_rsa_2048;
-        cscaCertPem = mock_csca_sha1_rsa_2048;
+        dscCertPem = mock_dsc_sha1_rsa_4096;
+        cscaCertPem = mock_csca_sha1_rsa_4096;
         break;
       case 'rsapss_sha256':
-        dscCertPem = mock_dsc_sha256_rsapss_2048;
-        cscaCertPem = mock_csca_sha256_rsapss_2048;
+        dscCertPem = mock_dsc_sha256_rsapss_4096;
+        cscaCertPem = mock_csca_sha256_rsapss_4096;
         break;
       default:
         throw new Error('Unsupported signature algorithm and hash function combination');
     }
 
-    const dscCert = forge.pki.certificateFromPem(dscCertPem);
-    const cscaCert = forge.pki.certificateFromPem(cscaCertPem);
-
-    const inputs = getCSCAInputs(
-      BigInt(0).toString(),
-      dscCert,
-      cscaCert,
-      n_dsc,
-      k_dsc,
-      n_dsc,
-      k_dsc,
-      max_cert_bytes,
-      true
-    );
+    const inputs = generateCircuitInputsDSC(BigInt(0).toString(), dscCertPem, max_cert_bytes);
+    console.log('inputs', inputs);
 
     before(async () => {
       const circuitPath = path.resolve(
         __dirname,
-        `../circuits/dsc/instances/${getCircuitName('dsc', sigAlg, hashFunction)}_2048.circom`
+        `../circuits/dsc/instances/${getCircuitName('dsc', sigAlg, hashFunction)}_4096.circom`
       );
       circuit = await wasm_tester(circuitPath, {
         include: [

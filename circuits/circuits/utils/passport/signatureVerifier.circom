@@ -19,7 +19,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
-    if (signatureAlgorithm == 1) { 
+    if (signatureAlgorithm == 1 || signatureAlgorithm == 10) { 
         component rsa = RSAVerifier65537(n, k);
         for (var i = 0; i < msg_len; i++) {
             rsa.message[i] <== hashParsed[i];
@@ -31,7 +31,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsa.signature <== signature;
 
     }
-    if (signatureAlgorithm == 3 ) {
+    if (signatureAlgorithm == 3 || signatureAlgorithm == 11) {
         component rsa_pkcs1 = RSAVerifier65537Pkcs1(n, k);
         for (var i = 0; i < msg_len; i++) {
             rsa_pkcs1.message[i] <== hashParsed[i];
@@ -43,7 +43,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsa_pkcs1.signature <== signature;
        
     }
-    if (signatureAlgorithm == 4) {
+    if (signatureAlgorithm == 4 || signatureAlgorithm == 12) {
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
 
         component rsaPssSha256Verification = VerifyRsaPssSig(n, k, HASH_LEN_BITS, pubKeyBitsLength);

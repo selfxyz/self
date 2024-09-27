@@ -14,6 +14,8 @@ export function parseCertificate(pem: string) {
     const cert = getCertificateFromPem(pem);
     let { signatureAlgorithm, hashFunction } = getSignatureAlgorithmDetails(cert.signatureAlgorithm.algorithmId);
     const subjectPublicKeyInfo = cert.subjectPublicKeyInfo;
+    const subjectKeyIdentifier = getSubjectKeyIdentifier(cert);
+    const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
     let publicKeyDetails: any;
     switch (signatureAlgorithm) {
         case 'rsa':
@@ -42,7 +44,7 @@ export function parseCertificate(pem: string) {
             console.log('\x1b[33mUnknown signature algorithm: \x1b[0m', signatureAlgorithm);
     }
     const hashLen = getHashLen(hashFunction);
-    return { signatureAlgorithm, hashFunction, hashLen, ...publicKeyDetails };
+    return { signatureAlgorithm, hashFunction, hashLen, subjectKeyIdentifier, authorityKeyIdentifier, ...publicKeyDetails };
 
 }
 
@@ -101,6 +103,20 @@ export const getSubjectKeyIdentifier = (cert: Certificate): string => {
     } else {
         return null;
     }
+}
+
+export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
+    const authorityKeyIdentifier = cert.extensions.find(
+        (ext) => ext.extnID === '2.5.29.35'
+    );
+    if (authorityKeyIdentifier) {
+        let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString('hex');
+        akiValue = akiValue.replace(/^(?:3016)?(?:0414)?/, '');
+        // cur off the first 2 bytes
+        akiValue = akiValue.slice(4);
+        return akiValue
+    }
+    return null;
 }
 
 export function getIssuerCountryCode(cert: Certificate): string {
