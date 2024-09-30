@@ -71,7 +71,7 @@ describe('start testing country_verifier.circom', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/disclose/country_verifier.circom'),
+      path.join(__dirname, '../../circuits/tests/utils/proveCountryIsNotInList_tester.circom'),
       {
         include: [
           'node_modules',
@@ -119,6 +119,7 @@ describe('start testing country_verifier.circom', function () {
 
   // Corrct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors , all conditions satisfied', async function () {
+    console.log(nonMemSmtInputs);
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     console.log('Everything correct, Valid proof of non-membership !!');
   });

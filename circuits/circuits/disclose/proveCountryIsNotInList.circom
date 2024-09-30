@@ -4,7 +4,7 @@ include "circomlib/circuits/poseidon.circom";
 include "./verify_commitment.circom";
 include "../utils/passport/ofac/validateCountry.circom";
 
-template ProveCountryNotInSCList(nLevels) {
+template ProveCountryNotInList(nLevels) {
     signal input secret;
     signal input attestation_id;
     signal input pubkey_leaf;
@@ -30,5 +30,3 @@ template ProveCountryNotInSCList(nLevels) {
     var host_user[6] = [hostCountry[0],hostCountry[1],hostCountry[2],dg1[7],dg1[8],dg1[9]];
     ValidateCountry(256)(host_user, closest_leaf, smt_root, smt_siblings);
 }
-
-component main { public [ merkle_root,smt_root,hostCountry ] } = ProveCountryNotInSCList(16);

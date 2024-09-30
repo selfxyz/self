@@ -16,15 +16,6 @@ template DISCLOSE() {
     signal output older_than[2];
     signal output nullifier;
 
-    // Verify validity of the passport
-    component isValid = IsValid();
-    isValid.currDate <== current_date;
-    for (var i = 0; i < 6; i++) {
-        isValid.validityDateASCII[i] <== dg1[70 + i];
-    }
-    
-    1 === isValid.out;
-
     // Disclose optional data
     component isOlderThan = IsOlderThan();
     isOlderThan.majorityASCII <== majority;

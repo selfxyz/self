@@ -42,6 +42,12 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+    // verify passport is not expired
+    component isValid = IsValid();
+    isValid.currDate <== current_date;
+    for (var i = 0; i < 6; i++) {
+        isValid.validityDateASCII[i] <== dg1[70 + i];
+    }
 
     // nulifier
     signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
@@ -61,6 +67,9 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     for (var i = 0; i < kScaled; i++) {
         pubKey_disclosed[i] <== pubKey[i] * (1 - selector_mode);
     }
+
+    // OFAC
+    // COUNTRY IS IN LIST
 
 
     // REGISTRATION (optional)

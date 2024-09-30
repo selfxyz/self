@@ -30,5 +30,5 @@ template IsValid() {
     is_valid.firstMonth <== currDate[2] * TEN + currDate[3];
     is_valid.firstDay <== currDate[4] * TEN + currDate[5];
 
-    signal output out <== is_valid.out;
+    1 === is_valid.out;
 }
