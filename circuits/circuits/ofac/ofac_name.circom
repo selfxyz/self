@@ -4,31 +4,17 @@ include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "binary-merkle-root.circom";
 include "../utils/other/getCommonLength.circom";
-include "../disclose/verify_commitment.circom";
 include "../utils/other/smt.circom";
 
-template OFAC_NAME(nLevels) {
-    signal input secret;
-    signal input attestation_id;
-    signal input pubkey_leaf;
-    signal input dg1[93];
-    signal input dg2_hash[64];
-    signal input merkle_root;
-    signal input merkletree_size;
-    signal input path[nLevels];
-    signal input siblings[nLevels];
-    signal input current_date[6]; 
+template OFAC_NAME() {
 
-    signal input closest_leaf;
+    signal input dg1[93];
+
+    signal input smt_leaf_value;
     signal input smt_root;
     signal input smt_siblings[256];
-    signal output proofType;
-    signal output proofLevel;
+    signal output proofLevel <== 1;
 
-    // Verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
-
-    // Name Hash
     component poseidon_hasher[3];
     for (var j = 0; j < 3; j++) {
         poseidon_hasher[j] = Poseidon(13);
@@ -38,16 +24,9 @@ template OFAC_NAME(nLevels) {
     }
 
     signal name_hash <== Poseidon(3)([poseidon_hasher[0].out, poseidon_hasher[1].out, poseidon_hasher[2].out]);
-    signal smtleaf_hash <== Poseidon(3)([name_hash, 1,1]);
-
-    // SMT Verification
-    signal closestleaf <== SMTVerify(256)(name_hash, 1, closest_leaf, smt_root, smt_siblings);
-
-    proofType <== IsEqual()([closestleaf,smtleaf_hash]); 
-    proofType === 0;  // Uncomment this line to make circuit handle both membership and non-membership proof and returns the type of proof (0 for non-membership, 1 for membership)
-
-    proofLevel <== 1;
+    
+    SMTVerify(256)(name_hash, smt_leaf_value, smt_root, smt_siblings, 0);
     
 }
 
-component main { public [ merkle_root,smt_root ] } = OFAC_NAME(16);
+component main { public [ smt_root ] } = OFAC_NAME();

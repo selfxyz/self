@@ -73,21 +73,10 @@ export function generateCircuitInputsDisclose(
 }
 
 export function generateCircuitInputsOfac(
-  secret: string,
-  attestation_id: string,
   passportData: PassportData,
-  merkletree: LeanIMT,
-  majority: string,
-  selector_dg1: string[],
-  selector_older_than: string,
-  scope: string,
-  user_identifier: string,
   sparsemerkletree: SMT,
   proofLevel: number,
 ) {
-
-  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, selector_dg1, selector_older_than, scope, user_identifier);
-  const { majority: _, scope: __, selector_dg1: ___, selector_older_than: _____, user_identifier: ______, ...finalResult } = result;
 
   const mrz_bytes = formatMrz(passportData.mrz);
   const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49, 58))
@@ -106,40 +95,28 @@ export function generateCircuitInputsOfac(
   }
 
   return {
-    ...finalResult,
-    closest_leaf: [BigInt(closestleaf).toString()],
+    dg1: formatInput(mrz_bytes),
+    smt_leaf_value: [BigInt(closestleaf).toString()],
     smt_root: [BigInt(root).toString()],
     smt_siblings: siblings.map(index => BigInt(index).toString()),
   };
 }
 
 export function generateCircuitInputsCountryVerifier(
-  secret: string,
-  attestation_id: string,
   passportData: PassportData,
-  merkletree: LeanIMT,
-  majority: string,
-  selector_dg1,
-  selector_older_than,
-  scope: string,
-  user_identifier: string,
   sparsemerkletree: SMT,
 ) {
-
-  const result = generateCircuitInputsDisclose(secret, attestation_id, passportData, merkletree, majority, selector_dg1, selector_older_than, scope, user_identifier);
-  const { majority: _, scope: __, selector_dg1: ___, selector_older_than: ____, user_identifier: _____, ...finalResult } = result;
-
   const mrz_bytes = formatMrz(passportData.mrz);
   const usa_ascii = stringToAsciiBigIntArray("USA")
   const country_leaf = getCountryLeaf(usa_ascii, mrz_bytes.slice(7, 10))
   const { root, closestleaf, siblings } = generateSMTProof(sparsemerkletree, country_leaf);
 
   return {
-    ...finalResult,
-    closest_leaf: [BigInt(closestleaf).toString()],
-    hostCountry: usa_ascii.map(byte => BigInt(byte).toString()),
-    smt_root: [BigInt(root).toString()],
-    smt_siblings: siblings.map(index => BigInt(index).toString()),
+    dg1: formatInput(mrz_bytes),
+    hostCountry: formatInput(usa_ascii),
+    smt_leaf_value: formatInput(closestleaf),
+    smt_root: formatInput(root),
+    smt_siblings: formatInput(siblings),
   };
 }
 

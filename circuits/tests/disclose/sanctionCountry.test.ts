@@ -20,49 +20,6 @@ let tree: LeanIMT;
 const hash = (childNodes: ChildNodes) =>
   childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes);
 
-// Calculating common validatidy inputs for all 3 ciruits
-function getPassportInputs(passportData: PassportData) {
-  const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-  const attestation_name = 'E-PASSPORT';
-  const attestation_id = poseidon1([
-    BigInt(Buffer.from(attestation_name).readUIntBE(0, 6)),
-  ]).toString();
-
-  const majority = '18';
-  const user_identifier = crypto.randomUUID();
-  const selector_dg1 = Array(88).fill('1');
-  const selector_older_than = '1';
-  const scope = 'sanctionCountryTest';
-
-  const pubkey_leaf = getLeaf(passportData.dsc).toString();
-  const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-  const commitment = generateCommitment(
-    secret,
-    attestation_id,
-    pubkey_leaf,
-    mrz_bytes,
-    formatDg2Hash(passportData.dg2Hash)
-  );
-
-  return {
-    secret: secret,
-    attestation_id: attestation_id,
-    passportData: passportData,
-    commitment: commitment,
-    majority: majority,
-    selector_dg1,
-    selector_older_than,
-    scope: scope,
-    user_identifier: user_identifier,
-  };
-}
-const validInputs = getPassportInputs(passportData);
-const invalidInputs = getPassportInputs(passportData2);
-
-tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
-tree.insert(BigInt(validInputs.commitment));
-tree.insert(BigInt(invalidInputs.commitment));
-
 describe('start testing country_verifier.circom', function () {
   this.timeout(0);
   let sc_smt = new SMT(hash, true);
@@ -85,29 +42,13 @@ describe('start testing country_verifier.circom', function () {
 
     nonMemSmtInputs = generateCircuitInputsCountryVerifier(
       // proof of membership, USA-FRA pair (FRA is not in USA sanctioned list)
-      validInputs.secret,
-      validInputs.attestation_id,
-      validInputs.passportData,
-      tree,
-      validInputs.majority,
-      validInputs.selector_dg1,
-      validInputs.selector_older_than,
-      validInputs.scope,
-      validInputs.user_identifier,
+      passportData,
       sc_smt
     );
 
     memSmtInputs = generateCircuitInputsCountryVerifier(
       // proof of non-membership, USA-CUB pair (CUB is in USA sanctioned list)
-      invalidInputs.secret,
-      invalidInputs.attestation_id,
-      invalidInputs.passportData,
-      tree,
-      invalidInputs.majority,
-      invalidInputs.selector_dg1,
-      invalidInputs.selector_older_than,
-      invalidInputs.scope,
-      invalidInputs.user_identifier,
+      passportData2,
       sc_smt
     );
   });
@@ -119,7 +60,6 @@ describe('start testing country_verifier.circom', function () {
 
   // Corrct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors , all conditions satisfied', async function () {
-    console.log(nonMemSmtInputs);
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     console.log('Everything correct, Valid proof of non-membership !!');
   });
@@ -131,21 +71,19 @@ describe('start testing country_verifier.circom', function () {
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.not.include('SMTVerify');
     }
   });
 
   // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
-  it('should fail to calculate witness due to wrong closest_leaf provided', async function () {
+  it('should fail to calculate witness due to wrong leaf provided', async function () {
     try {
       let wrongSibInputs = nonMemSmtInputs;
       const randomNumber = Math.floor(Math.random() * Math.pow(2, 254));
-      wrongSibInputs.closest_leaf = BigInt(randomNumber).toString();
+      wrongSibInputs.smt_leaf_value = BigInt(randomNumber).toString();
       await circuit.calculateWitness(wrongSibInputs);
       expect.fail('Expected an error but none was thrown.');
     } catch (error) {
       expect(error.message).to.include('Assert Failed');
-      expect(error.message).to.include('SMTVerify');
     }
   });
 });
