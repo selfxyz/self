@@ -5,6 +5,7 @@ include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../disclose/disclose.circom";
+include "../ofac/ofac_name.circom";
 
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -24,6 +25,11 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input pubKey[kScaled];
     signal input signature[kScaled];
     signal input selector_mode; // 0 - disclose, 1 - registration
+    // ofac check
+    signal input smt_leaf_value;
+    signal input smt_root;
+    signal input smt_siblings[256];
+    signal input selector_ofac;
     // disclose related inputs
     signal input selector_dg1[88];
     signal input selector_older_than;
@@ -69,8 +75,10 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     }
 
     // OFAC
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
+    signal output ofac_result <== ofacIntermediaryOutput;
     // COUNTRY IS IN LIST
-
 
     // REGISTRATION (optional)
     // generate the commitment
@@ -81,5 +89,4 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
     signal blindedDscCommitmenPrivate <== Poseidon(2)([dsc_secret, pubkeyHash]);
     signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selector_mode;
-
 }
