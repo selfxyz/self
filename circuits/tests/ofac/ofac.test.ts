@@ -72,15 +72,15 @@ describe('OFAC - Passport number match', function () {
   // Correct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('1');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('1');
   });
 
   // Correct siblings but membership proof: Fail at line 43 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
@@ -90,8 +90,8 @@ describe('OFAC - Passport number match', function () {
       smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
     let w = await circuit.calculateWitness(wrongInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 
 });
@@ -137,15 +137,15 @@ describe('OFAC - Name and DOB match', function () {
   // Correct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('1');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('1');
   });
 
   // Correct siblings but membership proof : Fail at line 54 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 2', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array
@@ -156,8 +156,8 @@ describe('OFAC - Name and DOB match', function () {
     };
 
     let w = await circuit.calculateWitness(wrongInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 });
 
@@ -202,15 +202,15 @@ describe('OFAC - Name match', function () {
   // Correct siblings and closest leaf : Everything correct as a proof
   it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('1');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('1');
   });
 
   // Correct siblings but membership proof : Fail at line 46 assertion
   it('should fail to calculate witness since trying to generate membership proof, level 1', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array
@@ -220,7 +220,7 @@ describe('OFAC - Name match', function () {
       smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
     let w = await circuit.calculateWitness(wrongInputs);
-    const ofacVerification = (await circuit.getOutput(w, ['ofacVerification'])).ofacVerification;
-    expect(ofacVerification).to.equal('0');
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
   });
 });

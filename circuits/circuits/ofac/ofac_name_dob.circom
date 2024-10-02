@@ -33,5 +33,5 @@ template OFAC_NAME_DOB() {
     // NameDob hash
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
 
-    signal output ofacVerification <== SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
+    signal output ofacCheckResult <== SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
 }
