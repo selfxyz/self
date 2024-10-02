@@ -78,14 +78,14 @@ describe('OFAC - Passport number match', function () {
   });
 
   // Correct siblings but membership proof: Fail at line 43 assertion
-  it('should fail to calculate witness since trying to generate membership proof, level 3', async function () {
+  it('should pass - passport is in ofac list, level 3', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
-  it('should fail to calculate witness due to wrong leaf provided, level 3', async function () {
+  it('should pass - wrong merkleroot, level 3', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
       smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
@@ -143,14 +143,14 @@ describe('OFAC - Name and DOB match', function () {
   });
 
   // Correct siblings but membership proof : Fail at line 54 assertion
-  it('should fail to calculate witness since trying to generate membership proof, level 2', async function () {
+  it('should pass - passport is in ofac list, level 2', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array
-  it('should fail to calculate witness due to wrong leaf provided, level 2', async function () {
+  it('should pass - wrong merkleroot, level 2', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
       smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
@@ -208,14 +208,14 @@ describe('OFAC - Name match', function () {
   });
 
   // Correct siblings but membership proof : Fail at line 46 assertion
-  it('should fail to calculate witness since trying to generate membership proof, level 1', async function () {
+  it('should pass - passport is in ofac list, level 1', async function () {
     let w = await circuit.calculateWitness(memSmtInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });
 
   // Give wrong closest leaf but correct siblings array
-  it('should fail to calculate witness due to wrong leaf provided, level 1', async function () {
+  it('should pass - wrong merkleroot, level 1', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
       smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
