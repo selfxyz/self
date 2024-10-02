@@ -14,13 +14,14 @@ let circuit: any;
 // Mock passport added in ofac list to test circuits
 const passportData = genMockPassportData('rsa_sha256', 'FRA', '040211', '300101');
 // Mock passport not added in ofac list to test circuits
-const passportData2 = genMockPassportData(
+const passportDataInOfac = genMockPassportData(
   'rsa_sha256',
   'FRA',
-  '000102',
+  '541007',
   '300101',
-  '24HB81833',
-  'CLAQUE'
+  '98lh90556',
+  'HENAO MONTOYA',
+  'ARCANGEL DE JESUS'
 );
 
 
@@ -52,13 +53,13 @@ describe('OFAC - Passport number match', function () {
     passno_smt.import(passportNojson);
     const proofLevel = 3;
     memSmtInputs = generateCircuitInputsOfac(
-      passportData,
+      passportDataInOfac,
       passno_smt,
       proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
-      passportData2,
+      passportData,
       passno_smt,
       proofLevel
     );
@@ -116,14 +117,14 @@ describe('OFAC - Name and DOB match', function () {
     const proofLevel = 2;
     memSmtInputs = generateCircuitInputsOfac(
       // proof of membership
-      passportData,
+      passportDataInOfac,
       namedob_smt,
       proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
       // proof of non-membership
-      passportData2,
+      passportData,
       namedob_smt,
       proofLevel
     );
@@ -181,14 +182,14 @@ describe('OFAC - Name match', function () {
     const proofLevel = 1;
     memSmtInputs = generateCircuitInputsOfac(
       // proof of membership
-      passportData,
+      passportDataInOfac,
       name_smt,
       proofLevel
     );
 
     nonMemSmtInputs = generateCircuitInputsOfac(
       // proof of non-membership
-      passportData2,
+      passportData,
       name_smt,
       proofLevel
     );

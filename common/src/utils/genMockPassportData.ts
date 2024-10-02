@@ -33,14 +33,42 @@ export function genMockPassportData(
   nationality: keyof typeof countryCodes,
   birthDate: string,
   expiryDate: string,
-  passportNumber: string = "24HB81832",
-  lastName: string = "DUPONT"
+  passportNumber: string = "15AA81234",
+  lastName: string = "DUPONT",
+  firstName: string = "ALPHONSE HUGHUES ALBERT"
 ): PassportData {
   if (birthDate.length !== 6 || expiryDate.length !== 6) {
     throw new Error('birthdate and expiry date have to be in the "YYMMDD" format');
   }
 
-  const mrz = `P<${nationality}${lastName}<<ALPHONSE<HUGUES<ALBERT<<<<<<<<<${passportNumber}4${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
+  // Prepare last name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
+  const lastNameParts = lastName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const formattedLastName = lastNameParts.join('<');
+
+  // Prepare first name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
+  const firstNameParts = firstName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const formattedFirstName = firstNameParts.join('<');
+
+  // Build the first line of MRZ
+  let mrzLine1 = `P<${nationality}${formattedLastName}<<${formattedFirstName}`;
+
+  // Pad the first line with '<' to make it exactly 44 characters
+  mrzLine1 = mrzLine1.padEnd(44, '<');
+
+  if (mrzLine1.length > 44) {
+    throw new Error('First line of MRZ exceeds 44 characters');
+  }
+
+  // Build the second line of MRZ
+  const mrzLine2 = `${passportNumber}4${nationality}${birthDate}1M${expiryDate}5<<<<<<<<<<<<<<02`;
+
+  // Combine both lines to form the MRZ
+  const mrz = mrzLine1 + mrzLine2;
+
+  // Validate the MRZ length
+  if (mrz.length !== 88) {
+    throw new Error(`MRZ must be 88 characters long, got ${mrz.length}`);
+  }
 
   let privateKeyPem: string;
   let dsc: string;
