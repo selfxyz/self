@@ -37,12 +37,14 @@ template SMTVerify(nLength) {
 
     // Verification
     signal computedRoot <== BinaryMerkleRoot(nLength)(leafOrZero, depth, path, siblings);
-    computedRoot === root;
+    signal computedRootIsValid <== IsEqual()([computedRoot,root]);
 
     // check is leaf equals virtual leaf
     signal virtualLeaf <== Poseidon(3)([virtualValue, 1,1]);
     signal areLeafAndVirtualLeafEquals <== IsEqual()([virtualLeaf, leaf]);
 
-    mode === areLeafAndVirtualLeafEquals;
+    signal isInclusionOrNonInclusionValid <== IsEqual()([mode,areLeafAndVirtualLeafEquals]);
 
+    signal output out <== computedRootIsValid * isInclusionOrNonInclusionValid;
+    
 }

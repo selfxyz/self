@@ -14,9 +14,6 @@ template OFAC_NAME_DOB() {
     signal input smt_leaf_value;
     signal input smt_root;
     signal input smt_siblings[256];
-    signal output proofLevel <== 2;
-
-
     // Name Hash
     component poseidon_hasher[3];
     for (var j = 0; j < 3; j++) {
@@ -36,7 +33,5 @@ template OFAC_NAME_DOB() {
     // NameDob hash
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
 
-    SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
+    signal output ofacVerification <== SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
 }
-
-component main { public [ smt_root ] } = OFAC_NAME_DOB();

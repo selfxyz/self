@@ -21,7 +21,5 @@ template OFAC_PASSPORT_NUMBER() {
     for (var i = 0; i < 9; i++) {
         poseidon_hasher.inputs[i] <== dg1[49 + i];
     } 
-    SMTVerify(256)(poseidon_hasher.out, smt_leaf_value, smt_root, smt_siblings, 0);
+   signal output ofacVerification <== SMTVerify(256)(poseidon_hasher.out, smt_leaf_value, smt_root, smt_siblings, 0);
 }
-
-component main { public [ smt_root ] } = OFAC_PASSPORT_NUMBER();
