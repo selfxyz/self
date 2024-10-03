@@ -1,16 +1,14 @@
 import { sha1Pad, sha256Pad } from "./shaPad";
 import * as forge from "node-forge";
-import { splitToWords } from "./utils";
-import { CSCA_AKI_MODULUS, CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
-import { poseidon16, poseidon2, poseidon4 } from "poseidon-lite";
+import { bytesToBigDecimal, extractRSFromSignature, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from "./utils";
+import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
+import { poseidon2 } from "poseidon-lite";
 import { IMT } from "@zk-kit/imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
-import { createHash } from "crypto";
 import axios from "axios";
-import { flexiblePoseidon } from "./poseidon";
-import { getSignatureAlgorithmDetails } from "./certificates/handleCertificate";
-import { getLeaf } from "./pubkeyTree";
-
+import { parseCertificate } from "./certificates/handleCertificate";
+import { getLeafCSCA } from "./pubkeyTree";
+import { SKI_PEM, SKI_PEM_DEV } from "../constants/skiPem";
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
     const modulusNumArray = [];
     for (let i = 0; i < modulus.length; i += 2) {
@@ -42,104 +40,101 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
     return startIndex;
 }
 
-export function getCSCAInputs(dscSecret: string, dscCertificate: any, cscaCertificate: any = null, n_dsc: number, k_dsc: number, n_csca: number, k_csca: number, max_cert_bytes: number, devmod: boolean = false) {
-    let csca_modulus_formatted;
-    let csca_modulus_bigint;
-    // the purpose of devmode is to get the csca modulus from the mock_csca certificate instead of using the registry which parses aki to csca modulus
-    if (devmod) {
-        // console.log('DEV MODE');
-        //const csca_modulus_bigint = BigInt('0x' + csca_modulus);
-        //console.log("certificate", cscaCertificate);
-        //console.log('csca_modulus_hex', cscaCertificate.getPublicKeyHex());
 
-        const rsaPublicKey = cscaCertificate.publicKey as forge.pki.rsa.PublicKey;
-        const csca_modulus = rsaPublicKey.n.toString(16).toLowerCase();
-        //console.log('csca_modulus', csca_modulus);
-        csca_modulus_bigint = BigInt(`0x${csca_modulus}`);
-        csca_modulus_formatted = splitToWords(csca_modulus_bigint, n_csca, k_csca);
-        //console.log('csca_modulus_formatted', csca_modulus_formatted);
+export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any, max_cert_bytes: number) {
 
+    // get the tbs certificate, first instiate the certificate
+    const dscCert = forge.pki.certificateFromPem(dscCertificate);
+    const dscTbs = dscCert.tbsCertificate;
+    const dscTbsCertDer = forge.asn1.toDer(dscTbs).getBytes();
+    const dscTbsCertBytes = derToBytes(dscTbsCertDer);
+    const dscTbsCertUint8Array = Uint8Array.from(dscTbsCertBytes.map(byte => parseInt(byte.toString(16), 16)));
 
-    }
-    else {
-        // console.log('NOT DEV MODE');
-        // Find the authorityKeyIdentifier extension
-        const authorityKeyIdentifierExt = dscCertificate.extensions.find(
-            (ext) => ext.name === 'authorityKeyIdentifier'
-        );
-        //console.log('authorityKeyIdentifierExt', authorityKeyIdentifierExt);
-        const value = authorityKeyIdentifierExt.value;
-        //console.log('value', value);
-        const byteArray = derToBytes(value);
-        //console.log('Authority Key Identifier (byte array):', byteArray);
-        const formattedValue = byteArray.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-        //console.log('Formatted Authority Key Identifier:', formattedValue);
-        const formattedValueAdjusted = formattedValue.substring(12); // Remove the first '30:16:80:14:' from the formatted string
-        const csca_modulus = CSCA_AKI_MODULUS[formattedValueAdjusted as keyof typeof CSCA_AKI_MODULUS];
-        const csca_modulus_cleaned = csca_modulus.replace(/:/g, '');
-        csca_modulus_bigint = BigInt(`0x${csca_modulus_cleaned}`);
-        csca_modulus_formatted = splitToWords(csca_modulus_bigint, n_csca, k_csca);
-        //console.log('CSCA modulus as bigint:', csca_modulus_bigint);
-        //console.log('CSCA modulus extracted from json:', csca_modulus_formatted);
-    }
-
-    const signatureAlgorithm = dscCertificate.signatureOid;;
-
-    //dsc modulus
-    const dsc_modulus = dscCertificate.publicKey.n.toString(16).toLowerCase();
-    //console.log('dsc_modulus', dsc_modulus);
-    const dsc_modulus_bytes_array = dsc_modulus.match(/.{2}/g).map(byte => parseInt(byte, 16));
-    //console.log('dsc_modulus_bytes_array', dsc_modulus_bytes_array);
-    const dsc_modulus_bytes_array_formatted = dsc_modulus_bytes_array.map(byte => byte.toString());
-    const dsc_modulus_number = BigInt(`0x${dsc_modulus}`);
-    const dsc_modulus_formatted = splitToWords(dsc_modulus_number, n_dsc, k_dsc);
-
-    const dsc_signature = dscCertificate.signature;
-    const dsc_signature_hex = Buffer.from(dsc_signature, 'binary').toString('hex');
-    const dsc_signature_bigint = BigInt('0x' + dsc_signature_hex);
-    const dsc_signature_formatted = splitToWords(dsc_signature_bigint, n_csca, k_csca);
-
-
-    //const formatted_dsc_signature = dsc_signature.map(byte => byte.toString(16).padStart(2, '0').toUpperCase()).join(':');
-    const tbsCertificateDer = forge.asn1.toDer(dscCertificate.tbsCertificate).getBytes();
-    const tbsCertificateBytes = derToBytes(tbsCertificateDer);
-    const dsc_tbsCertificateUint8Array = Uint8Array.from(tbsCertificateBytes.map(byte => parseInt(byte.toString(16), 16)));
-
+    const { signatureAlgorithm, hashFunction, publicKeyDetails, x, y, modulus, curve, exponent, bits, subjectKeyIdentifier, authorityKeyIdentifier } = parseCertificate(dscCertificate);
+    // console.log('authorityKeyIdentifier', authorityKeyIdentifier);
     let dsc_message_padded;
     let dsc_messagePaddedLen;
-    if (signatureAlgorithm === '1.2.840.113549.1.1.5') { // sha1
-        [dsc_message_padded, dsc_messagePaddedLen] = sha1Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
+    switch (hashFunction) {
+        case 'sha1':
+            [dsc_message_padded, dsc_messagePaddedLen] = sha1Pad(dscTbsCertUint8Array, max_cert_bytes);
+            break;
+        case 'sha256':
+            [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dscTbsCertUint8Array, max_cert_bytes);
+            break;
+        default:
+            console.log("Signature algorithm not recognized", signatureAlgorithm);
+            [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dscTbsCertUint8Array, max_cert_bytes);
+            break;
     }
-    else if (signatureAlgorithm === '1.2.840.113549.1.1.11') { //sha256
-        [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
-    }
-    else {
-        console.log("Signature algorithm not recognized", signatureAlgorithm);
-        [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dsc_tbsCertificateUint8Array, max_cert_bytes);
 
-    }
-    const startIndex = findStartIndex(dsc_modulus, dsc_message_padded);
+    const { n, k } = getNAndK(signatureAlgorithm);
+    // Extract the signature from the DSC certificate
+    const dscSignature = dscCert.signature;
+    const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), char => char.charCodeAt(0));
+
+    let pubKey, signature;
+
+
+
+    const startIndex = findStartIndex(modulus, dsc_message_padded);
     const startIndex_formatted = startIndex.toString();
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
-    // console.log('dsc_message_padded_formatted', dsc_message_padded_formatted);
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
-    // console.log('dsc_messagePaddedLen_formatted', dsc_messagePaddedLen_formatted);
 
-    // merkle tree saga
-    const pemContent = forge.pki.certificateToPem(cscaCertificate);
-    const leaf = getLeaf(pemContent);
-    const [root, proof] = getCSCAModulusProof(leaf, n_csca, k_csca);
-    const { signatureAlgorithm: signatureAlgorithmName, hashFunction } = getSignatureAlgorithmDetails(signatureAlgorithm);
+    const cscaPemPROD = (SKI_PEM as any)[authorityKeyIdentifier];
+    const cscaPemDEV = (SKI_PEM_DEV as any)[authorityKeyIdentifier];
+    const cscaPem = cscaPemPROD || cscaPemDEV;
+
+    const { x: csca_x, y: csca_y, modulus: csca_modulus, signature_algorithm: csca_signature_algorithm } = parseCertificate(cscaPem);
+    const { n: n_csca, k: k_csca } = getNAndKCSCA(csca_signature_algorithm);
+
+    const leaf = getLeafCSCA(cscaPem);
+    const [root, proof] = getCSCAModulusProof(leaf);
+
+    if (signatureAlgorithm === 'ecdsa') {
+        const { r, s } = extractRSFromSignature(encryptedDigest);
+        const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_csca, k_csca)
+        const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_csca, k_csca)
+        signature = [...signature_r, ...signature_s]
+        const dsc_x_formatted = splitToWords(BigInt(hexToDecimal(x)), n, k)
+        const dsc_y_formatted = splitToWords(BigInt(hexToDecimal(y)), n, k)
+        pubKey = [...dsc_x_formatted, ...dsc_y_formatted]
+    } else {
+
+        signature = splitToWords(
+            BigInt(bytesToBigDecimal(encryptedDigest)),
+            n_csca,
+            k_csca
+        )
+
+        pubKey = splitToWords(
+            BigInt(hexToDecimal(modulus)),
+            n,
+            k
+        )
+    }
+
+    let csca_pubKey_formatted;
+    if (csca_signature_algorithm === 'ecdsa') {
+        const csca_x_formatted = splitToWords(BigInt(hexToDecimal(csca_x)), n_csca, k_csca);
+        const csca_y_formatted = splitToWords(BigInt(hexToDecimal(csca_y)), n_csca, k_csca);
+        csca_pubKey_formatted = [...csca_x_formatted, ...csca_y_formatted];
+    }
+    else {
+        csca_pubKey_formatted = splitToWords(BigInt(hexToDecimal(csca_modulus)), n_csca, k_csca);
+    }
+
+
 
     return {
-        "signature_algorithm": `${hashFunction}_${signatureAlgorithmName}`, // this is the opposite order as in the other files?
+        "signature_algorithm": `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${4096}`,
         "inputs":
         {
             "raw_dsc_cert": dsc_message_padded_formatted,
             "raw_dsc_cert_padded_bytes": [dsc_messagePaddedLen_formatted],
-            "csca_pubKey": csca_modulus_formatted,
-            "signature": dsc_signature_formatted,
-            "dsc_pubKey": dsc_modulus_formatted,
+            "csca_pubKey": csca_pubKey_formatted,
+            "signature": signature,
+            "dsc_pubKey": pubKey,
             "dsc_pubKey_offset": [startIndex_formatted],
             "secret": [dscSecret],
             "merkle_root": [BigInt(root).toString()],
@@ -167,10 +162,10 @@ export function getCSCAModulusMerkleTree() {
 
 
 
-export function getCSCAModulusProof(leaf, n, k) {
+export function getCSCAModulusProof(leaf) {
+    console.log('leaf', leaf);
     let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
     tree.setNodes(serialized_csca_tree);
-    //const tree = getCSCAModulusMerkleTree(n, k);
     const index = tree.indexOf(leaf);
     if (index === -1) {
         throw new Error("Your public key was not found in the registry");

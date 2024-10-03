@@ -1,19 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { DEFAULT_MAJORITY, } from '../../../common/src/constants/constants';
+import { max_cert_bytes, } from '../../../common/src/constants/constants';
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType, ArgumentsProve } from '../../../common/src/utils/appType';
+import { AppType } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
-import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
-import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
 import { getCircuitName, parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
+import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
+import { generateCircuitInputsDSC } from '../../../common/src/utils/csca';
+import { sendCSCARequest } from '../../../common/src/utils/csca';
+
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
@@ -21,7 +23,7 @@ interface ProveScreenProps {
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [generatingProof, setGeneratingProof] = useState(false);
   const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
-  const disclosureOptions = (selectedApp as any).getDisclosureOptions();
+  const disclosureOptions = selectedApp.circuitMode === 'register' ? {} : (selectedApp as any).getDisclosureOptions();
   const {
     toast,
     setSelectedTab,
@@ -141,15 +143,51 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
       console.log("selectedApp.userIdType", selectedApp.userIdType);
 
-
       const inputs = generateCircuitInputsInApp(passportData, selectedApp);
-      const rawDscProof = await generateProof(
-        circuitName,
-        inputs,
-      );
-      const dscProof = formatProof(rawDscProof);
-      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit, userIdType: selectedApp.userIdType };
-      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
+
+      if (selectedApp.circuitMode === 'register') {
+        const { secret, dscSecret } = useUserStore.getState();
+        const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes);
+
+        // Execute sendCSCARequest and generateProof in parallel
+        const [modalResponse, proof] = await Promise.all([
+          sendCSCARequest(
+            cscaInputs
+          ),
+          generateProof(
+            circuitName,
+            inputs,
+          )
+        ]);
+        const dscProof = JSON.parse(JSON.stringify(modalResponse));
+
+        const formattedProof = formatProof(proof);
+        const attestation = buildAttestation({
+          proof: formattedProof.proof,
+          publicSignals: formattedProof.publicSignals,
+          dsc: passportData.dsc,
+          userIdType: selectedApp.userIdType,
+          dscProof: (dscProof as any).proof,
+          dscPublicSignals: (dscProof as any).pub_signals,
+        });
+        console.log(attestation);
+        socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
+
+      } else {
+        const proof = await generateProof(
+          circuitName,
+          inputs,
+        );
+        const formattedProof = formatProof(proof);
+        const attestation = buildAttestation({
+          proof: formattedProof.proof,
+          publicSignals: formattedProof.publicSignals,
+          dsc: passportData.dsc,
+          userIdType: selectedApp.userIdType,
+        });
+        console.log(attestation);
+        socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
+      }
 
     } catch (error) {
       toast.show("Error", {
@@ -210,8 +248,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       </YStack>
 
       <XStack f={1} />
-      {/* <Text py="$4" textAlign="center" color={textBlack}>{isZkeyDownloading[circuitName as CircuitName] ? "Downloading zkey..." : "zkey downloaded"}</Text> */}
-
 
       {isZkeyDownloading[circuitName as CircuitName] && <YStack alignItems='center' gap="$2" mb="$3" mx="$8">
         <Text style={{ fontStyle: 'italic' }}>downloading files...</Text>
@@ -247,3 +283,4 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 };
 
 export default ProveScreen;
+

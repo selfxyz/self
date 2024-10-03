@@ -3,7 +3,9 @@
   "version": "0.0.1",
   "author": "",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "tests": " yarn ts-mocha -p ./tsconfig.json modal.test.ts --exit"
+  },
   "dependencies": {
     "@types/chai-as-promised": "^7.1.6",
     "@types/node": "^20.11.19",

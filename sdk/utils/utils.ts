@@ -12,9 +12,9 @@ import {
   vkey_prove_rsa_65537_sha1,
   vkey_prove_rsa_65537_sha256,
   vkey_prove_rsapss_65537_sha256,
-  vkey_register_rsa_65537_sha1,
-  vkey_register_rsa_65537_sha256,
-  vkey_register_rsapss_65537_sha256,
+  vkey_dsc_rsa_65537_sha1,
+  vkey_dsc_rsa_65537_sha256,
+  vkey_dsc_rsapss_65537_sha256,
 } from '../../common/src/constants/vkey';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 
@@ -28,7 +28,7 @@ export function getVkeyFromArtifacts(
   hashFunction: string
 ) {
   const circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
-  console.log('Circuit name:', circuitName);
+  console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
   switch (circuitName) {
     case 'prove_rsa_65537_sha256':
       return vkey_prove_rsa_65537_sha256;
@@ -36,12 +36,12 @@ export function getVkeyFromArtifacts(
       return vkey_prove_rsa_65537_sha1;
     case 'prove_rsapss_65537_sha256':
       return vkey_prove_rsapss_65537_sha256;
-    case 'register_rsa_65537_sha256':
-      return vkey_register_rsa_65537_sha256;
-    case 'register_rsa_65537_sha1':
-      return vkey_register_rsa_65537_sha1;
-    case 'register_rsapss_65537_sha256':
-      return vkey_register_rsapss_65537_sha256;
+    case 'dsc_rsa_65537_sha1':
+      return vkey_dsc_rsa_65537_sha1;
+    case 'dsc_rsa_65537_sha256':
+      return vkey_dsc_rsa_65537_sha256;
+    case 'dsc_rsapss_65537_sha256':
+      return vkey_dsc_rsapss_65537_sha256;
     default:
       throw new Error('Invalid signature algorithm or hash function');
   }

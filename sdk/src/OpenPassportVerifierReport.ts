@@ -1,5 +1,3 @@
-import { bigIntToHex, castToUUID, hexToUUID } from '../../common/src/utils/utils';
-
 export class OpenPassportVerifierReport {
   scope: boolean = true;
   merkle_root: boolean = true;
@@ -15,13 +13,15 @@ export class OpenPassportVerifierReport {
   older_than: boolean = true;
   owner_of: boolean = true;
   proof: boolean = true;
+  dscProof: boolean = true;
   dsc: boolean = true;
+  pubKey: boolean = true;
   valid: boolean = true;
 
   public user_identifier: string;
   public nullifier: string;
 
-  constructor() {}
+  constructor() { }
 
   exposeAttribute(
     attribute: keyof OpenPassportVerifierReport,

@@ -1,12 +1,13 @@
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { countryCodes } from '../../common/src/constants/constants';
 import { AppType } from '../../common/src/utils/appType';
-import { OpenPassportVerifier, OpenPassportVerifierInputs } from './OpenPassportVerifier';
-
+import { OpenPassportVerifier } from './OpenPassportVerifier';
+import { OpenPassportDynamicAttestation, OpenPassportAttestation } from '../../common/src/utils/openPassportAttestation';
 export {
   AppType,
   OpenPassportVerifier,
-  OpenPassportVerifierInputs,
+  OpenPassportDynamicAttestation,
+  OpenPassportAttestation,
   OpenPassportVerifierReport,
   countryCodes,
 };

@@ -2,7 +2,7 @@ import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex
 import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
 import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
-import { formatDg2Hash, getNAndK, hexToDecimal, splitToWords } from './utils';
+import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
 import { parseCertificate } from "./certificates/handleCertificate";
 import { flexiblePoseidon } from "./poseidon";
 
@@ -44,7 +44,27 @@ export function getLeaf(dsc: string): string {
     return customHasher([sigAlgIndex, ...pubkeyChunked]);
   }
 }
+export function getLeafCSCA(dsc: string): string {
+  const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
+  const { n, k } = getNAndKCSCA(signatureAlgorithm);
+  console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
+  const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
+  if (sigAlgIndex == undefined) {
+    console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
+    throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
+  }
+  if (signatureAlgorithm === 'ecdsa') {
+    let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
+    let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
+    return customHasher([sigAlgIndex, ...qx, ...qy])
+
+  } else {
+    const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+    return customHasher([sigAlgIndex, ...pubkeyChunked]);
+  }
+}
 export async function getTreeFromTracker(): Promise<LeanIMT> {
   const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
   const imt = new LeanIMT(

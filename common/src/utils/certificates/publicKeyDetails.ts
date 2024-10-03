@@ -122,7 +122,7 @@ export function parseECParameters(publicKeyInfo: any): PublicKeyDetailsECDSA {
         const publicKeyDetailsECDSA: PublicKeyDetailsECDSA = {
             curve: curve,
             params: curveParams,
-            bits: bits,
+            bits: bits.toString(),
             x: x,
             y: y
         };

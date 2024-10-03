@@ -1,6 +1,6 @@
-import { countryCodes, DEFAULT_MAJORITY } from "../../../common/src/constants/constants";
+import { countryCodes, DEFAULT_MAJORITY } from '../../../common/src/constants/constants';
 
-type CircuitType = 'register' | 'prove';
+type CircuitType = 'prove';
 type AlgorithmType = 'rsa_sha256' | 'rsa_sha1' | 'rsapss_sha256';
 
 export const scope = '@spaceShips';
@@ -24,24 +24,6 @@ export interface TestCase {
 }
 
 export const testCases: TestCase[] = [
-  {
-    circuitType: 'register',
-    algorithm: 'rsa_sha256',
-    wasmPath: '../circuits/build/fromAWS/register_rsa_65537_sha256.wasm',
-    zkeyPath: '../circuits/build/fromAWS/register_rsa_65537_sha256.zkey',
-  },
-  {
-    circuitType: 'register',
-    algorithm: 'rsa_sha1',
-    wasmPath: '../circuits/build/fromAWS/register_rsa_65537_sha1.wasm',
-    zkeyPath: '../circuits/build/fromAWS/register_rsa_65537_sha1.zkey',
-  },
-  {
-    circuitType: 'register',
-    algorithm: 'rsapss_sha256',
-    wasmPath: '../circuits/build/fromAWS/register_rsapss_65537_sha256.wasm',
-    zkeyPath: '../circuits/build/fromAWS/register_rsapss_65537_sha256.zkey',
-  },
   {
     circuitType: 'prove',
     algorithm: 'rsa_sha256',

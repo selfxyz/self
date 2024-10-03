@@ -4,7 +4,7 @@ import { sha1 } from 'js-sha1';
 import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
-import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa } from '../constants/constants';
+import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca } from '../constants/constants';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -20,6 +20,11 @@ export function formatMrz(mrz: string) {
 export function getNAndK(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
   const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
   const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
+  return { n, k };
+}
+export function getNAndKCSCA(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
+  const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_csca;
+  const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_csca;
   return { n, k };
 }
 

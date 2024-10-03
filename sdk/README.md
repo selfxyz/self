@@ -13,13 +13,13 @@ import { AppType } from '@openpassport/sdk';
 const appName = '🤠 Cowboy App';
 const scope = 'cowboyApp';
 const userID = 'user1234';
-const sessionID = uuidv4():
+const sessionID = uuidv4();
 
 const cowboyApp: AppType = {
   name: appName,
   scope,
   userId: userID,
-  sessionId,
+  sessionId: sessionID,
   circuit: 'prove',
   arguments: {
     disclosureOptions: { older_than: '18', nationality: 'France' },
@@ -34,7 +34,7 @@ const cowboyApp: AppType = {
 | `userId`    | M        | User ID                                                       |
 | `sessionId` | M        | Session ID                                                    |
 | `circuit`   | M        | Circuit to use, only `prove` is available for now             |
-| `arguments` | O        | optional disclosure options, based on passport attributes     |
+| `arguments` | O        | Optional disclosure options, based on passport attributes     |
 
 ### Display the QR code
 
@@ -78,7 +78,7 @@ const verifier = new OpenPassportVerifier({
 
 ### Verify the proof
 
-The function fired from the OpenPassport app will send a `OpenPassportVerifierInputs` object.
+The function fired from the OpenPassport app will send an `OpenPassportVerifierInputs` object.
 
 ```typescript
 const result: OpenPassportVerifierReport = await verifier.verify(openPassportVerifierInputs);
