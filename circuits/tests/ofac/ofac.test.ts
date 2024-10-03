@@ -24,7 +24,6 @@ const passportDataInOfac = genMockPassportData(
   'ARCANGEL DE JESUS'
 );
 
-
 // POSSIBLE TESTS (for each of 3 circuits):
 // 0. Cicuits compiles and loads
 // 1. Valid proof   : Correct path and corresponding closest leaf AND leaf != pasport_hash ; Valid prove of non-membership
@@ -40,7 +39,10 @@ describe('OFAC - Passport number match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/ofac/../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
+      path.join(
+        __dirname,
+        '../../circuits/ofac/../../circuits/tests/ofac/ofac_passport_number_tester.circom'
+      ),
       {
         include: [
           'node_modules',
@@ -52,17 +54,9 @@ describe('OFAC - Passport number match', function () {
 
     passno_smt.import(passportNojson);
     const proofLevel = 3;
-    memSmtInputs = generateCircuitInputsOfac(
-      passportDataInOfac,
-      passno_smt,
-      proofLevel
-    );
+    memSmtInputs = generateCircuitInputsOfac(passportDataInOfac, passno_smt, proofLevel);
 
-    nonMemSmtInputs = generateCircuitInputsOfac(
-      passportData,
-      passno_smt,
-      proofLevel
-    );
+    nonMemSmtInputs = generateCircuitInputsOfac(passportData, passno_smt, proofLevel);
   });
 
   // Compile circuit
@@ -94,7 +88,6 @@ describe('OFAC - Passport number match', function () {
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });
-
 });
 
 // Level 2: NameDob match in OfacList
@@ -105,13 +98,16 @@ describe('OFAC - Name and DOB match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_tester.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_dob_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     namedob_smt.import(nameDobjson);
     const proofLevel = 2;
@@ -170,13 +166,16 @@ describe('OFAC - Name match', function () {
   let nonMemSmtInputs: any;
 
   before(async () => {
-    circuit = await wasm_tester(path.join(__dirname, '../../circuits/tests/ofac/ofac_name_tester.circom'), {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
-    });
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
 
     name_smt.import(namejson);
     const proofLevel = 1;
