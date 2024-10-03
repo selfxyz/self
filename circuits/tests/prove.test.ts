@@ -37,20 +37,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const selector_older_than = '1';
     const secret = 0;
     const dsc_secret = 0;
-    const selector_mode = 1;
+    const selector_mode = [1, 1];
     const selector_ofac = 1;
-    const forbidden_countries_list = [
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-      'XXX',
-    ];
+    const forbidden_countries_list = ['DZA'];
 
     let name_smt = new SMT(poseidon2, true);
     name_smt.import(namejson);

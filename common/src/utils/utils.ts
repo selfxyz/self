@@ -533,7 +533,13 @@ export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: 
 }
 
 export function formatCountriesList(countries: string[]) {
-  return countries.map(country =>
-    country.charCodeAt(0) * 1000000 + country.charCodeAt(1) * 1000 + country.charCodeAt(2)
-  );
+  if (countries.length > 20) {
+    throw new Error("Countries list must be inferior or equals to 20");
+  }
+  const paddedCountries = countries.concat(Array(20 - countries.length).fill(''));
+  const result = paddedCountries.flatMap(country => {
+    const chars = country.padEnd(3, '\0').split('').map(char => char.charCodeAt(0));
+    return chars;
+  });
+  return result;
 }

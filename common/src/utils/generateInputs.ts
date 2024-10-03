@@ -141,7 +141,7 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 
 
 export function generateCircuitInputsProve(
-  selector_mode: number | string,
+  selector_mode: number[] | string[],
   secret: number | string,
   dsc_secret: number | string,
   passportData: PassportData,
