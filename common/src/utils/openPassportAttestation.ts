@@ -1,127 +1,196 @@
-import { ECDSA_K_LENGTH_FACTOR, k_dsc, k_dsc_ecdsa } from "../constants/constants";
-import { parseDSC } from "./certificates/handleCertificate";
-import { bigIntToHex, castToScope, castToUUID, UserIdType } from "./utils";
-
-export interface OpenPassportAttestation {
+import {
+    ECDSA_K_LENGTH_FACTOR,
+    k_dsc,
+    k_dsc_ecdsa,
+  } from '../constants/constants';
+  import { parseDSC } from './certificates/handleCertificate';
+  import {
+    bigIntToHex,
+    castToScope,
+    castToUUID,
+    UserIdType,
+  } from './utils';
+  import { unpackReveal } from './revealBitmap';
+  import { getAttributeFromUnpackedReveal } from '../../../sdk/utils/utils';
+  
+  export interface OpenPassportAttestation {
     '@context': string[];
     type: string[];
     issuer: string;
     issuanceDate: string;
     credentialSubject: {
-        userId: string;
-        application: string;
+      userId: string;
+      application: string;
+      scope?: string;
+      merkle_root?: string;
+      attestation_id?: string;
+      current_date?: string;
+      issuing_state?: string;
+      name?: string;
+      passport_number?: string;
+      nationality?: string;
+      date_of_birth?: string;
+      gender?: string;
+      expiry_date?: string;
+      older_than?: string;
+      owner_of?: string;
+      pubKey?: string[];
+      valid?: boolean;
+      nullifier?: string;
     };
     proof: {
-        type: string;
-        verificationMethod: string;
-        value: {
-            proof: string[];
-            publicSignals: string[];
-        };
-        vkey: string;
+      type: string;
+      verificationMethod: string;
+      value: {
+        proof: string[];
+        publicSignals: string[];
+      };
+      vkey: string;
     };
     dscProof: {
-        type: string;
-        verificationMethod: string;
-        value: {
-            proof: string[];
-            publicSignals: string[];
-        };
-        vkey: string;
+      type: string;
+      verificationMethod: string;
+      value: {
+        proof: string[];
+        publicSignals: string[];
+      };
+      vkey: string;
     };
     dsc: {
-        type: string;
-        value: string;
-        encoding: string;
+      type: string;
+      value: string;
+      encoding: string;
     };
-}
-export function buildAttestation(options: {
+  }
+  
+  export function buildAttestation(options: {
     proof: string[];
     publicSignals: string[];
     dscProof?: string[];
     dscPublicSignals?: string[];
     dsc: string;
     userIdType?: UserIdType;
-}): OpenPassportDynamicAttestation {
-    const { proof, publicSignals, dscProof, dscPublicSignals, dsc, userIdType = 'uuid' } = options;
-
+  }): OpenPassportDynamicAttestation {
+    const {
+      proof,
+      publicSignals,
+      dscProof,
+      dscPublicSignals,
+      dsc,
+      userIdType = 'uuid',
+    } = options;
+  
     // Parse the DSC (Document Signing Certificate)
     const dscParsed = parseDSC(dsc);
-
+  
     // Determine the scaling factor based on the signature algorithm
     let kScaled: number;
     const { signatureAlgorithm } = dscParsed;
     switch (signatureAlgorithm) {
-        case 'ecdsa':
-            kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
-            break;
-        default:
-            kScaled = k_dsc;
+      case 'ecdsa':
+        kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
+        break;
+      default:
+        kScaled = k_dsc;
     }
-
+  
     // Parse the public signals
     const parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
-
+  
     // Get user identifier
     const rawUserId = parsedPublicSignals.user_identifier;
     let userId: string;
     switch (userIdType) {
-        case 'ascii':
-            userId = castToScope(BigInt(rawUserId));
-            break;
-        case 'hex':
-            userId = bigIntToHex(BigInt(rawUserId));
-            break;
-        case 'uuid':
-            userId = castToUUID(BigInt(rawUserId));
-            break;
-        default:
-            userId = rawUserId;
+      case 'ascii':
+        userId = castToScope(BigInt(rawUserId));
+        break;
+      case 'hex':
+        userId = bigIntToHex(BigInt(rawUserId));
+        break;
+      case 'uuid':
+        userId = castToUUID(BigInt(rawUserId));
+        break;
+      default:
+        userId = rawUserId;
     }
-
+  
     const scope = castToScope(BigInt(parsedPublicSignals.scope));
-
-    const attestation: OpenPassportAttestation = {
-        '@context': [
-            'https://www.w3.org/2018/credentials/v1',
-            'https://openpassport.app'
-        ],
-        type: ['OpenPassportAttestation', 'PassportCredential'],
-        issuer: 'https://openpassport.app',
-        issuanceDate: new Date().toISOString(),
-        credentialSubject: {
-            userId: userId,
-            application: scope
-        },
-        proof: {
-            type: 'ZeroKnowledgeProof',
-            verificationMethod: 'https://github.com/zk-passport/openpassport',
-            value: {
-                proof: proof,
-                publicSignals: publicSignals,
-            },
-            vkey: "",
-        },
-        dscProof: {
-            type: 'ZeroKnowledgeProof',
-            verificationMethod: 'https://github.com/zk-passport/openpassport',
-            value: {
-                proof: dscProof || [],
-                publicSignals: dscPublicSignals || [],
-            },
-            vkey: "",
-        },
-        dsc: {
-            type: 'X509Certificate',
-            value: dsc || '',
-            encoding: 'PEM',
-        }
+  
+    // Unpack the revealed data
+    const unpackedReveal = unpackReveal(
+      parsedPublicSignals.revealedData_packed
+    );
+  
+    // Extract attributes from unpackedReveal
+    const attributeNames = [
+      'issuing_state',
+      'name',
+      'passport_number',
+      'nationality',
+      'date_of_birth',
+      'gender',
+      'expiry_date',
+      'older_than',
+      'owner_of',
+    ];
+  
+    const credentialSubject: any = {
+      userId: userId,
+      application: scope,
+      nullifier: bigIntToHex(BigInt(parsedPublicSignals.nullifier)),
+      scope: scope,
+      current_date: parsedPublicSignals.current_date.toString(),
     };
-
+  
+    attributeNames.forEach((attrName) => {
+      const value = getAttributeFromUnpackedReveal(unpackedReveal, attrName);
+      if (value !== undefined && value !== null) {
+        credentialSubject[attrName] = value;
+      }
+    });
+  
+    // Include pubKey if needed
+    credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed;
+  
+    const attestation: OpenPassportAttestation = {
+      '@context': [
+        'https://www.w3.org/2018/credentials/v1',
+        'https://openpassport.app',
+      ],
+      type: ['OpenPassportAttestation', 'PassportCredential'],
+      issuer: 'https://openpassport.app',
+      issuanceDate: new Date().toISOString(),
+      credentialSubject: credentialSubject,
+      proof: {
+        type: 'ZeroKnowledgeProof',
+        verificationMethod:
+          'https://github.com/zk-passport/openpassport',
+        value: {
+          proof: proof,
+          publicSignals: publicSignals,
+        },
+        vkey: '',
+      },
+      dscProof: {
+        type: 'ZeroKnowledgeProof',
+        verificationMethod:
+          'https://github.com/zk-passport/openpassport',
+        value: {
+          proof: dscProof || [],
+          publicSignals: dscPublicSignals || [],
+        },
+        vkey: '',
+      },
+      dsc: {
+        type: 'X509Certificate',
+        value: dsc || '',
+        encoding: 'PEM',
+      },
+    };
+  
     // Return an instance of OpenPassportDynamicAttestation
     return new OpenPassportDynamicAttestation(attestation, userIdType);
-}
-
+  }
 // New OpenPassportDynamicAttestation class extending OpenPassportAttestation
 export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     '@context': string[];
@@ -131,6 +200,22 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     credentialSubject: {
         userId: string;
         application: string;
+        scope?: string;
+        merkle_root?: string;
+        attestation_id?: string;
+        current_date?: string;
+        issuing_state?: string;
+        name?: string;
+        passport_number?: string;
+        nationality?: string;
+        date_of_birth?: string;
+        gender?: string;
+        expiry_date?: string;
+        older_than?: string;
+        owner_of?: string;
+        pubKey?: string[];
+        valid?: boolean;
+        nullifier?: string;
     };
     proof: {
         type: string;
