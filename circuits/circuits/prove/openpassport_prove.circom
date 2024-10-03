@@ -5,9 +5,10 @@ include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../disclose/disclose.circom";
+include "../disclose/proveCountryIsNotInList.circom";
 include "../ofac/ofac_name.circom";
 
-template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
+template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -30,6 +31,8 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
+    // forbidden countries list
+    signal input forbidden_countries_list[FORBIDDEN_COUNTRIES_LIST_LENGTH];
     // disclose related inputs
     signal input selector_dg1[88];
     signal input selector_older_than;
@@ -79,6 +82,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
     // COUNTRY IS IN LIST
+    ProveCountryIsNotInList(FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
 
     // REGISTRATION (optional)
     // generate the commitment

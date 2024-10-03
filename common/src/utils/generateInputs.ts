@@ -18,6 +18,7 @@ import {
   formatDg2Hash,
   getNAndK,
   stringToAsciiBigIntArray,
+  formatCountriesList,
 } from './utils';
 import { generateCommitment, getLeaf } from "./pubkeyTree";
 import { LeanIMT } from "@zk-kit/lean-imt";
@@ -150,6 +151,7 @@ export function generateCircuitInputsProve(
   majority: string,
   name_smt: SMT,
   selector_ofac,
+  forbidden_countries_list: string[],
   user_identifier: string,
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
@@ -243,12 +245,13 @@ export function generateCircuitInputsProve(
     smt_root: formatInput(smt_root),
     smt_leaf_value: formatInput(smt_leaf_value),
     smt_siblings: formatInput(smt_siblings),
-    selector_ofac: formatInput(selector_ofac)
+    selector_ofac: formatInput(selector_ofac),
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
   };
 
 }
 
-function formatInput(input: any) {
+export function formatInput(input: any) {
   if (Array.isArray(input)) {
     return input.map(item => BigInt(item).toString());
   } else {

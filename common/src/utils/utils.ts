@@ -531,3 +531,9 @@ export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: 
       return uuidToBigInt(user_identifier).toString();
   }
 }
+
+export function formatCountriesList(countries: string[]) {
+  return countries.map(country =>
+    country.charCodeAt(0) * 1000000 + country.charCodeAt(1) * 1000 + country.charCodeAt(2)
+  );
+}

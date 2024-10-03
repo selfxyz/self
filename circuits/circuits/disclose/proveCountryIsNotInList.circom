@@ -1,20 +1,18 @@
 pragma circom 2.1.5;
 
-include "circomlib/circuits/poseidon.circom";
-include "./verify_commitment.circom";
-include "../utils/passport/ofac/validateCountry.circom";
-
-template ProveCountryNotInList() {
+include "circomlib/circuits/comparators.circom";
+template ProveCountryIsNotInList(forbiddenCountriesListLength) {
 
     signal input dg1[93];
+    signal input forbidden_countries_list[forbiddenCountriesListLength];
+    signal userCountryConcatenedBytes_0 <==  dg1[8] * 1000 + dg1[9];
+    signal userCountryConcatenedBytes_1 <==  dg1[7] * 1000000 + userCountryConcatenedBytes_0;
+    component areCountryEquals[forbiddenCountriesListLength];
 
-    signal input hostCountry[3];
-    signal input smt_leaf_value;
-    signal input smt_root;
-    signal input smt_siblings[256];
-    signal output proofLevel;
-
-    // User Country 
-    var host_user[6] = [hostCountry[0],hostCountry[1],hostCountry[2],dg1[7],dg1[8],dg1[9]];
-    ValidateCountry(256)(host_user, smt_leaf_value, smt_root, smt_siblings);
+    for (var i = 0; i < forbiddenCountriesListLength; i++) {
+        areCountryEquals[i] = IsEqual();
+        areCountryEquals[i].in[0] <== forbidden_countries_list[i];
+        areCountryEquals[i].in[1] <== userCountryConcatenedBytes_1;
+        areCountryEquals[i].out === 0;
+    }
 }

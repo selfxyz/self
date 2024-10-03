@@ -13,10 +13,10 @@ import { SMT } from '@ashpect/smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
-  { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  // { sigAlg: 'rsa', hashFunction: 'sha256' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha256' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -39,6 +39,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const dsc_secret = 0;
     const selector_mode = 1;
     const selector_ofac = 1;
+    const forbidden_countries_list = ['XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX'];
 
     let name_smt = new SMT(poseidon2, true);
     name_smt.import(namejson);
@@ -53,6 +54,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       majority,
       name_smt,
       selector_ofac,
+      forbidden_countries_list,
       user_identifier
     );
 

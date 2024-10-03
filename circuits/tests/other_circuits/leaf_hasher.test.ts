@@ -1,116 +1,179 @@
-import { expect } from 'chai';
-import { X509Certificate } from 'crypto';
+import chai, { expect, assert } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import forge from 'node-forge';
 
-import {
-  mock_dsc_sha256_rsa_2048,
-  mock_csca_sha256_rsa_2048,
-  mock_dsc_sha1_rsa_2048,
-  mock_csca_sha1_rsa_2048,
-  mock_dsc_sha256_ecdsa,
-} from '../../../common/src/constants/mockCertificates';
-import { hexToDecimal, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
-import { getLeaf, customHasher } from '../../../common/src/utils/pubkeyTree';
-import {
-  k_dsc,
-  k_dsc_ecdsa,
-  n_dsc,
-  n_dsc_ecdsa,
-  SignatureAlgorithmIndex,
-} from '../../../common/src/constants/constants';
-import {
-  parseCertificate,
-  parseDSC,
-} from '../../../common/src/utils/certificates/handleCertificate';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { generateCircuitInputsInCircuits } from '../utils/generateMockInputsInCircuits';
+describe('DateIsLessChecker Circuit Test', function () {
+  this.timeout(0); // Disable timeout
 
-function loadCertificates(dscCertContent: string, cscaCertContent: string) {
-  const dscCert = new X509Certificate(dscCertContent);
-  const cscaCert = new X509Certificate(cscaCertContent);
-  const dscCert_forge = forge.pki.certificateFromPem(dscCertContent);
-  const cscaCert_forge = forge.pki.certificateFromPem(cscaCertContent);
-
-  return { dscCert, cscaCert, dscCert_forge, cscaCert_forge };
-}
-
-describe('LeafHasher Light', function () {
-  this.timeout(0);
   let circuit;
 
-  this.beforeAll(async () => {
-    const circuitPath = path.resolve(
-      __dirname,
-      '../../circuits/tests/utils/leafHasher_tester.circom'
+  /**
+   *  Test parameters
+   *
+   *  n: number of dates to test
+   *  majority: age of majority
+   *  yearStart: start year for random current dates
+   *  yearEnd: end year for random current dates
+   *
+   *  According to circuit logic, user has to be majority years and 1 day old to be major
+   *
+   */
+
+  const n = 10;
+
+  const yearStart = 2023;
+  const yearEnd = 2049;
+  const maxDiff = 20; // Maximum date difference
+  const minDiff = -10; // Minimum date for majority
+
+  // Helper function to generate a random date within a given range
+  function generateRandomDate(yearStart, yearEnd) {
+    const year = Math.floor(Math.random() * (yearEnd - yearStart + 1)) + yearStart;
+    const month = Math.floor(Math.random() * 12) + 1;
+    const day = Math.floor(Math.random() * 28) + 1; // Simplification for month lengths
+    return { year, month, day };
+  }
+
+  // Generate arrays for current dates
+  const currentDates = Array(n)
+    .fill(0)
+    .map(() => generateRandomDate(yearStart, yearEnd));
+
+  // Generate majority birthDates ensuring the age difference is at least minDiff
+  const unvalidExpiryDates = currentDates.map((currentDate) => {
+    // Subtract a random number of years within the allowed age difference, plus a random number of days and months for additional variance
+    const yearDiff = Math.floor(Math.random() * (maxDiff - 0)) + 0;
+    const monthDiff = Math.floor(Math.random() * 12);
+    const dayDiff = Math.floor(Math.random() * 28) + 1;
+    return {
+      year: currentDate.year - yearDiff,
+      month: Math.max(1, currentDate.month - monthDiff), // Ensure month is within valid range
+      day: Math.max(1, currentDate.day - dayDiff), // Ensure day is within valid range
+    };
+  });
+
+  // Generate minority birthDates ensuring the age difference is less than minDiff
+  const validExpiryDates = currentDates.map((currentDate) => {
+    const yearDiff = Math.floor(Math.random() * -maxDiff);
+    const monthDiff = Math.floor(Math.random() * 12);
+    const dayDiff = Math.floor(Math.random() * 28);
+    return {
+      year: currentDate.year - yearDiff,
+      month: Math.max(1, currentDate.month - monthDiff), // Ensure month is within valid range
+      day: Math.max(1, currentDate.day - dayDiff), // Ensure day is within valid range
+    };
+  });
+
+  before(async () => {
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/utils/isValid_tester.circom'),
+      {
+        include: ['node_modules'],
+      }
     );
-    circuit = await wasm_tester(circuitPath, {
-      include: [
-        'node_modules',
-        './node_modules/@zk-kit/binary-merkle-root.circom/src',
-        './node_modules/circomlib/circuits',
-      ],
+  });
+
+  it('compile and load the circuit', async function () {
+    expect(circuit).to.not.be.undefined;
+  });
+
+  describe('Unvlaidity Tests', function () {
+    unvalidExpiryDates.forEach((date, index) => {
+      it(`unvalidity check for expiry date ${genDateStr(unvalidExpiryDates[index])} and current date ${genDateStr(currentDates[index])}, expired since: ${getAgeFromDates(unvalidExpiryDates[index], currentDates[index])}`, async function () {
+        const inputs = {
+          currDate: [
+            Math.floor(currentDates[index].year / 10) % 10,
+            currentDates[index].year % 10,
+            Math.floor(currentDates[index].month / 10),
+            currentDates[index].month % 10,
+            Math.floor(currentDates[index].day / 10),
+            currentDates[index].day % 10,
+          ],
+          validityDateASCII: [
+            Math.floor(date.year / 10) % 10,
+            date.year % 10,
+            Math.floor(date.month / 10),
+            date.month % 10,
+            Math.floor(date.day / 10),
+            date.day % 10,
+          ].map((n) => n + 48), // Convert to ASCII for the circuit input
+        };
+        /*
+                console.log("current date: " + JSON.stringify(currentDates[index]));
+                console.log("majority birth date: " + JSON.stringify(majorityBirthDates[index]));
+                console.log("yearDiff: " + (currentDates[index].year - majorityBirthDates[index].year) + " monthDiff: " + (currentDates[index].month - majorityBirthDates[index].month) + " dayDiff: " + (currentDates[index].day - majorityBirthDates[index].day));
+                */
+        const witness = await circuit.calculateWitness(inputs, true);
+        const output = await circuit.getOutput(witness, ['out']);
+        assert.strictEqual(output.out, '0', 'Passport should not be valid');
+      });
     });
   });
 
-  // describe('CustomHasher - getLeaf ECDSA', async () => {
-  //   const cert = mock_dsc_sha256_ecdsa;
-  //   const { signatureAlgorithm, hashFunction, x, y, bits, curve, exponent } = parseCertificate(cert);
-  //   console.log(parseCertificate(cert));
-  //   const leaf_light = getLeaf(cert, n_dsc_ecdsa, k_dsc_ecdsa);
-  //   console.log('\x1b[34m', 'customHasher output: ', leaf_light, '\x1b[0m');
-
-  //   const passportData = genMockPassportData('ecdsa_sha256', 'FRA', '000101', '300101');
-  //   const mock_inputs = generateCircuitInputsInCircuits(passportData, 'register');
-
-  //   const signatureAlgorithmIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`];
-  //   console.log('\x1b[34m', 'signatureAlgorithmIndex: ', signatureAlgorithmIndex, '\x1b[0m');
-  //   it('should extract and log certificate information', async () => {
-  //     const inputs = {
-  //       in: mock_inputs.pubKey,
-  //       sigAlg: signatureAlgorithmIndex,
-  //     };
-  //     const witness = await circuit.calculateWitness(inputs, true);
-  //     const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
-  //     console.log('\x1b[34m', 'leafValueCircom: ', leafValueCircom, '\x1b[0m');
-  //     expect(leafValueCircom).to.equal(leaf_light);
-  //   });
-  // });
-
-  describe('CustomHasher - customHasher', async () => {
-    const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
-    it('should extract and log certificate information', async () => {
-      const inputs = {
-        in: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
-      };
-      const witness = await circuit.calculateWitness(inputs, true);
-      const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
-      console.log('\x1b[34m', 'hashValueCircom: ', leafValueCircom, '\x1b[0m');
-
-      const hashValue = customHasher(passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
-      console.log('\x1b[34m', 'hashValue: ', hashValue, '\x1b[0m');
+  describe('Validity Tests', function () {
+    validExpiryDates.forEach((date, index) => {
+      it(`validity check for expiry date ${genDateStr(validExpiryDates[index])} and current date ${genDateStr(currentDates[index])} valid until: ${getAgeFromDates(currentDates[index], validExpiryDates[index])}`, async function () {
+        const inputs = {
+          currDate: [
+            Math.floor(currentDates[index].year / 10) % 10,
+            currentDates[index].year % 10,
+            Math.floor(currentDates[index].month / 10),
+            currentDates[index].month % 10,
+            Math.floor(currentDates[index].day / 10),
+            currentDates[index].day % 10,
+          ],
+          validityDateASCII: [
+            Math.floor(date.year / 10) % 10,
+            date.year % 10,
+            Math.floor(date.month / 10),
+            date.month % 10,
+            Math.floor(date.day / 10),
+            date.day % 10,
+          ].map((n) => n + 48), // Convert to ASCII for the circuit input
+        };
+        /*
+                console.log("current date: " + JSON.stringify(currentDates[index]));
+                console.log("minority birth date: " + JSON.stringify(minorityBirthDates[index]));
+                console.log("yearDiff: " + (currentDates[index].year - minorityBirthDates[index].year) + " monthDiff: " + (currentDates[index].month - minorityBirthDates[index].month) + " dayDiff: " + (currentDates[index].day - minorityBirthDates[index].day));
+                */
+        const witness = await circuit.calculateWitness(inputs, true);
+        const output = await circuit.getOutput(witness, ['out']);
+        assert.strictEqual(output.out, '1', 'Passport should be valid');
+      });
     });
   });
 
-  // describe('CustomHasher - getLeaf RSA', async () => {
-  //   const cert = mock_dsc_sha1_rsa_2048;
-  //   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } =
-  //     parseCertificate(cert);
-  //   console.log(parseCertificate(cert));
-  //   const leaf_light = getLeaf(cert, n_dsc, k_dsc);
-  //   console.log('\x1b[34m', 'customHasher: ', leaf_light, '\x1b[0m');
-  //   it('should extract and log certificate information', async () => {
-  //     const inputs = {
-  //       in: splitToWords(BigInt(hexToDecimal(modulus)), n_dsc, k_dsc),
-  //       sigAlg:
-  //         SignatureAlgorithmIndex[
-  //         `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`
-  //         ],
-  //     };
-  //     const witness = await circuit.calculateWitness(inputs, true);
-  //     const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
-  //     expect(leafValueCircom).to.equal(leaf_light);
-  //   });
-  // });
+  function genDateStr(currentDate: { year: number; month: number; day: number }): string {
+    // Ensure month and day are two digits by padding with '0' if necessary
+    const formattedMonth = currentDate.month.toString().padStart(2, '0');
+    const formattedDay = currentDate.day.toString().padStart(2, '0');
+    return `${currentDate.year}${formattedMonth}${formattedDay}`;
+  }
+
+  function getAgeFromDates(
+    birthDate: { year: number; month: number; day: number },
+    currentDate: { year: number; month: number; day: number }
+  ): string {
+    let years = currentDate.year - birthDate.year;
+    let months = currentDate.month - birthDate.month;
+    let days = currentDate.day - birthDate.day;
+
+    if (days < 0) {
+      months -= 1;
+      const lastDayOfPreviousMonth = new Date(currentDate.year, currentDate.month - 1, 0).getDate();
+      days += lastDayOfPreviousMonth;
+    }
+
+    if (months < 0) {
+      years -= 1;
+      months += 12;
+    }
+
+    // Add 's' at the end of year, month, and day if they are greater than 1
+    const yearStr = years > 1 ? 'years' : 'year';
+    const monthStr = months > 1 ? 'months' : 'month';
+    const dayStr = days > 1 ? 'days' : 'day';
+
+    return `${years} ${yearStr}, ${months} ${monthStr}, ${days} ${dayStr}`;
+  }
 });
