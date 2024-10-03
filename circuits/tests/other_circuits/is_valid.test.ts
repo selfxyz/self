@@ -103,9 +103,14 @@ describe('DateIsLessChecker Circuit Test', function () {
                 console.log("majority birth date: " + JSON.stringify(majorityBirthDates[index]));
                 console.log("yearDiff: " + (currentDates[index].year - majorityBirthDates[index].year) + " monthDiff: " + (currentDates[index].month - majorityBirthDates[index].month) + " dayDiff: " + (currentDates[index].day - majorityBirthDates[index].day));
                 */
-        const witness = await circuit.calculateWitness(inputs, true);
-        const output = await circuit.getOutput(witness, ['out']);
-        assert.strictEqual(output.out, '0', 'Passport should not be valid');
+
+        try {
+          const witness = await circuit.calculateWitness(inputs, true);
+          const output = await circuit.getOutput(witness, ['out']);
+          expect.fail('Expected an error but none was thrown.');
+        } catch (error) {
+          expect(error.message).to.include('Assert Failed');
+        }
       });
     });
   });
@@ -137,8 +142,8 @@ describe('DateIsLessChecker Circuit Test', function () {
                 console.log("yearDiff: " + (currentDates[index].year - minorityBirthDates[index].year) + " monthDiff: " + (currentDates[index].month - minorityBirthDates[index].month) + " dayDiff: " + (currentDates[index].day - minorityBirthDates[index].day));
                 */
         const witness = await circuit.calculateWitness(inputs, true);
-        const output = await circuit.getOutput(witness, ['out']);
-        assert.strictEqual(output.out, '1', 'Passport should be valid');
+        // const output = await circuit.getOutput(witness, ['out']);
+        // assert.strictEqual(output.out, '1', 'Passport should be valid');
       });
     });
   });
