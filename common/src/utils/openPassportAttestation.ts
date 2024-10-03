@@ -304,6 +304,5 @@ export function parsePublicSignalsProve(publicSignals, kScaled) {
         current_date: publicSignals.slice(8 + kScaled, 8 + kScaled + 6),
         user_identifier: publicSignals[8 + kScaled + 6],
         scope: publicSignals[9 + kScaled + 6],
-
     };
 }
