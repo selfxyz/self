@@ -35,13 +35,13 @@ CIRCUITS=(
     "prove_rsa_65537_sha256:prove:20:true"
     "prove_rsa_65537_sha1:prove:20:true"
     "prove_rsapss_65537_sha256:prove:20:true"
-    "prove_ecdsa_secp256r1_sha256:prove:22:true"
-    "prove_ecdsa_secp256r1_sha1:prove:22:true"
+    "prove_ecdsa_secp256r1_sha256:prove:22:false"
+    "prove_ecdsa_secp256r1_sha1:prove:22:false"
 )
 
 TOTAL_START_TIME=$(date +%s)
 for circuit in "${CIRCUITS[@]}"; do
-    IFS=':' read -r CIRCUIT_NAME CIRCUIT_TYPE BUILD_FLAG <<< "$circuit"
+    IFS=':' read -r CIRCUIT_NAME CIRCUIT_TYPE POWEROFTAU BUILD_FLAG <<< "$circuit"
     if [ "$BUILD_FLAG" = "true" ]; then
         echo "Debug: Building circuit $CIRCUIT_NAME of type $CIRCUIT_TYPE"
         build_circuit "$CIRCUIT_NAME" "$CIRCUIT_TYPE"
