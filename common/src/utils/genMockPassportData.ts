@@ -23,13 +23,15 @@ import {
   mock_dsc_sha1_ecdsa,
   mock_dsc_key_sha384_ecdsa,
   mock_dsc_sha384_ecdsa,
+  mock_dsc_key_sha256_brainpoolP256r1,
+  mock_dsc_sha256_brainpoolP256r1,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
 import { parseCertificate } from './certificates/handleCertificate';
 
 export function genMockPassportData(
-  signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384',
+  signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384' | 'brainpoolP256r1_sha256',
   nationality: keyof typeof countryCodes,
   birthDate: string,
   expiryDate: string,
@@ -104,6 +106,11 @@ export function genMockPassportData(
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
+      break;
+    case 'brainpoolP256r1_sha256':
+      sampleDataHashes = sampleDataHashes_small;
+      privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
+      dsc = mock_dsc_sha256_brainpoolP256r1;
       break;
   }
 
