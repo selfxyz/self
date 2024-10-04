@@ -70,3 +70,56 @@ yarn test
 ```
 
 This will run tests with sample data generated on the fly.
+
+
+## OpenPassport Prove circuit
+OpenPassport Prove is the main circuit of the project.
+It is used for these 3 different `circuit modes`:
+- prove offChain
+- prove onChain
+- register
+
+Learn more on these 3 use cases on [OpenPassport documentation.](https://docs.openpassport.app/docs/use-openpassport/quickstart)
+
+The circuit achieves the following actions:
+- verify the signature of the passport and the integrity of the datagroups
+- disclose attributes
+- verify that user's name is not part of the OFAC list
+- verify that passport issuer's country is not part of a forbidden countries list
+- generate a commitment: Hash(secret, DG1)
+- generate a blinded DSC commitment: Hash(anotherSecret, dscPubKey)
+
+If this "everything circuit" is executing all those actions each time, we want according to the `circuit mode` we selected to disclose only specific attributes and hide others.
+
+In order to achieve that we will input a bitmap `selector_mode[2]` that will ensure that the circuit can only disclose the attributes related to the `circuit mode` selected.
+
+| Circuit Mode | selector_mode[0] | selector_mode[1] |
+| --- | --- | --- |
+| prove offChain | 1 | 1 |
+| prove onChain | 1 | 0 |
+| register | 0 | 0 |
+
+Using the value [0,1] for `selector_mode` will fail proof generation.
+
+
+Here are the attributes disclosed according to the `circuit_mode`:
+
+| Circuit Mode | Attributes Disclosed |
+| --- | --- |
+| prove offChain | packedReveal-dg1, older than, OFAC, countryIsNotInList, pubKey |
+| prove onChain | packedReveal-dg1, older than, OFAC, countryIsNotInList, blinded DSC commitment |
+| register | blinded DSC commitment, commitment |
+
+
+## Certificate Chain verification
+
+Passports are signed by Document Signing Certificates (DSC).
+DSCs are signed by Country Signing Certificate Authority (CSCA).
+Both DSC and CSCA lists are published on online registry of the ICAO, however many countries still don't publish their certificates on the ICAO website.
+In order to maximize passport readability we need to verify the full certificate chain.
+
+### On chain
+To avoid huge proving time and (too) heavy zkeys, the signature of the passport data is verified on the mobile (the passport data never leaves the device) and the certificate chain verification is done on a remote modal server. A `blindedDscCommitment` is generated on both sides to link proofs.
+
+### Off chain
+In off chain setup users will send their DSC to the verifier along with their passport proof. The pubKey will be revealed as an output of the proof.
