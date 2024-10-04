@@ -84,19 +84,6 @@ describe('Disclose', function () {
     expect(nullifier_circom).to.equal(nullifier_js);
   });
 
-  it('should fail to calculate witness with outdated passport', async function () {
-    try {
-      const invalidInputs = {
-        ...inputs,
-        current_date: ['4', '4', '0', '5', '1', '0'], // 2044
-      };
-      await circuit.calculateWitness(invalidInputs);
-      expect.fail('Expected an error but none was thrown.');
-    } catch (error) {
-      expect(error.message).to.include('Assert Failed');
-    }
-  });
-
   it('should fail to calculate witness with different attestation_id', async function () {
     try {
       const invalidInputs = {

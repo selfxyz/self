@@ -49,3 +49,11 @@ export function formatAndUnpackReveal(revealedData_packed: string[]): string[] {
   ];
   return unpackReveal(revealedData_packed_formatted);
 }
+
+export function formatAndUnpackForbiddenCountriesList(forbiddenCountriesList_packed: string[]): string[] {
+  const forbiddenCountriesList_packed_formatted = [
+    forbiddenCountriesList_packed["forbidden_countries_list_packed[0]"],
+    forbiddenCountriesList_packed["forbidden_countries_list_packed[1]"],
+  ];
+  return unpackReveal(forbiddenCountriesList_packed_formatted);
+}

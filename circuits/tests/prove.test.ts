@@ -9,7 +9,8 @@ import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
 import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
-
+import { SMT } from '@ashpect/smt';
+import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },
   { sigAlg: 'rsa', hashFunction: 'sha256' },
@@ -36,8 +37,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     const selector_older_than = '1';
     const secret = 0;
     const dsc_secret = 0;
-    const selector_mode = 1;
+    const selector_mode = [1, 1];
+    const selector_ofac = 1;
+    const forbidden_countries_list = ['DZA'];
 
+    let name_smt = new SMT(poseidon2, true);
+    name_smt.import(namejson);
     const inputs = generateCircuitInputsProve(
       selector_mode,
       secret,
@@ -47,6 +52,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       selector_dg1,
       selector_older_than,
       majority,
+      name_smt,
+      selector_ofac,
+      forbidden_countries_list,
       user_identifier
     );
 
@@ -80,6 +88,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
         .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
+
+      const ofac_result = (await circuit.getOutput(w, ['ofac_result'])).ofac_result;
+      console.log('\x1b[34m%s\x1b[0m', 'ofac_result', ofac_result);
 
       expect(blinded_dsc_commitment).to.be.not.null;
       expect(nullifier).to.be.not.null;

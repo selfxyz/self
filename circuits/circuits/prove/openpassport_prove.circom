@@ -5,8 +5,10 @@ include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../disclose/disclose.circom";
+include "../disclose/proveCountryIsNotInList.circom";
+include "../ofac/ofac_name.circom";
 
-template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
+template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -23,7 +25,15 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input signed_attr_econtent_hash_offset;
     signal input pubKey[kScaled];
     signal input signature[kScaled];
-    signal input selector_mode; // 0 - disclose, 1 - registration
+    signal input selector_mode[2];
+
+    // ofac check
+    signal input smt_leaf_value;
+    signal input smt_root;
+    signal input smt_siblings[256];
+    signal input selector_ofac;
+    // forbidden countries list
+    signal input forbidden_countries_list[FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
     // disclose related inputs
     signal input selector_dg1[88];
     signal input selector_older_than;
@@ -37,11 +47,22 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
 
     signal attestation_id <== 1;
 
-    // assert selector_mode is 0 or 1
-    selector_mode * (selector_mode - 1) === 0;
+    signal selectorModeDisclosure <== selector_mode[0];
+    signal selectorModePubKey <== selector_mode[1];
+    signal selectorModeBlindedDscCommitment <== 1 - selector_mode[1];
+    signal selectorModeCommitment <== (1- selector_mode[0]) * (1 - selector_mode[1]);
+    signal isWrongSelectorMode <== IsEqual()([2*selector_mode[0] + selector_mode[1], 1]);
+    isWrongSelectorMode === 0;
+
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+    // verify passport is not expired
+    component isValid = IsValid();
+    isValid.currDate <== current_date;
+    for (var i = 0; i < 6; i++) {
+        isValid.validityDateASCII[i] <== dg1[70 + i];
+    }
 
     // nulifier
     signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
@@ -55,22 +76,39 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     disclose.selector_older_than <== selector_older_than;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
-    signal output revealedData_packed[3] <== disclose.revealedData_packed;
-    signal output older_than[2] <== disclose.older_than;
+
+    signal output revealedData_packed[3];
+    for (var i = 0; i < 3; i++) {
+        revealedData_packed[i] <== disclose.revealedData_packed[i] * selectorModeDisclosure;
+    }
+    signal output older_than[2];
+    for (var i = 0; i < 2; i++) {
+        older_than[i] <== disclose.older_than[i] * selectorModeDisclosure;
+    }
     signal output pubKey_disclosed[kScaled];
     for (var i = 0; i < kScaled; i++) {
-        pubKey_disclosed[i] <== pubKey[i] * (1 - selector_mode);
+        pubKey_disclosed[i] <== pubKey[i] * selectorModePubKey;
     }
 
+    // COUNTRY IS IN LIST
+    signal forbidden_countries_list_packed[2] <== ProveCountryIsNotInList(FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
+    signal output forbidden_countries_list_packed_disclosed[2];
+    for (var i = 0; i < 2; i++) {
+        forbidden_countries_list_packed_disclosed[i] <== forbidden_countries_list_packed[i] * selectorModeDisclosure;
+    }
+
+    // OFAC
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
+    signal output ofac_result <== ofacIntermediaryOutput;
 
     // REGISTRATION (optional)
     // generate the commitment
     signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
     signal commitmentPrivate <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
-    signal output commitment <== commitmentPrivate * selector_mode;
+    signal output commitment <== commitmentPrivate * selectorModeCommitment;
     // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
     signal blindedDscCommitmenPrivate <== Poseidon(2)([dsc_secret, pubkeyHash]);
-    signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selector_mode;
-
+    signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selectorModeBlindedDscCommitment;
 }
