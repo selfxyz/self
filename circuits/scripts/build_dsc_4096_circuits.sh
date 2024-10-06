@@ -19,10 +19,11 @@ build_circuit() {
     local START_TIME=$(date +%s)
 
     echo -e "\033[34mcompiling circuit: $CIRCUIT_NAME\033[0m"
-    circom circuits/dsc/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build
+    mkdir -p ./build/dsc/${CIRCUIT_NAME}/
+    circom circuits/dsc/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build/dsc/${CIRCUIT_NAME}/
 
     echo -e "\033[34mbuilding zkey\033[0m"
-    NODE_OPTIONS="--max-old-space-size=8192" yarn snarkjs groth16 setup build/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/${CIRCUIT_NAME}.zkey
+    NODE_OPTIONS="--max-old-space-size=8192" yarn snarkjs groth16 setup build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     if command -v openssl &> /dev/null
     then
@@ -32,12 +33,12 @@ build_circuit() {
     fi
 
     echo -e "\033[34mbuilding vkey\033[0m"
-    echo $RAND_STR | yarn snarkjs zkey contribute build/${CIRCUIT_NAME}.zkey build/${CIRCUIT_NAME}_final.zkey
-    yarn snarkjs zkey export verificationkey build/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_NAME}_vkey.json
+    echo $RAND_STR | yarn snarkjs zkey contribute build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
+    yarn snarkjs zkey export verificationkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
-    yarn snarkjs zkey export solidityverifier build/${CIRCUIT_NAME}_final.zkey build/Verifier_${CIRCUIT_NAME}.sol
-    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/Verifier_${CIRCUIT_NAME}.sol
-    cp build/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/Verifier_${CIRCUIT_NAME}.sol
+    yarn snarkjs zkey export solidityverifier build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/Verifier_${CIRCUIT_NAME}.sol
+    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/dsc/Verifier_${CIRCUIT_NAME}.sol
+    cp build/dsc/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/dsc/Verifier_${CIRCUIT_NAME}.sol
     echo -e "\033[34mcopied Verifier_${CIRCUIT_NAME}.sol to contracts\033[0m"
 
     echo -e "\033[32mBuild of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds\033[0m"
