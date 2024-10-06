@@ -11,6 +11,7 @@
     "install-app": "cd ../common && yarn && cd ../app && yarn"
   },
   "dependencies": {
+    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@amplitude/analytics-react-native": "^1.4.7",
     "@babel/plugin-transform-private-methods": "^7.23.3",
     "@ethersproject/shims": "^5.7.0",

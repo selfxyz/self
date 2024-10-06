@@ -8,9 +8,9 @@ import {
   n_dsc,
   PASSPORT_ATTESTATION_ID,
 } from '../../common/src/constants/constants';
+import { getAttributeFromUnpackedReveal } from '../../common/src/utils/utils';
 import {
   areArraysEqual,
-  getAttributeFromUnpackedReveal,
   getCurrentDateFormatted,
   getVkeyFromArtifacts,
   verifyDSCValidity,
@@ -121,7 +121,7 @@ export class OpenPassportVerifier {
     return this.report;
   }
 
-  private async verifyDiscloseArguments() {}
+  private async verifyDiscloseArguments() { }
 
   private verifyAttribute(
     attribute: keyof OpenPassportVerifierReport,

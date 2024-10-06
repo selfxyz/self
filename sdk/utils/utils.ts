@@ -95,14 +95,5 @@ export function verifyDSCValidity(dscCertificate: forge.pki.Certificate, dev_mod
   }
 }
 
-export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribute: string) {
-  const position = attributeToPosition[attribute];
-  let attributeValue = '';
-  for (let i = position[0]; i <= position[1]; i++) {
-    attributeValue += unpackedReveal[i];
-  }
-  return attributeValue;
-}
-
 export const areArraysEqual = (arr1: string[], arr2: string[]) =>
   arr1.length === arr2.length && arr1.every((value, index) => value === arr2[index]);
