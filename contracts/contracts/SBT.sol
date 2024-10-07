@@ -4,10 +4,9 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import {Verifier_disclose} from "./Verifier_disclose.sol";
+import {Verifier_vc_and_disclose} from "./verifiers/disclose/Verifier_vc_and_disclose.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {Formatter} from "./Formatter.sol";
-import {Registry} from "./Registry.sol";
 import {IRegister} from "./interfaces/IRegister.sol";
 import "hardhat/console.sol";
 
@@ -15,7 +14,7 @@ contract SBT is ERC721Enumerable, Ownable {
     using Strings for uint256;
     using Base64 for *;
 
-    Verifier_disclose public immutable verifier;
+    Verifier_vc_and_disclose public immutable verifier;
     Formatter public formatter;
     IRegister public register;
 
@@ -26,6 +25,7 @@ contract SBT is ERC721Enumerable, Ownable {
     struct SBTProof {
         uint nullifier;
         uint[3] revealedData_packed;
+        uint[2] older_than;
         uint attestation_id;
         uint merkle_root;
         uint scope;
@@ -52,7 +52,7 @@ contract SBT is ERC721Enumerable, Ownable {
     mapping(uint256 => Attributes) private tokenAttributes;
 
     constructor(
-        Verifier_disclose v,
+        Verifier_vc_and_disclose v,
         Formatter f,
         IRegister r
     ) ERC721("OpenPassport", "OpenPassport") {
@@ -108,6 +108,8 @@ contract SBT is ERC721Enumerable, Ownable {
                     uint(proof.revealedData_packed[0]),
                     uint(proof.revealedData_packed[1]),
                     uint(proof.revealedData_packed[2]),
+                    uint(proof.older_than[0]),
+                    uint(proof.older_than[1]),
                     uint(proof.attestation_id),
                     uint(proof.merkle_root),
                     uint(proof.scope),
