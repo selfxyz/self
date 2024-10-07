@@ -4,7 +4,7 @@ pragma solidity ^0.8.18;
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721Enumerable.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import {Verifier_disclose} from "./Verifier_disclose.sol";
+import {Verifier_disclose} from "./verifiers/disclose/Verifier_disclose.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {Formatter} from "./Formatter.sol";
 import {Registry} from "./Registry.sol";
