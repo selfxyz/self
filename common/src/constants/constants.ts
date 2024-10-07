@@ -72,6 +72,12 @@ export const attributeToPosition = {
   older_than: [88, 89]
 };
 
+export const circuitToSelectorMode = {
+  'register': [0, 0],
+  'prove_onchain': [1, 0],
+  'prove_offchain': [1, 1],
+}
+
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
 export const k_dsc = 32;
