@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import {IVerifiersManager} from "./interfaces/IVerifiersManager.sol";
 import {Base64} from "./libraries/Base64.sol";
 import {Formatter} from "./Formatter.sol";
-import "./constants/constants.sol";
+import "./constants/Constants.sol";
 import "./libraries/AttributeLibrary.sol";
 import "hardhat/console.sol";
 
@@ -23,8 +23,13 @@ contract OneTimeSBT is ERC721Enumerable {
     struct Attributes {
         string[8] values;
     }
-
     mapping(uint256 => Attributes) private tokenAttributes;
+
+    error CURRENT_DATE_NOT_IN_VALID_RANGE();
+    error UNEQUAL_BLINDED_DSC_COMMITMENT();
+    error INVALID_PROVE_PROOF();
+    error INVALID_DSC_PROOF();
+    error SBT_CAN_BE_TRANSFERED();
 
     constructor(
         IVerifiersManager v,
@@ -49,26 +54,27 @@ contract OneTimeSBT is ERC721Enumerable {
         uint currentTimestamp = getCurrentTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
-        require(
-            currentTimestamp >= block.timestamp - 1 days &&
-                currentTimestamp <= block.timestamp + 1 days,
-            "Current date is not within the valid range"
-        );
+        if(
+            currentTimestamp < block.timestamp - 1 days ||
+            currentTimestamp > block.timestamp + 1 days
+        ) {
+            revert CURRENT_DATE_NOT_VALID_RANGE();
+        };
 
         // check blinded dcs
         if (
             keccak256(abi.encodePacked(p_proof.pubSignals[PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX])) !=
             keccak256(abi.encodePacked(d_proof.pubSignals[DSC_BLINDED_DSC_COMMITMENT_INDEX]))
         ) {
-            revert ("Blinded DSC commitments are not equal");
+            revert UNEQUAL_BLINDED_DSC_COMMITMENT();
         }
 
         if (!verifiersManager.verifyWithProveVerifier(prove_verifier_id, p_proof)) {
-            revert ("Invalid Prove Proof");
+            revert INVALID_PROVE_PROOF();
         }
 
         if (!verifiersManager.verifyWithDscVerifier(dsc_verifier_id, d_proof)) {
-            revert ("Invalid DSC Proof");
+            revert INVALID_DSC_PROOF();
         }
 
         // Effects: Mint token
@@ -136,10 +142,9 @@ contract OneTimeSBT is ERC721Enumerable {
         uint256 batchSize
     ) internal virtual override {
         super._beforeTokenTransfer(from, to, tokenId, batchSize);
-        require(
-            from == address(0),
-            "Cannot transfer - SBT is soulbound"
-        );
+        if (from != address(0)) {
+            revert SBT_CAN_BE_TRANSFERED();
+        }
     }
 
     function isExpired(string memory date) public view returns (bool) {

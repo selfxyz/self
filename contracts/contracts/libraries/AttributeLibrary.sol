@@ -2,6 +2,9 @@
 pragma solidity ^0.8.18;
 
 library AttributeLibrary {
+
+    error INSUFFICIENT_CHARCODE_LEN();
+
     // Define constant start and end positions for each attribute
     uint256 private constant ISSUING_STATE_START = 2;
     uint256 private constant ISSUING_STATE_END = 4;
@@ -107,7 +110,9 @@ library AttributeLibrary {
      * @return The extracted substring as a string.
      */
     function extractAttribute(bytes memory charcodes, uint256 start, uint256 end) internal pure returns (string memory) {
-        require(charcodes.length > end, "AttributeLibrary: charcodes length insufficient");
+        if (charcodes.length <= end) {
+            revert INSUFFICIENT_CHARCODE_LEN();
+        }
         bytes memory attributeBytes = new bytes(end - start + 1);
         for (uint256 i = start; i <= end; i++) {
             attributeBytes[i - start] = charcodes[i];

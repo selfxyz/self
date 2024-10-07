@@ -56,5 +56,11 @@ describe("Unit test for OneTimeSBT.sol", function() {
 
         });
 
+        describe("")
+
+    });
+
+    describe("Test attrs are correctly registerd", async function () {
+        
     })
 });
