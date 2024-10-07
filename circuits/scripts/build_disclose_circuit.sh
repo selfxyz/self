@@ -35,9 +35,6 @@ build_circuit() {
 # set build_flag to false if you want to skip the build
 CIRCUITS=(
     "vc_and_disclose:disclose:20:true"
-    "disclose:disclose:20:false"
-    "proveCountryIsNotInList:disclose:20:false"
-    "verify_commitment:disclose:22:false"
 )
 
 TOTAL_START_TIME=$(date +%s)
