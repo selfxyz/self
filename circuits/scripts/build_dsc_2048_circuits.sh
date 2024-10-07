@@ -23,7 +23,7 @@ build_circuit() {
     circom circuits/dsc/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build/dsc/${CIRCUIT_NAME}/
 
     echo -e "\033[34mbuilding zkey\033[0m"
-    yarn snarkjs groth16 setup build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_20.ptau build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
+    yarn snarkjs groth16 setup build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     if command -v openssl &> /dev/null
     then
@@ -33,12 +33,13 @@ build_circuit() {
     fi
 
     echo -e "\033[34mbuilding vkey\033[0m"
-    echo $RAND_STR | yarn snarkjs zkey contribute build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
+    yarn snarkjs zkey contribute build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
     yarn snarkjs zkey export verificationkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
     yarn snarkjs zkey export solidityverifier build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/Verifier_${CIRCUIT_NAME}.sol
     sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/dsc/Verifier_${CIRCUIT_NAME}.sol
-    cp build/dsc/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/dsc/Verifier_${CIRCUIT_NAME}.sol
+    mkdir -p ../contracts/contracts/local/dsc/
+    cp build/dsc/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/local/dsc/Verifier_${CIRCUIT_NAME}.sol
     echo -e "\033[34mcopied Verifier_${CIRCUIT_NAME}.sol to contracts\033[0m"
 
     echo -e "\033[32mBuild of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds\033[0m"
@@ -52,9 +53,9 @@ build_circuit() {
 # Define circuits and their deployment flags
 # name:deploy_flag
 CIRCUITS=(
-    "dsc_rsapss_65537_sha256_2048:true"
+    "dsc_rsapss_65537_sha256_2048:false"
     "dsc_rsa_65537_sha256_2048:true"
-    "dsc_rsa_65537_sha1_2048:true"
+    "dsc_rsa_65537_sha1_2048:false"
 )
 
 for circuit in "${CIRCUITS[@]}"; do

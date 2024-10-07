@@ -8,6 +8,7 @@ build_circuit() {
     local START_TIME=$(date +%s)
 
     echo "compiling circuit: $CIRCUIT_NAME"
+    mkdir -p build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/
     circom circuits/${CIRCUIT_TYPE}/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits/ --r1cs --O1 --wasm -c --output build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/
 
     echo "building zkey"
@@ -19,7 +20,8 @@ build_circuit() {
 
     yarn snarkjs zkey export solidityverifier build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
     sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
-    cp build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers//${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
+    mkdir -p ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/
+    cp build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
     echo "copied Verifier_${CIRCUIT_NAME}.sol to contracts"
 
     echo "Build of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds"
