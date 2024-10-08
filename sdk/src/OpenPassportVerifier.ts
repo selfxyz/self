@@ -117,9 +117,12 @@ export class OpenPassportVerifier {
     // requirements
     const unpackedReveal = unpackReveal(this.parsedPublicSignals.revealedData_packed);
     if (this.olderThan) {
-      const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'older_than');
-      if (attributeValue > this.olderThan) {
-        this.report.exposeAttribute('older_than', attributeValue, this.olderThan);
+      const attributeValue = this.parsedPublicSignals.older_than;
+      const attributeValueInt = parseInt(String.fromCharCode(...attributeValue));
+      console.log('attributeValue', attributeValueInt);
+      console.log('this.olderThan', this.olderThan);
+      if (attributeValueInt < parseInt(this.olderThan)) {
+        this.report.exposeAttribute('older_than', attributeValueInt.toString(), this.olderThan);
       }
     }
     if (this.nationality) {
