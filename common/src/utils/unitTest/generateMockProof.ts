@@ -17,7 +17,7 @@ import { Proof } from "../types";
 export function generateMockRSAProveVerifierInputs({
     nullifier = "1",
     revealedData_packed = ["2", "3", "4"],
-    older_than = ["5", "6", "7"],
+    older_than = ["49", "56"],
     pubkey_disclosed = ["0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0","0", "0", "0", "0"],
     forbidden_contries_list_packed_disclose = ["8", "9"],
     ofac_result = "10",
@@ -108,4 +108,13 @@ function getDateNum(date: Date = new Date()): string[] {
     ];
 
     return dateNum.map(num => num.toString());
+}
+
+export function convertProofTypeIntoInput(proof: Proof) {
+    return {
+        a: proof.proof.a,
+        b: proof.proof.b,
+        c: proof.proof.c,
+        pubSignals: proof.pub_signals
+    }
 }
