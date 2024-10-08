@@ -28,6 +28,8 @@ describe("Unit test for OneTimeSBT.sol", function() {
     let addr1: any;
     let addr2: any;
 
+    let snapshotId: any;
+
     before(async function() {
         [owner, addr1, addr2] = await ethers.getSigners();
 
@@ -48,19 +50,14 @@ describe("Unit test for OneTimeSBT.sol", function() {
         );
         await oneTimeSBT.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${oneTimeSBT.target}`);
+
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
 
-
-    async function initializeOneTimeSBT() {
-        console.log('\x1b[34m%s\x1b[0m', `Initializing OneTimeSBT contract`);
-        const sbtFactory = await ethers.getContractFactory("OneTimeSBT");
-        oneTimeSBT = await sbtFactory.deploy(
-            verifiersManager,
-            formatter
-        );
-        await oneTimeSBT.waitForDeployment();
-        console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${oneTimeSBT.target}`);
-    }
+    afterEach(async function () {
+        await ethers.provider.send("evm_revert", [snapshotId]);
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
 
     function removeNullCharacters(str: string): string {
         return str.replace(/\u0000/g, ''); // ヌル文字を削除
@@ -227,19 +224,161 @@ describe("Unit test for OneTimeSBT.sol", function() {
 
     });
 
-    describe("Test util functions", async function () {
+    describe("Test isSbtValid", async function () {
 
-        describe("Test fieldElementsToBytes function", async function () {
+        it("Should be true before expiration", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({});
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
 
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            expect(await oneTimeSBT.isSbtValid(thisTokenId)).to.be.equal(true);
         });
 
-        describe("Test sliceFirstThree function", async function () {
+        it("Should be false at the expiration time", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({});
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
 
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            const ninetyDaysInSeconds = 90 * 24 * 60 * 60;
+            await ethers.provider.send("evm_increaseTime", [ninetyDaysInSeconds]);
+            await ethers.provider.send("evm_mine", []);
+
+            expect(await oneTimeSBT.isSbtValid(thisTokenId)).to.be.equal(false);
+        });
+
+        it("Should be false after expiration", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({});
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
+
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            const oneEightyDaysInSeconds = 180 * 24 * 60 * 60;
+            await ethers.provider.send("evm_increaseTime", [oneEightyDaysInSeconds]);
+            await ethers.provider.send("evm_mine", []);
+
+            expect(await oneTimeSBT.isSbtValid(thisTokenId)).to.be.equal(false);
+        });
+    });
+
+
+    describe("Test transfer functions", async function() {
+
+        it("Should not be able to transfer with transferFrom", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({
+                user_identifier: addr1.address
+            });
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
+
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            await expect(
+                oneTimeSBT.connect(addr1).transferFrom(addr1.address, addr2.address, thisTokenId)
+            ).to.be.revertedWithCustomError(
+                oneTimeSBT,
+                "SBT_CAN_NOT_BE_TRANSFERED"
+            );
+        });
+
+        it("Should not be able to transfer with safeTransferFrom(address from, address to, uint256 tokenId)", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({
+                user_identifier: addr1.address
+            });
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
+
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            await expect(
+                oneTimeSBT.connect(addr1)["safeTransferFrom(address,address,uint256)"](addr1.address, addr2.address, thisTokenId)
+            ).to.be.revertedWithCustomError(
+                oneTimeSBT,
+                "SBT_CAN_NOT_BE_TRANSFERED"
+            );
+        });
+
+        it("Should not be able to transfer with safeTransferFrom(address from, address to, uint256 tokenId, bytes memory data)", async function() {
+            let mockRSAProveVerifierProof = generateMockRSAProveVerifierInputs({
+                user_identifier: addr1.address
+            });
+            let p_proof = convertProofTypeIntoInput(mockRSAProveVerifierProof);
+
+            let mockDscVerifierProof = generateMockDSCVerifierInputs({});
+            let d_proof = convertProofTypeIntoInput(mockDscVerifierProof);
+
+            await oneTimeSBT.mint(
+                TRUE_VERIFIER_ID,
+                TRUE_VERIFIER_ID,
+                p_proof,
+                d_proof
+            );
+
+            let totalSupply = await oneTimeSBT.totalSupply();
+            let thisTokenId = totalSupply - 1n;
+
+            await expect(
+                oneTimeSBT.connect(addr1)["safeTransferFrom(address,address,uint256,bytes)"](addr1.address, addr2.address, thisTokenId, "0x")
+            ).to.be.revertedWithCustomError(
+                oneTimeSBT,
+                "SBT_CAN_NOT_BE_TRANSFERED"
+            );
         });
 
     });
 
-    describe("Test attrs are correctly registerd", async function () {
-        
-    })
 });
