@@ -1,19 +1,11 @@
 import { ethers } from "hardhat";
-import { expect, assert } from "chai";
-import { BigNumberish, Block, dataLength } from "ethers";
-import { genMockPassportData } from "../../common/src/utils/genMockPassportData";
-import { 
-    generateCircuitInputsProve,
-    generateCircuitInputsDisclose,
-} from "../../common/src/utils/generateInputs";
+import { expect } from "chai";
+import { Block } from "ethers";
 import { 
     generateMockRSAProveVerifierInputs,
     generateMockDSCVerifierInputs,
     convertProofTypeIntoInput
-} from "../../common/src/utils/unitTest/generateMockProof";
-import { getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
-import { formatRoot } from "../../common/src/utils/utils";
-import { IMT } from "../../common/node_modules/@zk-kit/imt";
+} from "../../../common/src/utils/unitTest/generateMockProof";
 
 const TRUE_VERIFIER_ID = 0;
 const FALSE_VERIFIER_ID = 1;
