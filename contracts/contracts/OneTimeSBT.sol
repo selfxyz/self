@@ -49,7 +49,7 @@ contract OneTimeSBT is ERC721Enumerable {
         // Convert the last four parameters into a valid timestamp, adding 30 years to adjust for block.timestamp starting in 1970
         uint[6] memory dateNum;
         for (uint i = 0; i < 6; i++) {
-            dateNum[i] = p_proof.pubSignals[PROVE_RSA_COMMITMENT_INDEX + i];
+            dateNum[i] = p_proof.pubSignals[PROVE_RSA_CURRENT_DATE_INDEX + i];
         }
         uint currentTimestamp = getCurrentTimestamp(dateNum);
 
@@ -58,8 +58,8 @@ contract OneTimeSBT is ERC721Enumerable {
             currentTimestamp < block.timestamp - 1 days ||
             currentTimestamp > block.timestamp + 1 days
         ) {
-            revert CURRENT_DATE_NOT_VALID_RANGE();
-        };
+            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
+        }
 
         // check blinded dcs
         if (
