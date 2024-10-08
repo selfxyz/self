@@ -119,9 +119,11 @@ export class OpenPassportVerifier {
     if (this.olderThan) {
       const attributeValue = this.parsedPublicSignals.older_than;
       const attributeValueInt = parseInt(String.fromCharCode(...attributeValue));
+      const selfAttributeOlderThan = parseInt(this.olderThan);
       console.log('attributeValue', attributeValueInt);
-      console.log('this.olderThan', this.olderThan);
-      if (attributeValueInt < parseInt(this.olderThan)) {
+      console.log('selfAttributeOlderThan', selfAttributeOlderThan);
+      if (attributeValueInt < selfAttributeOlderThan) {
+        console.log(attributeValueInt, selfAttributeOlderThan);
         this.report.exposeAttribute('older_than', attributeValueInt.toString(), this.olderThan);
       }
     }
@@ -147,6 +149,7 @@ export class OpenPassportVerifier {
           formattedCountryList.push(countryCode);
         }
       }
+      console.log('formattedCountryList', formattedCountryList);
       this.verifyAttribute('forbidden_countries_list', formattedCountryList.toString(), this.forbidden_countries_list.toString());
     }
 
