@@ -100,7 +100,7 @@ contract OneTimeSBT is ERC721Enumerable {
         attributes.values[4] = AttributeLibrary.getDateOfBirth(charcodes);
         attributes.values[5] = AttributeLibrary.getGender(charcodes);
         attributes.values[6] = AttributeLibrary.getExpiryDate(charcodes);
-        
+
         uint[] memory olderThanAscii = new uint[](2);
         olderThanAscii[0] = p_proof.pubSignals[PROVE_RSA_OLDER_THAN_INDEX];
         olderThanAscii[1] = p_proof.pubSignals[PROVE_RSA_OLDER_THAN_INDEX + 1];
@@ -112,7 +112,6 @@ contract OneTimeSBT is ERC721Enumerable {
     function convertUintArrayToString(uint[] memory input) internal pure returns (string memory) {
         bytes memory bytesArray = new bytes(input.length);
         for (uint i = 0; i < input.length; i++) {
-            // 確実に uint8 に収まるようにキャスト
             bytesArray[i] = bytes1(uint8(input[i]));
         }
         return string(bytesArray);
