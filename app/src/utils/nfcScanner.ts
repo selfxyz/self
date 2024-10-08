@@ -121,6 +121,10 @@ const handleResponseIOS = async (
 
   const parsed = JSON.parse(response);
 
+  const dgHashesObj = JSON.parse(parsed?.dataGroupHashes)
+  const dg2HashString = dgHashesObj?.DG2?.sodHash
+  const dg2Hash = Array.from(Buffer.from(dg2HashString, 'hex'))
+
   const eContentBase64 = parsed?.eContentBase64; // this is what we call concatenatedDataHashes in android world
   const signedAttributes = parsed?.signedAttributes; // this is what we call eContent in android world
   const mrz = parsed?.passportMRZ;
@@ -160,6 +164,7 @@ const handleResponseIOS = async (
   const passportData = {
     mrz,
     dsc: pem,
+    dg2Hash,
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
