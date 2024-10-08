@@ -15,7 +15,7 @@ import {
   WEBSOCKET_URL,
 } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
-import { CircuitName, reconstructAppType } from '../../../common/src/utils/appType';
+import { CircuitMode, CircuitName, reconstructAppType } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -32,9 +32,11 @@ interface OpenPassportQRcodeProps {
   userIdType?: UserIdType;
   olderThan?: string;
   nationality?: string;
+  ofac?: string;
+  forbidden_countries_list?: string[];
   onSuccess?: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void;
   circuit: CircuitName;
-  circuitMode?: 'prove' | 'register' | '';
+  circuitMode?: CircuitMode;
   devMode?: boolean;
   size?: number;
   websocketUrl?: string;
@@ -49,11 +51,13 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   userIdType = DEFAULT_USER_ID_TYPE,
   olderThan = '',
   nationality = '',
+  ofac = null,
+  forbidden_countries_list = null,
   onSuccess = (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => {
     console.log(proof, report);
   },
   circuit,
-  circuitMode = 'prove',
+  circuitMode = 'prove_onchain',
   devMode = false,
   size = 300,
   websocketUrl = WEBSOCKET_URL,
@@ -68,6 +72,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     scope: scope,
     olderThan: olderThan,
     nationality: nationality,
+    ofac: ofac,
+    forbidden_countries_list: forbidden_countries_list,
     dev_mode: devMode,
     circuit: circuit,
     circuitMode: circuitMode,
@@ -92,10 +98,12 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
             websocketUrl: websocketUrl,
           })
         );
-      } else {
+      } else if (circuitMode === 'prove_offchain') {
         const disclosureOptions = [
           ['nationality', nationality],
           ['older_than', olderThan],
+          ['ofac', ofac],
+          ['forbidden_countries_list', forbidden_countries_list],
         ];
         return JSON.stringify(
           reconstructAppType({

@@ -18,8 +18,10 @@ export default function Prove() {
         userId={userId}
         olderThan="18"
         circuit="prove"
-        circuitMode="prove"
-        nationality="France"
+        circuitMode="prove_offchain"
+        // nationality="France"
+        ofac="true"
+        forbidden_countries_list={["BMU", "BLZ", "PAN"]}
         devMode={true}
       />
 

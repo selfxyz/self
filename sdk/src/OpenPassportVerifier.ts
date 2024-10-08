@@ -25,12 +25,15 @@ import {
 import forge from 'node-forge';
 import { castToScope, splitToWords } from '../../common/src/utils/utils';
 import { parseDSC } from '../../common/src/utils/certificates/handleCertificate';
+import { CircuitMode, CircuitName } from '../../common/src/utils/appType';
 
 export class OpenPassportVerifier {
   scope: string;
   attestationId: string;
   olderThan?: string;
   nationality?: (typeof countryCodes)[keyof typeof countryCodes];
+  ofac?: string;
+  forbidden_countries_list?: string[];
   rpcUrl: string;
   report: OpenPassportVerifierReport;
   dev_mode: boolean;
@@ -42,20 +45,24 @@ export class OpenPassportVerifier {
     attestationId?: string;
     olderThan?: string;
     nationality?: (typeof countryCodes)[keyof typeof countryCodes];
+    ofac?: string;
+    forbidden_countries_list?: string[];
     rpcUrl?: string;
     dev_mode?: boolean;
-    circuit: string;
-    circuitMode?;
+    circuit: CircuitName;
+    circuitMode?: CircuitMode;
   }) {
     this.scope = options.scope;
     this.attestationId = options.attestationId || PASSPORT_ATTESTATION_ID;
     this.olderThan = options.olderThan || null;
     this.nationality = options.nationality || null;
+    this.ofac = options.ofac || null;
+    this.forbidden_countries_list = options.forbidden_countries_list || null;
     this.rpcUrl = options.rpcUrl || DEFAULT_RPC_URL;
     this.report = new OpenPassportVerifierReport();
     this.dev_mode = options.dev_mode || false;
     this.circuit = options.circuit;
-    this.circuitMode = options.circuitMode || 'prove';
+    this.circuitMode = options.circuitMode || 'prove_offchain';
   }
 
   async verify(attestation: OpenPassportAttestation): Promise<OpenPassportVerifierReport> {
@@ -72,11 +79,13 @@ export class OpenPassportVerifier {
     const { signatureAlgorithm, hashFunction } = parseDSC(dsc);
     const kScaled = signatureAlgorithm === 'ecdsa' ? ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa : k_dsc;
     this.parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
+    console.log('this.parsedPublicSignals', this.parsedPublicSignals);
 
     await this.verifyProof(proof, publicSignals, dsc);
+    console.log('this.circuit', this.circuit);
     switch (this.circuit) {
       case 'prove':
-        if (this.circuitMode === 'prove') {
+        if (this.circuitMode === 'prove_offchain') {
           await this.verifyProveArguments();
           await this.verifyDsc(dsc);
         } else if (this.circuitMode === 'register') {
@@ -116,6 +125,26 @@ export class OpenPassportVerifier {
     if (this.nationality) {
       const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
       this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality);
+    }
+    // if (this.ofac) {
+    //   const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'ofac');
+    //   this.verifyAttribute('ofac', attributeValue, this.ofac);
+    // }
+    if (this.forbidden_countries_list) {
+      const countryList1 = unpackReveal(this.parsedPublicSignals.forbidden_countries_list_packed_disclosed[0]);
+      const countryList2 = unpackReveal(this.parsedPublicSignals.forbidden_countries_list_packed_disclosed[1]);
+      const concatenatedCountryList = countryList1.concat(countryList2);
+      // dump every '\x00' value from the list
+      const cleanedCountryList = concatenatedCountryList.filter(value => value !== '\x00');
+      // Concatenate every 3 elements to form country codes
+      const formattedCountryList = [];
+      for (let i = 0; i < cleanedCountryList.length; i += 3) {
+        const countryCode = cleanedCountryList.slice(i, i + 3).join('');
+        if (countryCode.length === 3) {
+          formattedCountryList.push(countryCode);
+        }
+      }
+      this.verifyAttribute('forbidden_countries_list', formattedCountryList.toString(), this.forbidden_countries_list.toString());
     }
 
     return this.report;

@@ -2,7 +2,7 @@ import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from "../constants/constants";
 import { UserIdType } from "./utils";
 
 export type CircuitName = "prove" | "disclose";
-export type CircuitMode = "prove" | "register" | '';
+export type CircuitMode = "prove_onchain" | "register" | 'prove_offchain';
 
 export interface AppType {
   name: string,
@@ -21,6 +21,8 @@ export interface ArgumentsProve {
   disclosureOptions: {
     older_than?: string,
     nationality?: string,
+    ofac?: string,
+    forbidden_countries_list?: string[]
   },
 }
 
@@ -33,6 +35,9 @@ export interface ArgumentsDisclose {
   disclosureOptions: {
     older_than?: string,
     nationality?: string,
+    ofac?: string,
+    forbidden_countries_list?: string[]
+
   },
   merkle_root: string,
   merkletree_size: string,
@@ -64,7 +69,7 @@ export function reconstructAppType(json: any): AppType {
     throw new Error('Invalid or missing circuit');
   }
 
-  if (!json.circuitMode || !['prove', 'register', ''].includes(json.circuitMode)) {
+  if (!json.circuitMode || !['prove_onchain', 'register', '', 'prove_offchain'].includes(json.circuitMode)) {
     throw new Error('Invalid or missing circuitMode');
   }
 
@@ -120,6 +125,8 @@ export function reconstructAppType(json: any): AppType {
           disclosureOptions: {
             older_than: json.arguments.disclosureOptions.older_than,
             nationality: json.arguments.disclosureOptions.nationality,
+            ofac: json.arguments.disclosureOptions.ofac,
+            forbidden_countries_list: json.arguments.disclosureOptions.forbidden_countries_list,
           },
         }
       }
@@ -142,7 +149,7 @@ export function reconstructAppType(json: any): AppType {
       if (this.circuit === 'prove' || this.circuit === 'disclose') {
         return Object.fromEntries(
           Object.entries(this.arguments.disclosureOptions)
-            .filter(([_, value]) => value !== '' && value !== undefined)
+            .filter(([_, value]) => value !== '' && value !== undefined && value !== null)
         ) as Record<string, string>;
       }
       return {};

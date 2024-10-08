@@ -17,6 +17,8 @@ export class OpenPassportVerifierReport {
   dsc: boolean = true;
   pubKey: boolean = true;
   valid: boolean = true;
+  ofac: boolean = true;
+  forbidden_countries_list: boolean = true;
 
   public user_identifier: string;
   public nullifier: string;

@@ -120,7 +120,6 @@ export function buildAttestation(options: {
   const unpackedReveal = unpackReveal(
     parsedPublicSignals.revealedData_packed
   );
-
   // Extract attributes from unpackedReveal
   const attributeNames = [
     'issuing_state',
@@ -131,7 +130,6 @@ export function buildAttestation(options: {
     'gender',
     'expiry_date',
     'older_than',
-    'owner_of',
   ];
 
   const credentialSubject: any = {
@@ -141,6 +139,7 @@ export function buildAttestation(options: {
     scope: scope,
     current_date: parsedPublicSignals.current_date.toString(),
   };
+
 
   attributeNames.forEach((attrName) => {
     const value = getAttributeFromUnpackedReveal(unpackedReveal, attrName);
@@ -254,7 +253,6 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     this.dscProof = attestation.dscProof;
     this.dsc = attestation.dsc;
     this.userIdType = userIdType;
-    this.parsedPublicSignals = this.parsePublicSignals();
   }
 
   private parsePublicSignals() {
@@ -275,7 +273,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   }
 
   getUserId(): string {
-    const rawUserId = (this.parsedPublicSignals as any).user_identifier;
+    const parsedPublicSignals = this.parsePublicSignals();
+    const rawUserId = (parsedPublicSignals as any).user_identifier;
     switch (this.userIdType) {
       case 'ascii':
         return castToScope(BigInt(rawUserId));
@@ -289,7 +288,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   }
 
   getNullifier(): string {
-    return bigIntToHex(BigInt(this.parsedPublicSignals.nullifier));
+    const parsedPublicSignals = this.parsePublicSignals();
+    return bigIntToHex(BigInt(parsedPublicSignals.nullifier));
   }
 }
 
@@ -299,12 +299,12 @@ export function parsePublicSignalsProve(publicSignals, kScaled) {
     revealedData_packed: [publicSignals[1], publicSignals[2], publicSignals[3]],
     older_than: [publicSignals[4], publicSignals[5]],
     pubKey_disclosed: publicSignals.slice(6, 6 + kScaled),
-    forbidden_countries_list_packed_disclosed: publicSignals.slice(6 + kScaled, 6 + kScaled + 2),
+    forbidden_countries_list_packed_disclosed: publicSignals.slice(6 + kScaled, 8 + kScaled),
     ofac_result: publicSignals[8 + kScaled],
     commitment: publicSignals[9 + kScaled],
     blinded_dsc_commitment: publicSignals[10 + kScaled],
     current_date: publicSignals.slice(11 + kScaled, 11 + kScaled + 6),
-    user_identifier: publicSignals[12 + kScaled + 6],
-    scope: publicSignals[13 + kScaled + 6],
+    user_identifier: publicSignals[17 + kScaled],
+    scope: publicSignals[18 + kScaled],
   };
 }

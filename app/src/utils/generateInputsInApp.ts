@@ -14,13 +14,18 @@ export const generateCircuitInputsInApp = (
     passportData: PassportData,
     app: AppType
 ): any => {
+
     const disclosureOptions = (app.arguments as ArgumentsProve).disclosureOptions || {};
+    console.log('disclosureOptions', disclosureOptions);
+
     const { secret, dscSecret } = useUserStore.getState();
     const selector_mode = circuitToSelectorMode[app.circuitMode as keyof typeof circuitToSelectorMode];
-    const selector_older_than = 1;
+    console.log('selector_mode', selector_mode);
     const selector_dg1 = revealBitmapFromAttributes(disclosureOptions as any).slice(0, -2) // have been moved to selector older_than
+    console.log('selector_dg1', selector_dg1);
     let smt = new SMT(poseidon2, true);
     smt.import(namejson);
+    console.log('(disclosureOptions as any).forbidden_countries', (disclosureOptions as any).forbidden_countries);
     return generateCircuitInputsProve(
         selector_mode,
         secret,
@@ -28,11 +33,13 @@ export const generateCircuitInputsInApp = (
         passportData,
         app.scope,
         selector_dg1,
-        selector_older_than,
+        1,
+        // (disclosureOptions as any).older_than ? 1 : 0,
         disclosureOptions.older_than && disclosureOptions.older_than.length > 2 ? disclosureOptions.older_than : DEFAULT_MAJORITY,
         smt,
-        (disclosureOptions as any).ofac ? (disclosureOptions as any).ofac : 0,
-        (disclosureOptions as any).forbidden_countries ? (disclosureOptions as any).forbidden_countries : [],
+        // (disclosureOptions as any).ofac ? 1 : 0,
+        1,
+        (disclosureOptions as any).forbidden_countries_list ? (disclosureOptions as any).forbidden_countries_list : [],
         app.userId,
         app.userIdType
     );

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { max_cert_bytes, } from '../../../common/src/constants/constants';
+import { countryCodes, max_cert_bytes, } from '../../../common/src/constants/constants';
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
@@ -159,6 +159,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             inputs,
           )
         ]);
+
         const dscProof = JSON.parse(JSON.stringify(modalResponse));
 
         const formattedProof = formatProof(proof);
@@ -170,7 +171,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           dscProof: (dscProof as any).proof,
           dscPublicSignals: (dscProof as any).pub_signals,
         });
-        console.log(attestation);
         socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
 
       } else {
@@ -215,6 +215,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     }
     if (key === 'nationality') {
       return `I have a valid passport from ${value}.`;
+    }
+    if (key === 'ofac') {
+      return `My name is not present in the ofac list.`;
+    }
+    if (key === 'forbidden_countries_list' && value && value.length > 0) {
+      return `I am not part of the following countries list: ${(value as any).map((country: string) => countryCodes[country as keyof typeof countryCodes]).join(', ')}.`;
     }
     return '';
   }

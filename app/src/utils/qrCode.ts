@@ -56,6 +56,7 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         console.log(result);
         const parsedJson = JSON.parse(result);
         const app: AppType = reconstructAppType(parsedJson);
+        console.log(app);
         const dsc = useUserStore.getState().passportData.dsc;
         const sigAlgName = parseDSC(dsc!);
         const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
