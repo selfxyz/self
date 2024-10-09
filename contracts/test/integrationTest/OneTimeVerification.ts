@@ -26,7 +26,7 @@ type CircuitArtifacts = {
 }
 
 describe("Test one time verification flow", async function () {
-    this.timeout(0);
+    this.timeout(100000);
 
     // contracts
     let verifiersManager: any;
@@ -55,7 +55,7 @@ describe("Test one time verification flow", async function () {
     let prove_circuits: CircuitArtifacts = {};
     if (process.env.TEST_ENV === "local") {
         prove_circuits["prove_rsa_65537_sha256"] = {
-            wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
+            wasm: "../circuits/build/prov/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
             zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
             vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
         }
@@ -203,9 +203,9 @@ describe("Test one time verification flow", async function () {
             );
             const proof_prove_result = await groth16.fullProve(
                 prove,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
-            )
+                prove_circuits["prove_rsa_65537_sha256"].wasm,
+                prove_circuits["prove_rsa_65537_sha256"].zkey
+            );
             const proof_prove = proof_prove_result.proof;
             const publicSignals_prove = proof_prove_result.publicSignals;
 
