@@ -11,6 +11,7 @@ contract VerifiersManager is IVerifiersManager, Ownable {
         Dsc
     }
 
+    // TODO: Key of these mappings are keccak256 hash of parameters in each signature algorithm
     mapping(uint256 => address) public prove_verifiers;
     mapping(uint256 => address) public dsc_verifiers;
 
@@ -46,6 +47,7 @@ contract VerifiersManager is IVerifiersManager, Ownable {
         return result;
     }
 
+    // TODO: add batch update function
     function updateVerifier(
         VerificationType v_type,
         uint256 verifier_id,

@@ -42,6 +42,9 @@ download_and_compile_circuit() {
                 --O1 --wasm \
                 --output build/fromAWS
 
+            echo "Exporting vkey: $circuit_name"
+            snarkjs zkey export verificationkey build/fromAWS/${circuit_name}.zkey build/fromAWS/${circuit_name}_vkey.json
+
             if [ $? -eq 0 ]; then
                 echo "Successfully compiled $circuit_name"
                 # Keep only the wasm file and remove other generated files
@@ -52,6 +55,7 @@ download_and_compile_circuit() {
             else
                 echo "Failed to compile $circuit_name"
             fi
+
         else
             echo "Failed to download $circuit_name"
         fi
