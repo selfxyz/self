@@ -29,7 +29,7 @@ contract OneTimeSBT is ERC721Enumerable {
     error UNEQUAL_BLINDED_DSC_COMMITMENT();
     error INVALID_PROVE_PROOF();
     error INVALID_DSC_PROOF();
-    error SBT_CAN_BE_TRANSFERED();
+    error SBT_CAN_NOT_BE_TRANSFERED();
 
     constructor(
         IVerifiersManager v,
@@ -49,16 +49,16 @@ contract OneTimeSBT is ERC721Enumerable {
         // Convert the last four parameters into a valid timestamp, adding 30 years to adjust for block.timestamp starting in 1970
         uint[6] memory dateNum;
         for (uint i = 0; i < 6; i++) {
-            dateNum[i] = p_proof.pubSignals[PROVE_RSA_COMMITMENT_INDEX + i];
+            dateNum[i] = p_proof.pubSignals[PROVE_RSA_CURRENT_DATE_INDEX + i];
         }
-        uint currentTimestamp = getCurrentTimestamp(dateNum);
+        uint currentTimestamp = _getCurrentTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
         if(
             currentTimestamp < block.timestamp - 1 days ||
             currentTimestamp > block.timestamp + 1 days
         ) {
-            revert CURRENT_DATE_NOT_VALID_RANGE();
+            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
         // check blinded dcs
@@ -87,7 +87,7 @@ contract OneTimeSBT is ERC721Enumerable {
         for (uint256 i = 0; i < 3; i++) {
             revealedData_packed[i] = p_proof.pubSignals[PROVE_RSA_REVEALED_DATA_PACKED_INDEX + i];
         }
-        bytes memory charcodes = fieldElementsToBytes(
+        bytes memory charcodes = _fieldElementsToBytes(
             revealedData_packed
         );
 
@@ -100,62 +100,16 @@ contract OneTimeSBT is ERC721Enumerable {
         attributes.values[4] = AttributeLibrary.getDateOfBirth(charcodes);
         attributes.values[5] = AttributeLibrary.getGender(charcodes);
         attributes.values[6] = AttributeLibrary.getExpiryDate(charcodes);
-        attributes.values[7] = AttributeLibrary.getOlderThan(charcodes);
+
+        uint[] memory olderThanAscii = new uint[](2);
+        olderThanAscii[0] = p_proof.pubSignals[PROVE_RSA_OLDER_THAN_INDEX];
+        olderThanAscii[1] = p_proof.pubSignals[PROVE_RSA_OLDER_THAN_INDEX + 1];
+        attributes.values[7] = _convertUintArrayToString(olderThanAscii);
 
         sbtExpiration[newTokenId] = block.timestamp + 90 days;
     }
 
-    function fieldElementsToBytes(
-        uint256[3] memory publicSignals
-    ) public pure returns (bytes memory) {
-        uint8[3] memory bytesCount = [31, 31, 28];
-        bytes memory bytesArray = new bytes(90); // 31 + 31 + 28
-
-        uint256 index = 0;
-        for (uint256 i = 0; i < 3; i++) {
-            uint256 element = publicSignals[i];
-            for (uint8 j = 0; j < bytesCount[i]; j++) {
-                bytesArray[index++] = bytes1(uint8(element & 0xFF));
-                element = element >> 8;
-            }
-        }
-
-        return bytesArray;
-    }
-
-    function sliceFirstThree(
-        uint256[12] memory input
-    ) public pure returns (uint256[3] memory) {
-        uint256[3] memory sliced;
-
-        for (uint256 i = 0; i < 3; i++) {
-            sliced[i] = input[i];
-        }
-
-        return sliced;
-    }
-
-    function _beforeTokenTransfer(
-        address from,
-        address to,
-        uint256 tokenId,
-        uint256 batchSize
-    ) internal virtual override {
-        super._beforeTokenTransfer(from, to, tokenId, batchSize);
-        if (from != address(0)) {
-            revert SBT_CAN_BE_TRANSFERED();
-        }
-    }
-
-    function isExpired(string memory date) public view returns (bool) {
-        if (isAttributeEmpty(date)) {
-            return false; // this is disregarded anyway in the next steps
-        }
-        uint256 expiryDate = formatter.dateToUnixTimestamp(date);
-
-        return block.timestamp > expiryDate;
-    }
-
+    // get functions 
     function getIssuingStateOf(
         uint256 _tokenId
     ) public view returns (string memory) {
@@ -205,15 +159,51 @@ contract OneTimeSBT is ERC721Enumerable {
         uint256 _tokenId
     ) public view returns (bool) {
         uint256 expirationDate = sbtExpiration[_tokenId];
-        if (expirationDate < block.timestamp) {
-            return true;
-        }
-        return false;
+        return expirationDate > block.timestamp;
     }
 
-    function getCurrentTimestamp(
+    // internal functions
+    function _convertUintArrayToString(uint[] memory input) internal pure returns (string memory) {
+        bytes memory bytesArray = new bytes(input.length);
+        for (uint i = 0; i < input.length; i++) {
+            bytesArray[i] = bytes1(uint8(input[i]));
+        }
+        return string(bytesArray);
+    }
+
+    function _fieldElementsToBytes(
+        uint256[3] memory publicSignals
+    ) internal pure returns (bytes memory) {
+        uint8[3] memory bytesCount = [31, 31, 28];
+        bytes memory bytesArray = new bytes(90); // 31 + 31 + 28
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < 3; i++) {
+            uint256 element = publicSignals[i];
+            for (uint8 j = 0; j < bytesCount[i]; j++) {
+                bytesArray[index++] = bytes1(uint8(element & 0xFF));
+                element = element >> 8;
+            }
+        }
+
+        return bytesArray;
+    }
+
+    function _beforeTokenTransfer(
+        address from,
+        address to,
+        uint256 tokenId,
+        uint256 batchSize
+    ) internal virtual override {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        if (from != address(0)) {
+            revert SBT_CAN_NOT_BE_TRANSFERED();
+        }
+    }
+
+    function _getCurrentTimestamp(
         uint256[6] memory dateNum
-    ) public view returns (uint256) {
+    ) internal view returns (uint256) {
         string memory date = "";
         for (uint i = 0; i < 6; i++) {
             date = string(
@@ -224,6 +214,7 @@ contract OneTimeSBT is ERC721Enumerable {
         return currentTimestamp;
     }
 
+    // functions for calculate tokenURI
     function isAttributeEmpty(
         string memory attribute
     ) private pure returns (bool) {
@@ -251,6 +242,15 @@ contract OneTimeSBT is ERC721Enumerable {
             );
         }
         return baseURI;
+    }
+
+    function isExpired(string memory date) public view returns (bool) {
+        if (isAttributeEmpty(date)) {
+            return false; // this is disregarded anyway in the next steps
+        }
+        uint256 expiryDate = formatter.dateToUnixTimestamp(date);
+
+        return block.timestamp > expiryDate;
     }
 
     function formatAttribute(

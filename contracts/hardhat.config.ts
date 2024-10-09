@@ -3,6 +3,7 @@ import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
+import 'solidity-coverage';
 
 const { PKEY, OPTIMISM_SEPOLIA_RPC_URL } = process.env;
 

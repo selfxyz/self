@@ -94,15 +94,6 @@ library AttributeLibrary {
     }
 
     /**
-     * @notice Extracts the "older than" attribute from the charcodes.
-     * @param charcodes The bytes array containing packed attribute data.
-     * @return The "older than" value as a string.
-     */
-    function getOlderThan(bytes memory charcodes) internal pure returns (string memory) {
-        return extractAttribute(charcodes, OLDER_THAN_START, OLDER_THAN_END);
-    }
-
-    /**
      * @notice Extracts a substring from the charcodes based on start and end indices.
      * @param charcodes The bytes array containing packed attribute data.
      * @param start The starting index (inclusive).
