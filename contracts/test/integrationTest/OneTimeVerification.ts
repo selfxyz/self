@@ -1,12 +1,17 @@
 import { ethers } from "hardhat";
 import { expect } from "chai";
 import { groth16 } from "snarkjs";
+import fs from 'fs';
 import {
     VERIFICATION_TYPE_ENUM_PROVE,
     VERIFICATION_TYPE_ENUM_DSC
 } from "../../../common/src/constants/contractConstants";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
+import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
+import { mock_dsc_sha256_rsa_4096 } from "../../../common/src/constants/mockCertificates";
+import { generateCircuitInputsProve } from "../../../common/src/utils/generateInputs";
+import { buildSMT } from "../../../common/src/utils/smtTree";
 
 type CircuitArtifacts = {
     [key: string]: {
@@ -163,7 +168,78 @@ describe("Test one time verification flow", async function () {
 
     describe("test", async function() {
         it("Should be able to deploy", async function() {
-            
+
+            let selector_mode = [1, 0];
+            let secret = "42";
+            let dsc_secret = "4242";
+            let scope = "1";
+            let selector_dg1 = new Array(88).fill("1");;
+            let selector_older_than = "1";
+            let majority = "20";
+            let name = fs.readFileSync("./../common/ofacdata/inputs/names.json", "utf-8");
+            let name_list = JSON.parse(name);
+            // TODO: hardcode smt for test perfomance. Generate SMT everytime is not efficient.
+            let mockSmt = buildSMT(name_list, "name");
+
+            let selector_ofac = "0";
+            let forbidden_countries_list = ["AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG"];
+            let user_identifier = "70997970C51812dc3A010C7d01b50e0d17dc79C8";
+            let user_identifier_type:"ascii" | "hex" | "uuid" | undefined = "hex";
+
+            let prove = generateCircuitInputsProve(
+                selector_mode,
+                secret,
+                dsc_secret,
+                mockPassport,
+                scope,
+                selector_dg1,
+                selector_older_than,
+                majority,
+                mockSmt[2],
+                selector_ofac,
+                forbidden_countries_list,
+                user_identifier,
+                user_identifier_type
+            );
+            const proof_prove_result = await groth16.fullProve(
+                prove,
+                dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
+                dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
+            )
+            const proof_prove = proof_prove_result.proof;
+            const publicSignals_prove = proof_prove_result.publicSignals;
+
+            const vKey_prove = JSON.parse(fs.readFileSync(prove_circuits["prove_rsa_65537_sha256"].vkey) as unknown as string);
+            const verified_prove = await groth16.verify(
+                vKey_prove,
+                publicSignals_prove,
+                proof_prove
+            )
+            // assert(verified_csca == true, 'Should verify')
+            console.log("verified_csca: ", verified_prove);
+
+            // let dsc = generateCircuitInputsDSC(
+            //     "43",
+            //     mock_dsc_sha256_rsa_4096,
+            //     1024
+            // );
+            // const proof_dsc_result = await groth16.fullProve(
+            //     dsc.inputs,
+            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
+            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
+            // )
+            // const proof_csca = proof_dsc_result.proof;
+            // const publicSignals_csca = proof_dsc_result.publicSignals;
+
+            // const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits["dsc_rsa_65537_sha256_4096"].vkey) as unknown as string);
+            // const verified_csca = await groth16.verify(
+            //     vKey_csca,
+            //     publicSignals_csca,
+            //     proof_csca
+            // )
+            // // assert(verified_csca == true, 'Should verify')
+            // console.log("verified_csca: ", verified_csca);
+            // console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${"dsc_rsa_65537_sha256_4096"}`);
         });
     });
 
