@@ -52,6 +52,7 @@ describe("Test one time verification flow", async function () {
         "401031"
     );
 
+    // TODO: use path to get more robustness
     let prove_circuits: CircuitArtifacts = {};
     if (process.env.TEST_ENV === "local") {
         prove_circuits["prove_rsa_65537_sha256"] = {
@@ -176,10 +177,11 @@ describe("Test one time verification flow", async function () {
             let selector_dg1 = new Array(88).fill("1");;
             let selector_older_than = "1";
             let majority = "20";
-            let name = fs.readFileSync("./../common/ofacdata/inputs/names.json", "utf-8");
+            let name = fs.readFileSync("../common/ofacdata/inputs/names.json", "utf-8");
             let name_list = JSON.parse(name);
             // TODO: hardcode smt for test perfomance. Generate SMT everytime is not efficient.
             let mockSmt = buildSMT(name_list, "name");
+            console.log(mockSmt);
 
             let selector_ofac = "0";
             let forbidden_countries_list = ["AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG","AFG"];
@@ -203,8 +205,8 @@ describe("Test one time verification flow", async function () {
             );
             const proof_prove_result = await groth16.fullProve(
                 prove,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
+                prove_circuits["prove_rsa_65537_sha256"].wasm,
+                prove_circuits["prove_rsa_65537_sha256"].zkey
             )
             const proof_prove = proof_prove_result.proof;
             const publicSignals_prove = proof_prove_result.publicSignals;
