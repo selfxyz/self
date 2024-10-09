@@ -1,3 +1,6 @@
+//SPDX-License-Identifier: MIT
+pragma solidity ^0.8.18;
+
 uint256 constant ATTRIBUTE_ISSUING_STATE_INDEX = 0;
 uint256 constant ATTRIBUTE_NAME_INDEX = 1;
 uint256 constant ATTRIBUTE_PASSPORT_NUMBER_INDEX = 2;
