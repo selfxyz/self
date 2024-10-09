@@ -59,7 +59,7 @@ contract OneTimeSBT is ERC721Enumerable {
             currentTimestamp > block.timestamp + 1 days
         ) {
             revert CURRENT_DATE_NOT_VALID_RANGE();
-        };
+        }
 
         // check blinded dcs
         if (
