@@ -3,6 +3,7 @@
   "scripts": {
     "test": "npx hardhat test",
     "test:local": "TEST_ENV=local npx hardhat test",
+    "test:prod": "TEST_ENV=prod npx hardhat test",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
     "compile": "npx hardhat compile"
   },

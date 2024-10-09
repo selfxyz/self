@@ -53,10 +53,11 @@ describe("Test one time verification flow", async function () {
     );
 
     // TODO: use path to get more robustness
+    // TODO: make it change to global valuable for local and prod path 
     let prove_circuits: CircuitArtifacts = {};
     if (process.env.TEST_ENV === "local") {
         prove_circuits["prove_rsa_65537_sha256"] = {
-            wasm: "../circuits/build/prov/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
+            wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
             zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
             vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
         }
@@ -218,30 +219,30 @@ describe("Test one time verification flow", async function () {
                 proof_prove
             )
             // assert(verified_csca == true, 'Should verify')
-            console.log("verified_csca: ", verified_prove);
+            console.log("verified_prove: ", verified_prove);
 
-            // let dsc = generateCircuitInputsDSC(
-            //     "43",
-            //     mock_dsc_sha256_rsa_4096,
-            //     1024
-            // );
-            // const proof_dsc_result = await groth16.fullProve(
-            //     dsc.inputs,
-            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
-            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
-            // )
-            // const proof_csca = proof_dsc_result.proof;
-            // const publicSignals_csca = proof_dsc_result.publicSignals;
+            let dsc = generateCircuitInputsDSC(
+                "43",
+                mock_dsc_sha256_rsa_4096,
+                1664
+            );
+            const proof_dsc_result = await groth16.fullProve(
+                dsc.inputs,
+                dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
+                dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
+            )
+            const proof_csca = proof_dsc_result.proof;
+            const publicSignals_csca = proof_dsc_result.publicSignals;
 
-            // const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits["dsc_rsa_65537_sha256_4096"].vkey) as unknown as string);
-            // const verified_csca = await groth16.verify(
-            //     vKey_csca,
-            //     publicSignals_csca,
-            //     proof_csca
-            // )
-            // // assert(verified_csca == true, 'Should verify')
-            // console.log("verified_csca: ", verified_csca);
-            // console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${"dsc_rsa_65537_sha256_4096"}`);
+            const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits["dsc_rsa_65537_sha256_4096"].vkey) as unknown as string);
+            const verified_csca = await groth16.verify(
+                vKey_csca,
+                publicSignals_csca,
+                proof_csca
+            )
+            // assert(verified_csca == true, 'Should verify')
+            console.log("verified_csca: ", verified_csca);
+            console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${"dsc_rsa_65537_sha256_4096"}`);
         });
     });
 
