@@ -140,14 +140,16 @@ describe("Test one time verification flow", async function () {
         await oneTimeSBT.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${oneTimeSBT.target}`);
 
+        const PROVE_RSA_65537_SHA256_VERIFIER_ID = 0;
+        const DSC_RSA65537_SHA256_4096_VERIFIER_ID = 0;
         await verifiersManager.updateVerifier(
             VERIFICATION_TYPE_ENUM_PROVE,
-            0,
+            PROVE_RSA_65537_SHA256_VERIFIER_ID,
             verifierProveRsa65537Sha256.target
         );
         await verifiersManager.updateVerifier(
             VERIFICATION_TYPE_ENUM_DSC,
-            0,
+            DSC_RSA65537_SHA256_4096_VERIFIER_ID,
             verifierDscRsa65537Sha256_4096.target
         );
 
