@@ -38,6 +38,7 @@ export interface OpenPassportAttestation {
     pubKey?: string[];
     valid?: boolean;
     nullifier?: string;
+    blinded_dsc_commitment?: string;
   };
   proof: {
     mode: Mode;
@@ -146,6 +147,7 @@ export function buildAttestation(options: {
     nullifier: bigIntToHex(BigInt(parsedPublicSignals.nullifier)),
     scope: scope,
     current_date: parsedPublicSignals.current_date.toString(),
+    blinded_dsc_commitment: parsedPublicSignals.blinded_dsc_commitment,
   };
 
 
