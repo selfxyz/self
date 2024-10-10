@@ -17,12 +17,6 @@ import { mock_dsc_sha256_rsa_4096 } from "../../../common/src/constants/mockCert
 import { generateCircuitInputsProve } from "../../../common/src/utils/generateInputs";
 import { buildSMT, importSMTFromJsonFile, exportSMTToJsonFile } from "../../../common/src/utils/smtTree";
 import { SMT } from "@ashpect/smt";
-// import { ChildNodes, SMT } from "@ashpect/smt";
-// import * as nameSMTJson from "../../../common/ofacdata/outputs/nameSMT.json";
-// import { poseidon3, poseidon2 } from "poseidon-lite"
-// import { convertProofTypeIntoInput } from "../../../common/src/utils/test/generateMockProof";
-// import path from 'path';
-// import { hash } from "crypto";
 
 type CircuitArtifacts = {
     [key: string]: {
