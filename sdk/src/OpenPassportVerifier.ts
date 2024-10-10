@@ -5,10 +5,11 @@ import { UserIdType } from "../../common/src/utils/utils";
 import * as pako from 'pako';
 import msgpack from 'msgpack-lite';
 import { OpenPassportAttestation } from "./index.web";
+import { StringifyOptions } from "querystring";
 export class OpenPassportVerifier {
   private mode: Mode;
   private scope: string;
-  private minimumAge: { enabled: boolean; value: number } = { enabled: false, value: 0 };
+  private minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
   private nationality: { enabled: boolean; value: typeof countryNames[number] } = { enabled: false, value: '' as typeof countryNames[number] };
   private excludedCountries: { enabled: boolean; value: typeof countryNames[number][] } = { enabled: false, value: [] };
   private ofac: boolean = false;
@@ -24,7 +25,13 @@ export class OpenPassportVerifier {
 
   // Disclose
   setMinimumAge(age: number): this {
-    this.minimumAge = { enabled: true, value: age };
+    if (age < 10) {
+      throw new Error("Minimum age must be at least 10 years old");
+    }
+    if (age > 100) {
+      throw new Error("Minimum age must be at most 100 years old");
+    }
+    this.minimumAge = { enabled: true, value: age.toString() };
     return this;
   }
 
@@ -66,6 +73,9 @@ export class OpenPassportVerifier {
       mode: this.mode,
       scope: this.scope,
       websocketUrl: websocketUrl,
+      sessionId: sessionId,
+      userId: userId,
+      userIdType: userIdType,
     };
 
     let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegisterOnChain;

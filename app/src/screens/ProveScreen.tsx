@@ -5,7 +5,7 @@ import { countryCodes, max_cert_bytes, } from '../../../common/src/constants/con
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType } from '../../../common/src/utils/appType';
+import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
@@ -22,8 +22,8 @@ interface ProveScreenProps {
 
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [generatingProof, setGeneratingProof] = useState(false);
-  const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
-  const disclosureOptions = selectedApp.circuitMode === 'register' ? {} : (selectedApp as any).getDisclosureOptions();
+  const selectedApp = useNavigationStore(state => state.selectedApp) as OpenPassportApp;
+  const disclosureOptions = selectedApp.mode === 'register' ? {} : (selectedApp.args as any).disclosureOptions || {};
   const {
     toast,
     setSelectedTab,
@@ -145,7 +145,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       const inputs = generateCircuitInputsInApp(passportData, selectedApp);
 
-      if (selectedApp.circuitMode === 'register') {
+      if (selectedApp.mode === 'register') {
         const { secret, dscSecret } = useUserStore.getState();
         const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes);
 
@@ -206,50 +206,72 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     }
   };
 
+  // Refactored disclosureFieldsToText function
+  const disclosureFieldsToText = (key: keyof DisclosureOptions, option: any) => {
+    if (option.enabled) {
+      switch (key) {
+        case 'minimumAge':
+          return `I am older than ${option.value} years old.`;
+        case 'nationality':
+          return `I have a valid passport from ${option.value}.`;
+        case 'ofac':
+          return `My name is not present in the OFAC list.`;
+        case 'excludedCountries':
+          return option.value.length > 0
+            ? `I am not part of the following countries: ${option.value
 
-
-
-  const disclosureFieldsToText = (key: string, value: string = "") => {
-    if (key === 'older_than') {
-      return `I am older than ${value} years old.`;
-    }
-    if (key === 'nationality') {
-      return `I have a valid passport from ${value}.`;
-    }
-    if (key === 'ofac') {
-      return `My name is not present in the ofac list.`;
-    }
-    if (key === 'forbidden_countries_list' && value && value.length > 0) {
-      return `I am not part of the following countries list: ${(value as any).map((country: string) => countryCodes[country as keyof typeof countryCodes]).join(', ')}.`;
+              .join(', ')}.`
+            : '';
+        default:
+          return '';
+      }
     }
     return '';
-  }
+  };
+
+  // Function to check if any disclosure option is enabled
+  const hasEnabledDisclosureOptions = Object.values(disclosureOptions).some(
+    (option: any) => option.enabled
+  );
 
   return (
     <YStack f={1} p="$3" pt="$8">
-      {Object.keys(disclosureOptions).length > 0 ? <YStack mt="$4">
+      {hasEnabledDisclosureOptions ? (
+        <YStack mt="$4">
+          <Text fontSize="$9">
+            <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+              {selectedApp.appName}
+            </Text>{' '}
+            is requesting you to prove the following information.
+          </Text>
+          <Text mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.9 }}>
+            No{' '}
+            <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+              other
+            </Text>{' '}
+            information than the one selected below will be shared with {selectedApp.appName}.
+          </Text>
+        </YStack>
+      ) : (
         <Text fontSize="$9">
-          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
+          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+            {selectedApp.appName}
+          </Text>{' '}
+          is requesting you to prove you own a valid passport.
         </Text>
-        <Text mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.9 }}>
-          No <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>other</Text> information than the one selected below will be shared with {selectedApp.name}.
-        </Text>
-      </YStack> :
-        <Text fontSize="$9">
-          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove you own a valid passport.
-        </Text>
-      }
+      )}
 
       <YStack mt="$6">
-        {Object.keys(disclosureOptions).map((key) => {
-          return (
-            <XStack key={key} gap="$3" mb="$3" ml="$3" >
+        {Object.entries(disclosureOptions).map(([key, option]: [string, any]) => {
+          const text = disclosureFieldsToText(key as keyof DisclosureOptions, option);
+          return text ? (
+            <XStack key={key} gap="$3" mb="$3" ml="$3">
               <CheckCircle size={16} mt="$1.5" />
               <Text fontSize="$7" color={textBlack} w="85%">
-                {disclosureFieldsToText(key, (disclosureOptions as any)[key])}
+                {text}
               </Text>
             </XStack>
-          );
+          ) : null;
         })}
       </YStack>
 
@@ -289,4 +311,3 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 };
 
 export default ProveScreen;
-

@@ -2,7 +2,6 @@ import React, { useEffect, useState } from 'react';
 import {
   OpenPassportAttestation,
   OpenPassportVerifier,
-  OpenPassportVerifierReport,
 } from '../index.web';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
@@ -10,12 +9,9 @@ import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
 import {
-  DEFAULT_USER_ID_TYPE,
-  MODAL_SERVER_ADDRESS,
   WEBSOCKET_URL,
 } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
-import { CircuitName, Mode } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -26,13 +22,16 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
 });
 
 interface OpenPassportQRcodeProps {
+  appName: string;
+  userId: string;
+  userIdType: UserIdType;
   openPassportVerifier: OpenPassportVerifier;
-  onSuccess: (proof: OpenPassportAttestation, report: OpenPassportVerifierReport) => void;
+  onSuccess: (attestation: OpenPassportAttestation) => void;
   websocketUrl?: string;
   size?: number;
 }
 
-const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ openPassportVerifier, onSuccess, websocketUrl = WEBSOCKET_URL, size = 300 }) => {
+const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ appName, userId, userIdType, openPassportVerifier, onSuccess, websocketUrl = WEBSOCKET_URL, size = 300 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
@@ -84,7 +83,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ openPassportVer
                 );
               }
             default:
-              return <QRCodeSVG value={openPassportVerifier.getIntent("Mock App", "mockUid", "uuid", sessionId)} size={size} />;
+              return <QRCodeSVG value={openPassportVerifier.getIntent(appName, userId, userIdType, sessionId)} size={size} />;
           }
         })()}
       </div>

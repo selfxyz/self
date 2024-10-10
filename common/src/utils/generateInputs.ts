@@ -150,7 +150,7 @@ export function generateCircuitInputsProve(
   selector_older_than: string | number,
   majority: string,
   name_smt: SMT,
-  selector_ofac,
+  selector_ofac: string | number,
   forbidden_countries_list: string[],
   user_identifier: string,
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE

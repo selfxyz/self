@@ -4,43 +4,6 @@ import { UserIdType } from "./utils";
 export type CircuitName = "prove" | "disclose";
 export type CircuitMode = "prove_onchain" | "register" | 'prove_offchain';
 export type Mode = "prove_offchain" | "prove_onchain" | "register" | "disclose";
-// export interface AppType {
-//   name: string,
-//   scope: string,
-//   userId: string,
-//   userIdType: UserIdType,
-//   websocketUrl: string,
-//   sessionId: string,
-//   mode: Mode,
-//   arguments: ArgumentsProve | ArgumentsRegister | ArgumentsDisclose
-// }
-
-// export interface ArgumentsProve {
-//   disclosureOptions: {
-//     older_than?: string,
-//     nationality?: string,
-//     ofac?: string,
-//     forbidden_countries_list?: string[]
-//   },
-// }
-
-// export interface ArgumentsRegister {
-//   merkleTreeUrl: string,
-//   modalServerUrl: string,
-// }
-
-// export interface ArgumentsDisclose {
-//   disclosureOptions: {
-//     older_than?: string,
-//     nationality?: string,
-//     ofac?: string,
-//     forbidden_countries_list?: string[]
-
-//   },
-//   merkle_root: string,
-//   merkletree_size: string,
-// }
-
 
 // OpenPassportAppType
 export interface OpenPassportAppPartial {
@@ -48,6 +11,9 @@ export interface OpenPassportAppPartial {
   appName: string;
   scope: string;
   websocketUrl: string;
+  sessionId: string;
+  userId: string;
+  userIdType: UserIdType;
 }
 
 export interface OpenPassportApp extends OpenPassportAppPartial {
@@ -81,7 +47,7 @@ export interface ArgumentsDisclose {
 }
 
 export interface DisclosureOptions {
-  minimumAge: { enabled: boolean; value: number }
+  minimumAge: { enabled: boolean; value: string }
   nationality: { enabled: boolean; value: string }
   excludedCountries: { enabled: boolean; value: string[] }
   ofac: boolean
