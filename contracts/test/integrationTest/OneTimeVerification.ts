@@ -4,14 +4,19 @@ import { groth16 } from "snarkjs";
 import fs from 'fs';
 import {
     VERIFICATION_TYPE_ENUM_PROVE,
-    VERIFICATION_TYPE_ENUM_DSC
+    VERIFICATION_TYPE_ENUM_DSC,
+    PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX
 } from "../../../common/src/constants/contractConstants";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
-import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
+import { 
+    generateCircuitInputsDSC,
+    sendCSCARequest
+ } from "../../../common/src/utils/csca";
 import { mock_dsc_sha256_rsa_4096 } from "../../../common/src/constants/mockCertificates";
 import { generateCircuitInputsProve } from "../../../common/src/utils/generateInputs";
 import { buildSMT } from "../../../common/src/utils/smtTree";
+import { convertProofTypeIntoInput } from "../../../common/src/utils/test/generateMockProof";
 
 type CircuitArtifacts = {
     [key: string]: {
@@ -26,7 +31,10 @@ type CircuitArtifacts = {
 }
 
 describe("Test one time verification flow", async function () {
-    this.timeout(100000);
+    this.timeout(0);
+
+    const PROVE_RSA_65537_SHA256_VERIFIER_ID = 0;
+    const DSC_RSA65537_SHA256_4096_VERIFIER_ID = 0;
 
     // contracts
     let verifiersManager: any;
@@ -76,30 +84,25 @@ describe("Test one time verification flow", async function () {
     }
 
     let dsc_circuits: CircuitArtifacts = {};
-    dsc_circuits["dsc_rsa_65537_sha256_4096"] = {
-        wasm: "../circuits/build/dsc/dsc_rsa_65537_sha256_4096/dsc_rsa_65537_sha256_4096_js/dsc_rsa_65537_sha256_4096.wasm",
-        zkey: "../circuits/build/dsc/dsc_rsa_65537_sha256_4096/dsc_rsa_65537_sha256_4096_final.zkey",
-        vkey: "../circuits/build/dsc/dsc_rsa_65537_sha256_4096/dsc_rsa_65537_sha256_4096_vkey.json"
+    if (process.env.TEST_ENV === "local") {
+        dsc_circuits["prove_rsa_65537_sha256"] = {
+            wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
+            zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
+            vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
+        }
+    } else if (process.env.TEST_ENV === "prod") {
+        dsc_circuits["prove_rsa_65537_sha256"] = {
+            wasm: "../circuits/build/fromAWS/prove_rsa_65537_sha256.wasm",
+            zkey: "../circuits/build/fromAWS/prove_rsa_65537_sha256.zkey",
+            vkey: "../circuits/build/fromAWS/prove_rsa_65537_sha256_vkey.json"
+        }
+    } else {
+        dsc_circuits["prove_rsa_65537_sha256"] = {
+            wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
+            zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
+            vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
+        }
     }
-    // if (process.env.TEST_ENV === "local") {
-    //     prove_circuits["prove_rsa_65537_sha256"] = {
-    //         wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
-    //         zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
-    //         vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
-    //     }
-    // } else if (process.env.TEST_ENV === "prod") {
-    //     prove_circuits["prove_rsa_65537_sha256"] = {
-    //         wasm: "../circuits/build/fromAWS/prove_rsa_65537_sha256.wasm",
-    //         zkey: "../circuits/build/fromAWS/prove_rsa_65537_sha256.zkey",
-    //         vkey: "../circuits/build/fromAWS/prove_rsa_65537_sha256_vkey.json"
-    //     }
-    // } else {
-    //     prove_circuits["prove_rsa_65537_sha256"] = {
-    //         wasm: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_js/prove_rsa_65537_sha256.wasm",
-    //         zkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_final.zkey",
-    //         vkey: "../circuits/build/prove/prove_rsa_65537_sha256/prove_rsa_65537_sha256_vkey.json"
-    //     }
-    // }
 
     before(async function() {
         [owner, addr1, addr2] = await ethers.getSigners();
@@ -119,7 +122,7 @@ describe("Test one time verification flow", async function () {
 
         let verifierDscRsa65537Sha256_4096Factory: any;
         if (process.env.TEST_ENV === "local") {
-            verifierDscRsa65537Sha256_4096Factory = await ethers.getContractFactory("contracts/verifiers/local/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol:Verifier_dsc_rsa_65537_sha256_4096", owner);
+            verifierDscRsa65537Sha256_4096Factory = await ethers.getContractFactory("contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol:Verifier_dsc_rsa_65537_sha256_4096", owner);
         } else if (process.env.TEST_ENV === "prod") {
             verifierDscRsa65537Sha256_4096Factory = await ethers.getContractFactory("contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol:Verifier_dsc_rsa_65537_sha256_4096", owner);
         } else {
@@ -147,8 +150,6 @@ describe("Test one time verification flow", async function () {
         await oneTimeSBT.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${oneTimeSBT.target}`);
 
-        const PROVE_RSA_65537_SHA256_VERIFIER_ID = 0;
-        const DSC_RSA65537_SHA256_4096_VERIFIER_ID = 0;
         await verifiersManager.updateVerifier(
             VERIFICATION_TYPE_ENUM_PROVE,
             PROVE_RSA_65537_SHA256_VERIFIER_ID,
@@ -211,6 +212,8 @@ describe("Test one time verification flow", async function () {
             );
             const proof_prove = proof_prove_result.proof;
             const publicSignals_prove = proof_prove_result.publicSignals;
+            console.log("proof_prove: ", proof_prove);
+            console.log("publicSignals_prove: ", publicSignals_prove);
 
             const vKey_prove = JSON.parse(fs.readFileSync(prove_circuits["prove_rsa_65537_sha256"].vkey) as unknown as string);
             const verified_prove = await groth16.verify(
@@ -220,29 +223,60 @@ describe("Test one time verification flow", async function () {
             )
             // assert(verified_csca == true, 'Should verify')
             console.log("verified_prove: ", verified_prove);
+            const rawCallData_prove = await groth16.exportSolidityCallData(proof_prove, publicSignals_prove);
+            console.log(rawCallData_prove);
+            let prove_proof = JSON.parse("[" + rawCallData_prove + "]");
 
             let dsc = generateCircuitInputsDSC(
-                "43",
+                "4242",
                 mock_dsc_sha256_rsa_4096,
                 1664
             );
-            const proof_dsc_result = await groth16.fullProve(
-                dsc.inputs,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
-                dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
-            )
-            const proof_csca = proof_dsc_result.proof;
-            const publicSignals_csca = proof_dsc_result.publicSignals;
 
-            const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits["dsc_rsa_65537_sha256_4096"].vkey) as unknown as string);
-            const verified_csca = await groth16.verify(
-                vKey_csca,
-                publicSignals_csca,
-                proof_csca
-            )
-            // assert(verified_csca == true, 'Should verify')
-            console.log("verified_csca: ", verified_csca);
-            console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${"dsc_rsa_65537_sha256_4096"}`);
+            // TODO: I tried to generate proof in the test code, but it failed.
+            // console.log(dsc.inputs);
+            // fs.writeFileSync("dsc.json", JSON.stringify(dsc.inputs));
+
+            // const proof_dsc_result = await groth16.fullProve(
+            //     dsc.inputs,
+            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].wasm,
+            //     dsc_circuits["dsc_rsa_65537_sha256_4096"].zkey
+            // );
+            
+            // const proof_csca = proof_dsc_result.proof;
+            // const publicSignals_csca = proof_dsc_result.publicSignals;
+
+            // const vKey_csca = JSON.parse(fs.readFileSync(dsc_circuits["dsc_rsa_65537_sha256_4096"].vkey) as unknown as string);
+            // const verified_csca = await groth16.verify(
+            //     vKey_csca,
+            //     publicSignals_csca,
+            //     proof_csca
+            // )
+            // // assert(verified_csca == true, 'Should verify')
+            // console.log("verified_csca: ", verified_csca);
+            // console.log('\x1b[32m%s\x1b[0m', `Proof verified csca - ${"dsc_rsa_65537_sha256_4096"}`);
+
+            const response = await sendCSCARequest(dsc);
+            console.log(response);
+            const rawCallData_csca = await groth16.exportSolidityCallData(response.proof, response.pub_signals);
+            let csca_proof = JSON.parse("[" + rawCallData_csca + "]");
+
+            await oneTimeSBT.mint(
+                PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                {
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignals: prove_proof[3]
+                },
+                {
+                    a: csca_proof[0],
+                    b: csca_proof[1],
+                    c: csca_proof[2],
+                    pubSignals: csca_proof[3]
+                },
+            );
         });
     });
 
