@@ -31,6 +31,7 @@
     "typescript": "^5.1.6"
   },
   "dependencies": {
+    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@eth-optimism/hardhat-ovm": "^0.2.4",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openzeppelin/contracts": "^4.9.2",

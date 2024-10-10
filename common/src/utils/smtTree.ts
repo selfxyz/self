@@ -1,6 +1,8 @@
 import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from "poseidon-lite"
-import { stringToAsciiBigIntArray } from "./utils";
-import { ChildNodes,SMT } from "@ashpect/smt"
+import { hash, stringToAsciiBigIntArray } from "./utils";
+import { ChildNodes,SMT } from "@ashpect/smt";
+import fs from 'fs';
+import path from 'path';
 
 // SMT trees for 3 levels :
 // 1. Passport tree  : level 3 (Absolute Match)
@@ -45,6 +47,38 @@ export function buildSMT(field :any[], treetype:string): [number, number, SMT]{
     console.log("Total",treetype ,"paresed are : ",count ," over ",field.length )
     console.log(treetype, 'tree built in', performance.now() - startTime, 'ms')
     return [count, performance.now() - startTime, tree]
+}
+
+export function exportSMTToJsonFile(count: number, time: number, smt: SMT, outputPath?: string) {
+  const serializedSMT = smt.export();
+  const data = {
+      count: count,
+      time: time,
+      smt: serializedSMT
+  };
+  const jsonString = JSON.stringify(data, null, 2);
+  const defaultPath = path.join(process.cwd(), 'smt.json');
+  const finalPath = outputPath ? path.resolve(process.cwd(), outputPath) : defaultPath;
+
+  fs.writeFileSync(finalPath, jsonString, 'utf8');
+}
+
+export function importSMTFromJsonFile(filePath?: string): SMT | null {
+  try {
+    const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath), 'utf8');
+    
+    const data = JSON.parse(jsonString);
+    
+    const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+    const smt = new SMT(hash2, true);
+    smt.import(data.smt);
+    
+    console.log('Successfully imported SMT from JSON file');
+    return smt;
+  } catch (error) {
+      console.error('Failed to import SMT from JSON file:', error);
+      return null;
+  }
 }
 
 function processPassport(passno : string, index: number): bigint {

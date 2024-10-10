@@ -5,6 +5,8 @@ import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
 import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
+import * as fs from 'fs';
+import * as path from 'path';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -350,6 +352,24 @@ export function generateSMTProof(smt: SMT, leaf: bigint) {
     siblings,
   };
 }
+
+// I don't know if we need this function
+// export function saveSMTToJsonFile(count: number, time: number, smt: SMT, outputPath?: string): void {
+//   const serializedSMT = smt.export();
+//   const data = {
+//       count: count,
+//       time: time,
+//       smt: serializedSMT
+//   };
+
+//   const jsonString = JSON.stringify(data, null, 2);
+
+//   const defaultPath = path.join(__dirname, 'smtData.json');
+//   const finalPath = outputPath ? path.resolve(__dirname, outputPath) : defaultPath;
+
+//   fs.writeFileSync(finalPath, jsonString, 'utf8');
+//   console.log(`Saved json file here: ${finalPath}`);
+// }
 
 export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
   const { siblings: merkleProofSiblings, index } = imt.generateProof(_index);
