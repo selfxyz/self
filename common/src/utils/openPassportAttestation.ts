@@ -39,6 +39,8 @@ export interface OpenPassportAttestation {
     nullifier?: string;
   };
   proof: {
+    circuit: string;
+    signatureAlgorithm: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -48,6 +50,8 @@ export interface OpenPassportAttestation {
     vkey: string;
   };
   dscProof: {
+    circuit: string;
+    signatureAlgorithm: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -161,6 +165,8 @@ export function buildAttestation(options: {
     issuanceDate: new Date().toISOString(),
     credentialSubject: credentialSubject,
     proof: {
+      circuit: '',
+      signatureAlgorithm: '',
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -171,6 +177,8 @@ export function buildAttestation(options: {
       vkey: '',
     },
     dscProof: {
+      circuit: '',
+      signatureAlgorithm: '',
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -217,6 +225,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     nullifier?: string;
   };
   proof: {
+    circuit: string;
+    signatureAlgorithm: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -226,6 +236,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     vkey;
   };
   dscProof: {
+    circuit: string;
+    signatureAlgorithm: string;
     type: string;
     verificationMethod: string;
     value: {

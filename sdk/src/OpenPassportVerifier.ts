@@ -1,12 +1,12 @@
-import { ArgumentsProveOffChain, ArgumentsRegisterOffChain, ArgumentsRegisterOnChain, Mode, OpenPassportAppPartial } from "../../common/src/utils/appType";
+import { ArgumentsProveOffChain, ArgumentsRegister, Mode, OpenPassportAppPartial } from "../../common/src/utils/appType";
 import { DEFAULT_RPC_URL, MODAL_SERVER_ADDRESS, WEBSOCKET_URL, countryNames } from "../../common/src/constants/constants";
 import { OpenPassportApp } from "../../common/src/utils/appType";
 import { UserIdType } from "../../common/src/utils/utils";
 import * as pako from 'pako';
 import msgpack from 'msgpack-lite';
 import { OpenPassportAttestation } from "./index.web";
-import { StringifyOptions } from "querystring";
-export class OpenPassportVerifier {
+import { AttestationVerifier } from './AttestationVerifier';
+export class OpenPassportVerifier extends AttestationVerifier {
   private mode: Mode;
   private scope: string;
   private minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
@@ -16,9 +16,9 @@ export class OpenPassportVerifier {
   private modalServerUrl: string = MODAL_SERVER_ADDRESS;
   private rpcUrl: string = DEFAULT_RPC_URL;
   private cscaMerkleTreeUrl: string = "";
-  private devMode: boolean = false;
 
-  constructor(mode: Mode, scope: string) {
+  constructor(mode: Mode, scope: string, devMode: boolean = false) {
+    super(devMode);
     this.mode = mode;
     this.scope = scope;
   }
@@ -78,7 +78,7 @@ export class OpenPassportVerifier {
       userIdType: userIdType,
     };
 
-    let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegisterOnChain;
+    let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegister;
     switch (this.mode) {
       case "prove_offchain":
         const argsProveOffChain: ArgumentsProveOffChain = {
@@ -92,10 +92,9 @@ export class OpenPassportVerifier {
         openPassportArguments = argsProveOffChain;
         break;
       case "register":
-        const argsRegisterOnChain: ArgumentsRegisterOnChain = {
+        const argsRegisterOnChain: ArgumentsRegister = {
           modalServerUrl: this.modalServerUrl,
           cscaMerkleTreeUrl: this.cscaMerkleTreeUrl,
-          rpcUrl: this.rpcUrl,
         };
         openPassportArguments = argsRegisterOnChain;
         break;
@@ -116,8 +115,5 @@ export class OpenPassportVerifier {
     }
   }
 
-  verify(attestation: OpenPassportAttestation): boolean {
-    return true;
-  }
 }
 

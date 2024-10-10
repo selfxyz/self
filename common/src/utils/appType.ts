@@ -17,7 +17,7 @@ export interface OpenPassportAppPartial {
 }
 
 export interface OpenPassportApp extends OpenPassportAppPartial {
-  args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegisterOffChain | ArgumentsRegisterOnChain | ArgumentsDisclose
+  args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose
 }
 
 export interface ArgumentsProveOffChain {
@@ -31,14 +31,11 @@ export interface ArgumentsProveOnChain {
   rpcUrl: string,
 }
 
-export interface ArgumentsRegisterOffChain {
+export interface ArgumentsRegister {
   cscaMerkleTreeUrl: string,
   modalServerUrl: string,
 }
 
-export interface ArgumentsRegisterOnChain extends ArgumentsRegisterOffChain {
-  rpcUrl: string,
-}
 
 export interface ArgumentsDisclose {
   disclosureOptions: DisclosureOptions,
