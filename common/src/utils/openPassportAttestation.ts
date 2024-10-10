@@ -12,6 +12,7 @@ import {
 } from './utils';
 import { unpackReveal } from './revealBitmap';
 import { getAttributeFromUnpackedReveal } from './utils'
+import { Mode } from 'fs';
 
 export interface OpenPassportAttestation {
   '@context': string[];
@@ -39,8 +40,9 @@ export interface OpenPassportAttestation {
     nullifier?: string;
   };
   proof: {
-    circuit: string;
+    mode: Mode;
     signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -50,8 +52,8 @@ export interface OpenPassportAttestation {
     vkey: string;
   };
   dscProof: {
-    circuit: string;
     signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -68,28 +70,33 @@ export interface OpenPassportAttestation {
 }
 
 export function buildAttestation(options: {
+  userIdType: UserIdType;
+  mode: Mode;
   proof: string[];
   publicSignals: string[];
+  signatureAlgorithm: string;
+  hashFunction: string;
   dscProof?: string[];
   dscPublicSignals?: string[];
-  dsc: string;
-  userIdType?: UserIdType;
+  signatureAlgorithmDsc?: string;
+  hashFunctionDsc?: string;
+  dsc?: string;
 }): OpenPassportDynamicAttestation {
   const {
+    mode,
     proof,
     publicSignals,
-    dscProof,
-    dscPublicSignals,
-    dsc,
-    userIdType = 'uuid',
+    signatureAlgorithm,
+    hashFunction,
+    dscProof = [],
+    dscPublicSignals = [],
+    signatureAlgorithmDsc = '',
+    hashFunctionDsc = '',
+    dsc = '',
+    userIdType,
   } = options;
 
-  // Parse the DSC (Document Signing Certificate)
-  const dscParsed = parseDSC(dsc);
-
-  // Determine the scaling factor based on the signature algorithm
   let kScaled: number;
-  const { signatureAlgorithm } = dscParsed;
   switch (signatureAlgorithm) {
     case 'ecdsa':
       kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
@@ -97,11 +104,8 @@ export function buildAttestation(options: {
     default:
       kScaled = k_dsc;
   }
-
-  // Parse the public signals
   const parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
 
-  // Get user identifier
   const rawUserId = parsedPublicSignals.user_identifier;
   let userId: string;
   switch (userIdType) {
@@ -124,7 +128,7 @@ export function buildAttestation(options: {
   const unpackedReveal = unpackReveal(
     parsedPublicSignals.revealedData_packed
   );
-  // Extract attributes from unpackedReveal
+
   const attributeNames = [
     'issuing_state',
     'name',
@@ -151,7 +155,6 @@ export function buildAttestation(options: {
       credentialSubject[attrName] = value;
     }
   });
-
   // Include pubKey if needed
   credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed;
 
@@ -165,8 +168,9 @@ export function buildAttestation(options: {
     issuanceDate: new Date().toISOString(),
     credentialSubject: credentialSubject,
     proof: {
-      circuit: '',
-      signatureAlgorithm: '',
+      mode: mode,
+      signatureAlgorithm: signatureAlgorithm,
+      hashFunction: hashFunction,
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -177,8 +181,8 @@ export function buildAttestation(options: {
       vkey: '',
     },
     dscProof: {
-      circuit: '',
-      signatureAlgorithm: '',
+      signatureAlgorithm: signatureAlgorithmDsc,
+      hashFunction: hashFunctionDsc,
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -225,8 +229,9 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     nullifier?: string;
   };
   proof: {
-    circuit: string;
+    mode: Mode;
     signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -236,8 +241,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     vkey;
   };
   dscProof: {
-    circuit: string;
     signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
