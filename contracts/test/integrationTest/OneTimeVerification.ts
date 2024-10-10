@@ -379,35 +379,20 @@ describe("Test one time verification flow", async function () {
             user_identifier,
             user_identifier_type
         );
-        const proof_prove_result = await groth16.fullProve(
+        const proof_prove = await groth16.fullProve(
             prove,
             prove_circuits["prove_rsa_65537_sha256"].wasm,
             prove_circuits["prove_rsa_65537_sha256"].zkey
         );
 
-        const jsonString = JSON.stringify(proof_prove_result);
-        fs.writeFileSync("./test/integrationTest/proof_prove_result.json", jsonString);
-
-        const proof_prove_result_json = fs.readFileSync("./test/integrationTest/proof_prove_result.json", "utf-8");
-        const proof_prove_result_obj = JSON.parse(proof_prove_result_json);
-        console.log(proof_prove_result_obj.proof);
-        console.log(proof_prove_result_obj.publicSignals);
-
-        const proof_prove = proof_prove_result_obj.proof;
-        const publicSignals_prove = proof_prove_result.publicSignals;
-        console.log("proof_prove: ", proof_prove);
-        console.log("publicSignals_prove: ", publicSignals_prove);
-
         const vKey_prove = JSON.parse(fs.readFileSync(prove_circuits["prove_rsa_65537_sha256"].vkey) as unknown as string);
         const verified_prove = await groth16.verify(
             vKey_prove,
-            publicSignals_prove,
-            proof_prove
+            proof_prove.publicSignals,
+            proof_prove.proof
         )
         // assert(verified_csca == true, 'Should verify')
-        console.log("verified_prove: ", verified_prove);
-        const rawCallData_prove = await groth16.exportSolidityCallData(proof_prove, publicSignals_prove);
-        console.log(rawCallData_prove);
+        const rawCallData_prove = await groth16.exportSolidityCallData(proof_prove.proof, proof_prove.publicSignals);
         let prove_proof = JSON.parse("[" + rawCallData_prove + "]");
         fs.writeFileSync("./test/integrationTest/proof_prove.json", JSON.stringify(prove_proof));
         return prove_proof;
