@@ -178,7 +178,7 @@ export function buildAttestation(options: {
         proof: proof,
         publicSignals: publicSignals,
       },
-      vkey: '',
+      vkey: 'https://github.com/zk-passport/openpassport/blob/main/common/src/constants/vkey.ts',
     },
     dscProof: {
       signatureAlgorithm: signatureAlgorithmDsc,
@@ -190,7 +190,7 @@ export function buildAttestation(options: {
         proof: dscProof || [],
         publicSignals: dscPublicSignals || [],
       },
-      vkey: '',
+      vkey: 'https://github.com/zk-passport/openpassport/blob/main/common/src/constants/vkey.ts',
     },
     dsc: {
       type: 'X509Certificate',
