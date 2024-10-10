@@ -554,7 +554,9 @@ export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribu
   const position = attributeToPosition[attribute];
   let attributeValue = '';
   for (let i = position[0]; i <= position[1]; i++) {
-    attributeValue += unpackedReveal[i];
+    if (unpackedReveal[i] !== '\u0000') {
+      attributeValue += unpackedReveal[i];
+    }
   }
   return attributeValue;
 }
