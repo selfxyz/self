@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import {
-  OpenPassportVerifierInputs,
+  OpenPassportAttestation,
   OpenPassportVerifier,
   OpenPassportVerifierReport,
 } from '../index.web';
@@ -15,7 +15,7 @@ import {
   WEBSOCKET_URL,
 } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
-import { CircuitMode, CircuitName, reconstructAppType } from '../../../common/src/utils/appType';
+import { CircuitName, Mode } from '../../../common/src/utils/appType';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -26,121 +26,16 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
 });
 
 interface OpenPassportQRcodeProps {
-  appName: string;
-  scope: string;
-  userId?: string;
-  userIdType?: UserIdType;
-  olderThan?: string;
-  nationality?: string;
-  ofac?: string;
-  forbidden_countries_list?: string[];
-  onSuccess?: (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => void;
-  circuit: CircuitName;
-  circuitMode?: CircuitMode;
-  devMode?: boolean;
-  size?: number;
+  openPassportVerifier: OpenPassportVerifier;
+  onSuccess: (proof: OpenPassportAttestation, report: OpenPassportVerifierReport) => void;
   websocketUrl?: string;
-  merkleTreeUrl?: string;
-  modalServerUrl?: string;
+  size?: number;
 }
 
-const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
-  appName,
-  scope,
-  userId,
-  userIdType = DEFAULT_USER_ID_TYPE,
-  olderThan = '',
-  nationality = '',
-  ofac = null,
-  forbidden_countries_list = null,
-  onSuccess = (proof: OpenPassportVerifierInputs, report: OpenPassportVerifierReport) => {
-    console.log(proof, report);
-  },
-  circuit,
-  circuitMode = 'prove_onchain',
-  devMode = false,
-  size = 300,
-  websocketUrl = WEBSOCKET_URL,
-  modalServerUrl = MODAL_SERVER_ADDRESS,
-  merkleTreeUrl,
-}) => {
+const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ openPassportVerifier, onSuccess, websocketUrl = WEBSOCKET_URL, size = 300 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
-
-  const openPassportVerifier = new OpenPassportVerifier({
-    scope: scope,
-    olderThan: olderThan,
-    nationality: nationality,
-    ofac: ofac,
-    forbidden_countries_list: forbidden_countries_list,
-    dev_mode: devMode,
-    circuit: circuit,
-    circuitMode: circuitMode,
-  });
-
-  const getAppStringified = () => {
-    if (circuit === 'prove') {
-      if (circuitMode == 'register') {
-        return JSON.stringify(
-          reconstructAppType({
-            name: appName,
-            scope: scope,
-            userId: userId,
-            userIdType: userIdType,
-            sessionId: sessionId,
-            circuit: circuit,
-            circuitMode: circuitMode,
-            arguments: {
-              modalServerUrl: modalServerUrl,
-              merkleTreeUrl: merkleTreeUrl,
-            },
-            websocketUrl: websocketUrl,
-          })
-        );
-      } else if (circuitMode === 'prove_offchain') {
-        const disclosureOptions = [
-          ['nationality', nationality],
-          ['older_than', olderThan],
-          ['ofac', ofac],
-          ['forbidden_countries_list', forbidden_countries_list],
-        ];
-        return JSON.stringify(
-          reconstructAppType({
-            name: appName,
-            scope: scope,
-            userId: userId,
-            userIdType: userIdType,
-            sessionId: sessionId,
-            circuit: circuit,
-            circuitMode: circuitMode,
-            arguments: {
-              disclosureOptions: Object.fromEntries(disclosureOptions),
-            },
-            websocketUrl: websocketUrl,
-          })
-        );
-      }
-    }
-    // } else if (circuit === 'prove' && circuitMode === 'register') {
-    //   return JSON.stringify(
-    //     reconstructAppType({
-    //       name: appName,
-    //       scope: scope,
-    //       userId: userId,
-    //       userIdType: userIdType,
-    //       sessionId: sessionId,
-    //       circuit: circuit,
-    //       circuitMode: circuitMode,
-    //       arguments: {
-    //         attestation_id: attestationId,
-    //         merkleTreeUrl: merkleTreeUrl,
-    //       },
-    //       websocketUrl: websocketUrl,
-    //     })
-    //   );
-    // }
-  };
 
   useEffect(() => {
     initWebSocket(
@@ -189,7 +84,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
                 );
               }
             default:
-              return <QRCodeSVG value={getAppStringified()} size={size} />;
+              return <QRCodeSVG value={openPassportVerifier.getIntent("Mock App", "mockUid", "uuid", sessionId)} size={size} />;
           }
         })()}
       </div>
