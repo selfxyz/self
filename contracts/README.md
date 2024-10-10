@@ -30,3 +30,5 @@ cd ../circuits
 cd ../contracts
 yarn run test:prod
 ```
+
+If you want to generate your own proof or when you update circuits, pls delete json files in test/integrationTest
