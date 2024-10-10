@@ -35,8 +35,8 @@ build_circuit() {
 # set build_flag to false if you want to skip the build
 CIRCUITS=(
     "prove_rsa_65537_sha256:prove:20:true"
-    "prove_rsa_65537_sha1:prove:20:false"
-    "prove_rsapss_65537_sha256:prove:20:false"
+    "prove_rsa_65537_sha1:prove:20:true"
+    "prove_rsapss_65537_sha256:prove:20:true"
     "prove_ecdsa_secp256r1_sha256:prove:22:false"
     "prove_ecdsa_secp256r1_sha1:prove:22:false"
 )

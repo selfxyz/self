@@ -22,3 +22,6 @@ export const PROVE_RSA_SCOPE_INDEX = 50;
 
 export const DSC_BLINDED_DSC_COMMITMENT_INDEX = 0;
 
+// Enum in VerifiersManager.sol
+export const VERIFICATION_TYPE_ENUM_PROVE = 0;
+export const VERIFICATION_TYPE_ENUM_DSC = 1;

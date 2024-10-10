@@ -15,6 +15,7 @@ contract OneTimeSBT is ERC721Enumerable {
     using Strings for uint256;
     using Base64 for *;
 
+    //TODO: add ownable and functions to update verifiersmanager
     IVerifiersManager public verifiersManager;
     Formatter public formatter;
 

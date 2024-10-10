@@ -5,7 +5,7 @@ import {
     generateMockRSAProveVerifierInputs,
     generateMockDSCVerifierInputs,
     convertProofTypeIntoInput
-} from "../../../common/src/utils/unitTest/generateMockProof";
+} from "../../../common/src/utils/test/generateMockProof";
 
 const TRUE_VERIFIER_ID = 0;
 const FALSE_VERIFIER_ID = 1;
