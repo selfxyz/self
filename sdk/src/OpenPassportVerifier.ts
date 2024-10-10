@@ -1,4 +1,4 @@
-import { ArgumentsProveOffChain, ArgumentsRegister, Mode, OpenPassportAppPartial } from "../../common/src/utils/appType";
+import { ArgumentsProveOffChain, ArgumentsProveOnChain, ArgumentsRegister, Mode, OpenPassportAppPartial } from "../../common/src/utils/appType";
 import { DEFAULT_RPC_URL, MODAL_SERVER_ADDRESS, WEBSOCKET_URL, countryNames } from "../../common/src/constants/constants";
 import { OpenPassportApp } from "../../common/src/utils/appType";
 import { UserIdType } from "../../common/src/utils/utils";
@@ -80,6 +80,19 @@ export class OpenPassportVerifier extends AttestationVerifier {
 
     let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegister;
     switch (this.mode) {
+      case "prove_onchain":
+        const argsProveOnChain: ArgumentsProveOnChain = {
+          disclosureOptions: {
+            minimumAge: this.minimumAge,
+            nationality: this.nationality,
+            excludedCountries: this.excludedCountries,
+            ofac: this.ofac,
+          },
+          modalServerUrl: this.modalServerUrl,
+          merkleTreeUrl: this.cscaMerkleTreeUrl,
+        };
+        openPassportArguments = argsProveOnChain;
+        break;
       case "prove_offchain":
         const argsProveOffChain: ArgumentsProveOffChain = {
           disclosureOptions: {

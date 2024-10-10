@@ -7,7 +7,7 @@ export default function Prove() {
   const userId = uuidv4();
   const scope = "scope"
 
-  const openPassportVerifier = new OpenPassportVerifier("prove_offchain", scope).setNationality("France").excludeCountries("Finland", "Norway").setMinimumAge(12);
+  const openPassportVerifier = new OpenPassportVerifier("prove_onchain", scope).setNationality("France").excludeCountries("Finland", "Norway").setMinimumAge(12);
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode

@@ -32,7 +32,7 @@ export const generateProof = async (
       inputs
     );
 
-    console.log('local proof:', response);
+    // console.log('local proof:', response);
 
     if (Platform.OS === 'android') {
       const parsedResponse = parseProofAndroid(response);

@@ -147,7 +147,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
 
       switch (selectedApp.mode) {
-
+        case 'prove_onchain':
         case 'register':
           const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes);
           const [modalResponse, proof] = await Promise.all([
@@ -160,13 +160,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             )
           ]);
           const dscProof = JSON.parse(JSON.stringify(modalResponse));
-          console.log('modal proof', dscProof);
           const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, DEVELOPMENT_MODE);
           if (!cscaPem) {
             throw new Error(`CSCA not found, devMode: ${DEVELOPMENT_MODE}, authorityKeyIdentifier: ${authorityKeyIdentifier}`);
           }
           const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificate(cscaPem);
-          console.log('signatureAlgorithmDsc', signatureAlgorithmDsc);
           const formattedProof = formatProof(proof);
           const attestation = buildAttestation({
             mode: selectedApp.mode,
@@ -182,23 +180,24 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           });
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
           break;
+        case 'prove_offchain':
+          const proof_prove = await generateProof(
+            circuitName,
+            inputs,
+          );
+          const formattedProof_prove = formatProof(proof_prove);
+          const attestation_prove = buildAttestation({
+            userIdType: selectedApp.userIdType,
+            mode: selectedApp.mode,
+            proof: formattedProof_prove.proof,
+            publicSignals: formattedProof_prove.publicSignals,
+            signatureAlgorithm: signatureAlgorithm,
+            hashFunction: hashFunction,
+            dsc: passportData.dsc,
+          });
 
-        // case 'prove_onchain':
-        // case 'prove_offchain':
-        //   const proof = await generateProof(
-        //     circuitName,
-        //     inputs,
-        //   );
-        //   const formattedProof = formatProof(proof);
-        //   const attestation = buildAttestation({
-        //     proof: formattedProof.proof,
-        //     publicSignals: formattedProof.publicSignals,
-        //     dsc: passportData.dsc,
-        //     userIdType: selectedApp.userIdType,
-        //   });
-        //   console.log(attestation);
-        //   socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
-        //   break;
+          socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_prove });
+          break;
       }
 
     } catch (error) {

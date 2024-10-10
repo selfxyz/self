@@ -28,7 +28,6 @@ export interface ArgumentsProveOnChain {
   disclosureOptions: DisclosureOptions,
   modalServerUrl: string,
   merkleTreeUrl: string,
-  rpcUrl: string,
 }
 
 export interface ArgumentsRegister {
