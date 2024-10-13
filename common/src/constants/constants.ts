@@ -49,6 +49,13 @@ export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex
 export const ECDSA_K_LENGTH_FACTOR = 2;
 // possible values because of sha1 constaints: 192,320,384, 448, 576, 640
 
+export const circuitNameFromMode = {
+  prove_onchain: 'prove',
+  prove_offchain: 'prove',
+  register: 'prove',
+  disclose: 'disclose',
+}
+
 export enum SignatureAlgorithmIndex {
   rsa_65537_sha256_2048 = 1,
   rsa_65537_sha1_2048 = 3,
