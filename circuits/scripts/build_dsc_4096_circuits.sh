@@ -36,23 +36,23 @@ build_circuit() {
     echo $RAND_STR | yarn snarkjs zkey contribute build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
     yarn snarkjs zkey export verificationkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
-    yarn snarkjs zkey export solidityverifier build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/Verifier_${CIRCUIT_NAME}.sol
-    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/dsc/Verifier_${CIRCUIT_NAME}.sol
-    cp build/dsc/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/dsc/Verifier_${CIRCUIT_NAME}.sol
+    yarn snarkjs zkey export solidityverifier build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+    cp build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers/local/dsc/Verifier_${CIRCUIT_NAME}.sol
     echo -e "\033[34mcopied Verifier_${CIRCUIT_NAME}.sol to contracts\033[0m"
 
     echo -e "\033[32mBuild of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds\033[0m"
 
     echo "file sizes:"
-    echo -e "\033[34mSize of ${CIRCUIT_NAME}.r1cs: $(wc -c <build/${CIRCUIT_NAME}.r1cs) bytes\033[0m"
-    echo -e "\033[34mSize of ${CIRCUIT_NAME}.wasm: $(wc -c <build/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes\033[0m"
-    echo -e "\033[34mSize of ${CIRCUIT_NAME}_final.zkey: $(wc -c <build/${CIRCUIT_NAME}_final.zkey) bytes\033[0m"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}.r1cs: $(wc -c <build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs) bytes\033[0m"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}.wasm: $(wc -c <build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes\033[0m"
+    echo -e "\033[34mSize of ${CIRCUIT_NAME}_final.zkey: $(wc -c <build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey) bytes\033[0m"
 }
 
 # Define circuits and their deployment flags
 # name:deploy_flag
 CIRCUITS=(
-    "dsc_rsapss_65537_sha256_4096:false"
+    "dsc_rsapss_65537_sha256_4096:true"
     "dsc_rsa_65537_sha256_4096:true"
     "dsc_rsa_65537_sha1_4096:true"
 )
