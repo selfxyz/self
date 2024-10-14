@@ -1,9 +1,8 @@
 {
   "name": "@openpassport/sdk",
   "version": "0.1.8",
-  "main": "dist/bundle.node.js",
-  "browser": "dist/bundle.web.js",
-  "types": "dist/sdk/src/index.d.ts",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -57,15 +56,10 @@
     "ts-loader": "^9.5.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.4.5",
-    "webpack": "^5.94.0",
-    "webpack-cli": "^5.1.4"
+    "typescript": "^5.4.5"
   },
   "scripts": {
-    "build:ts": "tsc && tsc -p tsconfig.react.json",
-    "build:web": "webpack --config webpack.web.config.js",
-    "build:node": "webpack --config webpack.node.config.js",
-    "build": "npm run build:ts && npm run build:web && npm run build:node",
+    "build": "tsc",
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",

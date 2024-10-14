@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { OpenPassportAttestation, OpenPassportVerifier } from '../index.web';
+import { OpenPassportAttestation } from '../../../common/src/utils/openPassportAttestation';
+import { OpenPassportVerifier } from '../OpenPassportVerifier';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';

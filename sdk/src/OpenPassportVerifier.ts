@@ -1,4 +1,5 @@
 import {
+  ArgumentsDisclose,
   ArgumentsProveOffChain,
   ArgumentsProveOnChain,
   ArgumentsRegister,
@@ -15,7 +16,7 @@ import { OpenPassportApp } from '../../common/src/utils/appType';
 import { UserIdType } from '../../common/src/utils/utils';
 import * as pako from 'pako';
 import msgpack from 'msgpack-lite';
-import { OpenPassportAttestation } from './index.web';
+import { OpenPassportAttestation } from '.';
 import { AttestationVerifier } from './AttestationVerifier';
 export class OpenPassportVerifier extends AttestationVerifier {
   private mode: Mode;
@@ -124,6 +125,19 @@ export class OpenPassportVerifier extends AttestationVerifier {
         };
         openPassportArguments = argsRegisterOnChain;
         break;
+      // case 'vc_and_disclose':
+      //   const argsVcAndDisclose: ArgumentsDisclose = {
+      //     disclosureOptions: {
+      //       minimumAge: this.minimumAge,
+      //       nationality: this.nationality,
+      //       excludedCountries: this.excludedCountries,
+      //       ofac: this.ofac,
+      //     },
+      //     merkleRoot: this.merkleRoot,
+      //     merkletreeSize: this.merkletreeSize,
+      //   };
+      //   openPassportArguments = argsVcAndDisclose;
+      //   break;
     }
 
     const intent: OpenPassportApp = {
