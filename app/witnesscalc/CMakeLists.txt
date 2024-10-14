@@ -57,9 +57,9 @@ install(TARGETS
     witnesscalc_register_rsapss_65537_sha256
     witnesscalc_register_rsapss_65537_sha256Static
 
-    # disclose
-    # witnesscalc_disclose
-    # witnesscalc_discloseStatic
+    # vc_and_disclose
+    witnesscalc_vc_and_disclose
+    witnesscalc_vc_and_discloseStatic
 
     # register_sha256WithRSAEncryption_65537
     # witnesscalc_register_sha256WithRSAEncryption_65537
@@ -77,7 +77,7 @@ install(FILES "${GMP_LIB_DIR}/${GMP_LIB_FILE}"
     DESTINATION ${CMAKE_INSTALL_PREFIX}/lib)
 
 install(FILES
-    # src/disclose.dat
+    src/vc_and_disclose.dat
     # src/register_sha256WithRSAEncryption_65537.dat
     src/prove_rsa_65537_sha256.dat
     src/prove_rsa_65537_sha1.dat
@@ -90,7 +90,7 @@ install(FILES
 
 install(FILES
     src/witnesscalc.h
-    # src/witnesscalc_disclose.h
+    src/witnesscalc_vc_and_disclose.h
     # src/witnesscalc_register_sha256WithRSAEncryption_65537.h
     src/witnesscalc_prove_rsa_65537_sha256.h
     src/witnesscalc_prove_rsa_65537_sha1.h
