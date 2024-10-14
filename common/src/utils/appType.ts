@@ -32,6 +32,7 @@ export interface ArgumentsProveOnChain {
 
 export interface ArgumentsRegister {
   cscaMerkleTreeUrl: string,
+  commitmentMerkleTreeUrl: string,
   modalServerUrl: string,
 }
 
