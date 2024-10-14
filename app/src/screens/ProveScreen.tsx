@@ -178,6 +178,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             signatureAlgorithmDsc: signatureAlgorithmDsc,
             hashFunctionDsc: hashFunction,
           });
+          console.log("\x1b[90mattestation\x1b[0m", attestation);
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
           break;
         case 'prove_offchain':
@@ -195,6 +196,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             hashFunction: hashFunction,
             dsc: passportData.dsc,
           });
+          console.log("\x1b[90mattestation\x1b[0m", attestation_prove);
 
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_prove });
           break;
@@ -218,14 +220,17 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   };
 
   const disclosureFieldsToText = (key: keyof DisclosureOptions, option: any) => {
-    if (option.enabled) {
+    if (key === 'ofac') {
+      return (option == true)
+        ? `My name is not present in the OFAC list.`
+        : '';
+    }
+    else if (option.enabled) {
       switch (key) {
         case 'minimumAge':
           return `I am older than ${option.value} years old.`;
         case 'nationality':
           return `I have a valid passport from ${option.value}.`;
-        case 'ofac':
-          return `My name is not present in the OFAC list.`;
         case 'excludedCountries':
           return option.value.length > 0
             ? `I am not part of the following countries: ${option.value

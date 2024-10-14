@@ -2,7 +2,6 @@ import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
 import { OpenPassportVerifier } from '../../OpenPassportVerifier';
 import { OpenPassportAttestation } from '../../../../common/src/utils/openPassportAttestation';
-import { OpenPassportVerifierReport } from '../../OpenPassportVerifierReport';
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
   io(websocketUrl, {
@@ -47,7 +46,7 @@ const handleWebSocketMessage =
           const local_proofVerified = await openPassportVerifier.verify(
             data.proof
           );
-          setProofVerified(local_proofVerified);
+          setProofVerified(local_proofVerified.valid);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           setTimeout(() => {
             newSocket.emit('proof_verified', {
@@ -61,6 +60,7 @@ const handleWebSocketMessage =
         } catch (error) {
           console.error('Error verifying proof:', error);
           setProofVerified(false);
+          setProofStep(QRcodeSteps.PROOF_VERIFIED);
           newSocket.emit('proof_verified', {
             sessionId,
             proofVerified: { valid: false, error: error.message },

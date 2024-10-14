@@ -1,6 +1,7 @@
 export class OpenPassportVerifierReport {
   scope: boolean = true;
-  merkle_root: boolean = true;
+  merkle_root_commitment: boolean = true;
+  merkle_root_csca: boolean = true;
   attestation_id: boolean = true;
   current_date: boolean = true;
   issuing_state: boolean = true;
@@ -12,6 +13,7 @@ export class OpenPassportVerifierReport {
   expiry_date: boolean = true;
   older_than: boolean = true;
   owner_of: boolean = true;
+  blinded_dsc_commitment: boolean = true;
   proof: boolean = true;
   dscProof: boolean = true;
   dsc: boolean = true;

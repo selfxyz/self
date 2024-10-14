@@ -5,6 +5,7 @@ import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@ashpect/smt';
 import forge from 'node-forge';
 import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
+import { unpackReveal } from './revealBitmap';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -559,4 +560,27 @@ export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribu
     }
   }
   return attributeValue;
+}
+
+export function formatForbiddenCountriesListFromCircuitOutput(forbiddenCountriesList: string[]): string[] {
+  const countryList1 = unpackReveal(forbiddenCountriesList[0]);
+  const countryList2 = unpackReveal(forbiddenCountriesList[1]);
+  const concatenatedCountryList = countryList1.concat(countryList2);
+  // dump every '\x00' value from the list
+  const cleanedCountryList = concatenatedCountryList.filter(value => value !== '\x00');
+  // Concatenate every 3 elements to form country codes
+  const formattedCountryList = [];
+  for (let i = 0; i < cleanedCountryList.length; i += 3) {
+    const countryCode = cleanedCountryList.slice(i, i + 3).join('');
+    if (countryCode.length === 3) {
+      formattedCountryList.push(countryCode);
+    }
+  }
+  return formattedCountryList;
+}
+
+export function getOlderThanFromCircuitOutput(olderThan: string[]): number {
+  const ageString = olderThan.map(code => String.fromCharCode(parseInt(code))).join('');
+  const age = parseInt(ageString, 10);
+  return isNaN(age) ? 0 : age;
 }

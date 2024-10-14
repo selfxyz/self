@@ -8,6 +8,7 @@ import {
   bigIntToHex,
   castToScope,
   castToUUID,
+  formatForbiddenCountriesListFromCircuitOutput,
   UserIdType,
 } from './utils';
 import { unpackReveal } from './revealBitmap';
@@ -140,7 +141,7 @@ export function buildAttestation(options: {
     'expiry_date',
     'older_than',
   ];
-
+  const formattedCountryList = formatForbiddenCountriesListFromCircuitOutput(parsedPublicSignals.forbidden_countries_list_packed_disclosed);
   const credentialSubject: any = {
     userId: userId,
     application: scope,
@@ -148,6 +149,8 @@ export function buildAttestation(options: {
     scope: scope,
     current_date: parsedPublicSignals.current_date.toString(),
     blinded_dsc_commitment: parsedPublicSignals.blinded_dsc_commitment,
+    not_in_ofac_list: parsedPublicSignals.ofac_result.toString(),
+    not_in_countries: formattedCountryList,
   };
 
 
@@ -326,4 +329,11 @@ export function parsePublicSignalsProve(publicSignals, kScaled) {
     user_identifier: publicSignals[17 + kScaled],
     scope: publicSignals[18 + kScaled],
   };
+}
+
+export function parsePublicSignalsDsc(publicSignals) {
+  return {
+    blinded_dsc_commitment: publicSignals[0],
+    merkle_root: publicSignals[1],
+  }
 }
