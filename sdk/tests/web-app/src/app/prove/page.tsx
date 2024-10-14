@@ -5,15 +5,18 @@ import { v4 as uuidv4 } from 'uuid';
 import { OpenPassportVerifier } from '../../../../../src/OpenPassportVerifier';
 export default function Prove() {
   const userId = uuidv4();
-  const scope = "scope"
+  const scope = 'scope';
 
-  const openPassportVerifier = new OpenPassportVerifier("prove_onchain", scope).setNationality("France").excludeCountries("Finland", "Norway").setMinimumAge(12);
+  const openPassportVerifier = new OpenPassportVerifier('prove_onchain', scope)
+    .setNationality('France')
+    .excludeCountries('Finland', 'Norway')
+    .setMinimumAge(12);
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
         appName="Mock App"
         userId={userId}
-        userIdType={"uuid"}
+        userIdType={'uuid'}
         openPassportVerifier={openPassportVerifier}
         onSuccess={(attestation) => {
           // send the code to the backend server

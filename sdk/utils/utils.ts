@@ -28,7 +28,7 @@ export function getVkeyFromArtifacts(
   hashFunction: string
 ) {
   const circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
-  console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
+  // console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
   switch (circuitName) {
     case 'prove_rsa_65537_sha256':
       return vkey_prove_rsa_65537_sha256;
@@ -43,7 +43,7 @@ export function getVkeyFromArtifacts(
     case 'dsc_rsapss_65537_sha256':
       return vkey_dsc_rsapss_65537_sha256;
     default:
-      throw new Error('Invalid signature algorithm or hash function');
+      throw new Error(`Invalid circuit name: ${circuitName}`);
   }
 }
 

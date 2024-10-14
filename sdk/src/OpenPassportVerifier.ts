@@ -1,21 +1,28 @@
-import { ArgumentsProveOffChain, ArgumentsProveOnChain, ArgumentsRegister, Mode, OpenPassportAppPartial } from "../../common/src/utils/appType";
-import { DEFAULT_RPC_URL, MODAL_SERVER_ADDRESS, WEBSOCKET_URL, countryNames } from "../../common/src/constants/constants";
-import { OpenPassportApp } from "../../common/src/utils/appType";
-import { UserIdType } from "../../common/src/utils/utils";
+import {
+  ArgumentsProveOffChain,
+  ArgumentsProveOnChain,
+  ArgumentsRegister,
+  Mode,
+  OpenPassportAppPartial,
+} from '../../common/src/utils/appType';
+import {
+  DEFAULT_RPC_URL,
+  MODAL_SERVER_ADDRESS,
+  WEBSOCKET_URL,
+  countryNames,
+} from '../../common/src/constants/constants';
+import { OpenPassportApp } from '../../common/src/utils/appType';
+import { UserIdType } from '../../common/src/utils/utils';
 import * as pako from 'pako';
 import msgpack from 'msgpack-lite';
-import { OpenPassportAttestation } from "./index.web";
+import { OpenPassportAttestation } from './index.web';
 import { AttestationVerifier } from './AttestationVerifier';
 export class OpenPassportVerifier extends AttestationVerifier {
   private mode: Mode;
-  private scope: string;
-  private minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
-  private nationality: { enabled: boolean; value: typeof countryNames[number] } = { enabled: false, value: '' as typeof countryNames[number] };
-  private excludedCountries: { enabled: boolean; value: typeof countryNames[number][] } = { enabled: false, value: [] };
-  private ofac: boolean = false;
+
   private modalServerUrl: string = MODAL_SERVER_ADDRESS;
   private rpcUrl: string = DEFAULT_RPC_URL;
-  private cscaMerkleTreeUrl: string = "";
+  private cscaMerkleTreeUrl: string = '';
 
   constructor(mode: Mode, scope: string, devMode: boolean = false) {
     super(devMode);
@@ -26,21 +33,21 @@ export class OpenPassportVerifier extends AttestationVerifier {
   // Disclose
   setMinimumAge(age: number): this {
     if (age < 10) {
-      throw new Error("Minimum age must be at least 10 years old");
+      throw new Error('Minimum age must be at least 10 years old');
     }
     if (age > 100) {
-      throw new Error("Minimum age must be at most 100 years old");
+      throw new Error('Minimum age must be at most 100 years old');
     }
     this.minimumAge = { enabled: true, value: age.toString() };
     return this;
   }
 
-  setNationality(country: typeof countryNames[number]): this {
+  setNationality(country: (typeof countryNames)[number]): this {
     this.nationality = { enabled: true, value: country };
     return this;
   }
 
-  excludeCountries(...countries: typeof countryNames[number][]): this {
+  excludeCountries(...countries: (typeof countryNames)[number][]): this {
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }
@@ -67,7 +74,13 @@ export class OpenPassportVerifier extends AttestationVerifier {
     return this;
   }
 
-  getIntent(appName: string, userId: string, userIdType: UserIdType, sessionId: string, websocketUrl: string = WEBSOCKET_URL): string {
+  getIntent(
+    appName: string,
+    userId: string,
+    userIdType: UserIdType,
+    sessionId: string,
+    websocketUrl: string = WEBSOCKET_URL
+  ): string {
     const intent_raw: OpenPassportAppPartial = {
       appName: appName,
       mode: this.mode,
@@ -80,7 +93,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
 
     let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegister;
     switch (this.mode) {
-      case "prove_onchain":
+      case 'prove_onchain':
         const argsProveOnChain: ArgumentsProveOnChain = {
           disclosureOptions: {
             minimumAge: this.minimumAge,
@@ -93,7 +106,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
         };
         openPassportArguments = argsProveOnChain;
         break;
-      case "prove_offchain":
+      case 'prove_offchain':
         const argsProveOffChain: ArgumentsProveOffChain = {
           disclosureOptions: {
             minimumAge: this.minimumAge,
@@ -104,14 +117,13 @@ export class OpenPassportVerifier extends AttestationVerifier {
         };
         openPassportArguments = argsProveOffChain;
         break;
-      case "register":
+      case 'register':
         const argsRegisterOnChain: ArgumentsRegister = {
           modalServerUrl: this.modalServerUrl,
           cscaMerkleTreeUrl: this.cscaMerkleTreeUrl,
         };
         openPassportArguments = argsRegisterOnChain;
         break;
-
     }
 
     const intent: OpenPassportApp = {
@@ -127,6 +139,4 @@ export class OpenPassportVerifier extends AttestationVerifier {
       return '';
     }
   }
-
 }
-

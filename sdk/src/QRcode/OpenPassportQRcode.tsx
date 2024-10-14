@@ -1,16 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import {
-  OpenPassportAttestation,
-  OpenPassportVerifier,
-} from '../index.web';
+import { OpenPassportAttestation, OpenPassportVerifier } from '../index.web';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
-import {
-  WEBSOCKET_URL,
-} from '../../../common/src/constants/constants';
+import { WEBSOCKET_URL } from '../../../common/src/constants/constants';
 import { UserIdType } from '../../../common/src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
@@ -31,7 +26,15 @@ interface OpenPassportQRcodeProps {
   size?: number;
 }
 
-const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ appName, userId, userIdType, openPassportVerifier, onSuccess, websocketUrl = WEBSOCKET_URL, size = 300 }) => {
+const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
+  appName,
+  userId,
+  userIdType,
+  openPassportVerifier,
+  onSuccess,
+  websocketUrl = WEBSOCKET_URL,
+  size = 300,
+}) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(null);
   const [sessionId, setSessionId] = useState(uuidv4());
@@ -83,7 +86,12 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({ appName, userId
                 );
               }
             default:
-              return <QRCodeSVG value={openPassportVerifier.getIntent(appName, userId, userIdType, sessionId)} size={size} />;
+              return (
+                <QRCodeSVG
+                  value={openPassportVerifier.getIntent(appName, userId, userIdType, sessionId)}
+                  size={size}
+                />
+              );
           }
         })()}
       </div>

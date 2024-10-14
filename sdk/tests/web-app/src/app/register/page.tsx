@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { OpenPassportVerifier } from '../../../../../src/OpenPassportVerifier';
 export default function Prove() {
   const userId = uuidv4();
-  const scope = "scope"
+  const scope = 'scope';
 
   const openPassportVerifier = new OpenPassportVerifier('register', scope);
   return (
@@ -13,7 +13,7 @@ export default function Prove() {
       <OpenPassportQRcode
         appName="Mock App"
         userId={userId}
-        userIdType={"uuid"}
+        userIdType={'uuid'}
         openPassportVerifier={openPassportVerifier}
         onSuccess={(attestation) => {
           // send the code to the backend server
