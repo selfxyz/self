@@ -278,17 +278,15 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   }
 
   private parsePublicSignals() {
-    const dscParsed = parseDSC(this.dsc.value);
-
     let kScaled: number;
-    const { signatureAlgorithm } = dscParsed;
-    switch (signatureAlgorithm) {
+    switch (this.proof.signatureAlgorithm) {
       case 'ecdsa':
         kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
         break;
       default:
         kScaled = k_dsc;
     }
+
 
     // Parse the public signals
     return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
@@ -312,6 +310,20 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   getNullifier(): string {
     const parsedPublicSignals = this.parsePublicSignals();
     return bigIntToHex(BigInt(parsedPublicSignals.nullifier));
+  }
+
+  getCommitment(): string {
+    const parsedPublicSignals = this.parsePublicSignals();
+    return parsedPublicSignals.commitment;
+  }
+  getCSCAMerkleRoot(): string {
+    if (this.dscProof.value.publicSignals) {
+      const parsedPublicSignalsDsc = parsePublicSignalsDsc(this.dscProof.value.publicSignals);
+      return parsedPublicSignalsDsc.merkle_root;
+    }
+    else {
+      throw new Error('No DSC proof found');
+    }
   }
 }
 
