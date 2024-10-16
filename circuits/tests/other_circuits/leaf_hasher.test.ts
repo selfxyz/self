@@ -11,13 +11,14 @@ import {
   mock_csca_sha1_rsa_2048,
   mock_dsc_sha256_ecdsa,
 } from '../../../common/src/constants/mockCertificates';
-import { hexToDecimal, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
-import { getLeaf, customHasher } from '../../../common/src/utils/pubkeyTree';
+import { formatDg2Hash, formatMrz, hexToDecimal, packBytes, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
+import { getLeaf, customHasher, generateCommitment } from '../../../common/src/utils/pubkeyTree';
 import {
   k_dsc,
   k_dsc_ecdsa,
   n_dsc,
   n_dsc_ecdsa,
+  PASSPORT_ATTESTATION_ID,
   SignatureAlgorithmIndex,
 } from '../../../common/src/constants/constants';
 import {
@@ -26,6 +27,7 @@ import {
 } from '../../../common/src/utils/certificates/handleCertificate';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 import { generateCircuitInputsInCircuits } from '../utils/generateMockInputsInCircuits';
+import { formatInput, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 
 function loadCertificates(dscCertContent: string, cscaCertContent: string) {
   const dscCert = new X509Certificate(dscCertContent);
@@ -78,18 +80,44 @@ describe('LeafHasher Light', function () {
   //   });
   // });
 
-  describe('CustomHasher - customHasher', async () => {
+  // describe('CustomHasher - customHasher', async () => {
+  //   const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
+  //   it('should extract and log certificate information', async () => {
+  //     const inputs = {
+  //       in: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
+  //     };
+  //     const witness = await circuit.calculateWitness(inputs, true);
+  //     const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
+  //     console.log('\x1b[34m', 'hashValueCircom: ', leafValueCircom, '\x1b[0m');
+
+  //     const hashValue = customHasher(passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
+  //     console.log('\x1b[34m', 'hashValue: ', hashValue, '\x1b[0m');
+  //   });
+  // });
+  describe('GenerateCommitment - computeCommitment', async () => {
     const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
-    it('should extract and log certificate information', async () => {
-      const inputs = {
-        in: passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()),
-      };
+    const formattedMrz = formatMrz(passportData.mrz);
+    const dg2HashFormatted = formatDg2Hash(passportData.dg2Hash);
+    const secret = 0;
+    const attestation_id = 1;
+    const leaf = getLeaf(passportData.dsc);
+    const inputs = {
+      secret: formatInput(secret),
+      attestation_id: formatInput(attestation_id),
+      leaf: formatInput(leaf),
+      dg1: formatInput(formattedMrz),
+      dg2_hash: dg2HashFormatted,
+    };
+    // console.log(inputs);
+
+    it('should generate the commitment', async () => {
       const witness = await circuit.calculateWitness(inputs, true);
       const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
       console.log('\x1b[34m', 'hashValueCircom: ', leafValueCircom, '\x1b[0m');
-
-      const hashValue = customHasher(passportData.dg2Hash.map((x) => toUnsignedByte(x).toString()));
-      console.log('\x1b[34m', 'hashValue: ', hashValue, '\x1b[0m');
+      const mrz_bytes_packed = packBytes(formattedMrz);
+      const commitment = generateCommitment(BigInt(secret).toString(), BigInt(attestation_id).toString(), BigInt(leaf).toString(), mrz_bytes_packed, dg2HashFormatted);
+      console.log('\x1b[34m', 'commitment in js : ', commitment, '\x1b[0m');
+      expect(BigInt(leafValueCircom).toString()).to.equal(BigInt(commitment).toString());
     });
   });
 
