@@ -13,6 +13,8 @@ import { generateCircuitInputsDisclose } from '../../../common/src/utils/generat
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
+import { SMT } from '@ashpect/smt';
+import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -55,18 +57,27 @@ describe('Disclose', function () {
     console.log('commitment in js ', commitment);
     tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
     tree.insert(BigInt(commitment));
+    let smt = new SMT(poseidon2, true);
+    smt.import(namejson);
+
+    const selector_ofac = 1;
+    const forbidden_countries_list = ['ALG', 'DZA'];
 
     inputs = generateCircuitInputsDisclose(
       secret,
       PASSPORT_ATTESTATION_ID,
       passportData,
-      tree,
-      majority,
+      scope,
       selector_dg1,
       selector_older_than,
-      scope,
+      tree,
+      majority,
+      smt,
+      selector_ofac,
+      forbidden_countries_list,
       user_identifier
     );
+    console.log('inputs', inputs);
   });
 
   it('should compile and load the circuit', async function () {

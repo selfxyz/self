@@ -1,33 +1,34 @@
 'use client';
 
 import { OpenPassportQRcode } from '../../../../../src/QRcode/OpenPassportQRcode';
-// import { OpenPassportQRcode } from '../../../../dist/bundle.web.js'
-import { TextField } from '@mui/material';
-import { useState } from 'react';
-import { COMMITMENT_TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
 import { v4 as uuidv4 } from 'uuid';
-export default function Register() {
-  const [appName, setAppName] = useState('🌐 OpenPassport');
+import { OpenPassportVerifier } from '../../../../../src/OpenPassportVerifier';
+import { COMMITMENT_TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
+import axios from 'axios';
+export default function Prove() {
   const userId = uuidv4();
+  const scope = 'scope';
+  const openPassportVerifier = new OpenPassportVerifier(
+    'register',
+    scope
+  ).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
   return (
-    <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-12">
-      <div className="text-4xl text-black ">Register circuit</div>
+    <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
-        appName={appName}
-        scope="test"
-        devMode={true}
-        circuit="prove"
-        circuitMode="register"
-        merkleTreeUrl={COMMITMENT_TREE_TRACKER_URL}
+        appName="Mock App"
         userId={userId}
-      />
-
-      <TextField
-        id="outlined-basic"
-        label="App Name"
-        variant="outlined"
-        value={appName}
-        onChange={(e) => setAppName(e.target.value)}
+        userIdType={'uuid'}
+        openPassportVerifier={openPassportVerifier}
+        onSuccess={(attestation) => {
+          axios
+            .post('https://proofofpassport-merkle-tree.xyz/api/verifier/register', attestation)
+            .then((response) => {
+              console.log('Registration response:', response);
+            })
+            .catch((error) => {
+              console.error('Error registering attestation:', error);
+            });
+        }}
       />
     </div>
   );

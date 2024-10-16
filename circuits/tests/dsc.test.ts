@@ -48,7 +48,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
         throw new Error('Unsupported signature algorithm and hash function combination');
     }
 
-    const inputs = generateCircuitInputsDSC(BigInt(0).toString(), dscCertPem, max_cert_bytes);
+    const inputs = generateCircuitInputsDSC(BigInt(0).toString(), dscCertPem, max_cert_bytes, true);
     console.log('inputs', inputs);
 
     before(async () => {
@@ -96,6 +96,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       const blinded_dsc_commitment = (await circuit.getOutput(witness, ['blinded_dsc_commitment']))
         .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment: ', blinded_dsc_commitment);
+      const merkle_root = (await circuit.getOutput(witness, ['merkle_root'])).merkle_root;
+      console.log('\x1b[34m%s\x1b[0m', 'merkle_root: ', merkle_root);
       expect(blinded_dsc_commitment).to.be.not.null;
     });
   });

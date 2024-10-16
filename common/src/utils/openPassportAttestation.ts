@@ -8,10 +8,12 @@ import {
   bigIntToHex,
   castToScope,
   castToUUID,
+  formatForbiddenCountriesListFromCircuitOutput,
   UserIdType,
 } from './utils';
 import { unpackReveal } from './revealBitmap';
 import { getAttributeFromUnpackedReveal } from './utils'
+import { Mode } from 'fs';
 
 export interface OpenPassportAttestation {
   '@context': string[];
@@ -37,8 +39,12 @@ export interface OpenPassportAttestation {
     pubKey?: string[];
     valid?: boolean;
     nullifier?: string;
+    blinded_dsc_commitment?: string;
   };
   proof: {
+    mode: Mode;
+    signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -48,6 +54,8 @@ export interface OpenPassportAttestation {
     vkey: string;
   };
   dscProof: {
+    signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -64,28 +72,33 @@ export interface OpenPassportAttestation {
 }
 
 export function buildAttestation(options: {
+  userIdType: UserIdType;
+  mode: Mode;
   proof: string[];
   publicSignals: string[];
+  signatureAlgorithm: string;
+  hashFunction: string;
   dscProof?: string[];
   dscPublicSignals?: string[];
-  dsc: string;
-  userIdType?: UserIdType;
+  signatureAlgorithmDsc?: string;
+  hashFunctionDsc?: string;
+  dsc?: string;
 }): OpenPassportDynamicAttestation {
   const {
+    mode,
     proof,
     publicSignals,
-    dscProof,
-    dscPublicSignals,
-    dsc,
-    userIdType = 'uuid',
+    signatureAlgorithm,
+    hashFunction,
+    dscProof = [],
+    dscPublicSignals = [],
+    signatureAlgorithmDsc = '',
+    hashFunctionDsc = '',
+    dsc = '',
+    userIdType,
   } = options;
 
-  // Parse the DSC (Document Signing Certificate)
-  const dscParsed = parseDSC(dsc);
-
-  // Determine the scaling factor based on the signature algorithm
   let kScaled: number;
-  const { signatureAlgorithm } = dscParsed;
   switch (signatureAlgorithm) {
     case 'ecdsa':
       kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
@@ -94,10 +107,15 @@ export function buildAttestation(options: {
       kScaled = k_dsc;
   }
 
-  // Parse the public signals
-  const parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
+  let parsedPublicSignals;
+  switch (mode) {
+    case 'vc_and_disclose':
+      parsedPublicSignals = parsePublicSignalsDisclose(publicSignals);
+      break;
+    default:
+      parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
+  }
 
-  // Get user identifier
   const rawUserId = parsedPublicSignals.user_identifier;
   let userId: string;
   switch (userIdType) {
@@ -121,7 +139,6 @@ export function buildAttestation(options: {
     parsedPublicSignals.revealedData_packed
   );
 
-  // Extract attributes from unpackedReveal
   const attributeNames = [
     'issuing_state',
     'name',
@@ -131,16 +148,19 @@ export function buildAttestation(options: {
     'gender',
     'expiry_date',
     'older_than',
-    'owner_of',
   ];
-
+  const formattedCountryList = formatForbiddenCountriesListFromCircuitOutput(parsedPublicSignals.forbidden_countries_list_packed_disclosed);
   const credentialSubject: any = {
     userId: userId,
     application: scope,
     nullifier: bigIntToHex(BigInt(parsedPublicSignals.nullifier)),
     scope: scope,
     current_date: parsedPublicSignals.current_date.toString(),
+    blinded_dsc_commitment: parsedPublicSignals.blinded_dsc_commitment ?? '',
+    not_in_ofac_list: parsedPublicSignals.ofac_result.toString(),
+    not_in_countries: formattedCountryList,
   };
+
 
   attributeNames.forEach((attrName) => {
     const value = getAttributeFromUnpackedReveal(unpackedReveal, attrName);
@@ -148,9 +168,8 @@ export function buildAttestation(options: {
       credentialSubject[attrName] = value;
     }
   });
-
   // Include pubKey if needed
-  credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed;
+  credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed ?? [];
 
   const attestation: OpenPassportAttestation = {
     '@context': [
@@ -162,6 +181,9 @@ export function buildAttestation(options: {
     issuanceDate: new Date().toISOString(),
     credentialSubject: credentialSubject,
     proof: {
+      mode: mode,
+      signatureAlgorithm: signatureAlgorithm,
+      hashFunction: hashFunction,
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -169,9 +191,11 @@ export function buildAttestation(options: {
         proof: proof,
         publicSignals: publicSignals,
       },
-      vkey: '',
+      vkey: 'https://github.com/zk-passport/openpassport/blob/main/common/src/constants/vkey.ts',
     },
     dscProof: {
+      signatureAlgorithm: signatureAlgorithmDsc,
+      hashFunction: hashFunctionDsc,
       type: 'ZeroKnowledgeProof',
       verificationMethod:
         'https://github.com/zk-passport/openpassport',
@@ -179,7 +203,7 @@ export function buildAttestation(options: {
         proof: dscProof || [],
         publicSignals: dscPublicSignals || [],
       },
-      vkey: '',
+      vkey: 'https://github.com/zk-passport/openpassport/blob/main/common/src/constants/vkey.ts',
     },
     dsc: {
       type: 'X509Certificate',
@@ -218,6 +242,9 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     nullifier?: string;
   };
   proof: {
+    mode: Mode;
+    signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -227,6 +254,8 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     vkey;
   };
   dscProof: {
+    signatureAlgorithm: string;
+    hashFunction: string;
     type: string;
     verificationMethod: string;
     value: {
@@ -254,28 +283,31 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     this.dscProof = attestation.dscProof;
     this.dsc = attestation.dsc;
     this.userIdType = userIdType;
-    this.parsedPublicSignals = this.parsePublicSignals();
   }
 
   private parsePublicSignals() {
-    const dscParsed = parseDSC(this.dsc.value);
-
-    let kScaled: number;
-    const { signatureAlgorithm } = dscParsed;
-    switch (signatureAlgorithm) {
-      case 'ecdsa':
-        kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
-        break;
-      default:
-        kScaled = k_dsc;
+    if (this.proof.mode === 'vc_and_disclose') {
+      return parsePublicSignalsDisclose(this.proof.value.publicSignals);
+    }
+    else {
+      let kScaled: number;
+      switch (this.proof.signatureAlgorithm) {
+        case 'ecdsa':
+          kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
+          break;
+        default:
+          kScaled = k_dsc;
+      }
+      return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
     }
 
+
     // Parse the public signals
-    return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
   }
 
   getUserId(): string {
-    const rawUserId = (this.parsedPublicSignals as any).user_identifier;
+    const parsedPublicSignals = this.parsePublicSignals();
+    const rawUserId = (parsedPublicSignals as any).user_identifier;
     switch (this.userIdType) {
       case 'ascii':
         return castToScope(BigInt(rawUserId));
@@ -289,7 +321,27 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   }
 
   getNullifier(): string {
-    return bigIntToHex(BigInt(this.parsedPublicSignals.nullifier));
+    const parsedPublicSignals = this.parsePublicSignals();
+    return bigIntToHex(BigInt(parsedPublicSignals.nullifier));
+  }
+
+  getCommitment(): string {
+    const parsedPublicSignals = this.parsePublicSignals();
+    if (this.proof.mode === 'vc_and_disclose') {
+      return '';
+    }
+    else {
+      return (parsedPublicSignals as any).commitment;
+    }
+  }
+  getCSCAMerkleRoot(): string {
+    if (this.dscProof.value.publicSignals) {
+      const parsedPublicSignalsDsc = parsePublicSignalsDsc(this.dscProof.value.publicSignals);
+      return parsedPublicSignalsDsc.merkle_root;
+    }
+    else {
+      throw new Error('No DSC proof found');
+    }
   }
 }
 
@@ -299,12 +351,36 @@ export function parsePublicSignalsProve(publicSignals, kScaled) {
     revealedData_packed: [publicSignals[1], publicSignals[2], publicSignals[3]],
     older_than: [publicSignals[4], publicSignals[5]],
     pubKey_disclosed: publicSignals.slice(6, 6 + kScaled),
-    forbidden_countries_list_packed_disclosed: publicSignals.slice(6 + kScaled, 6 + kScaled + 2),
+    forbidden_countries_list_packed_disclosed: publicSignals.slice(6 + kScaled, 8 + kScaled),
     ofac_result: publicSignals[8 + kScaled],
     commitment: publicSignals[9 + kScaled],
     blinded_dsc_commitment: publicSignals[10 + kScaled],
     current_date: publicSignals.slice(11 + kScaled, 11 + kScaled + 6),
-    user_identifier: publicSignals[12 + kScaled + 6],
-    scope: publicSignals[13 + kScaled + 6],
+    user_identifier: publicSignals[17 + kScaled],
+    scope: publicSignals[18 + kScaled],
   };
+}
+
+export function parsePublicSignalsDsc(publicSignals) {
+  return {
+    blinded_dsc_commitment: publicSignals[0],
+    merkle_root: publicSignals[1],
+  }
+}
+
+export function parsePublicSignalsDisclose(publicSignals) {
+  return {
+    nullifier: publicSignals[0],
+    revealedData_packed: publicSignals.slice(1, 4),
+    older_than: publicSignals.slice(4, 6),
+    forbidden_countries_list_packed_disclosed: publicSignals.slice(6, 8),
+    ofac_result: publicSignals[8],
+    attestation_id: publicSignals[9],
+    merkle_root: publicSignals[10],
+    scope: publicSignals[11],
+    current_date: publicSignals.slice(12, 18),
+    user_identifier: publicSignals[18],
+    smt_root: publicSignals[19],
+  }
+
 }
