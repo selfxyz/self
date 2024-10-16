@@ -159,8 +159,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             hashFunction: hashFunction,
           });
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_disclose });
-
-
+          break;
         case 'prove_onchain':
         case 'register':
           const inputs = await generateCircuitInputsInApp(passportData, selectedApp);
