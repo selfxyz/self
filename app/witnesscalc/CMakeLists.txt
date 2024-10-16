@@ -57,7 +57,7 @@ install(TARGETS
     witnesscalc_register_rsapss_65537_sha256
     witnesscalc_register_rsapss_65537_sha256Static
 
-    # vc_and_disclose
+    vc_and_disclose
     witnesscalc_vc_and_disclose
     witnesscalc_vc_and_discloseStatic
 
