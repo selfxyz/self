@@ -2,7 +2,7 @@ import { SignatureAlgorithm } from "../utils/types"
 
 export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 //export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
-export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/download-merkle-tree"
+export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download"
 export const WEBSOCKET_URL = "https://proofofpassport-merkle-tree.xyz"
 export const PUBKEY_TREE_DEPTH = 16
 export const CSCA_TREE_DEPTH = 12
@@ -13,7 +13,7 @@ export const MODAL_SERVER_ADDRESS = "https://zk-passport--dsc-prover-generate-ds
 
 export const PASSPORT_ATTESTATION_NAME = "E-PASSPORT"
 // poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
-export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
+export const PASSPORT_ATTESTATION_ID = "1";//"8518753152044246090169372947057357973469996808638122125210848696986717482788"
 
 export const CHAIN_NAME = "optimism"
 export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL"
