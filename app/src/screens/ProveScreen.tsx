@@ -5,7 +5,7 @@ import { countryCodes, DEVELOPMENT_MODE, max_cert_bytes, } from '../../../common
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
+import { ArgumentsDisclose, DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
 import { formatProof, generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
@@ -15,7 +15,6 @@ import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
 import { generateCircuitInputsDSC, getCSCAFromSKI } from '../../../common/src/utils/csca';
 import { sendCSCARequest } from '../../../common/src/utils/csca';
-import { toast } from 'burnt';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -143,13 +142,29 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(false);
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
-      const inputs = generateCircuitInputsInApp(passportData, selectedApp);
 
 
       switch (selectedApp.mode) {
+        case 'vc_and_disclose':
+          const inputs_disclose = await generateCircuitInputsInApp(passportData, selectedApp);
+          const proof_disclose = await generateProof('vc_and_disclose', inputs_disclose);
+          const formattedProof_disclose = formatProof(proof_disclose);
+          console.log(formattedProof_disclose);
+          const attestation_disclose = buildAttestation({
+            userIdType: selectedApp.userIdType,
+            mode: selectedApp.mode,
+            proof: formattedProof_disclose.proof,
+            publicSignals: formattedProof_disclose.publicSignals,
+            signatureAlgorithm: signatureAlgorithm,
+            hashFunction: hashFunction,
+          });
+          socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_disclose });
+
+
         case 'prove_onchain':
         case 'register':
-          const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes);
+          const inputs = await generateCircuitInputsInApp(passportData, selectedApp);
+          const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes, true);
           const [modalResponse, proof] = await Promise.all([
             sendCSCARequest(
               cscaInputs
@@ -182,9 +197,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
           break;
         case 'prove_offchain':
+          const inputs_prove = generateCircuitInputsInApp(passportData, selectedApp);
           const proof_prove = await generateProof(
             circuitName,
-            inputs,
+            inputs_prove,
           );
           const formattedProof_prove = formatProof(proof_prove);
           const attestation_prove = buildAttestation({

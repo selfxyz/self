@@ -3,7 +3,7 @@ import { UserIdType } from "./utils";
 
 export type CircuitName = "prove" | "disclose";
 export type CircuitMode = "prove_onchain" | "register" | 'prove_offchain';
-export type Mode = "prove_offchain" | "prove_onchain" | "register" | "disclose";
+export type Mode = "prove_offchain" | "prove_onchain" | "register" | "vc_and_disclose";
 
 // OpenPassportAppType
 export interface OpenPassportAppPartial {
@@ -39,8 +39,7 @@ export interface ArgumentsRegister {
 
 export interface ArgumentsDisclose {
   disclosureOptions: DisclosureOptions,
-  merkleRoot: string,
-  merkletreeSize: string,
+  commitmentMerkleTreeUrl: string,
 }
 
 export interface DisclosureOptions {
