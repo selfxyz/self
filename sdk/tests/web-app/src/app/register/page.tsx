@@ -10,6 +10,7 @@ export default function Prove() {
   const scope = 'scope';
 
   const openPassportVerifier = new OpenPassportVerifier('register', scope).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
+  const openPassportVerifierDisclose = new OpenPassportVerifier('vc_and_disclose', scope).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
@@ -23,6 +24,14 @@ export default function Prove() {
           }).catch((error) => {
             console.error('Error registering attestation:', error);
           });
+        }}
+      />
+      <OpenPassportQRcode
+        appName="Mock App"
+        userId={userId}
+        userIdType={'uuid'}
+        openPassportVerifier={openPassportVerifierDisclose}
+        onSuccess={(attestation) => {
         }}
       />
     </div>

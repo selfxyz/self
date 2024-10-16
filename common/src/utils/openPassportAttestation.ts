@@ -106,7 +106,15 @@ export function buildAttestation(options: {
     default:
       kScaled = k_dsc;
   }
-  const parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
+
+  let parsedPublicSignals;
+  switch (mode) {
+    case 'vc_and_disclose':
+      parsedPublicSignals = parsePublicSignalsDisclose(publicSignals);
+      break;
+    default:
+      parsedPublicSignals = parsePublicSignalsProve(publicSignals, kScaled);
+  }
 
   const rawUserId = parsedPublicSignals.user_identifier;
   let userId: string;
@@ -148,7 +156,7 @@ export function buildAttestation(options: {
     nullifier: bigIntToHex(BigInt(parsedPublicSignals.nullifier)),
     scope: scope,
     current_date: parsedPublicSignals.current_date.toString(),
-    blinded_dsc_commitment: parsedPublicSignals.blinded_dsc_commitment,
+    blinded_dsc_commitment: parsedPublicSignals.blinded_dsc_commitment ?? '',
     not_in_ofac_list: parsedPublicSignals.ofac_result.toString(),
     not_in_countries: formattedCountryList,
   };
@@ -161,7 +169,7 @@ export function buildAttestation(options: {
     }
   });
   // Include pubKey if needed
-  credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed;
+  credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed ?? [];
 
   const attestation: OpenPassportAttestation = {
     '@context': [
@@ -278,18 +286,23 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   }
 
   private parsePublicSignals() {
-    let kScaled: number;
-    switch (this.proof.signatureAlgorithm) {
-      case 'ecdsa':
-        kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
-        break;
-      default:
-        kScaled = k_dsc;
+    if (this.proof.mode === 'vc_and_disclose') {
+      return parsePublicSignalsDisclose(this.proof.value.publicSignals);
+    }
+    else {
+      let kScaled: number;
+      switch (this.proof.signatureAlgorithm) {
+        case 'ecdsa':
+          kScaled = ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa;
+          break;
+        default:
+          kScaled = k_dsc;
+      }
+      return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
     }
 
 
     // Parse the public signals
-    return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
   }
 
   getUserId(): string {
@@ -348,4 +361,18 @@ export function parsePublicSignalsDsc(publicSignals) {
     blinded_dsc_commitment: publicSignals[0],
     merkle_root: publicSignals[1],
   }
+}
+
+export function parsePublicSignalsDisclose(publicSignals) {
+  return {
+    nullifier: publicSignals[0],
+    revealedData_packed: publicSignals.slice(1, 4),
+    older_than: publicSignals.slice(4, 6),
+    attestation_id: publicSignals[6],
+    merkle_root: publicSignals[7],
+    scope: publicSignals[8],
+    current_date: publicSignals.slice(9, 15),
+    user_identifier: publicSignals[15],
+  }
+
 }

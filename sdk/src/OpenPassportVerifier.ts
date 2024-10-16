@@ -135,19 +135,18 @@ export class OpenPassportVerifier extends AttestationVerifier {
         };
         openPassportArguments = argsRegisterOnChain;
         break;
-      // case 'vc_and_disclose':
-      //   const argsVcAndDisclose: ArgumentsDisclose = {
-      //     disclosureOptions: {
-      //       minimumAge: this.minimumAge,
-      //       nationality: this.nationality,
-      //       excludedCountries: this.excludedCountries,
-      //       ofac: this.ofac,
-      //     },
-      //     merkleRoot: this.merkleRoot,
-      //     merkletreeSize: this.merkletreeSize,
-      //   };
-      //   openPassportArguments = argsVcAndDisclose;
-      //   break;
+      case 'vc_and_disclose':
+        const argsVcAndDisclose: ArgumentsDisclose = {
+          disclosureOptions: {
+            minimumAge: this.minimumAge,
+            nationality: this.nationality,
+            excludedCountries: this.excludedCountries,
+            ofac: this.ofac,
+          },
+          commitmentMerkleTreeUrl: this.commitmentMerkleTreeUrl,
+        };
+        openPassportArguments = argsVcAndDisclose;
+        break;
     }
 
     const intent: OpenPassportApp = {
