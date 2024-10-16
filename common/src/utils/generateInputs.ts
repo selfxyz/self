@@ -31,19 +31,22 @@ export function generateCircuitInputsDisclose(
   secret: string,
   attestation_id: string,
   passportData: PassportData,
-  merkletree: LeanIMT,
-  majority: string,
+  scope: string,
   selector_dg1: string[],
   selector_older_than: string | number,
-  scope: string,
+  merkletree: LeanIMT,
+  majority: string,
+  name_smt: SMT,
+  selector_ofac: string | number,
+  forbidden_countries_list: string[],
   user_identifier: string
 ) {
 
   const pubkey_leaf = getLeaf(passportData.dsc);
   const formattedMrz = formatMrz(passportData.mrz);
-  const mrz_bytes = packBytes(formattedMrz);
+  const mrz_bytes_packed = packBytes(formattedMrz);
 
-  const commitment = generateCommitment(BigInt(secret).toString(), BigInt(attestation_id).toString(), BigInt(pubkey_leaf).toString(), mrz_bytes, formatDg2Hash(passportData.dg2Hash));
+  const commitment = generateCommitment(BigInt(secret).toString(), BigInt(attestation_id).toString(), BigInt(pubkey_leaf).toString(), mrz_bytes_packed, formatDg2Hash(passportData.dg2Hash));
   console.log("\x1b[90mcommitment:\x1b[0m", commitment);
 
   const index = findIndexInTree(merkletree, commitment);
@@ -54,7 +57,12 @@ export function generateCircuitInputsDisclose(
     PUBKEY_TREE_DEPTH
   );
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
-  const majority_ascii = formattedMajority.split('').map(char => char.charCodeAt(0))
+  const majority_ascii = formattedMajority.split('').map(char => char.charCodeAt(0));
+
+  // SMT -  OFAC
+
+  const name_leaf = getNameLeaf(formattedMrz.slice(10, 49)) // [6-44] + 5 shift
+  const { root: smt_root, closestleaf: smt_leaf_value, siblings: smt_siblings } = generateSMTProof(name_smt, name_leaf);
 
   return {
     secret: formatInput(secret),
@@ -72,6 +80,11 @@ export function generateCircuitInputsDisclose(
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
+    smt_root: formatInput(smt_root),
+    smt_leaf_value: formatInput(smt_leaf_value),
+    smt_siblings: formatInput(smt_siblings),
+    selector_ofac: formatInput(selector_ofac),
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
   };
 }
 
