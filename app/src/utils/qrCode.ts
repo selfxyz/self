@@ -66,8 +66,13 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
         setSelectedApp(openPassportApp);
         const dsc = useUserStore.getState().passportData.dsc;
         const sigAlgName = parseDSC(dsc!);
-        const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
-        downloadZkey(circuitName as any);
+        if (openPassportApp.mode == 'vc_and_disclose') {
+            downloadZkey('vc_and_disclose');
+        }
+        else {
+            const circuitName = getCircuitName("prove", sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+            downloadZkey(circuitName as any);
+        }
         setSelectedTab("prove");
         toast.show('✅', {
             message: "QR code scanned",
