@@ -1,16 +1,18 @@
-import { ArgumentsProveOffChain, ArgumentsRegister, DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
+import { ArgumentsDisclose, ArgumentsProveOffChain, DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import { PassportData } from '../../../common/src/utils/types';
-import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
-import { circuitToSelectorMode, DEFAULT_MAJORITY, getCountryCode } from '../../../common/src/constants/constants';
+import { generateCircuitInputsDisclose, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
+import { circuitToSelectorMode, DEFAULT_MAJORITY, getCountryCode, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import useUserStore from '../stores/userStore';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { SMT } from '@ashpect/smt';
 import { poseidon2 } from 'poseidon-lite';
-export const generateCircuitInputsInApp = (
+import { LeanIMT } from '@zk-kit/imt';
+
+export const generateCircuitInputsInApp = async (
     passportData: PassportData,
     app: OpenPassportApp
-): any => {
+): Promise<any> => {
     const { secret, dscSecret } = useUserStore.getState();
     const selector_mode = circuitToSelectorMode[app.mode as keyof typeof circuitToSelectorMode];
     let smt = new SMT(poseidon2, true);
@@ -59,7 +61,21 @@ export const generateCircuitInputsInApp = (
                 app.userIdType
             );
             break;
+        case "vc_and_disclose":
+            const commitmentMerkleTreeUrl = (app as any).args.commitmentMerkleTreeUrl;
+            const response = await fetch(commitmentMerkleTreeUrl);
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const commitmentMerkleTree = await response.json();
+            console.log("commitmentMerkleTree", commitmentMerkleTree);
+            const tree = new LeanIMT((a, b) => poseidon2([a, b]));
+            tree.import(commitmentMerkleTree);
 
+            const disclosureOptionsDisclose: DisclosureOptions = (app.args as ArgumentsDisclose).disclosureOptions;
+            const selector_dg1_disclose = revealBitmapFromAttributes(disclosureOptionsDisclose);
+            const selector_older_than_disclose = disclosureOptionsDisclose.minimumAge.enabled ? 1 : 0;
+            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, selector_dg1_disclose, selector_older_than_disclose, app.scope, app.userId)
     }
 
 }
