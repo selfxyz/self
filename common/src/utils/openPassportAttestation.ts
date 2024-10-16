@@ -327,7 +327,12 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
 
   getCommitment(): string {
     const parsedPublicSignals = this.parsePublicSignals();
-    return parsedPublicSignals.commitment;
+    if (this.proof.mode === 'vc_and_disclose') {
+      return '';
+    }
+    else {
+      return (parsedPublicSignals as any).commitment;
+    }
   }
   getCSCAMerkleRoot(): string {
     if (this.dscProof.value.publicSignals) {
@@ -368,11 +373,14 @@ export function parsePublicSignalsDisclose(publicSignals) {
     nullifier: publicSignals[0],
     revealedData_packed: publicSignals.slice(1, 4),
     older_than: publicSignals.slice(4, 6),
-    attestation_id: publicSignals[6],
-    merkle_root: publicSignals[7],
-    scope: publicSignals[8],
-    current_date: publicSignals.slice(9, 15),
-    user_identifier: publicSignals[15],
+    forbidden_countries_list_packed_disclosed: publicSignals.slice(6, 8),
+    ofac_result: publicSignals[8],
+    attestation_id: publicSignals[9],
+    merkle_root: publicSignals[10],
+    scope: publicSignals[11],
+    current_date: publicSignals.slice(12, 18),
+    user_identifier: publicSignals[18],
+    smt_root: publicSignals[19],
   }
 
 }

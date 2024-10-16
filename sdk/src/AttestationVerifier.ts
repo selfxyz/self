@@ -15,7 +15,8 @@ import {
     verifyDSCValidity,
 } from '../utils/utils';
 import {
-    OpenPassportAttestation
+    OpenPassportAttestation,
+    parsePublicSignalsDisclose
 } from '../../common/src/utils/openPassportAttestation';
 import {
     parsePublicSignalsDsc,
@@ -34,6 +35,7 @@ import {
 import { unpackReveal } from '../../common/src/utils/revealBitmap';
 import { getCSCAModulusMerkleTree } from '../../common/src/utils/csca';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
+import { fetchTreeFromUrl } from '../../common/src/utils/pubkeyTree';
 
 export class AttestationVerifier {
     protected devMode: boolean;
@@ -49,6 +51,8 @@ export class AttestationVerifier {
         value: [],
     };
     protected ofac: boolean = false;
+    protected commitmentMerkleTreeUrl: string = '';
+
 
     constructor(devMode: boolean = false) {
         this.devMode = devMode;
@@ -60,12 +64,21 @@ export class AttestationVerifier {
             attestation.proof.signatureAlgorithm === 'ecdsa'
                 ? ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa
                 : k_dsc;
-        const parsedPublicSignals = parsePublicSignalsProve(
-            attestation.proof.value.publicSignals,
-            kScaled
-        );
+
+        let parsedPublicSignals;
+        if (attestation.proof.mode === 'vc_and_disclose') {
+            parsedPublicSignals = parsePublicSignalsDisclose(
+                attestation.proof.value.publicSignals
+            );
+        } else {
+            parsedPublicSignals = parsePublicSignalsProve(
+                attestation.proof.value.publicSignals,
+                kScaled
+            );
+        }
 
         this.verifyAttribute('scope', castToScope(parsedPublicSignals.scope), this.scope);
+
         await this.verifyProof(
             attestation.proof.mode,
             attestation.proof.value.proof,
@@ -84,7 +97,7 @@ export class AttestationVerifier {
             case 'prove_offchain':
                 await this.verifyProveOffChain(attestation);
                 break;
-            case 'disclose':
+            case 'vc_and_disclose':
                 await this.verifyDisclose(attestation);
                 break;
         }
@@ -126,10 +139,17 @@ export class AttestationVerifier {
     }
 
     private verifyDiscloseAttributes(attestation: OpenPassportAttestation) {
-        const parsedPublicSignals = parsePublicSignalsProve(
-            attestation.proof.value.publicSignals,
-            k_dsc
-        );
+        let parsedPublicSignals;
+        if (attestation.proof.mode === 'vc_and_disclose') {
+            parsedPublicSignals = parsePublicSignalsDisclose(
+                attestation.proof.value.publicSignals
+            );
+        } else {
+            parsedPublicSignals = parsePublicSignalsProve(
+                attestation.proof.value.publicSignals,
+                k_dsc
+            );
+        }
         this.verifyAttribute(
             'current_date',
             parsedPublicSignals.current_date.toString(),
@@ -182,10 +202,11 @@ export class AttestationVerifier {
         this.verifyAttribute('merkle_root_csca', cscaRoot, cscaMerkleTreeFromDscProof);
     }
 
-    private verifyCommitment(attestation: OpenPassportAttestation) {
-        // check that the commitment is in the commitment merkle tree
-        // on chain -> call rpc url et contracts
-        // off chain -> call enpoints
+    private async verifyCommitment(attestation: OpenPassportAttestation) {
+        const tree = await fetchTreeFromUrl(this.commitmentMerkleTreeUrl);
+        const parsedPublicSignals = parsePublicSignalsDisclose(attestation.proof.value.publicSignals);
+        this.verifyAttribute('merkle_root_commitment', tree.root.toString(), parsedPublicSignals.merkle_root);
+
     }
 
     private verifyCertificateChain(attestation: OpenPassportAttestation) {

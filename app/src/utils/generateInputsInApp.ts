@@ -8,6 +8,7 @@ import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { SMT } from '@ashpect/smt';
 import { poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@zk-kit/imt';
+import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
 
 export const generateCircuitInputsInApp = async (
     passportData: PassportData,
@@ -63,19 +64,14 @@ export const generateCircuitInputsInApp = async (
             break;
         case "vc_and_disclose":
             const commitmentMerkleTreeUrl = (app as any).args.commitmentMerkleTreeUrl;
-            const response = await fetch(commitmentMerkleTreeUrl);
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            const commitmentMerkleTree = await response.json();
-            console.log("commitmentMerkleTree", commitmentMerkleTree);
-            const tree = new LeanIMT((a, b) => poseidon2([a, b]));
-            tree.import(commitmentMerkleTree);
+            const tree = await fetchTreeFromUrl(commitmentMerkleTreeUrl);
 
             const disclosureOptionsDisclose: DisclosureOptions = (app.args as ArgumentsDisclose).disclosureOptions;
             const selector_dg1_disclose = revealBitmapFromAttributes(disclosureOptionsDisclose);
             const selector_older_than_disclose = disclosureOptionsDisclose.minimumAge.enabled ? 1 : 0;
-            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, selector_dg1_disclose, selector_older_than_disclose, app.scope, app.userId)
+            const selector_ofac_disclose = disclosureOptionsDisclose.ofac ? 1 : 0;
+            const forbidden_countries_list = disclosureOptionsDisclose.excludedCountries.value.map(country => getCountryCode(country))
+            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, app.scope, selector_dg1_disclose, selector_older_than_disclose, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, smt, selector_ofac_disclose, forbidden_countries_list, app.userId)
     }
 
 }

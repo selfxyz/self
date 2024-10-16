@@ -24,7 +24,6 @@ export class OpenPassportVerifier extends AttestationVerifier {
   private modalServerUrl: string = MODAL_SERVER_ADDRESS;
   private rpcUrl: string = DEFAULT_RPC_URL;
   private cscaMerkleTreeUrl: string = '';
-  private commitmentMerkleTreeUrl: string = '';
 
   constructor(mode: Mode, scope: string, devMode: boolean = false) {
     super(devMode);

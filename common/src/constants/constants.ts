@@ -53,7 +53,7 @@ export const circuitNameFromMode = {
   prove_onchain: 'prove',
   prove_offchain: 'prove',
   register: 'prove',
-  disclose: 'disclose',
+  vc_and_disclose: 'vc_and_disclose',
 }
 
 export enum SignatureAlgorithmIndex {
