@@ -21,13 +21,11 @@ import {
   formatCountriesList,
 } from './utils';
 import { generateCommitment, getLeaf } from "./pubkeyTree";
-import { LeanIMT } from "@zk-kit/lean-imt";
+import { LeanIMT } from "@zk-kit/imt";
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./smtTree";
 import { packBytes } from "../utils/utils";
 import { SMT } from "@ashpect/smt"
 import { parseCertificate } from './certificates/handleCertificate';
-import { poseidon2 } from 'poseidon-lite';
-import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -36,17 +34,17 @@ export function generateCircuitInputsDisclose(
   merkletree: LeanIMT,
   majority: string,
   selector_dg1: string[],
-  selector_older_than: string,
+  selector_older_than: string | number,
   scope: string,
   user_identifier: string
 ) {
 
   const pubkey_leaf = getLeaf(passportData.dsc);
-
   const formattedMrz = formatMrz(passportData.mrz);
   const mrz_bytes = packBytes(formattedMrz);
 
-  const commitment = generateCommitment(secret, attestation_id, pubkey_leaf, mrz_bytes, passportData.dg2Hash);
+  const commitment = generateCommitment(BigInt(secret).toString(), BigInt(attestation_id).toString(), BigInt(pubkey_leaf).toString(), mrz_bytes, formatDg2Hash(passportData.dg2Hash));
+  console.log("\x1b[90mcommitment:\x1b[0m", commitment);
 
   const index = findIndexInTree(merkletree, commitment);
 
@@ -55,23 +53,25 @@ export function generateCircuitInputsDisclose(
     index,
     PUBKEY_TREE_DEPTH
   );
+  const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
+  const majority_ascii = formattedMajority.split('').map(char => char.charCodeAt(0))
 
   return {
-    secret: [secret],
-    attestation_id: [attestation_id],
-    pubkey_leaf: [pubkey_leaf.toString()],
-    dg1: formattedMrz.map((byte) => String(byte)),
-    dg2_hash: formatDg2Hash(passportData.dg2Hash),
-    merkle_root: [merkletree.root.toString()],
-    merkletree_size: [BigInt(depthForThisOne).toString()],
-    path: merkleProofIndices.map((index) => BigInt(index).toString()),
-    siblings: merkleProofSiblings.map((index) => BigInt(index).toString()),
-    selector_dg1: selector_dg1,
-    selector_older_than: [BigInt(selector_older_than).toString()],
-    scope: [castFromScope(scope)],
-    current_date: getCurrentDateYYMMDD().map(datePart => BigInt(datePart).toString()),
-    majority: majority.split('').map(char => BigInt(char.charCodeAt(0)).toString()),
-    user_identifier: [castFromUUID(user_identifier)],
+    secret: formatInput(secret),
+    attestation_id: formatInput(attestation_id),
+    pubkey_leaf: formatInput(pubkey_leaf),
+    dg1: formatInput(formattedMrz),
+    dg2_hash: formatInput(formatDg2Hash(passportData.dg2Hash)),
+    merkle_root: formatInput(merkletree.root),
+    merkletree_size: formatInput(depthForThisOne),
+    path: formatInput(merkleProofIndices),
+    siblings: formatInput(merkleProofSiblings),
+    selector_dg1: formatInput(selector_dg1),
+    selector_older_than: formatInput(selector_older_than),
+    scope: formatInput(castFromScope(scope)),
+    current_date: formatInput(getCurrentDateYYMMDD()),
+    majority: formatInput(majority_ascii),
+    user_identifier: formatInput(castFromUUID(user_identifier)),
   };
 }
 
