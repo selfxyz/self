@@ -15,4 +15,3 @@ interface OpenPassportQRcodeProps {
 declare const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps>;
 
 export { OpenPassportQRcode, OpenPassportQRcodeProps };
-

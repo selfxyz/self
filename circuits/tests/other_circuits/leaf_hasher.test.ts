@@ -11,7 +11,14 @@ import {
   mock_csca_sha1_rsa_2048,
   mock_dsc_sha256_ecdsa,
 } from '../../../common/src/constants/mockCertificates';
-import { formatDg2Hash, formatMrz, hexToDecimal, packBytes, splitToWords, toUnsignedByte } from '../../../common/src/utils/utils';
+import {
+  formatDg2Hash,
+  formatMrz,
+  hexToDecimal,
+  packBytes,
+  splitToWords,
+  toUnsignedByte,
+} from '../../../common/src/utils/utils';
 import { getLeaf, customHasher, generateCommitment } from '../../../common/src/utils/pubkeyTree';
 import {
   k_dsc,
@@ -115,7 +122,13 @@ describe('LeafHasher Light', function () {
       const leafValueCircom = (await circuit.getOutput(witness, ['out'])).out;
       console.log('\x1b[34m', 'hashValueCircom: ', leafValueCircom, '\x1b[0m');
       const mrz_bytes_packed = packBytes(formattedMrz);
-      const commitment = generateCommitment(BigInt(secret).toString(), BigInt(attestation_id).toString(), BigInt(leaf).toString(), mrz_bytes_packed, dg2HashFormatted);
+      const commitment = generateCommitment(
+        BigInt(secret).toString(),
+        BigInt(attestation_id).toString(),
+        BigInt(leaf).toString(),
+        mrz_bytes_packed,
+        dg2HashFormatted
+      );
       console.log('\x1b[34m', 'commitment in js : ', commitment, '\x1b[0m');
       expect(BigInt(leafValueCircom).toString()).to.equal(BigInt(commitment).toString());
     });

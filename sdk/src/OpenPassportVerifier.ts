@@ -125,7 +125,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
         break;
       case 'register':
         if (!this.commitmentMerkleTreeUrl) {
-          throw new Error('Commitment merkle tree URL is required for mode \'register\'');
+          throw new Error("Commitment merkle tree URL is required for mode 'register'");
         }
         const argsRegisterOnChain: ArgumentsRegister = {
           modalServerUrl: this.modalServerUrl,

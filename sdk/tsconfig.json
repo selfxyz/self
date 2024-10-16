@@ -23,10 +23,5 @@
     "utils/utils.ts",
     "../common/src/utils/openPassportAttestation.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "**/__tests__/*",
-    "dist",
-    "common/src/utils/csca.ts"
-  ]
+  "exclude": ["node_modules", "**/__tests__/*", "dist", "common/src/utils/csca.ts"]
 }

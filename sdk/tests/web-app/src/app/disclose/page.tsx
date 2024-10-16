@@ -8,7 +8,12 @@ export default function Prove() {
   const userId = uuidv4();
   const scope = 'scope';
 
-  const openPassportVerifierDisclose = new OpenPassportVerifier('vc_and_disclose', scope).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL).excludeCountries('Albania').setMinimumAge(20).enableOFACCheck().setNationality('Germany');
+  const openPassportVerifierDisclose = new OpenPassportVerifier('vc_and_disclose', scope)
+    .setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL)
+    .excludeCountries('Albania')
+    .setMinimumAge(20)
+    .enableOFACCheck()
+    .setNationality('Germany');
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
@@ -16,8 +21,7 @@ export default function Prove() {
         userId={userId}
         userIdType={'uuid'}
         openPassportVerifier={openPassportVerifierDisclose}
-        onSuccess={(attestation) => {
-        }}
+        onSuccess={(attestation) => {}}
       />
     </div>
   );

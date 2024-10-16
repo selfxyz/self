@@ -64,9 +64,20 @@ describe('Disclose', function () {
     const forbidden_countries_list = ['ALG', 'DZA'];
 
     inputs = generateCircuitInputsDisclose(
-      secret, PASSPORT_ATTESTATION_ID, passportData, scope, selector_dg1, selector_older_than, tree, majority, smt, selector_ofac, forbidden_countries_list, user_identifier
+      secret,
+      PASSPORT_ATTESTATION_ID,
+      passportData,
+      scope,
+      selector_dg1,
+      selector_older_than,
+      tree,
+      majority,
+      smt,
+      selector_ofac,
+      forbidden_countries_list,
+      user_identifier
     );
-    console.log("inputs", inputs);
+    console.log('inputs', inputs);
   });
 
   it('should compile and load the circuit', async function () {
