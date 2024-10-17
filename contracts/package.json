@@ -1,16 +1,26 @@
 {
-  "name": "hardhat-project",
+  "name": "@openpassport/contracts",
+  "version": "0.0.1",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zk-passport/openpassport"
+  },
+  "author": "motemotech",
   "scripts": {
     "test": "npx hardhat test",
     "test:local": "TEST_ENV=local npx hardhat test",
     "test:prod": "TEST_ENV=prod npx hardhat test",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
-    "compile": "npx hardhat compile"
+    "compile": "npx hardhat compile",
+    "publish": "npm publish --access public"
   },
   "files": [
-    "contracts/",
-    "contracts/interfaces/",
-    "contracts/verifiers/"
+    "contracts/constants/*",
+    "contracts/interfaces/*",
+    "contracts/libraries/*",
+    "contracts/verifiers/GenericVerifier.sol",
+    "contracts/OpenPassportVerifier.sol"
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",

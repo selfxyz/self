@@ -12,7 +12,7 @@ build_circuit() {
     circom circuits/${CIRCUIT_TYPE}/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build/prove/${CIRCUIT_NAME}/
 
     echo "building zkey"
-    yarn snarkjs groth16 setup build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_20.ptau build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
+    yarn snarkjs groth16 setup build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_22.ptau build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     echo "building vkey"
     yarn snarkjs zkey contribute build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
@@ -34,11 +34,11 @@ build_circuit() {
 # name:folder:build_flag
 # set build_flag to false if you want to skip the build
 CIRCUITS=(
-    "prove_rsa_65537_sha256:prove:20:true"
-    "prove_rsa_65537_sha1:prove:20:true"
-    "prove_rsapss_65537_sha256:prove:20:true"
-    "prove_ecdsa_secp256r1_sha256:prove:22:false"
-    "prove_ecdsa_secp256r1_sha1:prove:22:false"
+    "prove_rsa_65537_sha256:prove:20:false"
+    "prove_rsa_65537_sha1:prove:20:false"
+    "prove_rsapss_65537_sha256:prove:20:false"
+    "prove_ecdsa_secp256r1_sha256:prove:22:true"
+    "prove_ecdsa_secp256r1_sha1:prove:22:true"
 )
 
 TOTAL_START_TIME=$(date +%s)
