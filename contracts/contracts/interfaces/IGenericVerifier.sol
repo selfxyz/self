@@ -1,15 +1,28 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-interface IVerifiersManager {
+interface IGenericVerifier {
+
+    enum SignatureType {
+        RSA,
+        ECDSA
+    } 
+
+    enum VerificationType {
+        Prove,
+        Dsc
+    }
 
     error ZERO_ADDRESS();
+    error INVALID_SIGNATURE_TYPE();
 
-    struct RSAProveCircuitProof {
+    struct ProveCircuitProof {
+        SignatureType signatureType;
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
-        uint[51] pubSignals;
+        uint[51] pubSignalsRSA;
+        uint[6] pubSignalsECDSA;
     }
 
     struct DscCircuitProof {
@@ -21,7 +34,7 @@ interface IVerifiersManager {
 
     function verifyWithProveVerifier(
         uint256 verifier_id,
-        RSAProveCircuitProof memory proof
+        ProveCircuitProof memory proof
     ) external view returns (bool);
 
     function verifyWithDscVerifier(
@@ -31,12 +44,21 @@ interface IVerifiersManager {
 
 }
 
-interface IProveVerifier {
+interface IRSAProveVerifier {
     function verifyProof (
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
         uint[51] calldata _pubSignals
+    ) external view returns (bool);
+}
+
+interface IECDSAProveVerifier {
+    function verifyProof (
+        uint[2] calldata _pA,
+        uint[2][2] calldata _pB,
+        uint[2] calldata _pC,
+        uint[6] calldata _pubSignals
     ) external view returns (bool);
 }
 

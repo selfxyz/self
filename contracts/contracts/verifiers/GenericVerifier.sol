@@ -1,15 +1,10 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.18;
 
-import {IVerifiersManager, IProveVerifier, IDscVerifier} from "../interfaces/IVerifiersManager.sol";
+import {IGenericVerifier, IRSAProveVerifier, IECDSAProveVerifier, IDscVerifier} from "../interfaces/IGenericVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract VerifiersManager is IVerifiersManager, Ownable {
-
-    enum VerificationType {
-        Prove,
-        Dsc
-    }
+contract GenericVerifier is IGenericVerifier, Ownable {
 
     // TODO: Key of these mappings are keccak256 hash of parameters in each signature algorithm
     mapping(uint256 => address) public prove_verifiers;
@@ -21,15 +16,28 @@ contract VerifiersManager is IVerifiersManager, Ownable {
 
     function verifyWithProveVerifier(
         uint256 verifier_id,
-        RSAProveCircuitProof memory proof
+        ProveCircuitProof memory proof
     ) public view returns (bool) {
-        bool result = IProveVerifier(prove_verifiers[verifier_id])
-            .verifyProof(
-                proof.a,
-                proof.b,
-                proof.c,
-                proof.pubSignals
-            );
+        bool result;
+        if (proof.signatureType == SignatureType.RSA) {
+            result = IRSAProveVerifier(prove_verifiers[verifier_id])
+                .verifyProof(
+                    proof.a,
+                    proof.b,
+                    proof.c,
+                    proof.pubSignalsRSA
+                );
+        } else if (proof.signatureType == SignatureType.ECDSA) {
+            result = IECDSAProveVerifier(prove_verifiers[verifier_id])
+                .verifyProof(
+                    proof.a,
+                    proof.b,
+                    proof.c,
+                    proof.pubSignalsECDSA
+                );
+        } else {
+            revert INVALID_SIGNATURE_TYPE();
+        }
         return result;
     }
 
