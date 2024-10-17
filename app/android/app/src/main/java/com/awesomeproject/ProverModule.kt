@@ -72,8 +72,8 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
         "prove_rsa_65537_sha256" -> zkpTools::witnesscalc_prove_rsa_65537_sha256
         "prove_rsa_65537_sha1" -> zkpTools::witnesscalc_prove_rsa_65537_sha1
         "prove_rsapss_65537_sha256" -> zkpTools::witnesscalc_prove_rsapss_65537_sha256
-        "prove_ecdsa_secp256r1_sha1" -> zkpTools::witnesscalc_prove_ecdsa_secp256r1_sha1
-        "prove_ecdsa_secp256r1_sha256" -> zkpTools::witnesscalc_prove_ecdsa_secp256r1_sha256
+        // "prove_ecdsa_secp256r1_sha1" -> zkpTools::witnesscalc_prove_ecdsa_secp256r1_sha1
+        // "prove_ecdsa_secp256r1_sha256" -> zkpTools::witnesscalc_prove_ecdsa_secp256r1_sha256
         else -> throw IllegalArgumentException("Invalid witness calculator name")
     }  
     
@@ -164,23 +164,22 @@ class ZKPTools(val context: Context) {
     wtnsSize: LongArray,
     errorMsg: ByteArray,
     errorMsgMaxSize: Long): Int
-  external fun witnesscalc_prove_ecdsa_secp256r1_sha1(circuitBuffer: ByteArray,
-    circuitSize: Long,
-    jsonBuffer: ByteArray,
-    jsonSize: Long,
-    wtnsBuffer: ByteArray,
-    wtnsSize: LongArray,
-    errorMsg: ByteArray,
-    errorMsgMaxSize: Long): Int
-  external fun witnesscalc_prove_ecdsa_secp256r1_sha256(circuitBuffer: ByteArray,
-    circuitSize: Long,
-    jsonBuffer: ByteArray,
-    jsonSize: Long,
-    wtnsBuffer: ByteArray,
-    wtnsSize: LongArray,
-    errorMsg: ByteArray,
-    errorMsgMaxSize: Long): Int
-
+//   external fun witnesscalc_prove_ecdsa_secp256r1_sha1(circuitBuffer: ByteArray,
+//     circuitSize: Long,
+//     jsonBuffer: ByteArray,
+//     jsonSize: Long,
+//     wtnsBuffer: ByteArray,
+//     wtnsSize: LongArray,
+//     errorMsg: ByteArray,
+//     errorMsgMaxSize: Long): Int
+//   external fun witnesscalc_prove_ecdsa_secp256r1_sha256(circuitBuffer: ByteArray,
+//     circuitSize: Long,
+//     jsonBuffer: ByteArray,
+//     jsonSize: Long,
+//     wtnsBuffer: ByteArray,
+//     wtnsSize: LongArray,
+//     errorMsg: ByteArray,
+//     errorMsgMaxSize: Long): Int
   external fun groth16_prover(
       zkeyBuffer: ByteArray, zkeySize: Long,
       wtnsBuffer: ByteArray, wtnsSize: Long,
