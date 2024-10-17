@@ -9,7 +9,7 @@ const { PKEY, OPTIMISM_SEPOLIA_RPC_URL } = process.env;
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.18",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,

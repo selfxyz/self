@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.28;
 
 import {IGenericVerifier, IRSAProveVerifier, IECDSAProveVerifier, IDscVerifier} from "../interfaces/IGenericVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";

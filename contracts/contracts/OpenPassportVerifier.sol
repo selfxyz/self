@@ -2,35 +2,14 @@
 pragma solidity ^0.8.28;
 
 import {IGenericVerifier} from "./interfaces/IGenericVerifier.sol";
+import {IOpenPassportVerifier} from "./interfaces/IOpenPassportVerifier.sol";
 import "./constants/Constants.sol";
 import "./libraries/Formatter.sol";
 import "./libraries/Dg1Disclosure.sol";
 
-contract OpenPassportVerifier {
+contract OpenPassportVerifier is IOpenPassportVerifier {
 
     IGenericVerifier public genericVerifier;
-
-    struct DiscloseSelector {
-        bool extractIssuingState;
-        bool extractName;
-        bool extractPassportNumber;
-        bool extractNationality;
-        bool extractDateOfBirth;
-        bool extractGender;
-        bool extractExpiryDate;
-        bool extractOlderThan;
-    }
-
-    struct PassportAttributes {
-        string issuingState;
-        string name;
-        string passportNumber;
-        string nationality;
-        string dateOfBirth;
-        string gender;
-        string expiryDate;
-        uint256 olderThan;
-    }
 
     constructor (address _genericVerifier) {
         genericVerifier = IGenericVerifier(_genericVerifier);
@@ -54,9 +33,11 @@ contract OpenPassportVerifier {
                 revert INVALID_SIGNATURE_TYPE();
             }
         }
-        bytes memory charcodes = Formatter.fieldElementsToBytes(
+        bytes memory charcodes = OpenPassportFormatter.fieldElementsToBytes(
             revealedData_packed
         );
+
+        PassportAttributes memory attrs;
 
         if (discloseSelector.extractIssuingState) {
             attrs.issuingState = Dg1Disclosure.getIssuingState(charcodes);
@@ -89,12 +70,12 @@ contract OpenPassportVerifier {
         if (discloseSelector.extractOlderThan) {
             if (p_proof.signatureType == IGenericVerifier.SignatureType.RSA) {
                 attrs.olderThan =
-                    Formatter.numAsciiToUint(p_proof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX])*10
-                    + Formatter.numAsciiToUint(p_proof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX + 1]);
+                    OpenPassportFormatter.numAsciiToUint(p_proof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX])*10
+                    + OpenPassportFormatter.numAsciiToUint(p_proof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX + 1]);
             } else if (p_proof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
                 attrs.olderThan =
-                    Formatter.numAsciiToUint(p_proof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX])*10
-                    + Formatter.numAsciiToUint(p_proof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX + 1]);
+                    OpenPassportFormatter.numAsciiToUint(p_proof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX])*10
+                    + OpenPassportFormatter.numAsciiToUint(p_proof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX + 1]);
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }
@@ -114,7 +95,7 @@ contract OpenPassportVerifier {
         for (uint i = 0; i < 6; i++) {
             dateNum[i] = p_proof.pubSignalsRSA[PROVE_RSA_CURRENT_DATE_INDEX + i];
         }
-        uint currentTimestamp = proofDateToUnixTimestamp(dateNum);
+        uint currentTimestamp = OpenPassportFormatter.proofDateToUnixTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
         if(
@@ -125,18 +106,26 @@ contract OpenPassportVerifier {
         }
 
         // check blinded dcs
+        bytes memory blindedDscCommitment;
+        if (p_proof.signatureType == IGenericVerifier.SignatureType.RSA) {
+            blindedDscCommitment = abi.encodePacked(p_proof.pubSignalsRSA[PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
+        } else if (p_proof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
+            blindedDscCommitment = abi.encodePacked(p_proof.pubSignalsECDSA[PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
+        } else {
+            revert INVALID_SIGNATURE_TYPE();
+        }
         if (
-            keccak256(abi.encodePacked(p_proof.pubSignals[PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX])) !=
+            keccak256(blindedDscCommitment) !=
             keccak256(abi.encodePacked(d_proof.pubSignals[DSC_BLINDED_DSC_COMMITMENT_INDEX]))
         ) {
             revert UNEQUAL_BLINDED_DSC_COMMITMENT();
         }
 
-        if (!verifiersManager.verifyWithProveVerifier(prove_verifier_id, p_proof)) {
+        if (!genericVerifier.verifyWithProveVerifier(prove_verifier_id, p_proof)) {
             revert INVALID_PROVE_PROOF();
         }
 
-        if (!verifiersManager.verifyWithDscVerifier(dsc_verifier_id, d_proof)) {
+        if (!genericVerifier.verifyWithDscVerifier(dsc_verifier_id, d_proof)) {
             revert INVALID_DSC_PROOF();
         }
 

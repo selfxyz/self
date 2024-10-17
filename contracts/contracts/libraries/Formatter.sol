@@ -44,7 +44,7 @@ library OpenPassportFormatter {
 		// Ensure the date string is the correct length
         if (bytes(date).length != 6) {
             revert InvalidDateLength();
-        };
+        }
 
 		string memory year = substring(date, 0, 2);
 		string memory month = substring(date, 2, 4);

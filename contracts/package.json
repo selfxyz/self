@@ -6,7 +6,7 @@
     "type": "git",
     "url": "https://github.com/zk-passport/openpassport"
   },
-  "author": "motemotech",
+  "author": "motemotech <i.am.nicoshark@gmail.com>",
   "scripts": {
     "test": "npx hardhat test",
     "test:local": "TEST_ENV=local npx hardhat test",

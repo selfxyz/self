@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.28;
 
 interface IGenericVerifier {
 
@@ -22,7 +22,7 @@ interface IGenericVerifier {
         uint[2][2] b;
         uint[2] c;
         uint[51] pubSignalsRSA;
-        uint[6] pubSignalsECDSA;
+        uint[28] pubSignalsECDSA;
     }
 
     struct DscCircuitProof {
@@ -58,7 +58,7 @@ interface IECDSAProveVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[6] calldata _pubSignals
+        uint[28] calldata _pubSignals
     ) external view returns (bool);
 }
 
