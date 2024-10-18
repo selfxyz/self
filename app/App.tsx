@@ -12,7 +12,7 @@ import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 global.Buffer = Buffer;
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const toast = useToastController();
   const setToast = useNavigationStore((state) => state.setToast);
   const initUserStore = useUserStore((state) => state.initUserStore);
