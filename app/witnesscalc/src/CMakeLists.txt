@@ -102,23 +102,23 @@ set(LIB_SOURCES
 # target_compile_definitions(register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
 
 
-# disclose
-# set(disclose_SOURCES ${LIB_SOURCES}
-#     disclose.cpp
-#     witnesscalc_disclose.h
-#     witnesscalc_disclose.cpp
-#     )
+# vc_and_disclose
+set(vc_and_disclose_SOURCES ${LIB_SOURCES}
+    vc_and_disclose.cpp
+    witnesscalc_vc_and_disclose.h
+    witnesscalc_vc_and_disclose.cpp
+    )
 
-# add_library(witnesscalc_disclose SHARED ${disclose_SOURCES})
-# add_library(witnesscalc_discloseStatic STATIC ${disclose_SOURCES})
-# set_target_properties(witnesscalc_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_disclose)
+add_library(witnesscalc_vc_and_disclose SHARED ${vc_and_disclose_SOURCES})
+add_library(witnesscalc_vc_and_discloseStatic STATIC ${vc_and_disclose_SOURCES})
+set_target_properties(witnesscalc_vc_and_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_vc_and_disclose)
 
-# add_executable(disclose main.cpp)
-# target_link_libraries(disclose witnesscalc_discloseStatic)
+add_executable(vc_and_disclose main.cpp)
+target_link_libraries(vc_and_disclose witnesscalc_vc_and_discloseStatic)
 
-# target_compile_definitions(witnesscalc_disclose PUBLIC CIRCUIT_NAME=disclose)
-# target_compile_definitions(witnesscalc_discloseStatic PUBLIC CIRCUIT_NAME=disclose)
-# target_compile_definitions(disclose PUBLIC CIRCUIT_NAME=disclose)
+target_compile_definitions(witnesscalc_vc_and_disclose PUBLIC CIRCUIT_NAME=vc_and_disclose)
+target_compile_definitions(witnesscalc_vc_and_discloseStatic PUBLIC CIRCUIT_NAME=vc_and_disclose)
+target_compile_definitions(vc_and_disclose PUBLIC CIRCUIT_NAME=vc_and_disclose)
 
 
 

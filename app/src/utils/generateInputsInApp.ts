@@ -1,39 +1,77 @@
-import { AppType } from '../../../common/src/utils/appType';
+import { ArgumentsDisclose, ArgumentsProveOffChain, DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import { PassportData } from '../../../common/src/utils/types';
-import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
-import { circuitToSelectorMode, DEFAULT_MAJORITY, k_dsc, k_dsc_ecdsa, n_dsc, n_dsc_ecdsa, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { generateCircuitInputsDisclose, generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
+import { circuitToSelectorMode, DEFAULT_MAJORITY, getCountryCode, PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import useUserStore from '../stores/userStore';
-import { ArgumentsProve } from '../../../common/src/utils/appType'
-import { parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
-import { generateCircuitInputsDSC } from '../../../common/src/utils/csca';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { SMT } from '@ashpect/smt';
 import { poseidon2 } from 'poseidon-lite';
-export const generateCircuitInputsInApp = (
+import { LeanIMT } from '@zk-kit/imt';
+import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
+
+export const generateCircuitInputsInApp = async (
     passportData: PassportData,
-    app: AppType
-): any => {
-    const disclosureOptions = (app.arguments as ArgumentsProve).disclosureOptions || {};
+    app: OpenPassportApp
+): Promise<any> => {
     const { secret, dscSecret } = useUserStore.getState();
-    const selector_mode = circuitToSelectorMode[app.circuitMode as keyof typeof circuitToSelectorMode];
-    const selector_older_than = 1;
-    const selector_dg1 = revealBitmapFromAttributes(disclosureOptions as any).slice(0, -2) // have been moved to selector older_than
+    const selector_mode = circuitToSelectorMode[app.mode as keyof typeof circuitToSelectorMode];
     let smt = new SMT(poseidon2, true);
     smt.import(namejson);
-    return generateCircuitInputsProve(
-        selector_mode,
-        secret,
-        dscSecret as string,
-        passportData,
-        app.scope,
-        selector_dg1,
-        selector_older_than,
-        disclosureOptions.older_than && disclosureOptions.older_than.length > 2 ? disclosureOptions.older_than : DEFAULT_MAJORITY,
-        smt,
-        (disclosureOptions as any).ofac ? (disclosureOptions as any).ofac : 0,
-        (disclosureOptions as any).forbidden_countries ? (disclosureOptions as any).forbidden_countries : [],
-        app.userId,
-        app.userIdType
-    );
+    switch (app.mode) {
+        case "prove_offchain":
+        case "prove_onchain":
+            const disclosureOptions: DisclosureOptions = (app.args as ArgumentsProveOffChain).disclosureOptions;
+            const selector_dg1 = revealBitmapFromAttributes(disclosureOptions);
+            const selector_older_than = disclosureOptions.minimumAge.enabled ? 1 : 0;
+            const selector_ofac = disclosureOptions.ofac ? 1 : 0;
+
+            return generateCircuitInputsProve(
+                selector_mode,
+                secret,
+                dscSecret as string,
+                passportData,
+                app.scope,
+                selector_dg1,
+                selector_older_than,
+                disclosureOptions.minimumAge.value ?? DEFAULT_MAJORITY,
+                smt,
+                selector_ofac,
+                disclosureOptions.excludedCountries.value.map(country => getCountryCode(country)),
+                app.userId,
+                app.userIdType
+            );
+            break;
+        case "register":
+            const selector_dg1_zero = new Array(88).fill(0);
+            const selector_older_than_zero = 0;
+            const selector_ofac_zero = 0;
+            return generateCircuitInputsProve(
+                selector_mode,
+                secret,
+                dscSecret as string,
+                passportData,
+                app.scope,
+                selector_dg1_zero,
+                selector_older_than_zero,
+                DEFAULT_MAJORITY,
+                smt,
+                selector_ofac_zero,
+                [],
+                app.userId,
+                app.userIdType
+            );
+            break;
+        case "vc_and_disclose":
+            const commitmentMerkleTreeUrl = (app as any).args.commitmentMerkleTreeUrl;
+            const tree = await fetchTreeFromUrl(commitmentMerkleTreeUrl);
+
+            const disclosureOptionsDisclose: DisclosureOptions = (app.args as ArgumentsDisclose).disclosureOptions;
+            const selector_dg1_disclose = revealBitmapFromAttributes(disclosureOptionsDisclose);
+            const selector_older_than_disclose = disclosureOptionsDisclose.minimumAge.enabled ? 1 : 0;
+            const selector_ofac_disclose = disclosureOptionsDisclose.ofac ? 1 : 0;
+            const forbidden_countries_list = disclosureOptionsDisclose.excludedCountries.value.map(country => getCountryCode(country))
+            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, app.scope, selector_dg1_disclose, selector_older_than_disclose, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, smt, selector_ofac_disclose, forbidden_countries_list, app.userId)
+    }
+
 }

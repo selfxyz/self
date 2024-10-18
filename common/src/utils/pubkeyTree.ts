@@ -88,3 +88,16 @@ export function generateCommitment(secret: string, attestation_id: string, pubke
   ]);
   return commitment;
 }
+
+
+export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  const commitmentMerkleTree = await response.json();
+  console.log("\x1b[90m%s\x1b[0m", "commitment merkle tree: ", commitmentMerkleTree);
+  const tree = new LeanIMT((a, b) => poseidon2([a, b]));
+  tree.import(commitmentMerkleTree);
+  return tree;
+}

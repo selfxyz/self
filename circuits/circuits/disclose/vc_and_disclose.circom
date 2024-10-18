@@ -2,8 +2,10 @@ pragma circom 2.1.9;
 
 include "./verify_commitment.circom";
 include "./disclose.circom";
+include "./proveCountryIsNotInList.circom";
+include "../ofac/ofac_name.circom";
 
-template VC_AND_DISCLOSE( nLevels) {
+template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input secret;
     signal input attestation_id;
@@ -23,6 +25,14 @@ template VC_AND_DISCLOSE( nLevels) {
     signal input majority[2]; // YY - ASCII
     signal input user_identifier;
 
+    // ofac check
+    signal input smt_leaf_value;
+    signal input smt_root;
+    signal input smt_siblings[256];
+    signal input selector_ofac;
+    // forbidden countries list
+    signal input forbidden_countries_list[FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
+
     // verify commitment is part of the merkle tree
     VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
 
@@ -41,6 +51,14 @@ template VC_AND_DISCLOSE( nLevels) {
     signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;
+
+    // COUNTRY IS IN LIST
+    signal output forbidden_countries_list_packed_disclosed[2] <== ProveCountryIsNotInList(FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
+
+    // OFAC
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
+    signal output ofac_result <== ofacIntermediaryOutput;
 }
 
-component main { public [ merkle_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16);
+component main { public [ merkle_root, smt_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16,20);

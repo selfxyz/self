@@ -23,6 +23,7 @@ describe('MODAL PROVER', function () {
                 BigInt(0).toString(),
                 mock_dsc_sha256_rsapss_4096,
                 max_cert_bytes,
+                true
             );
             console.log('\x1b[34msending request to modal server\x1b[0m');
             const response = await sendCSCARequest(inputs);
@@ -43,6 +44,7 @@ describe('MODAL PROVER', function () {
                 BigInt(0).toString(),
                 mock_dsc_sha256_rsa_4096,
                 max_cert_bytes,
+                true
             );
             //console.log(JSON.stringify(inputs));
             console.log('\x1b[34msending request to modal server\x1b[0m');
@@ -65,6 +67,7 @@ describe('MODAL PROVER', function () {
                 BigInt(0).toString(),
                 mock_dsc_sha1_rsa_4096,
                 max_cert_bytes,
+                true
             );
 
             console.log('\x1b[34msending request to modal server\x1b[0m');

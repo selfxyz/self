@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { IsZkeyDownloading, ShowWarningModalProps } from '../utils/zkeyDownload';
 import { useToastController } from '@tamagui/toast';
-import { AppType } from '../../../common/src/utils/appType';
+import { OpenPassportApp } from '../../../common/src/utils/appType';
 
 interface NavigationState {
   isZkeyDownloading: IsZkeyDownloading
@@ -10,8 +10,8 @@ interface NavigationState {
   toast: ReturnType<typeof useToastController>
   selectedTab: string
   setSelectedTab: (tab: string) => void
-  selectedApp: AppType | null
-  setSelectedApp: (app: AppType | null) => void
+  selectedApp: OpenPassportApp | null
+  setSelectedApp: (app: OpenPassportApp | null) => void
   showRegistrationErrorSheet: boolean
   registrationErrorMessage: string
   setToast: (toast: ReturnType<typeof useToastController>) => void;

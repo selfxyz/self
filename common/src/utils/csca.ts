@@ -41,9 +41,8 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
 }
 
 
-export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any, max_cert_bytes: number) {
+export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any, max_cert_bytes: number, devMode: boolean = false) {
 
-    // get the tbs certificate, first instiate the certificate
     const dscCert = forge.pki.certificateFromPem(dscCertificate);
     const dscTbs = dscCert.tbsCertificate;
     const dscTbsCertDer = forge.asn1.toDer(dscTbs).getBytes();
@@ -51,7 +50,6 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
     const dscTbsCertUint8Array = Uint8Array.from(dscTbsCertBytes.map(byte => parseInt(byte.toString(16), 16)));
 
     const { signatureAlgorithm, hashFunction, publicKeyDetails, x, y, modulus, curve, exponent, bits, subjectKeyIdentifier, authorityKeyIdentifier } = parseCertificate(dscCertificate);
-    // console.log('authorityKeyIdentifier', authorityKeyIdentifier);
     let dsc_message_padded;
     let dsc_messagePaddedLen;
     switch (hashFunction) {
@@ -74,16 +72,12 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
 
     let pubKey, signature;
 
-
-
     const startIndex = findStartIndex(modulus, dsc_message_padded);
     const startIndex_formatted = startIndex.toString();
     const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString())
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
 
-    const cscaPemPROD = (SKI_PEM as any)[authorityKeyIdentifier];
-    const cscaPemDEV = (SKI_PEM_DEV as any)[authorityKeyIdentifier];
-    const cscaPem = cscaPemPROD || cscaPemDEV;
+    const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, devMode);
 
     const { x: csca_x, y: csca_y, modulus: csca_modulus, signature_algorithm: csca_signature_algorithm } = parseCertificate(cscaPem);
     const { n: n_csca, k: k_csca } = getNAndKCSCA(csca_signature_algorithm);
@@ -143,6 +137,16 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
         }
     }
 
+}
+
+export function getCSCAFromSKI(ski: string, devMode: boolean): string | null {
+    const cscaPemPROD = (SKI_PEM as any)[ski];
+    const cscaPemDEV = (SKI_PEM_DEV as any)[ski];
+    const cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
+    if (!cscaPem) {
+        console.log('\x1b[31m%s\x1b[0m', `CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
+    }
+    return cscaPem;
 }
 
 export function derToBytes(derValue: string) {
