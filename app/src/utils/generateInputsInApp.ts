@@ -25,8 +25,8 @@ export const generateCircuitInputsInApp = async (
             const selector_dg1 = revealBitmapFromAttributes(disclosureOptions);
             const selector_older_than = disclosureOptions.minimumAge.enabled ? 1 : 0;
             const selector_ofac = disclosureOptions.ofac ? 1 : 0;
-
-            return generateCircuitInputsProve(
+            const forbidden_countries_list = disclosureOptions.excludedCountries.value.map(country => getCountryCode(country));
+            const inputs = generateCircuitInputsProve(
                 selector_mode,
                 secret,
                 dscSecret as string,
@@ -37,11 +37,11 @@ export const generateCircuitInputsInApp = async (
                 disclosureOptions.minimumAge.value ?? DEFAULT_MAJORITY,
                 smt,
                 selector_ofac,
-                disclosureOptions.excludedCountries.value.map(country => getCountryCode(country)),
+                forbidden_countries_list,
                 app.userId,
                 app.userIdType
             );
-            break;
+            return inputs;
         case "register":
             const selector_dg1_zero = new Array(88).fill(0);
             const selector_older_than_zero = 0;
@@ -70,8 +70,8 @@ export const generateCircuitInputsInApp = async (
             const selector_dg1_disclose = revealBitmapFromAttributes(disclosureOptionsDisclose);
             const selector_older_than_disclose = disclosureOptionsDisclose.minimumAge.enabled ? 1 : 0;
             const selector_ofac_disclose = disclosureOptionsDisclose.ofac ? 1 : 0;
-            const forbidden_countries_list = disclosureOptionsDisclose.excludedCountries.value.map(country => getCountryCode(country))
-            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, app.scope, selector_dg1_disclose, selector_older_than_disclose, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, smt, selector_ofac_disclose, forbidden_countries_list, app.userId)
+            const forbidden_countries_list_disclose = disclosureOptionsDisclose.excludedCountries.value.map(country => getCountryCode(country))
+            return generateCircuitInputsDisclose(secret, PASSPORT_ATTESTATION_ID, passportData, app.scope, selector_dg1_disclose, selector_older_than_disclose, tree, disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY, smt, selector_ofac_disclose, forbidden_countries_list_disclose, app.userId)
     }
 
 }
