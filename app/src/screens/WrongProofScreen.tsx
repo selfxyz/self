@@ -35,16 +35,24 @@ const WrongProofScreen: React.FC = () => {
         <Text ml="$1" fontSize={34} color={textBlack}>
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Oops</Text>, the proof is not valid.
         </Text>
-        <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
-          Some of the <Text >conditions</Text> have not been satisfied:
-        </Text>
-        <YStack ml="$4" mt="$5">
-          {failedConditions.map((condition, index) => (
-            <Text key={index} fontSize="$7" color={textBlack} >
-              · <Text key={index} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{condition}</Text>
+        {(proofVerificationResult as any).error ? (
+          <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
+            Error: {(proofVerificationResult as any).error}
+          </Text>
+        ) : (
+          <>
+            <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
+              Some of the <Text >conditions</Text> have not been satisfied:
             </Text>
-          ))}
-        </YStack>
+            <YStack ml="$4" mt="$5">
+              {failedConditions.map((condition, index) => (
+                <Text key={index} fontSize="$7" color={textBlack} >
+                  · <Text key={index} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{condition}</Text>
+                </Text>
+              ))}
+            </YStack>
+          </>
+        )}
         <Text ml="$2" mt="$8" fontSize="$7" color={textBlack} style={{ opacity: 0.7 }}>
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Check again</Text> your eligibility, if you are sure to be eligible to this verification please contact OpenPassport support.
         </Text>

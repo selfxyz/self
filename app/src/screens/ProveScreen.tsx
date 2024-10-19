@@ -84,7 +84,6 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       });
 
       newSocket.on('proof_verification_result', (result) => {
-        console.log('Proof verification result:', result);
         setProofVerificationResult(JSON.parse(result));
         console.log("result", result);
         if (JSON.parse(result).valid) {
@@ -143,7 +142,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
 
-
+      console.log("selectedApp.mode", selectedApp.mode);
       switch (selectedApp.mode) {
         case 'vc_and_disclose':
           const inputs_disclose = await generateCircuitInputsInApp(passportData, selectedApp);
@@ -196,7 +195,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
           break;
         case 'prove_offchain':
-          const inputs_prove = generateCircuitInputsInApp(passportData, selectedApp);
+          const inputs_prove = await generateCircuitInputsInApp(passportData, selectedApp);
           const proof_prove = await generateProof(
             circuitName,
             inputs_prove,
