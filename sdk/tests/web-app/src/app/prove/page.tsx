@@ -9,7 +9,7 @@ export default function Prove() {
 
   const openPassportVerifier = new OpenPassportVerifier('prove_offchain', scope)
     .excludeCountries('Finland', 'Norway')
-    .setDevMode(true)
+    .allowMockPassports()
     .setMinimumAge(12);
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
