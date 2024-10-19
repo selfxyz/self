@@ -12,8 +12,7 @@ library OpenPassportAttributeSelector {
     uint256 public constant EXPIRY_DATE_SELECTOR = 1 << 6;
     uint256 public constant OLDER_THAN_SELECTOR = 1 << 7;
     uint256 public constant OFAC_RESULT_SELECTOR = 1 << 8;
-    uint256 public constant PUBKEY_SELECTOR = 1 << 9;
-    uint256 public constant FORBIDDEN_COUNTRIES_SELECTOR = 1 << 10;
+    uint256 public constant FORBIDDEN_COUNTRIES_SELECTOR = 1 << 9;
 
 
     function combineAttributeSelectors(uint256[] memory selectors) internal pure returns (uint256) {

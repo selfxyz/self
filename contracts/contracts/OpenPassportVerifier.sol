@@ -303,18 +303,6 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
             }
         }
 
-        // TODO: Need to add function to convert field elements to readable pubkey
-        // if ((attribute_selector & AttributeSelector.PUBKEY_SELECTOR) != 0) {
-        //     if (p_proof.signatureType == IGenericVerifier.SignatureType.RSA) {
-        //         attrs.pubkey = p_proof.publicSignalsRSA[PROVE_RSA_PUBKEY_INDEX];
-        //     } else if (p_proof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-        //         attrs.pubkey = p_proof.publicSignalsECDSA[PROVE_ECDSA_PUBKEY_INDEX];
-        //     } else {
-        //         revert INVALID_SIGNATURE_TYPE();
-        //     }
-        // }
-
-        // TODO: Need to add function to convert field elements to readable forbidden countries
         if ((attribute_selector & AttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR) != 0) {
             if (p_proof.signatureType == IGenericVerifier.SignatureType.RSA) {
                 attrs.forbiddenCountries = p_proof.publicSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX];
