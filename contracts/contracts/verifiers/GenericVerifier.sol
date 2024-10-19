@@ -6,21 +6,19 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
 contract GenericVerifier is IGenericVerifier, Ownable {
 
-    // TODO: Key of these mappings are keccak256 hash of parameters in each signature algorithm
-    mapping(uint256 => address) public prove_verifiers;
-    mapping(uint256 => address) public dsc_verifiers;
+    mapping (uint256 => address) public signatureTypeIdToVerifiers;
 
     constructor () {
         transferOwnership(msg.sender);
     }
 
     function verifyWithProveVerifier(
-        uint256 verifier_id,
+        uint256 signatureTypeId,
         ProveCircuitProof memory proof
     ) public view returns (bool) {
         bool result;
         if (proof.signatureType == SignatureType.RSA) {
-            result = IRSAProveVerifier(prove_verifiers[verifier_id])
+            result = IRSAProveVerifier(signatureTypeIdToVerifiers[signatureTypeId])
                 .verifyProof(
                     proof.a,
                     proof.b,
@@ -28,7 +26,7 @@ contract GenericVerifier is IGenericVerifier, Ownable {
                     proof.pubSignalsRSA
                 );
         } else if (proof.signatureType == SignatureType.ECDSA) {
-            result = IECDSAProveVerifier(prove_verifiers[verifier_id])
+            result = IECDSAProveVerifier(signatureTypeIdToVerifiers[signatureTypeId])
                 .verifyProof(
                     proof.a,
                     proof.b,
@@ -42,10 +40,10 @@ contract GenericVerifier is IGenericVerifier, Ownable {
     }
 
     function verifyWithDscVerifier(
-        uint256 verifier_id,
+        uint256 signatureTypeId,
         DscCircuitProof memory proof
     ) public view returns  (bool) {
-        bool result = IDscVerifier(dsc_verifiers[verifier_id])
+        bool result = IDscVerifier(signatureTypeIdToVerifiers[signatureTypeId])
             .verifyProof(
                 proof.a,
                 proof.b,
@@ -57,18 +55,18 @@ contract GenericVerifier is IGenericVerifier, Ownable {
 
     // TODO: add batch update function
     function updateVerifier(
-        VerificationType v_type,
-        uint256 verifier_id,
-        address verifier_address
+        VerificationType vType,
+        uint256 signatureTypeId,
+        address verifierAddress
     ) external onlyOwner {
-        if (verifier_address == address(0)) {
+        if (verifierAddress == address(0)) {
             revert ZERO_ADDRESS();
         }
-        if (v_type == VerificationType.Prove) {
-            prove_verifiers[verifier_id] = verifier_address;
+        if (vType == VerificationType.Prove) {
+            signatureTypeIdToVerifiers[signatureTypeId] = verifierAddress;
         }
-        if (v_type == VerificationType.Dsc) {
-            dsc_verifiers[verifier_id] = verifier_address;
+        if (vType == VerificationType.Dsc) {
+            signatureTypeIdToVerifiers[signatureTypeId] = verifierAddress;
         }
     }
 

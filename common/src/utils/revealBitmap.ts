@@ -34,6 +34,7 @@ export function unpackReveal(revealedData_packed: string | string[]): string[] {
   const bytesCount = [31, 31, 28]; // nb of bytes in each of the first three field elements
   const bytesArray = packedArray.flatMap((element: string, index: number) => {
     const bytes = bytesCount[index] || 31; // Use 31 as default if index is out of range
+    console.log(bytes);
     const elementBigInt = BigInt(element);
     const byteMask = BigInt(255); // 0xFF
     const bytesOfElement = [...Array(bytes)].map((_, byteIndex) => {
@@ -48,17 +49,17 @@ export function unpackReveal(revealedData_packed: string | string[]): string[] {
 
 export function formatAndUnpackReveal(revealedData_packed: string[]): string[] {
   const revealedData_packed_formatted = [
-    revealedData_packed["revealedData_packed[0]"],
-    revealedData_packed["revealedData_packed[1]"],
-    revealedData_packed["revealedData_packed[2]"],
+    revealedData_packed[0],
+    revealedData_packed[1],
+    revealedData_packed[2],
   ];
   return unpackReveal(revealedData_packed_formatted);
 }
 
 export function formatAndUnpackForbiddenCountriesList(forbiddenCountriesList_packed: string[]): string[] {
   const forbiddenCountriesList_packed_formatted = [
-    forbiddenCountriesList_packed["forbidden_countries_list_packed[0]"],
-    forbiddenCountriesList_packed["forbidden_countries_list_packed[1]"],
+    forbiddenCountriesList_packed[0],
+    forbiddenCountriesList_packed[1],
   ];
   return unpackReveal(forbiddenCountriesList_packed_formatted);
 }

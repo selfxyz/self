@@ -6,6 +6,23 @@ library OpenPassportFormatter {
     error InvalidDateLength();
     error InvalidAsciiCode();
 
+    uint256 constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
+
+    // TODO: Handle country code in bytes3 data type
+    function extractForbiddenCountries(
+        bytes memory charcodes
+    ) internal pure returns (string[] memory) {
+        string[] memory forbiddenCountries = new string[](20);
+        for (uint256 i = 0; i < FORBIDDEN_COUNTRIES_LIST_LENGTH; i++) {
+            bytes memory attributeBytes = new bytes(3);
+            for (uint256 j = 0; j < 3; j++) {
+                attributeBytes[j] = charcodes[i * 3 + j];
+            }
+            forbiddenCountries[i] = string(attributeBytes);
+        }
+        return forbiddenCountries;
+    }
+
     function formatName(string memory input) internal pure returns (string[] memory) {
         bytes memory inputBytes = bytes(input);
         bytes memory firstNameBytes;
@@ -60,6 +77,25 @@ library OpenPassportFormatter {
         return (numAscii - 48);
     }
 
+    function forbiddenCountriesfieldElementsToBytes(
+        uint256[2] memory publicSignals
+    ) internal pure returns (bytes memory) {
+        uint8[3] memory bytesCount = [31, 29];
+        bytes memory bytesArray = new bytes(60);
+
+        uint256 index = 0;
+        for (uint256 i = 0; i < 2; i++) {
+            uint256 element = publicSignals[i];
+            for (uint8 j = 0; j < bytesCount[i]; j++) {
+                bytesArray[index++] = bytes1(uint8(element & 0xff));
+                element = element >> 8;
+            }
+        }
+
+        return bytesArray;
+    }
+
+    // TODO: This function is only work for revealedData_packed, need to cahnge name and define similar function for forbidden coutries
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {

@@ -16,6 +16,7 @@ interface IGenericVerifier {
     error ZERO_ADDRESS();
     error INVALID_SIGNATURE_TYPE();
 
+    // TODO: Need to check if 28 public inputs are correct.
     struct ProveCircuitProof {
         SignatureType signatureType;
         uint[2] a;
@@ -33,12 +34,12 @@ interface IGenericVerifier {
     }
 
     function verifyWithProveVerifier(
-        uint256 verifier_id,
+        uint256 verifierId,
         ProveCircuitProof memory proof
     ) external view returns (bool);
 
     function verifyWithDscVerifier(
-        uint256 verifier_id,
+        uint256 verifierId,
         DscCircuitProof memory proof
     ) external view returns  (bool);
 
@@ -53,6 +54,7 @@ interface IRSAProveVerifier {
     ) external view returns (bool);
 }
 
+// TODO: Need to check if 28 public inputs are correct.
 interface IECDSAProveVerifier {
     function verifyProof (
         uint[2] calldata _pA,
