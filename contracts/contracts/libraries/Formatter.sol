@@ -1,26 +1,12 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.18;
 
 library OpenPassportFormatter {
 
     error InvalidDateLength();
     error InvalidAsciiCode();
 
-    uint256 constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
-
-    function extractForbiddenCountries(
-        bytes memory charcodes
-    ) internal pure returns (bytes3[] memory) {
-        bytes3[] memory forbiddenCountries = new string[](FORBIDDEN_COUNTRIES_LIST_LENGTH);
-        for (uint256 i = 0; i < FORBIDDEN_COUNTRIES_LIST_LENGTH; i++) {
-            bytes3 countryCode;
-            for (uint256 j = 0; j < 3; j++) {
-                countryCode |= bytes1(charcodes[i * 3 + j]) << (j * 8);
-            }
-            forbiddenCountries[i] = countryCode;
-        }
-        return forbiddenCountries;
-    }
+    uint256 public constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
 
     function formatName(string memory input) internal pure returns (string[] memory) {
         bytes memory inputBytes = bytes(input);
@@ -76,25 +62,7 @@ library OpenPassportFormatter {
         return (numAscii - 48);
     }
 
-    function forbiddenCountriesPackedToBytes(
-        uint256[2] memory publicSignals
-    ) internal pure returns (bytes memory) {
-        uint8[2] memory bytesCount = [31, 29];
-        bytes memory bytesArray = new bytes(60);
-
-        uint256 index = 0;
-        for (uint256 i = 0; i < 2; i++) {
-            uint256 element = publicSignals[i];
-            for (uint8 j = 0; j < bytesCount[i]; j++) {
-                bytesArray[index++] = bytes1(uint8(element & 0xff));
-                element = element >> 8;
-            }
-        }
-
-        return bytesArray;
-    }
-
-    function revealedDataPackedToBytes(
+    function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
         uint8[3] memory bytesCount = [31, 31, 28];
@@ -109,6 +77,45 @@ library OpenPassportFormatter {
             }
         }
         return bytesArray;
+    }
+
+    function extractForbiddenCountriesFromPacked(
+        uint256[2] memory publicSignals
+    ) internal pure returns (bytes3[] memory forbiddenCountries) {
+        forbiddenCountries = new bytes3[](FORBIDDEN_COUNTRIES_LIST_LENGTH);
+
+        for (uint256 j = 0; j < FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
+            uint256 byteIndex = j * 3;
+
+            if (byteIndex + 2 < 32) {
+                uint256 shift = byteIndex * 8;
+                uint256 mask = 0xFFFFFF;
+                uint256 packedData = (publicSignals[0] >> shift) & mask;
+                forbiddenCountries[j] = bytes3(uint24(packedData));
+            } else if (byteIndex < 32) {
+                uint256 bytesFrom0 = 32 - byteIndex;
+                uint256 bytesTo1 = 3 - bytesFrom0;
+
+                uint256 shift0 = byteIndex * 8;
+                uint256 mask0 = (1 << (bytesFrom0 * 8)) - 1;
+                uint256 part0 = (publicSignals[0] >> shift0) & mask0;
+
+                uint256 shift1 = 0;
+                uint256 mask1 = (1 << (bytesTo1 * 8)) - 1;
+                uint256 part1 = (publicSignals[1] >> shift1) & mask1;
+
+                uint256 combined = (part1 << (bytesFrom0 * 8)) | part0;
+                forbiddenCountries[j] = bytes3(uint24(combined));
+            } else {
+                uint256 byteIndexIn1 = byteIndex - 32;
+                uint256 shift = byteIndexIn1 * 8;
+                uint256 mask = 0xFFFFFF;
+                uint256 packedData = (publicSignals[1] >> shift) & mask;
+                forbiddenCountries[j] = bytes3(uint24(packedData));
+            }
+        }
+
+        return forbiddenCountries;
     }
 
     function proofDateToUnixTimestamp(

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.18;
 
 import {IGenericVerifier} from "./IGenericVerifier.sol";
+import {FORBIDDEN_COUNTRIES_LIST_LENGTH} from "../libraries/Formatter.sol";
 
 interface IOpenPassportVerifier {
 
@@ -25,7 +26,7 @@ interface IOpenPassportVerifier {
         uint256 olderThan;
         bool ofacResult;
         address pubkey;
-        bool[] forbiddenCountries;
+        bytes3[FORBIDDEN_COUNTRIES_LIST_LENGTH] forbiddenCountries;
     }
 
     function verifyAttributes(

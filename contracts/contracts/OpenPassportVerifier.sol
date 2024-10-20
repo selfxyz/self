@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.18;
 
 import {IGenericVerifier} from "./interfaces/IGenericVerifier.sol";
 import {IOpenPassportVerifier} from "./interfaces/IOpenPassportVerifier.sol";
@@ -187,44 +187,24 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         return attrs.ofacResult;
     }
 
-    // TODO: Enable these after I add functions to convert field elements to readable ofac result, pubkey, forbidden countries,
-    // function disclosePubkey(
-    //     uint256 proveVerifierId,
-    //     uint256 dscVerifierId,
-    //     IGenericVerifier.ProveCircuitProof memory pProof,
-    //     IGenericVerifier.DscCircuitProof memory dProof
-    // ) public returns (bytes memory) {
-    //     uint256 selector = OpenPassportAttributeSelector.PUBKEY_SELECTOR;
+    function discloseForbiddenCountries(
+        uint256 proveVerifierId,
+        uint256 dscVerifierId,
+        IGenericVerifier.ProveCircuitProof memory pProof,
+        IGenericVerifier.DscCircuitProof memory dProof
+    ) public returns (bytes3[OpenPassportFormatter.FORBIDDEN_COUNTRIES_LIST_LENGTH] memory) {
+        uint256 selector = OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR;
 
-    //     PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-    //         proveVerifierId,
-    //         dscVerifierId,
-    //         pProof,
-    //         dProof,
-    //         selector
-    //     );
+        PassportAttributes memory attrs = verifyAndDiscloseAttributes(
+            proveVerifierId,
+            dscVerifierId,
+            pProof,
+            dProof,
+            selector
+        );
 
-    //     return attrs.pubkey;
-    // }
-
-    // function discloseForbiddenCountries(
-    //     uint256 proveVerifierId,
-    //     uint256 dscVerifierId,
-    //     IGenericVerifier.ProveCircuitProof memory pProof,
-    //     IGenericVerifier.DscCircuitProof memory dProof
-    // ) public returns (string[] memory) {
-    //     uint256 selector = OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR;
-
-    //     PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-    //         proveVerifierId,
-    //         dscVerifierId,
-    //         pProof,
-    //         dProof,
-    //         selector
-    //     );
-
-    //     return attrs.forbiddenCountries;
-    // }
+        return attrs.forbiddenCountries;
+    }
 
     function verifyAndDiscloseAttributes(
         uint256 proveVerifierId,
@@ -244,7 +224,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
                 revert INVALID_SIGNATURE_TYPE();
             }
         }
-        bytes memory charcodes = OpenPassportFormatter.revealedDataPackedToBytes(
+        bytes memory charcodes = OpenPassportFormatter.fieldElementsToBytes(
             revealedData_packed
         );
 
@@ -277,8 +257,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         if ((attributeSelector & OpenPassportAttributeSelector.EXPIRY_DATE_SELECTOR) != 0) {
             attrs.expiryDate = Dg1Disclosure.getExpiryDate(charcodes);
         }
-
-        // TODO: move these data conversions to OpenPassportLibs
+ 
         if ((attributeSelector & OpenPassportAttributeSelector.OLDER_THAN_SELECTOR) != 0) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
                 attrs.olderThan =
@@ -304,10 +283,18 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         }
 
         if ((attribute_selector & AttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR) != 0) {
-            if (p_proof.signatureType == IGenericVerifier.SignatureType.RSA) {
-                attrs.forbiddenCountries = p_proof.publicSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX];
-            } else if (p_proof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-                attrs.forbiddenCountries = p_proof.publicSignalsECDSA[PROVE_ECDSA_FORBIDDEN_COUNTRIES_INDEX];
+            if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
+                attrs.forbiddenCountries
+                    = OpenPassportFormatter.extractForbiddenCountriesFromPacked(
+                        pProof.publicSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX],
+                        pProof.pubSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX + 1]
+                    );
+            } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
+                attrs.forbiddenCountries
+                    = OpenPassportFormatter.extractForbiddenCountriesFromPacked(
+                        pProof.publicSignalsECDSA[PROVE_ECDSA_FORBIDDEN_COUNTRIES_INDEX],
+                        pProof.pubSignalsECDSA[PROVE_ECDSA_FORBIDDEN_COUNTRIES_INDEX + 1]
+                    );
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }

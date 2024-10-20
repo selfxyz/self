@@ -3,7 +3,7 @@
 /// @title Base64
 /// @author Brecht Devos - <brecht@loopring.org>
 /// @notice Provides a function for encoding some bytes in base64
-pragma solidity ^0.8.28;
+pragma solidity ^0.8.18;
 library Base64 {
     string internal constant TABLE = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
 
