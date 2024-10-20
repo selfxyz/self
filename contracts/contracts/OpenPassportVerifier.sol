@@ -244,7 +244,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
                 revert INVALID_SIGNATURE_TYPE();
             }
         }
-        bytes memory charcodes = OpenPassportFormatter.fieldElementsToBytes(
+        bytes memory charcodes = OpenPassportFormatter.revealedDataPackedToBytes(
             revealedData_packed
         );
 

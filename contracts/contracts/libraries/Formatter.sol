@@ -8,17 +8,16 @@ library OpenPassportFormatter {
 
     uint256 constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
 
-    // TODO: Handle country code in bytes3 data type
     function extractForbiddenCountries(
         bytes memory charcodes
-    ) internal pure returns (string[] memory) {
-        string[] memory forbiddenCountries = new string[](20);
+    ) internal pure returns (bytes3[] memory) {
+        bytes3[] memory forbiddenCountries = new string[](FORBIDDEN_COUNTRIES_LIST_LENGTH);
         for (uint256 i = 0; i < FORBIDDEN_COUNTRIES_LIST_LENGTH; i++) {
-            bytes memory attributeBytes = new bytes(3);
+            bytes3 countryCode;
             for (uint256 j = 0; j < 3; j++) {
-                attributeBytes[j] = charcodes[i * 3 + j];
+                countryCode |= bytes1(charcodes[i * 3 + j]) << (j * 8);
             }
-            forbiddenCountries[i] = string(attributeBytes);
+            forbiddenCountries[i] = countryCode;
         }
         return forbiddenCountries;
     }
@@ -71,16 +70,16 @@ library OpenPassportFormatter {
 	}
     
     function numAsciiToUint(uint256 numAscii) internal pure returns (uint256) {
-        if (numAscii < 48 && numAscii > 57) {
+        if (numAscii < 48 || numAscii > 57) {
             revert InvalidAsciiCode();
         }
         return (numAscii - 48);
     }
 
-    function forbiddenCountriesfieldElementsToBytes(
+    function forbiddenCountriesPackedToBytes(
         uint256[2] memory publicSignals
     ) internal pure returns (bytes memory) {
-        uint8[3] memory bytesCount = [31, 29];
+        uint8[2] memory bytesCount = [31, 29];
         bytes memory bytesArray = new bytes(60);
 
         uint256 index = 0;
@@ -95,8 +94,7 @@ library OpenPassportFormatter {
         return bytesArray;
     }
 
-    // TODO: This function is only work for revealedData_packed, need to cahnge name and define similar function for forbidden coutries
-    function fieldElementsToBytes(
+    function revealedDataPackedToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
         uint8[3] memory bytesCount = [31, 31, 28];
