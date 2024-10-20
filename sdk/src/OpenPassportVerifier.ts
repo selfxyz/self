@@ -75,8 +75,8 @@ export class OpenPassportVerifier extends AttestationVerifier {
     return this;
   }
 
-  setDevMode(devMode: boolean): this {
-    this.devMode = devMode;
+  allowMockPassports(): this {
+    this.devMode = true;
     return this;
   }
 
