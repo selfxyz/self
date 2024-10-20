@@ -3,8 +3,8 @@ pragma solidity ^0.8.18;
 
 import {IGenericVerifier} from "./interfaces/IGenericVerifier.sol";
 import {IOpenPassportVerifier} from "./interfaces/IOpenPassportVerifier.sol";
-import "./constants/Constants.sol";
-import "./libraries/Formatter.sol";
+import "./constants/OpenPassportConstants.sol";
+import "./libraries/OpenPassportFormatter.sol";
 import "./libraries/Dg1Disclosure.sol";
 import "./libraries/OpenPassportAttributeSelector.sol";
 
@@ -192,7 +192,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         uint256 dscVerifierId,
         IGenericVerifier.ProveCircuitProof memory pProof,
         IGenericVerifier.DscCircuitProof memory dProof
-    ) public returns (bytes3[OpenPassportFormatter.FORBIDDEN_COUNTRIES_LIST_LENGTH] memory) {
+    ) public returns (bytes3[20] memory) {
         uint256 selector = OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
@@ -217,9 +217,9 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         uint[3] memory revealedData_packed;
         for (uint256 i = 0; i < 3; i++) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
-                revealedData_packed[i] = pProof.pubSignalsRSA[PROVE_RSA_REVEALED_DATA_PACKED_INDEX + i];
+                revealedData_packed[i] = pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_REVEALED_DATA_PACKED_INDEX + i];
             } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-                revealedData_packed[i] = pProof.pubSignalsECDSA[PROVE_ECDSA_REVEALED_DATA_PACKED_INDEX + i];
+                revealedData_packed[i] = pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_REVEALED_DATA_PACKED_INDEX + i];
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }
@@ -261,12 +261,12 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         if ((attributeSelector & OpenPassportAttributeSelector.OLDER_THAN_SELECTOR) != 0) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
                 attrs.olderThan =
-                    OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX])*10
-                        + OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsRSA[PROVE_RSA_OLDER_THAN_INDEX + 1]);
+                    OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_OLDER_THAN_INDEX])*10
+                        + OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_OLDER_THAN_INDEX + 1]);
             } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
                 attrs.olderThan =
-                    OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX])*10
-                        + OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsECDSA[PROVE_ECDSA_OLDER_THAN_INDEX + 1]);
+                    OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_OLDER_THAN_INDEX])*10
+                        + OpenPassportFormatter.numAsciiToUint(pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_OLDER_THAN_INDEX + 1]);
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }
@@ -274,26 +274,30 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
 
         if ((attributeSelector & OpenPassportAttributeSelector.OFAC_RESULT_SELECTOR) != 0) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
-                attrs.ofacResult = (pProof.publicSignalsRSA[PROVE_RSA_OFAC_RESULT_INDEX] != 0);
+                attrs.ofacResult = (pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_OFAC_RESULT_INDEX] != 0);
             } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-                attrs.ofacResult = (pProof.publicSignalsECDSA[PROVE_ECDSA_OFAC_RESULT_INDEX] != 0);
+                attrs.ofacResult = (pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_OFAC_RESULT_INDEX] != 0);
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }
         }
 
-        if ((attribute_selector & AttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR) != 0) {
+        if ((attributeSelector & OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR) != 0) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
                 attrs.forbiddenCountries
                     = OpenPassportFormatter.extractForbiddenCountriesFromPacked(
-                        pProof.publicSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX],
-                        pProof.pubSignalsRSA[PROVE_RSA_FORBIDDEN_COUNTRIES_INDEX + 1]
+                        [
+                        pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_FORBIDDEN_COUNTRIES_LIST_PACKED_DISCLOSED_INDEX],
+                        pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_FORBIDDEN_COUNTRIES_LIST_PACKED_DISCLOSED_INDEX + 1]
+                        ]
                     );
             } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
                 attrs.forbiddenCountries
                     = OpenPassportFormatter.extractForbiddenCountriesFromPacked(
-                        pProof.publicSignalsECDSA[PROVE_ECDSA_FORBIDDEN_COUNTRIES_INDEX],
-                        pProof.pubSignalsECDSA[PROVE_ECDSA_FORBIDDEN_COUNTRIES_INDEX + 1]
+                        [
+                            pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_FORBIDDEN_COUNTRIES_LIST_PACKED_DISCLOSED_INDEX],
+                            pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_FORBIDDEN_COUNTRIES_LIST_PACKED_DISCLOSED_INDEX + 1]
+                        ]
                     );
             } else {
                 revert INVALID_SIGNATURE_TYPE();
@@ -312,7 +316,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
 
         uint[6] memory dateNum;
         for (uint i = 0; i < 6; i++) {
-            dateNum[i] = pProof.pubSignalsRSA[PROVE_RSA_CURRENT_DATE_INDEX + i];
+            dateNum[i] = pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_CURRENT_DATE_INDEX + i];
         }
         uint currentTimestamp = OpenPassportFormatter.proofDateToUnixTimestamp(dateNum);
 
@@ -327,15 +331,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         // check blinded dcs
         bytes memory blindedDscCommitment;
         if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
-            blindedDscCommitment = abi.encodePacked(pProof.pubSignalsRSA[PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
+            blindedDscCommitment = abi.encodePacked(pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
         } else if (pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-            blindedDscCommitment = abi.encodePacked(pProof.pubSignalsECDSA[PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
+            blindedDscCommitment = abi.encodePacked(pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
         } else {
             revert INVALID_SIGNATURE_TYPE();
         }
         if (
             keccak256(blindedDscCommitment) !=
-            keccak256(abi.encodePacked(dProof.pubSignals[DSC_BLINDED_DSC_COMMITMENT_INDEX]))
+            keccak256(abi.encodePacked(dProof.pubSignals[OpenPassportConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
         ) {
             revert UNEQUAL_BLINDED_DSC_COMMITMENT();
         }

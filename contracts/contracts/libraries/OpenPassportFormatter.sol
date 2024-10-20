@@ -6,7 +6,7 @@ library OpenPassportFormatter {
     error InvalidDateLength();
     error InvalidAsciiCode();
 
-    uint256 public constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
+    uint256 constant FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
 
     function formatName(string memory input) internal pure returns (string[] memory) {
         bytes memory inputBytes = bytes(input);
@@ -81,8 +81,7 @@ library OpenPassportFormatter {
 
     function extractForbiddenCountriesFromPacked(
         uint256[2] memory publicSignals
-    ) internal pure returns (bytes3[] memory forbiddenCountries) {
-        forbiddenCountries = new bytes3[](FORBIDDEN_COUNTRIES_LIST_LENGTH);
+    ) internal pure returns (bytes3[FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries) {
 
         for (uint256 j = 0; j < FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
             uint256 byteIndex = j * 3;

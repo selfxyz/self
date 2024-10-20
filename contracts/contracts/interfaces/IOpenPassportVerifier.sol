@@ -2,7 +2,6 @@
 pragma solidity ^0.8.18;
 
 import {IGenericVerifier} from "./IGenericVerifier.sol";
-import {FORBIDDEN_COUNTRIES_LIST_LENGTH} from "../libraries/Formatter.sol";
 
 interface IOpenPassportVerifier {
 
@@ -26,15 +25,15 @@ interface IOpenPassportVerifier {
         uint256 olderThan;
         bool ofacResult;
         address pubkey;
-        bytes3[FORBIDDEN_COUNTRIES_LIST_LENGTH] forbiddenCountries;
+        bytes3[20] forbiddenCountries;
     }
 
-    function verifyAttributes(
+    function verifyAndDiscloseAttributes(
         uint256 proveVerifierId,
         uint256 dscVerifierId,
         IGenericVerifier.ProveCircuitProof memory pProof,
         IGenericVerifier.DscCircuitProof memory dProof,
-        DiscloseSelector memory discloseSelector
+        uint256 attributeSelector
     ) external returns (PassportAttributes memory);
 
 
