@@ -34,7 +34,7 @@ yarn run test:prod
 If you want to generate your own proof or when you update circuits, pls delete json files in test/integrationTest
 
 ## Deployed Addresses
-
+These contracts are deployed on Sepolia.
 | Contract Name | Address |
 | --- | --- |
 | GenericVerifier | 0x79A51bf5B1b903A60Eb91b80954943E596B4aa26 |
