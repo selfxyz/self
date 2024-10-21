@@ -13,7 +13,7 @@ import { bgWhite } from './src/utils/colors';
 import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
 global.Buffer = Buffer;
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const toast = useToastController();
   const setToast = useNavigationStore((state) => state.setToast);
   const initUserStore = useUserStore((state) => state.initUserStore);

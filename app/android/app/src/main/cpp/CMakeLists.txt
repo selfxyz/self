@@ -25,11 +25,11 @@ set_target_properties(prove_rsa_65537_sha1 PROPERTIES IMPORTED_LOCATION ${CMAKE_
 add_library(prove_rsapss_65537_sha256 SHARED IMPORTED)
 set_target_properties(prove_rsapss_65537_sha256 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libwitnesscalc_prove_rsapss_65537_sha256.so)
 
-add_library(prove_ecdsa_secp256r1_sha256 SHARED IMPORTED)
-set_target_properties(prove_ecdsa_secp256r1_sha256 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libwitnesscalc_prove_ecdsa_secp256r1_sha256.so)
+# add_library(prove_ecdsa_secp256r1_sha256 SHARED IMPORTED)
+# set_target_properties(prove_ecdsa_secp256r1_sha256 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libwitnesscalc_prove_ecdsa_secp256r1_sha256.so)
 
-add_library(prove_ecdsa_secp256r1_sha1 SHARED IMPORTED)
-set_target_properties(prove_ecdsa_secp256r1_sha1 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libwitnesscalc_prove_ecdsa_secp256r1_sha1.so)
+# add_library(prove_ecdsa_secp256r1_sha1 SHARED IMPORTED)
+# set_target_properties(prove_ecdsa_secp256r1_sha1 PROPERTIES IMPORTED_LOCATION ${CMAKE_SOURCE_DIR}/lib/libwitnesscalc_prove_ecdsa_secp256r1_sha1.so)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         proofofpassportapp.cpp)
