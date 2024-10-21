@@ -12,7 +12,7 @@
 ### Android
 | Requirement | Version | Installation Guide |
 |-------------|---------|--------------------|
-| Java        | 11      | [Install Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) or [GPT4 guide](https://chatgpt.com/share/26cd879b-26bb-4fd4-b59e-cfe002a06afe) |
+| Java        | 17      | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)|
 | Android Studio | Latest | [Install Android Studio](https://developer.android.com/studio) |
 | Android SDK | Latest  | [Install Android SDK](https://developer.android.com/studio#downloads) |
 | Android Ndk         | 23.1.7779620 | [Install NDK](https://developer.android.com/studio) or [GPT4 guide](https://chatgpt.com/share/a6e2544b-d32a-4554-a452-402511d03ffc) |
