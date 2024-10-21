@@ -1,90 +1,56 @@
 import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from "poseidon-lite"
-import { hash, stringToAsciiBigIntArray } from "./utils";
-import { ChildNodes,SMT } from "@ashpect/smt";
-import fs from 'fs';
-import path from 'path';
+import { stringToAsciiBigIntArray } from "./utils";
+import { ChildNodes, SMT } from "@ashpect/smt"
 
 // SMT trees for 3 levels :
 // 1. Passport tree  : level 3 (Absolute Match)
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
 
-export function buildSMT(field :any[], treetype:string): [number, number, SMT]{
-    let count = 0
-    let startTime = performance.now();
-    
-    const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes))
-    const tree = new SMT(hash2, true)
+export function buildSMT(field: any[], treetype: string): [number, number, SMT] {
+  let count = 0
+  let startTime = performance.now();
 
-    for (let i = 0; i < field.length; i++) {
-        const entry = field[i]
+  const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes))
+  const tree = new SMT(hash2, true)
 
-        if (i !== 0) {
-          console.log('Processing', treetype,'number', i, "out of", field.length);
-        }
+  for (let i = 0; i < field.length; i++) {
+    const entry = field[i]
 
-        let leaf = BigInt(0)
-        if (treetype == "passport") {
-          leaf = processPassport(entry.Pass_No, i)
-        } else if (treetype == "name_dob") {
-          leaf = processNameDob(entry, i)
-        } else if (treetype == "name"){
-          leaf = processName(entry.First_Name, entry.Last_Name, i)
-        } else if (treetype == "country"){
-          const keys = Object.keys(entry);
-          leaf = processCountry(keys[0],entry[keys[0]],i)
-        }
-       
-        if( leaf==BigInt(0) || tree.createProof(leaf).membership){
-          console.log("This entry already exists in the tree, skipping...")
-          continue
-        }
-      
-        count += 1
-        tree.add(leaf,BigInt(1))
-      } 
+    if (i !== 0) {
+      console.log('Processing', treetype, 'number', i, "out of", field.length);
+    }
 
-    console.log("Total",treetype ,"paresed are : ",count ," over ",field.length )
-    console.log(treetype, 'tree built in', performance.now() - startTime, 'ms')
-    return [count, performance.now() - startTime, tree]
-}
+    let leaf = BigInt(0)
+    if (treetype == "passport") {
+      leaf = processPassport(entry.Pass_No, i)
+    } else if (treetype == "name_dob") {
+      leaf = processNameDob(entry, i)
+    } else if (treetype == "name") {
+      leaf = processName(entry.First_Name, entry.Last_Name, i)
+    } else if (treetype == "country") {
+      const keys = Object.keys(entry);
+      leaf = processCountry(keys[0], entry[keys[0]], i)
+    }
 
-export function exportSMTToJsonFile(count: number, time: number, smt: SMT, outputPath?: string) {
-  const serializedSMT = smt.export();
-  const data = {
-      count: count,
-      time: time,
-      smt: serializedSMT
-  };
-  const jsonString = JSON.stringify(data, null, 2);
-  const defaultPath = path.join(process.cwd(), 'smt.json');
-  const finalPath = outputPath ? path.resolve(process.cwd(), outputPath) : defaultPath;
+    if (leaf == BigInt(0) || tree.createProof(leaf).membership) {
+      console.log("This entry already exists in the tree, skipping...")
+      continue
+    }
 
-  fs.writeFileSync(finalPath, jsonString, 'utf8');
-}
-
-export function importSMTFromJsonFile(filePath?: string): SMT | null {
-  try {
-    const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath), 'utf8');
-    
-    const data = JSON.parse(jsonString);
-    
-    const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
-    const smt = new SMT(hash2, true);
-    smt.import(data.smt);
-    
-    console.log('Successfully imported SMT from JSON file');
-    return smt;
-  } catch (error) {
-      console.error('Failed to import SMT from JSON file:', error);
-      return null;
+    count += 1
+    tree.add(leaf, BigInt(1))
   }
+
+  console.log("Total", treetype, "paresed are : ", count, " over ", field.length)
+  console.log(treetype, 'tree built in', performance.now() - startTime, 'ms')
+  return [count, performance.now() - startTime, tree]
 }
 
-function processPassport(passno : string, index: number): bigint {
+function processPassport(passno: string, index: number): bigint {
   if (passno.length > 9) {
     console.log('passport length is greater than 9:', index, passno)
-  } else if (passno.length < 9){
+  } else if (passno.length < 9) {
     while (passno.length != 9) {
       passno += '<'
     }
@@ -104,17 +70,17 @@ function processNameDob(entry: any, i: number): bigint {
   const day = entry.day
   const month = entry.month
   const year = entry.year
-  if(day == null || month == null || year == null){
+  if (day == null || month == null || year == null) {
     console.log('dob is null', i, entry)
     return BigInt(0)
   }
-  const nameHash = processName(firstName,lastName,i)
-  const dobHash = processDob(day, month, year,i)
+  const nameHash = processName(firstName, lastName, i)
+  const dobHash = processDob(day, month, year, i)
   const leaf = poseidon2([dobHash, nameHash])
   return leaf
 }
 
-function processName(firstName:string, lastName:string, i: number ): bigint {
+function processName(firstName: string, lastName: string, i: number): bigint {
   // LASTNAME<<FIRSTNAME<MIDDLENAME<<<... (6-44)
   firstName = firstName.replace(/'/g, '');
   firstName = firstName.replace(/\./g, '');
@@ -139,7 +105,7 @@ function processName(firstName:string, lastName:string, i: number ): bigint {
   return getNameLeaf(nameArr, i)
 }
 
-function processDob(day: string, month: string, year: string, i : number): bigint {
+function processDob(day: string, month: string, year: string, i: number): bigint {
   // YYMMDD
   const monthMap: { [key: string]: string } = {
     jan: "01",
@@ -160,14 +126,14 @@ function processDob(day: string, month: string, year: string, i : number): bigin
   year = year.slice(-2);
   const dob = year + month + day;
   let arr = stringToAsciiBigIntArray(dob);
-  return getDobLeaf(arr,i)
+  return getDobLeaf(arr, i)
 }
 
-function processCountry(country1 : string, country2 : string, i : number){
+function processCountry(country1: string, country2: string, i: number) {
   let arr = stringToAsciiBigIntArray(country1)
   let arr2 = stringToAsciiBigIntArray(country2)
 
-  const leaf = getCountryLeaf(arr,arr2,i)
+  const leaf = getCountryLeaf(arr, arr2, i)
   if (!leaf) {
     console.log('Error creating leaf value', i, country1, country2)
     return BigInt(0)
@@ -175,7 +141,7 @@ function processCountry(country1 : string, country2 : string, i : number){
   return leaf
 }
 
-export function getCountryLeaf(country_by: (bigint|number)[], country_to: (bigint|number)[], i?: number): bigint{
+export function getCountryLeaf(country_by: (bigint | number)[], country_to: (bigint | number)[], i?: number): bigint {
   if (country_by.length !== 3 || country_to.length !== 3) {
     console.log('parsed passport length is not 3:', i, country_to, country_by)
     return
@@ -184,11 +150,11 @@ export function getCountryLeaf(country_by: (bigint|number)[], country_to: (bigin
     const country = country_by.concat(country_to)
     return poseidon6(country)
   } catch (err) {
-    console.log('err : sanc_country hash', err, i, country_by,country_to)
+    console.log('err : sanc_country hash', err, i, country_by, country_to)
   }
 }
 
-export function getPassportNumberLeaf(passport: (bigint|number)[], i?: number): bigint {
+export function getPassportNumberLeaf(passport: (bigint | number)[], i?: number): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport)
     return
@@ -200,17 +166,17 @@ export function getPassportNumberLeaf(passport: (bigint|number)[], i?: number): 
   }
 }
 
-export function getNameDobLeaf(nameMrz : (bigint|number)[], dobMrz : (bigint|number)[], i? : number): bigint {
+export function getNameDobLeaf(nameMrz: (bigint | number)[], dobMrz: (bigint | number)[], i?: number): bigint {
   return poseidon2([getDobLeaf(dobMrz), getNameLeaf(nameMrz)])
 }
 
-export function getNameLeaf(nameMrz : (bigint|number)[] , i? : number ) : bigint {
+export function getNameLeaf(nameMrz: (bigint | number)[], i?: number): bigint {
   let middleChunks: bigint[] = [];
-  let chunks: (number|bigint)[][] = [];
+  let chunks: (number | bigint)[][] = [];
 
   chunks.push(nameMrz.slice(0, 13), nameMrz.slice(13, 26), nameMrz.slice(26, 39)); // 39/3 for posedion to digest
 
-  for(const chunk of chunks){
+  for (const chunk of chunks) {
     middleChunks.push(poseidon13(chunk))
   }
 
@@ -221,7 +187,7 @@ export function getNameLeaf(nameMrz : (bigint|number)[] , i? : number ) : bigint
   }
 }
 
-export function getDobLeaf(dobMrz : (bigint|number)[], i? : number): bigint {
+export function getDobLeaf(dobMrz: (bigint | number)[], i?: number): bigint {
   if (dobMrz.length !== 6) {
     console.log('parsed dob length is not 9:', i, dobMrz)
     return
@@ -232,4 +198,3 @@ export function getDobLeaf(dobMrz : (bigint|number)[], i? : number): bigint {
     console.log('err : Dob', err, i, dobMrz)
   }
 }
-

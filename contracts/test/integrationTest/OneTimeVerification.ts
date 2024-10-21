@@ -5,8 +5,10 @@ import fs from 'fs';
 import {
     VERIFICATION_TYPE_ENUM_PROVE,
     VERIFICATION_TYPE_ENUM_DSC,
-    PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX
+    PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX,
+    PROVE_RSA_CURRENT_DATE_INDEX
 } from "../../../common/src/constants/contractConstants";
+import { Block } from "ethers";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
 import { 
@@ -52,6 +54,9 @@ describe("Test one time verification flow", async function () {
     let owner: any;
     let addr1: any;
     let addr2: any;
+
+    let prove_proof: any;
+    let dsc_proof: any;
 
     // mock passport
     let mockPassport: PassportData = genMockPassportData(
@@ -170,6 +175,24 @@ describe("Test one time verification flow", async function () {
         );
 
         snapshotId = await ethers.provider.send("evm_snapshot", []);
+
+        if(fs.existsSync("./test/integrationTest/proof_prove.json")) {
+            prove_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_prove.json", "utf-8"));
+            const currentTimestamp = convertYYMMDDToTimestamp(prove_proof, PROVE_RSA_CURRENT_DATE_INDEX);
+            const latestBlock = await ethers.provider.getBlock("latest") as Block;
+            if (currentTimestamp < latestBlock.timestamp - 172800) {
+                console.log("This proof is outdated, generating new proof");
+                prove_proof = await generateProofRSAProve();
+            }
+        } else {
+            prove_proof = await generateProofRSAProve();
+        }
+
+        if(fs.existsSync("./test/integrationTest/proof_dsc.json")) {
+            dsc_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_dsc.json", "utf-8"));
+        } else {
+            dsc_proof = await generateProofDSC();
+        }
     });
 
     afterEach(async function () {
@@ -179,21 +202,6 @@ describe("Test one time verification flow", async function () {
 
     describe("test", async function() {
         it("Should be able to mint and set attributes", async function() {
-
-            let prove_proof;
-            if(fs.existsSync("./test/integrationTest/proof_prove.json")) {
-                prove_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_prove.json", "utf-8"));
-            } else {
-                prove_proof = await generateProofRSAProve();
-            }
-
-            let dsc_proof;
-            if(fs.existsSync("./test/integrationTest/proof_dsc.json")) {
-                dsc_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_dsc.json", "utf-8"));
-            } else {
-                dsc_proof = await generateProofDSC();
-            }
-
             await oneTimeSBT.mint(
                 PROVE_RSA_65537_SHA256_VERIFIER_ID,
                 DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -213,23 +221,8 @@ describe("Test one time verification flow", async function () {
         });
 
         it("Should not be able to mint with invalid prove proof", async function() {
-            let prove_proof;
-            if(fs.existsSync("./test/integrationTest/proof_prove.json")) {
-                prove_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_prove.json", "utf-8"));
-            } else {
-                prove_proof = await generateProofRSAProve();
-            }
-
-            let invalid_prove_proof = prove_proof;
+            let invalid_prove_proof = JSON.parse(JSON.stringify(prove_proof));
             invalid_prove_proof[0] = [0, 0];
-
-
-            let dsc_proof;
-            if(fs.existsSync("./test/integrationTest/proof_dsc.json")) {
-                dsc_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_dsc.json", "utf-8"));
-            } else {
-                dsc_proof = await generateProofDSC();
-            }
 
             await expect(
                 oneTimeSBT.mint(
@@ -239,7 +232,7 @@ describe("Test one time verification flow", async function () {
                         a: invalid_prove_proof[0],
                         b: invalid_prove_proof[1],
                         c: invalid_prove_proof[2],
-                        pubSignals: prove_proof[3]
+                        pubSignals: invalid_prove_proof[3]
                     },
                     {
                         a: dsc_proof[0],
@@ -255,20 +248,6 @@ describe("Test one time verification flow", async function () {
         });
 
         it("Should not be able to mint with invalid dsc proof", async function() {
-            let prove_proof;
-            if(fs.existsSync("./test/integrationTest/proof_prove.json")) {
-                prove_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_prove.json", "utf-8"));
-            } else {
-                prove_proof = await generateProofRSAProve();
-            }
-
-            let dsc_proof;
-            if(fs.existsSync("./test/integrationTest/proof_dsc.json")) {
-                dsc_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_dsc.json", "utf-8"));
-            } else {
-                dsc_proof = await generateProofDSC();
-            }
-
             let invalid_dsc_proof = dsc_proof;
             invalid_dsc_proof[0] = [0, 0];
 
@@ -286,7 +265,7 @@ describe("Test one time verification flow", async function () {
                         a: invalid_dsc_proof[0],
                         b: invalid_dsc_proof[1],
                         c: invalid_dsc_proof[2],
-                        pubSignals: dsc_proof[3]
+                        pubSignals: invalid_dsc_proof[3]
                     },
                 )
             ).to.be.revertedWithCustomError(
@@ -296,20 +275,6 @@ describe("Test one time verification flow", async function () {
         });
 
         it("Should not be able to mint with invalid blinded dcs", async function() {
-            let prove_proof;
-            if(fs.existsSync("./test/integrationTest/proof_prove.json")) {
-                prove_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_prove.json", "utf-8"));
-            } else {
-                prove_proof = await generateProofRSAProve();
-            }
-
-            let dsc_proof;
-            if(fs.existsSync("./test/integrationTest/proof_dsc.json")) {
-                dsc_proof = JSON.parse(fs.readFileSync("./test/integrationTest/proof_dsc.json", "utf-8"));
-            } else {
-                dsc_proof = await generateProofDSC();
-            }
-
             let invalid_prove_proof = prove_proof;
             invalid_prove_proof[3][PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX] = 0;
 
@@ -437,5 +402,49 @@ describe("Test one time verification flow", async function () {
         let dsc_proof = JSON.parse("[" + rawCallData_dsc + "]");
         fs.writeFileSync("./test/integrationTest/proof_dsc.json", JSON.stringify(dsc_proof));
         return dsc_proof;
+    };
+
+    function convertYYMMDDToTimestamp(proveProof: any[], index: number): number {
+        const dateDigits = proveProof[3].slice(index, index + 6);
+    
+        if (dateDigits.length !== 6) {
+            throw new Error("Insufficient date digits");
+        }
+
+        const digits = dateDigits.map((digit: string) => {
+            const num = Number(BigInt(digit));
+            if (isNaN(num) || num < 0 || num > 9) {
+                throw new Error(`Invalid digit value: ${digit}`);
+            }
+            return num.toString();
+        });
+        
+        // Correctly join the digits without padding each digit
+        const yymmdd = digits.join('');
+        console.log("yymmdd: ", yymmdd);
+        
+        const yy = parseInt(yymmdd.slice(0, 2), 10);
+        const mm = parseInt(yymmdd.slice(2, 4), 10);
+        const dd = parseInt(yymmdd.slice(4, 6), 10);
+        
+        const year = 2000 + yy;
+        
+        if (mm < 1 || mm > 12) {
+            throw new Error(`Invalid month value: ${mm}`);
+        }
+        
+        if (dd < 1 || dd > 31) {
+            throw new Error(`Invalid day value: ${dd}`);
+        }
+        
+        const date = new Date(year, mm - 1, dd);
+        if (date.getFullYear() !== year || date.getMonth() !== mm - 1 || date.getDate() !== dd) {
+            throw new Error("Invalid date provided");
+        }
+        
+        const timestamp = Math.floor(date.getTime() / 1000);
+        
+        return timestamp;
     }
+      
 });
