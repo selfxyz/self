@@ -1,4 +1,4 @@
-import { sha1Pad, sha256Pad } from "./shaPad";
+import { shaPad } from "./shaPad";
 import * as forge from "node-forge";
 import { bytesToBigDecimal, extractRSFromSignature, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from "./utils";
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
@@ -9,13 +9,16 @@ import axios from "axios";
 import { parseCertificate } from "./certificates/handleCertificate";
 import { getLeafCSCA } from "./pubkeyTree";
 import { SKI_PEM, SKI_PEM_DEV } from "../constants/skiPem";
+
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
+    console.log('messagePadded', messagePadded);
     const modulusNumArray = [];
     for (let i = 0; i < modulus.length; i += 2) {
         const hexPair = modulus.slice(i, i + 2);
         const number = parseInt(hexPair, 16);
         modulusNumArray.push(number);
     }
+    console.log('modulusNumArray', modulusNumArray);
     const messagePaddedNumber = [];
     for (let i = 0; i < messagePadded.length; i += 1) {
         const number = Number(messagePadded[i]);
@@ -26,16 +29,17 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
         if (modulusNumArray[0] === messagePaddedNumber[i]) {
             for (let j = 0; j < modulusNumArray.length; j++) {
                 if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
-                    //console.log("NO MODULUS FOUND IN CERTIFICATE");
                     break;
                 }
                 else if (j === modulusNumArray.length - 1) {
-                    //console.log("MODULUS FOUND IN CERTIFICATE");
                     startIndex = i;
                 }
             }
             break;
         }
+    }
+    if (startIndex === -1) {
+        throw new Error('DSC Pubkey not found in CSCA certificate');
     }
     return startIndex;
 }
@@ -52,18 +56,7 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
     const { signatureAlgorithm, hashFunction, publicKeyDetails, x, y, modulus, curve, exponent, bits, subjectKeyIdentifier, authorityKeyIdentifier } = parseCertificate(dscCertificate);
     let dsc_message_padded;
     let dsc_messagePaddedLen;
-    switch (hashFunction) {
-        case 'sha1':
-            [dsc_message_padded, dsc_messagePaddedLen] = sha1Pad(dscTbsCertUint8Array, max_cert_bytes);
-            break;
-        case 'sha256':
-            [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dscTbsCertUint8Array, max_cert_bytes);
-            break;
-        default:
-            console.log("Signature algorithm not recognized", signatureAlgorithm);
-            [dsc_message_padded, dsc_messagePaddedLen] = sha256Pad(dscTbsCertUint8Array, max_cert_bytes);
-            break;
-    }
+    [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
 
     const { n, k } = getNAndK(signatureAlgorithm);
     // Extract the signature from the DSC certificate
@@ -78,6 +71,7 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
     const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString()
 
     const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, devMode);
+    console.log('cscaPem', cscaPem);
 
     const { x: csca_x, y: csca_y, modulus: csca_modulus, signature_algorithm: csca_signature_algorithm } = parseCertificate(cscaPem);
     const { n: n_csca, k: k_csca } = getNAndKCSCA(csca_signature_algorithm);
@@ -139,12 +133,13 @@ export function generateCircuitInputsDSC(dscSecret: string, dscCertificate: any,
 
 }
 
-export function getCSCAFromSKI(ski: string, devMode: boolean): string | null {
+export function getCSCAFromSKI(ski: string, devMode: boolean): string {
     const cscaPemPROD = (SKI_PEM as any)[ski];
     const cscaPemDEV = (SKI_PEM_DEV as any)[ski];
     const cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
     if (!cscaPem) {
         console.log('\x1b[31m%s\x1b[0m', `CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
+        throw new Error(`CSCA not found, authorityKeyIdentifier: ${ski},  areMockPassportsAllowed: ${devMode},`);
     }
     return cscaPem;
 }

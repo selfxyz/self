@@ -95,6 +95,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
       sessionId: sessionId,
       userId: userId,
       userIdType: userIdType,
+      devMode: this.devMode,
     };
 
     let openPassportArguments: ArgumentsProveOffChain | ArgumentsRegister;

@@ -2,6 +2,7 @@ import { ethers } from 'ethers';
 import { getCurrentDateYYMMDD } from '../../common/src/utils/utils';
 import {
   attributeToPosition,
+  circuitNameFromMode,
   REGISTER_ABI,
   REGISTER_CONTRACT_ADDRESS,
 } from '../../common/src/constants/constants';
@@ -18,20 +19,24 @@ import {
   vkey_vc_and_disclose,
 } from '../../common/src/constants/vkey';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
+import { Mode } from 'fs';
 
 export function getCurrentDateFormatted() {
   return getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString());
 }
 
 export function getVkeyFromArtifacts(
-  circuit: string,
+  circuitMode: Mode,
   signatureAlgorithm: string,
   hashFunction: string
 ) {
-  const circuitName =
-    circuit === 'vc_and_disclose'
-      ? circuit
-      : getCircuitName(circuit, signatureAlgorithm, hashFunction);
+  const circuit = circuitNameFromMode[circuitMode];
+  let circuitName = '';
+  if (circuit === 'vc_and_disclose') {
+    circuitName = circuit;
+  } else {
+    circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
+  }
   // console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
   switch (circuitName) {
     case 'vc_and_disclose':

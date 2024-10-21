@@ -5,6 +5,8 @@ import elliptic from 'elliptic';
 import { parseRsaPublicKey, parseRsaPssPublicKey, parseECParameters } from './publicKeyDetails';
 import { PublicKeyDetailsRSAPSS } from './dataStructure';
 import { getNamedCurve } from './curves';
+import { circuitNameFromMode } from '../../constants/constants';
+import { Mode } from '../appType';
 
 if (typeof global.Buffer === 'undefined') {
     global.Buffer = require('buffer').Buffer;
@@ -48,12 +50,16 @@ export function parseCertificate(pem: string) {
 
 }
 
-export const getCircuitName = (circuitType: string, signatureAlgorithm: string, hashFunction: string) => {
-    if (signatureAlgorithm === 'ecdsa') {
-        return circuitType + "_" + signatureAlgorithm + "_secp256r1_" + hashFunction;
+export const getCircuitName = (circuitMode: Mode, signatureAlgorithm: string, hashFunction: string) => {
+    const circuit = circuitNameFromMode[circuitMode];
+    if (circuit == 'vc_and_disclose') {
+        return 'vc_and_disclose';
+    }
+    else if (signatureAlgorithm === 'ecdsa') {
+        return circuit + "_" + signatureAlgorithm + "_secp256r1_" + hashFunction;
     }
     else {
-        return circuitType + "_" + signatureAlgorithm + "_65537_" + hashFunction;
+        return circuit + "_" + signatureAlgorithm + "_65537_" + hashFunction;
     }
 }
 

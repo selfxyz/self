@@ -50,10 +50,12 @@ export const ECDSA_K_LENGTH_FACTOR = 2;
 // possible values because of sha1 constaints: 192,320,384, 448, 576, 640
 
 export const circuitNameFromMode = {
+  prove: 'prove',
   prove_onchain: 'prove',
   prove_offchain: 'prove',
   register: 'prove',
   vc_and_disclose: 'vc_and_disclose',
+  dsc: 'dsc',
 }
 
 export enum SignatureAlgorithmIndex {
