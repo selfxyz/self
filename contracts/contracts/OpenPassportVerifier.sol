@@ -17,18 +17,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseIssuingState(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.ISSUING_STATE_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -36,18 +33,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseName(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.NAME_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -55,18 +49,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function disclosePassportNumber(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.PASSPORT_NUMBER_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -74,18 +65,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }   
 
     function discloseNationality(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.NATIONALITY_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -93,18 +81,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseDateOfBirth(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.DATE_OF_BIRTH_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -112,18 +97,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseGender(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.GENDER_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -131,18 +113,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseExpiryDate(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.EXPIRY_DATE_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
         
@@ -150,18 +129,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseOlderThan(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (uint256) {
         uint256 selector = OpenPassportAttributeSelector.OLDER_THAN_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -169,18 +145,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseOfacResult(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (bool) {
         uint256 selector = OpenPassportAttributeSelector.OFAC_RESULT_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -188,18 +161,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function discloseForbiddenCountries(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation,
     ) public returns (bytes3[20] memory) {
         uint256 selector = OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR;
 
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
-            proveVerifierId,
-            dscVerifierId,
-            pProof,
-            dProof,
+            attestation.proveVerifierId,
+            attestation.dscVerifierId,
+            attestation.pProof,
+            attestation.dProof,
             selector
         );
 
@@ -207,13 +177,10 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function verifyAndDiscloseAttributes(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof,
+        OpenPassportAttestation memory attestation,
         uint256 attributeSelector
     ) public returns (PassportAttributes memory) {
-        verify(proveVerifierId, dscVerifierId, pProof, dProof);
+        verify(attestation);
         uint[3] memory revealedData_packed;
         for (uint256 i = 0; i < 3; i++) {
             if (pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
@@ -308,10 +275,7 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
     }
 
     function verify(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) public returns (IGenericVerifier.ProveCircuitProof memory) {
 
         uint[6] memory dateNum;

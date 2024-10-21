@@ -13,7 +13,6 @@ interface IOpenPassportVerifier {
     error INVALID_PROVE_PROOF();
     error INVALID_DSC_PROOF();
 
-    // TODO: Need to define data types for ofac, pubkey, forbidden countries after converters are defined
     struct PassportAttributes {
         string issuingState;
         string name;
@@ -28,89 +27,60 @@ interface IOpenPassportVerifier {
         bytes3[20] forbiddenCountries;
     }
 
+    struct OpenPassportAttestation {
+        uint256 proveVerifierId;
+        uint256 dscVerifierId;
+        IGenericVerifier.ProveCircuitProof pProof;
+        IGenericVerifier.DscCircuitProof dProof;
+    }
+
     function discloseIssuingState(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseName(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function disclosePassportNumber(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseNationality(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseDateOfBirth(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseGender(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseExpiryDate(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (string memory);
 
     function discloseOlderThan(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (uint256);
 
     function discloseOfacResult(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (bool);
 
     function discloseForbiddenCountries(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (bytes3[20] memory);
 
     function verifyAndDiscloseAttributes(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof,
+        OpenPassportAttestation memory attestation,
         uint256 attributeSelector
     ) external returns (PassportAttributes memory);
 
     function verify(
-        uint256 proveVerifierId,
-        uint256 dscVerifierId,
-        IGenericVerifier.ProveCircuitProof memory pProof,
-        IGenericVerifier.DscCircuitProof memory dProof
+        OpenPassportAttestation memory attestation
     ) external returns (IGenericVerifier.ProveCircuitProof memory);
 
 }
