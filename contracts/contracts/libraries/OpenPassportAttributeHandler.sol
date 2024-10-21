@@ -60,11 +60,11 @@ library OpenPassportAttributeHandler {
 
     function extractUserIdentifier(
         IOpenPassportVerifier.OpenPassportAttestation memory attestation
-    ) internal pure returns (address) {
+    ) internal pure returns (uint256) {
         if (attestation.pProof.signatureType == IGenericVerifier.SignatureType.RSA) {
-            return address(uint160(attestation.pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_USER_IDENTIFIER_INDEX]));
+            return attestation.pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_USER_IDENTIFIER_INDEX];
         } else if (attestation.pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-            return address(uint160(attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_USER_IDENTIFIER_INDEX]));
+            return attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_USER_IDENTIFIER_INDEX];
         } else {
             revert INVALID_SIGNATURE_TYPE();
         }
