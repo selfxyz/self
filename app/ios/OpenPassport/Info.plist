@@ -64,5 +64,14 @@
 		<string>A0000002472001</string>
 		<string>00000000000000</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>proofofpassport</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
