@@ -1,5 +1,5 @@
 //SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.28;
 
 library OpenPassportConstants {
     uint256 constant PROVE_RSA_NULLIFIER_INDEX = 0;
