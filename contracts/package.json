@@ -1,12 +1,27 @@
 {
-  "name": "hardhat-project",
+  "name": "@openpassport/contracts",
+  "version": "0.0.7",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zk-passport/openpassport"
+  },
+  "author": "motemotech <i.am.nicoshark@gmail.com>",
   "scripts": {
     "test": "npx hardhat test",
     "test:local": "TEST_ENV=local npx hardhat test",
     "test:prod": "TEST_ENV=prod npx hardhat test",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
-    "compile": "npx hardhat compile"
+    "compile": "npx hardhat compile",
+    "publish": "npm publish --access public"
   },
+  "files": [
+    "contracts/constants/*",
+    "contracts/interfaces/*",
+    "contracts/libraries/*",
+    "contracts/verifiers/GenericVerifier.sol",
+    "contracts/OpenPassportVerifier.sol"
+  ],
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
@@ -34,7 +49,7 @@
     "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@eth-optimism/hardhat-ovm": "^0.2.4",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
-    "@openzeppelin/contracts": "^4.9.2",
+    "@openzeppelin/contracts": "^5.0.2",
     "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.12",
     "@zk-kit/imt": "^2.0.0-beta.4",

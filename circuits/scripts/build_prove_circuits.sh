@@ -5,6 +5,7 @@ source "scripts/download_ptau.sh"
 build_circuit() {
     local CIRCUIT_NAME=$1
     local CIRCUIT_TYPE=$2
+    local POWEROFTAU=$3
     local START_TIME=$(date +%s)
 
     echo "compiling circuit: $CIRCUIT_NAME"
@@ -12,7 +13,7 @@ build_circuit() {
     circom circuits/${CIRCUIT_TYPE}/instances/${CIRCUIT_NAME}.circom -l node_modules -l ./node_modules/@zk-kit/binary-merkle-root.circom/src -l ./node_modules/circomlib/circuits --r1cs --O1 --wasm -c --output build/prove/${CIRCUIT_NAME}/
 
     echo "building zkey"
-    yarn snarkjs groth16 setup build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_20.ptau build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
+    yarn snarkjs groth16 setup build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_${POWEROFTAU}.ptau build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     echo "building vkey"
     yarn snarkjs zkey contribute build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
@@ -46,7 +47,7 @@ for circuit in "${CIRCUITS[@]}"; do
     IFS=':' read -r CIRCUIT_NAME CIRCUIT_TYPE POWEROFTAU BUILD_FLAG <<< "$circuit"
     if [ "$BUILD_FLAG" = "true" ]; then
         echo "Debug: Building circuit $CIRCUIT_NAME of type $CIRCUIT_TYPE"
-        build_circuit "$CIRCUIT_NAME" "$CIRCUIT_TYPE"
+        build_circuit "$CIRCUIT_NAME" "$CIRCUIT_TYPE" "$POWEROFTAU"
     else
         echo "Skipping build for $CIRCUIT_NAME"
     fi

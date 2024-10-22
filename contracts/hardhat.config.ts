@@ -5,11 +5,9 @@ import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import 'solidity-coverage';
 
-const { PKEY, OPTIMISM_SEPOLIA_RPC_URL } = process.env;
-
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.18",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,
@@ -66,6 +64,7 @@ const config: HardhatUserConfig = {
   },
   etherscan: {
     apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY as string,
       ethereum: process.env.ETHERSCAN_API_KEY as string,
       optimism: process.env.OPTIMISMSCAN_API_KEY as string
     }

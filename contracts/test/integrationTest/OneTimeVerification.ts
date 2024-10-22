@@ -17,8 +17,10 @@ import {
  } from "../../../common/src/utils/csca";
 import { mock_dsc_sha256_rsa_4096 } from "../../../common/src/constants/mockCertificates";
 import { generateCircuitInputsProve } from "../../../common/src/utils/generateInputs";
-import { buildSMT, importSMTFromJsonFile, exportSMTToJsonFile } from "../../../common/src/utils/smtTree";
-import { SMT } from "@ashpect/smt";
+import { buildSMT } from "../../../common/src/utils/smtTree";
+import { SMT, ChildNodes } from "@ashpect/smt";
+import path from "path";
+import { poseidon3, poseidon2 } from "poseidon-lite"
 
 type CircuitArtifacts = {
     [key: string]: {
@@ -448,3 +450,35 @@ describe("Test one time verification flow", async function () {
     }
       
 });
+
+export function exportSMTToJsonFile(count: number, time: number, smt: SMT, outputPath?: string) {
+    const serializedSMT = smt.export();
+    const data = {
+        count: count,
+        time: time,
+        smt: serializedSMT
+    };
+    const jsonString = JSON.stringify(data, null, 2);
+    const defaultPath = path.join(process.cwd(), 'smt.json');
+    const finalPath = outputPath ? path.resolve(process.cwd(), outputPath) : defaultPath;
+  
+    fs.writeFileSync(finalPath, jsonString, 'utf8');
+  }
+  
+  export function importSMTFromJsonFile(filePath?: string): SMT | null {
+    try {
+      const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath as string), 'utf8');
+      
+      const data = JSON.parse(jsonString);
+      
+      const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+      const smt = new SMT(hash2, true);
+      smt.import(data.smt);
+      
+      console.log('Successfully imported SMT from JSON file');
+      return smt;
+    } catch (error) {
+        console.error('Failed to import SMT from JSON file:', error);
+        return null;
+    }
+  }
