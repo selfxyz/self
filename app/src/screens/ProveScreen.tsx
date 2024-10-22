@@ -5,11 +5,11 @@ import { countryCodes, DEVELOPMENT_MODE, max_cert_bytes, } from '../../../common
 import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { ArgumentsDisclose, DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
+import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
-import { formatProof, generateProof } from '../utils/prover';
+import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitName, parseCertificate, parseDSC } from '../../../common/src/utils/certificates/handleCertificate';
+import { getCircuitName, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
@@ -41,7 +41,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   const [isConnecting, setIsConnecting] = useState(false);
   const { signatureAlgorithm, hashFunction, authorityKeyIdentifier } = parseCertificate(passportData.dsc);
   const { secret, dscSecret } = useUserStore.getState();
-  const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
+  const circuitName = getCircuitName(selectedApp.mode, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -88,7 +88,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         console.log("result", result);
         if (JSON.parse(result).valid) {
           toast.show("✅", {
-            message: "Proof verified",
+            message: "Identity verified",
             customData: {
               type: "success",
             },
@@ -98,7 +98,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           }, 700);
         } else {
           toast.show("❌", {
-            message: "Wrong proof",
+            message: "Verification failed",
             customData: {
               type: "info",
             },
@@ -142,28 +142,16 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
 
-      console.log("selectedApp.mode", selectedApp.mode);
+      const inputs = await generateCircuitInputsInApp(passportData, selectedApp);
+      let attestation;
+      let proof;
+      let dscProof;
+
       switch (selectedApp.mode) {
-        case 'vc_and_disclose':
-          const inputs_disclose = await generateCircuitInputsInApp(passportData, selectedApp);
-          const proof_disclose = await generateProof('vc_and_disclose', inputs_disclose);
-          const formattedProof_disclose = formatProof(proof_disclose);
-          console.log(formattedProof_disclose);
-          const attestation_disclose = buildAttestation({
-            userIdType: selectedApp.userIdType,
-            mode: selectedApp.mode,
-            proof: formattedProof_disclose.proof,
-            publicSignals: formattedProof_disclose.publicSignals,
-            signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashFunction,
-          });
-          socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_disclose });
-          break;
         case 'prove_onchain':
         case 'register':
-          const inputs = await generateCircuitInputsInApp(passportData, selectedApp);
-          const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes, true);
-          const [modalResponse, proof] = await Promise.all([
+          const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes, selectedApp.devMode);
+          [dscProof, proof] = await Promise.all([
             sendCSCARequest(
               cscaInputs
             ),
@@ -172,17 +160,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
               inputs,
             )
           ]);
-          const dscProof = JSON.parse(JSON.stringify(modalResponse));
           const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, DEVELOPMENT_MODE);
-          if (!cscaPem) {
-            throw new Error(`CSCA not found, devMode: ${DEVELOPMENT_MODE}, authorityKeyIdentifier: ${authorityKeyIdentifier}`);
-          }
           const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificate(cscaPem);
-          const formattedProof = formatProof(proof);
-          const attestation = buildAttestation({
+          attestation = buildAttestation({
             mode: selectedApp.mode,
-            proof: formattedProof.proof,
-            publicSignals: formattedProof.publicSignals,
+            proof: proof.proof,
+            publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
             hashFunction: hashFunction,
             userIdType: selectedApp.userIdType,
@@ -191,30 +174,25 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             signatureAlgorithmDsc: signatureAlgorithmDsc,
             hashFunctionDsc: hashFunction,
           });
-          console.log("\x1b[90mattestation\x1b[0m", attestation);
-          socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
           break;
-        case 'prove_offchain':
-          const inputs_prove = await generateCircuitInputsInApp(passportData, selectedApp);
-          const proof_prove = await generateProof(
+        default:
+          proof = await generateProof(
             circuitName,
-            inputs_prove,
-          );
-          const formattedProof_prove = formatProof(proof_prove);
-          const attestation_prove = buildAttestation({
+            inputs,
+          )
+          attestation = buildAttestation({
             userIdType: selectedApp.userIdType,
             mode: selectedApp.mode,
-            proof: formattedProof_prove.proof,
-            publicSignals: formattedProof_prove.publicSignals,
+            proof: proof.proof,
+            publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
             hashFunction: hashFunction,
             dsc: passportData.dsc,
           });
-          console.log("\x1b[90mattestation\x1b[0m", attestation_prove);
-
-          socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation_prove });
           break;
       }
+      console.log("\x1b[90mattestation\x1b[0m", attestation);
+      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
 
     } catch (error) {
       toast.show("Error", {

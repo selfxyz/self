@@ -37,15 +37,15 @@ export const generateProof = async (
     if (Platform.OS === 'android') {
       const parsedResponse = parseProofAndroid(response);
       console.log('parsedResponse', parsedResponse);
-      return parsedResponse
+      return formatProof(parsedResponse)
     } else {
       const parsedResponse = JSON.parse(response);
       console.log('parsedResponse', parsedResponse);
 
-      return {
+      return formatProof({
         proof: parsedResponse.proof,
         pub_signals: parsedResponse.inputs,
-      }
+      })
     }
   } catch (err: any) {
     console.log('err', err);

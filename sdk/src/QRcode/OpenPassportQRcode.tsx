@@ -51,6 +51,13 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     );
   }, [sessionId, websocketUrl]);
 
+  const generateUniversalLink = () => {
+    const baseUrl = 'https://proofofpassport-merkle-tree.xyz';
+    const path = '/open-passport';
+    const data = openPassportVerifier.getIntent(appName, userId, userIdType, sessionId);
+    return `${baseUrl}${path}?data=${data}`;
+  };
+
   const renderProofStatus = () => (
     <div style={containerStyle}>
       <div style={ledContainerStyle}>
@@ -89,7 +96,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
             default:
               return (
                 <QRCodeSVG
-                  value={openPassportVerifier.getIntent(appName, userId, userIdType, sessionId)}
+                  value={generateUniversalLink()}
                   size={size}
                 />
               );

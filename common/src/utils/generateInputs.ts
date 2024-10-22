@@ -218,12 +218,10 @@ export function generateCircuitInputsProve(
   }
 
   const [eContentPadded, eContentLen] = shaPad(
-    signatureAlgorithm,
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
   );
   const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
-    signatureAlgorithm,
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
   );

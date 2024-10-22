@@ -14,6 +14,7 @@ export interface OpenPassportAppPartial {
   sessionId: string;
   userId: string;
   userIdType: UserIdType;
+  devMode: boolean;
 }
 
 export interface OpenPassportApp extends OpenPassportAppPartial {

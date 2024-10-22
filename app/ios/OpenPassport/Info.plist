@@ -34,6 +34,12 @@
 	<string>Need NFC to read Passport</string>
 	<key>NSAppTransportSecurity</key>
 	<string></string>
+	 <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<key>NSAllowsArbitraryLoads</key>
+	<false/>
+	<key>NSAllowsLocalNetworking</key>
+	<true/>
+	
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
@@ -48,7 +54,7 @@
 	<string>LaunchScreen</string>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
-		<string>armv7</string>
+		<string>arm64</string>
 	</array>
 	<key>UISupportedInterfaceOrientations</key>
 	<array>
@@ -63,6 +69,15 @@
 		<string>A0000002471001</string>
 		<string>A0000002472001</string>
 		<string>00000000000000</string>
+	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>proofofpassport</string>
+			</array>
+		</dict>
 	</array>
 </dict>
 </plist>
