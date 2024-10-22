@@ -12,8 +12,7 @@ export default function Prove() {
     .setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL)
     .excludeCountries('Albania')
     .setMinimumAge(20)
-    .enableOFACCheck()
-    .setNationality('Germany');
+    .enableOFACCheck();
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
@@ -21,7 +20,7 @@ export default function Prove() {
         userId={userId}
         userIdType={'uuid'}
         openPassportVerifier={openPassportVerifierDisclose}
-        onSuccess={(attestation) => {}}
+        onSuccess={(attestation) => { }}
       />
     </div>
   );

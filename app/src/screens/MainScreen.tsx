@@ -25,7 +25,6 @@ import ProveScreen from './ProveScreen';
 import NfcScreen from './NfcScreen';
 import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
-import RegisterScreen from './RegisterScreen';
 import AppScreen from './AppScreen';
 // import constants
 import { RPC_URL, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
@@ -334,14 +333,6 @@ const MainScreen: React.FC = () => {
                       </Label>
                       <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
                         <Eraser color={textColor2} />
-                      </Button>
-                    </Fieldset>
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        go to register
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setSelectedTab('register')}>
-                        <ArrowRight color={textColor2} />
                       </Button>
                     </Fieldset>
                     <Fieldset gap="$4" mt="$1" horizontal>
@@ -688,9 +679,6 @@ const MainScreen: React.FC = () => {
           </Tabs.Content>
           <Tabs.Content value="next" f={1}>
             <NextScreen />
-          </Tabs.Content>
-          <Tabs.Content value="register" f={1}>
-            <RegisterScreen />
           </Tabs.Content>
           <Tabs.Content value="app" f={1}>
             <AppScreen

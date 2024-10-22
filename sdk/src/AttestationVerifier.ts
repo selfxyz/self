@@ -260,8 +260,7 @@ export class AttestationVerifier {
     signatureAlgorithm: string,
     hashFunction: string
   ): Promise<void> {
-    const circuitName = circuitNameFromMode[mode];
-    const vkey = getVkeyFromArtifacts(circuitName, signatureAlgorithm, hashFunction);
+    const vkey = getVkeyFromArtifacts(mode, signatureAlgorithm, hashFunction);
     const isVerified = await groth16.verify(vkey, publicSignals, proof as any);
     this.verifyAttribute('proof', isVerified.toString(), 'true');
   }

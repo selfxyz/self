@@ -11,7 +11,7 @@ export default function Prove() {
   const openPassportVerifier = new OpenPassportVerifier(
     'register',
     scope
-  ).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
+  ).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL).allowMockPassports();
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode
