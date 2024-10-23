@@ -20,7 +20,7 @@ export const startCameraScan = async () => {
       })
 
       setSelectedTab("nfc");
-      toast.show("✅", {
+      toast.show("✔︎", {
         message: 'Scan successful',
         customData: {
           type: "success",
@@ -43,7 +43,7 @@ export const startCameraScan = async () => {
           })
 
           setSelectedTab("nfc");
-          toast.show("✅", {
+          toast.show("✔︎", {
             message: 'Scan successful',
             customData: {
               type: "success",
