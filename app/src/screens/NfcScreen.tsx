@@ -21,7 +21,7 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
-  const carouselImages = [US_PASSPORT, REMOVE_CASE, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
+  const carouselImages = [US_PASSPORT, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
 
   const openNfcSettings = () => {
     if (Platform.OS === 'ios') {
@@ -60,8 +60,7 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
 
   return (
     <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }}>
-      <YStack f={1} p="$3" >
-        <Text fontSize="$9" mt="$0" color={textBlack} mb="$4" ml="$2">Verify your passport using <Text fontSize="$9" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>NFC</Text></Text>
+      <YStack f={1} >
         <Carousel
           images={carouselImages}
           height={300}
