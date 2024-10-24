@@ -26,7 +26,7 @@ const StartScreen: React.FC = () => {
 
             </YStack>
 
-            <YStack gap="$2.5" mb="$3.5">
+            <YStack gap="$2.5">
                 <CustomButton Icon={<ArrowRight />} text="Use my passport" onPress={() => {
                     setSelectedTab("scan");
                 }} />
@@ -35,10 +35,7 @@ const StartScreen: React.FC = () => {
                 }} />
 
             </YStack>
-            <XStack justifyContent='center' alignItems='center' gap="$1.5">
-                <ShieldCheck color={textBlack} size={12} />
-                <Text color={textBlack} fontSize="$3">private and secured</Text>
-            </XStack>
+
         </YStack >
     );
 };

@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
 import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner } from 'tamagui';
-import { CalendarSearch, Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
-import { bgGreen, borderColor, textBlack } from '../utils/colors';
+import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
+import { borderColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';

@@ -28,10 +28,10 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
         <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
 
-      <XStack mt="$3.5" justifyContent='center' alignItems='center' gap="$1.5">
+      {/* <XStack mt="$3.5" justifyContent='center' alignItems='center' gap="$1.5">
         <ShieldCheck color={textBlack} size={12} />
         <Text color={textBlack} fontSize="$3">private and secured</Text>
-      </XStack>
+      </XStack> */}
 
     </YStack >
   );
