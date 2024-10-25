@@ -188,6 +188,15 @@ const MainScreen: React.FC = () => {
     else if (selectedTab === "app") {
       setSelectedTab("next");
     }
+    else if (selectedTab === "prove") {
+      setSelectedTab("app");
+    }
+    else if (selectedTab === "wrong") {
+      setSelectedTab("app");
+    }
+    else if (selectedTab === "valid") {
+      setSelectedTab("app");
+    }
   }
 
   useEffect(() => {
