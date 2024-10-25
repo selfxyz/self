@@ -247,6 +247,7 @@ const handleResponseAndroid = async (
     signerInfoDigestAlgorithm: signerInfoDigestAlgorithm,
     digestEncryptionAlgorithm: digestEncryptionAlgorithm,
     dsc: pem,
+    mockUser: false
   });
 
   try {
