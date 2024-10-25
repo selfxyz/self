@@ -38,7 +38,7 @@ build_circuit() {
 
     yarn snarkjs zkey export solidityverifier build/dsc/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
     sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
-    cp build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers/local/dsc/Verifier_${CIRCUIT_NAME}.sol
+    cp build/dsc/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers/dsc/Verifier_${CIRCUIT_NAME}.sol
     echo -e "\033[34mcopied Verifier_${CIRCUIT_NAME}.sol to contracts\033[0m"
 
     echo -e "\033[32mBuild of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds\033[0m"

@@ -37,10 +37,10 @@ contract Verifier_dsc_rsapss_65537_sha256_4096 {
     uint256 constant gammax2 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
     uint256 constant gammay1 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
     uint256 constant gammay2 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
-    uint256 constant deltax1 = 13895167442092445119345474371877881914902771726759258389545317775164948560905;
-    uint256 constant deltax2 = 7869870708174811955096678304548839007154287258190413617003681688289998544363;
-    uint256 constant deltay1 = 4506300078076551050020769122684099845250830429303573895173907811984513760915;
-    uint256 constant deltay2 = 20200825746679840433042883936581680153594933665848454517284389398796563819348;
+    uint256 constant deltax1 = 11178871189289476718066796914086694937261254534191355355208715473729459679073;
+    uint256 constant deltax2 = 6017862818859039949402494358517294962820240623943684783826304039772640083873;
+    uint256 constant deltay1 = 8005285279181761514246985809032780535330313241768111893953981130952718939039;
+    uint256 constant deltay2 = 18289536515878615632378439677874060078266723798016506833131127246101859022607;
 
     
     uint256 constant IC0x = 8938477176893632284539660223582989287068454472173218831171935317066824606917;
@@ -49,6 +49,9 @@ contract Verifier_dsc_rsapss_65537_sha256_4096 {
     uint256 constant IC1x = 9406714425071299321475031445293798140218018985951799864352153321364734136304;
     uint256 constant IC1y = 16190677786472274760082919772279780726948507745938757138812410377304364738549;
     
+    uint256 constant IC2x = 17636847760071529621476637340355013609204110513013412005293780563117471695582;
+    uint256 constant IC2y = 16269304104382842638426610869142550901209834485529174763447294867648099217552;
+    
  
     // Memory data
     uint16 constant pVk = 0;
@@ -56,7 +59,7 @@ contract Verifier_dsc_rsapss_65537_sha256_4096 {
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[1] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[2] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, q)) {
@@ -101,6 +104,8 @@ contract Verifier_dsc_rsapss_65537_sha256_4096 {
                 // Compute the linear combination vk_x
                 
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
+                
+                g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
                 
 
                 // -A
@@ -158,6 +163,8 @@ contract Verifier_dsc_rsapss_65537_sha256_4096 {
             checkField(calldataload(add(_pubSignals, 0)))
             
             checkField(calldataload(add(_pubSignals, 32)))
+            
+            checkField(calldataload(add(_pubSignals, 64)))
             
 
             // Validate all evaluations
