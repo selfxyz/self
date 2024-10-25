@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner } from 'tamagui';
+import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner, ToggleGroup, Switch } from 'tamagui';
 import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
-import { borderColor, textBlack } from '../utils/colors';
+import { bgColor, bgGreen, bgGreen2, blueColor, borderColor, greenColorLight, redColorDark, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
@@ -18,7 +18,7 @@ const MockDataScreen: React.FC = () => {
   const [expiryYears, setExpiryYears] = useState(5);
   const [nationality, setNationality] = useState("FRA");
   const [isGenerating, setIsGenerating] = useState(false);
-
+  const [isInOfacList, setIsInOfacList] = useState(false);
   const castDate = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -29,14 +29,28 @@ const MockDataScreen: React.FC = () => {
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
-
+    const randomPassportNumber = Math.random().toString(36).substring(2, 11).replace(/[^a-z0-9]/gi, '').toUpperCase();
     await new Promise(resolve => setTimeout(() => {
-      const mockPassportData = genMockPassportData(
-        signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
-        nationality as keyof typeof countryCodes,
-        castDate(-age),
-        castDate(expiryYears)
-      );
+      let mockPassportData;
+      if (isInOfacList) {
+        mockPassportData = genMockPassportData(
+          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          nationality as keyof typeof countryCodes,
+          castDate(-age),
+          castDate(expiryYears),
+          randomPassportNumber,
+          'HENAO MONTOYA',
+          'ARCANGEL DE JESUS'
+        );
+      } else {
+        mockPassportData = genMockPassportData(
+          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          nationality as keyof typeof countryCodes,
+          castDate(-age),
+          castDate(expiryYears),
+          randomPassportNumber,
+        );
+      }
       useUserStore.getState().registerPassportData(mockPassportData);
       useUserStore.getState().setRegistered(true);
       resolve(null);
@@ -51,7 +65,7 @@ const MockDataScreen: React.FC = () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     useNavigationStore.getState().setSelectedTab("next");
-  }, [signatureAlgorithm, nationality, age, expiryYears]);
+  }, [signatureAlgorithm, nationality, age, expiryYears, isInOfacList]);
   const countryOptions = useMemo(() => {
     return Object.keys(countryCodes).map((countryCode, index) => ({
       countryCode,
@@ -64,7 +78,7 @@ const MockDataScreen: React.FC = () => {
     <YStack f={1} gap="$4" >
       <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>Generate passport data</Text>
       <XStack ai="center" >
-        <Text f={1}>
+        <Text f={1} fontSize="$5">
           Encryption
         </Text>
         <Select
@@ -129,7 +143,7 @@ const MockDataScreen: React.FC = () => {
 
 
       <XStack ai="center" gap="$2">
-        <Text f={1} >
+        <Text f={1} fontSize="$5">
           Nationality
         </Text>
         <Select
@@ -228,7 +242,25 @@ const MockDataScreen: React.FC = () => {
         </Button>
       </Fieldset>
 
+      <YStack >
+        <Fieldset mt="$2" gap="$2" horizontal>
+          <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
+            Is in OFAC list
+          </Text>
+          <XStack f={1} />
+          <Switch size="$3.5" checked={isInOfacList} onCheckedChange={() => setIsInOfacList(!isInOfacList)} bg={isInOfacList ? "$green7Light" : "$gray4"}>
+            <Switch.Thumb animation="quick" bc="white" />
+          </Switch>
+
+
+        </Fieldset>
+        <Text mt="$2" color="$red10" justifyContent="flex-end" fontSize="$3" style={{ opacity: isInOfacList ? 1 : 0 }}>
+          OFAC list is a list of people who are suspected of being involved in terrorism or other illegal activities.
+        </Text>
+      </YStack>
+
       <YStack f={1} />
+
       <YStack >
         <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
           These passport data are only for testing purposes.
