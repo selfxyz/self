@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { YStack, ScrollView } from 'tamagui';
+import { YStack, XStack, ScrollView } from 'tamagui';
 import { Carousel } from '../components/Carousel';
 import US_PASSPORT from '../images/us_passport.jpeg'
 import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.jpeg'
