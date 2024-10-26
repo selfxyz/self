@@ -21,7 +21,7 @@ interface UserState {
   dscSecret: string | null
   userLoaded: boolean
   initUserStore: () => void
-  registerPassportData: (passportData: PassportData) => void
+  registerPassportData: (passportData: PassportData) => Promise<void>
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
   clearProofsFromStorage: () => void
