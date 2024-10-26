@@ -1,19 +1,15 @@
 import React from 'react';
-import { YStack, Text, XStack, Image } from 'tamagui';
-import { Camera, ShieldCheck, SquarePen } from '@tamagui/lucide-icons';
-import { bgGreen, blueColor, textBlack } from '../utils/colors';
+import { YStack, Text, Image } from 'tamagui';
+import { Camera, SquarePen } from '@tamagui/lucide-icons';
+import { bgGreen, textBlack } from '../utils/colors';
 import { startCameraScan } from '../utils/cameraScanner';
 import CustomButton from '../components/CustomButton';
-import useNavigationStore from '../stores/navigationStore';
 import PASSPORT_DRAWING from '../images/passport_drawing.png'
 interface CameraScreenProps {
   setSheetIsOpen: (value: boolean) => void
 }
 
 const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
-  const {
-    setSelectedTab,
-  } = useNavigationStore();
 
   return (
     <YStack f={1}>
@@ -27,11 +23,6 @@ const CameraScreen: React.FC<CameraScreenProps> = ({ setSheetIsOpen }) => {
         <CustomButton text="Open Camera" onPress={startCameraScan} Icon={<Camera color={textBlack} size={24} />} />
         <CustomButton bgColor='#ffff' text="Manual Input" onPress={() => setSheetIsOpen(true)} Icon={<SquarePen color={textBlack} size={24} />} />
       </YStack>
-
-      {/* <XStack mt="$3.5" justifyContent='center' alignItems='center' gap="$1.5">
-        <ShieldCheck color={textBlack} size={12} />
-        <Text color={textBlack} fontSize="$3">private and secured</Text>
-      </XStack> */}
 
     </YStack >
   );

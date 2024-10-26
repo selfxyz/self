@@ -1,9 +1,9 @@
 import React from 'react';
-import { ScrollView, Text, YStack, Image } from 'tamagui';
+import { Text, YStack, Image } from 'tamagui';
 import { XStack } from 'tamagui';
 import CustomButton from '../components/CustomButton';
-import { BadgeCheck, Binary, List, QrCode, Smartphone } from '@tamagui/lucide-icons';
-import { bgGreen, textBlack } from '../utils/colors';
+import { QrCode } from '@tamagui/lucide-icons';
+import { textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import { scanQRCode } from '../utils/qrCode';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';

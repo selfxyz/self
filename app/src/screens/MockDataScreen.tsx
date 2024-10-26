@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo } from 'react';
-import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner, ToggleGroup, Switch } from 'tamagui';
+import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner, Switch } from 'tamagui';
 import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
 import { bgColor, bgGreen, bgGreen2, blueColor, borderColor, greenColorLight, redColorDark, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';

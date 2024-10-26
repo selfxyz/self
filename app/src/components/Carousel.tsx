@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { AnimatePresence } from '@tamagui/animate-presence'
 import { ArrowLeft, Nfc } from '@tamagui/lucide-icons'
 import { Button, Image, XStack, YStack, styled, Text } from 'tamagui'
-import { bgBlue, bgGreen, borderColor, textBlack, textColor1, textColor2 } from '../utils/colors'
+import { bgGreen, textBlack } from '../utils/colors'
 import CustomButton from './CustomButton'
 
 const GalleryItem = styled(YStack, {

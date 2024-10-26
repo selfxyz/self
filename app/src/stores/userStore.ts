@@ -8,7 +8,6 @@ import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { generateDscSecret } from '../../../common/src/utils/csca';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
 interface UserState {
   passportNumber: string

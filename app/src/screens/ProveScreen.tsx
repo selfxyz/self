@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { countryCodes, DEVELOPMENT_MODE, max_cert_bytes, } from '../../../common/src/constants/constants';
-import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
+import { DEVELOPMENT_MODE, max_cert_bytes, } from '../../../common/src/constants/constants';
+import { bgGreen, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
@@ -36,6 +36,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     registered,
     passportData,
   } = useUserStore()
+
+  if (!passportData) {
+    return <Text mt="$10" fontSize="$9" color={textBlack} textAlign='center' >No passport data</Text>;
+  }
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
