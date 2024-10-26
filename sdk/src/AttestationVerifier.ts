@@ -4,7 +4,6 @@ import {
   k_dsc,
   ECDSA_K_LENGTH_FACTOR,
   k_dsc_ecdsa,
-  circuitNameFromMode,
   countryNames,
   countryCodes,
 } from '../../common/src/constants/constants';

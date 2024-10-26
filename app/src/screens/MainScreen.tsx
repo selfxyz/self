@@ -217,8 +217,8 @@ const MainScreen: React.FC = () => {
               p="$4"
               unstyled
               onPress={decrementStep}
-              opacity={selectedTab !== "start" && selectedTab !== "app" ? 1 : 0}
-              pointerEvents={selectedTab !== "start" && selectedTab !== "app" ? "auto" : "none"}
+              opacity={selectedTab !== "start" && selectedTab !== "app" && selectedTab !== "splash" ? 1 : 0}
+              pointerEvents={selectedTab !== "start" && selectedTab !== "app" && selectedTab !== "splash" ? "auto" : "none"}
             >
               <ChevronLeft color={textBlack} size={24} />
             </Button>
