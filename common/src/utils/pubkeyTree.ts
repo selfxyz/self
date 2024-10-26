@@ -66,20 +66,6 @@ export function getLeafCSCA(dsc: string): string {
   }
 }
 
-type AnyNestedArray = any[];
-function deepConvertStringsToBigInt(data: AnyNestedArray): any {
-  return data.map(item => {
-    if (Array.isArray(item)) {
-      return deepConvertStringsToBigInt(item);
-    } else if (typeof item === 'string') {
-      return BigInt(item);
-    } else {
-      // 予期しない型の場合はそのまま返す、またはエラーを投げる
-      return item;
-    }
-  });
-}
-
 export async function getTreeFromTracker(): Promise<LeanIMT> {
   const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
 
