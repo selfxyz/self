@@ -14,9 +14,10 @@ const WrongProofScreen: React.FC = () => {
   };
 
   const fieldsToCheck = [
-    'scope', 'merkle_root', 'attestation_id', 'current_date', 'issuing_state',
+    'scope', 'merkle_root_commitment', 'merkle_root_csca', 'attestation_id', 'current_date', 'issuing_state',
     'name', 'passport_number', 'nationality', 'date_of_birth', 'gender',
-    'expiry_date', 'older_than', 'owner_of', 'proof'
+    'expiry_date', 'older_than', 'owner_of', 'blinded_dsc_commitment', 'proof',
+    'dscProof', 'dsc', 'pubKey', 'ofac', 'forbidden_countries_list'
   ];
 
   const failedConditions = [];
