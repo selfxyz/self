@@ -1,4 +1,4 @@
-import { LeanIMT } from '@zk-kit/lean-imt';
+import { LeanIMT } from '@zk-kit/imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384, sha512_256 } from 'js-sha512';

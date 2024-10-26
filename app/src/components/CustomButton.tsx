@@ -15,7 +15,7 @@ interface CustomButtonProps {
 
 const CustomButton: React.FC<CustomButtonProps> = ({ text, onPress, Icon, bgColor, h, isDisabled, disabledOnPress, blueVariant }) => {
     return (
-        <Button bg={bgColor ? bgColor : blueVariant ? bgBlue : bgGreen} h={blueVariant ? "$8" : "$4.5"} borderRadius="$10" mx="$3" onPress={isDisabled ? disabledOnPress : onPress}>
+        <Button bg={bgColor ? bgColor : blueVariant ? bgBlue : bgGreen} h={blueVariant ? "$8" : "$5"} borderRadius="$10" onPress={isDisabled ? disabledOnPress : onPress}>
             {Icon && <Button.Icon>{Icon}</Button.Icon>}
             <Text textAlign='center' fontSize={blueVariant ? "$6" : "$5"} fontWeight="bold" color={textBlack}>
                 {text}

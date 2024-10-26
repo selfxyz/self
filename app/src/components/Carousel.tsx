@@ -51,7 +51,6 @@ export function Carousel({ images, height = 300, handleNfcScan }: CarouselProps)
     const isLastImage = imageIndex === images.length - 1
     const slideTexts = [
         { header: "Follow this guide carefully", subtitle: "", acknowledgment: "I'm ready to start" },
-        { header: "Remove your phone case", subtitle: "If your phone does not have a case, you can skip this step.", acknowledgment: "I have removed my phone case" },
         { header: "Open your passport to the last page", subtitle: "", acknowledgment: "I have opened my passport to the last page" },
         { header: "Put your phone on the passport", subtitle: "Press your phone against the last page of the passport as in the image.", acknowledgment: "I have placed my phone on the passport" },
         { header: "Start scanning", subtitle: "Press Start NFC Scan and follow the on-screen instructions.", acknowledgment: "Start scanning" },
@@ -60,44 +59,47 @@ export function Carousel({ images, height = 300, handleNfcScan }: CarouselProps)
     const currentSlide = slideTexts[imageIndex] || { header: "No header", subtitle: "No subtitle for this slide", acknowledgment: "Continue" }
 
     return (
-        <YStack f={1} >
+        <YStack f={1}>
+            <YStack f={1} jc='space-evenly'>
 
-            <XStack
-                overflow="hidden"
-                backgroundColor="#000"
-                position="relative"
-                height={height}
-                alignItems="center"
-                borderRadius="$10"
-                mt="$5"
-            >
-                <AnimatePresence initial={false} custom={{ going }}>
-                    <GalleryItem key={page} animation="medium" going={going}>
-                        <Image source={{ uri: images[imageIndex] }} height={height} resizeMode="contain" />
-                    </GalleryItem>
-                </AnimatePresence>
+                <Text textAlign='center' fontSize="$9" color={textBlack} >Verify your passport using <Text color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>NFC</Text></Text>
+
+                <XStack
+                    overflow="hidden"
+                    backgroundColor="#000"
+                    position="relative"
+                    height={height}
+                    alignItems="center"
+                    borderRadius="$10"
+                >
+                    <AnimatePresence initial={false} custom={{ going }}>
+                        <GalleryItem key={page} animation="medium" going={going}>
+                            <Image source={{ uri: images[imageIndex] }} height={height} resizeMode="contain" />
+                        </GalleryItem>
+                    </AnimatePresence>
 
 
-                {imageIndex > 0 && (
-                    <Button
-                        icon={ArrowLeft}
-                        size="$5"
-                        position="absolute"
-                        left="$4"
-                        circular
-                        elevate
-                        onPress={() => paginate(-1)}
-                        zi={100}
-                    />
-                )}
-            </XStack>
+                    {imageIndex > 0 && (
+                        <Button
+                            icon={ArrowLeft}
+                            size="$5"
+                            position="absolute"
+                            left="$4"
+                            circular
+                            elevate
+                            onPress={() => paginate(-1)}
+                            zi={100}
+                        />
+                    )}
+                </XStack>
 
-            <YStack ml="$2">
-                <Text fontSize="$8" mt="$4" color={textBlack} textAlign='center'>{currentSlide.header}</Text>
-                <Text color={textBlack} fontSize="$5" mt="$2" textAlign='center' style={{ opacity: 0.7 }} fontStyle='italic'>{currentSlide.subtitle}</Text>
+                <YStack>
+                    <Text fontSize="$8" color={textBlack} textAlign='center'>{currentSlide.header}</Text>
+                    <Text color={textBlack} fontSize="$5" textAlign='center' style={{ opacity: 0.7 }} fontStyle='italic'>{currentSlide.subtitle}</Text>
+                </YStack>
             </YStack>
 
-            <XStack f={1} />
+
 
             <CustomButton
                 onPress={isLastImage ? () => handleNfcScan?.() : () => paginate(+1)}

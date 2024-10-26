@@ -45,17 +45,17 @@ install(TARGETS
     witnesscalc_prove_rsapss_65537_sha256
     witnesscalc_prove_rsapss_65537_sha256Static
 
-    register_rsa_65537_sha256
-    witnesscalc_register_rsa_65537_sha256
-    witnesscalc_register_rsa_65537_sha256Static
+    # register_rsa_65537_sha256
+    # witnesscalc_register_rsa_65537_sha256
+    # witnesscalc_register_rsa_65537_sha256Static
 
-    register_rsa_65537_sha1
-    witnesscalc_register_rsa_65537_sha1
-    witnesscalc_register_rsa_65537_sha1Static
+    # register_rsa_65537_sha1
+    # witnesscalc_register_rsa_65537_sha1
+    # witnesscalc_register_rsa_65537_sha1Static
 
-    register_rsapss_65537_sha256
-    witnesscalc_register_rsapss_65537_sha256
-    witnesscalc_register_rsapss_65537_sha256Static
+    # register_rsapss_65537_sha256
+    # witnesscalc_register_rsapss_65537_sha256
+    # witnesscalc_register_rsapss_65537_sha256Static
 
     vc_and_disclose
     witnesscalc_vc_and_disclose
@@ -82,9 +82,9 @@ install(FILES
     src/prove_rsa_65537_sha256.dat
     src/prove_rsa_65537_sha1.dat
     src/prove_rsapss_65537_sha256.dat
-    src/register_rsa_65537_sha256.dat
-    src/register_rsa_65537_sha1.dat
-    src/register_rsapss_65537_sha256.dat
+    # src/register_rsa_65537_sha256.dat
+    # src/register_rsa_65537_sha1.dat
+    # src/register_rsapss_65537_sha256.dat
     # src/authV2.dat
     DESTINATION ${CMAKE_INSTALL_PREFIX}/bin)
 
@@ -95,8 +95,8 @@ install(FILES
     src/witnesscalc_prove_rsa_65537_sha256.h
     src/witnesscalc_prove_rsa_65537_sha1.h
     src/witnesscalc_prove_rsapss_65537_sha256.h
-    src/witnesscalc_register_rsa_65537_sha256.h
-    src/witnesscalc_register_rsa_65537_sha1.h
-    src/witnesscalc_register_rsapss_65537_sha256.h
+    # src/witnesscalc_register_rsa_65537_sha256.h
+    # src/witnesscalc_register_rsa_65537_sha1.h
+    # src/witnesscalc_register_rsapss_65537_sha256.h
     # src/witnesscalc_authV2.h
     DESTINATION ${CMAKE_INSTALL_PREFIX}/include)

@@ -57,7 +57,9 @@ export const scanQRCode = () => {
                 if (qrScanner && qrScanner.scanQRCode) {
                     qrScanner.scanQRCode()
                         .then((result: string) => {
-                            handleQRCodeScan(result, toast, setSelectedApp, setSelectedTab);
+                            const params = parseUrlParams(result);
+                            const encodedData = params.get('data');
+                            handleQRCodeScan(encodedData as string, toast, setSelectedApp, setSelectedTab);
                         })
                         .catch((error: any) => {
                             console.error('QR Scanner Error:', error);

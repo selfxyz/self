@@ -1,9 +1,13 @@
 import React from 'react';
-import { YStack, Text } from 'tamagui';
-import { ArrowRight } from '@tamagui/lucide-icons';
-import { bgGreen, textBlack } from '../utils/colors';
+import { View } from 'react-native';
+import { YStack, Text, XStack, Image } from 'tamagui';
+import { ArrowRight, ShieldCheck } from '@tamagui/lucide-icons';
+import { bgGreen, bgWhite, textBlack } from '../utils/colors';
+import OPENPASSPORT_LOGO from '../images/openpassport.png';
 import CustomButton from '../components/CustomButton';
 import useNavigationStore from '../stores/navigationStore';
+
+
 
 const StartScreen: React.FC = () => {
 
@@ -12,19 +16,26 @@ const StartScreen: React.FC = () => {
     } = useNavigationStore();
 
     return (
-        <YStack f={1} p="$3">
-            <YStack f={1} mt="$12">
-                <YStack gap="$0.5" mb="$14">
-                    <Text fontSize="$9" >Welcome to OpenPassport 👋</Text>
-                    <Text fontSize="$8" mt="$6" color={textBlack}>OpenPassport allows you to scan your passport, and to prove your identity in a
-                        <Text fontSize="$8" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}> secure </Text>way.
-                    </Text>
-                </YStack>
+        <YStack f={1} >
+
+            <YStack f={1} mt="$6" mb="$2.5" gap="$0" ai="center" jc="space-between" >
+
+                <Text fontSize={38} color={textBlack} textAlign='center'>Welcome to OpenPassport.</Text>
+                <Image src={OPENPASSPORT_LOGO} width={400} height={300} />
+                <Text textAlign='center' fontSize="$4" color={textBlack}>No information will be shared without your explicit consent.</Text>
 
             </YStack>
-            <CustomButton Icon={<ArrowRight />} text="Let's start" onPress={() => {
-                setSelectedTab("scan");
-            }} />
+
+            <YStack gap="$2.5">
+                <CustomButton Icon={<ArrowRight />} text="Use my passport" onPress={() => {
+                    setSelectedTab("scan");
+                }} />
+                <CustomButton bgColor="white" Icon={<ArrowRight />} text="Use a fake passport" onPress={() => {
+                    setSelectedTab("mock");
+                }} />
+
+            </YStack>
+
         </YStack >
     );
 };
