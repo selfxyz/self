@@ -10,7 +10,6 @@
     "lint": "prettier --check ."
   },
   "dependencies": {
-    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@noble/curves": "^1.4.2",
     "@types/chai-as-promised": "^7.1.6",
     "@types/node": "^20.11.19",
@@ -20,8 +19,9 @@
     "@zk-email/zk-regex-circom": "^1.2.1",
     "@zk-kit/binary-merkle-root.circom": "^1.0.0-beta",
     "@zk-kit/circuits": "^1.0.0-beta",
-    "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
-    "@zk-kit/lean-imt": "^2.0.1",
+    "@openpassport/zk-kit-imt": "^0.0.1",
+    "@openpassport/zk-kit-lean-imt": "^0.0.1",
+    "@openpassport/zk-kit-smt": "^0.0.1",
     "asn1": "^0.2.6",
     "asn1js": "^3.0.5",
     "chai-as-promised": "^7.1.1",

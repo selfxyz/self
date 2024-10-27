@@ -5,9 +5,9 @@ import { circuitToSelectorMode, DEFAULT_MAJORITY, getCountryCode, PASSPORT_ATTES
 import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
 import useUserStore from '../stores/userStore';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
-import { SMT } from '@ashpect/smt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
-import { LeanIMT } from '@zk-kit/imt';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
 
 export const generateCircuitInputsInApp = async (

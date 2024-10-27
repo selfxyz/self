@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/generateInputs';
-import { SMT } from '@ashpect/smt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
 import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';

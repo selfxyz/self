@@ -7,13 +7,13 @@ import {
   PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
-import { LeanIMT } from '@zk-kit/lean-imt';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { generateCommitment, getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { SMT } from '@ashpect/smt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 
 describe('Disclose', function () {

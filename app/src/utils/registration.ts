@@ -1,6 +1,6 @@
 import axios from "axios";
 import { COMMITMENT_TREE_TRACKER_URL, PASSPORT_ATTESTATION_ID } from "../../../common/src/constants/constants";
-import { LeanIMT } from "@zk-kit/imt";
+import { LeanIMT, LeanIMTHashFunction } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2, poseidon6 } from "poseidon-lite";
 import { PassportData } from "../../../common/src/utils/types";
 import { generateCommitment, getLeaf } from "../../../common/src/utils/pubkeyTree";
@@ -20,12 +20,8 @@ export async function isCommitmentRegistered(secret: string, passportData: Passp
   }
   console.log('response.data:', response.data);
 
-  const imt = new LeanIMT(
-    (a: bigint, b: bigint) => poseidon2([a, b]),
-    []
-  );
-
-  imt.import(response.data);
+  const hashFunction: LeanIMTHashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+  const imt = LeanIMT.import(hashFunction, response.data);
 
   const pubkey_leaf = getLeaf(passportData.dsc);
 
