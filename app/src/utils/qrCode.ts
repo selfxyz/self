@@ -88,28 +88,37 @@ export const scanQRCode = () => {
 
 const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSelectedTab: any) => {
     try {
-        const decodedResult = atob(result);
-        const uint8Array = new Uint8Array(decodedResult.split('').map(char => char.charCodeAt(0)));
-        const decompressedData = pako.inflate(uint8Array);
-        const unpackedData = msgpack.decode(decompressedData);
-        const openPassportApp: OpenPassportApp = unpackedData;
-        setSelectedApp(openPassportApp);
+        const dsc = useUserStore.getState().passportData?.dsc;
+        if (dsc) {
 
-        const dsc = useUserStore.getState().passportData.dsc;
-        const sigAlgName = parseDSC(dsc!);
+            const decodedResult = atob(result);
+            const uint8Array = new Uint8Array(decodedResult.split('').map(char => char.charCodeAt(0)));
+            const decompressedData = pako.inflate(uint8Array);
+            const unpackedData = msgpack.decode(decompressedData);
+            const openPassportApp: OpenPassportApp = unpackedData;
+            setSelectedApp(openPassportApp);
 
-        const circuitName = openPassportApp.mode === 'vc_and_disclose'
-            ? 'vc_and_disclose'
-            : getCircuitName("prove" as Mode, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
-        downloadZkey(circuitName as any);
+            const sigAlgName = parseDSC(dsc);
 
-        setSelectedTab("prove");
-        toast.show('✅', {
-            message: "QR code scanned",
-            customData: {
-                type: "success",
-            },
-        });
+            const circuitName = openPassportApp.mode === 'vc_and_disclose'
+                ? 'vc_and_disclose'
+                : getCircuitName("prove" as Mode, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+            downloadZkey(circuitName as any);
+
+            setSelectedTab("prove");
+            toast.show('✅', {
+                message: "QR code scanned",
+                customData: {
+                    type: "success",
+                },
+            });
+        }
+        else {
+            toast.show('Welcome', {
+                message: 'Please register your passport first',
+                type: 'info',
+            });
+        }
     } catch (error) {
         console.error('Error parsing QR code result:', error);
         toast.show('Try again', {
