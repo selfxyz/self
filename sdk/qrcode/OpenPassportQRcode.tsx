@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { OpenPassportAttestation } from '../../../common/src/utils/openPassportAttestation';
-import { OpenPassportVerifier } from '../OpenPassportVerifier';
+import { OpenPassportAttestation } from '../../common/src/utils/openPassportAttestation';
+import { OpenPassportVerifier } from '@openpassport/core';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
-import { WEBSOCKET_URL } from '../../../common/src/constants/constants';
-import { UserIdType } from '../../../common/src/utils/utils';
+import { WEBSOCKET_URL } from '../../common/src/constants/constants';
+import { UserIdType } from '../../common/src/utils/utils';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -27,6 +27,22 @@ interface OpenPassportQRcodeProps {
   size?: number;
 }
 
+// Create a wrapper component that handles client-side rendering
+const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => {
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return null;
+  }
+
+  return <OpenPassportQRcode {...props} />;
+};
+
+// Your existing OpenPassportQRcode component
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   userId,
@@ -37,7 +53,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   size = 300,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
-  const [proofVerified, setProofVerified] = useState(null);
+  const [proofVerified, setProofVerified] = useState(false);
   const [sessionId, setSessionId] = useState(uuidv4());
 
   useEffect(() => {
@@ -109,4 +125,4 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
-export { OpenPassportQRcode };
+export default OpenPassportQRcodeWrapper;
