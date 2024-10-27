@@ -1,6 +1,6 @@
 //
 //  MRZScannerModule.swift
-//  OpenPassport
+//  ProofOfPassport
 //
 //  Created by Rémi Colin on 27/02/2024.
 //
@@ -28,7 +28,7 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
           
           var hostingController: UIHostingController<ScannerWithInstructions>? = nil
           var scannerView = QKMRZScannerViewRepresentable()
-        //   let lottieView = LottieView(animationFileName: "passport", loopMode: .loop)
+          let lottieView = LottieView(animationFileName: "passport", loopMode: .loop)
 
           scannerView.onScanResult = { scanResult in
               let resultDict: [String: Any] = [
@@ -43,8 +43,7 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
           }
           
           // Wrap the scanner view and instruction text in a new SwiftUI view
-        //   let scannerWithInstructions = ScannerWithInstructions(scannerView: scannerView, lottieView: lottieView)
-          let scannerWithInstructions = ScannerWithInstructions(scannerView: scannerView)
+          let scannerWithInstructions = ScannerWithInstructions(scannerView: scannerView, lottieView: lottieView)
           hostingController = UIHostingController(rootView: scannerWithInstructions)
           rootViewController.present(hostingController!, animated: true, completion: nil)
       }
@@ -58,7 +57,7 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
 // Define a new SwiftUI view that includes the scanner and instruction text
 struct ScannerWithInstructions: View {
     var scannerView: QKMRZScannerViewRepresentable
-    // var lottieView: LottieView
+    var lottieView: LottieView
     
     var body: some View {
         ZStack {
@@ -71,7 +70,7 @@ struct ScannerWithInstructions: View {
                             RoundedRectangle(cornerRadius: 15)
                                 .frame(width: 370, height: 270)
                         }
-                    // lottieView.frame(width: 360, height: 230)
+                    lottieView.frame(width: 360, height: 230)
                 }
                 .frame(height: 320)
                 Text("Hold your passport on a flat surface while scanning")

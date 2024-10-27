@@ -1,36 +1,56 @@
-import React, { useState, useCallback } from 'react';
-import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner } from 'tamagui';
-import { CalendarSearch, Check, ChevronDown, ChevronUp, Cpu } from '@tamagui/lucide-icons';
-import { bgGreen, textBlack } from '../utils/colors';
+import React, { useState, useCallback, useMemo } from 'react';
+import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner, Switch } from 'tamagui';
+import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
+import { bgColor, bgGreen, bgGreen2, blueColor, borderColor, greenColorLight, redColorDark, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
 import CustomButton from '../components/CustomButton';
-import DatePicker from 'react-native-date-picker';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
+
 const MockDataScreen: React.FC = () => {
   const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa_sha256");
   const listOfSignatureAlgorithms = ["rsa_sha1", "rsa_sha256", "rsapss_sha256"];
 
-  const [dateOfBirthDatePicker, setDateOfBirthDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() - 24)))
-  const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] = useState<Date>(new Date(new Date().setFullYear(new Date().getFullYear() + 5)))
-  const [dateOfBirthDatePickerIsOpen, setDateOfBirthDatePickerIsOpen] = useState(false)
-  const [dateOfExpiryDatePickerIsOpen, setDateOfExpiryDatePickerIsOpen] = useState(false)
-  const [nationality, setNationality] = useState("FRA")
-  const [isGenerating, setIsGenerating] = useState(false)
-
-  const castDate = (date: Date) => {
+  const [age, setAge] = useState(24);
+  const [expiryYears, setExpiryYears] = useState(5);
+  const [nationality, setNationality] = useState("FRA");
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [isInOfacList, setIsInOfacList] = useState(false);
+  const castDate = (yearsOffset: number) => {
+    const date = new Date();
+    date.setFullYear(date.getFullYear() + yearsOffset);
     return (date.toISOString().slice(2, 4) + date.toISOString().slice(5, 7) + date.toISOString().slice(8, 10)).toString();
-  }
-  const { toast } = useNavigationStore()
+  };
+
+  const { toast } = useNavigationStore();
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
-
+    const randomPassportNumber = Math.random().toString(36).substring(2, 11).replace(/[^a-z0-9]/gi, '').toUpperCase();
     await new Promise(resolve => setTimeout(() => {
-      const mockPassportData = genMockPassportData(signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256", nationality as keyof typeof countryCodes, castDate(dateOfBirthDatePicker), castDate(dateOfExpiryDatePicker));
+      let mockPassportData;
+      if (isInOfacList) {
+        mockPassportData = genMockPassportData(
+          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          nationality as keyof typeof countryCodes,
+          castDate(-age),
+          castDate(expiryYears),
+          randomPassportNumber,
+          'HENAO MONTOYA',
+          'ARCANGEL DE JESUS'
+        );
+      } else {
+        mockPassportData = genMockPassportData(
+          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          nationality as keyof typeof countryCodes,
+          castDate(-age),
+          castDate(expiryYears),
+          randomPassportNumber,
+        );
+      }
       useUserStore.getState().registerPassportData(mockPassportData);
       useUserStore.getState().setRegistered(true);
       resolve(null);
@@ -45,13 +65,20 @@ const MockDataScreen: React.FC = () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     useNavigationStore.getState().setSelectedTab("next");
-  }, [signatureAlgorithm, nationality, dateOfBirthDatePicker, dateOfExpiryDatePicker]);
-
+  }, [signatureAlgorithm, nationality, age, expiryYears, isInOfacList]);
+  const countryOptions = useMemo(() => {
+    return Object.keys(countryCodes).map((countryCode, index) => ({
+      countryCode,
+      countryName: countryCodes[countryCode as keyof typeof countryCodes],
+      flagEmoji: flag(getCountryISO2(countryCode)),
+      index,
+    }));
+  }, []);
   return (
-    <YStack p="$3" f={1} gap="$5">
-      <Text ml="$1" fontSize={34} color={textBlack}><Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Generate</Text> passport data</Text>
-      <XStack ai="center" gap="$2" mt="$4">
-        <Text f={1} miw="$12">
+    <YStack f={1} gap="$4" >
+      <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>Generate passport data</Text>
+      <XStack ai="center" >
+        <Text f={1} fontSize="$5">
           Encryption
         </Text>
         <Select
@@ -60,7 +87,7 @@ const MockDataScreen: React.FC = () => {
           onValueChange={setSignatureAlgorithm}
           native
         >
-          <Select.Trigger width={220} iconAfter={ChevronDown}>
+          <Select.Trigger w="$16" iconAfter={ChevronDown}>
             <Select.Value placeholder="Select algorithm" />
           </Select.Trigger>
 
@@ -115,8 +142,8 @@ const MockDataScreen: React.FC = () => {
       </XStack>
 
 
-      <XStack ai="center" gap="$2" mt="$4">
-        <Text f={1} miw="$12">
+      <XStack ai="center" gap="$2">
+        <Text f={1} fontSize="$5">
           Nationality
         </Text>
         <Select
@@ -125,7 +152,7 @@ const MockDataScreen: React.FC = () => {
           onValueChange={setNationality}
           native
         >
-          <Select.Trigger width={220} iconAfter={ChevronDown}>
+          <Select.Trigger width="$16" iconAfter={ChevronDown}>
             <Select.Value placeholder="Select algorithm" />
           </Select.Trigger>
 
@@ -161,9 +188,9 @@ const MockDataScreen: React.FC = () => {
 
             <Select.Viewport minWidth={200}>
               <Select.Group>
-                {Object.keys(countryCodes).map((countryCode, index) => (
+                {countryOptions.map(({ countryCode, countryName, flagEmoji, index }) => (
                   <Select.Item key={countryCode} index={index} value={countryCode}>
-                    <Select.ItemText>{countryCodes[countryCode as keyof typeof countryCodes]} {flag(getCountryISO2(countryCode))}</Select.ItemText>
+                    <Select.ItemText>{countryName} {flagEmoji}</Select.ItemText>
                     <Select.ItemIndicator marginLeft="auto">
                       <Check size={16} />
                     </Select.ItemIndicator>
@@ -180,61 +207,66 @@ const MockDataScreen: React.FC = () => {
       </XStack>
 
 
-      <Fieldset gap="$4" horizontal>
+
+      <Fieldset mt="$2" gap="$2" horizontal>
         <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
-          Date of birth
+          Age (🎂)
         </Text>
-        <Text color={textBlack} f={1}>
-          {dateOfBirthDatePicker ? dateOfBirthDatePicker.toISOString().slice(0, 10) : ''}
-        </Text>
-        <Button bg={bgGreen} onPress={() => setDateOfBirthDatePickerIsOpen(true)}
-          borderRadius={"$10"}
-        >
-          <CalendarSearch />
+        <XStack f={1} />
+
+        <Button h="$3.5" w="$3.5" bg="white" jc="center" borderColor={borderColor} borderWidth={1} borderRadius="$10" onPress={() => setAge(age - 1)} disabled={age <= 0}>
+          <Minus />
         </Button>
-        <DatePicker
-          modal
-          mode='date'
-          open={dateOfBirthDatePickerIsOpen}
-          date={dateOfBirthDatePicker || new Date()}
-          onConfirm={(date) => {
-            setDateOfBirthDatePickerIsOpen(false)
-            setDateOfBirthDatePicker(date)
-          }}
-          onCancel={() => {
-            setDateOfBirthDatePickerIsOpen(false)
-          }}
-        />
-      </Fieldset>
-      <Fieldset gap="$4" horizontal>
-        <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
-          Date of expiry
+        <Text textAlign='center' w="$6" color={textBlack} fontSize="$5">
+          {age} yo
         </Text>
-        <Text color={textBlack} f={1}>
-          {dateOfExpiryDatePicker ? dateOfExpiryDatePicker.toISOString().slice(0, 10) : ''}
-        </Text>
-        <Button bg={bgGreen} onPress={() => setDateOfExpiryDatePickerIsOpen(true)}
-          borderRadius="$10"
-        >
-          <CalendarSearch />
+        <Button h="$3.5" w="$3.5" bg="white" jc="center" borderColor={borderColor} borderWidth={1} borderRadius="$10" onPress={() => setAge(age + 1)}>
+          <Plus />
         </Button>
-        <DatePicker
-          modal
-          mode='date'
-          open={dateOfExpiryDatePickerIsOpen}
-          date={dateOfExpiryDatePicker || new Date()}
-          onConfirm={(date) => {
-            setDateOfExpiryDatePickerIsOpen(false)
-            setDateOfExpiryDatePicker(date)
-          }}
-          onCancel={() => {
-            setDateOfExpiryDatePickerIsOpen(false)
-          }}
-        />
       </Fieldset>
 
+      <Fieldset gap="$2" horizontal>
+        <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
+          Passport expires in
+        </Text>
+        <XStack f={1} />
+
+        <Button h="$3.5" w="$3.5" bg="white" jc="center" borderColor={borderColor} borderWidth={1} borderRadius="$10" onPress={() => setExpiryYears(expiryYears - 1)} disabled={expiryYears <= 0}>
+          <Minus />
+        </Button>
+        <Text textAlign='center' w="$6" color={textBlack} fontSize="$5">
+          {expiryYears} years
+        </Text>
+        <Button h="$3.5" w="$3.5" bg="white" jc="center" borderColor={borderColor} borderWidth={1} borderRadius="$10" onPress={() => setExpiryYears(expiryYears + 1)}>
+          <Plus />
+        </Button>
+      </Fieldset>
+
+      <YStack >
+        <Fieldset mt="$2" gap="$2" horizontal>
+          <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">
+            Is in OFAC list
+          </Text>
+          <XStack f={1} />
+          <Switch size="$3.5" checked={isInOfacList} onCheckedChange={() => setIsInOfacList(!isInOfacList)} bg={isInOfacList ? "$green7Light" : "$gray4"}>
+            <Switch.Thumb animation="quick" bc="white" />
+          </Switch>
+
+
+        </Fieldset>
+        <Text mt="$2" color="$red10" justifyContent="flex-end" fontSize="$3" style={{ opacity: isInOfacList ? 1 : 0 }}>
+          OFAC list is a list of people who are suspected of being involved in terrorism or other illegal activities.
+        </Text>
+      </YStack>
+
       <YStack f={1} />
-      <CustomButton onPress={handleGenerate} text="Generate passport data" Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />} isDisabled={isGenerating} />
+
+      <YStack >
+        <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
+          These passport data are only for testing purposes.
+        </Text>
+        <CustomButton onPress={handleGenerate} text="Generate passport data" Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />} isDisabled={isGenerating} />
+      </YStack>
     </YStack>
   );
 };

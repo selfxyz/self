@@ -8,21 +8,20 @@ import { PassportData, Proof } from '../../../common/src/utils/types';
 import * as Keychain from 'react-native-keychain';
 import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
 import { generateDscSecret } from '../../../common/src/utils/csca';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 
 interface UserState {
   passportNumber: string
   dateOfBirth: string
   dateOfExpiry: string
   registered: boolean
-  passportData: PassportData
+  passportData: PassportData | null
   secret: string
   cscaProof: Proof | null
   localProof: Proof | null
   dscSecret: string | null
   userLoaded: boolean
   initUserStore: () => void
-  registerPassportData: (passportData: PassportData) => void
+  registerPassportData: (passportData: PassportData) => Promise<void>
   clearPassportDataFromStorage: () => void
   clearSecretFromStorage: () => void
   clearProofsFromStorage: () => void
@@ -42,7 +41,7 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfExpiry: DEFAULT_DOE ?? "",
   dscSecret: null,
   registered: false,
-  passportData: genMockPassportData("rsa_sha256", "FRA", "900101", "300101"),
+  passportData: null,
   secret: "",
   cscaProof: null,
   localProof: null,

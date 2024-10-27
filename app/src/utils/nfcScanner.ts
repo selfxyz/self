@@ -8,8 +8,6 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { parseDSC, getCircuitName } from '../../../common/src/utils/certificates/handleCertificate';
-import { downloadZkey } from './zkeyDownload';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
@@ -69,12 +67,23 @@ const scanAndroid = async (setModalProofStep: (modalProofStep: number) => void) 
     console.log('error during scan:', e);
     setNfcSheetIsOpen(false);
     amplitude.track('nfc_scan_unsuccessful', { error: e.message });
-    toast.show('Error', {
-      message: e.message,
-      customData: {
-        type: "error",
-      },
-    })
+    if (e.message.includes("InvalidMRZKey")) {
+      toast.show('Error', {
+        message: "Go to previous screen and rescan your passport with the camera",
+        customData: {
+          type: "error",
+        },
+        timeout: 5000,
+      })
+      useNavigationStore.getState().setSelectedTab("scan");
+    } else {
+      toast.show('Error', {
+        message: e.message,
+        customData: {
+          type: "error",
+        },
+      })
+    }
   }
 };
 
@@ -102,8 +111,25 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
   } catch (e: any) {
     console.log('error during scan:', e);
     amplitude.track('nfc_scan_unsuccessful', { error: e.message });
-    if (!e.message.includes("UserCanceled")) {
-      toast.show('Failed to read passport', {
+    // if (!e.message.includes("UserCanceled")) {
+    //   toast.show('Failed to read passport', {
+    //     message: e.message,
+    //     customData: {
+    //       type: "error",
+    //     },
+    //   })
+    // }
+    if (e.message.includes("InvalidMRZKey")) {
+      toast.show('Error', {
+        message: "Go to previous screen and rescan your passport with the camera",
+        customData: {
+          type: "error",
+        },
+        timeout: 5000,
+      })
+      useNavigationStore.getState().setSelectedTab("scan");
+    } else {
+      toast.show('Error', {
         message: e.message,
         customData: {
           type: "error",
@@ -174,9 +200,6 @@ const handleResponseIOS = async (
 
   try {
     useUserStore.getState().registerPassportData(passportData)
-    const { signatureAlgorithm, hashFunction } = parseDSC(pem);
-    const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
-    downloadZkey(circuitName as any);
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);
@@ -247,13 +270,11 @@ const handleResponseAndroid = async (
     signerInfoDigestAlgorithm: signerInfoDigestAlgorithm,
     digestEncryptionAlgorithm: digestEncryptionAlgorithm,
     dsc: pem,
+    mockUser: false
   });
 
   try {
-    useUserStore.getState().registerPassportData(passportData)
-    const { signatureAlgorithm, hashFunction } = parseDSC(pem);
-    const circuitName = getCircuitName("prove", signatureAlgorithm, hashFunction);
-    downloadZkey(circuitName as any);
+    await useUserStore.getState().registerPassportData(passportData)
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);

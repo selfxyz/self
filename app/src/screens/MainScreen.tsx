@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable } from 'react-native';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X, ShieldCheck } from '@tamagui/lucide-icons';
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
@@ -27,8 +27,6 @@ import CameraScreen from './CameraScreen';
 import NextScreen from './NextScreen';
 import AppScreen from './AppScreen';
 // import constants
-import { RPC_URL, SignatureAlgorithmIndex } from '../../../common/src/constants/constants';
-import { mock_csca_sha256_rsa_4096, mock_dsc_sha256_rsa_4096 } from '../../../common/src/constants/mockCertificates';
 import DatePicker from 'react-native-date-picker'
 import StartScreen from './StartScreen';
 import CustomButton from '../components/CustomButton';
@@ -37,6 +35,7 @@ import SplashScreen from './SplashScreen';
 import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
 import MockDataScreen from './MockDataScreen';
+import OPENPASSPORT_LOGO from '../images/openpassport.png'
 
 const emitter = (Platform.OS === 'android')
   ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -169,6 +168,36 @@ const MainScreen: React.FC = () => {
   //   }
   // }, [modalProofStep]);
 
+  const decrementStep = () => {
+    if (selectedTab === "scan") {
+      setSelectedTab("start");
+    }
+    else if (selectedTab === "nfc") {
+      setSelectedTab("scan");
+    }
+    else if (selectedTab === "mock") {
+      setSelectedTab("start");
+    }
+    else if (selectedTab === "next") {
+      if (passportData.mockUser) {
+        setSelectedTab("mock");
+      } else {
+        setSelectedTab("nfc");
+      }
+    }
+    else if (selectedTab === "app") {
+      setSelectedTab("next");
+    }
+    else if (selectedTab === "prove") {
+      setSelectedTab("app");
+    }
+    else if (selectedTab === "wrong") {
+      setSelectedTab("app");
+    }
+    else if (selectedTab === "valid") {
+      setSelectedTab("app");
+    }
+  }
 
   useEffect(() => {
     setIsFormComplete(passportNumber?.length >= 3 && dateOfBirth?.length >= 6 && dateOfExpiry?.length >= 6);
@@ -181,36 +210,36 @@ const MainScreen: React.FC = () => {
     <YStack f={1}>
       <ToastViewport portalToRoot flexDirection="column-reverse" top={85} right={0} left={0} />
       <ToastMessage />
-      <YStack f={1} mt={Platform.OS === 'ios' ? "$8" : "$0"} mb={Platform.OS === 'ios' ? "$4" : "$2"}>
+      <YStack f={1} mt={Platform.OS === 'ios' ? "$8" : "$2"} mb={Platform.OS === 'ios' ? "$5" : "$2"}>
         <YStack >
-          <StepOneStepTwo variable={selectedTab} step1="scan" step2="nfc" />
-          {selectedTab !== ("app") && selectedTab !== ("splash") && <XStack onPress={() => setSelectedTab("app")} px="$4" py="$2" mt="$3" alignSelf='flex-end'><X size={28} color={textBlack} /></XStack>}
-          {selectedTab === "app" &&
-            <XStack px="$4" py="$2" mt="$0" ai="center">
-              <Text fontSize="$9"  >OpenPassport</Text>
-              <XStack f={1} />
-
-              <XStack onPress={() => setHelpIsOpen(true)}><HelpCircle size={28} color={textBlack} /></XStack>
-              <XStack p="$2" onPress={() => setSettingsIsOpen(true)}><Cog size={24} color={textBlack} /></XStack>
+          <XStack mt="$2" h="$5" jc="space-between" ai="center" mb="$2">
+            <Button
+              p="$4"
+              unstyled
+              onPress={decrementStep}
+              opacity={selectedTab !== "start" && selectedTab !== "app" && selectedTab !== "splash" ? 1 : 0}
+              pointerEvents={selectedTab !== "start" && selectedTab !== "app" && selectedTab !== "splash" ? "auto" : "none"}
+            >
+              <ChevronLeft color={textBlack} size={24} />
+            </Button>
+            <XStack jc="center" ai="center">
+              <Image src={OPENPASSPORT_LOGO} style={{ width: 50, height: 50 }} />
+              <Text fontWeight="bold" fontSize="$5">OpenPassport</Text>
             </XStack>
-          }
+            <Button
+              p="$4"
+              unstyled
+              onPress={() => setHelpIsOpen(true)}
+              opacity={selectedTab === "app" ? 1 : 0}
+              pointerEvents={selectedTab === "app" ? "auto" : "none"}
+            >
+              <HelpCircle size={28} color={textBlack} />
+            </Button>
+          </XStack>
 
-          {/* {selectedTab !== "start" && selectedTab !== "scan" && selectedTab !== "nfc" && selectedTab !== "next" && selectedTab !== "register" && (
-            <YStack>
-              <XStack jc="space-between" ai="center" px="$3">
-                <Button p="$2" py="$3" unstyled onPress={decrementStep}><ChevronLeft color={(selectedTab === "start") ? "transparent" : "#a0a0a0"} /></Button>
 
-                <Text fontSize="$6" color="#a0a0a0">
-                  {selectedTab === "scan" ? "Scan" : (selectedTab === "app" ? "Apps" : "Prove")}
-                </Text>
-                <XStack>
-                  <Button p="$2" py="$3" unstyled onPress={() => setSettingsIsOpen(true)}><Cog color="#a0a0a0" /></Button>
-                  <Button p="$2" py="$3" unstyled onPress={() => setHelpIsOpen(true)}><HelpCircle color="#a0a0a0" /></Button>
-                </XStack>
-              </XStack>
-              <Separator borderColor={separatorColor} />
-            </YStack>
-          )} */}
+          <StepOneStepTwo variable={selectedTab} step1="scan" step2="nfc" />
+
           <Sheet open={nfcSheetIsOpen} onOpenChange={setNfcSheetIsOpen} dismissOnSnapToBottom modal dismissOnOverlayPress={false} disableDrag animation="medium" snapPoints={[35]}>
             <Sheet.Overlay />
             <Sheet.Frame>
@@ -386,14 +415,108 @@ const MainScreen: React.FC = () => {
                     <H3 color={textBlack}>About ZK Proofs</H3>
                     <Text color={textBlack} ml="$2" mt="$1">Zero-knowledge proofs rely on mathematical magic tricks to show the validity of some computation without revealing of all its inputs. In our case, the proof shows the passport has not been forged, but allows you to hide sensitive data.</Text>
                   </YStack> */}
-                  <YStack gap="$1">
-                    <H3 color={textBlack}>FAQ</H3>
-                    <YStack ml="$1">
-                      <H4 color={textBlack}>My passport is not supported</H4>
-                      <Text color={textBlack} ml="$2">Please contact us on Telegram, or if you have programming skills, you can easily <Text onPress={() => Linking.openURL('https://t.me/openpassport')} color={blueColorLight} style={{ textDecorationLine: 'underline', fontStyle: 'italic' }}>contribute</Text> to the project by adding your signature algorithm.</Text>
-                    </YStack>
-                  </YStack>
+                  <H4 textAlign='center' color={textBlack}>My passport is not supported</H4>
+                  <Text textAlign='center' color={textBlack}>Please contact us on Telegram; you can also contribute your passport data to help us implement the custom signature algorithm for your country.</Text>
+                  <Button w="$12" mt="$4" bg="white" jc="center" borderColor={borderColor} borderWidth={1} onPress={() => setDialogContributeIsOpen(true)} alignSelf='center' >
+                    <Share size={16} color={textBlack} />
+                    <Text color={textBlack} >Contribute</Text>
+                  </Button>
+                  <Dialog.Container visible={DialogContributeIsOpen}>
+                    <Dialog.Title>Contribute</Dialog.Title>
+                    <Dialog.Description>
+                      By pressing yes, you accept sending your passport data.
+                      Passport data are encrypted and will be deleted once the signature algorithm is implemented.
+                    </Dialog.Description>
+                    <Dialog.Button onPress={() => setDialogContributeIsOpen(false)} label="Cancel" />
+                    <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
+                  </Dialog.Container>
+                  <Separator mt="$5" borderColor={separatorColor} w="80%" alignSelf='center' />
 
+
+                  <Fieldset horizontal mt="$3" alignSelf='center'>
+                    <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
+                      Display other options
+                    </Label>
+                    <Switch size="$3.5" checked={displayOtherOptions} onCheckedChange={() => setDisplayOtherOptions(!displayOtherOptions)}>
+                      <Switch.Thumb animation="bouncy" bc={bgColor} />
+                    </Switch>
+                  </Fieldset>
+
+
+
+                  {displayOtherOptions && (
+                    <YStack gap="$2" mt="$3" ai="center">
+                      <Fieldset gap="$4" horizontal>
+                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
+                          Restart to step 1
+                        </Label>
+                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
+                          <IterationCw color={textBlack} />
+                        </Button>
+                      </Fieldset>
+
+                      <Fieldset gap="$4" mt="$1" horizontal>
+                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
+                          Delete passport data
+                        </Label>
+                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
+                          <Eraser color={textBlack} />
+                        </Button>
+                      </Fieldset>
+
+                      {/* <Fieldset gap="$4" mt="$1" horizontal>
+                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
+                          Delete proofs
+                        </Label>
+                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
+                          <Eraser color={textBlack} />
+                        </Button>
+                      </Fieldset> */}
+
+
+                      {/* <Fieldset horizontal>
+                    <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
+                      Private mode
+                    </Label>
+                    <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
+                      <Switch.Thumb animation="bouncy" bc={bgColor} />
+                    </Switch>
+                  </Fieldset> */}
+
+                      <Fieldset gap="$4" mt="$1" horizontal>
+                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
+                          Delete secret (caution)
+                        </Label>
+                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
+                          <Eraser color={textColor2} />
+                        </Button>
+                      </Fieldset>
+                      <Dialog.Container visible={dialogDeleteSecretIsOpen}>
+                        <Dialog.Title>Delete Secret</Dialog.Title>
+                        <Dialog.Description>
+                          You are about to delete your secret. Be careful! You will not be able to recover your identity.
+                        </Dialog.Description>
+                        <Dialog.Button onPress={() => setDialogDeleteSecretIsOpen(false)} label="Cancel" />
+                        <Dialog.Button onPress={() => handleDeleteSecret()} label="Delete secret" />
+                      </Dialog.Container>
+                      {/* <Fieldset gap="$4" mt="$1" horizontal>
+                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
+                          registered = (!registered)
+                        </Label>
+                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
+                          <UserPlus color={textColor2} />
+                        </Button>
+                      </Fieldset> */}
+
+
+
+
+                    </YStack>
+
+                  )}
+
+
+                  <XStack f={1} />
 
 
                 </YStack>
@@ -653,6 +776,7 @@ const MainScreen: React.FC = () => {
         </YStack>
 
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"splash"}
+          px="$5"
           value={selectedTab}
           onValueChange={(value) => updateNavigationStore({ selectedTab: value })}
         >
@@ -698,6 +822,10 @@ const MainScreen: React.FC = () => {
             <WrongProofScreen />
           </Tabs.Content>
         </Tabs>
+        <XStack mt="$2.5" justifyContent='center' alignItems='center' gap="$1.5">
+          <ShieldCheck color={textBlack} size={12} />
+          <Text color={textBlack} fontSize="$3">private and secured</Text>
+        </XStack>
 
       </YStack>
       <Sheet
