@@ -1,5 +1,5 @@
 import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex } from "../constants/constants";
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { LeanIMT } from '@zk-kit/imt'
 import axios from "axios";
 import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
 import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
@@ -65,18 +65,13 @@ export function getLeafCSCA(dsc: string): string {
     return customHasher([sigAlgIndex, ...pubkeyChunked]);
   }
 }
-
 export async function getTreeFromTracker(): Promise<LeanIMT> {
   const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
-
-  const parsedResponse: string[][] = JSON.parse(response.data);
-  const commitmentTreeData: string = JSON.stringify(parsedResponse);
-
-  const imt = LeanIMT.import<bigint>(
+  const imt = new LeanIMT(
     (a: bigint, b: bigint) => poseidon2([a, b]),
-      commitmentTreeData,
-      (value: string) => BigInt(value)
-    );
+    []
+  );
+  imt.import(response.data)
   return imt
 }
 
@@ -100,13 +95,9 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   if (!response.ok) {
     throw new Error(`HTTP error! status: ${response.status}`);
   }
-  
   const commitmentMerkleTree = await response.json();
   console.log("\x1b[90m%s\x1b[0m", "commitment merkle tree: ", commitmentMerkleTree);
-  const tree = LeanIMT.import<bigint>(
-    (a: bigint, b: bigint) => poseidon2([a, b]),
-    commitmentMerkleTree,
-    (value: string) => BigInt(value)
-  );
+  const tree = new LeanIMT((a, b) => poseidon2([a, b]));
+  tree.import(commitmentMerkleTree);
   return tree;
 }

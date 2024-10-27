@@ -2,6 +2,10 @@
 # yarn lockfile v1
 
 
+"@ashpect/smt@https://github.com/ashpect/smt#main":
+  version "1.0.0"
+  resolved "https://github.com/ashpect/smt#4f73fd24adb06a7f8efd6fd2d3ed58e9e2f2691a"
+
 "@babel/runtime@^7.23.4":
   version "7.25.9"
   resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.25.9.tgz#65884fd6dc255a775402cc1d9811082918f4bf00"
@@ -13,25 +17,6 @@
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.5.0.tgz#abadc5ca20332db2b1b2aa3e496e9af1213570b0"
   integrity sha512-1j6kQFb7QRru7eKN3ZDvRcP13rugwdxZqCjbiAVZfIJwgj2A65UmT4TgARXGlXgnRkORLTDTrO19ZErt7+QXgA==
-
-"@openpassport/zk-kit-imt@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-imt/-/zk-kit-imt-0.0.1.tgz#4f68810fcd38f300054d8b8b4814f02a6534136b"
-  integrity sha512-wz4ApTvOYd2+XArOMsZgNKXfMVb/s1K3JRYJ6FcqU8duk6R3Sd90kfBgpf6wi+YZ92TrJtEO41jFWlkFX0YRGw==
-  dependencies:
-    "@zk-kit/utils" "1.2.1"
-
-"@openpassport/zk-kit-lean-imt@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-lean-imt/-/zk-kit-lean-imt-0.0.1.tgz#6fbd3e6207c621dfb947e9ea17e67326aaf3292a"
-  integrity sha512-6CeUEX951hbELDYfadFS5bRQyEbxAt/vPBoCeyRcPkwPmQj/2ys8D7XlGFulicdsNYHjW3V9oZ/CFLCr93shJA==
-  dependencies:
-    "@zk-kit/utils" "1.2.1"
-
-"@openpassport/zk-kit-smt@^0.0.1":
-  version "0.0.1"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-smt/-/zk-kit-smt-0.0.1.tgz#d447ed24e7b57146d5dee8d7458ac3886346b4d2"
-  integrity sha512-P7Hkd5fD8JxGbqJ48lUq6gGKmZTaVzCB5I8FsOSUmljqf7VMeZmbyqo2ZmXt/lk6ltPXrmcrQ+QNhHXKZNcWhg==
 
 "@types/json5@^0.0.29":
   version "0.0.29"
@@ -52,12 +37,9 @@
   dependencies:
     undici-types "~6.19.2"
 
-"@zk-kit/utils@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@zk-kit/utils/-/utils-1.2.1.tgz#6cb38120535c73ab68cd0f09684882af148f256d"
-  integrity sha512-H2nTsyWdicVOyvqC5AjgU7tsTgmR6PDrruFJNmlmdhKp7RxEia/E1B1swMZjaasYa2QMp4Zc6oB7cWchty7B2Q==
-  dependencies:
-    buffer "^6.0.3"
+"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
+  version "2.0.0-beta.1"
+  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
 
 ansi-colors@^4.1.3:
   version "4.1.3"
