@@ -1,7 +1,7 @@
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
-import { OpenPassportVerifier } from '../../OpenPassportVerifier';
-import { OpenPassportAttestation } from '../../../../common/src/utils/openPassportAttestation';
+import { OpenPassportVerifier } from '@openpassport/core';
+import { OpenPassportAttestation } from '@openpassport/core';
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
   io(websocketUrl, {

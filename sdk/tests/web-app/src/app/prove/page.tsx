@@ -1,13 +1,13 @@
 'use client';
 
-import { OpenPassportQRcode } from '../../../../../src/QRcode/OpenPassportQRcode';
+import OpenPassportQRcode from '../../../../../qrcode/OpenPassportQRcode';
 import { v4 as uuidv4 } from 'uuid';
-import { OpenPassportVerifier } from '../../../../../src/OpenPassportVerifier';
+import { OpenPassportVerifier } from '@openpassport/core';
 export default function Prove() {
   const userId = uuidv4();
   const scope = 'scope';
 
-  const openPassportVerifier = new OpenPassportVerifier('prove_offchain', scope)
+  const openPassportVerifier: OpenPassportVerifier = new OpenPassportVerifier('prove_offchain', scope)
     .excludeCountries('Finland', 'Norway')
     .allowMockPassports()
     .setMinimumAge(12);
