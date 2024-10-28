@@ -1,12 +1,12 @@
-import { ethers } from 'ethers';
-import { getCurrentDateYYMMDD } from '../../common/src/utils/utils';
+// import { ethers } from 'ethers';
+import { getCurrentDateYYMMDD } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   circuitNameFromMode,
   REGISTER_ABI,
   REGISTER_CONTRACT_ADDRESS,
-} from '../../common/src/constants/constants';
-import { derToBytes } from '../../common/src/utils/csca';
+} from '../../../common/src/constants/constants';
+import { derToBytes } from '../../../common/src/utils/csca';
 import forge from 'node-forge';
 import { SKI_PEM, SKI_PEM_DEV } from './skiPem';
 import {
@@ -17,8 +17,8 @@ import {
   vkey_dsc_rsa_65537_sha256,
   vkey_dsc_rsapss_65537_sha256,
   vkey_vc_and_disclose,
-} from '../../common/src/constants/vkey';
-import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
+} from '../../../common/src/constants/vkey';
+import { getCircuitName } from '../../../common/src/utils/certificates/handleCertificate';
 import { Mode } from 'fs';
 
 export function getCurrentDateFormatted() {
@@ -58,12 +58,12 @@ export function getVkeyFromArtifacts(
   }
 }
 
-// OpenPassport2Step
-export async function checkMerkleRoot(rpcUrl: string, merkleRoot: number) {
-  const provider = new ethers.JsonRpcProvider(rpcUrl);
-  const contract = new ethers.Contract(REGISTER_CONTRACT_ADDRESS, REGISTER_ABI, provider);
-  return await contract.checkRoot(merkleRoot);
-}
+// // OpenPassport2Step
+// export async function checkMerkleRoot(rpcUrl: string, merkleRoot: number) {
+//   const provider = new ethers.JsonRpcProvider(rpcUrl);
+//   const contract = new ethers.Contract(REGISTER_CONTRACT_ADDRESS, REGISTER_ABI, provider);
+//   return await contract.checkRoot(merkleRoot);
+// }
 
 // OpenPassport1Step
 function getCSCAPem(formattedValueAdjusted: string, dev_mode: boolean): string {

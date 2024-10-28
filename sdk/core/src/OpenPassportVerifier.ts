@@ -5,18 +5,17 @@ import {
   ArgumentsRegister,
   Mode,
   OpenPassportAppPartial,
-} from '../../common/src/utils/appType';
+  OpenPassportApp
+} from '../../../common/src/utils/appType';
 import {
   DEFAULT_RPC_URL,
   MODAL_SERVER_ADDRESS,
   WEBSOCKET_URL,
   countryNames,
-} from '../../common/src/constants/constants';
-import { OpenPassportApp } from '../../common/src/utils/appType';
-import { UserIdType } from '../../common/src/utils/utils';
+} from '../../../common/src/constants/constants';
+import { UserIdType } from '../../../common/src/utils/utils';
 import * as pako from 'pako';
 import msgpack from 'msgpack-lite';
-import { OpenPassportAttestation } from '.';
 import { AttestationVerifier } from './AttestationVerifier';
 export class OpenPassportVerifier extends AttestationVerifier {
   private mode: Mode;
