@@ -1,8 +1,8 @@
-import { LeanIMT } from '@zk-kit/imt';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384, sha512_256 } from 'js-sha512';
-import { SMT } from '@ashpect/smt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
 import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';

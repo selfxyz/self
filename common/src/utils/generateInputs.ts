@@ -21,10 +21,10 @@ import {
   formatCountriesList,
 } from './utils';
 import { generateCommitment, getLeaf } from "./pubkeyTree";
-import { LeanIMT } from "@zk-kit/imt";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from "./smtTree";
 import { packBytes } from "../utils/utils";
-import { SMT } from "@ashpect/smt"
+import { SMT } from "@openpassport/zk-kit-smt"
 import { parseCertificate } from './certificates/handleCertificate';
 
 export function generateCircuitInputsDisclose(

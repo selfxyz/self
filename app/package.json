@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "@amplitude/analytics-react-native": "^1.4.7",
-    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@babel/plugin-transform-private-methods": "^7.23.3",
     "@ethersproject/shims": "^5.7.0",
     "@react-native-async-storage/async-storage": "^1.23.1",
@@ -26,7 +25,9 @@
     "@tamagui/types": "1.105.0",
     "@types/msgpack-lite": "^0.1.11",
     "@types/pako": "^2.0.3",
-    "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@openpassport/zk-kit-smt": "^0.0.1",
     "axios": "^1.6.3",
     "buffer": "^6.0.3",
     "burnt": "^0.12.2",
