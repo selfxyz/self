@@ -1,6 +1,6 @@
 import React from 'react';
-import { OpenPassportAttestation, OpenPassportVerifier } from '..';
-import { UserIdType } from '../../../common/src/utils/utils';
+import { OpenPassportAttestation, OpenPassportVerifier } from '@openpassport/core';
+import { UserIdType } from '../../common/src/utils/utils';
 
 interface OpenPassportQRcodeProps {
   appName: string;

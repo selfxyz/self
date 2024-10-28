@@ -6,7 +6,7 @@ import {
   k_dsc_ecdsa,
   countryNames,
   countryCodes,
-} from '../../common/src/constants/constants';
+} from '../../../common/src/constants/constants';
 import {
   areArraysEqual,
   getCurrentDateFormatted,
@@ -16,25 +16,23 @@ import {
 import {
   OpenPassportAttestation,
   parsePublicSignalsDisclose,
-} from '../../common/src/utils/openPassportAttestation';
-import {
   parsePublicSignalsDsc,
   parsePublicSignalsProve,
-} from '../../common/src/utils/openPassportAttestation';
+} from '../../../common/src/utils/openPassportAttestation';
 import { Mode } from 'fs';
 import forge from 'node-forge';
-import { parseCertificate } from '../../common/src/utils/certificates/handleCertificate';
+import { parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
 import {
   castToScope,
   formatForbiddenCountriesListFromCircuitOutput,
   getAttributeFromUnpackedReveal,
   getOlderThanFromCircuitOutput,
   splitToWords,
-} from '../../common/src/utils/utils';
-import { unpackReveal } from '../../common/src/utils/revealBitmap';
-import { getCSCAModulusMerkleTree } from '../../common/src/utils/csca';
+} from '../../../common/src/utils/utils';
+import { unpackReveal } from '../../../common/src/utils/revealBitmap';
+import { getCSCAModulusMerkleTree } from '../../../common/src/utils/csca';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { fetchTreeFromUrl } from '../../common/src/utils/pubkeyTree';
+import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
 
 export class AttestationVerifier {
   protected devMode: boolean;
