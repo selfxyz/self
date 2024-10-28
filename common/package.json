@@ -9,7 +9,6 @@
     "lint": "prettier --check ."
   },
   "dependencies": {
-    "@ashpect/smt": "https://github.com/ashpect/smt#main",
     "@babel/runtime": "^7.23.4",
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",

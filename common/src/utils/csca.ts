@@ -3,7 +3,7 @@ import * as forge from "node-forge";
 import { bytesToBigDecimal, extractRSFromSignature, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from "./utils";
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from "../constants/constants";
 import { poseidon2 } from "poseidon-lite";
-import { IMT } from "@zk-kit/imt";
+import { IMT } from "@openpassport/zk-kit-imt";
 import serialized_csca_tree from "../../pubkeys/serialized_csca_tree.json"
 import axios from "axios";
 import { parseCertificate } from "./certificates/handleCertificate";
