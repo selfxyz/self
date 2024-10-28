@@ -14,17 +14,17 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.5.0.tgz#abadc5ca20332db2b1b2aa3e496e9af1213570b0"
   integrity sha512-1j6kQFb7QRru7eKN3ZDvRcP13rugwdxZqCjbiAVZfIJwgj2A65UmT4TgARXGlXgnRkORLTDTrO19ZErt7+QXgA==
 
-"@openpassport/zk-kit-imt@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-imt/-/zk-kit-imt-0.0.2.tgz#45f2cb792a0190bf735b0110c19d3f435cdcffd4"
-  integrity sha512-RkloNqgzNqZhmuvou7JPq0/ezTuRRJ54uAN2gZAvXFMCA4paPTaP9YJYuioKpovlXOIz/8Kt7/zpEg8q74L7pA==
+"@openpassport/zk-kit-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-imt/-/zk-kit-imt-0.0.4.tgz#ec36d3d58a9056dab0669737c42bb130245868c3"
+  integrity sha512-6jIa3tUXt4axf6LqeNn5QrFWMu1k6wAzg2XbeNyCXXz5KU6R4R2No5RpGIycE6JgMgn8rQlJ2O7ia8v4xK34Bg==
   dependencies:
     "@openpassport/zk-kit-utils" "0.0.1"
 
-"@openpassport/zk-kit-lean-imt@^0.0.2":
-  version "0.0.2"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-lean-imt/-/zk-kit-lean-imt-0.0.2.tgz#8b7201e0d765ce64c34d3c688d40b872ce071dfb"
-  integrity sha512-2Ol23RqwwpNrTLg8W7F8sfB1+zv87L268Jno0zFeAcgyELoXh29HcicKWEkTKP453bPlCk+//PSOPp+mFg861w==
+"@openpassport/zk-kit-lean-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-lean-imt/-/zk-kit-lean-imt-0.0.4.tgz#ed75d332513f6149965f9247dac971f89485d1cc"
+  integrity sha512-RrchSaI8GJ3O95K8xsOzMl1itmft7iTtnNQbxiuh5jx5SvSUpImSIvGRw1JFBBEtB2++cCoO9w84RN363ekWJw==
   dependencies:
     "@openpassport/zk-kit-utils" "0.0.1"
 

@@ -6,8 +6,8 @@
   "dependencies": {
     "@peculiar/x509": "^1.11.0",
     "@prisma/client": "^5.19.0",
-    "@openpassport/zk-kit-imt": "^0.0.1",
-    "@openpassport/zk-kit-lean-imt": "^0.0.1",
+    "@openpassport/zk-kit-imt": "^0.0.4",
+    "@openpassport/zk-kit-lean-imt": "^0.0.4",
     "@openpassport/zk-kit-smt": "^0.0.1",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",

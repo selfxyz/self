@@ -7,6 +7,32 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.4.0.tgz#45814aa329f30e4fe0ba49426f49dfccdd066426"
   integrity sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==
 
+"@openpassport/zk-kit-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-imt/-/zk-kit-imt-0.0.4.tgz#ec36d3d58a9056dab0669737c42bb130245868c3"
+  integrity sha512-6jIa3tUXt4axf6LqeNn5QrFWMu1k6wAzg2XbeNyCXXz5KU6R4R2No5RpGIycE6JgMgn8rQlJ2O7ia8v4xK34Bg==
+  dependencies:
+    "@openpassport/zk-kit-utils" "0.0.1"
+
+"@openpassport/zk-kit-lean-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-lean-imt/-/zk-kit-lean-imt-0.0.4.tgz#ed75d332513f6149965f9247dac971f89485d1cc"
+  integrity sha512-RrchSaI8GJ3O95K8xsOzMl1itmft7iTtnNQbxiuh5jx5SvSUpImSIvGRw1JFBBEtB2++cCoO9w84RN363ekWJw==
+  dependencies:
+    "@openpassport/zk-kit-utils" "0.0.1"
+
+"@openpassport/zk-kit-smt@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-smt/-/zk-kit-smt-0.0.1.tgz#d447ed24e7b57146d5dee8d7458ac3886346b4d2"
+  integrity sha512-P7Hkd5fD8JxGbqJ48lUq6gGKmZTaVzCB5I8FsOSUmljqf7VMeZmbyqo2ZmXt/lk6ltPXrmcrQ+QNhHXKZNcWhg==
+
+"@openpassport/zk-kit-utils@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-utils/-/zk-kit-utils-0.0.1.tgz#b0ad083c411bc7bcc1051516a76ada528a283a3a"
+  integrity sha512-T7jZ3vn+iCAPnvMS+NLg3Yj4ixF2xXG/geFkyNi48beEFd1hD/2Yca05QP+g2iaJAsIRvllwtni5SuLXGwv5Xw==
+  dependencies:
+    buffer "^6.0.3"
+
 "@peculiar/asn1-cms@^2.3.13", "@peculiar/asn1-cms@^2.3.8":
   version "2.3.13"
   resolved "https://registry.yarnpkg.com/@peculiar/asn1-cms/-/asn1-cms-2.3.13.tgz#34415f558c16f0a0bc7ac6df31230325a4eb3e59"
@@ -179,10 +205,6 @@
   dependencies:
     undici-types "~5.26.4"
 
-"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
-  version "2.0.0-beta.1"
-  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
-
 asn1.js@^5.4.1:
   version "5.4.1"
   resolved "https://registry.yarnpkg.com/asn1.js/-/asn1.js-5.4.1.tgz#11a980b84ebb91781ce35b0fdc2ee294e3783f07"
@@ -209,10 +231,23 @@ asn1js@^3.0.5:
     pvutils "^1.1.3"
     tslib "^2.4.0"
 
+base64-js@^1.3.1:
+  version "1.5.1"
+  resolved "https://registry.yarnpkg.com/base64-js/-/base64-js-1.5.1.tgz#1b1b440160a5bf7ad40b650f095963481903930a"
+  integrity sha512-AKpaYlHn8t4SVbOHCy+b5+KKgvR4vrsD8vbvrbiQJps7fKDTkjkDry6ji0rUJjC0kzbNePLwzxq8iypo41qeWA==
+
 bn.js@^4.0.0:
   version "4.12.0"
   resolved "https://registry.yarnpkg.com/bn.js/-/bn.js-4.12.0.tgz#775b3f278efbb9718eec7361f483fb36fbbfea88"
   integrity sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==
+
+buffer@^6.0.3:
+  version "6.0.3"
+  resolved "https://registry.yarnpkg.com/buffer/-/buffer-6.0.3.tgz#2ace578459cc8fbe2a70aaa8f52ee63b6a74c6c6"
+  integrity sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==
+  dependencies:
+    base64-js "^1.3.1"
+    ieee754 "^1.2.1"
 
 bytestreamjs@^2.0.0:
   version "2.0.1"
@@ -228,6 +263,11 @@ fsevents@2.3.3:
   version "2.3.3"
   resolved "https://registry.yarnpkg.com/fsevents/-/fsevents-2.3.3.tgz#cac6407785d03675a2a5e1a5305c697b347d90d6"
   integrity sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==
+
+ieee754@^1.2.1:
+  version "1.2.1"
+  resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.2.1.tgz#8eb7a10a63fff25d15a57b001586d177d1b0d352"
+  integrity sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==
 
 inherits@^2.0.1:
   version "2.0.4"
