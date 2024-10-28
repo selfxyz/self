@@ -1,6 +1,6 @@
 /// This file implements the ECDSA verification algorithm along with public key generation (xG)
 
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 include "../../../node_modules/circomlib/circuits/multiplexer.circom";
 
 include "p256.circom";
@@ -139,7 +139,7 @@ template ECDSAVerifyNoPubkeyCheck(n, k) {
     var order[100] = get_p256_order(n, k);
 
     // compute multiplicative inverse of s mod n
-    var sinv_comp[100] = mod_inv(n, k, s, order);
+    var sinv_comp[100] = mod_inv_ecdsa(n, k, s, order);
     signal sinv[k];
     component sinv_range_checks[k];
     for (var idx = 0; idx < k; idx++) {

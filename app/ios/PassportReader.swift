@@ -94,8 +94,8 @@ class PassportReader: NSObject{
 
       do {
         let mrzKey = getMRZKey( passportNumber: passportNumber, dateOfBirth: dateOfBirth, dateOfExpiry: dateOfExpiry)
-        let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")
-        passportReader.setMasterListURL( masterListURL! )
+        // let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")
+        // passportReader.setMasterListURL( masterListURL! )
 
         let passport = try await passportReader.readPassport( mrzKey: mrzKey, customDisplayMessage: customMessageHandler)
 

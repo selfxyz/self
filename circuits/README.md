@@ -10,51 +10,46 @@
 
 ## Overview of the circuits
 
-Circom circuits are located in the `circuits` folder.
+Circom circuits are located in the `circuits/` folder.
+The circuits are split into two parts: `register` and `disclose`.
+This design is close to that of [semaphore](https://semaphore.pse.dev/).
 
-There is a one-step flow and a two step flow.
+The `register` circuit is used for the following:
 
-The one-step flow allows a user to prove their passport is valid and disclose attributes at the same time. With the zk proof, they send the DSC (intermediate certificate) that signed their passport with to the verifier, who checks their DSC has been signed by a CSCA (top certificate). This is ideal if the verification is done server-side, there is no need for onchain verification, and if it's fine for the server to learn the nationality of the user, as it's leaked by the DSC. The circuits for the one-step flow are located in the `prove` directory. They are currently in use on the [playground](https://www.openpassport.app/playground).
+1. Verify the signature of the passport
+2. Verify that the public key which signed the passport is part of the registry merkle tree (a check of the merkle roots will be performed on-chain)
+3. Generate commitment = H (secret + passportData + some other data)
 
-The `prove` circuits do the following:
-- Prove the passport has been signed by the DSC.
-- Optionally disclose attributes such as age.
+Once the proof is generated, the user can register on-chain and their commitment will be added to the Lean merkle tree.
 
-The two-step flow allows a user to register an identity in a merkle tree, proving they have a valid passport, then do selective disclosure proofs using the commitment they registered. This design is akin to [Semaphore](https://semaphore.pse.dev/). It's ideal for applications that need onchain verification or need the server to never learn the nationality of the user. The circuits are split into two parts: `register`, `dsc` and `disclose`.
+As the hash function and signature algorithm is different upon the issuer country, there will be different `register` circuits for each of those set-ups.
+The `register` will follow the `register_<hash>With<signature>.circom` naming convention.
+One verifier for each register circuit will be deployed on-chain, all of them committing to the same merkle tree.
 
-The `register` circuits do the following:
-- Prove the passport has been signed by the DSC.
-- Do a blinded commitment of the DSC public key
-- Generate the user's commitment = H(secret + passportData)
+The `disclose` circuit is used for the following:
 
-The `dsc` circuits do the following:
-- Prove the DSC has been signed by a CSCA.
-- Prove the CSCA is part of a merkle tree of CSCA.
-- Do a blinded commitment of the DSC public key.
+1. Verify that a user knows a secret e.g., he is able to reconstruct one leaf of the merkle tree (a check of the merkle roots will be performed on-chain)
+2. Passport expiry is verified
+3. A range check is performed over the age of the user
+4. The output is multiplied by an input selector_dg1 to allow the user to disclose only what they want to disclose.
+5. Final output is packed.
 
-The check that the two blinded commitments are equal and that the root of the CSCA merkle tree is valid can be performed onchain or offchain.
-The different `register` and `dsc` circuits correspond to the hash functions and signature algorithms countries use.
-
-The `disclose` circuit do the following:
-- Verify the user knows the secret corresponding to a commitment in the tree.
-- Check the passport is not expired
-- Optionally disclose attributes such as age.
+Any application that wants to use OpenPassport can actually build its own `disclose` circuit.
 
 ### 🚧 Under development 🚧
 
 OpenPassport currently supports the following sig/hash algorithms:
 
-- [x] rsa_65537_sha256
-- [x] rsa_65537_sha1
-- [x] rsapss_65537_sha256
-- [x] ecdsa_sha1
-- [x] ecdsa_sha256
-- [ ] ecdsa_sha384
-- [ ] ecdsa_sha512
-- [ ] rsa_65537_sha512
+- [x] sha256WithRSAEncryption
+- [x] sha1WithRSAEncryption
+- [x] sha256WithRSASSAPSS
+- [ ] ecdsa-with-SHA384
+- [ ] ecdsa-with-SHA1
+- [ ] ecdsa-with-SHA256
+- [ ] ecdsa-with-SHA512
+- [ ] sha512WithRSAEncryption
 
-For more details on signature algorithm support, see [this issue](https://github.com/zk-passport/openpassport/issues/38) and [the map](https://map.openpassport.app/)
-> 💡 We currently have a bounty program for implementing the remaining hash functions/signature algorithms.
+> 💡 We currently have a bounty program if you implement a sig/hash setup.
 
 ## Installation
 
@@ -65,8 +60,7 @@ yarn install-circuits
 ## Build circuits (dev only)
 
 ```bash
-./scripts/build_prove_circuits.sh
-./scripts/build_register_circuits.sh
+./scripts/build_circuits.sh
 ```
 
 ## Run tests
@@ -74,3 +68,60 @@ yarn install-circuits
 ```bash
 yarn test
 ```
+
+This will run tests with sample data generated on the fly.
+
+## OpenPassport Prove circuit
+
+OpenPassport Prove is the main circuit of the project.
+It is used for these 3 different `circuit modes`:
+
+- prove offChain
+- prove onChain
+- register
+
+Learn more on these 3 use cases on [OpenPassport documentation.](https://docs.openpassport.app/docs/use-openpassport/quickstart)
+
+The circuit achieves the following actions:
+
+- verify the signature of the passport and the integrity of the datagroups
+- disclose attributes
+- verify that user's name is not part of the OFAC list
+- verify that passport issuer's country is not part of a forbidden countries list
+- generate a commitment: Hash(secret, DG1)
+- generate a blinded DSC commitment: Hash(anotherSecret, dscPubKey)
+
+If this "everything circuit" is executing all those actions each time, we want according to the `circuit mode` we selected to disclose only specific attributes and hide others.
+
+In order to achieve that we will input a bitmap `selector_mode[2]` that will ensure that the circuit can only disclose the attributes related to the `circuit mode` selected.
+
+| Circuit Mode   | selector_mode[0] | selector_mode[1] |
+| -------------- | ---------------- | ---------------- |
+| prove offChain | 1                | 1                |
+| prove onChain  | 1                | 0                |
+| register       | 0                | 0                |
+
+Using the value [0,1] for `selector_mode` will fail proof generation.
+
+Here are the attributes disclosed according to the `circuit_mode`:
+
+| Circuit Mode   | Attributes Disclosed                                                           |
+| -------------- | ------------------------------------------------------------------------------ |
+| prove offChain | packedReveal-dg1, older than, OFAC, countryIsNotInList, pubKey                 |
+| prove onChain  | packedReveal-dg1, older than, OFAC, countryIsNotInList, blinded DSC commitment |
+| register       | blinded DSC commitment, commitment                                             |
+
+## Certificate Chain verification
+
+Passports are signed by Document Signing Certificates (DSC).
+DSCs are signed by Country Signing Certificate Authority (CSCA).
+Both DSC and CSCA lists are published on online registry of the ICAO, however many countries still don't publish their certificates on the ICAO website.
+In order to maximize passport readability we need to verify the full certificate chain.
+
+### On chain
+
+To avoid huge proving time and (too) heavy zkeys, the signature of the passport data is verified on the mobile (the passport data never leaves the device) and the certificate chain verification is done on a remote modal server. A `blindedDscCommitment` is generated on both sides to link proofs.
+
+### Off chain
+
+In off chain setup users will send their DSC to the verifier along with their passport proof. The pubKey will be revealed as an output of the proof.

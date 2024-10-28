@@ -1,0 +1,186 @@
+
+App Thinning Size Report for All Variants of OpenPassport
+
+Variant: OpenPassport App Clip-2AF49703-19A9-4ABA-AC17-33B8E1D0B243.ipa
+Supported variant descriptors: [device: iPhone10,4, os-version: 16.0], [device: iPhone10,1, os-version: 16.0], [device: iPod9,1, os-version: 15.0], [device: iPhone14,6, os-version: 16.0], [device: iPhone8,4, os-version: 15.0], [device: iPhone10,4, os-version: 15.0], [device: iPhone12,8, os-version: 15.0], [device: iPhone8,1, os-version: 15.0], [device: iPhone12,8, os-version: 16.0], [device: iPhone14,6, os-version: 17.0], [device: iPhone9,1, os-version: 15.0], [device: iPhone10,1, os-version: 15.0], [device: iPhone9,3, os-version: 15.0], [device: iPhone12,8, os-version: 17.0], and [device: iPhone14,6, os-version: 15.0]
+App + On Demand Resources size: 28,9 MB compressed, 82,5 MB uncompressed
+App size: 28,9 MB compressed, 82,5 MB uncompressed
+On Demand Resources size: Zero KB compressed, Zero KB uncompressed
+
+
+Variant: OpenPassport App Clip-3433A61C-C98F-4CE6-B0E7-CB9CB651BA57.ipa
+Supported variant descriptors: [device: iPhone12,3, os-version: 17.0], [device: iPhone15,3, os-version: 17.0], [device: iPhone13,2, os-version: 17.0], [device: iPhone11,6, os-version: 17.0], [device: iPhone13,4, os-version: 15.0], [device: iPhone11,2, os-version: 16.0], [device: iPhone14,5, os-version: 17.0], [device: iPhone9,2, os-version: 15.0], [device: iPhone14,4, os-version: 17.0], [device: iPhone10,2, os-version: 15.0], [device: iPhone15,5, os-version: 17.0], [device: iPhone13,1, os-version: 16.0], [device: iPhone10,2, os-version: 16.0], [device: iPhone11,2, os-version: 15.0], [device: iPhone16,2, os-version: 17.0], [device: iPhone13,4, os-version: 17.0], [device: iPhone14,2, os-version: 16.0], [device: iPhone14,3, os-version: 16.0], [device: iPhone15,3, os-version: 16.0], [device: iPhone12,5, os-version: 17.0], [device: iPhone16,1, os-version: 17.0], [device: iPhone10,6, os-version: 15.0], [device: iPhone9,4, os-version: 15.0], [device: iPhone10,3, os-version: 16.0], [device: iPhone15,2, os-version: 16.0], [device: iPhone13,1, os-version: 15.0], [device: iPhone14,8, os-version: 16.0], [device: iPhone13,3, os-version: 16.0], [device: iPhone13,3, os-version: 17.0], [device: iPhone8,2, os-version: 15.0], [device: iPhone14,2, os-version: 15.0], [device: iPhone11,4, os-version: 16.0], [device: iPhone13,2, os-version: 15.0], [device: iPhone14,7, os-version: 17.0], [device: iPhone11,4, os-version: 17.0], [device: iPhone15,2, os-version: 17.0], [device: iPhone14,4, os-version: 16.0], [device: iPhone13,3, os-version: 15.0], [device: iPhone12,5, os-version: 16.0], [device: iPhone11,6, os-version: 15.0], [device: iPhone14,7, os-version: 16.0], [device: iPhone13,4, os-version: 16.0], [device: iPhone12,5, os-version: 15.0], [device: iPhone14,3, os-version: 17.0], [device: iPhone12,3, os-version: 15.0], [device: iPhone10,3, os-version: 15.0], [device: iPhone11,2, os-version: 17.0], [device: iPhone10,6, os-version: 16.0], [device: iPhone14,8, os-version: 17.0], [device: iPhone13,1, os-version: 17.0], [device: iPhone11,6, os-version: 16.0], [device: iPhone12,3, os-version: 16.0], [device: iPhone10,5, os-version: 16.0], [device: iPhone14,5, os-version: 16.0], [device: iPhone14,5, os-version: 15.0], [device: iPhone13,2, os-version: 16.0], [device: iPhone14,3, os-version: 15.0], [device: iPhone14,2, os-version: 17.0], [device: iPhone14,4, os-version: 15.0], [device: iPhone11,4, os-version: 15.0], [device: iPhone10,5, os-version: 15.0], and [device: iPhone15,4, os-version: 17.0]
+App + On Demand Resources size: 28,9 MB compressed, 82,5 MB uncompressed
+App size: 28,9 MB compressed, 82,5 MB uncompressed
+On Demand Resources size: Zero KB compressed, Zero KB uncompressed
+
+
+Variant: OpenPassport App Clip-687B3ADE-6A57-4818-B0FA-3C86D19C345B.ipa
+Supported variant descriptors: [device: iPad6,4, os-version: 15.0], [device: iPad7,4, os-version: 16.0], [device: iPad8,7, os-version: 15.0], [device: iPad8,11, os-version: 17.0], [device: iPad8,2, os-version: 17.0], [device: iPad13,5, os-version: 17.0], [device: iPad13,10, os-version: 17.0], [device: iPad8,8, os-version: 16.0], [device: iPad11,6, os-version: 16.0], [device: iPad8,4, os-version: 16.0], [device: iPad7,1, os-version: 16.0], [device: iPad6,4, os-version: 16.0], [device: iPad11,1, os-version: 15.0], [device: iPad13,6, os-version: 15.0], [device: RealityFamily22,1, os-version: 17.0], [device: iPad8,5, os-version: 17.0], [device: iPad7,12, os-version: 15.0], [device: iPad11,3, os-version: 16.0], [device: iPad8,7, os-version: 17.0], [device: iPad13,7, os-version: 15.0], [device: iPad8,4, os-version: 17.0], [device: iPad8,8, os-version: 17.0], [device: iPad13,18, os-version: 17.0], [device: iPad12,1, os-version: 16.0], [device: iPad11,6, os-version: 17.0], [device: iPad7,2, os-version: 17.0], [device: iPad7,1, os-version: 15.0], [device: iPad8,10, os-version: 16.0], [device: iPad13,11, os-version: 17.0], [device: iPad8,3, os-version: 17.0], [device: iPad11,6, os-version: 15.0], [device: iPad14,2, os-version: 16.0], [device: iPad13,16, os-version: 16.0], [device: iPad12,1, os-version: 15.0], [device: iPad13,1, os-version: 17.0], [device: iPad7,2, os-version: 15.0], [device: MacFamily20,1, os-version: 17.0], [device: iPad14,4-B, os-version: 16.0], [device: iPad8,3, os-version: 16.0], [device: iPad11,7, os-version: 16.0], [device: iPad7,1, os-version: 17.0], [device: iPad13,9, os-version: 17.0], [device: iPad8,9, os-version: 15.0], [device: iPad8,2, os-version: 15.0], [device: iPad14,3-A, os-version: 16.0], [device: iPad6,7, os-version: 16.0], [device: iPad8,3, os-version: 15.0], [device: iPad11,1, os-version: 16.0], [device: iPad7,6, os-version: 15.0], [device: iPad13,4, os-version: 16.0], [device: iPad6,7, os-version: 15.0], [device: iPad14,5-B, os-version: 16.0], [device: iPad7,6, os-version: 17.0], [device: iPad12,2, os-version: 17.0], [device: iPad13,6, os-version: 17.0], [device: iPad12,1, os-version: 17.0], [device: iPad13,10, os-version: 15.0], [device: iPad13,17, os-version: 16.0], [device: iPad13,7, os-version: 17.0], [device: iPad13,16, os-version: 17.0], [device: iPad8,6, os-version: 15.0], [device: iPad14,3-B, os-version: 16.0], [device: iPad5,4, os-version: 15.0], [device: iPad14,5-A, os-version: 17.0], [device: iPad14,6-B, os-version: 16.0], [device: iPad8,7, os-version: 16.0], [device: iPad13,8, os-version: 16.0], [device: iPad14,4-A, os-version: 16.0], [device: iPad13,18, os-version: 16.0], [device: iPad14,1, os-version: 17.0], [device: iPad6,8, os-version: 16.0], [device: iPad13,7, os-version: 16.0], [device: iPad8,12, os-version: 16.0], [device: iPad7,11, os-version: 16.0], [device: iPad13,17, os-version: 17.0], [device: MacFamily20,1, os-version: 16.0], [device: iPad13,11, os-version: 15.0], [device: iPad11,1, os-version: 17.0], [device: iPad13,1, os-version: 15.0], [device: iPad13,2, os-version: 15.0], [device: iPad13,11, os-version: 16.0], [device: iPad14,6-B, os-version: 17.0], [device: iPad14,1, os-version: 16.0], [device: iPad8,12, os-version: 17.0], [device: iPad5,1, os-version: 15.0], [device: iPad13,5, os-version: 15.0], [device: iPad13,10, os-version: 16.0], [device: iPad12,2, os-version: 16.0], [device: iPad11,4, os-version: 15.0], [device: iPad14,2, os-version: 15.0], [device: iPad14,3-B, os-version: 17.0], [device: iPad14,6-A, os-version: 17.0], [device: iPad13,4, os-version: 15.0], [device: iPad11,7, os-version: 15.0], [device: iPad14,3-A, os-version: 17.0], [device: iPad14,4-B, os-version: 17.0], [device: iPad13,19, os-version: 16.0], [device: iPad14,5-A, os-version: 16.0], [device: iPad7,3, os-version: 15.0], [device: iPad5,3, os-version: 15.0], [device: iPad6,3, os-version: 16.0], [device: iPad8,1, os-version: 16.0], [device: iPad11,2, os-version: 15.0], [device: iPad11,2, os-version: 16.0], [device: iPad13,4, os-version: 17.0], [device: iPad11,4, os-version: 16.0], [device: iPad7,12, os-version: 17.0], [device: iPad13,2, os-version: 17.0], [device: iPad6,12, os-version: 15.0], [device: iPad8,11, os-version: 15.0], [device: iPad8,10, os-version: 17.0], [device: iPad13,9, os-version: 16.0], [device: iPad11,4, os-version: 17.0], [device: iPad8,6, os-version: 17.0], [device: iPad14,6-A, os-version: 16.0], [device: iPad6,8, os-version: 15.0], [device: iPad13,19, os-version: 17.0], [device: iPad7,2, os-version: 16.0], [device: iPad7,5, os-version: 17.0], [device: iPad6,11, os-version: 15.0], [device: iPad8,9, os-version: 16.0], [device: iPad8,9, os-version: 17.0], [device: iPad12,2, os-version: 15.0], [device: MacFamily20,1, os-version: 15.0], [device: iPad6,3, os-version: 15.0], [device: iPad8,5, os-version: 15.0], [device: iPad7,3, os-version: 17.0], [device: iPad11,3, os-version: 15.0], [device: iPad8,10, os-version: 15.0], [device: iPad6,11, os-version: 16.0], [device: iPad7,5, os-version: 16.0], [device: iPad13,8, os-version: 15.0], [device: iPad6,12, os-version: 16.0], [device: iPad7,11, os-version: 15.0], [device: iPad7,4, os-version: 15.0], [device: iPad13,16, os-version: 15.0], [device: iPad8,2, os-version: 16.0], [device: iPad7,5, os-version: 15.0], [device: iPad13,1, os-version: 16.0], [device: iPad7,6, os-version: 16.0], [device: iPad8,1, os-version: 17.0], [device: iPad11,3, os-version: 17.0], [device: iPad13,6, os-version: 16.0], [device: iPad13,9, os-version: 15.0], [device: iPad8,11, os-version: 16.0], [device: iPad14,4-A, os-version: 17.0], [device: iPad8,4, os-version: 15.0], [device: iPad7,3, os-version: 16.0], [device: iPad7,12, os-version: 16.0], [device: iPad5,2, os-version: 15.0], [device: iPad11,2, os-version: 17.0], [device: iPad13,5, os-version: 16.0], [device: iPad14,1, os-version: 15.0], [device: iPad8,6, os-version: 16.0], [device: iPad13,8, os-version: 17.0], [device: iPad7,11, os-version: 17.0], [device: iPad14,5-B, os-version: 17.0], [device: iPad8,8, os-version: 15.0], [device: iPad7,4, os-version: 17.0], [device: iPad13,17, os-version: 15.0], [device: iPad8,5, os-version: 16.0], [device: iPad8,12, os-version: 15.0], [device: iPad11,7, os-version: 17.0], [device: iPad13,2, os-version: 16.0], [device: iPad8,1, os-version: 15.0], and [device: iPad14,2, os-version: 17.0]
+App + On Demand Resources size: 28,9 MB compressed, 82,5 MB uncompressed
+App size: 28,9 MB compressed, 82,5 MB uncompressed
+On Demand Resources size: Zero KB compressed, Zero KB uncompressed
+
+
+Variant: OpenPassport App Clip-E8C6D612-C984-492E-A0E7-86E479C89185.ipa
+Supported variant descriptors: [device: iPhone12,1, os-version: 15.0], [device: iPhone11,8, os-version: 16.0], [device: iPhone11,8, os-version: 17.0], [device: iPhone11,8, os-version: 15.0], [device: iPhone12,1, os-version: 17.0], and [device: iPhone12,1, os-version: 16.0]
+App + On Demand Resources size: 28,9 MB compressed, 82,5 MB uncompressed
+App size: 28,9 MB compressed, 82,5 MB uncompressed
+On Demand Resources size: Zero KB compressed, Zero KB uncompressed
+
+
+Variant: OpenPassport App Clip.ipa
+Supported variant descriptors: Universal
+App + On Demand Resources size: 28,9 MB compressed, 82,6 MB uncompressed
+App size: 28,9 MB compressed, 82,6 MB uncompressed
+On Demand Resources size: Zero KB compressed, Zero KB uncompressed
+
+
+
+2024-08-23 06:37:34 +0000  17305600 bytes for ./OpenPassport App Clip
+2024-08-23 06:37:34 +0000  copying file ./Assets.car ... 
+2024-08-23 06:37:34 +0000  22080904 bytes for ./Assets.car
+2024-08-23 06:37:34 +0000  copying file ./main.jsbundle ... 
+2024-08-23 06:37:34 +0000  10184487 bytes for ./main.jsbundle
+2024-08-23 06:37:34 +0000  copying file ./masterList.pem ... 
+2024-08-23 06:37:34 +0000  1487485 bytes for ./masterList.pem
+2024-08-23 06:37:34 +0000  10657680 bytes for ./Frameworks/OpenSSL.framework/OpenSSL
+2024-08-23 06:37:34 +0000  copying file ./Frameworks/OpenSSL.framework/Info.plist ... 
+2024-08-23 06:37:34 +0000  4757088 bytes for ./Frameworks/Lottie.framework/Lottie
+2024-08-23 06:37:34 +0000  copying file ./Frameworks/Lottie.framework/Info.plist ... 
+2024-08-23 06:37:34 +0000  copying file ./assets/src/images/phone_scanbutton.png ... 
+2024-08-23 06:37:34 +0000  22752 bytes for ./assets/src/images/phone_scanbutton.png
+
+
+turboblitz@Florents-MacBook-Air OpenPassport.app % du -sh */ | sort -rh
+ 79M    AppClips/
+ 25M    Frameworks/
+5.3M    assets/
+128K    _CodeSignature/
+ 12K    LaunchScreen.storyboardc/
+
+
+turboblitz@Florents-MacBook-Air images % ls -sh | sort -rh 
+3592 zupass.png
+1560 passport_lastpage_graybg.png
+1448 passport_lastpage_iphone.png
+1280 passport_lastpage_android.png
+ 760 ens_mark_dao.png
+ 488 user.png
+ 448 us-passport.png
+ 408 remove_case.png
+ 352 gitcoin.png
+ 264 nfc.png
+  56 internet.png
+  48 x.png
+  48 phone_scanbutton.png
+  40 telegram.png
+  32 github.png
+total 10824
+
+
+turboblitz@Florents-MacBook-Air Frameworks % ls -sh */ | sort -rh
+11064 SwiftyTesseract
+9296 Lottie
+5008 OpenSSL
+3064 React
+2208 NFCPassportReader
+1208 RNSVG
+1064 folly
+976 CoreModules
+888 cxxreact
+816 fmt
+752 React_Codegen
+752 RCTText
+712 RCTImage
+608 RCTAnimation
+576 SwiftQRScanner
+512 React_NativeModulesApple
+464 ReactCommon
+456 SSZipArchive
+456 QKMRZScanner
+448 jsireact
+424 SocketRocket
+400 glog
+400 amplitude_react_native
+392 React_runtimescheduler
+392 RCTNetwork
+384 QKMRZParser
+376 RNFS
+352 jsi
+344 react_native_nfc_manager
+344 DoubleConversion
+336 yoga
+328 RCTBlob
+312 React_jsc
+280 RNCAsyncStorage
+256 React_RCTAppDelegate
+248 react_native_netinfo
+248 react_native_date_picker
+248 RCTLinking
+240 RNKeychain
+216 jsinspector
+216 RCTSettings
+208 RCTVibration
+192 reactperflogger
+192 React_utils
+192 RNZipArchive
+184 react_native_get_random_values
+184 logger
+184 RNCClipboard
+184 RCTTypeSafety
+176 React_debug
+
+
+turboblitz@Florents-MacBook-Air Frameworks % du -sh */ | sort -rh
+5.4M    SwiftyTesseract.framework/
+4.6M    Lottie.framework/
+2.5M    OpenSSL.framework/
+1.5M    React.framework/
+1.1M    NFCPassportReader.framework/
+612K    RNSVG.framework/
+568K    QKMRZScanner.framework/
+
+
+turboblitz@Florents-MacBook-Air OpenPassport App Clip.app % ls -sh | sort -rh 
+43128 Assets.car <== this contains the .dat files
+33808 OpenPassport App Clip
+19896 main.jsbundle
+ 2912 masterList.pem
+  168 passport.json
+   40 embedded.mobileprovision
+
+turboblitz@Florents-Air app % npx depcheck
+Unused dependencies
+* @tamagui/colors
+* @tamagui/core
+* @tamagui/types
+* buffer
+* js-sha256
+
+Removing react-native-svg makes things crash
+@tamagui/toast needs burnt that needs expo-modules-core
+
+We record the uncompressed size when Archiving with Full App, then selecting App Clip, Development, etc, as it is the same as the size that counts.
+- Starting from: 82,6 MB
+- Without Lottie (but few stuff got added): 75,8 MB
+- Removing 5,8MB of `.dat` files (register and disclose): 70 MB (compressed 25,2 MB)
+- Removing corresponding witnesscalc: 70 MB (compressed 22,8 MB)
+=> `.dat` files are copied directly (5,8 MB)
+=> but witnesscalcs are compressed (13,94 MB makes it go from 22,8 to 25,2 MB), and do not appear in the uncompressed version.
+=> So they count for users but not for App Clip requirements
+- Removing bundled masterList: 68,5 MB
+- Removing some unused dependencies: 68,2 MB
+- Optimizing images: 66,3 MB
+- Removing dat files (4.6 + 4.7 + 6.9 = 16,2): 50,1 MB
+- Removing fonts: 50,1 MB (still)
+- Compressing images more: 49,8 MB (14,6 MB compressed)
+
+
+
+
+promising path:
+- Removing parts of OpenSSL
+- Removing parts of SwiftyTesseract
+
+- When removing all 3 `.a` witnesscalcs: 9,9 MB compressed, 33 MB uncompressed

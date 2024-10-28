@@ -1,16 +1,16 @@
 pragma circom 2.0.3;
 
-function min(a, b) {
-    if(a < b)
-        return a;
-    return b;
-}
+// function min(a, b) {
+//     if(a < b)
+//         return a;
+//     return b;
+// }
 
-function max(a, b) {
-    if(a > b)
-        return a;
-    return b;
-}
+// function max(a, b) {
+//     if(a > b)
+//         return a;
+//     return b;
+// }
 
 function div_ceil_ecdsa(m, n) {
     var ret = 0;
@@ -33,13 +33,13 @@ function log_ceil_ecdsa(n) {
    return 254;
 }
 
-function SplitFn(in, n, m) {
-    return [in % (1 << n), (in \ (1 << n)) % (1 << m)];
-}
+// function SplitFn(in, n, m) {
+//     return [in % (1 << n), (in \ (1 << n)) % (1 << m)];
+// }
 
-function SplitThreeFn(in, n, m, k) {
-    return [in % (1 << n), (in \ (1 << n)) % (1 << m), (in \ (1 << n + m)) % (1 << k)];
-}
+// function SplitThreeFn(in, n, m, k) {
+//     return [in % (1 << n), (in \ (1 << n)) % (1 << m), (in \ (1 << n + m)) % (1 << k)];
+// }
 
 // 1 if true, 0 if false
 function long_gt_ecdsa(n, k, a, b) {
@@ -54,19 +54,19 @@ function long_gt_ecdsa(n, k, a, b) {
     return 0;
 }
 
-function long_is_zero(k, a){
-    for(var idx=0; idx<k; idx++){
-        if(a[idx] != 0)
-            return 0;
-    }
-    return 1;
-}
+// function long_is_zero(k, a){
+//     for(var idx=0; idx<k; idx++){
+//         if(a[idx] != 0)
+//             return 0;
+//     }
+//     return 1;
+// }
 
 // n bits per register
 // a has k registers
 // b has k registers
 // output has k+1 registers
-function long_add(n, k, a, b){
+function long_add_ecdsa(n, k, a, b){
     var carry = 0;
     var sum[50];
     for(var i=0; i<k; i++){
@@ -78,46 +78,46 @@ function long_add(n, k, a, b){
     return sum;
 }
 
-// n bits per register
-// a has k registers
-// b has k registers
-// c has k registers
-// d has k registers
-// output has k+1 registers
-function long_add4(n, k, a, b, c, d){
-    var carry = 0;
-    var sum[50];
-    for(var i=0; i < k; i++){
-        var sumAndCarry[2] = SplitFn(a[i] + b[i] + c[i] + d[i] + carry, n, n);
-        sum[i] = sumAndCarry[0];
-        carry = sumAndCarry[1];
-    }
-    sum[k] = carry;
-    return sum;
-}
+// // n bits per register
+// // a has k registers
+// // b has k registers
+// // c has k registers
+// // d has k registers
+// // output has k+1 registers
+// function long_add4(n, k, a, b, c, d){
+//     var carry = 0;
+//     var sum[50];
+//     for(var i=0; i < k; i++){
+//         var sumAndCarry[2] = SplitFn(a[i] + b[i] + c[i] + d[i] + carry, n, n);
+//         sum[i] = sumAndCarry[0];
+//         carry = sumAndCarry[1];
+//     }
+//     sum[k] = carry;
+//     return sum;
+// }
 
-// n bits per register
-// a has k1 registers
-// b has k2 registers
-// assume k1 > k2
-// output has k1+1 registers
-function long_add_unequal(n, k1, k2, a, b){
-    var carry = 0;
-    var sum[50];
-    for(var i=0; i<k1; i++){
-        if (i < k2) {
-            var sumAndCarry[2] = SplitFn(a[i] + b[i] + carry, n, n);
-            sum[i] = sumAndCarry[0];
-            carry = sumAndCarry[1];
-        } else {
-            var sumAndCarry[2] = SplitFn(a[i] + carry, n, n);
-            sum[i] = sumAndCarry[0];
-            carry = sumAndCarry[1];
-        }
-    }
-    sum[k1] = carry;
-    return sum;
-}
+// // n bits per register
+// // a has k1 registers
+// // b has k2 registers
+// // assume k1 > k2
+// // output has k1+1 registers
+// function long_add_unequal(n, k1, k2, a, b){
+//     var carry = 0;
+//     var sum[50];
+//     for(var i=0; i<k1; i++){
+//         if (i < k2) {
+//             var sumAndCarry[2] = SplitFn(a[i] + b[i] + carry, n, n);
+//             sum[i] = sumAndCarry[0];
+//             carry = sumAndCarry[1];
+//         } else {
+//             var sumAndCarry[2] = SplitFn(a[i] + carry, n, n);
+//             sum[i] = sumAndCarry[0];
+//             carry = sumAndCarry[1];
+//         }
+//     }
+//     sum[k1] = carry;
+//     return sum;
+// }
 
 // n bits per register
 // a has k registers
@@ -171,7 +171,7 @@ function long_scalar_mult_ecdsa(n, k, a, b) {
 // out[1] has length k -- remainder
 // implements algorithm of https://people.eecs.berkeley.edu/~fateman/282/F%20Wright%20notes/week4.pdf
 // b[k-1] must be nonzero!
-function long_div2(n, k, m, a, b){
+function long_div2_ecdsa(n, k, m, a, b){
     var out[2][50];
     // assume k+m < 50
     var remainder[50];
@@ -212,7 +212,7 @@ function long_div2(n, k, m, a, b){
 }
 
 function long_div_ecdsa(n, k, a, b) {
-    return long_div2(n, k, k, a, b);
+    return long_div2_ecdsa(n, k, k, a, b);
 }
 
 // n bits per register
@@ -264,7 +264,7 @@ function short_div_ecdsa(n, k, a, b) {
 //  a_i can be "negative" assume a_i in (-2^251, 2^251) 
 // output is the value of a with a_i all of the same sign 
 // out[50] = 0 if positive, 1 if negative
-function signed_long_to_short(n, k, a){
+function signed_long_to_short_ecdsa(n, k, a){
     var out[51];
     var MAXL = 50;
     var temp[51];
@@ -314,7 +314,7 @@ function signed_long_to_short(n, k, a){
 // a and b both have k registers
 // out[0] has length 2 * k
 // adapted from BigMulShortLong and LongToShortNoEndCarry witness computation
-function prod(n, k, a, b) {
+function prod_ecdsa(n, k, a, b) {
     // first compute the intermediate values. taken from BigMulShortLong
     var prod_val[50]; // length is 2 * k - 1
     for (var i = 0; i < 2 * k - 1; i++) {
@@ -358,80 +358,80 @@ function prod(n, k, a, b) {
 }
 
 
-// n bits per register
-// a and b both have l x k registers
-// out has length 2l - 1 x 2k
-// adapted from BigMultShortLong2D and LongToShortNoEndCarry2 witness computation
-function prod2D(n, k, l, a, b) {
-    // first compute the intermediate values. taken from BigMulShortLong
-    var prod_val[20][50]; // length is 2l - 1 by 2k - 1
-    for (var i = 0; i < 2 * k - 1; i++) {
-        for (var j = 0; j < 2 * l - 1; j ++) {
-            prod_val[j][i] = 0;
-        }
-    }
-    for (var i1 = 0; i1 < k; i1 ++) {
-        for (var i2 = 0; i2 < k; i2 ++) {
-            for (var j1 = 0; j1 < l; j1 ++) {
-                for (var j2 = 0; j2 < l; j2 ++) {
-                    prod_val[j1+j2][i1+i2] = prod_val[j1+j2][i1+i2] + a[j1][i1] * b[j2][i2];
-                }
-            }
-        }
-    }
+// // n bits per register
+// // a and b both have l x k registers
+// // out has length 2l - 1 x 2k
+// // adapted from BigMultShortLong2D and LongToShortNoEndCarry2 witness computation
+// function prod2D(n, k, l, a, b) {
+//     // first compute the intermediate values. taken from BigMulShortLong
+//     var prod_val[20][50]; // length is 2l - 1 by 2k - 1
+//     for (var i = 0; i < 2 * k - 1; i++) {
+//         for (var j = 0; j < 2 * l - 1; j ++) {
+//             prod_val[j][i] = 0;
+//         }
+//     }
+//     for (var i1 = 0; i1 < k; i1 ++) {
+//         for (var i2 = 0; i2 < k; i2 ++) {
+//             for (var j1 = 0; j1 < l; j1 ++) {
+//                 for (var j2 = 0; j2 < l; j2 ++) {
+//                     prod_val[j1+j2][i1+i2] = prod_val[j1+j2][i1+i2] + a[j1][i1] * b[j2][i2];
+//                 }
+//             }
+//         }
+//     }
 
-    // now do a bunch of carrying to make sure registers not overflowed. taken from LongToShortNoEndCarry2
-    var out[20][50]; // length is 2 * l by 2 * k
+//     // now do a bunch of carrying to make sure registers not overflowed. taken from LongToShortNoEndCarry2
+//     var out[20][50]; // length is 2 * l by 2 * k
 
-    var split[20][50][3]; // second dimension has length 2 * k - 1
-    for (var j = 0; j < 2 * l - 1; j ++) {
-        for (var i = 0; i < 2 * k - 1; i++) {
-            split[j][i] = SplitThreeFn(prod_val[j][i], n, n, n);
-        }
-    }
+//     var split[20][50][3]; // second dimension has length 2 * k - 1
+//     for (var j = 0; j < 2 * l - 1; j ++) {
+//         for (var i = 0; i < 2 * k - 1; i++) {
+//             split[j][i] = SplitThreeFn(prod_val[j][i], n, n, n);
+//         }
+//     }
 
-    var carry[20][50]; // length is 2l-1 x 2k
-    var sumAndCarry[20][2];
-    for ( var j = 0; j < 2 * l - 1; j ++) {
-        carry[j][0] = 0;
-        out[j][0] = split[j][0][0];
-        if (2 * k - 1 > 1) {
-            sumAndCarry[j] = SplitFn(split[j][0][1] + split[j][1][0], n, n);
-            out[j][1] = sumAndCarry[j][0];
-            carry[j][1] = sumAndCarry[j][1];
-        }
-        if (2 * k - 1 > 2) {
-            for (var i = 2; i < 2 * k - 1; i++) {
-                sumAndCarry[j] = SplitFn(split[j][i][0] + split[j][i-1][1] + split[j][i-2][2] + carry[j][i-1], n, n);
-                out[j][i] = sumAndCarry[j][0];
-                carry[j][i] = sumAndCarry[j][1];
-            }
-            out[j][2 * k - 1] = split[j][2*k-2][1] + split[j][2*k-3][2] + carry[j][2*k-2];
-        }
-    }
+//     var carry[20][50]; // length is 2l-1 x 2k
+//     var sumAndCarry[20][2];
+//     for ( var j = 0; j < 2 * l - 1; j ++) {
+//         carry[j][0] = 0;
+//         out[j][0] = split[j][0][0];
+//         if (2 * k - 1 > 1) {
+//             sumAndCarry[j] = SplitFn(split[j][0][1] + split[j][1][0], n, n);
+//             out[j][1] = sumAndCarry[j][0];
+//             carry[j][1] = sumAndCarry[j][1];
+//         }
+//         if (2 * k - 1 > 2) {
+//             for (var i = 2; i < 2 * k - 1; i++) {
+//                 sumAndCarry[j] = SplitFn(split[j][i][0] + split[j][i-1][1] + split[j][i-2][2] + carry[j][i-1], n, n);
+//                 out[j][i] = sumAndCarry[j][0];
+//                 carry[j][i] = sumAndCarry[j][1];
+//             }
+//             out[j][2 * k - 1] = split[j][2*k-2][1] + split[j][2*k-3][2] + carry[j][2*k-2];
+//         }
+//     }
 
-    return out;
-}
+//     return out;
+// }
 
-// Put all modular arithmetic, aka F_p field stuff, at the end
+// // Put all modular arithmetic, aka F_p field stuff, at the end
 
-function long_add_mod(n, k, a, b, p) {
-    var sum[50] = long_add(n,k,a,b); 
-    var temp[2][50] = long_div2(n,k,1,sum,p);
+function long_add_mod_ecdsa(n, k, a, b, p) {
+    var sum[50] = long_add_ecdsa(n,k,a,b); 
+    var temp[2][50] = long_div2_ecdsa(n,k,1,sum,p);
     return temp[1];
 }
 
-function long_sub_mod(n, k, a, b, p) {
+function long_sub_mod_ecdsa(n, k, a, b, p) {
     if(long_gt_ecdsa(n, k, b, a) == 1){
-        return long_add(n, k, a, long_sub_ecdsa(n,k,p,b));
+        return long_add_ecdsa(n, k, a, long_sub_ecdsa(n,k,p,b));
     }else{
         return long_sub_ecdsa(n, k, a, b);
     }
 }
 
-function prod_mod(n, k, a, b, p) {
-    var prod[50] = prod(n,k,a,b);
-    var temp[2][50] = long_div_ecdsa(n,k,prod,p);
+function prod_mod_ecdsa(n, k, a, b, p) {
+    var prod_ecdsa[50] = prod_ecdsa(n,k,a,b);
+    var temp[2][50] = long_div_ecdsa(n,k,prod_ecdsa,p);
     return temp[1];
 }
 
@@ -443,7 +443,7 @@ function prod_mod(n, k, a, b, p) {
 // k * n <= 500
 // p is a prime
 // computes a^e mod p
-function mod_exp(n, k, a, p, e) {
+function mod_exp_ecdsa(n, k, a, p, e) {
     var eBits[500]; // length is k * n
     var bitlength; 
     for (var i = 0; i < k; i++) {
@@ -465,7 +465,7 @@ function mod_exp(n, k, a, p, e) {
         // multiply by a if bit is 0
         if (eBits[i] == 1) {
             var temp[50]; // length 2 * k
-            temp = prod(n, k, out, a);
+            temp = prod_ecdsa(n, k, out, a);
             var temp2[2][50];
             temp2 = long_div_ecdsa(n, k, temp, p);
             out = temp2[1];
@@ -474,7 +474,7 @@ function mod_exp(n, k, a, p, e) {
         // square, unless we're at the end
         if (i > 0) {
             var temp[50]; // length 2 * k
-            temp = prod(n, k, out, out);
+            temp = prod_ecdsa(n, k, out, out);
             var temp2[2][50];
             temp2 = long_div_ecdsa(n, k, temp, p);
             out = temp2[1];
@@ -491,7 +491,7 @@ function mod_exp(n, k, a, p, e) {
 // p is a prime
 // if a == 0 mod p, returns 0
 // else computes inv = a^(p-2) mod p
-function mod_inv(n, k, a, p) {
+function mod_inv_ecdsa(n, k, a, p) {
     var isZero = 1;
     for (var i = 0; i < k; i++) {
         if (a[i] != 0) {

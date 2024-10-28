@@ -4,10 +4,8 @@
 //
 //  Created by Ivan Lele on 27.02.2024.
 //
-
 import Lottie
 import SwiftUI
-
 struct LottieView: UIViewRepresentable {
     var animationFileName: String
     let loopMode: LottieLoopMode
@@ -20,7 +18,6 @@ struct LottieView: UIViewRepresentable {
         let animationView = LottieAnimationView(name: animationFileName)
         animationView.loopMode = loopMode
         animationView.contentMode = .scaleAspectFit
-
         animationView.play()
         
         animationView.translatesAutoresizingMaskIntoConstraints = false
@@ -34,7 +31,6 @@ struct LottieView: UIViewRepresentable {
         return view
     }
 }
-
 #Preview {
     LottieView(animationFileName: "passport", loopMode: .loop)
         .frame(width: 300)

@@ -12,7 +12,7 @@
 ### Android
 | Requirement | Version | Installation Guide |
 |-------------|---------|--------------------|
-| Java        | 11      | [Install Java](https://www.oracle.com/java/technologies/javase-jdk11-downloads.html) or [GPT4 guide](https://chatgpt.com/share/26cd879b-26bb-4fd4-b59e-cfe002a06afe) |
+| Java        | 17      | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)|
 | Android Studio | Latest | [Install Android Studio](https://developer.android.com/studio) |
 | Android SDK | Latest  | [Install Android SDK](https://developer.android.com/studio#downloads) |
 | Android Ndk         | 23.1.7779620 | [Install NDK](https://developer.android.com/studio) or [GPT4 guide](https://chatgpt.com/share/a6e2544b-d32a-4554-a452-402511d03ffc) |
@@ -50,6 +50,8 @@ Press `a` to open the app on Android.
 
 To see the Android logs you'll have to use the Android Studio Logcat.
 
+**EDIT**: to test the app on android, see [this issue](https://github.com/zk-passport/openpassport/issues/191) temporarily
+
 ### iOS
 
 > :warning: To run the app on iOS, you will need a paying Apple Developer account. Free accounts can't run apps that use NFC reading.<br/>
@@ -71,7 +73,7 @@ If you want to modify the circuits, you'll have to adapt a few things.
 
 First, go to the `circuit` folder of the monorepo, modify the circuits and build them.
 
-Then, upload the zipped zkeys built at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`.
+Then, upload the zipped zkeys and dat files at publicly available urls and replace the urls in `app/src/utils/zkeyDownload.ts`.
 
 Adapt the input generation in `common/src/utils/generateInputs.ts`, and adapt and redeploy the contracts.
 
@@ -128,7 +130,7 @@ Don't forget to bump the build number.
 
 If you get something like this:
 ```
-'std::__1::system_error: open: /proof-of-passport/app: Operation not permitted'
+'std::__1::system_error: open: /openpassport/app: Operation not permitted'
 ```
 You might want to try [this](https://stackoverflow.com/questions/49443341/watchman-crawl-failed-retrying-once-with-node-crawler):
 ```

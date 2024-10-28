@@ -20,6 +20,10 @@ import com.google.gson.GsonBuilder
 
 import com.proofofpassportapp.R
 
+import java.io.File
+import java.io.FileInputStream
+import java.io.IOException
+
 class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJavaModule(reactContext) {
   private val TAG = "ProverModule"
 
@@ -28,11 +32,26 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
   }
 
   @ReactMethod
-  fun runProveAction(zkey_path: String, witness_calculator: String, dat_file_name: String, inputs: ReadableMap, promise: Promise) {
-    Log.e(TAG, "zkey_path in provePassport kotlin: " + zkey_path)
-    Log.e(TAG, "witness_calculator in provePassport kotlin: " + witness_calculator)
-    Log.e(TAG, "dat_file_name in provePassport kotlin: " + dat_file_name)
-    Log.e(TAG, "inputs in provePassport kotlin: " + inputs.toString())
+  fun runProveAction(zkey_path: String, witness_calculator: String, dat_file_path: String, inputs: ReadableMap, promise: Promise) {
+    Log.e(TAG, "zkey_path in provePassport kotlin: $zkey_path")
+    Log.e(TAG, "witness_calculator in provePassport kotlin: $witness_calculator")
+    Log.e(TAG, "dat_file_path in provePassport kotlin: $dat_file_path")
+    Log.e(TAG, "inputs in provePassport kotlin: ${inputs.toString()}")
+
+    // Read the dat file from the provided filesystem path
+    val datFile = File(dat_file_path)
+    if (!datFile.exists()) {
+        Log.e(TAG, "Dat file does not exist at path: $dat_file_path")
+        throw IllegalArgumentException("Dat file does not exist at path: $dat_file_path")
+    }
+
+    val datBytes: ByteArray
+    try {
+        datBytes = datFile.readBytes()
+    } catch (e: IOException) {
+        Log.e(TAG, "Error reading dat file: ${e.message}")
+        throw IllegalArgumentException("Error reading dat file: ${e.message}")
+    }
 
     val formattedInputs = mutableMapOf<String, Any?>()
 
@@ -67,25 +86,18 @@ class ProverModule(reactContext: ReactApplicationContext) : ReactContextBaseJava
     val zkpTools = ZKPTools(reactApplicationContext)
 
     val witnessCalcFunction = when (witness_calculator) {
-        // "register_sha256WithRSAEncryption_65537" -> zkpTools::witnesscalc_register_sha256WithRSAEncryption_65537
-        // "disclose" -> zkpTools::witnesscalc_disclose
         "prove_rsa_65537_sha256" -> zkpTools::witnesscalc_prove_rsa_65537_sha256
         "prove_rsa_65537_sha1" -> zkpTools::witnesscalc_prove_rsa_65537_sha1
         "prove_rsapss_65537_sha256" -> zkpTools::witnesscalc_prove_rsapss_65537_sha256
+        "vc_and_disclose" -> zkpTools::witnesscalc_vc_and_disclose
         else -> throw IllegalArgumentException("Invalid witness calculator name")
     }  
     
-    // Get the resource ID dynamically
-    val resId = reactApplicationContext.resources.getIdentifier(dat_file_name, "raw", reactApplicationContext.packageName)
-    if (resId == 0) {
-        throw IllegalArgumentException("Invalid dat file name")
-    }
-
     val zkp: ZkProof = ZKPUseCase(reactApplicationContext).generateZKP(
-      zkey_path,
-      resId,
-      jsonInputs,
-      witnessCalcFunction
+        zkey_path,
+        datBytes,
+        jsonInputs,
+        witnessCalcFunction
     )
 
     Log.e("ZKP", gson.toJson(zkp))
@@ -162,7 +174,31 @@ class ZKPTools(val context: Context) {
     wtnsSize: LongArray,
     errorMsg: ByteArray,
     errorMsgMaxSize: Long): Int
+  external fun witnesscalc_vc_and_disclose(circuitBuffer: ByteArray,
+    circuitSize: Long,
+    jsonBuffer: ByteArray,
+    jsonSize: Long,
+    wtnsBuffer: ByteArray,
+    wtnsSize: LongArray,
+    errorMsg: ByteArray,
+    errorMsgMaxSize: Long): Int
 
+//   external fun witnesscalc_prove_ecdsa_secp256r1_sha1(circuitBuffer: ByteArray,
+//     circuitSize: Long,
+//     jsonBuffer: ByteArray,
+//     jsonSize: Long,
+//     wtnsBuffer: ByteArray,
+//     wtnsSize: LongArray,
+//     errorMsg: ByteArray,
+//     errorMsgMaxSize: Long): Int
+//   external fun witnesscalc_prove_ecdsa_secp256r1_sha256(circuitBuffer: ByteArray,
+//     circuitSize: Long,
+//     jsonBuffer: ByteArray,
+//     jsonSize: Long,
+//     wtnsBuffer: ByteArray,
+//     wtnsSize: LongArray,
+//     errorMsg: ByteArray,
+//     errorMsgMaxSize: Long): Int
   external fun groth16_prover(
       zkeyBuffer: ByteArray, zkeySize: Long,
       wtnsBuffer: ByteArray, wtnsSize: Long,
@@ -207,7 +243,7 @@ class ZKPUseCase(val context: Context) {
 
     fun generateZKP(
         zkey_path: String,
-        datId: Int,
+        datBytes: ByteArray,
         inputs: ByteArray,
         proofFunction: (
             circuitBuffer: ByteArray,
@@ -221,7 +257,7 @@ class ZKPUseCase(val context: Context) {
         ) -> Int
     ): ZkProof {
         val zkpTool = ZKPTools(context)
-        val datFile = zkpTool.openRawResourceAsByteArray(datId)
+        val datFile = datBytes
 
         val msg = ByteArray(256)
 
@@ -334,3 +370,4 @@ class ZKPUseCase(val context: Context) {
         return stringArray.toList()
     }
 }
+

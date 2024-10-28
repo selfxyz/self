@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { YStack, XStack, Text, Spinner, Progress } from 'tamagui';
 import { CheckCircle } from '@tamagui/lucide-icons';
-import { DEFAULT_MAJORITY, WEBSOCKET_URL, } from '../../../common/src/constants/constants';
-import { bgGreen, bgGreen2, greenColorLight, separatorColor, textBlack } from '../utils/colors';
+import { DEVELOPMENT_MODE, max_cert_bytes, } from '../../../common/src/constants/constants';
+import { bgGreen, greenColorLight, separatorColor, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
-import { AppType, ArgumentsProve } from '../../../common/src/utils/appType';
+import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/appType';
 import CustomButton from '../components/CustomButton';
-import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
-import { revealBitmapFromAttributes } from '../../../common/src/utils/revealBitmap';
-import { formatProof, generateProof } from '../utils/prover';
+import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitName, getSignatureAlgorithm } from '../../../common/src/utils/handleCertificate';
+import { getCircuitName, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
+import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
+import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
+import { generateCircuitInputsDSC, getCSCAFromSKI } from '../../../common/src/utils/csca';
+import { sendCSCARequest } from '../../../common/src/utils/csca';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -20,8 +22,8 @@ interface ProveScreenProps {
 
 const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => {
   const [generatingProof, setGeneratingProof] = useState(false);
-  const selectedApp = useNavigationStore(state => state.selectedApp) as AppType;
-  const disclosureOptions = (selectedApp as any).getDisclosureOptions();
+  const selectedApp = useNavigationStore(state => state.selectedApp) as OpenPassportApp;
+  const disclosureOptions = selectedApp.mode === 'register' ? {} : (selectedApp.args as any).disclosureOptions || {};
   const {
     toast,
     setSelectedTab,
@@ -35,10 +37,15 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     passportData,
   } = useUserStore()
 
+  if (!passportData) {
+    return <Text mt="$10" fontSize="$9" color={textBlack} textAlign='center' >No passport data</Text>;
+  }
+
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashFunction } = getSignatureAlgorithm(passportData.dsc as string);
-  const circuitName = getCircuitName(selectedApp.circuit, signatureAlgorithm, hashFunction);
+  const { signatureAlgorithm, hashFunction, authorityKeyIdentifier } = parseCertificate(passportData.dsc);
+  const { secret, dscSecret } = useUserStore.getState();
+  const circuitName = getCircuitName(selectedApp.mode, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -56,7 +63,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
     let newSocket: Socket | null = null;
 
     try {
-      newSocket = io(WEBSOCKET_URL, {
+      newSocket = io(selectedApp.websocketUrl, {
         path: '/websocket',
         transports: ['websocket'],
         query: { sessionId: selectedApp.sessionId, clientType: 'mobile' }
@@ -81,12 +88,11 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       });
 
       newSocket.on('proof_verification_result', (result) => {
-        console.log('Proof verification result:', result);
         setProofVerificationResult(JSON.parse(result));
         console.log("result", result);
         if (JSON.parse(result).valid) {
           toast.show("✅", {
-            message: "Proof verified",
+            message: "Identity verified",
             customData: {
               type: "success",
             },
@@ -96,7 +102,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
           }, 700);
         } else {
           toast.show("❌", {
-            message: "Wrong proof",
+            message: "Verification failed",
             customData: {
               type: "info",
             },
@@ -139,81 +145,147 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
       setIsConnecting(false);
 
       socket.emit('proof_generation_start', { sessionId: selectedApp.sessionId });
-      const inputs = generateCircuitInputsProve(
-        passportData,
-        64, 32,
-        selectedApp.scope,
-        revealBitmapFromAttributes(disclosureOptions as any),
-        disclosureOptions?.older_than ?? DEFAULT_MAJORITY,
-        selectedApp.userId
-      );
-      const rawDscProof = await generateProof(
-        circuitName,
-        inputs,
-      );
-      const dscProof = formatProof(rawDscProof);
-      const response = { dsc: passportData.dsc, dscProof: dscProof, circuit: selectedApp.circuit }
-      console.log("response", response);
-      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: response });
+
+      const inputs = await generateCircuitInputsInApp(passportData, selectedApp);
+      let attestation;
+      let proof;
+      let dscProof;
+
+      switch (selectedApp.mode) {
+        case 'prove_onchain':
+        case 'register':
+          const cscaInputs = generateCircuitInputsDSC(dscSecret as string, passportData.dsc, max_cert_bytes, selectedApp.devMode);
+          [dscProof, proof] = await Promise.all([
+            sendCSCARequest(
+              cscaInputs
+            ),
+            generateProof(
+              circuitName,
+              inputs,
+            )
+          ]);
+          const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, DEVELOPMENT_MODE);
+          const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificate(cscaPem);
+          attestation = buildAttestation({
+            mode: selectedApp.mode,
+            proof: proof.proof,
+            publicSignals: proof.publicSignals,
+            signatureAlgorithm: signatureAlgorithm,
+            hashFunction: hashFunction,
+            userIdType: selectedApp.userIdType,
+            dscProof: (dscProof as any).proof,
+            dscPublicSignals: (dscProof as any).pub_signals,
+            signatureAlgorithmDsc: signatureAlgorithmDsc,
+            hashFunctionDsc: hashFunction,
+          });
+          break;
+        default:
+          proof = await generateProof(
+            circuitName,
+            inputs,
+          )
+          attestation = buildAttestation({
+            userIdType: selectedApp.userIdType,
+            mode: selectedApp.mode,
+            proof: proof.proof,
+            publicSignals: proof.publicSignals,
+            signatureAlgorithm: signatureAlgorithm,
+            hashFunction: hashFunction,
+            dsc: passportData.dsc,
+          });
+          break;
+      }
+      console.log("\x1b[90mattestation\x1b[0m", attestation);
+      socket.emit('proof_generated', { sessionId: selectedApp.sessionId, proof: attestation });
 
     } catch (error) {
       toast.show("Error", {
-        message: "Proof generation failed",
+        message: String(error),
         customData: {
           type: "error",
         },
       });
       console.error('Error in handleProve:', error);
+      if (socket) {
+        socket.emit('proof_generation_failed', { sessionId: selectedApp.sessionId });
+      }
     } finally {
       setGeneratingProof(false);
       setIsConnecting(false);
     }
   };
 
-
-
-
-  const disclosureFieldsToText = (key: string, value: string = "") => {
-    if (key === 'older_than') {
-      return `I am older than ${value} years old.`;
+  const disclosureFieldsToText = (key: keyof DisclosureOptions, option: any) => {
+    if (key === 'ofac') {
+      return (option == true)
+        ? `My name is not present in the OFAC list.`
+        : '';
     }
-    if (key === 'nationality') {
-      return `I have a valid passport from ${value}.`;
+    else if (option.enabled) {
+      switch (key) {
+        case 'minimumAge':
+          return `I am older than ${option.value} years old.`;
+        case 'nationality':
+          return `I have a valid passport from ${option.value}.`;
+        case 'excludedCountries':
+          return option.value.length > 0
+            ? `I am not part of the following countries: ${option.value
+
+              .join(', ')}.`
+            : '';
+        default:
+          return '';
+      }
     }
     return '';
-  }
+  };
+
+  const hasEnabledDisclosureOptions = Object.values(disclosureOptions).some(
+    (option: any) => option.enabled
+  );
 
   return (
     <YStack f={1} p="$3" pt="$8">
-      {Object.keys(disclosureOptions).length > 0 ? <YStack mt="$4">
+      {hasEnabledDisclosureOptions ? (
+        <YStack mt="$4">
+          <Text fontSize="$9">
+            <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+              {selectedApp.appName}
+            </Text>{' '}
+            is requesting you to prove the following information.
+          </Text>
+          <Text mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.9 }}>
+            No{' '}
+            <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+              other
+            </Text>{' '}
+            information than the one selected below will be shared with {selectedApp.appName}.
+          </Text>
+        </YStack>
+      ) : (
         <Text fontSize="$9">
-          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove the following information.
+          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>
+            {selectedApp.appName}
+          </Text>{' '}
+          is requesting you to prove you own a valid passport.
         </Text>
-        <Text mt="$3" fontSize="$8" color={textBlack} style={{ opacity: 0.9 }}>
-          No <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>other</Text> information than the one selected below will be shared with {selectedApp.name}.
-        </Text>
-      </YStack> :
-        <Text fontSize="$9">
-          <Text fow="bold" style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>{selectedApp.name}</Text> is requesting you to prove you own a valid passport.
-        </Text>
-      }
+      )}
 
       <YStack mt="$6">
-        {Object.keys(disclosureOptions).map((key) => {
-          return (
-            <XStack key={key} gap="$3" mb="$3" ml="$3" >
+        {Object.entries(disclosureOptions).map(([key, option]: [string, any]) => {
+          const text = disclosureFieldsToText(key as keyof DisclosureOptions, option);
+          return text ? (
+            <XStack key={key} gap="$3" mb="$3" ml="$3">
               <CheckCircle size={16} mt="$1.5" />
               <Text fontSize="$7" color={textBlack} w="85%">
-                {disclosureFieldsToText(key, (disclosureOptions as any)[key])}
+                {text}
               </Text>
             </XStack>
-          );
+          ) : null;
         })}
       </YStack>
 
       <XStack f={1} />
-      {/* <Text py="$4" textAlign="center" color={textBlack}>{isZkeyDownloading[circuitName as CircuitName] ? "Downloading zkey..." : "zkey downloaded"}</Text> */}
-
 
       {isZkeyDownloading[circuitName as CircuitName] && <YStack alignItems='center' gap="$2" mb="$3" mx="$8">
         <Text style={{ fontStyle: 'italic' }}>downloading files...</Text>

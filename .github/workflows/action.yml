@@ -37,13 +37,12 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
       - name: Setup Rust
         uses: dtolnay/rust-toolchain@stable
 
-      - name: Download Circom Binary v2.1.8
+      - name: Download Circom Binary v2.1.9
         run: |
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.8/circom-linux-amd64
+          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
           chmod +x /home/runner/work/circom
           sudo mv /home/runner/work/circom /bin/circom
 
@@ -58,6 +57,10 @@ jobs:
         working-directory: ./circuits
         run: yarn lint
 
-      - name: Run Tests
+      - name: Run Tests (Circuits)
         working-directory: ./circuits
+        run: yarn test
+
+      - name: Run Tests (Common)
+        working-directory: ./common
         run: yarn test

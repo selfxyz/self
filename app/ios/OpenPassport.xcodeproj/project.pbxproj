@@ -7,113 +7,38 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		054340B82C71B2960014B445 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 054340B72C71B2960014B445 /* AppDelegate.m */; };
-		054340BB2C71B2960014B445 /* SceneDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 054340BA2C71B2960014B445 /* SceneDelegate.m */; };
-		054340BE2C71B2960014B445 /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 054340BD2C71B2960014B445 /* ViewController.m */; };
-		054340C12C71B2960014B445 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 054340BF2C71B2960014B445 /* Main.storyboard */; };
-		054340C42C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 054340C22C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld */; };
-		054340C62C71B2980014B445 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 054340C52C71B2980014B445 /* Assets.xcassets */; };
-		054340C92C71B2980014B445 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 054340C72C71B2980014B445 /* LaunchScreen.storyboard */; };
-		054340CC2C71B2980014B445 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 054340CB2C71B2980014B445 /* main.m */; };
-		054340D02C71B2980014B445 /* OpenPassport App Clip.app in Embed App Clips */ = {isa = PBXBuildFile; fileRef = 054340B42C71B2960014B445 /* OpenPassport App Clip.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
-		05527D5C2C7743010077C942 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */; };
-		05527D5D2C7743010077C942 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */; };
-		05527D5E2C7743010077C942 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */; };
 		0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
 		0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35E2BBC98C9006670BD /* libfq.a */; };
-		0573C4D72C72E6D0006C7386 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CA2C72E6D0006C7386 /* PassportReader.swift */; };
-		0573C4D82C72E6D0006C7386 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CC2C72E6D0006C7386 /* PassportReader.m */; };
-		0573C4D92C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */; };
-		0573C4DA2C72E6D0006C7386 /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */; };
-		0573C4DB2C72E6D0006C7386 /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4CF2C72E6D0006C7386 /* Prover.m */; };
-		0573C4DC2C72E6D0006C7386 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */; };
-		0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */; };
-		0573C4DE2C72E6D0006C7386 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */; };
-		0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D32C72E6D0006C7386 /* LottieView.swift */; };
-		0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */; };
-		0573C4E12C72E6D0006C7386 /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D52C72E6D0006C7386 /* Prover.swift */; };
-		0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */; };
-		0573C4E42C72E7F6006C7386 /* libfq.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35E2BBC98C9006670BD /* libfq.a */; };
-		0573C4E52C72E7F6006C7386 /* libfr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F32BB331AB00F58EEA /* libfr.a */; };
-		0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
-		0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0569F35A2BBC900D006670BD /* librapidsnark.a */; };
-		0573C4E82C72E7F6006C7386 /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
-		0573C4E92C72E7F6006C7386 /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
-		0573C4EE2C72E857006C7386 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4ED2C72E857006C7386 /* passport.json */; };
-		0573C4F02C742FA6006C7386 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 0573C4EF2C742FA6006C7386 /* masterList.pem */; };
 		0573C4F42C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */; };
-		0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */; };
 		0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */; };
-		058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */; };
-		058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */; };
-		05B4DDF72C7850A90067519E /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05B4DDF62C7850A80067519E /* Images.xcassets */; };
 		05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F22BB331AB00F58EEA /* libgmp.a */; };
 		05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 05D985F32BB331AB00F58EEA /* libfr.a */; };
 		05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 05D985FA2BB3344600F58EEA /* Assets.xcassets */; };
-		05E2174E2E7E48EB80B9C8D8 /* Luciole-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */; };
 		05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC42B52D25D00AA51AD /* Prover.m */; };
 		05EDEDC72B52D25D00AA51AD /* Prover.swift in Sources */ = {isa = PBXBuildFile; fileRef = 05EDEDC52B52D25D00AA51AD /* Prover.swift */; };
-		0A6918EB0654476189741475 /* Inter-Light.otf in Resources */ = {isa = PBXBuildFile; fileRef = 780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */; };
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		15AAF7651FCF40EB993543A3 /* Inter-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */; };
+		163754792CBDD4BB008AE334 /* libwitnesscalc_vc_and_disclose.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 163754782CBDD4AB008AE334 /* libwitnesscalc_vc_and_disclose.a */; };
+		1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1648EB772CC9564D003BEA7D /* LottieView.swift */; };
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
+		167D93462C91B1E100530E6B /* libwitnesscalc_register_rsa_65537_sha1.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D93422C91AE0F00530E6B /* libwitnesscalc_register_rsa_65537_sha1.a */; };
+		167D93472C91B1E100530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D93432C91AE0F00530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a */; };
+		167D93492C91D2A300530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 167D93482C91D28500530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */; };
+		167D934A2C91D2EA00530E6B /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */; };
 		1686F0DC2C500F3800841CDE /* QRScannerBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */; };
 		1686F0DE2C500F4F00841CDE /* QRScannerViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */; };
 		1686F0E02C500FBD00841CDE /* QRScannerBridge.m in Sources */ = {isa = PBXBuildFile; fileRef = 1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */; };
-		16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E083892C4E7AF100CE8DB2 /* LottieView.swift */; };
 		16E6646E2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = 16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */; };
 		16E884A52C5BD764003B7125 /* passport.json in Resources */ = {isa = PBXBuildFile; fileRef = 16E884A42C5BD764003B7125 /* passport.json */; };
-		1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */ = {isa = PBXBuildFile; fileRef = 568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */; };
-		1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */; };
-		2CD45EA0A0A94063935CE7D3 /* Inter-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = DF4EC58B331A46F098343757 /* Inter-Regular.otf */; };
-		2FA7C90AFAF5417DAA7BCB1E /* Inter-Black.otf in Resources */ = {isa = PBXBuildFile; fileRef = 066DD67BD55B4E90941F2B97 /* Inter-Black.otf */; };
-		37AF1D1302824FFC83B6D1D2 /* Inter-ThinItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */; };
-		5A0E2800F0C34012B292255B /* Inter-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 449D98322BFA406CBB9E2648 /* Inter-Bold.otf */; };
-		625D35EA2F1643E89F9887CE /* Inter-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */; };
-		6959CC40713D4D42AA56850D /* Luciole-Regular-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */; };
-		6FA6BA98BE3F485982F5E962 /* Inter-SemiBold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */; };
-		749862C5A266413FBE508618 /* slkscr.woff in Resources */ = {isa = PBXBuildFile; fileRef = 98413C61772F41BD96F279F5 /* slkscr.woff */; };
+		205310F3BECB4ECF3B41887C /* Pods_OpenPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A19556C626C22D40B7D18E23 /* Pods_OpenPassport.framework */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
-		8362BCF2197E445C9CAFFD53 /* Inter-MediumItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */; };
 		905B70052A72767900AFA232 /* PassportReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 905B70042A72767900AFA232 /* PassportReader.swift */; };
 		905B70072A72774000AFA232 /* PassportReader.m in Sources */ = {isa = PBXBuildFile; fileRef = 905B70062A72774000AFA232 /* PassportReader.m */; };
-		905B700B2A72A5E900AFA232 /* masterList.pem in Resources */ = {isa = PBXBuildFile; fileRef = 905B700A2A72A5E900AFA232 /* masterList.pem */; };
-		926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */; };
-		9713779CBED04A308A0B2DF2 /* Inter-LightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */; };
-		98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 110D16BAD3FA4513BEA89A3A /* slkscr.ttf */; };
-		B7C1F08B40CC4C1985152F72 /* Inter-SemiBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */; };
-		B9E3D3D20C9F4863A67B66D3 /* Inter-Medium.otf in Resources */ = {isa = PBXBuildFile; fileRef = 53AEBBB143534D68B7792C46 /* Inter-Medium.otf */; };
-		C942C431B15D9EB7F90220BE /* Pods_OpenPassport_OpenPassportTests.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AC752CDC19F5CA03C154E950 /* Pods_OpenPassport_OpenPassportTests.framework */; };
-		C9B733B168F84BBA818C6CB8 /* Inter-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */; };
-		CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B3521C927F0DD22505739205 /* Pods_OpenPassport.framework */; };
-		CC99B59A281C4B6497C14141 /* Luciole-Bold-Italic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */; };
-		E4BC7CC193684992A11E3135 /* Inter-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */; };
-		E4E0715B819049EFACAF2AEE /* Luciole-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */; };
-		EEC491DF41A44001A577E8C5 /* Inter-Italic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 8716F728A49C438396CB79D3 /* Inter-Italic.otf */; };
-		F78FB2FC94E1443A8EE8EEC3 /* Inter-Thin.otf in Resources */ = {isa = PBXBuildFile; fileRef = B68457923C3F444388AB85F2 /* Inter-Thin.otf */; };
-		FA58D9C915314CF086BD7FFB /* slkscrb.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0AD24C885D29461481982641 /* slkscrb.ttf */; };
+		EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
-
-/* Begin PBXContainerItemProxy section */
-		00E356F41AD99517003FC87E /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
-			remoteInfo = OpenPassport;
-		};
-		054340CE2C71B2980014B445 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 83CBB9F71A601CBA00E9B192 /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 054340B32C71B2960014B445;
-			remoteInfo = "OpenPassport App Clip";
-		};
-/* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
 		054340D12C71B2980014B445 /* Embed App Clips */ = {
@@ -122,7 +47,6 @@
 			dstPath = "$(CONTENTS_FOLDER_PATH)/AppClips";
 			dstSubfolderSpec = 16;
 			files = (
-				054340D02C71B2980014B445 /* OpenPassport App Clip.app in Embed App Clips */,
 			);
 			name = "Embed App Clips";
 			runOnlyForDeploymentPostprocessing = 0;
@@ -130,9 +54,6 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		00E356EE1AD99517003FC87E /* OpenPassportTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenPassportTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		03D7F2F0EF44EF6300A9E4CD /* Pods-OpenPassport-OpenPassport App Clip.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport-OpenPassport App Clip.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip.release.xcconfig"; sourceTree = "<group>"; };
-		054340B42C71B2960014B445 /* OpenPassport App Clip.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "OpenPassport App Clip.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		054340B62C71B2960014B445 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		054340B72C71B2960014B445 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		054340B92C71B2960014B445 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
@@ -157,123 +78,69 @@
 		0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = SOURCE_ROOT; };
-		0573C4D32C72E6D0006C7386 /* LottieView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D52C72E6D0006C7386 /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = SOURCE_ROOT; };
 		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
 		0573C4EA2C72E7F6006C7386 /* groth16_prover.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = groth16_prover.h; sourceTree = "<group>"; };
 		0573C4ED2C72E857006C7386 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = SOURCE_ROOT; };
-		0573C4EF2C742FA6006C7386 /* masterList.pem */ = {isa = PBXFileReference; lastKnownFileType = text; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = SOURCE_ROOT; };
 		0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha1.a; sourceTree = "<group>"; };
 		0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsapss_65537_sha256.a; sourceTree = "<group>"; };
 		0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_prove_rsa_65537_sha256.a; sourceTree = "<group>"; };
-		058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_sha256WithRSAEncryption_65537.a; sourceTree = "<group>"; };
-		058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_disclose.a; sourceTree = "<group>"; };
 		05B4DDF62C7850A80067519E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "OpenPassport App Clip/Images.xcassets"; sourceTree = "<group>"; };
 		05D985F22BB331AB00F58EEA /* libgmp.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libgmp.a; sourceTree = "<group>"; };
 		05D985F32BB331AB00F58EEA /* libfr.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libfr.a; sourceTree = "<group>"; };
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
 		05EDEDC42B52D25D00AA51AD /* Prover.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Prover.m; sourceTree = "<group>"; };
 		05EDEDC52B52D25D00AA51AD /* Prover.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Prover.swift; sourceTree = "<group>"; };
-		066DD67BD55B4E90941F2B97 /* Inter-Black.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Black.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Black.otf"; sourceTree = "<group>"; };
-		0AD24C885D29461481982641 /* slkscrb.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscrb.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscrb.ttf"; sourceTree = "<group>"; };
-		0B18C6F4404CC83576C2F36A /* Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig"; sourceTree = "<group>"; };
-		0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BlackItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BlackItalic.otf"; sourceTree = "<group>"; };
-		110D16BAD3FA4513BEA89A3A /* slkscr.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.ttf; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.ttf"; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* OpenPassport.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = OpenPassport.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FAF1A68108700A75B9A /* AppDelegate.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AppDelegate.h; path = OpenPassport/AppDelegate.h; sourceTree = "<group>"; };
 		13B07FB01A68108700A75B9A /* AppDelegate.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = AppDelegate.mm; path = OpenPassport/AppDelegate.mm; sourceTree = "<group>"; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = OpenPassport/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = OpenPassport/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = OpenPassport/main.m; sourceTree = "<group>"; };
+		163754782CBDD4AB008AE334 /* libwitnesscalc_vc_and_disclose.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_vc_and_disclose.a; sourceTree = "<group>"; };
+		1648EB772CC9564D003BEA7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = "<group>"; };
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
+		167D93422C91AE0F00530E6B /* libwitnesscalc_register_rsa_65537_sha1.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_rsa_65537_sha1.a; sourceTree = "<group>"; };
+		167D93432C91AE0F00530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_rsapss_65537_sha256.a; sourceTree = "<group>"; };
+		167D93482C91D28500530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = libwitnesscalc_register_rsa_65537_sha256.a; sourceTree = "<group>"; };
 		1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = "<group>"; };
 		1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = "<group>"; };
 		1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = "<group>"; };
-		16E083892C4E7AF100CE8DB2 /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
+		169349842CC694DA00166F21 /* OpenPassportDebug.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassportDebug.entitlements; path = OpenPassport/OpenPassportDebug.entitlements; sourceTree = "<group>"; };
 		16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = "<group>"; };
 		16E884A42C5BD764003B7125 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = "<group>"; };
-		1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
-		38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-LightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-LightItalic.otf"; sourceTree = "<group>"; };
-		449D98322BFA406CBB9E2648 /* Inter-Bold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Bold.otf"; sourceTree = "<group>"; };
-		453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.debug.xcconfig"; sourceTree = "<group>"; };
-		4B084D2A6DF9460DCA9EE4BE /* Pods-OpenPassport App Clip.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport App Clip.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport App Clip/Pods-OpenPassport App Clip.debug.xcconfig"; sourceTree = "<group>"; };
-		53AEBBB143534D68B7792C46 /* Inter-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Medium.otf"; sourceTree = "<group>"; };
-		568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLight.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLight.otf"; sourceTree = "<group>"; };
-		5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBoldItalic.otf"; sourceTree = "<group>"; };
-		60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-MediumItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-MediumItalic.otf"; sourceTree = "<group>"; };
-		666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBold.otf"; sourceTree = "<group>"; };
-		67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraLightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraLightItalic.otf"; sourceTree = "<group>"; };
-		6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BoldItalic.otf"; sourceTree = "<group>"; };
-		714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Regular.ttf"; path = "../assets/fonts/Luciole-Regular.ttf"; sourceTree = "<group>"; };
-		780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Light.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Light.otf"; sourceTree = "<group>"; };
+		7C737C07B2C3788F9AB02DE4 /* Pods-OpenPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.release.xcconfig"; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = OpenPassport/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		8716F728A49C438396CB79D3 /* Inter-Italic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Italic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Italic.otf"; sourceTree = "<group>"; };
-		8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Regular-Italic.ttf"; path = "../assets/fonts/Luciole-Regular-Italic.ttf"; sourceTree = "<group>"; };
-		8A94FF2ACC255C722460867D /* Pods-OpenPassport-OpenPassportTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport-OpenPassportTests.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport-OpenPassportTests/Pods-OpenPassport-OpenPassportTests.release.xcconfig"; sourceTree = "<group>"; };
 		905B70032A72767800AFA232 /* OpenPassport-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "OpenPassport-Bridging-Header.h"; sourceTree = "<group>"; };
 		905B70042A72767900AFA232 /* PassportReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = "<group>"; };
 		905B70062A72774000AFA232 /* PassportReader.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = "<group>"; };
 		905B70082A729CD400AFA232 /* OpenPassport.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = OpenPassport.entitlements; path = OpenPassport/OpenPassport.entitlements; sourceTree = "<group>"; };
-		905B700A2A72A5E900AFA232 /* masterList.pem */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = masterList.pem; path = OpenPassport/masterList.pem; sourceTree = "<group>"; };
-		98413C61772F41BD96F279F5 /* slkscr.woff */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = slkscr.woff; path = "../node_modules/@tamagui/font-silkscreen/files/slkscr.woff"; sourceTree = "<group>"; };
-		ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Bold.ttf"; path = "../assets/fonts/Luciole-Bold.ttf"; sourceTree = "<group>"; };
-		AC752CDC19F5CA03C154E950 /* Pods_OpenPassport_OpenPassportTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport_OpenPassportTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B3521C927F0DD22505739205 /* Pods_OpenPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		B68457923C3F444388AB85F2 /* Inter-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Thin.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Thin.otf"; sourceTree = "<group>"; };
-		BAD0889E49DD94940404B318 /* Pods-OpenPassport App Clip.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport App Clip.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport App Clip/Pods-OpenPassport App Clip.release.xcconfig"; sourceTree = "<group>"; };
-		C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-SemiBoldItalic.otf"; sourceTree = "<group>"; };
-		D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ExtraBold.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ExtraBold.otf"; sourceTree = "<group>"; };
-		DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.release.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.release.xcconfig"; sourceTree = "<group>"; };
-		DEBCA1D9B9B7ED1BF998F4A1 /* Pods-OpenPassport-OpenPassportTests.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport-OpenPassportTests.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport-OpenPassportTests/Pods-OpenPassport-OpenPassportTests.debug.xcconfig"; sourceTree = "<group>"; };
-		DF4EC58B331A46F098343757 /* Inter-Regular.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Regular.otf"; sourceTree = "<group>"; };
+		A19556C626C22D40B7D18E23 /* Pods_OpenPassport.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		C9DDA5F7441C6B4DEC17FCC9 /* Pods-OpenPassport.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-OpenPassport.debug.xcconfig"; path = "Target Support Files/Pods-OpenPassport/Pods-OpenPassport.debug.xcconfig"; sourceTree = "<group>"; };
+		E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = OpenPassport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_OpenPassport_OpenPassport_App_Clip.framework; sourceTree = BUILT_PRODUCTS_DIR; };
-		F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Luciole-Bold-Italic.ttf"; path = "../assets/fonts/Luciole-Bold-Italic.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		00E356EB1AD99517003FC87E /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				C942C431B15D9EB7F90220BE /* Pods_OpenPassport_OpenPassportTests.framework in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		054340B12C71B2960014B445 /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				05527D5C2C7743010077C942 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */,
-				0573C4E92C72E7F6006C7386 /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */,
-				0573C4E52C72E7F6006C7386 /* libfr.a in Frameworks */,
-				0573C4E42C72E7F6006C7386 /* libfq.a in Frameworks */,
-				0573C4E62C72E7F6006C7386 /* libgmp.a in Frameworks */,
-				05527D5E2C7743010077C942 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
-				0573C4E72C72E7F6006C7386 /* librapidsnark.a in Frameworks */,
-				0573C4E82C72E7F6006C7386 /* libwitnesscalc_disclose.a in Frameworks */,
-				926E45294BCCFD19D5CD4AEF /* Pods_OpenPassport_OpenPassport_App_Clip.framework in Frameworks */,
-				05527D5D2C7743010077C942 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		13B07F8C1A680F5B00A75B9A /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				0573C4F42C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a in Frameworks */,
-				058516D52BF49B98006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a in Frameworks */,
 				05D985F52BB331AB00F58EEA /* libgmp.a in Frameworks */,
+				163754792CBDD4BB008AE334 /* libwitnesscalc_vc_and_disclose.a in Frameworks */,
+				167D93492C91D2A300530E6B /* libwitnesscalc_register_rsa_65537_sha256.a in Frameworks */,
+				167D93472C91B1E100530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a in Frameworks */,
 				0569F35F2BBC98D5006670BD /* libfq.a in Frameworks */,
 				0569F35B2BBC9015006670BD /* librapidsnark.a in Frameworks */,
 				0573C4F62C754600006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a in Frameworks */,
-				058516D42BF49B98006A14DA /* libwitnesscalc_disclose.a in Frameworks */,
 				05D985F62BB331AB00F58EEA /* libfr.a in Frameworks */,
-				CA9CD86025E82C8AE5193959 /* Pods_OpenPassport.framework in Frameworks */,
-				0573C4F52C754600006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
+				167D934A2C91D2EA00530E6B /* libwitnesscalc_prove_rsa_65537_sha256.a in Frameworks */,
+				167D93462C91B1E100530E6B /* libwitnesscalc_register_rsa_65537_sha1.a in Frameworks */,
+				205310F3BECB4ECF3B41887C /* Pods_OpenPassport.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,14 +153,12 @@
 				054340B62C71B2960014B445 /* AppDelegate.h */,
 				0573C4ED2C72E857006C7386 /* passport.json */,
 				054340B72C71B2960014B445 /* AppDelegate.m */,
-				0573C4D32C72E6D0006C7386 /* LottieView.swift */,
 				0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */,
 				0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */,
 				0573C4CB2C72E6D0006C7386 /* OpenPassport-Bridging-Header.h */,
 				0573C4CC2C72E6D0006C7386 /* PassportReader.m */,
 				0573C4CA2C72E6D0006C7386 /* PassportReader.swift */,
 				0573C4CF2C72E6D0006C7386 /* Prover.m */,
-				0573C4EF2C742FA6006C7386 /* masterList.pem */,
 				0573C4D52C72E6D0006C7386 /* Prover.swift */,
 				0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */,
 				0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */,
@@ -318,10 +183,10 @@
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
+				169349842CC694DA00166F21 /* OpenPassportDebug.entitlements */,
 				16E884A42C5BD764003B7125 /* passport.json */,
 				05EDEDC42B52D25D00AA51AD /* Prover.m */,
 				05EDEDC52B52D25D00AA51AD /* Prover.swift */,
-				905B700A2A72A5E900AFA232 /* masterList.pem */,
 				905B70082A729CD400AFA232 /* OpenPassport.entitlements */,
 				05D985F32BB331AB00F58EEA /* libfr.a */,
 				05D985FA2BB3344600F58EEA /* Assets.xcassets */,
@@ -336,13 +201,14 @@
 				905B70032A72767800AFA232 /* OpenPassport-Bridging-Header.h */,
 				165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */,
 				905B70062A72774000AFA232 /* PassportReader.m */,
-				16E083892C4E7AF100CE8DB2 /* LottieView.swift */,
 				165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */,
 				165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */,
 				16E6646D2B8D292500FDD6A0 /* QKMRZScannerViewRepresentable.swift */,
 				1686F0DB2C500F3800841CDE /* QRScannerBridge.swift */,
 				1686F0DF2C500FBD00841CDE /* QRScannerBridge.m */,
 				1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */,
+				E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */,
+				1648EB772CC9564D003BEA7D /* LottieView.swift */,
 			);
 			name = OpenPassport;
 			sourceTree = "<group>";
@@ -350,18 +216,18 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				163754782CBDD4AB008AE334 /* libwitnesscalc_vc_and_disclose.a */,
+				167D93482C91D28500530E6B /* libwitnesscalc_register_rsa_65537_sha256.a */,
+				167D93422C91AE0F00530E6B /* libwitnesscalc_register_rsa_65537_sha1.a */,
+				167D93432C91AE0F00530E6B /* libwitnesscalc_register_rsapss_65537_sha256.a */,
 				0573C4EA2C72E7F6006C7386 /* groth16_prover.h */,
 				0573C4F12C7545F6006C7386 /* libwitnesscalc_prove_rsa_65537_sha1.a */,
 				0573C4F32C7545F7006C7386 /* libwitnesscalc_prove_rsa_65537_sha256.a */,
 				0573C4F22C7545F7006C7386 /* libwitnesscalc_prove_rsapss_65537_sha256.a */,
-				058516D32BF49B91006A14DA /* libwitnesscalc_disclose.a */,
-				058516D22BF49B91006A14DA /* libwitnesscalc_register_sha256WithRSAEncryption_65537.a */,
 				0569F35E2BBC98C9006670BD /* libfq.a */,
 				0569F35A2BBC900D006670BD /* librapidsnark.a */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
-				B3521C927F0DD22505739205 /* Pods_OpenPassport.framework */,
-				AC752CDC19F5CA03C154E950 /* Pods_OpenPassport_OpenPassportTests.framework */,
-				F28D0EC9A537B138EDEDC422 /* Pods_OpenPassport_OpenPassport_App_Clip.framework */,
+				A19556C626C22D40B7D18E23 /* Pods_OpenPassport.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -369,31 +235,6 @@
 		48CFD94B265341A283033375 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				066DD67BD55B4E90941F2B97 /* Inter-Black.otf */,
-				0C76A5D3C00C4D19B7624F46 /* Inter-BlackItalic.otf */,
-				6F5E37006DF4462994FA8164 /* Inter-BoldItalic.otf */,
-				D20EA8C94F544E14AB58E6EB /* Inter-ExtraBold.otf */,
-				5686BD657D224A089EAFB825 /* Inter-ExtraBoldItalic.otf */,
-				568162F4DC4B4CDC8B341853 /* Inter-ExtraLight.otf */,
-				67F811D831354006A0A6FE2A /* Inter-ExtraLightItalic.otf */,
-				8716F728A49C438396CB79D3 /* Inter-Italic.otf */,
-				780F6F2600AE4EC1B21B6F44 /* Inter-Light.otf */,
-				38DEC0D33CBA43429A48B8E3 /* Inter-LightItalic.otf */,
-				53AEBBB143534D68B7792C46 /* Inter-Medium.otf */,
-				60F5BB028A4E49588D71E6CE /* Inter-MediumItalic.otf */,
-				DF4EC58B331A46F098343757 /* Inter-Regular.otf */,
-				666078AFC2DC4894ABC19DA5 /* Inter-SemiBold.otf */,
-				C03CCA67A92F47D59CDA16E5 /* Inter-SemiBoldItalic.otf */,
-				B68457923C3F444388AB85F2 /* Inter-Thin.otf */,
-				1CA9D245CD5A439D88F01D4F /* Inter-ThinItalic.otf */,
-				F59F295E9CC54539B2C48953 /* Luciole-Bold-Italic.ttf */,
-				ABB740B68A8141229E6118AC /* Luciole-Bold.ttf */,
-				8720D4D8B8BC41B79088D43C /* Luciole-Regular-Italic.ttf */,
-				714371FB26B944FFBE7F0B29 /* Luciole-Regular.ttf */,
-				110D16BAD3FA4513BEA89A3A /* slkscr.ttf */,
-				0AD24C885D29461481982641 /* slkscrb.ttf */,
-				98413C61772F41BD96F279F5 /* slkscr.woff */,
-				449D98322BFA406CBB9E2648 /* Inter-Bold.otf */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -426,8 +267,6 @@
 			isa = PBXGroup;
 			children = (
 				13B07F961A680F5B00A75B9A /* OpenPassport.app */,
-				00E356EE1AD99517003FC87E /* OpenPassportTests.xctest */,
-				054340B42C71B2960014B445 /* OpenPassport App Clip.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -435,14 +274,8 @@
 		BBD78D7AC51CEA395F1C20DB /* Pods */ = {
 			isa = PBXGroup;
 			children = (
-				453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */,
-				DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */,
-				DEBCA1D9B9B7ED1BF998F4A1 /* Pods-OpenPassport-OpenPassportTests.debug.xcconfig */,
-				8A94FF2ACC255C722460867D /* Pods-OpenPassport-OpenPassportTests.release.xcconfig */,
-				4B084D2A6DF9460DCA9EE4BE /* Pods-OpenPassport App Clip.debug.xcconfig */,
-				BAD0889E49DD94940404B318 /* Pods-OpenPassport App Clip.release.xcconfig */,
-				0B18C6F4404CC83576C2F36A /* Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig */,
-				03D7F2F0EF44EF6300A9E4CD /* Pods-OpenPassport-OpenPassport App Clip.release.xcconfig */,
+				C9DDA5F7441C6B4DEC17FCC9 /* Pods-OpenPassport.debug.xcconfig */,
+				7C737C07B2C3788F9AB02DE4 /* Pods-OpenPassport.release.xcconfig */,
 			);
 			path = Pods;
 			sourceTree = "<group>";
@@ -450,64 +283,23 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		00E356ED1AD99517003FC87E /* OpenPassportTests */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "OpenPassportTests" */;
-			buildPhases = (
-				095376EF00B07A916686CBD0 /* [CP] Check Pods Manifest.lock */,
-				00E356EA1AD99517003FC87E /* Sources */,
-				00E356EB1AD99517003FC87E /* Frameworks */,
-				00E356EC1AD99517003FC87E /* Resources */,
-				F5F0F71D37DB5C4B9CCFE9F5 /* [CP] Embed Pods Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-				00E356F51AD99517003FC87E /* PBXTargetDependency */,
-			);
-			name = OpenPassportTests;
-			productName = OpenPassportTests;
-			productReference = 00E356EE1AD99517003FC87E /* OpenPassportTests.xctest */;
-			productType = "com.apple.product-type.bundle.unit-test";
-		};
-		054340B32C71B2960014B445 /* OpenPassport App Clip */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = 054340D42C71B2980014B445 /* Build configuration list for PBXNativeTarget "OpenPassport App Clip" */;
-			buildPhases = (
-				C58A18F469AD91A0B2CC5615 /* [CP] Check Pods Manifest.lock */,
-				054340B02C71B2960014B445 /* Sources */,
-				054340B12C71B2960014B445 /* Frameworks */,
-				054340B22C71B2960014B445 /* Resources */,
-				054340D52C72904B0014B445 /* Start Packager */,
-				054340D62C7290C50014B445 /* Bundle React Native code and images */,
-				BD911A31EA0C67D2934076B6 /* [CP] Embed Pods Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = "OpenPassport App Clip";
-			productName = "OpenPassport App Clip";
-			productReference = 054340B42C71B2960014B445 /* OpenPassport App Clip.app */;
-			productType = "com.apple.product-type.application.on-demand-install-capable";
-		};
 		13B07F861A680F5B00A75B9A /* OpenPassport */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "OpenPassport" */;
 			buildPhases = (
-				0F781D3EBD6F8DD7E63316E1 /* [CP] Check Pods Manifest.lock */,
+				17F3EE4BABFEFEDC3C2AD3FC /* [CP] Check Pods Manifest.lock */,
 				FD10A7F022414F080027D42C /* Start Packager */,
 				13B07F871A680F5B00A75B9A /* Sources */,
 				13B07F8C1A680F5B00A75B9A /* Frameworks */,
 				13B07F8E1A680F5B00A75B9A /* Resources */,
 				00DD1BFF1BD5951E006B06BC /* Bundle React Native code and images */,
-				DF7986E9DBA454E2407E80A3 /* [CP] Embed Pods Frameworks */,
 				054340D12C71B2980014B445 /* Embed App Clips */,
+				A032F3F676B35028E7879043 /* [CP] Embed Pods Frameworks */,
+				C35A2C941C33076C64ACA128 /* [CP] Copy Pods Resources */,
 			);
 			buildRules = (
 			);
 			dependencies = (
-				054340CF2C71B2980014B445 /* PBXTargetDependency */,
 			);
 			name = OpenPassport;
 			productName = OpenPassport;
@@ -522,14 +314,6 @@
 			attributes = {
 				LastUpgradeCheck = 1520;
 				TargetAttributes = {
-					00E356ED1AD99517003FC87E = {
-						CreatedOnToolsVersion = 6.2;
-						TestTargetID = 13B07F861A680F5B00A75B9A;
-					};
-					054340B32C71B2960014B445 = {
-						CreatedOnToolsVersion = 15.2;
-						LastSwiftMigration = 1520;
-					};
 					13B07F861A680F5B00A75B9A = {
 						LastSwiftMigration = 1430;
 					};
@@ -549,67 +333,20 @@
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* OpenPassport */,
-				00E356ED1AD99517003FC87E /* OpenPassportTests */,
-				054340B32C71B2960014B445 /* OpenPassport App Clip */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		00E356EC1AD99517003FC87E /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		054340B22C71B2960014B445 /* Resources */ = {
-			isa = PBXResourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				054340C92C71B2980014B445 /* LaunchScreen.storyboard in Resources */,
-				0573C4F02C742FA6006C7386 /* masterList.pem in Resources */,
-				0573C4EE2C72E857006C7386 /* passport.json in Resources */,
-				054340C62C71B2980014B445 /* Assets.xcassets in Resources */,
-				05B4DDF72C7850A90067519E /* Images.xcassets in Resources */,
-				054340C12C71B2960014B445 /* Main.storyboard in Resources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		13B07F8E1A680F5B00A75B9A /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				905B700B2A72A5E900AFA232 /* masterList.pem in Resources */,
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
-				2FA7C90AFAF5417DAA7BCB1E /* Inter-Black.otf in Resources */,
-				C9B733B168F84BBA818C6CB8 /* Inter-BlackItalic.otf in Resources */,
-				15AAF7651FCF40EB993543A3 /* Inter-BoldItalic.otf in Resources */,
-				1D2A11340C7041909B820A90 /* Inter-ExtraBold.otf in Resources */,
-				E4BC7CC193684992A11E3135 /* Inter-ExtraBoldItalic.otf in Resources */,
-				1BA25F26C91C45F697D55099 /* Inter-ExtraLight.otf in Resources */,
 				05D985FB2BB3344600F58EEA /* Assets.xcassets in Resources */,
-				625D35EA2F1643E89F9887CE /* Inter-ExtraLightItalic.otf in Resources */,
-				EEC491DF41A44001A577E8C5 /* Inter-Italic.otf in Resources */,
-				0A6918EB0654476189741475 /* Inter-Light.otf in Resources */,
-				9713779CBED04A308A0B2DF2 /* Inter-LightItalic.otf in Resources */,
-				B9E3D3D20C9F4863A67B66D3 /* Inter-Medium.otf in Resources */,
-				8362BCF2197E445C9CAFFD53 /* Inter-MediumItalic.otf in Resources */,
-				2CD45EA0A0A94063935CE7D3 /* Inter-Regular.otf in Resources */,
-				6FA6BA98BE3F485982F5E962 /* Inter-SemiBold.otf in Resources */,
-				B7C1F08B40CC4C1985152F72 /* Inter-SemiBoldItalic.otf in Resources */,
-				F78FB2FC94E1443A8EE8EEC3 /* Inter-Thin.otf in Resources */,
-				37AF1D1302824FFC83B6D1D2 /* Inter-ThinItalic.otf in Resources */,
-				CC99B59A281C4B6497C14141 /* Luciole-Bold-Italic.ttf in Resources */,
-				05E2174E2E7E48EB80B9C8D8 /* Luciole-Bold.ttf in Resources */,
 				16E884A52C5BD764003B7125 /* passport.json in Resources */,
-				6959CC40713D4D42AA56850D /* Luciole-Regular-Italic.ttf in Resources */,
-				E4E0715B819049EFACAF2AEE /* Luciole-Regular.ttf in Resources */,
-				98D6CE33FC02453794D8DB08 /* slkscr.ttf in Resources */,
-				FA58D9C915314CF086BD7FFB /* slkscrb.ttf in Resources */,
-				749862C5A266413FBE508618 /* slkscr.woff in Resources */,
-				5A0E2800F0C34012B292255B /* Inter-Bold.otf in Resources */,
+				EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -632,67 +369,7 @@
 			shellPath = /bin/sh;
 			shellScript = "set -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE\"\n";
 		};
-		054340D52C72904B0014B445 /* Start Packager */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-			);
-			name = "Start Packager";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nexport RCT_METRO_PORT=\"${RCT_METRO_PORT:=8081}\"\necho \"export RCT_METRO_PORT=${RCT_METRO_PORT}\" > \"${SRCROOT}/../node_modules/react-native/scripts/.packager.env\"\nif [ -z \"${RCT_NO_LAUNCH_PACKAGER+xxx}\" ] ; then\n  if nc -w 5 -z localhost ${RCT_METRO_PORT} ; then\n    if ! curl -s \"http://localhost:${RCT_METRO_PORT}/status\" | grep -q \"packager-status:running\" ; then\n      echo \"Port ${RCT_METRO_PORT} already in use, packager is either not running or not running correctly\"\n      exit 2\n    fi\n  else\n    echo \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\"\n    open \"$SRCROOT/../node_modules/react-native/scripts/launchPackager.command\" || echo \"Can't start packager automatically\"\n  fi\nfi\n";
-		};
-		054340D62C7290C50014B445 /* Bundle React Native code and images */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"$(SRCROOT)/.xcode.env.local",
-				"$(SRCROOT)/.xcode.env",
-			);
-			name = "Bundle React Native code and images";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "# Type a script or drag a script file from your workspace to insert its path.\nset -e\n\nWITH_ENVIRONMENT=\"../node_modules/react-native/scripts/xcode/with-environment.sh\"\nREACT_NATIVE_XCODE=\"../node_modules/react-native/scripts/react-native-xcode.sh\"\n\n/bin/sh -c \"$WITH_ENVIRONMENT $REACT_NATIVE_XCODE index.clip.js\"\n";
-		};
-		095376EF00B07A916686CBD0 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-OpenPassport-OpenPassportTests-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		0F781D3EBD6F8DD7E63316E1 /* [CP] Check Pods Manifest.lock */ = {
+		17F3EE4BABFEFEDC3C2AD3FC /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -714,46 +391,7 @@
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
 			showEnvVarsInLog = 0;
 		};
-		BD911A31EA0C67D2934076B6 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassport App Clip/Pods-OpenPassport-OpenPassport App Clip-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
-		C58A18F469AD91A0B2CC5615 /* [CP] Check Pods Manifest.lock */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-			);
-			inputPaths = (
-				"${PODS_PODFILE_DIR_PATH}/Podfile.lock",
-				"${PODS_ROOT}/Manifest.lock",
-			);
-			name = "[CP] Check Pods Manifest.lock";
-			outputFileListPaths = (
-			);
-			outputPaths = (
-				"$(DERIVED_FILE_DIR)/Pods-OpenPassport-OpenPassport App Clip-checkManifestLockResult.txt",
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		DF7986E9DBA454E2407E80A3 /* [CP] Embed Pods Frameworks */ = {
+		A032F3F676B35028E7879043 /* [CP] Embed Pods Frameworks */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -770,21 +408,21 @@
 			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenPassport/Pods-OpenPassport-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
-		F5F0F71D37DB5C4B9CCFE9F5 /* [CP] Embed Pods Frameworks */ = {
+		C35A2C941C33076C64ACA128 /* [CP] Copy Pods Resources */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 			);
 			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassportTests/Pods-OpenPassport-OpenPassportTests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport/Pods-OpenPassport-resources-${CONFIGURATION}-input-files.xcfilelist",
 			);
-			name = "[CP] Embed Pods Frameworks";
+			name = "[CP] Copy Pods Resources";
 			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassportTests/Pods-OpenPassport-OpenPassportTests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
+				"${PODS_ROOT}/Target Support Files/Pods-OpenPassport/Pods-OpenPassport-resources-${CONFIGURATION}-output-files.xcfilelist",
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenPassport-OpenPassportTests/Pods-OpenPassport-OpenPassportTests-frameworks.sh\"\n";
+			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-OpenPassport/Pods-OpenPassport-resources.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 		FD10A7F022414F080027D42C /* Start Packager */ = {
@@ -809,37 +447,6 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		00E356EA1AD99517003FC87E /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		054340B02C71B2960014B445 /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				054340CC2C71B2980014B445 /* main.m in Sources */,
-				054340BE2C71B2960014B445 /* ViewController.m in Sources */,
-				0573C4DE2C72E6D0006C7386 /* MRZScannerModule.m in Sources */,
-				0573C4D72C72E6D0006C7386 /* PassportReader.swift in Sources */,
-				0573C4D82C72E6D0006C7386 /* PassportReader.m in Sources */,
-				0573C4E12C72E6D0006C7386 /* Prover.swift in Sources */,
-				0573C4DA2C72E6D0006C7386 /* QRScannerBridge.m in Sources */,
-				0573C4D92C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift in Sources */,
-				054340B82C71B2960014B445 /* AppDelegate.m in Sources */,
-				054340BB2C71B2960014B445 /* SceneDelegate.m in Sources */,
-				0573C4DD2C72E6D0006C7386 /* QRScannerViewController.swift in Sources */,
-				054340C42C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld in Sources */,
-				0573C4DF2C72E6D0006C7386 /* LottieView.swift in Sources */,
-				0573C4E02C72E6D0006C7386 /* ScannerHostingController.swift in Sources */,
-				0573C4E22C72E6D0006C7386 /* QRScannerBridge.swift in Sources */,
-				0573C4DB2C72E6D0006C7386 /* Prover.m in Sources */,
-				0573C4DC2C72E6D0006C7386 /* MRZScannerModule.swift in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		13B07F871A680F5B00A75B9A /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -855,26 +462,13 @@
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,
+				1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */,
 				05EDEDC62B52D25D00AA51AD /* Prover.m in Sources */,
-				16E0838A2C4E7AF100CE8DB2 /* LottieView.swift in Sources */,
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXTargetDependency section */
-		00E356F51AD99517003FC87E /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 13B07F861A680F5B00A75B9A /* OpenPassport */;
-			targetProxy = 00E356F41AD99517003FC87E /* PBXContainerItemProxy */;
-		};
-		054340CF2C71B2980014B445 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 054340B32C71B2960014B445 /* OpenPassport App Clip */;
-			targetProxy = 054340CE2C71B2980014B445 /* PBXContainerItemProxy */;
-		};
-/* End PBXTargetDependency section */
 
 /* Begin PBXVariantGroup section */
 		054340BF2C71B2960014B445 /* Main.storyboard */ = {
@@ -896,180 +490,18 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
-		00E356F61AD99517003FC87E /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = DEBCA1D9B9B7ED1BF998F4A1 /* Pods-OpenPassport-OpenPassportTests.debug.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
-				INFOPLIST_FILE = OpenPassportTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lc++",
-					"$(inherited)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenPassport.app/OpenPassport";
-			};
-			name = Debug;
-		};
-		00E356F71AD99517003FC87E /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 8A94FF2ACC255C722460867D /* Pods-OpenPassport-OpenPassportTests.release.xcconfig */;
-			buildSettings = {
-				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
-				BUNDLE_LOADER = "$(TEST_HOST)";
-				COPY_PHASE_STRIP = NO;
-				INFOPLIST_FILE = OpenPassportTests/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-					"@loader_path/Frameworks",
-				);
-				OTHER_LDFLAGS = (
-					"-ObjC",
-					"-lc++",
-					"$(inherited)",
-				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/OpenPassport.app/OpenPassport";
-			};
-			name = Release;
-		};
-		054340D22C71B2980014B445 /* Debug */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 0B18C6F4404CC83576C2F36A /* Pods-OpenPassport-OpenPassport App Clip.debug.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
-				CODE_SIGN_IDENTITY = "Apple Development";
-				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 54;
-				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "OpenPassport App Clip/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(SDKROOT)/usr/lib/swift",
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.6;
-				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
-				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport-Bridging-Header.h";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Debug;
-		};
-		054340D32C71B2980014B445 /* Release */ = {
-			isa = XCBuildConfiguration;
-			baseConfigurationReference = 03D7F2F0EF44EF6300A9E4CD /* Pods-OpenPassport-OpenPassport App Clip.release.xcconfig */;
-			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
-				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CLANG_ANALYZER_NONNULL = YES;
-				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
-				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
-				CLANG_ENABLE_MODULES = YES;
-				CLANG_ENABLE_OBJC_WEAK = YES;
-				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
-				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
-				CODE_SIGN_ENTITLEMENTS = "OpenPassport App Clip/OpenPassport_App_Clip.entitlements";
-				CODE_SIGN_STYLE = Automatic;
-				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 54;
-				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = 5B29R5LYHQ;
-				ENABLE_USER_SCRIPT_SANDBOXING = NO;
-				GCC_C_LANGUAGE_STANDARD = gnu17;
-				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_FILE = "OpenPassport App Clip/Info.plist";
-				INFOPLIST_KEY_CFBundleDisplayName = OpenPassport;
-				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
-				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
-				INFOPLIST_KEY_UIMainStoryboardFile = Main;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
-				LD_RUNPATH_SEARCH_PATHS = (
-					"$(inherited)",
-					"@executable_path/Frameworks",
-				);
-				LIBRARY_SEARCH_PATHS = (
-					"$(SDKROOT)/usr/lib/swift",
-					"$(inherited)",
-					"$(PROJECT_DIR)",
-				);
-				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
-				MARKETING_VERSION = 1.6;
-				MTL_FAST_MATH = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = com.warroom.proofofpassport.Clip;
-				PRODUCT_NAME = "$(TARGET_NAME)";
-				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
-				SUPPORTS_MACCATALYST = NO;
-				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OBJC_BRIDGING_HEADER = "$(PROJECT_DIR)/OpenPassport-Bridging-Header.h";
-				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = 1;
-			};
-			name = Release;
-		};
 		13B07F941A680F5B00A75B9A /* Debug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 453D60E43CC0F08D884424E7 /* Pods-OpenPassport.debug.xcconfig */;
+			baseConfigurationReference = C9DDA5F7441C6B4DEC17FCC9 /* Pods-OpenPassport.debug.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
-				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
+				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassportDebug.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 63;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				ENABLE_BITCODE = NO;
 				FRAMEWORK_SEARCH_PATHS = (
@@ -1183,7 +615,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.9.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1201,13 +633,14 @@
 		};
 		13B07F951A680F5B00A75B9A /* Release */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = DC9D466C01604E7CE1392D92 /* Pods-OpenPassport.release.xcconfig */;
+			baseConfigurationReference = 7C737C07B2C3788F9AB02DE4 /* Pods-OpenPassport.release.xcconfig */;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_ENTITLEMENTS = OpenPassport/OpenPassport.entitlements;
-				CURRENT_PROJECT_VERSION = 54;
+				CURRENT_PROJECT_VERSION = 63;
+				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 5B29R5LYHQ;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(inherited)",
@@ -1320,7 +753,7 @@
 					"$(PROJECT_DIR)",
 					"$(PROJECT_DIR)/MoproKit/Libs",
 				);
-				MARKETING_VERSION = 1.6;
+				MARKETING_VERSION = 1.9.6;
 				OTHER_LDFLAGS = (
 					"$(inherited)",
 					"-ObjC",
@@ -1338,8 +771,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -1365,6 +799,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = NO;
+				CXX = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -1390,9 +825,20 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1411,8 +857,14 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
+				USE_HERMES = false;
 			};
 			name = Debug;
 		};
@@ -1420,8 +872,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
+				CC = "";
 				CLANG_ANALYZER_LOCALIZABILITY_NONLOCALIZED = YES;
-				CLANG_CXX_LANGUAGE_STANDARD = "c++17";
+				CLANG_CXX_LANGUAGE_STANDARD = "c++20";
 				CLANG_CXX_LIBRARY = "libc++";
 				CLANG_ENABLE_MODULES = YES;
 				CLANG_ENABLE_OBJC_ARC = YES;
@@ -1447,6 +900,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				COPY_PHASE_STRIP = YES;
+				CXX = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				"EXCLUDED_ARCHS[sdk=iphonesimulator*]" = "";
@@ -1465,9 +919,20 @@
 					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon-Samples/ReactCommon_Samples.framework/Headers/platform/ios",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-NativeModulesApple/React_NativeModulesApple.framework/Headers",
 					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers/react/renderer/graphics/platform/ios",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/ReactCommon/ReactCommon.framework/Headers",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-Fabric/React_Fabric.framework/Headers/react/renderer/components/view/platform/cxx",
+					"${PODS_CONFIGURATION_BUILD_DIR}/React-graphics/React_graphics.framework/Headers",
 				);
 				INFOPLIST_KEY_NSCameraUsageDescription = "Needed to scan your passport MRZ, you can however enter it manually.";
 				IPHONEOS_DEPLOYMENT_TARGET = 12.4;
+				LD = "";
+				LDPLUSPLUS = "";
 				LD_RUNPATH_SEARCH_PATHS = (
 					/usr/lib/swift,
 					"$(inherited)",
@@ -1485,8 +950,13 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
+				OTHER_LDFLAGS = (
+					"$(inherited)",
+					" ",
+				);
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
+				USE_HERMES = false;
 				VALIDATE_PRODUCT = YES;
 			};
 			name = Release;
@@ -1494,24 +964,6 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		00E357021AD99517003FC87E /* Build configuration list for PBXNativeTarget "OpenPassportTests" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				00E356F61AD99517003FC87E /* Debug */,
-				00E356F71AD99517003FC87E /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
-		054340D42C71B2980014B445 /* Build configuration list for PBXNativeTarget "OpenPassport App Clip" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				054340D22C71B2980014B445 /* Debug */,
-				054340D32C71B2980014B445 /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Release;
-		};
 		13B07F931A680F5B00A75B9A /* Build configuration list for PBXNativeTarget "OpenPassport" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

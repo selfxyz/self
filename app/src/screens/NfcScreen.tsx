@@ -1,13 +1,11 @@
 import React, { useState } from 'react';
-import { YStack, Text, XStack, Button, ScrollView } from 'tamagui';
-import { bgGreen, borderColor, textBlack, textColor1 } from '../utils/colors';
+import { YStack, XStack, ScrollView } from 'tamagui';
 import { Carousel } from '../components/Carousel';
-import US_PASSPORT from '../images/us_passport.png'
-import REMOVE_CASE from '../images/remove_case.png'
-import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.png'
-import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.png'
-import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.png'
-import PHONE_SCANBUTTON from "../images/phone_scanbutton.png"
+import US_PASSPORT from '../images/us_passport.jpeg'
+import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.jpeg'
+import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.jpeg'
+import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.jpeg'
+import PHONE_SCANBUTTON from "../images/phone_scanbutton.jpeg"
 
 import Dialog from "react-native-dialog";
 import NfcManager from 'react-native-nfc-manager';
@@ -21,7 +19,7 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
   const [dialogVisible, setDialogVisible] = useState(false);
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
-  const carouselImages = [US_PASSPORT, REMOVE_CASE, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
+  const carouselImages = [US_PASSPORT, US_PASSPORT_LASTPAGE, Platform.OS === 'ios' ? US_PASSPORT_LASTPAGE_IOS : US_PASSPORT_LASTPAGE_ANDROID, PHONE_SCANBUTTON,];
 
   const openNfcSettings = () => {
     if (Platform.OS === 'ios') {
@@ -60,8 +58,7 @@ const NfcScreen: React.FC<NfcScreenProps> = ({ handleNFCScan }) => {
 
   return (
     <ScrollView flex={1} contentContainerStyle={{ flexGrow: 1 }}>
-      <YStack f={1} p="$3" >
-        <Text fontSize="$9" mt="$0" color={textBlack} mb="$4" ml="$2">Verify your passport using <Text fontSize="$9" color={textBlack} style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>NFC</Text></Text>
+      <YStack f={1} >
         <Carousel
           images={carouselImages}
           height={300}

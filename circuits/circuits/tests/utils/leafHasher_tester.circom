@@ -1,5 +1,5 @@
 pragma circom  2.1.6;
 
-include "../../utils/leafHasher.circom";
+include "../../utils/passport/computeCommitment.circom";
 
-component main = LeafHasher(32);
+component main = ComputeCommitment();

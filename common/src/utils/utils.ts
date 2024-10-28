@@ -1,9 +1,11 @@
-import { LeanIMT } from '@zk-kit/lean-imt';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
-import { sha384 } from 'js-sha512';
-import { SMT } from '@ashpect/smt';
+import { sha384, sha512_256 } from 'js-sha512';
+import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
+import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
+import { unpackReveal } from './revealBitmap';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -16,21 +18,23 @@ export function formatMrz(mrz: string) {
   return mrzCharcodes;
 }
 
-export function parsePubKeyString(pubKeyString: string) {
-  const modulusMatch = pubKeyString.match(/modulus: ([\w\d]+)\s*public/);
-  const publicExponentMatch = pubKeyString.match(/public exponent: (\w+)/);
+export function getNAndK(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
+  const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
+  const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
+  return { n, k };
+}
+export function getNAndKCSCA(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
+  const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_csca;
+  const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_csca;
+  return { n, k };
+}
 
-  const modulus = modulusMatch ? modulusMatch[1] : null;
-  const exponent = publicExponentMatch ? publicExponentMatch[1] : null;
-
-  if (!modulus || !exponent) {
-    throw new Error('Could not parse public key string');
+export function formatDg2Hash(dg2Hash: number[]) {
+  const unsignedBytesDg2Hash = dg2Hash.map((x) => toUnsignedByte(x));
+  while (unsignedBytesDg2Hash.length < 64) { // pad it to 64 bytes to correspond to the hash length of sha512 and avoid multiplying circuits
+    unsignedBytesDg2Hash.push(0);
   }
-
-  return {
-    modulus,
-    exponent,
-  };
+  return unsignedBytesDg2Hash;
 }
 
 export function formatAndConcatenateDataHashes(
@@ -46,7 +50,7 @@ export function formatAndConcatenateDataHashes(
     () => Math.floor(Math.random() * 256) - 128
   );
 
-  // sha256 with rsa (index of mrzhash is 31)
+  // // sha256 with rsa (index of mrzhash is 31)
   // const startingSequence = [
   //   // SEQUENCE + long form indicator + length (293 bytes)
   //   48, -126, 1, 37,
@@ -105,6 +109,9 @@ export function formatAndConcatenateDataHashes(
   for (const dataHash of dataHashes) {
     // console.log(`dataHash ${dataHash[0]}`, dataHash[1].map(byte => (byte < 0 ? byte + 256 : byte).toString(16).padStart(2, '0')).join(''));
 
+    //push 7 padding bytes
+    concat.push(...[0, 0, 0, 0, 0, 0, 0]);
+
     concat.push(...dataHash[1]);
     // concat.push(...[48, hashLen + 5, 2, 1, dataHash[0], 4, hashLen, ...dataHash[1]])
     // 48, 37, 2, 1, 1, 4, 32,
@@ -156,14 +163,14 @@ export const toBinaryString = (byte: any) => {
   return binary;
 };
 
-export function splitToWords(number: bigint, wordsize: bigint, numberElement: bigint) {
+export function splitToWords(number: bigint, wordsize: number, numberElement: number) {
   let t = number;
   const words: string[] = [];
-  for (let i = BigInt(0); i < numberElement; ++i) {
+  for (let i = 0; i < numberElement; ++i) {
     const baseTwo = BigInt(2);
 
-    words.push(`${t % BigInt(Math.pow(Number(baseTwo), Number(wordsize)))}`);
-    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), Number(wordsize))));
+    words.push(`${t % BigInt(Math.pow(Number(baseTwo), wordsize))}`);
+    t = BigInt(t / BigInt(Math.pow(Number(BigInt(2)), wordsize)));
   }
   if (!(t == BigInt(0))) {
     throw `Number ${number} does not fit in ${(wordsize * numberElement).toString()} bits`;
@@ -184,28 +191,25 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-
-export function hash(signatureAlgorithm: string, bytesArray: number[]): number[] {
+export function hash(hashFunction: string, bytesArray: number[]): number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
+  switch (hashFunction) {
+    case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
-    case 'SHA384withECDSA':
+    case 'sha256':
+      hashResult = sha256(unsignedBytesArray);
+      break;
+    case 'sha384':
       hashResult = sha384(unsignedBytesArray);
       break;
-    case 'sha256WithRSAEncryption':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'sha256WithRSASSAPSS':
-      hashResult = sha256(unsignedBytesArray);
-      break;
-    case 'ecdsa-with-SHA1':
-      hashResult = sha1(unsignedBytesArray);
+    case 'sha512':
+      hashResult = sha512_256(unsignedBytesArray);
       break;
     default:
+      console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red
       hashResult = sha256(unsignedBytesArray); // Default to sha256
   }
   return hexToSignedBytes(hashResult);
@@ -222,13 +226,6 @@ export function hexToSignedBytes(hexString: string): number[] {
 
 export function toUnsignedByte(signedByte: number) {
   return signedByte < 0 ? signedByte + 256 : signedByte;
-}
-
-export function formatSigAlgNameForCircuit(sigAlg: string, exponent?: string) {
-  // replace - by _, for instance for ecdsa-with-SHA256
-  sigAlg = sigAlg.replace(/-/g, '_');
-  // add exponent, for instance for sha256WithRSAEncryption
-  return exponent ? `${sigAlg}_${exponent}` : sigAlg;
 }
 
 export function bigIntToChunkedBytes(
@@ -273,23 +270,18 @@ export function getCurrentDateYYMMDD(dayDiff: number = 0): number[] {
   return Array.from(yymmdd).map((char) => parseInt(char));
 }
 
-export function getHashLen(signatureAlgorithm: string) {
-  switch (signatureAlgorithm) {
-    case 'sha1WithRSAEncryption':
-    case 'ecdsa-with-SHA1':
+export function getHashLen(hashFunction: string) {
+  switch (hashFunction) {
+    case 'sha1':
       return 20;
-    case 'sha256WithRSAEncryption':
-    case 'rsassaPss':
-    case 'ecdsa-with-SHA256':
+    case 'sha256':
       return 32;
-    case 'sha384WithRSAEncryption':
-    case 'ecdsa-with-SHA384':
+    case 'sha384':
       return 48;
-    case 'sha512WithRSAEncryption':
-    case 'ecdsa-with-SHA512':
+    case 'sha512':
       return 64;
     default:
-      console.log(`${signatureAlgorithm} not found in getHashLen`);
+      console.log(`${hashFunction} not found in getHashLen`);
       return 32;
   }
 }
@@ -400,22 +392,8 @@ export function extractRSFromSignature(signatureBytes: number[]): { r: string; s
   return { r, s };
 }
 
-export function BigintToArray(n: number, k: number, x: bigint) {
-  let mod: bigint = 1n;
-  for (var idx = 0; idx < n; idx++) {
-    mod = mod * 2n;
-  }
-
-  let ret: bigint[] = [];
-  var x_temp: bigint = x;
-  for (var idx = 0; idx < k; idx++) {
-    ret.push(x_temp % mod);
-    x_temp = x_temp / mod;
-  }
-  return ret;
-}
-
 /// UUID
+
 function hexToBigInt(hex: string): bigint {
   return BigInt(`0x${hex}`);
 }
@@ -454,8 +432,8 @@ export function castToUUID(bigInt: bigint): string {
 
 /// scope
 function checkStringLength(str: string) {
-  if (str.length > 30) {
-    throw new Error("Input string must not exceed 30 characters");
+  if (str.length > 25) {
+    throw new Error("Input string must not exceed 25 characters");
   }
 }
 
@@ -512,4 +490,97 @@ export function num2Bits(n: number, inValue: bigint): bigint[] {
     throw new Error("Reconstructed value does not match the input.");
   }
   return out;
+}
+
+// custom user_identifier type validation
+
+export type UserIdType = 'ascii' | 'hex' | 'uuid';
+
+const validateUserId = (userId: string, type: UserIdType): boolean => {
+  switch (type) {
+    case 'ascii':
+      return /^[\x00-\xFF]+$/.test(userId);
+    case 'hex':
+      return /^[0-9A-Fa-f]+$/.test(userId);
+    case 'uuid':
+      return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(userId);
+    default:
+      return false;
+  }
+}
+
+const getMaxLenght = (idType: UserIdType) => {
+  switch (idType) {
+    case 'ascii':
+      return 25;
+    default:
+      return 63;
+  }
+}
+
+export const parseUIDToBigInt = (user_identifier: string, user_identifier_type: UserIdType): string => {
+  if (!validateUserId(user_identifier, user_identifier_type)) {
+    throw new Error(`User identifier of type ${user_identifier_type} is not valid`);
+  }
+
+  const maxLength = getMaxLenght(user_identifier_type);
+  if (user_identifier.length > maxLength) {
+    throw new Error(`User identifier of type ${user_identifier_type} exceeds maximum length of ${maxLength} characters`);
+  }
+
+  switch (user_identifier_type) {
+    case 'ascii':
+      return stringToBigInt(user_identifier).toString();
+    case 'hex':
+      return hexToBigInt(user_identifier).toString();
+    case 'uuid':
+      return uuidToBigInt(user_identifier).toString();
+  }
+}
+
+export function formatCountriesList(countries: string[]) {
+  if (countries.length > 20) {
+    throw new Error("Countries list must be inferior or equals to 20");
+  }
+  const paddedCountries = countries.concat(Array(20 - countries.length).fill(''));
+  const result = paddedCountries.flatMap(country => {
+    const chars = country.padEnd(3, '\0').split('').map(char => char.charCodeAt(0));
+    return chars;
+  });
+  return result;
+}
+
+
+export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribute: string) {
+  const position = attributeToPosition[attribute];
+  let attributeValue = '';
+  for (let i = position[0]; i <= position[1]; i++) {
+    if (unpackedReveal[i] !== '\u0000') {
+      attributeValue += unpackedReveal[i];
+    }
+  }
+  return attributeValue;
+}
+
+export function formatForbiddenCountriesListFromCircuitOutput(forbiddenCountriesList: string[]): string[] {
+  const countryList1 = unpackReveal(forbiddenCountriesList[0]);
+  const countryList2 = unpackReveal(forbiddenCountriesList[1]);
+  const concatenatedCountryList = countryList1.concat(countryList2);
+  // dump every '\x00' value from the list
+  const cleanedCountryList = concatenatedCountryList.filter(value => value !== '\x00');
+  // Concatenate every 3 elements to form country codes
+  const formattedCountryList = [];
+  for (let i = 0; i < cleanedCountryList.length; i += 3) {
+    const countryCode = cleanedCountryList.slice(i, i + 3).join('');
+    if (countryCode.length === 3) {
+      formattedCountryList.push(countryCode);
+    }
+  }
+  return formattedCountryList;
+}
+
+export function getOlderThanFromCircuitOutput(olderThan: string[]): number {
+  const ageString = olderThan.map(code => String.fromCharCode(parseInt(code))).join('');
+  const age = parseInt(ageString, 10);
+  return isNaN(age) ? 0 : age;
 }

@@ -102,23 +102,23 @@ set(LIB_SOURCES
 # target_compile_definitions(register_sha256WithRSAEncryption_65537 PUBLIC CIRCUIT_NAME=register_sha256WithRSAEncryption_65537)
 
 
-# disclose
-# set(disclose_SOURCES ${LIB_SOURCES}
-#     disclose.cpp
-#     witnesscalc_disclose.h
-#     witnesscalc_disclose.cpp
-#     )
+# vc_and_disclose
+set(vc_and_disclose_SOURCES ${LIB_SOURCES}
+    vc_and_disclose.cpp
+    witnesscalc_vc_and_disclose.h
+    witnesscalc_vc_and_disclose.cpp
+    )
 
-# add_library(witnesscalc_disclose SHARED ${disclose_SOURCES})
-# add_library(witnesscalc_discloseStatic STATIC ${disclose_SOURCES})
-# set_target_properties(witnesscalc_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_disclose)
+add_library(witnesscalc_vc_and_disclose SHARED ${vc_and_disclose_SOURCES})
+add_library(witnesscalc_vc_and_discloseStatic STATIC ${vc_and_disclose_SOURCES})
+set_target_properties(witnesscalc_vc_and_discloseStatic PROPERTIES OUTPUT_NAME witnesscalc_vc_and_disclose)
 
-# add_executable(disclose main.cpp)
-# target_link_libraries(disclose witnesscalc_discloseStatic)
+add_executable(vc_and_disclose main.cpp)
+target_link_libraries(vc_and_disclose witnesscalc_vc_and_discloseStatic)
 
-# target_compile_definitions(witnesscalc_disclose PUBLIC CIRCUIT_NAME=disclose)
-# target_compile_definitions(witnesscalc_discloseStatic PUBLIC CIRCUIT_NAME=disclose)
-# target_compile_definitions(disclose PUBLIC CIRCUIT_NAME=disclose)
+target_compile_definitions(witnesscalc_vc_and_disclose PUBLIC CIRCUIT_NAME=vc_and_disclose)
+target_compile_definitions(witnesscalc_vc_and_discloseStatic PUBLIC CIRCUIT_NAME=vc_and_disclose)
+target_compile_definitions(vc_and_disclose PUBLIC CIRCUIT_NAME=vc_and_disclose)
 
 
 
@@ -177,3 +177,58 @@ target_link_libraries(prove_rsapss_65537_sha256 witnesscalc_prove_rsapss_65537_s
 target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
 target_compile_definitions(witnesscalc_prove_rsapss_65537_sha256Static PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
 target_compile_definitions(prove_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=prove_rsapss_65537_sha256)
+
+# register_rsa_65537_sha256
+# set(register_rsa_65537_sha256_SOURCES ${LIB_SOURCES}
+#     register_rsa_65537_sha256.cpp
+#     witnesscalc_register_rsa_65537_sha256.h
+#     witnesscalc_register_rsa_65537_sha256.cpp
+#     )
+
+# add_library(witnesscalc_register_rsa_65537_sha256 SHARED ${register_rsa_65537_sha256_SOURCES})
+# add_library(witnesscalc_register_rsa_65537_sha256Static STATIC ${register_rsa_65537_sha256_SOURCES})
+# set_target_properties(witnesscalc_register_rsa_65537_sha256Static PROPERTIES OUTPUT_NAME witnesscalc_register_rsa_65537_sha256)
+
+# add_executable(register_rsa_65537_sha256 main.cpp)
+# target_link_libraries(register_rsa_65537_sha256 witnesscalc_register_rsa_65537_sha256Static)
+
+# target_compile_definitions(witnesscalc_register_rsa_65537_sha256 PUBLIC CIRCUIT_NAME=register_rsa_65537_sha256)
+# target_compile_definitions(witnesscalc_register_rsa_65537_sha256Static PUBLIC CIRCUIT_NAME=register_rsa_65537_sha256)
+# target_compile_definitions(register_rsa_65537_sha256 PUBLIC CIRCUIT_NAME=register_rsa_65537_sha256)
+
+
+# # register_rsa_65537_sha1
+# set(register_rsa_65537_sha1_SOURCES ${LIB_SOURCES}
+#     register_rsa_65537_sha1.cpp
+#     witnesscalc_register_rsa_65537_sha1.h
+#     witnesscalc_register_rsa_65537_sha1.cpp
+#     )
+
+# add_library(witnesscalc_register_rsa_65537_sha1 SHARED ${register_rsa_65537_sha1_SOURCES})
+# add_library(witnesscalc_register_rsa_65537_sha1Static STATIC ${register_rsa_65537_sha1_SOURCES})
+# set_target_properties(witnesscalc_register_rsa_65537_sha1Static PROPERTIES OUTPUT_NAME witnesscalc_register_rsa_65537_sha1)
+
+# add_executable(register_rsa_65537_sha1 main.cpp)
+# target_link_libraries(register_rsa_65537_sha1 witnesscalc_register_rsa_65537_sha1Static)
+
+# target_compile_definitions(witnesscalc_register_rsa_65537_sha1 PUBLIC CIRCUIT_NAME=register_rsa_65537_sha1)
+# target_compile_definitions(witnesscalc_register_rsa_65537_sha1Static PUBLIC CIRCUIT_NAME=register_rsa_65537_sha1)
+# target_compile_definitions(register_rsa_65537_sha1 PUBLIC CIRCUIT_NAME=register_rsa_65537_sha1)
+
+# # register_rsapss_65537_sha256
+# set(register_rsapss_65537_sha256_SOURCES ${LIB_SOURCES}
+#     register_rsapss_65537_sha256.cpp
+#     witnesscalc_register_rsapss_65537_sha256.h
+#     witnesscalc_register_rsapss_65537_sha256.cpp
+#     )
+
+# add_library(witnesscalc_register_rsapss_65537_sha256 SHARED ${register_rsapss_65537_sha256_SOURCES})
+# add_library(witnesscalc_register_rsapss_65537_sha256Static STATIC ${register_rsapss_65537_sha256_SOURCES})
+# set_target_properties(witnesscalc_register_rsapss_65537_sha256Static PROPERTIES OUTPUT_NAME witnesscalc_register_rsapss_65537_sha256)
+
+# add_executable(register_rsapss_65537_sha256 main.cpp)
+# target_link_libraries(register_rsapss_65537_sha256 witnesscalc_register_rsapss_65537_sha256Static)
+
+# target_compile_definitions(witnesscalc_register_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=register_rsapss_65537_sha256)
+# target_compile_definitions(witnesscalc_register_rsapss_65537_sha256Static PUBLIC CIRCUIT_NAME=register_rsapss_65537_sha256)
+# target_compile_definitions(register_rsapss_65537_sha256 PUBLIC CIRCUIT_NAME=register_rsapss_65537_sha256)

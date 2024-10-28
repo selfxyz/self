@@ -1,8 +1,8 @@
 #import "AppDelegate.h"
-
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTRootView.h>
 #import <React/RCTBridge.h>
+#import <React/RCTLinkingManager.h>
 
 @implementation AppDelegate
 
@@ -18,11 +18,25 @@
 
 - (NSURL *)sourceURLForBridge:(RCTBridge *)bridge
 {
+  return [self bundleURL];
+}
+ 
+- (NSURL *)bundleURL
+{
 #if DEBUG
   return [[RCTBundleURLProvider sharedSettings] jsBundleURLForBundleRoot:@"index"];
 #else
   return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
 #endif
+}
+
+- (BOOL)application:(UIApplication *)application
+continueUserActivity:(NSUserActivity *)userActivity
+ restorationHandler:(void (^)(NSArray<id<UIUserActivityRestoring>> * _Nullable))restorationHandler
+{
+  return [RCTLinkingManager application:application
+                   continueUserActivity:userActivity
+                     restorationHandler:restorationHandler];
 }
 
 @end

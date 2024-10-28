@@ -5,12 +5,12 @@
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW"/>
     <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
     
     <application
         android:usesCleartextTraffic="true"
         tools:targetApi="28"
-        tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" android:exported="false" />
-    </application>
+        tools:ignore="GoogleAppIndexingWarning"
+    />
+
 </manifest>

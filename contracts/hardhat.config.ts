@@ -3,12 +3,11 @@ import "@nomicfoundation/hardhat-toolbox";
 require("dotenv").config();
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
-
-const { PKEY, OPTIMISM_SEPOLIA_RPC_URL } = process.env;
+import 'solidity-coverage';
 
 const config: HardhatUserConfig = {
   solidity: {
-    version: "0.8.18",
+    version: "0.8.28",
     settings: {
       optimizer: {
         enabled: true,
@@ -36,36 +35,39 @@ const config: HardhatUserConfig = {
       url: "http://127.0.0.1:8545",
       accounts: ["0xdf57089febbacf7ba0bc227dafbffa9fc08a93fdc68e1e42411a14efcf23656e"]
     },
-    goerli: {
-      url: "https://eth-goerli.public.blastapi.io",
-      accounts: [process.env.PKEY as string],
-    },
+    // goerli: {
+    //   url: "https://eth-goerli.public.blastapi.io",
+    //   accounts: [process.env.PKEY as string],
+    // },
     polygon: {
-      url: "https://polygon.llamarpc.com",
+      url: process.env.POLYGON_RPC_URL || "https://polygon.llamarpc.com",
       accounts: [process.env.PKEY as string],
     },
     mumbai: {
-      url: "https://polygon-mumbai-bor.publicnode.com",
+      url: process.env.MUMBAI_RPC_URL || "https://polygon-mumbai-bor.publicnode.com",
       accounts: [process.env.PKEY as string],
     },
     sepolia: {
-      url: "https://eth-sepolia.public.blastapi.io",
+      url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
       accounts: [process.env.PKEY as string],
       gasPrice: 6 * 10 ** 9, 
     },
     optimismSepolia: {
-      url: "https://opt-sepolia.g.alchemy.com/v2/t30F1rBnOskwo0M0Q4Re6bXQHQPpW_Sz",
+      url: process.env.OPTIMISM_SEPOLIA_RPC_URL || "https://sepolia.optimism.io",
       accounts: [process.env.PKEY as string],
       gasPrice: 5 * 10 ** 9, // Optimism uses a different gas mechanism, set to 0 for automatic handling
     },
     optimism: {
-      url: "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL",
-      accounts: [process.env.PKEY_OP as string],
+      url: process.env.OPTIMISM_RPC_URL || "https://mainnet.optimism.io",
+      accounts: [process.env.PKEY as string],
     }
   },
   etherscan: {
-    //apiKey: "GSZW9CN933WI4N3ZMQF9XCX9R6AC2H9IZF", ethereum
-    apiKey: "86Q5KMJ24TADN1WRUUVSDK31IAR44I1J4K" // optimism
+    apiKey: {
+      sepolia: process.env.ETHERSCAN_API_KEY as string,
+      ethereum: process.env.ETHERSCAN_API_KEY as string,
+      optimism: process.env.OPTIMISMSCAN_API_KEY as string
+    }
   }
 };
 

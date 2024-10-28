@@ -2,10 +2,6 @@
 # yarn lockfile v1
 
 
-"@ashpect/smt@https://github.com/ashpect/smt#main":
-  version "1.0.0"
-  resolved "https://github.com/ashpect/smt#4f73fd24adb06a7f8efd6fd2d3ed58e9e2f2691a"
-
 "@cspotcode/source-map-support@^0.8.0":
   version "0.8.1"
   resolved "https://registry.yarnpkg.com/@cspotcode/source-map-support/-/source-map-support-0.8.1.tgz#00629c35a688e05a88b1cda684fb9d5e73f000a1"
@@ -398,6 +394,32 @@
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.4.0.tgz#45814aa329f30e4fe0ba49426f49dfccdd066426"
   integrity sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==
 
+"@openpassport/zk-kit-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-imt/-/zk-kit-imt-0.0.4.tgz#ec36d3d58a9056dab0669737c42bb130245868c3"
+  integrity sha512-6jIa3tUXt4axf6LqeNn5QrFWMu1k6wAzg2XbeNyCXXz5KU6R4R2No5RpGIycE6JgMgn8rQlJ2O7ia8v4xK34Bg==
+  dependencies:
+    "@openpassport/zk-kit-utils" "0.0.1"
+
+"@openpassport/zk-kit-lean-imt@^0.0.4":
+  version "0.0.4"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-lean-imt/-/zk-kit-lean-imt-0.0.4.tgz#ed75d332513f6149965f9247dac971f89485d1cc"
+  integrity sha512-RrchSaI8GJ3O95K8xsOzMl1itmft7iTtnNQbxiuh5jx5SvSUpImSIvGRw1JFBBEtB2++cCoO9w84RN363ekWJw==
+  dependencies:
+    "@openpassport/zk-kit-utils" "0.0.1"
+
+"@openpassport/zk-kit-smt@^0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-smt/-/zk-kit-smt-0.0.1.tgz#d447ed24e7b57146d5dee8d7458ac3886346b4d2"
+  integrity sha512-P7Hkd5fD8JxGbqJ48lUq6gGKmZTaVzCB5I8FsOSUmljqf7VMeZmbyqo2ZmXt/lk6ltPXrmcrQ+QNhHXKZNcWhg==
+
+"@openpassport/zk-kit-utils@0.0.1":
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@openpassport/zk-kit-utils/-/zk-kit-utils-0.0.1.tgz#b0ad083c411bc7bcc1051516a76ada528a283a3a"
+  integrity sha512-T7jZ3vn+iCAPnvMS+NLg3Yj4ixF2xXG/geFkyNi48beEFd1hD/2Yca05QP+g2iaJAsIRvllwtni5SuLXGwv5Xw==
+  dependencies:
+    buffer "^6.0.3"
+
 "@tsconfig/node10@^1.0.7":
   version "1.0.9"
   resolved "https://registry.yarnpkg.com/@tsconfig/node10/-/node10-1.0.9.tgz#df4907fc07a886922637b15e02d4cebc4c0021b2"
@@ -521,24 +543,6 @@
   integrity sha512-ZJBkmm//iFlDB3pQOWAOqSCeUQFYWzI00a980jjbEcuzQgq2PqBxiq36TFxnZHkbrOh39XpeWOoEpCXRkjS2KQ==
   dependencies:
     circomlib "^2.0.5"
-
-"@zk-kit/imt@https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675":
-  version "2.0.0-beta.1"
-  resolved "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675#38244ea6eef75dc1ad7fff3ff2a22dd5f1a2593a"
-
-"@zk-kit/lean-imt@^2.0.1":
-  version "2.0.1"
-  resolved "https://registry.yarnpkg.com/@zk-kit/lean-imt/-/lean-imt-2.0.1.tgz#78af48b384b083e4a3f003036a40a4ea3cb102c0"
-  integrity sha512-yc0rh9BCY6VvvKrZUNejfucuWscy1iRb9JrppuJktsiA9HcEukB3oX9CB7N/CUmCtqzmdwybet6N2aglGL/SUQ==
-  dependencies:
-    "@zk-kit/utils" "1.0.0"
-
-"@zk-kit/utils@1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@zk-kit/utils/-/utils-1.0.0.tgz#db1af01a4e60f5290734a26c2fd9e863bff049e3"
-  integrity sha512-v5UjrZiaRNAN2UJmTFHvlMktaA2Efc2qN1Mwd4060ExX12yRhY8ZhzdlDODhnuHkvW5zPukuBHgQhHMScNP3Pg==
-  dependencies:
-    buffer "^6.0.3"
 
 acorn-walk@^8.1.1:
   version "8.3.2"
@@ -881,9 +885,9 @@ circom_tester@^0.0.19:
     tmp-promise "^3.0.3"
     util "^0.12.4"
 
-"circom_tester@github:Atomic-Buy/circom_tester#main":
+"circom_tester@github:remicolin/circom_tester#main":
   version "0.0.20"
-  resolved "https://codeload.github.com/Atomic-Buy/circom_tester/tar.gz/cf7d7a60bddcffc2388f0acaf44f38bb00d6f2f6"
+  resolved "https://codeload.github.com/remicolin/circom_tester/tar.gz/81e963cea5fb91ca31126058c8fdc9aafc9d695d"
   dependencies:
     chai "^4.3.6"
     ffjavascript "^0.2.60"
@@ -943,6 +947,11 @@ create-require@^1.1.0:
   version "1.1.1"
   resolved "https://registry.yarnpkg.com/create-require/-/create-require-1.1.1.tgz#c1d7e8f1e5f6cfc9ff65f9cd352d37348756c333"
   integrity sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==
+
+crypto@^1.0.1:
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/crypto/-/crypto-1.0.1.tgz#2af1b7cad8175d24c8a1b0778255794a21803037"
+  integrity sha512-VxBKmeNcqQdiUQUW2Tzq0t377b54N2bMtXO/qiLa+6eRRmmC4qT3D4OnTGoT/U6O9aklQ/jTwbOtRMTTY8G0Ig==
 
 debug@4.3.4:
   version "4.3.4"

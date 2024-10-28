@@ -9,20 +9,9 @@ require Pod::Executable.execute_command('node', ['-p',
 
 project 'OpenPassport.xcodeproj'
 
-platform :ios, '13.0'
+platform :ios, '14.0'
 prepare_react_native_project!
 
-
-# If you are using a `react-native-flipper` your iOS build will fail when `NO_FLIPPER=1` is set.
-# because `react-native-flipper` depends on (FlipperKit,...) that will be excluded
-#
-# To fix this you can also exclude `react-native-flipper` using a `react-native.config.js`
-# ```js
-# module.exports = {
-#   dependencies: {
-#     ...(process.env.NO_FLIPPER ? { 'react-native-flipper': { platforms: { ios: null } } } : {}),
-# ```
-flipper_config = ENV['NO_FLIPPER'] == "1" ? FlipperConfiguration.disabled : FlipperConfiguration.enabled
 
 linkage = ENV['USE_FRAMEWORKS']
 if linkage != nil
@@ -34,11 +23,8 @@ target 'OpenPassport' do
 
   config = use_native_modules!
 
-  # Flags change depending on the env values.
-  flags = get_default_flags()
-  
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '310ecb519655d9ed8b1afc5eb490b2f51a4d3595'
+  pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45'
   pod 'QKMRZScanner'
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   pod 'lottie-ios'
@@ -46,33 +32,23 @@ target 'OpenPassport' do
 
   use_react_native!(
     :path => config[:reactNativePath],
-    # Hermes is now enabled by default. Disable by setting this flag to false.
+
     :hermes_enabled => false,
-    :fabric_enabled => flags[:fabric_enabled],
-    # Enables Flipper.
-    #
-    # Note that if you have use_frameworks! enabled, Flipper will not work and
-    # you should disable the next line.
-    #:flipper_configuration => flipper_config,
+    # :fabric_enabled => flags[:fabric_enabled],
     # An absolute path to your application root.
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'OpenPassportTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
-  target 'OpenPassport App Clip' do
-    inherit! :search_paths
-    inherit! :complete
-  end
+  # target 'OpenPassport App Clip' do
+  #   inherit! :search_paths
+  #   inherit! :complete
+  # end
 
   post_install do |installer|
     installer.generated_projects.each do |project|
       project.targets.each do |target|
           target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
               config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
            end
       end
@@ -82,8 +58,8 @@ target 'OpenPassport' do
     react_native_post_install(
       installer,
       config[:reactNativePath],
-      :mac_catalyst_enabled => false
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
     )
-    __apply_Xcode_12_5_M1_post_install_workaround(installer)
   end
 end

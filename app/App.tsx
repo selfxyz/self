@@ -10,9 +10,10 @@ import { AMPLITUDE_KEY } from '@env';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
+import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
 global.Buffer = Buffer;
 
-function App(): JSX.Element {
+function App(): React.JSX.Element {
   const toast = useToastController();
   const setToast = useNavigationStore((state) => state.setToast);
   const initUserStore = useUserStore((state) => state.initUserStore);
@@ -29,11 +30,16 @@ function App(): JSX.Element {
   useEffect(() => {
     setSelectedTab('splash');
   }, [setSelectedTab]);
-  
+
   useEffect(() => {
     if (AMPLITUDE_KEY) {
       amplitude.init(AMPLITUDE_KEY);
     }
+  }, []);
+
+  useEffect(() => {
+    const cleanup = setupUniversalLinkListener();
+    return cleanup;
   }, []);
 
   return (

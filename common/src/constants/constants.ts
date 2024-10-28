@@ -1,16 +1,19 @@
+import { SignatureAlgorithm } from "../utils/types"
+
 export const RELAYER_URL = "https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint"
 //export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
-export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/download-merkle-tree"
+export const COMMITMENT_TREE_TRACKER_URL = "https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download"
 export const WEBSOCKET_URL = "https://proofofpassport-merkle-tree.xyz"
 export const PUBKEY_TREE_DEPTH = 16
 export const CSCA_TREE_DEPTH = 12
 export const COMMITMENT_TREE_DEPTH = 16
+export const DEFAULT_USER_ID_TYPE = 'uuid'
 
 export const MODAL_SERVER_ADDRESS = "https://zk-passport--dsc-prover-generate-dsc-proof.modal.run"
 
 export const PASSPORT_ATTESTATION_NAME = "E-PASSPORT"
 // poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
-export const PASSPORT_ATTESTATION_ID = "8518753152044246090169372947057357973469996808638122125210848696986717482788"
+export const PASSPORT_ATTESTATION_ID = "1";//"8518753152044246090169372947057357973469996808638122125210848696986717482788"
 
 export const CHAIN_NAME = "optimism"
 export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL"
@@ -19,22 +22,52 @@ export const RPC_URL = "https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true
 export const DEFAULT_MAJORITY = "18"
 
-export enum SignatureAlgorithm {
-  sha256WithRSAEncryption_65537 = 1,
-  sha256WithRSAEncryption_3 = 2,
-  sha1WithRSAEncryption_65537 = 3,
-  sha256WithRSASSAPSS_65537 = 4,
-  sha256WithRSASSAPSS_3 = 5,
-  ecdsa_with_SHA384 = 6,
-  ecdsa_with_SHA1 = 7,
-  ecdsa_with_SHA256 = 8,
-  ecdsa_with_SHA512 = 9,
-  sha512WithRSAEncryption_65537 = 10
+export const MAX_PADDED_ECONTENT_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
+  rsa_65537_sha256_2048: 384,
+  rsa_65537_sha1_2048: 320,
+  rsapss_65537_sha256_2048: 384,
+  ecdsa_secp256r1_sha1_256: 320,
+  ecdsa_secp256r1_sha256_256: 384,
+  ecdsa_secp384r1_sha384_384: 512,
 }
 
-export const signatureOidToName = {
-  "1.2.840.113549.1.1.11": "sha256_rsa",
-  "1.2.840.113549.1.1.5": "sha1_rsa"
+export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
+  rsa_65537_sha256_2048: 192,
+  rsa_65537_sha1_2048: 192,
+  rsapss_65537_sha256_2048: 192,
+  ecdsa_secp256r1_sha1_256: 192,
+  ecdsa_secp256r1_sha256_256: 192,
+  ecdsa_secp384r1_sha384_384: 192,
+}
+
+export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
+  rsa_65537_sha256_4096: 512,
+  rsa_65537_sha1_4096: 640,
+  rsapss_65537_sha256_4096: 768,
+}
+
+export const ECDSA_K_LENGTH_FACTOR = 2;
+// possible values because of sha1 constaints: 192,320,384, 448, 576, 640
+
+export const circuitNameFromMode = {
+  prove: 'prove',
+  prove_onchain: 'prove',
+  prove_offchain: 'prove',
+  register: 'prove',
+  vc_and_disclose: 'vc_and_disclose',
+  dsc: 'dsc',
+}
+
+export enum SignatureAlgorithmIndex {
+  rsa_65537_sha256_2048 = 1,
+  rsa_65537_sha1_2048 = 3,
+  rsapss_65537_sha256_2048 = 4,
+  ecdsa_secp256r1_sha1_256 = 7,
+  ecdsa_secp256r1_sha256_256 = 8,
+  ecdsa_secp384r1_sha384_384 = 9,
+  rsa_65537_sha256_4096 = 10,
+  rsa_65537_sha1_4096 = 11,
+  rsapss_65537_sha256_4096 = 12,
 }
 
 export const attributeToPosition = {
@@ -48,11 +81,19 @@ export const attributeToPosition = {
   older_than: [88, 89]
 };
 
+export const circuitToSelectorMode = {
+  'register': [0, 0],
+  'prove_onchain': [1, 0],
+  'prove_offchain': [1, 1],
+}
+
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-export const n_dsc = 121;
-export const k_dsc = 17;
-export const n_csca = 121;
-export const k_csca = 34;
+export const n_dsc = 64;
+export const k_dsc = 32;
+export const n_csca = 120;
+export const k_csca = 35;
+export const n_dsc_ecdsa = 43;
+export const k_dsc_ecdsa = 6;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   "AFG": "Afghanistan",
@@ -305,6 +346,262 @@ export const countryCodes = {
   "ZMB": "Zambia",
   "ZWE": "Zimbabwe"
 }
+export function getCountryCode(countryName: string): string | string {
+  const entries = Object.entries(countryCodes);
+  const found = entries.find(([_, name]) => name.toLowerCase() === countryName.toLowerCase());
+  return found ? found[0] : 'undefined';
+}
+export const countryNames = [
+  "Afghanistan",
+  "Aland Islands",
+  "Albania",
+  "Algeria",
+  "American Samoa",
+  "Andorra",
+  "Angola",
+  "Anguilla",
+  "Antarctica",
+  "Antigua and Barbuda",
+  "Argentina",
+  "Armenia",
+  "Aruba",
+  "Australia",
+  "Austria",
+  "Azerbaijan",
+  "Bahamas",
+  "Bahrain",
+  "Bangladesh",
+  "Barbados",
+  "Belarus",
+  "Belgium",
+  "Belize",
+  "Benin",
+  "Bermuda",
+  "Bhutan",
+  "Bolivia (Plurinational State of)",
+  "Bonaire, Sint Eustatius and Saba",
+  "Bosnia and Herzegovina",
+  "Botswana",
+  "Bouvet Island",
+  "Brazil",
+  "British Indian Ocean Territory",
+  "Brunei Darussalam",
+  "Bulgaria",
+  "Burkina Faso",
+  "Burundi",
+  "Cabo Verde",
+  "Cambodia",
+  "Cameroon",
+  "Canada",
+  "Cayman Islands",
+  "Central African Republic",
+  "Chad",
+  "Chile",
+  "China",
+  "Christmas Island",
+  "Cocos (Keeling) Islands",
+  "Colombia",
+  "Comoros",
+  "Congo",
+  "Congo, Democratic Republic of the",
+  "Cook Islands",
+  "Costa Rica",
+  "Cote d'Ivoire",
+  "Croatia",
+  "Cuba",
+  "Curacao",
+  "Cyprus",
+  "Czechia",
+  "Denmark",
+  "Djibouti",
+  "Dominica",
+  "Dominican Republic",
+  "Ecuador",
+  "Egypt",
+  "El Salvador",
+  "Equatorial Guinea",
+  "Eritrea",
+  "Estonia",
+  "Eswatini",
+  "Ethiopia",
+  "Falkland Islands (Malvinas)",
+  "Faroe Islands",
+  "Fiji",
+  "Finland",
+  "France",
+  "French Guiana",
+  "French Polynesia",
+  "French Southern Territories",
+  "Gabon",
+  "Gambia",
+  "Georgia",
+  "Germany",
+  "Ghana",
+  "Gibraltar",
+  "Greece",
+  "Greenland",
+  "Grenada",
+  "Guadeloupe",
+  "Guam",
+  "Guatemala",
+  "Guernsey",
+  "Guinea",
+  "Guinea-Bissau",
+  "Guyana",
+  "Haiti",
+  "Heard Island and McDonald Islands",
+  "Holy See",
+  "Honduras",
+  "Hong Kong",
+  "Hungary",
+  "Iceland",
+  "India",
+  "Indonesia",
+  "Iran (Islamic Republic of)",
+  "Iraq",
+  "Ireland",
+  "Isle of Man",
+  "Israel",
+  "Italy",
+  "Jamaica",
+  "Japan",
+  "Jersey",
+  "Jordan",
+  "Kazakhstan",
+  "Kenya",
+  "Kiribati",
+  "Korea (Democratic People's Republic of)",
+  "Korea, Republic of",
+  "Kuwait",
+  "Kyrgyzstan",
+  "Lao People's Democratic Republic",
+  "Latvia",
+  "Lebanon",
+  "Lesotho",
+  "Liberia",
+  "Libya",
+  "Liechtenstein",
+  "Lithuania",
+  "Luxembourg",
+  "Macao",
+  "Madagascar",
+  "Malawi",
+  "Malaysia",
+  "Maldives",
+  "Mali",
+  "Malta",
+  "Marshall Islands",
+  "Martinique",
+  "Mauritania",
+  "Mauritius",
+  "Mayotte",
+  "Mexico",
+  "Micronesia (Federated States of)",
+  "Moldova, Republic of",
+  "Monaco",
+  "Mongolia",
+  "Montenegro",
+  "Montserrat",
+  "Morocco",
+  "Mozambique",
+  "Myanmar",
+  "Namibia",
+  "Nauru",
+  "Nepal",
+  "Netherlands",
+  "New Caledonia",
+  "New Zealand",
+  "Nicaragua",
+  "Niger",
+  "Nigeria",
+  "Niue",
+  "Norfolk Island",
+  "North Macedonia",
+  "Northern Mariana Islands",
+  "Norway",
+  "Oman",
+  "Pakistan",
+  "Palau",
+  "Palestine, State of",
+  "Panama",
+  "Papua New Guinea",
+  "Paraguay",
+  "Peru",
+  "Philippines",
+  "Pitcairn",
+  "Poland",
+  "Portugal",
+  "Puerto Rico",
+  "Qatar",
+  "Reunion",
+  "Romania",
+  "Russian Federation",
+  "Rwanda",
+  "Saint Barthelemy",
+  "Saint Helena, Ascension and Tristan da Cunha",
+  "Saint Kitts and Nevis",
+  "Saint Lucia",
+  "Saint Martin (French part)",
+  "Saint Pierre and Miquelon",
+  "Saint Vincent and the Grenadines",
+  "Samoa",
+  "San Marino",
+  "Sao Tome and Principe",
+  "Saudi Arabia",
+  "Senegal",
+  "Serbia",
+  "Seychelles",
+  "Sierra Leone",
+  "Singapore",
+  "Sint Maarten (Dutch part)",
+  "Slovakia",
+  "Slovenia",
+  "Solomon Islands",
+  "Somalia",
+  "South Africa",
+  "South Georgia and the South Sandwich Islands",
+  "South Sudan",
+  "Spain",
+  "Sri Lanka",
+  "Sudan",
+  "Suriname",
+  "Svalbard and Jan Mayen",
+  "Sweden",
+  "Switzerland",
+  "Syrian Arab Republic",
+  "Taiwan, Province of China",
+  "Tajikistan",
+  "Tanzania, United Republic of",
+  "Thailand",
+  "Timor-Leste",
+  "Togo",
+  "Tokelau",
+  "Tonga",
+  "Trinidad and Tobago",
+  "Tunisia",
+  "Turkey",
+  "Turkmenistan",
+  "Turks and Caicos Islands",
+  "Tuvalu",
+  "Uganda",
+  "Ukraine",
+  "United Arab Emirates",
+  "United Kingdom of Great Britain and Northern Ireland",
+  "United States of America",
+  "United States Minor Outlying Islands",
+  "Uruguay",
+  "Uzbekistan",
+  "Vanuatu",
+  "Venezuela (Bolivarian Republic of)",
+  "Viet Nam",
+  "Virgin Islands (British)",
+  "Virgin Islands (U.S.)",
+  "Wallis and Futuna",
+  "Western Sahara",
+  "Yemen",
+  "Zambia",
+  "Zimbabwe"
+] as const;
 
 export const contribute_publicKey = `-----BEGIN RSA PUBLIC KEY-----
 MIICCgKCAgEAv/hm7FZZ2KBmaeDHmLoRwuWmCcNKT561RqbsW8ZuYSyPWJUldE9U

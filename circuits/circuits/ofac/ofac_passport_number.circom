@@ -1,48 +1,25 @@
-pragma circom 2.1.5;
+pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@zk-email/circuits/utils/array.circom";
+include "../utils/other/array.circom";
 include "binary-merkle-root.circom";
-include "../utils/getCommonLength.circom";
-include "../disclose/verify_commitment.circom";
-include "../utils/smt.circom";
+include "../utils/other/getCommonLength.circom";
+include "../utils/other/smt.circom";
 
-template OFAC_PASSPORT_NUMBER(nLevels) {
-    signal input secret;
-    signal input attestation_id;
-    signal input pubkey_leaf;
-    signal input mrz[93];
-    signal input merkle_root;
-    signal input merkletree_size;
-    signal input path[nLevels];
-    signal input siblings[nLevels];
-    signal input current_date[6]; 
+template OFAC_PASSPORT_NUMBER() {
 
-    signal input closest_leaf;
+    signal input dg1[93];
+
+    signal input smt_leaf_value;
     signal input smt_root;
     signal input smt_siblings[256];
-    signal output proofLevel;
+    signal output proofLevel <== 3;
 
-    // Verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, mrz, merkle_root, merkletree_size, path, siblings);
-
-    // PassportNo Hash
     component poseidon_hasher = Poseidon(9);
     for (var i = 0; i < 9; i++) {
-        poseidon_hasher.inputs[i] <== mrz[49 + i];
+        poseidon_hasher.inputs[i] <== dg1[49 + i];
     } 
-    signal smtleaf_hash <== Poseidon(3)([poseidon_hasher.out, 1,1]);
-
-    // SMT Verification
-    signal closestleaf <== SMTVerify(256)(poseidon_hasher.out, 1, closest_leaf, smt_root, smt_siblings);
-
-    // If leaf given = leaf calulated ; then membership proof
-    signal proofType <== IsEqual()([closestleaf,smtleaf_hash]); // 1 for membership proof, 0 for non-membership proof
-    proofType === 0;  // Uncomment this line to make circuit handle both membership and non-membership proof (0 for non-membership, 1 for membership)
-
-    proofLevel <== 3;
+   signal output ofacCheckResult <== SMTVerify(256)(poseidon_hasher.out, smt_leaf_value, smt_root, smt_siblings, 0);
 }
-
-component main { public [ merkle_root,smt_root ] } = OFAC_PASSPORT_NUMBER(16);

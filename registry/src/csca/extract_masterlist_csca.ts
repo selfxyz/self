@@ -1,12 +1,31 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { execSync } from 'child_process';
+import * as crypto from 'crypto';
+
+// Function to convert DER to PEM
+function derToPem(derBuffer: Buffer): string {
+  const base64 = derBuffer.toString('base64');
+  const pem = `-----BEGIN CERTIFICATE-----\n${base64.match(/.{1,64}/g)!.join('\n')}\n-----END CERTIFICATE-----\n`;
+  return pem;
+}
 
 export async function extractMasterlistCsca() {
   // Extract masterlists from ICAO ldif file
   const ldif_path = path.join(__dirname, '..', '..', 'inputs', 'icao_download_section', 'icaopkd-002-complete-000243.ldif');
   const masterlist_path = path.join(__dirname, '..', '..', 'outputs', 'csca', 'masterlists');
   const csca_path = path.join(__dirname, '..', '..', 'outputs', 'csca');
+
+  const outputsPath = path.join(__dirname, '..', '..', 'outputs');
+  const outputsCscaPath = path.join(outputsPath, 'csca');
+
+  if (!fs.existsSync(outputsPath)) {
+    fs.mkdirSync(outputsPath);
+  }
+
+  if (!fs.existsSync(outputsCscaPath)) {
+    fs.mkdirSync(outputsCscaPath);
+  }
 
   const fileContent = fs.readFileSync(ldif_path, "utf-8");
   const regex = /pkdMasterListContent::\s*([\s\S]*?)(?=\w+:|\n\n|$)/g;
@@ -68,44 +87,86 @@ export async function extractMasterlistCsca() {
     let count = 0;
     for (const match of certificateMatches) {
       const startOffset = parseInt(match[1]);
-      const certificateOutput = execSync(`openssl asn1parse -inform DER -in ${path.join(masterlist_path, `masterlist_${i}_binary_dump.bin`)} -strparse ${startOffset} -out ${path.join(masterlist_csca_path, `cert_${count}.pem`)}`).toString();
-      console.log(`Extracted certificate ${count} to cert_${count}.pem`);
+      const certPath = path.join(masterlist_csca_path, `cert_${count}.pem`);
+
+      execSync(`openssl asn1parse -inform DER -in ${path.join(masterlist_path, `masterlist_${i}_binary_dump.bin`)} -strparse ${startOffset} -out ${certPath}`);
+
+      // Check the size of the extracted certificate
+      const stats = fs.statSync(certPath);
+      if (stats.size > 10000) { // Adjust this threshold as needed
+        console.warn(`Warning: Unusually large certificate extracted. Masterlist ${i}, Certificate ${count}, Size: ${stats.size} bytes`);
+      }
+
+      //console.log(`Extracted certificate ${count} to cert_${count}.pem (Size: ${stats.size} bytes)`);
       count++;
     }
   }
 
+  // After extracting certificates, rename them to .der
+  for (let i = 0; i < masterlists.length; i++) {
+    const masterlist_csca_path = path.join(csca_path, `masterlist_${i}`);
+    const files = fs.readdirSync(masterlist_csca_path);
+
+    files.forEach((file) => {
+      if (file.endsWith('.pem')) {
+        const oldPath = path.join(masterlist_csca_path, file);
+        const newPath = path.join(masterlist_csca_path, file.replace('.pem', '.der'));
+        fs.renameSync(oldPath, newPath);
+      }
+    });
+  }
+
   console.log('Deduplicating certificates...');
 
-  const uniqueCertificates = new Set<string>();
+  const uniqueCertificates = new Map<string, Buffer>();
+  let skippedFiles = 0;
 
   const masterlistDirectories = fs.readdirSync(csca_path);
 
   masterlistDirectories.forEach((directory) => {
-    const files = fs.readdirSync(path.join(csca_path, directory));
+    const dirPath = path.join(csca_path, directory);
+    if (!fs.statSync(dirPath).isDirectory()) return;
+
+    const files = fs.readdirSync(dirPath);
 
     files.forEach((file) => {
-      const filePath = path.join(csca_path, directory, file);
+      if (!file.match(/^cert_\d+\.der$/)) {
+        skippedFiles++;
+        return;
+      }
+
+      const filePath = path.join(dirPath, file);
       const certContent = fs.readFileSync(filePath);
 
-      const certBase64 = certContent.toString('base64');
+      try {
+        // Hash the certificate content
+        const hash = crypto.createHash('sha256').update(certContent).digest('hex');
 
-      if (!uniqueCertificates.has(certBase64)) {
-        uniqueCertificates.add(certBase64);
+        if (!uniqueCertificates.has(hash)) {
+          uniqueCertificates.set(hash, certContent);
+        }
+      } catch (error) {
+        console.error(`Error processing file: ${filePath}`, error);
+        skippedFiles++;
       }
     });
   });
 
+  console.log(`Skipped ${skippedFiles} non-certificate files.`);
+
+  // Write unique certificates in PEM format
   const uniqueCertsDir = path.join(csca_path, 'pem_masterlist');
   if (!fs.existsSync(uniqueCertsDir)) {
     fs.mkdirSync(uniqueCertsDir);
   }
 
   let uniqueCertCount = 0;
-  uniqueCertificates.forEach((certBase64) => {
-    const pemCert = `-----BEGIN CERTIFICATE-----\n${certBase64}\n-----END CERTIFICATE-----\n`;
-    fs.writeFileSync(path.join(uniqueCertsDir, `unique_cert_${uniqueCertCount}.pem`), pemCert);
+  uniqueCertificates.forEach((certContent, hash) => {
+    const pemContent = derToPem(certContent);
+    const outputPath = path.join(uniqueCertsDir, `unique_cert_${uniqueCertCount}.pem`);
+    fs.writeFileSync(outputPath, pemContent);
     uniqueCertCount++;
   });
 
-  console.log(`Deduplicated and saved ${uniqueCertCount} unique certificates.`);
+  console.log(`Deduplicated and saved ${uniqueCertCount} unique certificates in PEM format. Skipped ${skippedFiles} non-certificate files.`);
 }

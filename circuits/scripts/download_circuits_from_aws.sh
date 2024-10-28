@@ -1,8 +1,14 @@
 #!/bin/sh
 
-# Define the circuit names, URLs, download flags, and circuit types
-circuits="prove_rsa_65537_sha256 prove_rsa_65537_sha1 prove_rsapss_65537_sha256"
-urls="https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha256.zkey.zip https://d8o9bercqupgk.cloudfront.net/prove_rsa_65537_sha1.zkey.zip https://d8o9bercqupgk.cloudfront.net/prove_rsapss_65537_sha256.zkey.zip"
+# Define the AWS URL prefix
+awsUrl="https://d8o9bercqupgk.cloudfront.net/staging"
+
+# Define environment variables
+ENVIRONMENT="staging"
+BUCKET_NAME="proofofpassport-us"
+
+# Define the circuit names, download flags, and circuit types
+circuits="prove_rsa_65537_sha256:prove_rsa_65537_sha256 prove_rsa_65537_sha1:prove_rsa_65537_sha1 prove_rsapss_65537_sha256:prove_rsapss_65537_sha256"
 flags="true true true"
 circuit_types="prove prove prove"
 
@@ -11,14 +17,17 @@ mkdir -p build/fromAWS
 
 # Function to download, unzip, and compile a circuit
 download_and_compile_circuit() {
-    circuit_name=$1
-    url=$2
-    should_download=$3
-    circuit_type=$4
+    circuit_info=$1
+    should_download=$2
+    circuit_type=$3
+
+    circuit_name=$(echo $circuit_info | cut -d':' -f1)
+    circuit_url=$(echo $circuit_info | cut -d':' -f2)
+    url="${awsUrl}/${circuit_url}.zkey.zip"
 
     if [ "$should_download" = "true" ]; then
         echo "Downloading $circuit_name..."
-        wget -q -O build/fromAWS/${circuit_name}.zkey.zip $url
+        aws s3 cp s3://${BUCKET_NAME}/${ENVIRONMENT}/${circuit_name}.zkey.zip build/fromAWS/${circuit_name}.zkey.zip --no-sign-request
         if [ $? -eq 0 ]; then
             echo "Unzipping $circuit_name..."
             unzip -q -o build/fromAWS/${circuit_name}.zkey.zip -d build/fromAWS
@@ -26,12 +35,15 @@ download_and_compile_circuit() {
             echo "Successfully downloaded and unzipped $circuit_name"
 
             echo "Compiling circuit: $circuit_name"
-            circom circuits/${circuit_type}/${circuit_name}.circom \
+            circom circuits/${circuit_type}/instances/${circuit_name}.circom \
                 -l node_modules \
                 -l ./node_modules/@zk-kit/binary-merkle-root.circom/src \
                 -l ./node_modules/circomlib/circuits \
                 --O1 --wasm \
                 --output build/fromAWS
+
+            echo "Exporting vkey: $circuit_name"
+            snarkjs zkey export verificationkey build/fromAWS/${circuit_name}.zkey build/fromAWS/${circuit_name}_vkey.json
 
             if [ $? -eq 0 ]; then
                 echo "Successfully compiled $circuit_name"
@@ -43,6 +55,7 @@ download_and_compile_circuit() {
             else
                 echo "Failed to compile $circuit_name"
             fi
+
         else
             echo "Failed to download $circuit_name"
         fi
@@ -54,10 +67,9 @@ download_and_compile_circuit() {
 # Download, unzip, and compile each circuit
 i=1
 for circuit in $circuits; do
-    url=$(echo $urls | cut -d' ' -f$i)
     flag=$(echo $flags | cut -d' ' -f$i)
     circuit_type=$(echo $circuit_types | cut -d' ' -f$i)
-    download_and_compile_circuit $circuit $url $flag $circuit_type
+    download_and_compile_circuit $circuit $flag $circuit_type
     i=$((i+1))
 done
 

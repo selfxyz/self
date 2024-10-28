@@ -1,14 +1,15 @@
 export type PassportData = {
   mrz: string;
-  signatureAlgorithm: string;
-  dsc?: string;
-  pubKey?: { modulus?: string, exponent?: string, curveName?: string, publicKeyQ?: string };
-  dataGroupHashes: number[];
+  dg2Hash?: number[];
+  dsc: string;
   eContent: number[];
+  signedAttr: number[];
   encryptedDigest: number[];
   photoBase64: string;
   mockUser?: boolean;
 };
+
+export type SignatureAlgorithm = 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384';
 
 export type Proof = {
   proof: {
