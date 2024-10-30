@@ -65,15 +65,6 @@ export function getLeafCSCA(dsc: string): string {
     return customHasher([sigAlgIndex, ...pubkeyChunked]);
   }
 }
-export async function getTreeFromTracker(): Promise<LeanIMT> {
-  const response = await axios.get(COMMITMENT_TREE_TRACKER_URL)
-  const imt = new LeanIMT(
-    (a: bigint, b: bigint) => poseidon2([a, b]),
-    []
-  );
-  imt.import(response.data)
-  return imt
-}
 
 export function generateCommitment(secret: string, attestation_id: string, pubkey_leaf: string, mrz_bytes: any[], dg2Hash: any[]) {
   const dg2Hash2 = customHasher(formatDg2Hash(dg2Hash).map(x => x.toString()));
@@ -97,7 +88,6 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   }
   const commitmentMerkleTree = await response.json();
   console.log("\x1b[90m%s\x1b[0m", "commitment merkle tree: ", commitmentMerkleTree);
-  const tree = new LeanIMT((a, b) => poseidon2([a, b]));
-  tree.import(commitmentMerkleTree);
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), commitmentMerkleTree);
   return tree;
 }
