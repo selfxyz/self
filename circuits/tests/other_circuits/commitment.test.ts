@@ -2,11 +2,7 @@ import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 
-import {
-  formatDg2Hash,
-  formatMrz,
-  packBytes,
-} from '../../../common/src/utils/utils';
+import { formatDg2Hash, formatMrz, packBytes } from '../../../common/src/utils/utils';
 import { getLeaf, generateCommitment } from '../../../common/src/utils/pubkeyTree';
 
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
