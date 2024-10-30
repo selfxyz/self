@@ -35,6 +35,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
   };
 
   const { toast } = useNavigationStore();
+  const signatureAlgorithmToStrictSignatureAlgorithm = {
+    "rsa sha256": "rsa_sha256",
+    "rsa sha1": "rsa_sha1",
+    "rsapss sha256": "rsapss_sha256"
+  } as const;
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -43,17 +48,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
       let mockPassportData;
       if (isInOfacList) {
         mockPassportData = genMockPassportData(
-          selectedAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          signatureAlgorithmToStrictSignatureAlgorithm[selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm],
           selectedCountry as keyof typeof countryCodes,
           castDate(-age),
           castDate(expiryYears),
           randomPassportNumber,
-          'HENAO MONTOYA',
+          'HENAO MONTOYA', // this name is the OFAC list
           'ARCANGEL DE JESUS'
         );
       } else {
         mockPassportData = genMockPassportData(
-          selectedAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
+          signatureAlgorithmToStrictSignatureAlgorithm[selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm],
           selectedCountry as keyof typeof countryCodes,
           castDate(-age),
           castDate(expiryYears),

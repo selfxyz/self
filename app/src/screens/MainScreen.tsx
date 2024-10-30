@@ -63,7 +63,7 @@ const MainScreen: React.FC = () => {
   const [countrySheetOpen, setCountrySheetOpen] = useState(false);
   const [algorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
   const [selectedCountry, setSelectedCountry] = useState('USA');
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa_sha256');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa sha256');
 
   const {
     passportNumber,
@@ -848,7 +848,7 @@ const MainScreen: React.FC = () => {
                 </XStack>
                 <Separator borderColor={separatorColor} mb="$4" />
                 <ScrollView showsVerticalScrollIndicator={false}>
-                  {["rsa_sha1", "rsa_sha256", "rsapss_sha256"].map((algorithm) => (
+                  {["rsa sha256", "rsa sha1", "rsapss sha256"].map((algorithm) => (
                     <TouchableOpacity
                       key={algorithm}
                       onPress={() => {
