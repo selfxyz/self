@@ -37,10 +37,10 @@ contract Verifier_dsc_rsa_65537_sha1_4096 {
     uint256 constant gammax2 = 10857046999023057135944570762232829481370756359578518086990519993285655852781;
     uint256 constant gammay1 = 4082367875863433681332203403145435568316851327593401208105741076214120093531;
     uint256 constant gammay2 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
-    uint256 constant deltax1 = 4029485152563416121115364420018531469967267623611523920345284968134090692096;
-    uint256 constant deltax2 = 7157873844514231518123648442854857067192138049695650281682343264174761051395;
-    uint256 constant deltay1 = 20138418790395189475202532559767804536140663145783932008030369725764144665659;
-    uint256 constant deltay2 = 7438435437647529811982102624225358793882835492628538310043045475331942385086;
+    uint256 constant deltax1 = 8441806186745188372537460321981116999801031201583499966958826604947980830000;
+    uint256 constant deltax2 = 13609834548161300582477853991526320293433640330539801500903753457627888495381;
+    uint256 constant deltay1 = 14114983069796580083449425790812236094683577678022815810458824633453412210627;
+    uint256 constant deltay2 = 8448384202753302962223109595229113261664582566011624155734783894938928271855;
 
     
     uint256 constant IC0x = 8080423910694661461576427977746141048179131345871564682235127365538915251175;
@@ -49,6 +49,9 @@ contract Verifier_dsc_rsa_65537_sha1_4096 {
     uint256 constant IC1x = 16011015387972163546219334947336021918538394305813640145299036166236111586389;
     uint256 constant IC1y = 19422172264639146231714658451804174650252945098828793769061895536286758622279;
     
+    uint256 constant IC2x = 2543445962105990625291559091474595879940066015891597850114251320085420659626;
+    uint256 constant IC2y = 1917249161113849432608012443620967377861258824599427135619631874160142518773;
+    
  
     // Memory data
     uint16 constant pVk = 0;
@@ -56,7 +59,7 @@ contract Verifier_dsc_rsa_65537_sha1_4096 {
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[1] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[2] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, q)) {
@@ -101,6 +104,8 @@ contract Verifier_dsc_rsa_65537_sha1_4096 {
                 // Compute the linear combination vk_x
                 
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
+                
+                g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
                 
 
                 // -A
@@ -158,6 +163,8 @@ contract Verifier_dsc_rsa_65537_sha1_4096 {
             checkField(calldataload(add(_pubSignals, 0)))
             
             checkField(calldataload(add(_pubSignals, 32)))
+            
+            checkField(calldataload(add(_pubSignals, 64)))
             
 
             // Validate all evaluations

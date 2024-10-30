@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import { getPublicKey, isRsaPublicKey, readCertificate } from '../utils/certificates'
 import { getLeaf, getLeafCSCA } from '../../../common/src/utils/pubkeyTree'
 import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
-import { IMT } from '@zk-kit/imt';
+import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
 import { writeFile } from 'fs/promises';
 import * as path from 'path';

@@ -667,6 +667,10 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         private const val PARAM_DOE = "dateOfExpiry";
         const val JPEG_DATA_URI_PREFIX = "data:image/jpeg;base64,"
         private const val KEY_IS_SUPPORTED = "isSupported"
-        var instance: RNPassportReaderModule? = null
+        private var instance: RNPassportReaderModule? = null
+
+        fun getInstance(): RNPassportReaderModule {
+            return instance ?: throw IllegalStateException("RNPassportReaderModule instance is not initialized")
+        }
     }
 }

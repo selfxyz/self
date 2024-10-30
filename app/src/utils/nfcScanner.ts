@@ -274,7 +274,7 @@ const handleResponseAndroid = async (
   });
 
   try {
-    useUserStore.getState().registerPassportData(passportData)
+    await useUserStore.getState().registerPassportData(passportData)
     useNavigationStore.getState().setSelectedTab("next");
   } catch (e: any) {
     console.log('error during parsing:', e);

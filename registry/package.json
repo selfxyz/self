@@ -6,7 +6,9 @@
   "dependencies": {
     "@peculiar/x509": "^1.11.0",
     "@prisma/client": "^5.19.0",
-    "@zk-kit/imt": "https://gitpkg.now.sh/0xturboblitz/zk-kit/packages/imt?6d417675",
+    "@openpassport/zk-kit-imt": "^0.0.4",
+    "@openpassport/zk-kit-lean-imt": "^0.0.4",
+    "@openpassport/zk-kit-smt": "^0.0.1",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",

@@ -14,14 +14,19 @@
     "moduleResolution": "node"
   },
   "include": [
-    "src/index.ts",
-    "src/index.node.ts",
+    "index.ts",
     "src/**/*",
+    "OpenPassportQRcode.tsx",
     "common/**/*",
     "circuits/**/*",
     "circuits/**/*.json",
     "utils/utils.ts",
-    "../common/src/utils/openPassportAttestation.ts"
+    "../../common/src/utils/openPassportAttestation.ts"
   ],
-  "exclude": ["node_modules", "**/__tests__/*", "dist", "common/src/utils/csca.ts"]
+  "exclude": [
+    "node_modules",
+    "**/__tests__/*",
+    "dist",
+    "common/src/utils/csca.ts"
+  ]
 }

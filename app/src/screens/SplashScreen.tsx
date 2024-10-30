@@ -5,11 +5,11 @@ import { YStack, Text, Spinner, XStack } from 'tamagui';
 import { textBlack } from '../utils/colors';
 
 const SplashScreen = () => {
-    const { userLoaded, registered } = useUserStore();
+    const { userLoaded, passportData } = useUserStore();
     const { setSelectedTab } = useNavigationStore();
     useEffect(() => {
         if (userLoaded) {
-            if (registered) {
+            if (passportData) {
                 setSelectedTab('app');
             } else {
                 setSelectedTab('start');

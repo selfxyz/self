@@ -9,7 +9,7 @@ import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
 import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
-import { SMT } from '@ashpect/smt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1' },

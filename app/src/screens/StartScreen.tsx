@@ -30,7 +30,7 @@ const StartScreen: React.FC = () => {
                 <CustomButton Icon={<ArrowRight />} text="Use my passport" onPress={() => {
                     setSelectedTab("scan");
                 }} />
-                <CustomButton bgColor="white" Icon={<ArrowRight />} text="Use a fake passport" onPress={() => {
+                <CustomButton bgColor="white" Icon={<ArrowRight />} text="Use a mock passport" onPress={() => {
                     setSelectedTab("mock");
                 }} />
 

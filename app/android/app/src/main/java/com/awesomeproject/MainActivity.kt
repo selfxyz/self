@@ -37,6 +37,6 @@ class MainActivity : ReactActivity() {
   override fun onNewIntent(intent: Intent) {
     super.onNewIntent(intent)
     Log.d("MAIN_ACTIVITY", "onNewIntent: " + intent.action)
-    // RNPassportReaderModule.Companion.getInstance().receiveIntent(intent);
+    RNPassportReaderModule.getInstance().receiveIntent(intent)
   }
 }

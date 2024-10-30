@@ -1,5 +1,5 @@
 import { PUBKEY_TREE_DEPTH, COMMITMENT_TREE_TRACKER_URL, SignatureAlgorithmIndex } from "../constants/constants";
-import { LeanIMT } from '@zk-kit/imt'
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt'
 import axios from "axios";
 import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
 import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
