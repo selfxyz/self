@@ -245,7 +245,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   );
 
   return (
-    <YStack f={1} p="$3" pt="$8">
+    <YStack f={1} pt="$8">
       {hasEnabledDisclosureOptions ? (
         <YStack mt="$4">
           <Text fontSize="$9">
