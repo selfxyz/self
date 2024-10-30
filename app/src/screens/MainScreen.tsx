@@ -186,7 +186,7 @@ const MainScreen: React.FC = () => {
       setSelectedTab("start");
     }
     else if (selectedTab === "next") {
-      if (passportData.mockUser) {
+      if (passportData?.mockUser) {
         setSelectedTab("mock");
       } else {
         setSelectedTab("nfc");
