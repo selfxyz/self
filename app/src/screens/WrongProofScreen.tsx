@@ -31,7 +31,7 @@ const WrongProofScreen: React.FC = () => {
   console.log('Failed conditions:', JSON.stringify(failedConditions));
 
   return (
-    <YStack f={1} p="$3">
+    <YStack f={1} >
       <YStack f={1} mt="$4" >
         <Text ml="$1" fontSize={34} color={textBlack}>
           <Text style={{ textDecorationLine: 'underline', textDecorationColor: bgGreen }}>Oops</Text>, the proof is not valid.
