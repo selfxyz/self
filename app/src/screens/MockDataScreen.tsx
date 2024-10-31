@@ -1,6 +1,6 @@
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useRef } from 'react';
 import { YStack, XStack, Text, Select, Adapt, Sheet, Fieldset, Button, Spinner, Switch } from 'tamagui';
-import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
+import { Check, ChevronDown, ChevronUp, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { bgColor, bgGreen, bgGreen2, blueColor, borderColor, greenColorLight, redColorDark, textBlack } from '../utils/colors';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
@@ -9,14 +9,23 @@ import { genMockPassportData } from '../../../common/src/utils/genMockPassportDa
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 
-const MockDataScreen: React.FC = () => {
-  const [signatureAlgorithm, setSignatureAlgorithm] = useState("rsa_sha256");
-  const listOfSignatureAlgorithms = ["rsa_sha1", "rsa_sha256", "rsapss_sha256"];
+interface MockDataScreenProps {
+  onCountryPress: () => void;
+  onAlgorithmPress: () => void;
+  selectedCountry: string;
+  selectedAlgorithm: string;
+}
 
+const MockDataScreen: React.FC<MockDataScreenProps> = ({
+  onCountryPress,
+  onAlgorithmPress,
+  selectedCountry,
+  selectedAlgorithm,
+}) => {
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
-  const [nationality, setNationality] = useState("FRA");
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
   const castDate = (yearsOffset: number) => {
@@ -26,6 +35,11 @@ const MockDataScreen: React.FC = () => {
   };
 
   const { toast } = useNavigationStore();
+  const signatureAlgorithmToStrictSignatureAlgorithm = {
+    "rsa sha256": "rsa_sha256",
+    "rsa sha1": "rsa_sha1",
+    "rsapss sha256": "rsapss_sha256"
+  } as const;
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
@@ -34,18 +48,18 @@ const MockDataScreen: React.FC = () => {
       let mockPassportData;
       if (isInOfacList) {
         mockPassportData = genMockPassportData(
-          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
-          nationality as keyof typeof countryCodes,
+          signatureAlgorithmToStrictSignatureAlgorithm[selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm],
+          selectedCountry as keyof typeof countryCodes,
           castDate(-age),
           castDate(expiryYears),
           randomPassportNumber,
-          'HENAO MONTOYA',
+          'HENAO MONTOYA', // this name is the OFAC list
           'ARCANGEL DE JESUS'
         );
       } else {
         mockPassportData = genMockPassportData(
-          signatureAlgorithm as "rsa_sha256" | "rsa_sha1" | "rsapss_sha256",
-          nationality as keyof typeof countryCodes,
+          signatureAlgorithmToStrictSignatureAlgorithm[selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm],
+          selectedCountry as keyof typeof countryCodes,
           castDate(-age),
           castDate(expiryYears),
           randomPassportNumber,
@@ -65,148 +79,29 @@ const MockDataScreen: React.FC = () => {
 
     await new Promise(resolve => setTimeout(resolve, 1000));
     useNavigationStore.getState().setSelectedTab("next");
-  }, [signatureAlgorithm, nationality, age, expiryYears, isInOfacList]);
-  const countryOptions = useMemo(() => {
-    return Object.keys(countryCodes).map((countryCode, index) => ({
-      countryCode,
-      countryName: countryCodes[countryCode as keyof typeof countryCodes],
-      flagEmoji: flag(getCountryISO2(countryCode)),
-      index,
-    }));
-  }, []);
+  }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
+
   return (
     <YStack f={1} gap="$4" >
       <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>Generate passport data</Text>
-      <XStack ai="center" >
-        <Text f={1} fontSize="$5">
-          Encryption
-        </Text>
-        <Select
-          id="signature-algorithm"
-          value={signatureAlgorithm}
-          onValueChange={setSignatureAlgorithm}
-          native
-        >
-          <Select.Trigger w="$16" iconAfter={ChevronDown}>
-            <Select.Value placeholder="Select algorithm" />
-          </Select.Trigger>
-
-          <Adapt when="sm" platform="touch">
-            <Sheet
-              modal
-              dismissOnSnapToBottom
-              animationConfig={{
-                type: 'spring',
-                damping: 20,
-                mass: 1.2,
-                stiffness: 250,
-              }}
-            >
-              <Sheet.Frame>
-                <Text fontSize="$8" p="$3">Encryption method</Text>
-                <Sheet.ScrollView>
-                  <Adapt.Contents />
-                </Sheet.ScrollView>
-              </Sheet.Frame>
-              <Sheet.Overlay
-                animation="lazy"
-                enterStyle={{ opacity: 0 }}
-                exitStyle={{ opacity: 0 }}
-              />
-            </Sheet>
-          </Adapt>
-
-          <Select.Content zIndex={200000}>
-            <Select.ScrollUpButton ai="center" jc="center" pos="relative" w="100%" h="$3">
-              <ChevronUp size={20} />
-            </Select.ScrollUpButton>
-
-            <Select.Viewport minWidth={200}>
-              <Select.Group>
-                {listOfSignatureAlgorithms.map((algorithm, index) => (
-                  <Select.Item key={algorithm} index={index} value={algorithm}>
-                    <Select.ItemText >{algorithm}</Select.ItemText>
-                    <Select.ItemIndicator marginLeft="auto">
-                      <Check size={16} />
-                    </Select.ItemIndicator>
-                  </Select.Item>
-                ))}
-              </Select.Group>
-            </Select.Viewport>
-
-            <Select.ScrollDownButton ai="center" jc="center" pos="relative" w="100%" h="$3">
-              <ChevronDown size={20} />
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select>
+      <XStack ai="center">
+        <Text f={1} fontSize="$5">Encryption</Text>
+        <Button onPress={onAlgorithmPress} p="$2" px="$3" bg="white" borderColor={borderColor} borderWidth={1} borderRadius="$4" >
+          <XStack ai="center" gap="$2">
+            <Text fontSize="$4">{selectedAlgorithm}</Text>
+            <ChevronDown size={20} />
+          </XStack>
+        </Button>
       </XStack>
-
-
-      <XStack ai="center" gap="$2">
-        <Text f={1} fontSize="$5">
-          Nationality
-        </Text>
-        <Select
-          id="nationality"
-          value={nationality}
-          onValueChange={setNationality}
-          native
-        >
-          <Select.Trigger width="$16" iconAfter={ChevronDown}>
-            <Select.Value placeholder="Select algorithm" />
-          </Select.Trigger>
-
-          <Adapt when="sm" platform="touch">
-            <Sheet
-              modal
-              dismissOnSnapToBottom
-              animationConfig={{
-                type: 'spring',
-                damping: 20,
-                mass: 1.2,
-                stiffness: 250,
-              }}
-            >
-              <Sheet.Frame >
-                <Text fontSize="$8" p="$3">Nationality</Text>
-                <Sheet.ScrollView>
-                  <Adapt.Contents />
-                </Sheet.ScrollView>
-              </Sheet.Frame>
-              <Sheet.Overlay
-                animation="lazy"
-                enterStyle={{ opacity: 0 }}
-                exitStyle={{ opacity: 0 }}
-              />
-            </Sheet>
-          </Adapt>
-
-          <Select.Content zIndex={200000}>
-            <Select.ScrollUpButton ai="center" jc="center" pos="relative" w="100%" h="$3">
-              <ChevronUp size={20} />
-            </Select.ScrollUpButton>
-
-            <Select.Viewport minWidth={200}>
-              <Select.Group>
-                {countryOptions.map(({ countryCode, countryName, flagEmoji, index }) => (
-                  <Select.Item key={countryCode} index={index} value={countryCode}>
-                    <Select.ItemText>{countryName} {flagEmoji}</Select.ItemText>
-                    <Select.ItemIndicator marginLeft="auto">
-                      <Check size={16} />
-                    </Select.ItemIndicator>
-                  </Select.Item>
-                ))}
-              </Select.Group>
-            </Select.Viewport>
-
-            <Select.ScrollDownButton ai="center" jc="center" pos="relative" w="100%" h="$3">
-              <ChevronDown size={20} />
-            </Select.ScrollDownButton>
-          </Select.Content>
-        </Select>
+      <XStack ai="center">
+        <Text f={1} fontSize="$5">Nationality</Text>
+        <Button onPress={onCountryPress} p="$2" px="$3" bg="white" borderColor={borderColor} borderWidth={1} borderRadius="$4">
+          <XStack ai="center" gap="$2">
+            <Text fontSize="$4">{countryCodes[selectedCountry as keyof typeof countryCodes]} {flag(getCountryISO2(selectedCountry))}</Text>
+            <ChevronDown size={20} />
+          </XStack>
+        </Button>
       </XStack>
-
-
 
       <Fieldset mt="$2" gap="$2" horizontal>
         <Text color={textBlack} width={160} justifyContent="flex-end" fontSize="$5">

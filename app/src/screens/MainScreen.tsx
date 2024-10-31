@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable } from 'react-native';
+import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable, TouchableOpacity, ScrollView } from 'react-native';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View, Separator } from 'tamagui'
 import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X, ShieldCheck } from '@tamagui/lucide-icons';
 import Telegram from '../images/telegram.png'
@@ -36,6 +36,9 @@ import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
 import MockDataScreen from './MockDataScreen';
 import OPENPASSPORT_LOGO from '../images/openpassport.png'
+import { countryCodes } from '../../../common/src/constants/constants';
+import getCountryISO2 from "country-iso-3-to-2";
+import { flag } from 'country-emoji';
 
 const emitter = (Platform.OS === 'android')
   ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -57,6 +60,10 @@ const MainScreen: React.FC = () => {
   const [dateOfBirthDatePickerIsOpen, setDateOfBirthDatePickerIsOpen] = useState(false)
   const [dateOfExpiryDatePickerIsOpen, setDateOfExpiryDatePickerIsOpen] = useState(false)
   const [isFormComplete, setIsFormComplete] = useState(false);
+  const [countrySheetOpen, setCountrySheetOpen] = useState(false);
+  const [algorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
+  const [selectedCountry, setSelectedCountry] = useState('USA');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa sha256');
 
   const {
     passportNumber,
@@ -179,7 +186,7 @@ const MainScreen: React.FC = () => {
       setSelectedTab("start");
     }
     else if (selectedTab === "next") {
-      if (passportData.mockUser) {
+      if (passportData?.mockUser) {
         setSelectedTab("mock");
       } else {
         setSelectedTab("nfc");
@@ -205,6 +212,16 @@ const MainScreen: React.FC = () => {
 
 
   const { height } = useWindowDimensions();
+
+  const handleCountrySelect = (countryCode: string) => {
+    setSelectedCountry(countryCode);
+    setCountrySheetOpen(false);
+  };
+
+  const handleAlgorithmSelect = (algorithm: string) => {
+    setSelectedAlgorithm(algorithm);
+    setAlgorithmSheetOpen(false);
+  };
 
   return (
     <YStack f={1}>
@@ -773,6 +790,82 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
+          <Sheet
+            modal
+            open={countrySheetOpen}
+            onOpenChange={setCountrySheetOpen}
+            snapPoints={[60]}
+            animation="medium"
+            disableDrag
+          >
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9">
+              <YStack p="$4">
+                <XStack ai="center" jc="space-between" mb="$4">
+                  <Text fontSize="$8">Select a country</Text>
+                  <XStack onPress={() => setCountrySheetOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
+                  </XStack>
+                </XStack>
+                <Separator borderColor={separatorColor} mb="$4" />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {Object.keys(countryCodes).map((countryCode) => (
+                    <TouchableOpacity
+                      key={countryCode}
+                      onPress={() => {
+                        handleCountrySelect(countryCode);
+                        setCountrySheetOpen(false);
+                      }}
+                    >
+                      <XStack py="$3" px="$2">
+                        <Text fontSize="$4">
+                          {countryCodes[countryCode as keyof typeof countryCodes]} {flag(getCountryISO2(countryCode))}
+                        </Text>
+                      </XStack>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+
+          <Sheet
+            modal
+            open={algorithmSheetOpen}
+            onOpenChange={setAlgorithmSheetOpen}
+            snapPoints={[40]}
+            animation="medium"
+            disableDrag
+          >
+            <Sheet.Overlay />
+            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9">
+              <YStack p="$4">
+                <XStack ai="center" jc="space-between" mb="$4">
+                  <Text fontSize="$8">Select an algorithm</Text>
+                  <XStack onPress={() => setAlgorithmSheetOpen(false)} p="$2">
+                    <X color={borderColor} size="$1.5" mr="$2" />
+                  </XStack>
+                </XStack>
+                <Separator borderColor={separatorColor} mb="$4" />
+                <ScrollView showsVerticalScrollIndicator={false}>
+                  {["rsa sha256", "rsa sha1", "rsapss sha256"].map((algorithm) => (
+                    <TouchableOpacity
+                      key={algorithm}
+                      onPress={() => {
+                        handleAlgorithmSelect(algorithm);
+                        setAlgorithmSheetOpen(false);
+                      }}
+                    >
+                      <XStack py="$3" px="$2">
+                        <Text fontSize="$4">{algorithm}</Text>
+                      </XStack>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </YStack>
+            </Sheet.Frame>
+          </Sheet>
+
         </YStack>
 
         <Tabs f={1} orientation="horizontal" flexDirection="column" defaultValue={"splash"}
@@ -789,7 +882,12 @@ const MainScreen: React.FC = () => {
             />
           </Tabs.Content>
           <Tabs.Content value="mock" f={1}>
-            <MockDataScreen />
+            <MockDataScreen
+              onCountryPress={() => setCountrySheetOpen(true)}
+              onAlgorithmPress={() => setAlgorithmSheetOpen(true)}
+              selectedCountry={selectedCountry}
+              selectedAlgorithm={selectedAlgorithm}
+            />
           </Tabs.Content>
           <Tabs.Content value="scan" f={1}>
             <CameraScreen

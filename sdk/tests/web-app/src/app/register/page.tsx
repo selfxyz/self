@@ -1,9 +1,9 @@
 'use client';
 
-import { OpenPassportQRcode } from '../../../../../src/QRcode/OpenPassportQRcode';
 import { v4 as uuidv4 } from 'uuid';
-import { OpenPassportVerifier } from '../../../../../src/OpenPassportVerifier';
 import { COMMITMENT_TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
+import { OpenPassportVerifier } from '@openpassport/core';
+import OpenPassportQRcode from '../../../../../qrcode/OpenPassportQRcode';
 import axios from 'axios';
 export default function Prove() {
   const userId = uuidv4();
