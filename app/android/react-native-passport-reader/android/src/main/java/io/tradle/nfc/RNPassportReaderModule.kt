@@ -272,16 +272,29 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
         override fun doInBackground(vararg params: Void?): Exception? {
             try {
                 eventMessageEmitter(Messages.STOP_MOVING)
-                isoDep.timeout = 10000
+                isoDep.timeout = 20000
                 Log.e("MY_LOGS", "This should obvsly log")
-                val cardService = CardService.getInstance(isoDep)
-                Log.e("MY_LOGS", "cardService gotten")
-                cardService.open()
+                val cardService = try {
+                    CardService.getInstance(isoDep)
+                } catch (e: Exception) {
+                    Log.e("MY_LOGS", "Failed to get CardService instance", e)
+                    throw e
+                }
+                
+                try {
+                    cardService.open()
+                } catch (e: Exception) {
+                    Log.e("MY_LOGS", "Failed to open CardService", e)
+                    isoDep.close()
+                    Thread.sleep(500)
+                    isoDep.connect()
+                    cardService.open()
+                }
                 Log.e("MY_LOGS", "cardService opened")
                 val service = PassportService(
                     cardService,
-                    PassportService.NORMAL_MAX_TRANCEIVE_LENGTH,
-                    PassportService.DEFAULT_MAX_BLOCKSIZE,
+                    PassportService.NORMAL_MAX_TRANCEIVE_LENGTH * 2,
+                    PassportService.DEFAULT_MAX_BLOCKSIZE * 2,
                     false,
                     false,
                 )
@@ -313,14 +326,39 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 }
                 Log.e("MY_LOGS", "Sending select applet command with paceSucceeded: ${paceSucceeded}") // this is false so PACE doesn't succeed
                 service.sendSelectApplet(paceSucceeded)
+
                 if (!paceSucceeded) {
-                    try {
-                        Log.e("MY_LOGS", "trying to get EF_COM...")
-                        service.getInputStream(PassportService.EF_COM).read()
-                    } catch (e: Exception) {
-                        Log.e("MY_LOGS", "doing BAC")
-                        service.doBAC(bacKey) // <======================== error happens here
-                        Log.e("MY_LOGS", "BAC done")
+                    var bacSucceeded = false
+                    var attempts = 0
+                    val maxAttempts = 3
+                    
+                    while (!bacSucceeded && attempts < maxAttempts) {
+                        try {
+                            attempts++
+                            Log.e("MY_LOGS", "BAC attempt $attempts of $maxAttempts")
+                            
+                            if (attempts > 1) {
+                                // Wait before retry
+                                Thread.sleep(500)
+                            }
+                            
+                            // Try to read EF_COM first
+                            try {
+                                service.getInputStream(PassportService.EF_COM).read()
+                            } catch (e: Exception) {
+                                // EF_COM failed, do BAC
+                                service.doBAC(bacKey)
+                            }
+                            
+                            bacSucceeded = true
+                            Log.e("MY_LOGS", "BAC succeeded on attempt $attempts")
+                            
+                        } catch (e: Exception) {
+                            Log.e("MY_LOGS", "BAC attempt $attempts failed: ${e.message}")
+                            if (attempts == maxAttempts) {
+                                throw e // Re-throw on final attempt
+                            }
+                        }
                     }
                 }
 
