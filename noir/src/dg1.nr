@@ -1,5 +1,5 @@
-use crate::utils::{MAX_ECONTENT_LEN, HASH_LEN_BYTES, DG_PADDING_BYTES_LEN, MAX_SIGNED_ATTR_LEN};
 use std::hash::sha256;
+use crate::constants::{MAX_ECONTENT_LEN, HASH_LEN_BYTES, DG_PADDING_BYTES_LEN, MAX_SIGNED_ATTR_LEN};
 
 pub fn verify_dg1_and_dg2(
     dg1: [u8; 93],

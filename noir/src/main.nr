@@ -1,8 +1,11 @@
-use crate::utils::{MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN};
+use constants::{MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN};
 use crate::dg1::{verify_dg1_and_dg2, verify_econtent};
 
 pub mod dg1;
 pub mod utils;
+pub mod types;
+pub mod constants;
+pub mod disclose;
 
 fn main(
     dg1: [u8; 93],
