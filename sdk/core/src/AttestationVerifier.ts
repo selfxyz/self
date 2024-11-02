@@ -157,8 +157,12 @@ export class AttestationVerifier {
       }
     }
     if (this.nationality.enabled) {
-      const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
-      this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality.value);
+      if (this.nationality.value === 'Any') {
+        console.log('\x1b[32m%s\x1b[0m', '- nationality verified');
+      } else {
+        const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
+        this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality.value);
+      }
     }
     if (this.ofac) {
       const attributeValue = parsedPublicSignals.ofac_result.toString();

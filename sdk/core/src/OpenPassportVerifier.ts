@@ -47,6 +47,11 @@ export class OpenPassportVerifier extends AttestationVerifier {
     return this;
   }
 
+  discloseNationality(): this {
+    this.setNationality('Any');
+    return this;
+  }
+
   excludeCountries(...countries: (typeof countryNames)[number][]): this {
     this.excludedCountries = { enabled: true, value: countries };
     return this;

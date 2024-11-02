@@ -334,6 +334,14 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
       return (parsedPublicSignals as any).commitment;
     }
   }
+
+  getNationality(): string {
+    const parsedPublicSignals = this.parsePublicSignals();
+    const revealedData_packed = (parsedPublicSignals as any).revealedData_packed;
+    const unpackedReveal = unpackReveal(revealedData_packed);
+    return getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
+  }
+
   getCSCAMerkleRoot(): string {
     if (this.dscProof.value.publicSignals) {
       const parsedPublicSignalsDsc = parsePublicSignalsDsc(this.dscProof.value.publicSignals);
