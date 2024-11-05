@@ -82,7 +82,7 @@ mod tests {
 
         let (root, indices, siblings) = get_merkle_path::<134>(leaves, 5);
 
-        let computed_root = binary_merkle_root(leaves[5], 4, indices, siblings);
+        let computed_root = binary_merkle_root(leaves[5], 3, indices, siblings);
 
         assert(computed_root == root);
     }
@@ -97,7 +97,7 @@ mod tests {
 
         let (root, indices, siblings) = get_merkle_path::<4>(leaves, 5);
 
-        let computed_root = binary_merkle_root(leaves[5], 4, indices, siblings);
+        let computed_root = binary_merkle_root(leaves[5], 3, indices, siblings);
 
         assert(computed_root == root);
     }
