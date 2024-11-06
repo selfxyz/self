@@ -226,7 +226,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
         case 'minimumAge':
           return `I am older than ${option.value} years old.`;
         case 'nationality':
-          return `I have a valid passport from ${option.value}.`;
+          return option.value === 'Any'
+            ? `The issuer country of my passport.`
+            : `I have a valid passport from ${option.value}.`;
         case 'excludedCountries':
           return option.value.length > 0
             ? `I am not part of the following countries: ${option.value

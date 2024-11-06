@@ -352,6 +352,7 @@ export function getCountryCode(countryName: string): string | string {
   return found ? found[0] : 'undefined';
 }
 export const countryNames = [
+  'Any',
   "Afghanistan",
   "Aland Islands",
   "Albania",
