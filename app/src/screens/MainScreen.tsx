@@ -47,7 +47,6 @@ const emitter = (Platform.OS === 'android')
 const MainScreen: React.FC = () => {
   const [scanningMessage, setScanningMessage] = useState('');
   const [displayOtherOptions, setDisplayOtherOptions] = useState(false);
-  const [SettingsIsOpen, setSettingsIsOpen] = useState(false);
   const [DialogContributeIsOpen, setDialogContributeIsOpen] = useState(false);
   const [dialogDeleteSecretIsOpen, setDialogDeleteSecretIsOpen] = useState(false);
   const [HelpIsOpen, setHelpIsOpen] = useState(false);
@@ -289,123 +288,6 @@ const MainScreen: React.FC = () => {
             </Sheet.Frame>
           </Sheet>
 
-          <Sheet open={SettingsIsOpen} onOpenChange={setSettingsIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[88]}>
-            <Sheet.Overlay />
-            <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3" >
-              <YStack p="$3" pb="$5" f={1} gap={height > 750 ? "$3" : "$1"} mb="$1.5">
-                <XStack gap="$2" ml="$2" >
-                  <H2 color={textBlack}>Settings</H2>
-                  <Cog color={textBlack} mt="$1" alignSelf='center' size="$2" />
-                </XStack>
-
-                <Fieldset gap="$4" mt="$1" horizontal>
-                  <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
-                    Contribute
-                  </Label>
-                  <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogContributeIsOpen(true)}>
-                    <Share color={textBlack} />
-                  </Button>
-                </Fieldset>
-                <Fieldset horizontal>
-                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
-                    Private mode
-                  </Label>
-                  <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
-                    <Switch.Thumb animation="bouncy" bc={bgColor} />
-                  </Switch>
-                </Fieldset>
-
-                <Fieldset horizontal>
-                  <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
-                    Display other options
-                  </Label>
-                  <Switch size="$3.5" checked={displayOtherOptions} onCheckedChange={() => setDisplayOtherOptions(!displayOtherOptions)}>
-                    <Switch.Thumb animation="bouncy" bc={bgColor} />
-                  </Switch>
-                </Fieldset>
-
-                <Dialog.Container visible={DialogContributeIsOpen}>
-                  <Dialog.Title>Contribute</Dialog.Title>
-                  <Dialog.Description>
-                    By pressing yes, you accept sending your passport data.
-                    Passport data are encrypted and will be deleted once the signature algorithm is implemented.
-                  </Dialog.Description>
-                  <Dialog.Button onPress={() => setDialogContributeIsOpen(false)} label="Cancel" />
-                  <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
-                </Dialog.Container>
-
-                <Dialog.Container visible={dialogDeleteSecretIsOpen}>
-                  <Dialog.Title>Delete Secret</Dialog.Title>
-                  <Dialog.Description>
-                    You are about to delete your secret. Be careful! You will not be able to recover your identity.
-                  </Dialog.Description>
-                  <Dialog.Button onPress={() => setDialogDeleteSecretIsOpen(false)} label="Cancel" />
-                  <Dialog.Button onPress={() => handleDeleteSecret()} label="Delete secret" />
-                </Dialog.Container>
-
-                {displayOtherOptions && (
-                  <>
-                    <XStack my="$3" alignSelf='center' h={2} w="80%" bg={componentBgColor} borderRadius={100} />
-                    <Fieldset gap="$4" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
-                        Restart to step 1
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
-                        <IterationCw color={textBlack} />
-                      </Button>
-                    </Fieldset>
-
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        Delete passport data
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearPassportDataFromStorage}>
-                        <Eraser color={textBlack} />
-                      </Button>
-                    </Fieldset>
-
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        Delete proofs
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
-                        <Eraser color={textBlack} />
-                      </Button>
-                    </Fieldset>
-
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        Delete secret (caution)
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setDialogDeleteSecretIsOpen(true)}>
-                        <Eraser color={textColor2} />
-                      </Button>
-                    </Fieldset>
-                    <Fieldset gap="$4" mt="$1" horizontal>
-                      <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                        registered = (!registered)
-                      </Label>
-                      <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
-                        <UserPlus color={textColor2} />
-                      </Button>
-                    </Fieldset>
-
-
-
-                  </>
-                )}
-
-                <YStack flex={1} />
-
-                <YStack mb="$0">
-                  {/* <Button p="$2.5" borderRadius="$3" bg={componentBgColor} jc="center" borderColor={borderColor} borderWidth={1.2} onPress={() => setSettingsIsOpen(false)} w="80%" alignSelf='center'>
-                    <Text color={textBlack}textAlign='center' fow="bold">Close</Text>
-                  </Button> */}
-                </YStack>
-              </YStack>
-
-            </Sheet.Frame>
-          </Sheet>
 
           <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[76]}>
             <Sheet.Overlay />
@@ -465,7 +347,7 @@ const MainScreen: React.FC = () => {
                     <YStack gap="$2" mt="$3" ai="center">
                       <Fieldset gap="$4" horizontal>
                         <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
-                          Restart to step 1
+                          Rescan passport
                         </Label>
                         <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={handleRestart}>
                           <IterationCw color={textBlack} />
@@ -922,7 +804,8 @@ const MainScreen: React.FC = () => {
         </Tabs>
         <XStack mt="$2.5" justifyContent='center' alignItems='center' gap="$1.5">
           <ShieldCheck color={textBlack} size={12} />
-          <Text color={textBlack} fontSize="$3">private and secured</Text>
+          {/* <Text color={textBlack} fontSize="$3">private and secured</Text> */}
+          <Text color={textBlack} fontSize="$3">secured by ZK</Text>
         </XStack>
 
       </YStack>
