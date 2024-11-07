@@ -10,7 +10,7 @@ pub fn binary_merkle_root<let N: u32>(
     let mut root = 0;
 
     for i in 0..N {
-        let isDepth = if i + 1 == depth { 1 } else { 0 };
+        let isDepth = if i == depth { 1 } else { 0 };
 
         root += isDepth * nodes[i];
 
@@ -23,9 +23,8 @@ pub fn binary_merkle_root<let N: u32>(
         nodes[i + 1] = std::hash::poseidon::bn254::hash_2(child_nodes);
     }
 
-    if depth == 0 {
-        root = leaf;
-    }
+    let isDepth = if N == depth { 1 } else { 0 };
+    root += isDepth * nodes[N];
 
     root
 }
@@ -83,7 +82,7 @@ mod tests {
 
         let (root, indices, siblings) = get_merkle_path::<134>(leaves, 5);
 
-        let computed_root = binary_merkle_root(leaves[5], 4, indices, siblings);
+        let computed_root = binary_merkle_root(leaves[5], 3, indices, siblings);
 
         assert(computed_root == root);
     }
@@ -98,7 +97,7 @@ mod tests {
 
         let (root, indices, siblings) = get_merkle_path::<4>(leaves, 5);
 
-        let computed_root = binary_merkle_root(leaves[5], 4, indices, siblings);
+        let computed_root = binary_merkle_root(leaves[5], 3, indices, siblings);
 
         assert(computed_root == root);
     }

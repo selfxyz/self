@@ -5,7 +5,7 @@ pub fn verify_dg1_and_dg2(
     dg1: [u8; 93],
     dg1_hash_offset: u8,
     dg2_hash: [u8; 64],
-    eContent: [u8; MAX_ECONTENT_LEN]
+    eContent: [u8; MAX_ECONTENT_LEN],
 ) {
     let computed_dg1_hash = sha256(dg1);
 
@@ -25,6 +25,6 @@ pub fn verify_econtent(
     signed_attr: [u8; MAX_SIGNED_ATTR_LEN],
     signed_attr_econtent_hash_offset: u8,
     eContent_padded_length: u16,
-    signed_attr_padded_length: u8
+    signed_attr_padded_length: u8,
 ) {}
 
