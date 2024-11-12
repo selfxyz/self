@@ -4,11 +4,11 @@
     "prisma": "^5.18.0"
   },
   "dependencies": {
-    "@peculiar/x509": "^1.11.0",
-    "@prisma/client": "^5.19.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
+    "@peculiar/x509": "^1.11.0",
+    "@prisma/client": "^5.19.0",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
