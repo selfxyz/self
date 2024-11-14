@@ -24,16 +24,16 @@ pub fn smt_verify<let N: u32>(
 ) -> bool {
     let depth = siblings_length(siblings);
 
-    let path_in_bits = value.to_be_bits();
+    let path_in_bits = virtualValue.to_be_bits::<N>();
     let mut path: [u1; N] = [0; N];
 
     //move the last "depth" number of bits from path_in_bits to the starting of path
-    assert(depth < path_in_bits.len());
+    assert(depth < N);
     for i in 0..depth {
         path[i] = path_in_bits[path_in_bits.len() - depth + i];
     }
-
     let leaf = std::hash::poseidon::bn254::hash_3([value, 1, 1]);
+
     let leaf_or_zero = if value == 0 { 0 } else { leaf };
 
     let computed_root = binary_merkle_root(leaf_or_zero, depth, path, siblings);
