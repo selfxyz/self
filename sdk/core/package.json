@@ -1,6 +1,6 @@
 {
   "name": "@openpassport/core",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "main": "dist/sdk/core/index.js",
   "types": "dist/sdk/core/index.d.ts",
   "license": "MIT",

@@ -24,13 +24,13 @@ function main(arg: string) {
                     const notAfterDate = new Date(certificate.validity.notAfter);
                     if (notAfterDate > new Date()) {
                         // Check if we've seen this SKI before
-                        if (seenSKIs.has(certificate.subjectKeyIdentifier)) {
-                            console.log('\x1b[33m%s\x1b[0m', `Skipping duplicate SKI in ${file} (SKI: ${certificate.subjectKeyIdentifier})`);
-                            duplicates.push(file);
-                            continue;
-                        }
+                        // if (seenSKIs.has(certificate.subjectKeyIdentifier)) {
+                        //     console.log('\x1b[33m%s\x1b[0m', `Skipping duplicate SKI in ${file} (SKI: ${certificate.subjectKeyIdentifier})`);
+                        //     duplicates.push(file);
+                        //     continue;
+                        // }
 
-                        seenSKIs.add(certificate.subjectKeyIdentifier);
+                        // seenSKIs.add(certificate.subjectKeyIdentifier);
                         csca_certificates[file] = certificate;
                     } else {
                         console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
