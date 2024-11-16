@@ -1,6 +1,6 @@
 'use client';
 
-import OpenPassportQRcode from '../../../../../qrcode/OpenPassportQRcode';
+import { OpenPassportQRcode } from '@openpassport/qrcode';
 import { v4 as uuidv4 } from 'uuid';
 
 
