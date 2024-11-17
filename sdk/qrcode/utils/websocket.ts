@@ -51,7 +51,7 @@ const handleWebSocketMessage =
               sessionId,
               proofVerified: local_proofVerified.toString(),
             });
-            if (local_proofVerified) {
+            if (local_proofVerified.valid) {
               onSuccess(data.proof);
             }
           }, 1500); // wait for animation to finish before sending the proof to mobile

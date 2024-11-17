@@ -230,13 +230,17 @@ const handleResponseAndroid = async (
     LDSVersion,
     unicodeVersion,
     encapContent,
-    documentSigningCertificate
+    documentSigningCertificate,
+    dataGroupHashes
   } = response;
 
+  const dgHashesObj = JSON.parse(dataGroupHashes);
+  const dg2Hash = dgHashesObj["2"]; // This will give you the DG2 hash
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     dsc: pem,
+    dg2Hash,
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),

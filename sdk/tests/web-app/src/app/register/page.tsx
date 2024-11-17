@@ -8,10 +8,13 @@ import axios from 'axios';
 export default function Prove() {
   const userId = uuidv4();
   const scope = 'scope';
-  const openPassportVerifier = new OpenPassportVerifier(
-    'register',
-    scope
-  ).setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL).allowMockPassports();
+
+
+  const openPassportVerifier = new OpenPassportVerifier('register', scope)
+    .setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
+
+
+
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <OpenPassportQRcode

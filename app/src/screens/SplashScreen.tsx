@@ -9,7 +9,7 @@ const SplashScreen = () => {
     const { setSelectedTab } = useNavigationStore();
     useEffect(() => {
         if (userLoaded) {
-            if (passportData) {
+            if (passportData && passportData.dg2Hash && !passportData.mockUser) {
                 setSelectedTab('app');
             } else {
                 setSelectedTab('start');

@@ -68,15 +68,18 @@ function getMapKey(certificateData: CertificateData): string {
     return `${hashAlgorithm.toLowerCase()} ${signatureAlgorithm.toLowerCase()} ${keyDetails}`;
 }
 
-export async function getSkiPemJson(certificates: { [key: string]: CertificateData }) {
-
+export function getSkiPemJson(certificates: { [key: string]: CertificateData }) {
     const skiPemMap: { [ski: string]: string } = {};
 
+    console.log('Total certificates to process:', Object.keys(certificates).length);
+
     for (const certificateData of Object.values(certificates)) {
-        if (certificateData.rawPem) {
+        if (certificateData.rawPem && certificateData.subjectKeyIdentifier) {
             skiPemMap[certificateData.subjectKeyIdentifier] = certificateData.rawPem;
         }
     }
+
+    console.log('Final map size:', Object.keys(skiPemMap).length);
 
     return skiPemMap;
 }
