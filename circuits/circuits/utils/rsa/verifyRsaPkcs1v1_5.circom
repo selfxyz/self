@@ -17,13 +17,13 @@ template VerifyRsaPkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, E_BITS, HASH_SIZE) {
     signal input signature[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
 
-    signal input hashed[CHUNK_NUMBER];
+    signal input message[CHUNK_NUMBER];
 
     // 1. Add padding to the hashed message
     component padder = Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         padder.modulus[i] <== modulus[i];
-        padder.message[i] <== hashed[i];
+        padder.message[i] <== message[i];
     }
 
     // 2. Check that the signature is in proper form and reduced mod modulus.

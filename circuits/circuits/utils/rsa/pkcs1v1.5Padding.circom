@@ -27,15 +27,15 @@ template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal messageBits[CHUNK_SIZE * CHUNK_NUMBER];
 
     for (var i = 0; i < CHUNK_NUMBER; i++) {
-        messageN2B[i] = Num2Bits(n);
+        messageN2B[i] = Num2Bits(CHUNK_SIZE);
         messageN2B[i].in <== message[i];
-        for (var j = 0; j < n; j++) {
-            messageBits[i*n+j] <== messageN2B[i].out[j];
+        for (var j = 0; j < CHUNK_SIZE; j++) {
+            messageBits[i*CHUNK_SIZE+j] <== messageN2B[i].out[j];
         }
-        modulusN2B[i] = Num2Bits(n);
+        modulusN2B[i] = Num2Bits(CHUNK_SIZE);
         modulusN2B[i].in <== modulus[i];
-        for (var j = 0; j < n; j++) {
-            modulusBits[i*n+j] <== modulusN2B[i].out[j];
+        for (var j = 0; j < CHUNK_SIZE; j++) {
+            modulusBits[i*CHUNK_SIZE+j] <== modulusN2B[i].out[j];
         }
     }
 
@@ -80,7 +80,7 @@ template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
 
     component passedMessageB2N[CHUNK_NUMBER];
     for (var i = 0; i < CHUNK_NUMBER; i++) {
-        passedMessageB2N[i] = Bits2Num(n);
+        passedMessageB2N[i] = Bits2Num(CHUNK_SIZE);
         for (var j = 0; j < CHUNK_SIZE; j++) {
             passedMessageB2N[i].in[j] <== paddedMessageBits[i*CHUNK_SIZE+j];
         }
