@@ -9,7 +9,8 @@ export type PassportData = {
   mockUser?: boolean;
 };
 
-export type SignatureAlgorithm = 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384';
+// Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
+export type SignatureAlgorithm = 'rsa_sha1_65537_2048' | 'rsa_sha256_65537_2048' | 'rsapss_sha256_65537_2048' | 'ecdsa_sha256_secp256r1_256' | 'ecdsa_sha1_secp256r1_256' | 'ecdsa_sha384_secp384r1_384' | 'ecdsa_sha256_brainpoolP256r1_256' | 'rsa_sha256_3_2048' | 'rsa_sha256_65537_3072';
 
 export type Proof = {
   proof: {

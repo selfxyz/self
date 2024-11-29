@@ -29,9 +29,9 @@ import {
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
 import { parseCertificate } from './certificates/handleCertificate';
-
+import { SignatureAlgorithm } from './types';
 export function genMockPassportData(
-  signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384' | 'brainpoolP256r1_sha256',
+  signatureType: SignatureAlgorithm,
   nationality: keyof typeof countryCodes,
   birthDate: string,
   expiryDate: string,
@@ -77,37 +77,37 @@ export function genMockPassportData(
   let sampleDataHashes: [number, number[]][];
 
   switch (signatureType) {
-    case 'rsa_sha1':
+    case 'rsa_sha1_65537_2048':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha1_rsa_4096;
       dsc = mock_dsc_sha1_rsa_4096;
       break;
-    case 'rsa_sha256':
+    case 'rsa_sha256_65537_2048':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsa_4096;
       dsc = mock_dsc_sha256_rsa_4096;
       break;
-    case 'rsapss_sha256':
+    case 'rsapss_sha256_65537_2048':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
       dsc = mock_dsc_sha256_rsapss_4096;
       break;
-    case 'ecdsa_sha256':
+    case 'ecdsa_sha256_secp256r1_256':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_ecdsa;
       dsc = mock_dsc_sha256_ecdsa;
       break;
-    case 'ecdsa_sha1':
+    case 'ecdsa_sha1_secp256r1_256':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha1_ecdsa;
       dsc = mock_dsc_sha1_ecdsa;
       break;
-    case 'ecdsa_sha384':
+    case 'ecdsa_sha384_secp384r1_384':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
       break;
-    case 'brainpoolP256r1_sha256':
+    case 'ecdsa_sha256_brainpoolP256r1_256':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
       dsc = mock_dsc_sha256_brainpoolP256r1;

@@ -26,8 +26,8 @@ export function customHasher(pubKeyFormatted: string[]) {
 export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
   const { n, k } = getNAndK(signatureAlgorithm);
-  console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  console.log(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`);
+  const sigAlgKey = `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`;
   const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
   if (sigAlgIndex == undefined) {
@@ -47,9 +47,11 @@ export function getLeaf(dsc: string): string {
 export function getLeafCSCA(dsc: string): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } = parseCertificate(dsc);
   const { n, k } = getNAndKCSCA(signatureAlgorithm);
-  console.log(`${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`)
-  const sigAlgKey = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  console.log(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`)
+  const sigAlgKey = `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`;
+  console.log('sigAlgKey', sigAlgKey);
   const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
+  console.log('sigAlgIndex', sigAlgIndex);
 
   if (sigAlgIndex == undefined) {
     console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);

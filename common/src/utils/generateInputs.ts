@@ -172,7 +172,7 @@ export function generateCircuitInputsProve(
   const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
   const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } = parseCertificate(passportData.dsc);
 
-  const signatureAlgorithmFullName = `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${bits}`;
+  const signatureAlgorithmFullName = `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`;
   let pubKey: any;
   let signature: any;
 
@@ -217,6 +217,8 @@ export function generateCircuitInputsProve(
     throw new Error(`This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`);
   }
 
+  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
+  console.log('MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]', MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]);
   const [eContentPadded, eContentLen] = shaPad(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
