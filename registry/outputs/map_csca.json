@@ -1,247 +1,3050 @@
 {
-  "ecdsa sha256 256 brainpoolP256r1": {
-    "AE": 2,
-    "CY": 8,
-    "OM": 3
-  },
-  "rsa sha256 3072 65537": {
-    "AR": 1,
-    "CL": 3,
-    "DK": 5,
-    "LI": 1,
-    "NL": 1,
-    "PL": 5,
-    "TL": 1,
-    "UN": 2,
-    "CO": 2,
-    "MK": 2
-  },
-  "ecdsa sha384 384 brainpoolP384r1": {
-    "AT": 3,
-    "CH": 4,
-    "CN": 2,
-    "DE": 3,
-    "LB": 1,
-    "LV": 4,
-    "PE": 1,
-    "TH": 1,
-    "UZ": 3,
-    "BD": 1,
-    "CR": 2,
-    "PS": 1,
-    "CY": 1
-  },
-  "rsa sha256 4096 38129": {
-    "AT": 1
-  },
-  "rsa sha1 4096 65537": {
-    "AU": 1,
-    "BE": 2,
-    "CN": 4,
-    "HU": 4,
-    "IT": 4,
-    "MT": 6,
-    "RO": 3,
-    "VA": 2,
-    "KZ": 2
-  },
-  "rsa sha256 4096 65537": {
-    "AU": 4,
-    "AZ": 3,
-    "BB": 2,
-    "BE": 4,
-    "BG": 4,
-    "BW": 3,
-    "CN": 7,
-    "EE": 2,
-    "ES": 3,
-    "FI": 3,
-    "FR": 3,
-    "GB": 3,
-    "GE": 3,
-    "GR": 8,
-    "HU": 5,
-    "IE": 3,
-    "IL": 1,
-    "KS": 3,
-    "KW": 2,
-    "MA": 3,
-    "MC": 4,
-    "ME": 2,
-    "MT": 2,
-    "NL": 5,
-    "NO": 2,
-    "NZ": 1,
-    "PA": 2,
-    "PT": 2,
-    "QA": 2,
-    "RO": 2,
-    "SG": 2,
-    "SI": 3,
-    "SK": 5,
-    "TH": 1,
-    "TM": 4,
-    "TR": 2,
-    "TW": 5,
-    "UA": 2,
-    "US": 4,
-    "UG": 2,
-    "NP": 1,
-    "UZ": 2,
-    "ID": 3,
-    "KE": 4,
-    "CI": 3,
-    "JM": 1,
-    "AD": 4,
-    "AL": 3,
-    "SY": 1,
-    "CM": 1
-  },
-  "ecdsa sha1 256 brainpoolP256r1": {
-    "BA": 2,
-    "LT": 4,
-    "LV": 2
-  },
-  "ecdsa sha256 256 secp256r1": {
-    "BE": 4,
-    "RW": 2,
-    "IN": 2,
-    "SA": 1,
-    "BJ": 1
-  },
-  "ecdsa sha512 512 brainpoolP512r1": {
-    "BR": 1,
-    "CH": 1,
-    "DE": 2,
-    "FI": 1,
-    "VN": 1
-  },
-  "rsapss sha256 4096 65537": {
-    "BS": 1,
-    "CA": 3,
-    "HR": 4,
-    "IL": 1,
-    "JP": 1,
-    "KN": 1,
-    "LU": 7,
-    "NO": 2,
-    "PH": 4,
-    "PY": 1,
-    "SE": 2,
-    "SG": 2,
-    "VC": 2,
-    "AG": 2,
-    "CN": 1,
-    "TZ": 3,
-    "BZ": 1,
-    "BH": 1,
-    "GH": 1,
-    "MN": 1,
-    "EC": 1,
-    "SI": 1,
-    "DM": 1,
-    "AM": 1,
-    "GM": 3
-  },
-  "rsapss sha256 4096 3": {
-    "CN": 8
-  },
-  "ecdsa sha256 384 brainpoolP384r1": {
-    "CY": 1,
-    "UY": 1
-  },
-  "rsapss sha256 3072 65537": {
-    "CZ": 3,
-    "MY": 3
-  },
-  "ecdsa sha384 512 brainpoolP512r1": {
-    "DE": 1
-  },
-  "ecdsa sha512 unknown unknown": {
-    "DZ": 2,
-    "TR": 1
-  },
-  "ecdsa sha512 384 secp384r1": {
-    "DZ": 1
-  },
-  "rsapss sha512 4096 65537": {
-    "EE": 3,
-    "IT": 2,
-    "ME": 1
-  },
-  "rsapss sha384 4096 65537": {
-    "EU": 2,
-    "MK": 1
-  },
-  "ecdsa sha256 384 secp384r1": {
-    "GB": 3,
-    "HU": 2,
-    "NZ": 4,
-    "AE": 1,
-    "SC": 1
-  },
-  "rsa sha512 4096 65537": {
-    "IS": 1,
-    "LI": 2,
-    "CM": 2,
-    "MX": 1,
-    "AU": 1,
-    "XO": 2,
-    "KP": 1,
-    "PT": 1
-  },
-  "rsa sha256 2048 65537": {
-    "IS": 1
-  },
-  "rsa sha384 4096 65537": {
-    "JP": 1,
-    "LI": 1,
-    "AD": 1
-  },
-  "ecdsa sha384 384 secp384r1": {
-    "JP": 2,
-    "BY": 1,
-    "IL": 1
-  },
-  "rsapss sha256 3072 3": {
-    "KR": 3
-  },
-  "rsa sha256 6144 65537": {
-    "MD": 4
-  },
-  "rsa sha1 6144 65537": {
-    "MD": 1
-  },
-  "rsapss sha384 3072 65537": {
-    "RS": 4,
-    "TJ": 2
-  },
-  "ecdsa sha1 256 secp256r1": {
-    "RU": 3
-  },
-  "ecdsa sha512 521 secp521r1": {
-    "TR": 3,
-    "IS": 1,
-    "HU": 2,
-    "ZW": 1,
-    "IQ": 1
-  },
-  "rsa sha256 4096 109729": {
-    "SN": 1
-  },
-  "rsa sha1 4096 3": {
-    "VA": 1
-  },
-  "rsa sha1 2048 65537": {
-    "SM": 1
-  },
-  "rsa sha256 4096 56611": {
-    "IR": 1
-  },
-  "rsa sha256 4096 107903": {
-    "NG": 1
-  },
-  "rsa sha384 3072 65537": {
-    "TJ": 1
-  }
+  "AE": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "AR": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "AT": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "38129",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "AU": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "AZ": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BA": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "BB": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BE": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BG": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BR": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    }
+  ],
+  "BS": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BW": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "CA": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "CH": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "CL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "CN": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "CY": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "CZ": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "DE": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    }
+  ],
+  "DK": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "DZ": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "unknown",
+      "bit_length": 0,
+      "amount": 2
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "EE": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "ES": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "EU": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "FI": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "FR": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "GB": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "GE": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "GR": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "HR": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "HU": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    }
+  ],
+  "IE": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "IL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "IS": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 2048,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    }
+  ],
+  "IT": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "JP": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "KN": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "KR": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "3",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "KS": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "KW": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "LB": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "LI": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "LT": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "LU": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "LV": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "MA": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MC": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MD": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 6144,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 6144,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 6144,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 6144,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 6144,
+      "amount": 1
+    }
+  ],
+  "ME": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MT": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MY": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "NL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "NO": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "NZ": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "OM": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "PA": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "PE": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "PH": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "PL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "PT": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "PY": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "QA": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "RO": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "RS": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "RU": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "RW": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "SE": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SG": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SI": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SK": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "TH": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "TJ": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "TL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "TM": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "TR": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "unknown",
+      "bit_length": 0,
+      "amount": 1
+    }
+  ],
+  "TW": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "UA": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "UN": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "US": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SN": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "109729",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "UG": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "VC": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "NP": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "AG": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "CM": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "VA": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "3",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "UZ": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "SM": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 2048,
+      "amount": 1
+    }
+  ],
+  "ID": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MX": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "TZ": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BZ": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BH": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "IN": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "BD": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "SC": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "ZW": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    }
+  ],
+  "CR": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "KE": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "IQ": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "secp521r1",
+      "bit_length": 521,
+      "amount": 1
+    }
+  ],
+  "CO": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "VN": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "brainpoolP512r1",
+      "bit_length": 512,
+      "amount": 1
+    }
+  ],
+  "CI": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "KZ": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha1",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SA": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "IR": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "56611",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BY": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "secp384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "JM": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "GH": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MN": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "EC": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "BJ": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "secp256r1",
+      "bit_length": 256,
+      "amount": 1
+    }
+  ],
+  "XO": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "KP": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha512",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "AD": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "AL": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "NG": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "107903",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "SY": [
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "MK": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 3072,
+      "amount": 1
+    }
+  ],
+  "DM": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "PS": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha384",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "UY": [
+    {
+      "signature_algorithm": "ecdsa",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "brainpoolP384r1",
+      "bit_length": 384,
+      "amount": 1
+    }
+  ],
+  "AM": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ],
+  "GM": [
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    },
+    {
+      "signature_algorithm": "rsapss",
+      "hash_algorithm": "sha256",
+      "curve_exponent": "65537",
+      "bit_length": 4096,
+      "amount": 1
+    }
+  ]
 }
