@@ -1,284 +1,168 @@
 {
-  "sha-256 rsa 2048 bit 65537": {
-    "NZ": 182,
-    "CN": 6961,
-    "US": 1458,
-    "FR": 2016,
-    "MD": 67,
-    "AU": 727,
+  "rsa sha256 2048 65537": {
+    "CN": 6223,
+    "US": 1111,
+    "FR": 1855,
+    "MD": 40,
+    "AU": 705,
     "IE": 85,
-    "TH": 78,
-    "UN": 37,
     "CO": 2,
-    "TM": 356,
-    "FI": 36,
+    "TH": 16,
+    "FI": 14,
     "HU": 12,
-    "IS": 36,
+    "IS": 30,
+    "NZ": 40,
+    "UN": 27,
     "ES": 83,
-    "ID": 14,
+    "TM": 211,
+    "ID": 10,
     "SK": 42,
-    "MA": 3,
+    "MA": 1,
     "RO": 8,
+    "BJ": 2,
     "PA": 43,
-    "NG": 1,
-    "GB": 2454,
-    "AR": 16,
-    "QA": 3,
-    "SG": 45,
+    "GB": 689,
+    "AR": 5,
     "NO": 1,
     "UZ": 10
   },
-  "sha-256 rsa-pss unknown": {
-    "CN": 143,
-    "CZ": 152,
-    "JP": 127,
-    "KR": 194,
-    "CA": 755,
-    "SG": 24,
+  "rsapss sha256 2048 65537": {
+    "CZ": 111,
+    "JP": 51,
+    "CA": 522,
     "LU": 109,
-    "SE": 296,
+    "SG": 20,
+    "SE": 63,
+    "CN": 57,
     "TZ": 89,
-    "MY": 189,
-    "BZ": 14,
     "MN": 5,
     "BH": 5
   },
-  "sha-256 rsa 4096 bit 65537": {
-    "BG": 90,
-    "UA": 44,
+  "rsapss sha256 2048 3": {
+    "CN": 54,
+    "KR": 92,
+    "JP": 1
+  },
+  "rsa sha256 4096 65537": {
+    "BG": 64,
+    "UA": 43,
     "IS": 38
   },
-  "sha-256 ecdsa secp256r1": {
+  "ecdsa sha256 256 secp256r1": {
     "GB": 1572,
     "NZ": 52,
     "HU": 19,
     "RW": 5,
     "BJ": 1
   },
-  "sha-384 ecdsa brainpoolP256r1": {
+  "ecdsa sha384 256 brainpoolP256r1": {
     "AT": 48,
-    "CH": 195,
-    "DE": 31
+    "CH": 162,
+    "DE": 18
   },
-  "sha-256 rsa 2048 bit 3": {
-    "IE": 469
+  "rsa sha256 2048 3": {
+    "IE": 415
   },
-  "sha-1 rsa 2048 bit 65537": {
-    "CN": 90,
-    "ES": 84,
-    "IT": 21,
-    "FR": 32,
-    "AU": 68,
-    "HU": 68,
-    "LU": 2
-  },
-  "sha-256 ecdsa brainpoolP256r1": {
-    "AE": 50,
+  "ecdsa sha256 256 brainpoolP256r1": {
+    "UA": 2,
     "CN": 23,
+    "AE": 13,
     "TH": 15
   },
-  "sha-256 rsa unknown": {
-    "UA": 2
+  "rsa sha1 2048 65537": {
+    "ES": 21,
+    "IT": 8,
+    "HU": 18
   },
-  "sha-256 rsa 3072 bit 64999": {
+  "rsa sha256 3072 64999": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 62391": {
+  "rsa sha256 3072 62391": {
     "IR": 1
   },
-  "sha-384 ecdsa secp384r1": {
+  "ecdsa sha384 384 secp384r1": {
     "JP": 56
   },
-  "sha-256 rsa 3072 bit 49861": {
+  "rsa sha256 3072 49861": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 37399": {
+  "rsa sha256 3072 37399": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 65223": {
+  "rsa sha256 3072 65223": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 44459": {
+  "rsa sha256 3072 44459": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 54007": {
+  "rsa sha256 3072 54007": {
     "IR": 1
   },
-  "sha-512 rsa-pss unknown": {
+  "rsapss sha512 2048 65537": {
     "IT": 36
   },
-  "sha-384 rsa-pss unknown": {
+  "rsapss sha384 2048 65537": {
     "EU": 11
   },
-  "sha-256 rsa 3072 bit 49729": {
+  "rsa sha256 3072 49729": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 52355": {
+  "rsa sha256 3072 52355": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 42239": {
+  "rsapss sha256 3072 65537": {
+    "SE": 91,
+    "CA": 133,
+    "BZ": 14
+  },
+  "rsa sha256 3072 42239": {
     "IR": 1
   },
-  "sha-512 rsa 2048 bit 65537": {
+  "rsa sha512 2048 65537": {
     "MX": 12
   },
-  "sha-256 rsa 3072 bit 55443": {
+  "rsa sha256 3072 55443": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 34389": {
+  "rsa sha256 3072 34389": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 58333": {
+  "rsa sha256 3072 58333": {
     "IR": 1
   },
-  "sha-256 rsa 3072 bit 65537": {
+  "rsa sha256 3072 65537": {
     "NP": 104,
     "FI": 8
   },
-  "sha-256 ecdsa secp384r1": {
+  "ecdsa sha256 384 secp384r1": {
     "AE": 1
   },
-  "sha-256 rsa 3072 bit 45347": {
+  "rsa sha256 3072 45347": {
     "IR": 1
   },
-  "sha-256 ecdsa Unknown": {
-    "BJ": 2
-  },
-  "sha-256 rsa 3072 bit 63289": {
+  "rsa sha256 3072 63289": {
     "IR": 1
   },
-  "sha-512 ecdsa brainpoolP512r1": {
+  "ecdsa sha512 512 brainpoolP512r1": {
     "FI": 24,
     "BR": 2
   },
-  "sha-256 rsa 3072 bit 60353": {
+  "rsa sha256 3072 60353": {
     "IR": 1
   },
-  "sha-512 ecdsa secp384r1": {
+  "ecdsa sha512 384 secp384r1": {
     "IQ": 5
   },
-  "sha-384 ecdsa brainpoolP384r1": {
+  "ecdsa sha384 384 brainpoolP384r1": {
     "VN": 1
   },
-  "sha-512 ecdsa brainpoolP256r1": {
+  "ecdsa sha512 256 brainpoolP256r1": {
     "CH": 5
   },
-  "sha-512 rsa 4096 bit 65537": {
+  "rsa sha512 4096 65537": {
     "CM": 1
   },
-  "sha-1 ecdsa Unknown curve": {
-    "DE": 19
-  },
-  "sha-256 ecdsa Unknown curve": {
-    "DE": 12,
-    "AE": 42
-  },
-  "sha-256 rsa 1024 bit 65537": {
-    "ZZ": 43
-  },
-  "sha-256 rsa 3072 bit 61181": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 48081": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 45279": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 51925": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 37121": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 35033": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 33579": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 35221": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 44681": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 44591": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 36515": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 62785": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 64113": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 36291": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 64721": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 65123": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 63701": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 53873": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 47415": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 42743": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 62765": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 53037": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 34779": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 59793": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 58127": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 33769": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 41817": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 33225": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 49371": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 65427": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 59575": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 53741": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 38105": {
-    "AT": 1
-  },
-  "sha-256 rsa 3072 bit 61957": {
-    "AT": 1
-  },
-  "sha-256 rsa 2048 bit 61735": {
+  "rsa sha256 3072 44681": {
     "AT": 1
   }
 }

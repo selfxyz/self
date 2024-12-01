@@ -14,7 +14,7 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 model dsc_masterlist {
-  id                    String   @id
+  id                    String   @id @unique
   issuer                String?
   hashAlgorithm         String?
   signatureAlgorithm    String?
@@ -23,9 +23,24 @@ model dsc_masterlist {
   publicKeyDetails      Json?
   rawPem                String?  @db.Text
   rawTxt                String?  @db.Text
+  
+  pk_modulus            String?
+  pk_exponent          String?
+  pk_bits              String?
+  pk_curve             String?
+  pk_hashAlgorithm     String?
+  pk_mgf               String?
+  pk_saltLength        String?
+
+  @@index([pk_modulus])
+  @@index([pk_bits])
+  @@index([pk_curve])
+  @@index([hashAlgorithm])
+  @@index([signatureAlgorithm])
+  @@index([subjectKeyIdentifier])
 }
 model csca_masterlist {
-  id                    String   @id
+  id                    String   @id @unique
   issuer                String?
   hashAlgorithm         String?
   signatureAlgorithm    String?
@@ -34,4 +49,19 @@ model csca_masterlist {
   publicKeyDetails      Json?
   rawPem                String?  @db.Text
   rawTxt                String?  @db.Text
+  
+  pk_modulus            String?
+  pk_exponent          String?
+  pk_bits              String?
+  pk_curve             String?
+  pk_hashAlgorithm     String?
+  pk_mgf               String?
+  pk_saltLength        String?
+
+  @@index([pk_modulus])
+  @@index([pk_bits])
+  @@index([pk_curve])
+  @@index([hashAlgorithm])
+  @@index([signatureAlgorithm])
+  @@index([subjectKeyIdentifier])
 }

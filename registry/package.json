@@ -4,11 +4,13 @@
     "prisma": "^5.18.0"
   },
   "dependencies": {
-    "@peculiar/x509": "^1.11.0",
-    "@prisma/client": "^5.19.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
+    "@peculiar/asn1-schema": "^2.3.13",
+    "@peculiar/asn1-x509": "^2.3.13",
+    "@peculiar/x509": "^1.11.0",
+    "@prisma/client": "^5.19.0",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
@@ -18,14 +20,17 @@
     "node-forge": "^1.3.1",
     "node-rsa": "^1.1.1",
     "pkijs": "^3.2.4",
-    "poseidon-lite": "^0.2.0"
+    "poseidon-lite": "^0.2.0",
+    "x509-ts": "^0.13.0"
   },
   "scripts": {
     "install-registry": "cd ../common && yarn && cd ../registry && yarn",
     "db-init": "npx prisma generate",
     "db-push": "ts-node src/pushToDb.ts",
+    "db-clear": "ts-node src/deleteDb.ts",
     "extract-masterlist": "ts-node src/extractMasterList.ts",
-    "parse-data": "ts-node src/parseData.ts"
+    "parse-data": "ts-node src/parseData.ts",
+    "mapJson": "ts-node src/buildMapJson.ts"
   },
   "license": "MIT"
 }

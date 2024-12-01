@@ -1,6 +1,6 @@
 {
   "name": "@openpassport/qrcode",
-  "version": "0.0.12",
+  "version": "0.0.14",
   "main": "dist/sdk/qrcode/index.js",
   "types": "dist/sdk/qrcode/index.d.ts",
   "license": "MIT",
@@ -10,7 +10,7 @@
   },
   "author": "turnoffthiscomputer",
   "dependencies": {
-    "@openpassport/core": "0.0.9",
+    "@openpassport/core": "0.0.11",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
