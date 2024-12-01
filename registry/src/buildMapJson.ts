@@ -37,7 +37,15 @@ async function main() {
             try {
                 const certificate = parseCertificate(pemContent, file);
                 if (certificate) {
-                    const notAfterDate = new Date(certificate.validity.notAfter);
+                    let notAfterDate = new Date(certificate.validity.notAfter);
+
+                    // Add extra validity years based on certificate type
+                    if (certType === 'dsc') {
+                        notAfterDate.setFullYear(notAfterDate.getFullYear() + 10);
+                    } else if (certType === 'csca') {
+                        notAfterDate.setFullYear(notAfterDate.getFullYear() + 20);
+                    }
+
                     if (notAfterDate > new Date()) {
                         certificates[certificate.id] = certificate;
                     } else {
