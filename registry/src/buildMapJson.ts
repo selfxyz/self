@@ -1,31 +1,35 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { argv } from 'process';
-import { getPrismaClientFromEnv, prepareDataForInsertion } from './utils/prisma';
 import { parseCertificate } from './utils/certificateParsing/parseCertificate';
 import { CertificateData } from './utils/certificateParsing/dataStructure';
 
 let pemDirectory: string;
-let tableName: 'csca_masterlist' | 'dsc_masterlist';
 
 const certType = argv[2];
 
 if (certType === 'csca') {
     pemDirectory = path.join(__dirname, '..', 'outputs', 'csca', 'pem_masterlist');
-    tableName = 'csca_masterlist';
 } else if (certType === 'dsc') {
     pemDirectory = path.join(__dirname, '..', 'outputs', 'dsc', 'pem_masterlist');
-    tableName = 'dsc_masterlist';
 } else {
     console.error('Invalid certificate type. Use "csca" or "dsc".');
     process.exit(1);
 }
 
-
-
 async function main() {
-    let mapJson: { [key: string]: { [key: string]: number } } = {};
+    let mapJson: {
+        [key: string]: Array<{
+            signature_algorithm: string,
+            hash_algorithm: string,
+            curve_exponent: string,
+            bit_length: number,
+            amount: number
+        }>
+    } = {};
+
     let certificates: { [key: string]: CertificateData } = {};
+
     try {
         const files = fs.readdirSync(pemDirectory);
         for (const file of files) {
@@ -40,36 +44,71 @@ async function main() {
                         console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
                     }
                 }
-            }
-            catch (error) {
+            } catch (error) {
                 console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is invalid.`);
             }
-
         }
     } catch (error) {
         console.error('error:', error);
     }
+
     for (const cert of Object.values(certificates)) {
-        const issuer = cert.issuer;
-        const signatureAlgorithm = cert.signatureAlgorithm;
-        const hashAlgorithm = cert.hashAlgorithm;
-        const bits = cert.publicKeyDetails?.bits || 'unknown';
+        const countryCode = cert.issuer;
 
-        const pubKeyType = cert.publicKeyDetails
-            ? ('exponent' in cert.publicKeyDetails ? cert.publicKeyDetails.exponent : cert.publicKeyDetails.curve)
-            : 'unknown';
+        // Normalize fields
+        const signatureAlgorithm = cert.signatureAlgorithm.toLowerCase().trim();
+        const hashAlgorithm = cert.hashAlgorithm.toLowerCase().trim();
+        const bits = Number(cert.publicKeyDetails?.bits || 0);
 
-        const certDescription = `${signatureAlgorithm} ${hashAlgorithm} ${bits} ${pubKeyType}`;
-
-        if (!mapJson[certDescription]) {
-            mapJson[certDescription] = {};
-        }
-        if (!mapJson[certDescription][issuer]) {
-            mapJson[certDescription][issuer] = 0;
+        let curveExponent: string = 'unknown';
+        if (cert.publicKeyDetails) {
+            if ('exponent' in cert.publicKeyDetails && cert.publicKeyDetails.exponent !== undefined) {
+                curveExponent = String(cert.publicKeyDetails.exponent).trim();
+            } else if ('curve' in cert.publicKeyDetails && cert.publicKeyDetails.curve !== undefined) {
+                curveExponent = cert.publicKeyDetails.curve.toLowerCase().trim();
+            }
         }
 
-        mapJson[certDescription][issuer]++;
+        // Initialize country array if it doesn't exist
+        if (!mapJson[countryCode]) {
+            mapJson[countryCode] = [];
+        }
+
+        // For debugging: Log the values being compared
+        // console.log(`Comparing for country ${countryCode}:`, {
+        //     signatureAlgorithm,
+        //     hashAlgorithm,
+        //     curveExponent,
+        //     bits
+        // });
+
+        // Find existing entry with matching properties
+        const existingEntryIndex = mapJson[countryCode].findIndex(entry =>
+            entry.signature_algorithm === signatureAlgorithm &&
+            entry.hash_algorithm === hashAlgorithm &&
+            entry.curve_exponent === curveExponent &&
+            entry.bit_length === bits
+        );
+
+        if (existingEntryIndex !== -1) {
+            // If found, increment the amount
+            mapJson[countryCode][existingEntryIndex].amount += 1;
+        } else {
+            // If not found, add new entry with amount 1
+            mapJson[countryCode].push({
+                signature_algorithm: signatureAlgorithm,
+                hash_algorithm: hashAlgorithm,
+                curve_exponent: curveExponent,
+                bit_length: bits,
+                amount: 1
+            });
+        }
     }
-    fs.writeFileSync(path.join(__dirname, '..', 'outputs', certType, 'map_json.json'), JSON.stringify(mapJson, null, 2));
+
+    fs.writeFileSync(
+        path.join(__dirname, '..', 'outputs', certType, 'map_json.json'),
+        JSON.stringify(mapJson, null, 2)
+    );
 }
+
 main();
