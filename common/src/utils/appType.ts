@@ -1,9 +1,9 @@
-import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from "../constants/constants";
-import { UserIdType } from "./utils";
+import { DEFAULT_USER_ID_TYPE, WEBSOCKET_URL } from '../constants/constants';
+import { UserIdType } from './utils';
 
-export type CircuitName = "prove" | "disclose";
-export type CircuitMode = "prove_onchain" | "register" | 'prove_offchain';
-export type Mode = "prove_offchain" | "prove_onchain" | "register" | "vc_and_disclose";
+export type CircuitName = 'prove' | 'disclose';
+export type CircuitMode = 'prove_onchain' | 'register' | 'prove_offchain';
+export type Mode = 'prove_offchain' | 'prove_onchain' | 'register' | 'vc_and_disclose';
 
 // OpenPassportAppType
 export interface OpenPassportAppPartial {
@@ -18,35 +18,33 @@ export interface OpenPassportAppPartial {
 }
 
 export interface OpenPassportApp extends OpenPassportAppPartial {
-  args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose
+  args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose;
 }
 
 export interface ArgumentsProveOffChain {
-  disclosureOptions: DisclosureOptions,
+  disclosureOptions: DisclosureOptions;
 }
 
 export interface ArgumentsProveOnChain {
-  disclosureOptions: DisclosureOptions,
-  modalServerUrl: string,
-  merkleTreeUrl: string,
+  disclosureOptions: DisclosureOptions;
+  modalServerUrl: string;
+  merkleTreeUrl: string;
 }
 
 export interface ArgumentsRegister {
-  cscaMerkleTreeUrl: string,
-  commitmentMerkleTreeUrl: string,
-  modalServerUrl: string,
+  cscaMerkleTreeUrl: string;
+  commitmentMerkleTreeUrl: string;
+  modalServerUrl: string;
 }
 
-
 export interface ArgumentsDisclose {
-  disclosureOptions: DisclosureOptions,
-  commitmentMerkleTreeUrl: string,
+  disclosureOptions: DisclosureOptions;
+  commitmentMerkleTreeUrl: string;
 }
 
 export interface DisclosureOptions {
-  minimumAge: { enabled: boolean; value: string }
-  nationality: { enabled: boolean; value: string }
-  excludedCountries: { enabled: boolean; value: string[] }
-  ofac: boolean
+  minimumAge: { enabled: boolean; value: string };
+  nationality: { enabled: boolean; value: string };
+  excludedCountries: { enabled: boolean; value: string[] };
+  ofac: boolean;
 }
-

@@ -9,7 +9,7 @@ export function shaPad(prehash_prepad_m: Uint8Array, maxShaBytes: number): [Uint
     prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(0));
   }
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, length_in_bytes);
-  assert((prehash_prepad_m.length * 8) % 512 === 0, "Padding did not complete properly!");
+  assert((prehash_prepad_m.length * 8) % 512 === 0, 'Padding did not complete properly!');
   let messageLen = prehash_prepad_m.length;
   while (prehash_prepad_m.length < maxShaBytes) {
     prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int64toBytes(0));

@@ -1,10 +1,5 @@
 import { PassportData } from './types';
-import {
-  hash,
-  assembleEContent,
-  formatAndConcatenateDataHashes,
-  formatMrz,
-} from './utils';
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz } from './utils';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
@@ -39,20 +34,26 @@ export function genMockPassportData(
   nationality: keyof typeof countryCodes,
   birthDate: string,
   expiryDate: string,
-  passportNumber: string = "15AA81234",
-  lastName: string = "DUPONT",
-  firstName: string = "ALPHONSE HUGHUES ALBERT"
+  passportNumber: string = '15AA81234',
+  lastName: string = 'DUPONT',
+  firstName: string = 'ALPHONSE HUGHUES ALBERT'
 ): PassportData {
   if (birthDate.length !== 6 || expiryDate.length !== 6) {
     throw new Error('birthdate and expiry date have to be in the "YYMMDD" format');
   }
 
   // Prepare last name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
-  const lastNameParts = lastName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const lastNameParts = lastName
+    .toUpperCase()
+    .replace(/[^A-Z< ]/g, '')
+    .split(' ');
   const formattedLastName = lastNameParts.join('<');
 
   // Prepare first name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
-  const firstNameParts = firstName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const firstNameParts = firstName
+    .toUpperCase()
+    .replace(/[^A-Z< ]/g, '')
+    .split(' ');
   const formattedFirstName = firstNameParts.join('<');
 
   // Build the first line of MRZ
@@ -154,11 +155,7 @@ export function genMockPassportData(
   };
 }
 
-function sign(
-  privateKeyPem: string,
-  dsc: string,
-  eContent: number[]
-): number[] {
+function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
   const { signatureAlgorithm, hashFunction, curve } = parseCertificate(dsc);
 
   if (signatureAlgorithm === 'rsapss') {

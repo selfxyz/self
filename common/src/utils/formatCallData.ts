@@ -7,7 +7,7 @@ export function formatCallData_register(parsedCallData: any[]) {
     a: parsedCallData[0],
     b: [parsedCallData[1][0], parsedCallData[1][1]],
     c: parsedCallData[2],
-  };;
+  };
 }
 export function formatCallData_dsc(parsedCallData: any[]) {
   return {
@@ -16,7 +16,7 @@ export function formatCallData_dsc(parsedCallData: any[]) {
     a: parsedCallData[0],
     b: [parsedCallData[1][0], parsedCallData[1][1]],
     c: parsedCallData[2],
-  };;
+  };
 }
 
 export function formatCallData_disclose(parsedCallData: any[]) {
@@ -26,7 +26,14 @@ export function formatCallData_disclose(parsedCallData: any[]) {
     attestation_id: parsedCallData[3][4],
     merkle_root: parsedCallData[3][5],
     scope: parsedCallData[3][6],
-    current_date: [parsedCallData[3][7], parsedCallData[3][8], parsedCallData[3][9], parsedCallData[3][10], parsedCallData[3][11], parsedCallData[3][12]],
+    current_date: [
+      parsedCallData[3][7],
+      parsedCallData[3][8],
+      parsedCallData[3][9],
+      parsedCallData[3][10],
+      parsedCallData[3][11],
+      parsedCallData[3][12],
+    ],
     user_identifier: parsedCallData[3][13],
     a: parsedCallData[0],
     b: [parsedCallData[1][0], parsedCallData[1][1]],

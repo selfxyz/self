@@ -1,8 +1,4 @@
-import {
-  ECDSA_K_LENGTH_FACTOR,
-  k_dsc,
-  k_dsc_ecdsa,
-} from '../constants/constants';
+import { ECDSA_K_LENGTH_FACTOR, k_dsc, k_dsc_ecdsa } from '../constants/constants';
 import { parseDSC } from './certificates/handleCertificate';
 import {
   bigIntToHex,
@@ -12,7 +8,7 @@ import {
   UserIdType,
 } from './utils';
 import { unpackReveal } from './revealBitmap';
-import { getAttributeFromUnpackedReveal } from './utils'
+import { getAttributeFromUnpackedReveal } from './utils';
 import { Mode } from 'fs';
 
 export interface OpenPassportAttestation {
@@ -135,9 +131,7 @@ export function buildAttestation(options: {
   const scope = castToScope(BigInt(parsedPublicSignals.scope));
 
   // Unpack the revealed data
-  const unpackedReveal = unpackReveal(
-    parsedPublicSignals.revealedData_packed
-  );
+  const unpackedReveal = unpackReveal(parsedPublicSignals.revealedData_packed);
 
   const attributeNames = [
     'issuing_state',
@@ -149,7 +143,9 @@ export function buildAttestation(options: {
     'expiry_date',
     'older_than',
   ];
-  const formattedCountryList = formatForbiddenCountriesListFromCircuitOutput(parsedPublicSignals.forbidden_countries_list_packed_disclosed);
+  const formattedCountryList = formatForbiddenCountriesListFromCircuitOutput(
+    parsedPublicSignals.forbidden_countries_list_packed_disclosed
+  );
   const credentialSubject: any = {
     userId: userId,
     application: scope,
@@ -161,7 +157,6 @@ export function buildAttestation(options: {
     not_in_countries: formattedCountryList,
   };
 
-
   attributeNames.forEach((attrName) => {
     const value = getAttributeFromUnpackedReveal(unpackedReveal, attrName);
     if (value !== undefined && value !== null) {
@@ -172,10 +167,7 @@ export function buildAttestation(options: {
   credentialSubject.pubKey = parsedPublicSignals.pubKey_disclosed ?? [];
 
   const attestation: OpenPassportAttestation = {
-    '@context': [
-      'https://www.w3.org/2018/credentials/v1',
-      'https://openpassport.app',
-    ],
+    '@context': ['https://www.w3.org/2018/credentials/v1', 'https://openpassport.app'],
     type: ['OpenPassportAttestation', 'PassportCredential'],
     issuer: 'https://openpassport.app',
     issuanceDate: new Date().toISOString(),
@@ -185,8 +177,7 @@ export function buildAttestation(options: {
       signatureAlgorithm: signatureAlgorithm,
       hashFunction: hashFunction,
       type: 'ZeroKnowledgeProof',
-      verificationMethod:
-        'https://github.com/zk-passport/openpassport',
+      verificationMethod: 'https://github.com/zk-passport/openpassport',
       value: {
         proof: proof,
         publicSignals: publicSignals,
@@ -197,8 +188,7 @@ export function buildAttestation(options: {
       signatureAlgorithm: signatureAlgorithmDsc,
       hashFunction: hashFunctionDsc,
       type: 'ZeroKnowledgeProof',
-      verificationMethod:
-        'https://github.com/zk-passport/openpassport',
+      verificationMethod: 'https://github.com/zk-passport/openpassport',
       value: {
         proof: dscProof || [],
         publicSignals: dscPublicSignals || [],
@@ -288,8 +278,7 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
   private parsePublicSignals() {
     if (this.proof.mode === 'vc_and_disclose') {
       return parsePublicSignalsDisclose(this.proof.value.publicSignals);
-    }
-    else {
+    } else {
       let kScaled: number;
       switch (this.proof.signatureAlgorithm) {
         case 'ecdsa':
@@ -300,7 +289,6 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
       }
       return parsePublicSignalsProve(this.proof.value.publicSignals, kScaled);
     }
-
 
     // Parse the public signals
   }
@@ -329,8 +317,7 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     const parsedPublicSignals = this.parsePublicSignals();
     if (this.proof.mode === 'vc_and_disclose') {
       return '';
-    }
-    else {
+    } else {
       return (parsedPublicSignals as any).commitment;
     }
   }
@@ -346,8 +333,7 @@ export class OpenPassportDynamicAttestation implements OpenPassportAttestation {
     if (this.dscProof.value.publicSignals) {
       const parsedPublicSignalsDsc = parsePublicSignalsDsc(this.dscProof.value.publicSignals);
       return parsedPublicSignalsDsc.merkle_root;
-    }
-    else {
+    } else {
       throw new Error('No DSC proof found');
     }
   }
@@ -373,7 +359,7 @@ export function parsePublicSignalsDsc(publicSignals) {
   return {
     blinded_dsc_commitment: publicSignals[0],
     merkle_root: publicSignals[1],
-  }
+  };
 }
 
 export function parsePublicSignalsDisclose(publicSignals) {
@@ -389,6 +375,5 @@ export function parsePublicSignalsDisclose(publicSignals) {
     current_date: publicSignals.slice(12, 18),
     user_identifier: publicSignals[18],
     smt_root: publicSignals[19],
-  }
-
+  };
 }
