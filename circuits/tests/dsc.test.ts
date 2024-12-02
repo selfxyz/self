@@ -63,8 +63,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
             './node_modules/@zk-kit/binary-merkle-root.circom/src',
             './node_modules/circomlib/circuits',
           ],
-      }
-    );
+        }
+      );
     });
 
     // it('verify dsc has been signed by the csca', () => {
