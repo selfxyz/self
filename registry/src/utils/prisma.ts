@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { CertificateData, PublicKeyDetailsRSA, PublicKeyDetailsECDSA } from './utils';
+import { CertificateData, PublicKeyDetailsRSA, PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from './certificateParsing/dataStructure';
 import dotenv from 'dotenv';
 
 // Load environment variables
@@ -39,39 +39,70 @@ function publicKeyDetailsToJson(details: PublicKeyDetailsRSA | PublicKeyDetailsE
 }
 
 
-export async function insertDB(prisma: PrismaClient, tableName: 'csca_masterlist' | 'dsc_masterlist', certificateData: CertificateData) {
+export async function insertDB(prisma: PrismaClient, tableName: 'csca_masterlist' | 'dsc_masterlist', data: CertificateData) {
+    // Create a properly formatted data object for Prisma
+    const flattenedData = {
+        id: data.id,
+        issuer: data.issuer,
+        hashAlgorithm: data.hashAlgorithm,
+        signatureAlgorithm: data.signatureAlgorithm,
+        // Convert JSON objects to strings
+        validity: JSON.stringify(data.validity),
+        publicKeyDetails: JSON.stringify(data.publicKeyDetails),
+        subjectKeyIdentifier: data.subjectKeyIdentifier,
+        rawPem: data.rawPem,
+        rawTxt: data.rawTxt,
+
+        // Flattened fields from publicKeyDetails
+        pk_modulus: data.publicKeyDetails?.['modulus']?.toString() || null,
+        pk_exponent: data.publicKeyDetails?.['exponent']?.toString() || null,
+        pk_bits: data.publicKeyDetails?.['bits']?.toString() || null,
+        pk_curve: (data.publicKeyDetails as PublicKeyDetailsECDSA)?.['curve']?.toString() || null,
+        pk_hashAlgorithm: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['hashAlgorithm']?.toString() || null,
+        pk_mgf: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['mgf']?.toString() || null,
+        pk_saltLength: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['saltLength']?.toString() || null,
+    };
+
     try {
-
-        const result = await (prisma[tableName] as any).upsert({
-            where: { id: certificateData.id },
-            update: {
-                // Overwrite all fields with new data
-                issuer: certificateData.issuer,
-                validity: certificateData.validity,
-                subjectKeyIdentifier: certificateData.subjectKeyIdentifier,
-                signatureAlgorithm: certificateData.signatureAlgorithm,
-                hashAlgorithm: certificateData.hashAlgorithm,
-                publicKeyDetails: publicKeyDetailsToJson(certificateData.publicKeyDetails),
-                rawPem: certificateData.rawPem,
-                rawTxt: certificateData.rawTxt,
-            },
-            create: {
-                id: certificateData.id,
-                issuer: certificateData.issuer,
-                validity: certificateData.validity,
-                subjectKeyIdentifier: certificateData.subjectKeyIdentifier,
-                signatureAlgorithm: certificateData.signatureAlgorithm,
-                hashAlgorithm: certificateData.hashAlgorithm,
-                publicKeyDetails: publicKeyDetailsToJson(certificateData.publicKeyDetails),
-                rawPem: certificateData.rawPem,
-                rawTxt: certificateData.rawTxt,
-            },
-        });
-
-        console.log(`Certificate with ID ${certificateData.id} has been upserted.`);
-        return result;
+        if (tableName === 'csca_masterlist') {
+            await prisma.csca_masterlist.upsert({
+                where: { id: data.id },
+                update: flattenedData,
+                create: flattenedData,
+            });
+        } else {
+            await prisma.dsc_masterlist.upsert({
+                where: { id: data.id },
+                update: flattenedData,
+                create: flattenedData,
+            });
+        }
     } catch (error) {
-        console.error('Error inserting certificate:', error);
+        console.error('Error inserting data:', error);
         throw error;
     }
+}
+// registry/src/utils/prisma.ts
+export function prepareDataForInsertion(data: CertificateData) {
+    // Flatten the data as before
+    const flattenedData = {
+        id: data.id,
+        issuer: data.issuer,
+        hashAlgorithm: data.hashAlgorithm,
+        signatureAlgorithm: data.signatureAlgorithm,
+        validity: data.validity, // Assuming validity is serialized as JSON string
+        publicKeyDetails: data.publicKeyDetails, // Assuming this is serialized as JSON string
+        subjectKeyIdentifier: data.subjectKeyIdentifier,
+        rawPem: data.rawPem,
+        rawTxt: data.rawTxt,
+        pk_modulus: data.publicKeyDetails?.['modulus']?.toString() || null,
+        pk_exponent: data.publicKeyDetails?.['exponent']?.toString() || null,
+        pk_bits: data.publicKeyDetails?.['bits']?.toString() || null,
+        pk_curve: (data.publicKeyDetails as PublicKeyDetailsECDSA)?.['curve']?.toString() || null,
+        pk_hashAlgorithm: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['hashAlgorithm']?.toString() || null,
+        pk_mgf: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['mgf']?.toString() || null,
+        pk_saltLength: (data.publicKeyDetails as PublicKeyDetailsRSAPSS)?.['saltLength']?.toString() || null,
+    };
+
+    return flattenedData;
 }

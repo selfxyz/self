@@ -39,6 +39,15 @@ export const standardCurves: StandardCurve[] = [
     }
     ,
     {
+        name: "brainpoolP224r1",
+        p: "d7c134aa264366862a18302575d1d787b09f075797da89f57ec8c0ff",
+        a: "68a5e62ca9ce6c1c299803a6c1530b514e182ad8b0042a59cad29f43",
+        b: "2580f63ccfe44138870713b1a92369e33e2135d266dbb372386c400b",
+        G: "040d9029ad2c7e5cf4340823b2a87dc68c9e4ce3174c1e6efdee12c07d58aa56f772c0726f24c6b89e4ecdac24354b9e99caa3f6d3761402cd",
+        n: "d7c134aa264366862a18302575d0fb98d116bc4b6ddebca3a5a7939f",
+        h: "01"
+    },
+    {
         name: "brainpoolP256r1",
         p: "A9FB57DBA1EEA9BC3E660A909D838D726E3BF623D52620282013481D1F6E5377",
         a: "7D5A0975FC2C3057EEF67530417AFFE7FB8055C126DC5C6CE94A4B44F330B5D9",
@@ -93,23 +102,16 @@ export function identifyCurve(params: any): string {
             return curve.name;
         }
     }
+    console.log("Unknown curve:", normalizedParams);
     return "Unknown curve";
 }
 
-export function getNamedCurve(oid: string): string {
-    const curves = {
-        '1.2.840.10045.3.1.7': 'secp256r1',
-        '1.3.132.0.34': 'secp384r1',
-        '1.3.132.0.35': 'secp521r1',
-        // Add more curve OIDs as needed
-    };
-    return curves[oid] || `Unknown (${oid})`;
-}
 export function getECDSACurveBits(curveName: string): string {
     const curveBits: { [key: string]: number } = {
         'secp256r1': 256,
         'secp384r1': 384,
         'secp521r1': 521,
+        'brainpoolP224r1': 224,
         'brainpoolP256r1': 256,
         'brainpoolP384r1': 384,
         'brainpoolP512r1': 512,

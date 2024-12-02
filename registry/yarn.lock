@@ -358,6 +358,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"asn1-ts@npm:^2.0.0":
+  version: 2.11.2
+  resolution: "asn1-ts@npm:2.11.2"
+  checksum: 10c0/bd887152f433a96d35473c31d868887e05ba3ab4bad259dc47d12b401dc001fea646e01f740a6240b138cdb95d41839f3c769271563c795676eda141d5206d3c
+  languageName: node
+  linkType: hard
+
 "asn1.js@npm:^5.4.1":
   version: 5.4.1
   resolution: "asn1.js@npm:5.4.1"
@@ -1103,6 +1110,8 @@ __metadata:
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
+    "@peculiar/asn1-schema": "npm:^2.3.13"
+    "@peculiar/asn1-x509": "npm:^2.3.13"
     "@peculiar/x509": "npm:^1.11.0"
     "@prisma/client": "npm:^5.19.0"
     "@types/node": "npm:^20.11.20"
@@ -1117,6 +1126,7 @@ __metadata:
     pkijs: "npm:^3.2.4"
     poseidon-lite: "npm:^0.2.0"
     prisma: "npm:^5.18.0"
+    x509-ts: "npm:^0.13.0"
   languageName: unknown
   linkType: soft
 
@@ -1353,6 +1363,15 @@ __metadata:
     string-width: "npm:^5.0.1"
     strip-ansi: "npm:^7.0.1"
   checksum: 10c0/138ff58a41d2f877eae87e3282c0630fc2789012fc1af4d6bd626eeb9a2f9a65ca92005e6e69a75c7b85a68479fe7443c7dbe1eb8fbaa681a4491364b7c55c60
+  languageName: node
+  linkType: hard
+
+"x509-ts@npm:^0.13.0":
+  version: 0.13.0
+  resolution: "x509-ts@npm:0.13.0"
+  dependencies:
+    asn1-ts: "npm:^2.0.0"
+  checksum: 10c0/0d9ef45147fdb0d957f80d01ca076554014600e5a3ac7afad35a9b5ee62f82ad0aa2a1895ef15cfca2ec736c15e80e5f779678888335eebb5f1dfc561103d778
   languageName: node
   linkType: hard
 
