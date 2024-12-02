@@ -217,8 +217,6 @@ export function generateCircuitInputsProve(
     throw new Error(`This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`);
   }
 
-  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
-  console.log('MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]', MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]);
   const [eContentPadded, eContentLen] = shaPad(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
