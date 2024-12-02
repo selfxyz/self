@@ -29,6 +29,8 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<Record<keyof typeof SignatureAlgor
   ecdsa_sha1_secp256r1_256: 320,
   ecdsa_sha256_secp256r1_256: 384,
   ecdsa_sha384_secp384r1_384: 512,
+  rsa_sha256_65537_3072: 384,
+  rsa_sha256_3_2048: 384,
 }
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -38,6 +40,8 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<keyof typeof SignatureAl
   ecdsa_sha1_secp256r1_256: 192,
   ecdsa_sha256_secp256r1_256: 192,
   ecdsa_sha384_secp384r1_384: 192,
+  rsa_sha256_65537_3072: 192,
+  rsa_sha256_3_2048: 192,
 }
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -92,6 +96,7 @@ export const circuitToSelectorMode = {
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
 export const k_dsc = 32;
+export const k_dsc_3072 = 48;
 export const n_csca = 120;
 export const k_csca = 35;
 export const n_dsc_ecdsa = 43;

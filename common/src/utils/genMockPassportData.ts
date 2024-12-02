@@ -25,6 +25,10 @@ import {
   mock_dsc_sha384_ecdsa,
   mock_dsc_key_sha256_brainpoolP256r1,
   mock_dsc_sha256_brainpoolP256r1,
+  mock_dsc_key_sha256_rsa_3_2048,
+  mock_dsc_sha256_rsa_3_2048,
+  mock_dsc_key_sha256_rsa_65537_3072,
+  mock_dsc_sha256_rsa_65537_3072,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
@@ -111,6 +115,16 @@ export function genMockPassportData(
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
       dsc = mock_dsc_sha256_brainpoolP256r1;
+      break;
+    case 'rsa_sha256_3_2048':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsa_3_2048;
+      dsc = mock_dsc_sha256_rsa_3_2048;
+      break;
+    case 'rsa_sha256_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsa_65537_3072;
+      dsc = mock_dsc_sha256_rsa_65537_3072;
       break;
   }
 

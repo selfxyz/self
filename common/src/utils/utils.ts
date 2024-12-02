@@ -4,8 +4,9 @@ import { sha1 } from 'js-sha1';
 import { sha384, sha512_256 } from 'js-sha512';
 import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
-import { n_dsc, k_dsc, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
+import { n_dsc, k_dsc, k_dsc_3072, n_dsc_ecdsa, k_dsc_ecdsa, n_csca, k_csca, attributeToPosition } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';
+import { SignatureAlgorithm } from './types';
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -18,11 +19,22 @@ export function formatMrz(mrz: string) {
   return mrzCharcodes;
 }
 
-export function getNAndK(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
-  const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_dsc;
-  const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_dsc;
-  return { n, k };
+export function getNAndK(sigAlg: SignatureAlgorithm) {
+  if (sigAlg === 'rsa_sha256_65537_3072') {
+    return { n: n_dsc, k: k_dsc_3072 };  // 3072/32 = 96
+  }
+  
+  if (sigAlg.startsWith('ecdsa_')) {
+    return { n: n_dsc_ecdsa, k: k_dsc_ecdsa };  // 256/32 = 8
+  }
+  
+  if (sigAlg.startsWith('rsapss_')) {
+    return { n: n_dsc, k: k_dsc };  // 2048/32 = 64
+  }
+  
+  return { n: n_dsc, k: k_dsc };  // 2048/32 = 64
 }
+
 export function getNAndKCSCA(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
   const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_csca;
   const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_csca;

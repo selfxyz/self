@@ -176,7 +176,7 @@ export function generateCircuitInputsProve(
   let pubKey: any;
   let signature: any;
 
-  const { n, k } = getNAndK(signatureAlgorithm);
+  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(encryptedDigest);
@@ -187,7 +187,6 @@ export function generateCircuitInputsProve(
     const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k)
     pubKey = [...dsc_modulus_x, ...dsc_modulus_y]
   } else {
-
     signature = splitToWords(
       BigInt(bytesToBigDecimal(encryptedDigest)),
       n,
@@ -221,6 +220,7 @@ export function generateCircuitInputsProve(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
   );
+
   const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
