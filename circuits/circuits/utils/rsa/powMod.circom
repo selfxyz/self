@@ -2,8 +2,6 @@ pragma circom 2.1.9;
  
 include "../other/bigInt.circom";
 
-// CHUNK_SIZE = 32
-// E_BITS = 17
 // CHUNK_NUMBER is the length of the base and modulus
 // calculates (base^exp) % modulus, exp = 2^(E_BITS - 1) + 1 = 2^16 + 1
 template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, E_BITS) {

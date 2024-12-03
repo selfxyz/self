@@ -21,7 +21,7 @@ describe('Disclose', function () {
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
+  const passportData = genMockPassportData('rsa_sha256_65537_2048', 'FRA', '000101', '300101');
   let tree: any;
 
   before(async () => {
