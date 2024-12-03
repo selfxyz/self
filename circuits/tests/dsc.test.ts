@@ -17,12 +17,12 @@ import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsa', hashFunction: 'sha1' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
 ];
 
-sigAlgs.forEach(({ sigAlg, hashFunction }) => {
+sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
   describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
@@ -52,17 +52,19 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     console.log('inputs', inputs);
 
     before(async () => {
-      const circuitPath = path.resolve(
-        __dirname,
-        `../circuits/dsc/instances/${getCircuitName('dsc', sigAlg, hashFunction)}_4096.circom`
+      circuit = await wasm_tester(
+        path.join(
+          __dirname,
+          `../circuits/dsc/instances/${getCircuitName('dsc', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
+        ),
+        {
+          include: [
+            'node_modules',
+            './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            './node_modules/circomlib/circuits',
+          ],
+        }
       );
-      circuit = await wasm_tester(circuitPath, {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
-      });
     });
 
     // it('verify dsc has been signed by the csca', () => {
