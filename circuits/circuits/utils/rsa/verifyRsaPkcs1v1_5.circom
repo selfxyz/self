@@ -1,8 +1,9 @@
 pragma circom 2.1.9;
 
-include "./powMod.circom";
+include "../other/optimized/bigInt/bigInt.circom";
 include "./pkcs1v1.5Padding.circom";
-include "circomlib/circuits/bitify.circom";
+include "../other/optimized/bitify/bitify.circom";
+// include "circomlib/circuits/bitify.circom";
 
 // For exponent is 3, use E_BITS = 2
 // For exponent is 65537, use E_BITS = 17

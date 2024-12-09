@@ -2,6 +2,8 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
+// include "./optimized/bitify/bitify.circom";
+// include "./optimized/bitify/comparators.circom";
 include "./array.circom";
 include "./functions.circom";
 include "./constants.circom";
