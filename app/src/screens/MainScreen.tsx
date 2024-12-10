@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { NativeEventEmitter, NativeModules, Linking, Modal, Platform, Pressable, TouchableOpacity, ScrollView } from 'react-native';
 import { YStack, XStack, Text, Button, Tabs, Sheet, Label, Fieldset, Input, Switch, H2, Image, useWindowDimensions, H4, H3, View, Separator } from 'tamagui'
-import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X, ShieldCheck } from '@tamagui/lucide-icons';
+import { HelpCircle, IterationCw, VenetianMask, Cog, CheckCircle2, ChevronLeft, Share, Eraser, ArrowRight, UserPlus, CalendarSearch, X, ShieldCheck, Info } from '@tamagui/lucide-icons';
 import Telegram from '../images/telegram.png'
 import Github from '../images/github.png'
 import Internet from "../images/internet.png"
@@ -39,6 +39,7 @@ import OPENPASSPORT_LOGO from '../images/openpassport.png'
 import { countryCodes } from '../../../common/src/constants/constants';
 import getCountryISO2 from "country-iso-3-to-2";
 import { flag } from 'country-emoji';
+import UserInfo from './UserInfo';
 
 const emitter = (Platform.OS === 'android')
   ? new NativeEventEmitter(NativeModules.nativeModule)
@@ -203,6 +204,9 @@ const MainScreen: React.FC = () => {
     else if (selectedTab === "valid") {
       setSelectedTab("app");
     }
+    else if (selectedTab === "userInfo") {
+      setSelectedTab("app");
+    }
   }
 
   useEffect(() => {
@@ -289,7 +293,7 @@ const MainScreen: React.FC = () => {
           </Sheet>
 
 
-          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[76]}>
+          <Sheet open={HelpIsOpen} onOpenChange={setHelpIsOpen} dismissOnSnapToBottom modal animation="medium" snapPoints={[82]}>
             <Sheet.Overlay />
             <Sheet.Frame bg={bgWhite} borderTopLeftRadius="$9" borderTopRightRadius="$9" pt="$2" pb="$3">
               <YStack p="$4" f={1} gap="$3">
@@ -330,9 +334,19 @@ const MainScreen: React.FC = () => {
                     <Dialog.Button onPress={() => handleContribute()} label="Contribute" />
                   </Dialog.Container>
                   <Separator mt="$5" borderColor={separatorColor} w="80%" alignSelf='center' />
+                  <Fieldset mt="$4" gap="$4" horizontal alignSelf="center">
+                    <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
+                      View passport infos
+                    </Label>
+                    <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => {
+                      setHelpIsOpen(false);
+                      setSelectedTab("userInfo");
+                    }}>
+                      <Info color={textBlack} />
+                    </Button>
+                  </Fieldset>
 
-
-                  <Fieldset horizontal mt="$3" alignSelf='center'>
+                  <Fieldset horizontal mt="$2" alignSelf='center'>
                     <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
                       Display other options
                     </Label>
@@ -344,7 +358,7 @@ const MainScreen: React.FC = () => {
 
 
                   {displayOtherOptions && (
-                    <YStack gap="$2" mt="$3" ai="center">
+                    <YStack gap="$2" mt="$2" ai="center">
                       <Fieldset gap="$4" horizontal>
                         <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="restart">
                           Rescan passport
@@ -800,6 +814,9 @@ const MainScreen: React.FC = () => {
           </Tabs.Content>
           <Tabs.Content value="wrong" f={1}>
             <WrongProofScreen />
+          </Tabs.Content>
+          <Tabs.Content value="userInfo" f={1}>
+            <UserInfo />
           </Tabs.Content>
         </Tabs>
         <XStack mt="$2.5" justifyContent='center' alignItems='center' gap="$1.5">
