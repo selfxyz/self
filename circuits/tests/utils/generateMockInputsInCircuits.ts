@@ -1,10 +1,13 @@
 import crypto from 'crypto';
-import { splitToWords, hexToDecimal, bytesToBigDecimal, getNAndK } from '../../../common/src/utils/utils';
+import {
+  splitToWords,
+  hexToDecimal,
+  bytesToBigDecimal,
+  getNAndK,
+} from '../../../common/src/utils/utils';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
 
-export const generateMockRsaPkcs1v1_5Inputs = (
-  signatureAlgorithm: SignatureAlgorithm,
-) => {
+export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgorithm) => {
   let privateKey: string;
   let publicKey: string;
   let signAlgorithm: string;
@@ -33,12 +36,12 @@ export const generateMockRsaPkcs1v1_5Inputs = (
     publicExponent,
     publicKeyEncoding: {
       type: 'spki',
-      format: 'pem'
+      format: 'pem',
     },
     privateKeyEncoding: {
       type: 'pkcs8',
-      format: 'pem'
-    }
+      format: 'pem',
+    },
   }));
 
   const message = Buffer.from('test message');
@@ -51,10 +54,14 @@ export const generateMockRsaPkcs1v1_5Inputs = (
   const modulus = keyDetails.n!; // base64url encoded modulus
 
   const { n, k } = getNAndK(signatureAlgorithm);
-  
+
   return {
     signature: splitToWords(BigInt(bytesToBigDecimal(Array.from(signature))), n, k),
-    modulus: splitToWords(BigInt(hexToDecimal(Buffer.from(modulus, 'base64url').toString('hex'))), n, k),
-    message: splitToWords(BigInt(bytesToBigDecimal(Array.from(messageHash))), n, k)
+    modulus: splitToWords(
+      BigInt(hexToDecimal(Buffer.from(modulus, 'base64url').toString('hex'))),
+      n,
+      k
+    ),
+    message: splitToWords(BigInt(bytesToBigDecimal(Array.from(messageHash))), n, k),
   };
 };
