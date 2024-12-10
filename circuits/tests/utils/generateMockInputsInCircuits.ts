@@ -1,49 +1,60 @@
-import { PassportData } from '../../../common/src/utils/types';
-import { CircuitName } from '../../../common/src/utils/appType';
-import {
-  DEFAULT_MAJORITY,
-  k_dsc,
-  k_dsc_ecdsa,
-  n_dsc,
-  n_dsc_ecdsa,
-  PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
-import {
-  generateCircuitInputsProve,
-  generateCircuitInputsRegister,
-} from '../../../common/src/utils/generateInputs';
-import { parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
+import crypto from 'crypto';
+import { splitToWords, hexToDecimal, bytesToBigDecimal, getNAndK } from '../../../common/src/utils/utils';
+import { SignatureAlgorithm } from '../../../common/src/utils/types';
 
-const majority = DEFAULT_MAJORITY;
-const scope = '@spaceShips';
+export const generateMockRsaPkcs1v1_5Inputs = (
+  signatureAlgorithm: SignatureAlgorithm,
+) => {
+  let privateKey: string;
+  let publicKey: string;
+  let signAlgorithm: string;
+  let modulusLength: number;
+  let publicExponent: number;
 
-export const generateCircuitInputsInCircuits = (
-  passportData: PassportData,
-  circuit: CircuitName
-): any => {
-  const { signatureAlgorithm } = parseCertificate(passportData.dsc);
-
-  switch (circuit) {
-    case 'register': {
-      const secret = BigInt(0).toString();
-      const dscSecret = BigInt(0).toString();
-      const attestationId = PASSPORT_ATTESTATION_ID;
-      return generateCircuitInputsRegister(secret, dscSecret, attestationId, passportData);
-    }
-    case 'prove': {
-      // const selector_dg1 = Array(90).fill('1');
-      // const user_identifier = crypto.randomUUID();
-      // return generateCircuitInputsProve(
-      //     passportData,
-      //     n_dsc,
-      //     k_dsc,
-      //     scope,
-      //     selector_dg1,
-      //     majority,
-      //     user_identifier
-      // );
-    }
+  switch (signatureAlgorithm) {
+    case 'rsa_sha256_3_2048':
+      modulusLength = 2048;
+      signAlgorithm = 'sha256';
+      publicExponent = 3;
+      break;
+    case 'rsa_sha1_65537_2048':
+    case 'rsa_sha256_65537_2048':
+    case 'rsa_sha256_65537_3072':
+      modulusLength = signatureAlgorithm.includes('3072') ? 3072 : 2048;
+      signAlgorithm = signatureAlgorithm.includes('sha1') ? 'sha1' : 'sha256';
+      publicExponent = 65537;
+      break;
     default:
-      throw new Error('Invalid circuit');
+      throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
   }
+
+  ({ privateKey, publicKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength,
+    publicExponent,
+    publicKeyEncoding: {
+      type: 'spki',
+      format: 'pem'
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem'
+    }
+  }));
+
+  const message = Buffer.from('test message');
+  const messageHash = crypto.createHash(signAlgorithm).update(message).digest();
+
+  const signature = crypto.sign(signAlgorithm, message, privateKey);
+
+  const publicKeyObject = crypto.createPublicKey(publicKey);
+  const keyDetails = publicKeyObject.export({ format: 'jwk' });
+  const modulus = keyDetails.n!; // base64url encoded modulus
+
+  const { n, k } = getNAndK(signatureAlgorithm);
+  
+  return {
+    signature: splitToWords(BigInt(bytesToBigDecimal(Array.from(signature))), n, k),
+    modulus: splitToWords(BigInt(hexToDecimal(Buffer.from(modulus, 'base64url').toString('hex'))), n, k),
+    message: splitToWords(BigInt(bytesToBigDecimal(Array.from(messageHash))), n, k)
+  };
 };

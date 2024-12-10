@@ -6,6 +6,7 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
 import {
   n_dsc,
+  n_dsc_3072,
   k_dsc,
   k_dsc_3072,
   n_dsc_ecdsa,
@@ -30,7 +31,7 @@ export function formatMrz(mrz: string) {
 
 export function getNAndK(sigAlg: SignatureAlgorithm) {
   if (sigAlg === 'rsa_sha256_65537_3072') {
-    return { n: n_dsc, k: k_dsc_3072 }; // 3072/32 = 96
+    return { n: n_dsc_3072, k: k_dsc }; // 3072/32 = 96
   }
 
   if (sigAlg.startsWith('ecdsa_')) {
