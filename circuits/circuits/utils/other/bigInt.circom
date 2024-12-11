@@ -727,6 +727,30 @@ template BigMultModP(CHUNK_SIZE, CHUNK_NUMBER) {
     signal input p[CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
 
+    component big_mult = BigMult(CHUNK_SIZE, CHUNK_NUMBER);
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        big_mult.a[i] <== a[i];
+        big_mult.b[i] <== b[i];
+    }
+    component big_mod = BigMod(CHUNK_SIZE, CHUNK_NUMBER);
+    for (var i = 0; i < 2 * CHUNK_NUMBER; i++) {
+        big_mod.a[i] <== big_mult.out[i];
+    }
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        big_mod.b[i] <== p[i];
+    }
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        out[i] <== big_mod.mod[i];
+    }
+}
+
+template BigMultModPOptimized(CHUNK_SIZE, CHUNK_NUMBER) {
+    assert(CHUNK_SIZE <= 252);
+    signal input a[CHUNK_NUMBER];
+    signal input b[CHUNK_NUMBER];
+    signal input p[CHUNK_NUMBER];
+    signal output out[CHUNK_NUMBER];
+
     component big_mult = BigMultOptimised(CHUNK_SIZE, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         big_mult.in[0][i] <== a[i];

@@ -22,9 +22,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
    
     if (
         signatureAlgorithm == 1 
-        || signatureAlgorithm == 3 
-        || signatureAlgorithm == 10 
-        || signatureAlgorithm == 11
+        || signatureAlgorithm == 3
         || signatureAlgorithm == 13
         || signatureAlgorithm == 14
     ) {
@@ -39,6 +37,32 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
+    }
+
+    if (
+        signatureAlgorithm == 10
+    ) {
+        component rsa65537 = RSAVerifier65537(n, k);
+        for (var i = 0; i < msg_len; i++) {
+            rsa65537.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa65537.message[i] <== 0;
+        }
+        rsa65537.modulus <== pubKey;
+        rsa65537.signature <== signature;
+    }
+
+    if (signatureAlgorithm == 11) {
+        component rsa_pkcs1 = RSAVerifier65537Pkcs1(n, k);
+        for (var i = 0; i < msg_len; i++) {
+            rsa_pkcs1.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa_pkcs1.message[i] <== 0;
+        }
+        rsa_pkcs1.modulus <== pubKey;
+        rsa_pkcs1.signature <== signature;
     }
 
     if (signatureAlgorithm == 4 || signatureAlgorithm == 12) {
