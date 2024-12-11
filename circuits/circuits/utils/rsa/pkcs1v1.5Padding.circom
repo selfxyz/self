@@ -90,36 +90,16 @@ template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
 
 function getOID(HASH_SIZE) {
     if (HASH_SIZE == 160) {
-        var oid = [
-            83887124, // 5000414
-            650212878678426138, // 906052B0E03021A
-            18446744069417738544, // FFFFFFFF00302130
-            18446744073709551615, // FFFFFFFFFFFFFFFF
-            562949953421311 // 1FFFFFFFFFFFF
-        ];
-        return oid;
+        return 0x3021300906052b0e03021a05000414;
     }
     if (HASH_SIZE == 256) {
-        var oid = [
-            217300885422736416, // 304020105000420
-            938447882527703397, // D06096086480165
-            18446744069417742640, // FFFFFFFF00303130
-            18446744073709551615, // FFFFFFFFFFFFFFFF
-            562949953421311 // 1FFFFFFFFFFFF
-        ];
-        return oid;
+        return 0x3031300d060960864801650304020105000420;
     }
     if (HASH_SIZE == 384) {
-        var oid = [
-
-        ];
-        return oid;
+        return 0x3041300d060960864801650304020205000430;
     }
     if (HASH_SIZE == 512) {
-        var oid = [
-
-        ];
-        return oid;
+        return 0x3051300d060960864801650304020305000440;
     }
     return 0;
 }

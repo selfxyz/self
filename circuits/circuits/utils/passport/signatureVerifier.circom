@@ -28,7 +28,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     ) {
         var hash_len = getHashLength(signatureAlgorithm);
         var exponent_bits = getExponentBits(signatureAlgorithm);
-        component rsa = VerifyRsaPkcs1v1_5(n, kScaled, exponent_bits, hash_len);
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, kScaled, exponent_bits, hash_len);
         for (var i = 0; i < msg_len; i++) {
             rsa.message[i] <== hashParsed[i];
         }
