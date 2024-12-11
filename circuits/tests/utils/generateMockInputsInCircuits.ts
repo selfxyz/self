@@ -44,8 +44,9 @@ export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgo
     },
   }));
 
-  const message = Buffer.from('test message');
+  const message = Buffer.from('helloworld');
   const messageHash = crypto.createHash(signAlgorithm).update(message).digest();
+  console.log('messageHash', messageHash.toString('hex'));
 
   const signature = crypto.sign(signAlgorithm, message, privateKey);
 

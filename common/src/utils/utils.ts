@@ -8,7 +8,6 @@ import {
   n_dsc,
   n_dsc_3072,
   k_dsc,
-  k_dsc_3072,
   n_dsc_ecdsa,
   k_dsc_ecdsa,
   n_csca,

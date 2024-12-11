@@ -19,7 +19,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     var msg_len = (HASH_LEN_BITS + n) \ n;
 
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
-   
+
     if (
         signatureAlgorithm == 1 
         || signatureAlgorithm == 3
