@@ -12,6 +12,8 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
     'rsa_sha256_65537_2048',
     'rsa_sha256_3_2048',
     'rsa_sha256_65537_3072',
+    'rsa_sha256_65537_4096',
+    'rsa_sha512_65537_4096'
   ];
 
   rsaAlgorithms.forEach((algorithm) => {
@@ -22,7 +24,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
 
       // Run circuit with inputs
       const circuit = await wasmTester(
-        path.join(__dirname, `../../circuits/tests/utils/test_${algorithm}.circom`),
+        path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: [
             'node_modules',

@@ -1,5 +1,21 @@
 pragma circom 2.1.9;
 
+/*
+ ID to Signature Algorithm
+  1: rsa_sha256_65537_2048
+  3: rsa_sha1_65537_2048
+  4: rsapss_sha256_65537_2048
+  7: ecdsa_sha1_secp256r1_256
+  8: ecdsa_sha256_secp256r1_256
+  9: ecdsa_sha384_secp384r1_384
+ 10: rsa_sha256_65537_4096
+ 11: rsa_sha1_65537_4096
+ 12: rsapss_sha256_65537_4096
+ 13: rsa_sha256_3_2048
+ 14: rsa_sha256_65537_3072
+ 15: rsa_sha512_65537_4096
+*/
+
 function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 1 ) {
         return 256;
@@ -33,6 +49,9 @@ function getHashLength(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 14) {
         return 256;
+    }
+    if (signatureAlgorithm == 15) {
+        return 512;
     }
     return 0;
 }
@@ -70,6 +89,9 @@ function getKeyLength(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 14) {
         return 3072;
+    }
+    if (signatureAlgorithm == 15) {
+        return 4096;
     }
     return 0;
 }
@@ -109,6 +131,9 @@ function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 14) {
         return 1;
     }
+    if (signatureAlgorithm == 15) {
+        return 1;
+    }
     return 0;
 
 }
@@ -136,6 +161,9 @@ function getExponentBits(signatureAlgorithm) {
     if (signatureAlgorithm == 14) {
         return 17;
     }
+    if (signatureAlgorithm == 15) {
+        return 17;
+    }
     return 0;
 }
 
@@ -151,6 +179,7 @@ function getPadding(signatureAlgorithm) {
     if (
         signatureAlgorithm == 1 ||
         signatureAlgorithm == 4 ||
+        signatureAlgorithm == 10 ||
         signatureAlgorithm == 13
     ) {
         padding[0] = 217300885422736416; // 304020105000420
@@ -166,6 +195,14 @@ function getPadding(signatureAlgorithm) {
         padding[2] = 79228162514264337589252141360; // FFFFFFFFFFFFFFFF00303130
         padding[3] = 79228162514264337593543950335; // FFFFFFFFFFFFFFFFFFFFFFFF
         padding[4] = 2417851639229258349412351; // 1FFFFFFFFFFFFFFFFFFFF
+    }
+
+    if (signatureAlgorithm == 15) {
+        padding[0] = 217300894012671040; // 304020305000440
+        padding[1] = 938447882527703397; // D06096086480165
+        padding[2] = 18446744069417750832; // FFFFFFFF00305130
+        padding[3] = 18446744073709551615; // FFFFFFFFFFFFFFFF
+        padding[4] = 562949953421311; // 1FFFFFFFFFFFF
     }
     return padding;
 }

@@ -20,15 +20,15 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
 
     signal input message[CHUNK_NUMBER];
 
-    // component signatureRangeCheck[CHUNK_NUMBER];
-    // component bigLessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
-    // for (var i = 0; i < CHUNK_NUMBER; i++) {
-    //     signatureRangeCheck[i] = Num2Bits(CHUNK_SIZE);
-    //     signatureRangeCheck[i].in <== signature[i];
-    //     bigLessThan.a[i] <== signature[i];
-    //     bigLessThan.b[i] <== modulus[i];
-    // }
-    // bigLessThan.out === 1;
+    component signatureRangeCheck[CHUNK_NUMBER];
+    component bigLessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        signatureRangeCheck[i] = Num2Bits(CHUNK_SIZE);
+        signatureRangeCheck[i].in <== signature[i];
+        bigLessThan.a[i] <== signature[i];
+        bigLessThan.b[i] <== modulus[i];
+    }
+    bigLessThan.out === 1;
 
     component bigPow = PowerMod(CHUNK_SIZE, CHUNK_NUMBER, E_BITS);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
@@ -55,6 +55,17 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
             bigPow.out[i] === padding[3];
         }
         bigPow.out[CHUNK_NUMBER - 1] === padding[4];
+    } else if (signatureAlgorithm == 10) {
+        for (var i = 0; i < 4; i++) {
+            bigPow.out[i] === message[i];
+        }
+        bigPow.out[4] === padding[0];
+        bigPow.out[5] === padding[1];
+        bigPow.out[6] === padding[2];
+        for (var i = 7; i < CHUNK_NUMBER - 1; i++) {
+            bigPow.out[i] === padding[3];
+        }
+        bigPow.out[CHUNK_NUMBER - 1] === padding[4];
     } else if (signatureAlgorithm == 14) {
         for (var i = 0; i < 2; i++) {
             bigPow.out[i] === message[i];
@@ -69,6 +80,17 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
         bigPow.out[3] === padding[1];
         bigPow.out[4] === padding[2];
         for (var i = 5; i < CHUNK_NUMBER - 1; i++) {
+            bigPow.out[i] === padding[3];
+        }
+        bigPow.out[CHUNK_NUMBER - 1] === padding[4];
+    } else if (signatureAlgorithm == 15) {
+        for (var i = 0; i < 8; i++) {
+            bigPow.out[i] === message[i];
+        }
+        bigPow.out[8] === padding[0];
+        bigPow.out[9] === padding[1];
+        bigPow.out[10] === padding[2];
+        for (var i = 11; i < CHUNK_NUMBER - 1; i++) {
             bigPow.out[i] === padding[3];
         }
         bigPow.out[CHUNK_NUMBER - 1] === padding[4];
