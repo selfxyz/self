@@ -13,7 +13,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
     'rsa_sha256_3_2048',
     'rsa_sha256_65537_3072',
     'rsa_sha256_65537_4096',
-    'rsa_sha512_65537_4096'
+    'rsa_sha512_65537_4096',
   ];
 
   rsaAlgorithms.forEach((algorithm) => {
