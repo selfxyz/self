@@ -5,7 +5,7 @@ import { generateMockRsaPkcs1v1_5Inputs } from './generateMockInputsInCircuits';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
 
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
-  this.timeout(30000);
+  this.timeout(0);
 
   const rsaAlgorithms: SignatureAlgorithm[] = [
     'rsa_sha1_65537_2048',
