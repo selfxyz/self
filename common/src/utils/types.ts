@@ -21,7 +21,9 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha384_secp384r1_384'
   | 'ecdsa_sha256_brainpoolP256r1_256'
   | 'rsa_sha256_3_2048'
-  | 'rsa_sha256_65537_3072';
+  | 'rsa_sha256_65537_3072'
+  | 'rsa_sha256_65537_4096'
+  | 'rsa_sha512_65537_4096';
 
 export type Proof = {
   proof: {

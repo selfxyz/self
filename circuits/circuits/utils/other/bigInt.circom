@@ -5,6 +5,8 @@ include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/gates.circom";
 
 include "bigIntFunc.circom";
+include "./optimized/bigInt/karatsuba.circom";
+include "./optimized/int/arithmetic.circom";
 
 // addition mod 2**CHUNK_SIZE with carry bit
 template ModSum(CHUNK_SIZE) {
@@ -393,6 +395,41 @@ template BigMult(CHUNK_SIZE, CHUNK_NUMBER) {
     }
 }
 
+template BigMultOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
+    signal input dummy;
+    signal input in[2][CHUNK_NUMBER];
+
+    signal output out[CHUNK_NUMBER * 2];
+
+    component karatsuba = KaratsubaNoCarry(CHUNK_NUMBER);
+    karatsuba.in <== in;
+    karatsuba.dummy <== dummy;
+
+    dummy * dummy === 0;
+
+    component getLastNBits[CHUNK_NUMBER * 2 - 1];
+    component bits2Num[CHUNK_NUMBER * 2 - 1];
+
+    for (var i = 0; i < CHUNK_NUMBER * 2 - 1; i++) {
+        getLastNBits[i] = GetLastNBits(CHUNK_SIZE);
+        bits2Num[i] = Bits2Num(CHUNK_SIZE);
+
+        if (i == 0) {
+            getLastNBits[i].in <== karatsuba.out[i];
+        } else {
+            getLastNBits[i].in <== karatsuba.out[i] + getLastNBits[i - 1].div;
+        }
+
+        bits2Num[i].in <== getLastNBits[i].out;
+    }
+
+    for (var i = 0; i < CHUNK_NUMBER * 2 - 1; i++) {
+        out[i] <== bits2Num[i].out;
+    }
+
+    out[CHUNK_NUMBER * 2 - 1] <== getLastNBits[CHUNK_NUMBER * 2 - 2].div;
+}
+
 /*
 Inputs:
     - BigInts a, b
@@ -695,6 +732,32 @@ template BigMultModP(CHUNK_SIZE, CHUNK_NUMBER) {
         big_mult.a[i] <== a[i];
         big_mult.b[i] <== b[i];
     }
+    component big_mod = BigMod(CHUNK_SIZE, CHUNK_NUMBER);
+    for (var i = 0; i < 2 * CHUNK_NUMBER; i++) {
+        big_mod.a[i] <== big_mult.out[i];
+    }
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        big_mod.b[i] <== p[i];
+    }
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        out[i] <== big_mod.mod[i];
+    }
+}
+
+template BigMultModPOptimized(CHUNK_SIZE, CHUNK_NUMBER) {
+    assert(CHUNK_SIZE <= 252);
+    signal input a[CHUNK_NUMBER];
+    signal input b[CHUNK_NUMBER];
+    signal input p[CHUNK_NUMBER];
+    signal output out[CHUNK_NUMBER];
+
+    component big_mult = BigMultOptimised(CHUNK_SIZE, CHUNK_NUMBER);
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        big_mult.in[0][i] <== a[i];
+        big_mult.in[1][i] <== b[i];
+    }
+    big_mult.dummy <== 0;
+
     component big_mod = BigMod(CHUNK_SIZE, CHUNK_NUMBER);
     for (var i = 0; i < 2 * CHUNK_NUMBER; i++) {
         big_mod.a[i] <== big_mult.out[i];

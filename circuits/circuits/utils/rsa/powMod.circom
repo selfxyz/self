@@ -15,7 +15,7 @@ template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, E_BITS) {
     component muls[E_BITS];
 
     for (var i = 0; i < E_BITS; i++) {
-        muls[i] = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER);
+        muls[i] = BigMultModPOptimized(CHUNK_SIZE, CHUNK_NUMBER);
 
         for (var j = 0; j < CHUNK_NUMBER; j++) {
             muls[i].p[j] <== modulus[j];
