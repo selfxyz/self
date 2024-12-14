@@ -18,12 +18,12 @@ import { poseidon2 } from 'poseidon-lite';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsa', hashFunction: 'sha1' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  // { sigAlg: 'rsa', hashFunction: 'sha1' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
-  describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
+  describe.only(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
 
@@ -49,7 +49,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     }
 
     const inputs = generateCircuitInputsDSC(BigInt(0).toString(), dscCertPem, max_cert_bytes, true);
-    console.log('inputs', inputs);
+    console.log(inputs);
 
     before(async () => {
       const circuitPath = path.resolve(

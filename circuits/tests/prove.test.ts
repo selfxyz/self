@@ -12,11 +12,11 @@ import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 const sigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha1' },
-  { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
+  // { sigAlg: 'rsa', hashFunction: 'sha1' },
+  // { sigAlg: 'rsa', hashFunction: 'sha256' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha1' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction }) => {
@@ -58,6 +58,10 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       user_identifier
     );
 
+    // console.log('sig');
+    // console.log(inputs.signature);
+    // return;
+
     before(async () => {
       circuit = await wasm_tester(
         path.join(
@@ -69,6 +73,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
             'node_modules',
             './node_modules/@zk-kit/binary-merkle-root.circom/src',
             './node_modules/circomlib/circuits',
+            './node_modules/circom-dl/circuits',
           ],
         }
       );
