@@ -4,11 +4,13 @@ include "../other/array.circom";
 include "../other/bytes.circom";
 // include "../shaBytes/shaBytesStatic.circom";
 // include "../shaBytes/shaBytesDynamic.circom";
-include "circom-dl/circuits/hasher/hash.circom";
+include "../circomlib/hasher/hash.circom";
 include "./signatureAlgorithm.circom";
 include "./signatureVerifier.circom";
 
 template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN) {
+    assert(MAX_ECONTENT_LEN % 64 == 0);
+
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -29,7 +31,19 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     // compute hash of DG1
     // signal dg1Sha[HASH_LEN_BITS] <== ShaBytesStatic(HASH_LEN_BITS, 93)(dg1);
-    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93, HASH_LEN_BITS)(dg1, 0);
+    signal dg1Bits[93 * 8];
+    component n2b[93];
+    for (var i = 0; i < 93; i++) {
+        n2b[i] = Num2Bits(8);
+        n2b[i].in <== dg1[i];
+        for (var j = 0; j < 8; j++) {
+            dg1Bits[i * 8 + j] <== n2b[i].out[7 - j];
+        }
+
+    }
+    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits, 0);
+    for (var i = 0; i < HASH_LEN_BITS; i++) {
+    }
 
     component dg1ShaBytes[HASH_LEN_BYTES];
     for (var i = 0; i < HASH_LEN_BYTES; i++) {
@@ -46,25 +60,51 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         dg1AndDg2Hash[i + HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] === dg2_hash[i];
     }
 
-    // compute hash of eContent
-    signal eContentSha[HASH_LEN_BITS] <== ShaHashChunks(HASH_LEN_BITS, MAX_ECONTENT_LEN \ 512)(eContent, 0);
-    component eContentShaBytes[HASH_LEN_BYTES];
-    for (var i = 0; i < HASH_LEN_BYTES; i++) {
-        eContentShaBytes[i] = Bits2Num(8);
+    signal eContentBits[MAX_ECONTENT_LEN * 8];
+
+    component n2b_2[MAX_ECONTENT_LEN];
+    for (var i = 0; i < MAX_ECONTENT_LEN; i++) {
+        n2b_2[i] = Num2Bits(8);
+        n2b_2[i].in <== eContent[i];
         for (var j = 0; j < 8; j++) {
-            eContentShaBytes[i].in[7 - j] <== eContentSha[i * 8 + j];
+            eContentBits[i * 8 + j] <== n2b_2[i].out[j];
         }
     }
 
+    // HASH OF ECONTENT IS WRONG
+
+    // compute hash of eContent
+    // signal eContentSha[HASH_LEN_BITS] <== ShaHashChunks( (MAX_ECONTENT_LEN * 8) \ 512 , HASH_LEN_BITS)(eContentBits, 0);
+    // for (var i = 0; i < HASH_LEN_BITS; i++) {
+    // }
+
+    // component eContentShaBytes[HASH_LEN_BYTES];
+    // for (var i = 0; i < HASH_LEN_BYTES; i++) {
+    //     eContentShaBytes[i] = Bits2Num(8);
+    //     for (var j = 0; j < 8; j++) {
+    //         eContentShaBytes[i].in[7 - j] <== eContentSha[i * 8 + j];
+    //     }
+    // }
+
     // assert eContent hash matches the one in signedAttr
-    signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
-    for(var i = 0; i < HASH_LEN_BYTES; i++) {
-        eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
-    }
+    // signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
+    // for(var i = 0; i < HASH_LEN_BYTES; i++) {
+    //     eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
+    // }
 
-    // compute hash of signedAttr
-    signal signedAttrSha[HASH_LEN_BITS] <== ShaHashChunks(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN \ 512)(signed_attr, 0);
+    // signal signedAttrBits[MAX_SIGNED_ATTR_LEN * 8];
 
-    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
+    // component n2b_2[MAX_SIGNED_ATTR_LEN];
+    // for (var i = 0; i < MAX_SIGNED_ATTR_LEN; i++) {
+    //     n2b_2[i] = Num2Bits(8);
+    //     n2b_2[i].in <== signed_attr[i];
+    //     for (var j = 0; j < 8; j++) {
+    //         signedAttrBits[i * 8 + j] <== n2b_2[i].out[j];
+    //     }
+    // }
+    // // compute hash of signedAttr
+    // signal signedAttrSha[HASH_LEN_BITS] <== ShaHashChunks( (MAX_SIGNED_ATTR_LEN * 8) \ 512,HASH_LEN_BITS)(signedAttrBits, 0);
+
+    // SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
 }
 

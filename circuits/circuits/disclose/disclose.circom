@@ -2,8 +2,6 @@ pragma circom 2.1.9;
 
 include "../utils/other/bytes.circom";
 include "../utils/passport/date/isOlderThan.circom";
-include "../utils/passport/date/isValid.circom";
-include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
 
 template DISCLOSE() {
     signal input dg1[93];

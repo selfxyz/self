@@ -1,6 +1,6 @@
 pragma circom 2.1.5;
 
-include "circom-dl/circuits/bitify/comparators.circom";
+include "../utils/circomlib/bitify/comparators.circom";
 include "../utils/other/bytes.circom";
 
 template ProveCountryIsNotInList(forbiddenCountriesListLength) {
