@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/poseidon.circom";
+include "circom-dl/circuits/hasher/hash.circom";
 include "../other/bytes.circom";
 include "./customHashers.circom";
 
@@ -13,7 +13,7 @@ template ComputeCommitment() {
     signal input dg2_hash[64];
     signal output out;
 
-    component poseidon_hasher = Poseidon(7);
+    component poseidon_hasher = PoseidonHash(7);
     poseidon_hasher.inputs[0] <== secret;
     poseidon_hasher.inputs[1] <== attestation_id;
     poseidon_hasher.inputs[2] <== leaf;

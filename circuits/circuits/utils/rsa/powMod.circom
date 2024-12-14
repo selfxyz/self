@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
  
-include "../other/bigInt.circom";
+include "circom-dl/circuits/bigInt/bigInt.circom";
 
 // CHUNK_SIZE = 32
 // E_BITS = 17

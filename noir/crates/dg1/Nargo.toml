@@ -1,0 +1,8 @@
+[package]
+name = "noir"
+type = "bin"
+authors = [""]
+compiler_version = ">=0.36.0"
+
+[dependencies]
+# version error in rsa crate 0.3.1, keep both rsa and bignum are causing some issues.

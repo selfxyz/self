@@ -1,10 +1,10 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/poseidon.circom";
-include "circomlib/circuits/comparators.circom";
-include "circomlib/circuits/bitify.circom";
+include "circom-dl/circuits/hasher/hash.circom";
+include "circom-dl/circuits/bitify/comparators.circom";
+include "circom-dl/circuits/bitify/bitify.circom";
 include "./array.circom";
-include "binary-merkle-root.circom";
+include "./binary-merkle-root/binary-merkle-root.circom";
 include "getCommonLength.circom";
 
 template SMTVerify(nLength) {
@@ -31,7 +31,7 @@ template SMTVerify(nLength) {
     path <== ct1.out; 
 
     // Closest_key to leaf
-    signal leaf <== Poseidon(3)([value, 1,1]); // compute the leaf from the value
+    signal leaf <== PoseidonHasher(3)([value, 1, 1], 0); // compute the leaf from the value
     signal isClosestZero <== IsEqual()([value,0]); // check if the inital value is 0, in that case the leaf will be 0 too, not Hash(0,1,1);
     signal leafOrZero <== leaf * (1 - isClosestZero);
 
@@ -40,11 +40,10 @@ template SMTVerify(nLength) {
     signal computedRootIsValid <== IsEqual()([computedRoot,root]);
 
     // check is leaf equals virtual leaf
-    signal virtualLeaf <== Poseidon(3)([virtualValue, 1,1]);
+    signal virtualLeaf <== PoseidonHash(3)([virtualValue, 1,1], 0);
     signal areLeafAndVirtualLeafEquals <== IsEqual()([virtualLeaf, leaf]);
 
     signal isInclusionOrNonInclusionValid <== IsEqual()([mode,areLeafAndVirtualLeafEquals]);
 
     signal output out <== computedRootIsValid * isInclusionOrNonInclusionValid;
-    
 }

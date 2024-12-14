@@ -1,7 +1,8 @@
 pragma circom 2.1.9;
 
 include "./signatureAlgorithm.circom";
-include "../circom-ecdsa/ecdsa.circom";
+// include "../circom-ecdsa/ecdsa.circom";
+include "../../../node_modules/circom-dl/circuits/signatures/ecdsa.circom";
 
 template Secp256r1Verifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -39,13 +40,36 @@ template Secp256r1Verifier(signatureAlgorithm, n, k) {
     signal pubkey_xy[2][k] <== [pubKey_x, pubKey_y];
 
     // verify eContentHash signature
-    component ecdsa_verify = ECDSAVerifyNoPubkeyCheck(n, k);
+    // component ecdsa_verify = ECDSAVerifyNoPubkeyCheck(n, k);
+    component ecdsa_verify = verifyECDSABigInt(n, k, [ 
+        18446744073709551612, 
+        4294967295, 
+        0, 
+        18446744069414584321 
+    ], 
+    [
+        4309448131093880907,
+        7285987128567378166,
+        12964664127075681980,
+        6540974713487397863
+    ],
+    [ 
+        18446744073709551615, 
+        4294967295, 
+        0, 
+        18446744069414584321 
+    ]);
 
-    ecdsa_verify.r <== signature_r;
-    ecdsa_verify.s <== signature_s;
-    ecdsa_verify.msghash <== msgHash;
     ecdsa_verify.pubkey <== pubkey_xy;
+    ecdsa_verify.signature <== [signature_r, signature_s];
+    ecdsa_verify.hashed <== hashParsed;
+    ecdsa_verify.dummy <== 0;
 
-    1 === ecdsa_verify.result;
+    // ecdsa_verify.r <== signature_r;
+    // ecdsa_verify.s <== signature_s;
+    // ecdsa_verify.msghash <== msgHash;
+    // ecdsa_verify.pubkey <== pubkey_xy;
+
+    // 1 === ecdsa_verify.result;
 
 }

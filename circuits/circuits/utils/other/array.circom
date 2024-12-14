@@ -1,9 +1,8 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/comparators.circom";
-include "circomlib/circuits/bitify.circom";
+include "circom-dl/circuits/bitify/comparators.circom";
+include "circom-dl/circuits/bitify/bitify.circom";
 include "./functions.circom";
-
 
 /// @title ItemAtIndex
 /// @notice Select item at given index from the input array

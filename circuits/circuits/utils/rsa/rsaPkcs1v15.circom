@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "./powMod.circom";
-include "circomlib/circuits/bitify.circom";
+include "circom-dl/circuits/bitify/bitify.circom";
 
 // Pkcs1v15 + Sha256, e = 65537
 template RsaVerifierPkcs1v15(CHUNK_SIZE, CHUNK_NUMBER, E_BITS, HASH_TYPE) {
