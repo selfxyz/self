@@ -1,8 +1,7 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/poseidon.circom";
 include "../utils/other/bytes.circom";
-include "binary-merkle-root.circom";
+include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
 include "../utils/passport/computeCommitment.circom";
 
 template VERIFY_COMMITMENT( nLevels) {

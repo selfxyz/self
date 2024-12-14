@@ -1116,6 +1116,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"assertion-error@npm:^2.0.1":
+  version: 2.0.1
+  resolution: "assertion-error@npm:2.0.1"
+  checksum: 10c0/bbbcb117ac6480138f8c93cf7f535614282dea9dc828f540cdece85e3c665e8f78958b96afac52f29ff883c72638e6a87d469ecc9fe5bc902df03ed24a55dba8
+  languageName: node
+  linkType: hard
+
 "async@npm:^3.2.3":
   version: 3.2.6
   resolution: "async@npm:3.2.6"
@@ -1430,6 +1437,19 @@ __metadata:
   languageName: node
   linkType: hard
 
+"chai@npm:^5.1.2":
+  version: 5.1.2
+  resolution: "chai@npm:5.1.2"
+  dependencies:
+    assertion-error: "npm:^2.0.1"
+    check-error: "npm:^2.1.1"
+    deep-eql: "npm:^5.0.1"
+    loupe: "npm:^3.1.0"
+    pathval: "npm:^2.0.0"
+  checksum: 10c0/6c04ff8495b6e535df9c1b062b6b094828454e9a3c9493393e55b2f4dbff7aa2a29a4645133cad160fb00a16196c4dc03dc9bb37e1f4ba9df3b5f50d7533a736
+  languageName: node
+  linkType: hard
+
 "chalk@npm:^3.0.0":
   version: 3.0.0
   resolution: "chalk@npm:3.0.0"
@@ -1456,6 +1476,13 @@ __metadata:
   dependencies:
     get-func-name: "npm:^2.0.2"
   checksum: 10c0/94aa37a7315c0e8a83d0112b5bfb5a8624f7f0f81057c73e4707729cdd8077166c6aefb3d8e2b92c63ee130d4a2ff94bad46d547e12f3238cc1d78342a973841
+  languageName: node
+  linkType: hard
+
+"check-error@npm:^2.1.1":
+  version: 2.1.1
+  resolution: "check-error@npm:2.1.1"
+  checksum: 10c0/979f13eccab306cf1785fa10941a590b4e7ea9916ea2a4f8c87f0316fc3eab07eabefb6e587424ef0f88cbcd3805791f172ea739863ca3d7ce2afc54641c7f0e
   languageName: node
   linkType: hard
 
@@ -1506,6 +1533,20 @@ __metadata:
   languageName: node
   linkType: hard
 
+"circom-dl@https://github.com/distributed-lab/circom-dl":
+  version: 1.0.0
+  resolution: "circom-dl@https://github.com/distributed-lab/circom-dl.git#commit=cabf83f8473ce4cb915896c004bacd6378911537"
+  dependencies:
+    chai: "npm:^5.1.2"
+    circom_tester: "npm:^0.0.20"
+    circomlib: "npm:^2.0.5"
+    ffjavascript: "npm:^0.3.1"
+    mocha: "npm:^10.7.3"
+    path: "npm:^0.12.7"
+  checksum: 10c0/c028b97bde4d4feeaca57b5584307b9b7714117411cda846aaf1020f38367b7ad649495c9f0e31735bba2553041ce19993d7bff9b473186d98f26a6fc1279aeb
+  languageName: node
+  linkType: hard
+
 "circom-passport@workspace:.":
   version: 0.0.0-use.local
   resolution: "circom-passport@workspace:."
@@ -1531,6 +1572,7 @@ __metadata:
     asn1js: "npm:^3.0.5"
     chai: "npm:4.3.8"
     chai-as-promised: "npm:^7.1.1"
+    circom-dl: "https://github.com/distributed-lab/circom-dl"
     circom_tester: "github:remicolin/circom_tester#main"
     circomlib: "npm:^2.0.5"
     circomlibjs: "npm:^0.1.7"
@@ -1584,6 +1626,21 @@ __metadata:
     tmp-promise: "npm:^3.0.3"
     util: "npm:^0.12.5"
   checksum: 10c0/5918e6ab746b23a03a1b942afe521350c12bbc6ea8be986b611f7ab04e4651e07681859b4c3115139c566fb3c83f62fbe00781bdd6bfab9faa23a020a1a2c094
+  languageName: node
+  linkType: hard
+
+"circom_tester@npm:^0.0.20":
+  version: 0.0.20
+  resolution: "circom_tester@npm:0.0.20"
+  dependencies:
+    chai: "npm:^4.3.6"
+    ffjavascript: "npm:^0.2.60"
+    fnv-plus: "npm:^1.3.1"
+    r1csfile: "npm:^0.0.47"
+    snarkjs: "npm:^0.7.0"
+    tmp-promise: "npm:^3.0.3"
+    util: "npm:^0.12.5"
+  checksum: 10c0/ef6572385756a53a206c96e580d50c58cbbcf39b3c87e9769b86eef564eebce9322187afa22e7caa50bdd4b1664affc106514acfcc4767557141a91c7dff92bf
   languageName: node
   linkType: hard
 
@@ -1745,6 +1802,13 @@ __metadata:
   dependencies:
     type-detect: "npm:^4.0.0"
   checksum: 10c0/264e0613493b43552fc908f4ff87b8b445c0e6e075656649600e1b8a17a57ee03e960156fce7177646e4d2ddaf8e5ee616d76bd79929ff593e5c79e4e5e6c517
+  languageName: node
+  linkType: hard
+
+"deep-eql@npm:^5.0.1":
+  version: 5.0.2
+  resolution: "deep-eql@npm:5.0.2"
+  checksum: 10c0/7102cf3b7bb719c6b9c0db2e19bf0aa9318d141581befe8c7ce8ccd39af9eaa4346e5e05adef7f9bd7015da0f13a3a25dcfe306ef79dc8668aedbecb658dd247
   languageName: node
   linkType: hard
 
@@ -2117,7 +2181,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ffjavascript@npm:0.3.1, ffjavascript@npm:^0.3.0":
+"ffjavascript@npm:0.3.1, ffjavascript@npm:^0.3.0, ffjavascript@npm:^0.3.1":
   version: 0.3.1
   resolution: "ffjavascript@npm:0.3.1"
   dependencies:
@@ -2541,6 +2605,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"inherits@npm:2.0.3":
+  version: 2.0.3
+  resolution: "inherits@npm:2.0.3"
+  checksum: 10c0/6e56402373149ea076a434072671f9982f5fad030c7662be0332122fe6c0fa490acb3cc1010d90b6eff8d640b1167d77674add52dfd1bb85d545cf29e80e73e7
+  languageName: node
+  linkType: hard
+
 "ip-address@npm:^9.0.5":
   version: 9.0.5
   resolution: "ip-address@npm:9.0.5"
@@ -2872,6 +2943,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"loupe@npm:^3.1.0":
+  version: 3.1.2
+  resolution: "loupe@npm:3.1.2"
+  checksum: 10c0/b13c02e3ddd6a9d5f8bf84133b3242de556512d824dddeea71cce2dbd6579c8f4d672381c4e742d45cf4423d0701765b4a6e5fbc24701def16bc2b40f8daa96a
+  languageName: node
+  linkType: hard
+
 "lowercase-keys@npm:^2.0.0":
   version: 2.0.0
   resolution: "lowercase-keys@npm:2.0.0"
@@ -3121,7 +3199,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mocha@npm:^10.3.0":
+"mocha@npm:^10.3.0, mocha@npm:^10.7.3":
   version: 10.8.2
   resolution: "mocha@npm:10.8.2"
   dependencies:
@@ -3370,10 +3448,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"path@npm:^0.12.7":
+  version: 0.12.7
+  resolution: "path@npm:0.12.7"
+  dependencies:
+    process: "npm:^0.11.1"
+    util: "npm:^0.10.3"
+  checksum: 10c0/f795ce5438a988a590c7b6dfd450ec9baa1c391a8be4c2dea48baa6e0f5b199e56cd83b8c9ebf3991b81bea58236d2c32bdafe2c17a2e70c3a2e4c69891ade59
+  languageName: node
+  linkType: hard
+
 "pathval@npm:^1.1.1":
   version: 1.1.1
   resolution: "pathval@npm:1.1.1"
   checksum: 10c0/f63e1bc1b33593cdf094ed6ff5c49c1c0dc5dc20a646ca9725cc7fe7cd9995002d51d5685b9b2ec6814342935748b711bafa840f84c0bb04e38ff40a335c94dc
+  languageName: node
+  linkType: hard
+
+"pathval@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "pathval@npm:2.0.0"
+  checksum: 10c0/602e4ee347fba8a599115af2ccd8179836a63c925c23e04bd056d0674a64b39e3a081b643cc7bc0b84390517df2d800a46fcc5598d42c155fe4977095c2f77c5
   languageName: node
   linkType: hard
 
@@ -3418,6 +3513,13 @@ __metadata:
   version: 5.0.0
   resolution: "proc-log@npm:5.0.0"
   checksum: 10c0/bbe5edb944b0ad63387a1d5b1911ae93e05ce8d0f60de1035b218cdcceedfe39dbd2c697853355b70f1a090f8f58fe90da487c85216bf9671f9499d1a897e9e3
+  languageName: node
+  linkType: hard
+
+"process@npm:^0.11.1":
+  version: 0.11.10
+  resolution: "process@npm:0.11.10"
+  checksum: 10c0/40c3ce4b7e6d4b8c3355479df77aeed46f81b279818ccdc500124e6a5ab882c0cc81ff7ea16384873a95a74c4570b01b120f287abbdd4c877931460eca6084b3
   languageName: node
   linkType: hard
 
@@ -4150,6 +4252,15 @@ __metadata:
   version: 1.0.2
   resolution: "util-deprecate@npm:1.0.2"
   checksum: 10c0/41a5bdd214df2f6c3ecf8622745e4a366c4adced864bc3c833739791aeeeb1838119af7daed4ba36428114b5c67dcda034a79c882e97e43c03e66a4dd7389942
+  languageName: node
+  linkType: hard
+
+"util@npm:^0.10.3":
+  version: 0.10.4
+  resolution: "util@npm:0.10.4"
+  dependencies:
+    inherits: "npm:2.0.3"
+  checksum: 10c0/d29f6893e406b63b088ce9924da03201df89b31490d4d011f1c07a386ea4b3dbe907464c274023c237da470258e1805d806c7e4009a5974cd6b1d474b675852a
   languageName: node
   linkType: hard
 

@@ -1,6 +1,6 @@
 pragma circom 2.0.2;
 
-include "bigint.circom";
+include "circom-dl/circuits/bigInt/bigInt.circom";
 
 template A2NoCarry() {
     signal input a[4];

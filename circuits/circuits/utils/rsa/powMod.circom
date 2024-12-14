@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
  
-include "../other/bigInt.circom";
+include "circom-dl/circuits/bigInt/bigInt.circom";
 
 // CHUNK_NUMBER is the length of the base and modulus
 // calculates (base^exp) % modulus, exp = 2^(E_BITS - 1) + 1 = 2^16 + 1

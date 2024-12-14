@@ -1,11 +1,10 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/comparators.circom";
-include "circomlib/circuits/bitify.circom";
+include "circom-dl/circuits/bitify/comparators.circom";
+include "circom-dl/circuits/bitify/bitify.circom";
 
 // Computes the first n common bits of the hashes
 template CommonBitsLengthFromEnd() {
-
     signal input bits1[256];
     signal input bits2[256];
     signal output out;

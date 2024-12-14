@@ -34,6 +34,9 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<
   ecdsa_sha384_secp384r1_384: 512,
   rsa_sha256_65537_3072: 384,
   rsa_sha256_3_2048: 384,
+  rsa_sha256_65537_4096: 512,
+  rsa_sha1_65537_4096: 640,
+  rsapss_sha256_65537_4096: 768,
 };
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
@@ -106,8 +109,8 @@ export const k_dsc = 32;
 export const k_dsc_4096 = 64;
 export const n_csca = 120;
 export const k_csca = 35;
-export const n_dsc_ecdsa = 43;
-export const k_dsc_ecdsa = 6;
+export const n_dsc_ecdsa = 64;
+export const k_dsc_ecdsa = 4;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   AFG: 'Afghanistan',

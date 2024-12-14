@@ -1,14 +1,14 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/bitify.circom";
-include "circomlib/circuits/poseidon.circom";
-include "circomlib/circuits/comparators.circom";
-include "binary-merkle-root.circom";
+include "circom-dl/circuits/bitify/bitify.circom";
+include "circom-dl/circuits/hasher/hash.circom";
+include "circom-dl/circuits/bitify/comparators.circom";
+include "circom-dl/circuits/hasher/hash.circom";
+include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
 include "../utils/passport/customHashers.circom";
 include "../utils/other/bytes.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/signatureVerifier.circom";
-include "../utils/shaBytes/shaBytesDynamic.circom";
 include "../utils/other/bytes.circom";
 
 
@@ -41,8 +41,21 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
 
+    signal raw_dsc_cert_bits[max_cert_bytes * 8];
+
+    component n2b[max_cert_bytes];
+    for (var i = 0; i < max_cert_bytes; i++) {
+        n2b[i] = Num2Bits(8);
+        n2b[i].in <== raw_dsc_cert[i];
+        for (var j = 0; j < 8; j++) {
+            raw_dsc_cert_bits[i * 8 + j] <== n2b[i].out[j];
+        }
+    }
+
     // verify certificate signature
-    signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
+    // signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
+    // for now 512 but it can be 1024 as well
+    signal hashedCertificate[hashLength] <== ShaHashChunks((max_cert_bytes * 8) \ 512, hashLength)(raw_dsc_cert_bits, 0);
     SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature);
 
     // verify DSC csca_pubKey
@@ -57,6 +70,6 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
 
     // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(k_dsc)(dsc_pubKey);
-    signal output blinded_dsc_commitment <== Poseidon(2)([secret, pubkeyHash]);
+    signal output blinded_dsc_commitment <== PoseidonHash(2)([secret, pubkeyHash], 0);
 }
 

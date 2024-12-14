@@ -1,0 +1,35 @@
+[0m[1m[38;5;11mwarning[P1004][0m[1m: File "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsa/rsa.circom" does not include pragma version. Assuming pragma version (2, 1, 9)[0m
+ [0m[34m=[0m At the beginning of file "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsa/rsa.circom", you should add the directive "pragma circom <Version>", to indicate which compiler version you are using.
+
+[0m[1m[38;5;11mwarning[P1004][0m[1m: File "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsapss/rsapss.circom" does not include pragma version. Assuming pragma version (2, 1, 9)[0m
+ [0m[34m=[0m At the beginning of file "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsapss/rsapss.circom", you should add the directive "pragma circom <Version>", to indicate which compiler version you are using.
+
+[0m[1m[38;5;11mwarning[P1004][0m[1m: File "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsa/rsaPkcs1.circom" does not include pragma version. Assuming pragma version (2, 1, 9)[0m
+ [0m[34m=[0m At the beginning of file "/home/ayman/openpassport/openpassport/circuits/circuits/utils/rsa/rsaPkcs1.circom", you should add the directive "pragma circom <Version>", to indicate which compiler version you are using.
+
+[0m[1m[38;5;9merror[T2046][0m[1m: Typing error found[0m
+   [0m[34m┌─[0m "/home/ayman/openpassport/openpassport/circuits/circuits/utils/passport/customHashers.circom":19:17
+   [0m[34m│[0m
+[0m[34m19[0m [0m[34m│[0m                 [0m[31mhash[i].inputs[j] <== in[i * 16 + j][0m;
+   [0m[34m│[0m                 [0m[31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[31mSignal not found in component: only accesses to input/output signals are allowed[0m
+
+[0m[1m[38;5;9merror[T2046][0m[1m: Typing error found[0m
+   [0m[34m┌─[0m "/home/ayman/openpassport/openpassport/circuits/circuits/utils/passport/customHashers.circom":21:17
+   [0m[34m│[0m
+[0m[34m21[0m [0m[34m│[0m                 [0m[31mhash[i].inputs[j] <== 0[0m;
+   [0m[34m│[0m                 [0m[31m^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[31mSignal not found in component: only accesses to input/output signals are allowed[0m
+
+[0m[1m[38;5;9merror[T2046][0m[1m: Typing error found[0m
+   [0m[34m┌─[0m "/home/ayman/openpassport/openpassport/circuits/circuits/utils/passport/customHashers.circom":28:9
+   [0m[34m│[0m
+[0m[34m28[0m [0m[34m│[0m         [0m[31mfinalHash.inputs[i] <== hash[i].out[0m;
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[31mSignal not found in component: only accesses to input/output signals are allowed[0m
+
+[0m[1m[38;5;9merror[T2000][0m[1m: Typing error found[0m
+   [0m[34m┌─[0m "/home/ayman/openpassport/openpassport/circuits/circuits/dsc/openpassport_dsc.circom":47:9
+   [0m[34m│[0m
+[0m[34m47[0m [0m[34m│[0m         [0m[31mraw_dsc_cert_bits[i * 8] <== Num2Bits(8)(raw_dsc_cert[i])[0m;
+   [0m[34m│[0m         [0m[31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m [0m[31mAssignee and assigned types do not match. 
+ Expected dimensions: 0, found 1[0m
+
+[31mprevious errors were found[0m
