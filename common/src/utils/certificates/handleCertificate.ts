@@ -59,7 +59,7 @@ export function parseCertificate(pem: string) {
 }
 
 export const getCircuitName = (
-  circuitMode: Mode,
+  circuitMode: "prove" | "dsc" | "vc_and_disclose",
   signatureAlgorithm: string,
   hashFunction: string,
   domainParameter: string,
