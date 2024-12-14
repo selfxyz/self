@@ -4,6 +4,16 @@
     "esModuleInterop": true,
     "target": "ES2020",
     "moduleResolution": "node",
-    "module": "CommonJS"
-  }
+    "module": "CommonJS",
+    "allowJs": true,
+    "checkJs": false,
+    "outDir": "./dist"
+  },
+  "include": [
+    "tests/**/*",
+    "src/**/*"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }
