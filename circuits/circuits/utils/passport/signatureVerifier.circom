@@ -1,9 +1,10 @@
 pragma circom 2.1.9;
 
-include "../rsa/rsaPkcs1.circom";
-include "secp256r1Verifier.circom";
-include "../rsapss/rsapss.circom";
-include "../rsa/rsa.circom";
+// include "../rsa/rsaPkcs1.circom";
+// include "secp256r1Verifier.circom";
+// include "../rsapss/rsapss.circom";
+// include "../rsa/rsa.circom";
+// include "../rsa/verifyRsaPkcs1v1_5.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -42,6 +43,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         // rsa_pkcs1.signature <== signature;
        
     }
+
     if (signatureAlgorithm == 4 || signatureAlgorithm == 12) {
         // var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
 
@@ -52,10 +54,10 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     }
     if (signatureAlgorithm == 7) {
-        Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
+        // Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
     }
     if (signatureAlgorithm == 8) {
-        Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
+        // Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
     }
     if (signatureAlgorithm == 9) {
     }

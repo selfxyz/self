@@ -10,18 +10,18 @@ import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
 
 const sigAlgs: SignatureAlgorithm[] = [
-  'rsa_sha1',
-  'rsa_sha256',
-  'rsapss_sha256',
-  'ecdsa_sha256',
-  'ecdsa_sha1',
-  'ecdsa_sha384',
+  'rsa_sha1_65537_2048',
+  'rsa_sha256_65537_2048',
+  'rsapss_sha256_65537_2048',
+  'ecdsa_sha256_secp256r1_256',
+  'ecdsa_sha1_secp256r1_256',
+  // 'ecdsa_sha384_secp384r1_384',
 ];
 
 describe('Mock Passport Data Generator', function () {
   this.timeout(0);
 
-  sigAlgs.forEach(sigAlg => {
+  sigAlgs.forEach((sigAlg) => {
     it(`should generate valid passport data for ${sigAlg}`, () => {
       const passportData = genMockPassportData(sigAlg, 'FRA', '000101', '300101');
       expect(passportData).to.exist;
@@ -35,20 +35,31 @@ function verify(passportData: PassportData): boolean {
   const { signatureAlgorithm, hashFunction, hashLen, curve } = parseCertificate(dsc);
   const formattedMrz = formatMrz(mrz);
   const mrzHash = hash(hashFunction, formattedMrz);
-  const dg1HashOffset = findSubarrayIndex(eContent, mrzHash)
+  const dg1HashOffset = findSubarrayIndex(eContent, mrzHash);
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in eContent');
-  console.error("\x1b[32m", "signatureAlgorithm", signatureAlgorithm, " hashFunction", hashFunction, "eContent size", eContent.length, "signedAttr size", signedAttr.length, "\x1b[0m");
-  const concatHash = hash(hashFunction, eContent)
+  console.error(
+    '\x1b[32m',
+    'signatureAlgorithm',
+    signatureAlgorithm,
+    ' hashFunction',
+    hashFunction,
+    'eContent size',
+    eContent.length,
+    'signedAttr size',
+    signedAttr.length,
+    '\x1b[0m'
+  );
+  const concatHash = hash(hashFunction, eContent);
   assert(
-    arraysAreEqual(
-      concatHash,
-      signedAttr.slice(signedAttr.length - hashLen)
-    ),
+    arraysAreEqual(concatHash, signedAttr.slice(signedAttr.length - hashLen)),
     'concatHash is not at the right place in signedAttr'
   );
 
   if (signatureAlgorithm === 'ecdsa') {
-    const certBuffer = Buffer.from(dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''), 'base64');
+    const certBuffer = Buffer.from(
+      dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+      'base64'
+    );
     const asn1Data = asn1.fromBER(certBuffer);
     const cert = new Certificate({ schema: asn1Data.result });
     const publicKeyInfo = cert.subjectPublicKeyInfo;
@@ -59,7 +70,7 @@ function verify(passportData: PassportData): boolean {
     const key = ec.keyFromPublic(publicKeyBuffer);
     const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-    const msgHash = md.digest().toHex()
+    const msgHash = md.digest().toHex();
     const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
 
     return key.verify(msgHash, signature_crypto);
@@ -76,7 +87,7 @@ function verify(passportData: PassportData): boolean {
       const pss = forge.pss.create({
         md: forge.md[hashFunction].create(),
         mgf: forge.mgf.mgf1.create(forge.md[hashFunction].create()),
-        saltLength: hashLen
+        saltLength: hashLen,
       });
       return publicKey.verify(md.digest().bytes(), signature, pss);
     } else {

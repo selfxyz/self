@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "circom-dl/circuits/bitify/comparators.circom";
-include "circom-dl/circuits/bitify/bitify.circom";
+include "../circomlib/bitify/comparators.circom";
+include "../circomlib/bitify/bitify.circom";
 include "./functions.circom";
 
 /// @title ItemAtIndex

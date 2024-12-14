@@ -1,8 +1,8 @@
 pragma circom 2.1.9;
 
-include "circom-dl/circuits/hasher/hash.circom";
-include "circom-dl/circuits/bitify/comparators.circom";
-include "binary-merkle-root.circom";
+include "../utils/circomlib/hasher/hash.circom";
+include "../utils/circomlib/bitify/comparators.circom";
+include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
 include "../utils/other/getCommonLength.circom";
 include "../utils/other/smt.circom";
 
@@ -19,7 +19,7 @@ template OFAC_NAME() {
         poseidon_hasher[j] = PoseidonHash(13);
 
         for (var i = 0; i < 13; i++) {
-            poseidon_hasher[j].inputs[i] <== dg1[10 + 13 * j + i];
+            poseidon_hasher[j].in[i] <== dg1[10 + 13 * j + i];
         }
         poseidon_hasher[j].dummy <== 0;
     }

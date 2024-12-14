@@ -26,29 +26,36 @@ export const DEFAULT_MAJORITY = '18';
 export const MAX_PADDED_ECONTENT_LEN: Partial<
   Record<keyof typeof SignatureAlgorithmIndex, number>
 > = {
-  rsa_65537_sha256_2048: 384,
-  rsa_65537_sha1_2048: 320,
-  rsapss_65537_sha256_2048: 384,
-  ecdsa_secp256r1_sha1_256: 320,
-  ecdsa_secp256r1_sha256_256: 384,
-  ecdsa_secp384r1_sha384_384: 512,
+  rsa_sha256_65537_2048: 384,
+  rsa_sha1_65537_2048: 320,
+  rsapss_sha256_65537_2048: 384,
+  ecdsa_sha1_secp256r1_256: 320,
+  ecdsa_sha256_secp256r1_256: 384,
+  ecdsa_sha384_secp384r1_384: 512,
+  rsa_sha256_65537_3072: 384,
+  rsa_sha256_3_2048: 384,
+  rsa_sha256_65537_4096: 512,
+  rsa_sha1_65537_4096: 640,
+  rsapss_sha256_65537_4096: 768,
 };
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
   Record<keyof typeof SignatureAlgorithmIndex, number>
 > = {
-  rsa_65537_sha256_2048: 192,
-  rsa_65537_sha1_2048: 192,
-  rsapss_65537_sha256_2048: 192,
-  ecdsa_secp256r1_sha1_256: 192,
-  ecdsa_secp256r1_sha256_256: 192,
-  ecdsa_secp384r1_sha384_384: 192,
+  rsa_sha256_65537_2048: 192,
+  rsa_sha1_65537_2048: 192,
+  rsapss_sha256_65537_2048: 192,
+  ecdsa_sha1_secp256r1_256: 192,
+  ecdsa_sha256_secp256r1_256: 192,
+  ecdsa_sha384_secp384r1_384: 192,
+  rsa_sha256_65537_3072: 192,
+  rsa_sha256_3_2048: 192,
 };
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
-  rsa_65537_sha256_4096: 512,
-  rsa_65537_sha1_4096: 640,
-  rsapss_65537_sha256_4096: 768,
+  rsa_sha256_65537_4096: 512,
+  rsa_sha1_65537_4096: 640,
+  rsapss_sha256_65537_4096: 768,
 };
 
 export const ECDSA_K_LENGTH_FACTOR = 2;
@@ -64,15 +71,17 @@ export const circuitNameFromMode = {
 };
 
 export enum SignatureAlgorithmIndex {
-  rsa_65537_sha256_2048 = 1,
-  rsa_65537_sha1_2048 = 3,
-  rsapss_65537_sha256_2048 = 4,
-  ecdsa_secp256r1_sha1_256 = 7,
-  ecdsa_secp256r1_sha256_256 = 8,
-  ecdsa_secp384r1_sha384_384 = 9,
-  rsa_65537_sha256_4096 = 10,
-  rsa_65537_sha1_4096 = 11,
-  rsapss_65537_sha256_4096 = 12,
+  rsa_sha256_65537_2048 = 1,
+  rsa_sha1_65537_2048 = 3,
+  rsapss_sha256_65537_2048 = 4,
+  ecdsa_sha1_secp256r1_256 = 7,
+  ecdsa_sha256_secp256r1_256 = 8,
+  ecdsa_sha384_secp384r1_384 = 9,
+  rsa_sha256_65537_4096 = 10,
+  rsa_sha1_65537_4096 = 11,
+  rsapss_sha256_65537_4096 = 12,
+  rsa_sha256_3_2048 = 13,
+  rsa_sha256_65537_3072 = 14,
 }
 
 export const attributeToPosition = {
@@ -94,7 +103,10 @@ export const circuitToSelectorMode = {
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 64;
+export const n_dsc_3072 = 96;
+export const n_dsc_4096 = 64;
 export const k_dsc = 32;
+export const k_dsc_4096 = 64;
 export const n_csca = 120;
 export const k_csca = 35;
 export const n_dsc_ecdsa = 64;

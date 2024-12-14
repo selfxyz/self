@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
-include "circom-dl/circuits/hasher/hash.circom";
-include "circom-dl/circuits/bitify/comparators.circom";
+include "../../circomlib/hasher/hash.circom";
+include "../../circomlib/bitify/comparators.circom";
 
 // This circuit is designed to calculate the root of a binary Merkle
 // tree given a leaf, its depth, and the necessary sibling

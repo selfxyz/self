@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
-include "circom-dl/circuits/bigInt/bigIntFunc.circom";
-include "circom-dl/circuits/hasher/hash.circom";
+include "../circomlib/bigInt/bigIntFunc.circom";
+include "../circomlib/hasher/hash.circom";
 
 template CustomHasher(k) {
     signal input in[k];

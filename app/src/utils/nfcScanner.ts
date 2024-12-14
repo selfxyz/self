@@ -148,6 +148,8 @@ const handleResponseIOS = async (
   const parsed = JSON.parse(response);
 
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes)
+  const dg1HashString = dgHashesObj?.DG1?.sodHash
+  const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'))
   const dg2HashString = dgHashesObj?.DG2?.sodHash
   const dg2Hash = Array.from(Buffer.from(dg2HashString, 'hex'))
 
@@ -190,7 +192,9 @@ const handleResponseIOS = async (
   const passportData = {
     mrz,
     dsc: pem,
-    dg2Hash,
+    dg2Hash: dg2Hash,
+    dg1Hash: dg1Hash,
+    dgPresents: parsed?.dataGroupsPresent,
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
@@ -235,12 +239,22 @@ const handleResponseAndroid = async (
   } = response;
 
   const dgHashesObj = JSON.parse(dataGroupHashes);
-  const dg2Hash = dgHashesObj["2"]; // This will give you the DG2 hash
+  const dg1HashString = dgHashesObj["1"];
+  const dg1Hash = Array.from(Buffer.from(dg1HashString, 'hex'));
+  const dg2Hash = dgHashesObj["2"];
   const pem = "-----BEGIN CERTIFICATE-----" + documentSigningCertificate + "-----END CERTIFICATE-----"
+
+  const dgPresents = Object.keys(dgHashesObj)
+    .map(key => parseInt(key))
+    .filter(num => !isNaN(num))
+    .sort((a, b) => a - b);
+
   const passportData: PassportData = {
     mrz: mrz.replace(/\n/g, ''),
     dsc: pem,
     dg2Hash,
+    dg1Hash,
+    dgPresents,
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
