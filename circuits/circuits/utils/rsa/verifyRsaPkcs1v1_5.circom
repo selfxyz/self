@@ -1,15 +1,15 @@
 pragma circom 2.1.9;
 
-include "circomlib/circuits/bitify.circom";
-include "./powMod.circom";
+include "../circomlib/bitify/bitify.circom";
+include "../circomlib/bigInt/bigInt.circom";
 include "../passport/signatureAlgorithm.circom";
-include "../other/optimized/int/arithmetic.circom";
+include "../circomlib/int/arithmetic.circom";
 
 // For exponent is 3, use E_BITS = 2
 // For exponent is 65537, use E_BITS = 17
 
 // For 2048bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
-// For 3072bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 48
+// For 3072bits RSA, CHUNK_SIZE = 96, CHUNK_NUMBER = 32
 // For 4096bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 64
 
 // HASH_SIZE is the size of the hash in bits
@@ -20,24 +20,30 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
 
     signal input message[CHUNK_NUMBER];
 
+    signal input dummy;
+
+    // Range check which is came from old openpassport impl
     component signatureRangeCheck[CHUNK_NUMBER];
     component bigLessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         signatureRangeCheck[i] = Num2Bits(CHUNK_SIZE);
         signatureRangeCheck[i].in <== signature[i];
-        bigLessThan.a[i] <== signature[i];
-        bigLessThan.b[i] <== modulus[i];
+        bigLessThan.in[0][i] <== signature[i];
+        bigLessThan.in[1][i] <== modulus[i];
     }
     bigLessThan.out === 1;
 
+    // Calc Power Mod
     component bigPow = PowerMod(CHUNK_SIZE, CHUNK_NUMBER, E_BITS);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
     }
+    bigPow.dummy <== dummy;
 
     var padding[5] = getPadding(signatureAlgorithm);
 
+    // Verify Padding and Hashed Message
     if (signatureAlgorithm == 3) {
         for (var i = 0; i < 2; i++) {
             bigPow.out[i] === message[i];

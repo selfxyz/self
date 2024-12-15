@@ -7,7 +7,9 @@ template VerifyRsaPkcs1v1_5Tester() {
     signal input modulus[32];
     signal input message[32];
 
-    VerifyRsaPkcs1v1_5(13, 64, 32, 2, 256)(signature, modulus, message);
+    signal input dummy;
+
+    VerifyRsaPkcs1v1_5(13, 64, 32, 3, 256)(signature, modulus, message, dummy);
 }
 
 component main = VerifyRsaPkcs1v1_5Tester();
