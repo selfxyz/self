@@ -1,7 +1,8 @@
-pragma circom 2.1.5;
+pragma circom 2.1.6;
 
 include "../../circomlib/hasher/hash.circom";
 include "../../circomlib/bitify/comparators.circom";
+include "../../circomlib/mux/mux1.circom";
 
 // This circuit is designed to calculate the root of a binary Merkle
 // tree given a leaf, its depth, and the necessary sibling
@@ -41,33 +42,4 @@ template BinaryMerkleRoot(MAX_DEPTH) {
     var isDepth = IsEqual()([depth, MAX_DEPTH]);
 
     out <== root + isDepth * nodes[MAX_DEPTH];
-}
-
-template MultiMux1(n) {
-    signal input c[n][2];  // Constants
-    signal input s;   // Selector
-    signal output out[n];
-
-    for (var i=0; i<n; i++) {
-
-        out[i] <== (c[i][1] - c[i][0])*s + c[i][0];
-
-    }
-}
-
-template Mux1() {
-    var i;
-    signal input c[2];  // Constants
-    signal input s;   // Selector
-    signal output out;
-
-    component mux = MultiMux1(1);
-
-    for (i=0; i<2; i++) {
-        mux.c[0][i] <== c[i];
-    }
-
-    s ==> mux.s;
-
-    mux.out[0] ==> out;
 }
