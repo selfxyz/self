@@ -1,8 +1,7 @@
 pragma circom 2.1.9;
 
 include "./signatureAlgorithm.circom";
-// include "../circom-ecdsa/ecdsa.circom";
-include "../../../node_modules/circom-dl/circuits/signatures/ecdsa.circom";
+include "../circomlib/signatures/ecdsa.circom";
 
 template Secp256r1Verifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
