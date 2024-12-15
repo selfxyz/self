@@ -20,6 +20,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
     it(`should verify RSA signature using the circuit for ${algorithm}`, async function () {
       // Generate inputs using the utility function
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
+      let dummy = 0;
       // console.log('signature', signature);
 
       // Run circuit with inputs
@@ -29,7 +30,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
           include: [
             'node_modules',
             './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            './node_modules/circomlib/circuits',
+            // './node_modules/circomlib/circuits',a
           ],
         }
       );
@@ -41,6 +42,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
         signature,
         modulus,
         message,
+        dummy,
       });
 
       // Check constraints
