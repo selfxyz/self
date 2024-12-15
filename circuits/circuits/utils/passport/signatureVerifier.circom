@@ -2,7 +2,7 @@ pragma circom 2.1.9;
 
 // include "../rsa/rsaPkcs1.circom";
 // include "secp256r1Verifier.circom";
-// include "../rsapss/rsapss.circom";
+include "../rsapss/rsapss.circom";
 // include "../rsa/rsa.circom";
 include "../rsa/verifyRsaPkcs1v1_5.circom";
 include "../circomlib/utils/bytes.circom";
@@ -55,13 +55,29 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         // rsa.dummy <== 0;
     }
 
-    if (signatureAlgorithm == 4 || signatureAlgorithm == 12) {
-        // var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+    if (
+        signatureAlgorithm == 4 
+        || signatureAlgorithm == 12 
+        || signatureAlgorithm == 16
+        || signatureAlgorithm == 17
+        || signatureAlgorithm == 18
+        || signatureAlgorithm == 19
+    ) {
+        var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+        var SALT_LEN = HASH_LEN_BITS / 8;
+        var E_BITS = getExponentBits(signatureAlgorithm);
+        var EXP;
+        if (E_BITS == 17) {
+            EXP = 65537;
+        } else {
+            EXP = 3;
+        }
 
-        // component rsaPssSha256Verification = VerifyRsaPssSig(n, k, HASH_LEN_BITS, pubKeyBitsLength);
-        // rsaPssSha256Verification.pubkey <== pubKey;
-        // rsaPssSha256Verification.signature <== signature;
-        // rsaPssSha256Verification.hashed <== hash; // send the raw hash
+        component rsaPssShaVerification = VerifyRsaPssSig(n, k, SALT_LEN, EXP, HASH_LEN_BITS);
+        rsaPssShaVerification.pubkey <== pubKey;
+        rsaPssShaVerification.signature <== signature;
+        rsaPssShaVerification.hashed <== hash; // send the raw hash
+        rsaPssShaVerification.dummy <== 0;
 
     }
     if (signatureAlgorithm == 7) {
