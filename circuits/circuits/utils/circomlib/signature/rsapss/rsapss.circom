@@ -1,12 +1,9 @@
 pragma circom 2.1.6;
 
-// include "../bigInt/bigInt.circom";
-include "../circomlib/bigInt/bigInt.circom";
+include "../../bigInt/bigInt.circom";
 include "./mgf1.circom";
-// include "../bitify/bitGates.circom";
-include "../circomlib/bitify/bitGates.circom";
-// include "../hasher/hash.circom";
-include "../circomlib/hasher/hash.circom";
+include "../../bitify/bitGates.circom";
+include "../../hasher/hash.circom";
 
 /*
 * Verification for RSAPSS signature.

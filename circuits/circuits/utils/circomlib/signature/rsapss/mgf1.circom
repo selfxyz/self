@@ -1,8 +1,6 @@
 pragma circom 2.1.6;
 
-// include "../bitify/bitify.circom";
-include "../circomlib/bitify/bitify.circom";
-// include "../sha2/sha256/sha256_hash_bits.circom";
+include "../../bitify/bitify.circom";
 
 template Mgf1Sha384(SEED_LEN, MASK_LEN) { //in bytes
     var SEED_LEN_BITS = SEED_LEN * 8;
