@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../utils/circomlib/utils/bytes.circom";
-include "../utils/passport/date/isOlderThan.circom";
+include "../../circomlib/utils/bytes.circom";
+include "../date/isOlderThan.circom";
 
 template DISCLOSE() {
     signal input dg1[93];
