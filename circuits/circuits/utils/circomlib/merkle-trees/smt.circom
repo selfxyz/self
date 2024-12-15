@@ -1,10 +1,10 @@
 pragma circom 2.1.9;
 
-include "../circomlib/hasher/hash.circom";
-include "../circomlib/bitify/comparators.circom";
-include "../circomlib/bitify/bitify.circom";
-include "./array.circom";
-include "./binary-merkle-root/binary-merkle-root.circom";
+include "../hasher/hash.circom";
+include "../bitify/comparators.circom";
+include "../bitify/bitify.circom";
+include "../utils/array.circom";
+include "binary-merkle-root.circom";
 include "getCommonLength.circom";
 
 template SMTVerify(nLength) {

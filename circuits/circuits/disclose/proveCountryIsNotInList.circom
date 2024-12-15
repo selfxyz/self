@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
 include "../utils/circomlib/bitify/comparators.circom";
-include "../utils/other/bytes.circom";
+include "../utils/circomlib/utils/bytes.circom";
 
 template ProveCountryIsNotInList(forbiddenCountriesListLength) {
     signal input dg1[93];

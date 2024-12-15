@@ -1,10 +1,7 @@
 pragma circom 2.1.9;
 
 include "../../circomlib/hasher/hash.circom";
-include "../../circomlib/bitify/comparators.circom";
-include "../../other/binary-merkle-root/binary-merkle-root.circom";
-include "../../other/getCommonLength.circom";
-include "../../other/smt.circom";
+include "../../circomlib/merkle-trees/smt.circom";
 
 template OFAC_NAME() {
 

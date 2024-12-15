@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../circomlib/bitify/comparators.circom";
-include "../circomlib/bitify/bitify.circom";
+include "../bitify/comparators.circom";
+include "../bitify/bitify.circom";
 
 // Computes the first n common bits of the hashes
 template CommonBitsLengthFromEnd() {
