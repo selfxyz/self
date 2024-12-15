@@ -1,11 +1,7 @@
 pragma circom 2.1.9;
 
-include "../utils/circomlib/hasher/hash.circom";
-include "../utils/circomlib/bitify/comparators.circom";
-include "../utils/circomlib/bitify/bitify.circom";
-include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
-include "../utils/other/getCommonLength.circom";
-include "../utils/other/smt.circom";
+include "../../circomlib/hasher/hash.circom";
+include "../../circomlib/merkle-trees/smt.circom";
 
 template OFAC_NAME_DOB() {
 
@@ -19,7 +15,7 @@ template OFAC_NAME_DOB() {
     for (var j = 0; j < 3; j++) {
         poseidon_hasher[j] = PoseidonHash(13);
         for (var i = 0; i < 13; i++) {
-            poseidon_hasher[j].inputs[i] <== dg1[10 + 13 * j + i];
+            poseidon_hasher[j].in[i] <== dg1[10 + 13 * j + i];
         }
         poseidon_hasher[j].dummy <== 0;
     }
@@ -28,7 +24,7 @@ template OFAC_NAME_DOB() {
     // Dob hash
     component pos_dob = PoseidonHash(6);
     for(var i = 0; i < 6; i++) {
-        pos_dob.inputs[i] <== dg1[62 + i];
+        pos_dob.in[i] <== dg1[62 + i];
     }
 
     pos_dob.dummy <== 0;

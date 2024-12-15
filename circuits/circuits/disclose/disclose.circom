@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../utils/other/bytes.circom";
+include "../utils/circomlib/utils/bytes.circom";
 include "../utils/passport/date/isOlderThan.circom";
 
 template DISCLOSE() {

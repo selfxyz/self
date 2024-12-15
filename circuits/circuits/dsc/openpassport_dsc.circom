@@ -4,12 +4,11 @@ include "../utils/circomlib/bitify/bitify.circom";
 include "../utils/circomlib/hasher/hash.circom";
 include "../utils/circomlib/bitify/comparators.circom";
 include "../utils/circomlib/hasher/hash.circom";
-include "../utils/other/binary-merkle-root/binary-merkle-root.circom";
+include "../utils/circomlib/merkle-trees/binary-merkle-root.circom";
 include "../utils/passport/customHashers.circom";
-include "../utils/other/bytes.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/signatureVerifier.circom";
-include "../utils/other/bytes.circom";
+include "../utils/circomlib/utils/bytes.circom";
 
 
 template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, dscPubkeyBytesLength, nLevels) {

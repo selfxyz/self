@@ -1,4 +1,4 @@
-pragma circom 2.1.9;
+pragma circom 2.1.6;
 
 /// @function log2Ceil
 /// @notice Calculate log2 of a number and round it up

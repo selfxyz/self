@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../other/array.circom";
-include "../other/bytes.circom";
+include "../circomlib/utils/array.circom";
+include "../circomlib/utils/bytes.circom";
 // include "../shaBytes/shaBytesStatic.circom";
 include "../shaBytes/shaBytesDynamic.circom";
 include "../circomlib/hasher/hash.circom";

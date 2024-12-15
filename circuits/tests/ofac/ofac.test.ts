@@ -88,6 +88,7 @@ describe('OFAC - Passport number match', function () {
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });
+
 });
 
 // Level 2: NameDob match in OfacList

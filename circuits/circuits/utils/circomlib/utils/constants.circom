@@ -1,4 +1,4 @@
-pragma circom 2.1.9;
+pragma circom 2.1.6;
 
 
 function EMAIL_ADDR_MAX_BYTES() {

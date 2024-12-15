@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "../circomlib/hasher/hash.circom";
-include "../other/bytes.circom";
+include "../circomlib/utils/bytes.circom";
 include "./customHashers.circom";
 
 template ComputeCommitment() {
