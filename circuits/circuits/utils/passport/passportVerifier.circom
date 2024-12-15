@@ -29,7 +29,6 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     signal input signature[kScaled];
 
     // compute hash of DG1
-    // signal dg1Sha[HASH_LEN_BITS] <== ShaBytesStatic(HASH_LEN_BITS, 93)(dg1);
     signal dg1Bits[93 * 8];
     component n2b[93];
     for (var i = 0; i < 93; i++) {
@@ -59,19 +58,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         dg1AndDg2Hash[i + HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] === dg2_hash[i];
     }
 
-    signal eContentBits[MAX_ECONTENT_LEN * 8];
-
-    component n2b_2[MAX_ECONTENT_LEN];
-    for (var i = 0; i < MAX_ECONTENT_LEN; i++) {
-        n2b_2[i] = Num2Bits(8);
-        n2b_2[i].in <== eContent[i];
-        for (var j = 0; j < 8; j++) {
-            eContentBits[i * 8 + j] <== n2b_2[i].out[j];
-        }
-    }
-
     // compute hash of eContent
-    // signal eContentSha[HASH_LEN_BITS] <== ShaHashChunks( (MAX_ECONTENT_LEN * 8) \ 512 , HASH_LEN_BITS)(eContentBits, 0);
     signal eContentSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS,MAX_ECONTENT_LEN)(eContent, eContent_padded_length);
 
     component eContentShaBytes[HASH_LEN_BYTES];
