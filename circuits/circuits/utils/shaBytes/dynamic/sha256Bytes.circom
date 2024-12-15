@@ -3,8 +3,8 @@ pragma circom 2.1.9;
 // include "circomlib/circuits/bitify.circom";
 include "../../circomlib/bitify/bitify.circom";
 
-include "../../sha2/circomlib/sha256/constants.circom";
-include "../../sha2/circomlib/sha256/sha256compression.circom";
+include "../../circomlib/hasher/sha2/sha256_temp/constants.circom";
+include "../../circomlib/hasher/sha2/sha256_temp/sha256compression.circom";
 include "../../circomlib/bitify/comparators.circom";
 // include "../../sha2/circomlib/comparators.circom";
 
