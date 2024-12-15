@@ -13,7 +13,8 @@ include "../../circomlib/bitify/bitify.circom";
 // include "@zk-email/circuits/lib/fp.circom";
 // include "@zk-email/circuits/utils/array.circom";
 // include "../../other/fp.circom";
-include "../../other/array.circom";
+// include "../../other/array.circom";
+include "../../circomlib/utils/array.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
