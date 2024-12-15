@@ -4,7 +4,7 @@ include "../utils/passport/customHashers.circom";
 include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
-// include "../utils/circomlib/hasher/poseidon/poseidon.circom";
+include "../utils/circomlib/hasher/poseidon/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";

@@ -15,6 +15,7 @@ import {
   n_csca,
   k_csca,
   attributeToPosition,
+  k_dsc_3072,
 } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';
 import { SignatureAlgorithm } from './types';
@@ -40,6 +41,15 @@ export function getNAndK(sigAlg: SignatureAlgorithm) {
   }
 
   if (sigAlg.startsWith('rsapss_')) {
+    const keyLength = parseInt(sigAlg.split('_')[3]);
+
+    if (keyLength === 3072) {
+      return { n: n_dsc_3072, k: k_dsc_3072 }; // 3072/32 = 96
+    }
+
+    if (keyLength === 4096) {
+      return { n: n_dsc_4096, k: k_dsc_4096 }; // 4096/32 = 128
+    }
     return { n: n_dsc, k: k_dsc }; // 2048/32 = 64
   }
 

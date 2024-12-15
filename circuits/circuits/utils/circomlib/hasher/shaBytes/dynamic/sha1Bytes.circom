@@ -1,20 +1,9 @@
 pragma circom 2.1.5;
 
-// include "../../sha1/sha1compression.circom";
-// include "../../sha1/constants.circom";
-include "../../circomlib/hasher/sha1/sha1compression.circom";
-include "../../circomlib/hasher/sha1/constants.circom";
-include "../../circomlib/bitify/bitify.circom";
-// include "circom-dl/circuits/bitify/bitify.circom";
-// include "circom-dl/circuits/bitify/comparators.circom";
-// include "circomlib/circuits/bitify.circom";
-// include "circomlib/circuits/comparators.circom";
-// include "circomlib/circuits/mimcsponge.circom";
-// include "@zk-email/circuits/lib/fp.circom";
-// include "@zk-email/circuits/utils/array.circom";
-// include "../../other/fp.circom";
-// include "../../other/array.circom";
-include "../../circomlib/utils/array.circom";
+include "../../sha1/sha1compression.circom";
+include "../../sha1/constants.circom";
+include "../../../bitify/bitify.circom";
+include "../../../utils/array.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
