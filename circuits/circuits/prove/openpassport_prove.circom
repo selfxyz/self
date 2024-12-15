@@ -8,7 +8,7 @@ include "../utils/passport/date/isValid.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../disclose/disclose.circom";
 include "../disclose/proveCountryIsNotInList.circom";
-// include "../ofac/ofac_name.circom";
+include "../ofac/ofac_name.circom";
 
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -103,10 +103,10 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
         forbidden_countries_list_packed_disclosed[i] <== forbidden_countries_list_packed[i] * selectorModeDisclosure;
     }
 
-    // // OFAC
-    // signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
-    // signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
-    // signal output ofac_result <== ofacIntermediaryOutput;
+    // OFAC
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
+    signal output ofac_result <== ofacIntermediaryOutput;
 
     // // REGISTRATION (optional)
     // // generate the commitment
