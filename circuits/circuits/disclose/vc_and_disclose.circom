@@ -1,9 +1,9 @@
 pragma circom 2.1.9;
 
-include "./verify_commitment.circom";
-include "./disclose.circom";
-include "./proveCountryIsNotInList.circom";
-include "../ofac/ofac_name.circom";
+include "../utils/passport/disclose/verify_commitment.circom";
+include "../utils/passport/disclose/disclose.circom";
+include "../utils/passport/disclose/proveCountryIsNotInList.circom";
+include "../utils/passport/ofac/ofac_name.circom";
 
 template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
@@ -45,9 +45,10 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     disclose.majority <== majority;
     
     // generate scope nullifier
-    component poseidon_nullifier = Poseidon(2);
-    poseidon_nullifier.inputs[0] <== secret;
-    poseidon_nullifier.inputs[1] <== scope;
+    component poseidon_nullifier = PoseidonHash(2);
+    poseidon_nullifier.in[0] <== secret;
+    poseidon_nullifier.in[1] <== scope;
+    poseidon_nullifier.dummy <== 0;
     signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;

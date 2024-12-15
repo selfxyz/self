@@ -6,8 +6,8 @@ include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
 // include "../utils/circomlib/hasher/poseidon/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
-include "../disclose/disclose.circom";
-include "../disclose/proveCountryIsNotInList.circom";
+include "../utils/passport/disclose/disclose.circom";
+include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
