@@ -3,7 +3,7 @@ pragma circom 2.1.9;
 include "../other/array.circom";
 include "../other/bytes.circom";
 // include "../shaBytes/shaBytesStatic.circom";
-// include "../shaBytes/shaBytesDynamic.circom";
+include "../shaBytes/shaBytesDynamic.circom";
 include "../circomlib/hasher/hash.circom";
 include "./signatureAlgorithm.circom";
 include "./signatureVerifier.circom";
@@ -71,40 +71,26 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         }
     }
 
-    // HASH OF ECONTENT IS WRONG
-
     // compute hash of eContent
     // signal eContentSha[HASH_LEN_BITS] <== ShaHashChunks( (MAX_ECONTENT_LEN * 8) \ 512 , HASH_LEN_BITS)(eContentBits, 0);
-    // for (var i = 0; i < HASH_LEN_BITS; i++) {
-    // }
+    signal eContentSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS,MAX_ECONTENT_LEN)(eContent, eContent_padded_length);
 
-    // component eContentShaBytes[HASH_LEN_BYTES];
-    // for (var i = 0; i < HASH_LEN_BYTES; i++) {
-    //     eContentShaBytes[i] = Bits2Num(8);
-    //     for (var j = 0; j < 8; j++) {
-    //         eContentShaBytes[i].in[7 - j] <== eContentSha[i * 8 + j];
-    //     }
-    // }
+    component eContentShaBytes[HASH_LEN_BYTES];
+    for (var i = 0; i < HASH_LEN_BYTES; i++) {
+        eContentShaBytes[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            eContentShaBytes[i].in[7 - j] <== eContentSha[i * 8 + j];
+        }
+    }
 
     // assert eContent hash matches the one in signedAttr
-    // signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
-    // for(var i = 0; i < HASH_LEN_BYTES; i++) {
-    //     eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
-    // }
+    signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
+    for(var i = 0; i < HASH_LEN_BYTES; i++) {
+        eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
+    }
 
-    // signal signedAttrBits[MAX_SIGNED_ATTR_LEN * 8];
+    signal signedAttrSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
 
-    // component n2b_2[MAX_SIGNED_ATTR_LEN];
-    // for (var i = 0; i < MAX_SIGNED_ATTR_LEN; i++) {
-    //     n2b_2[i] = Num2Bits(8);
-    //     n2b_2[i].in <== signed_attr[i];
-    //     for (var j = 0; j < 8; j++) {
-    //         signedAttrBits[i * 8 + j] <== n2b_2[i].out[j];
-    //     }
-    // }
-    // // compute hash of signedAttr
-    // signal signedAttrSha[HASH_LEN_BITS] <== ShaHashChunks( (MAX_SIGNED_ATTR_LEN * 8) \ 512,HASH_LEN_BITS)(signedAttrBits, 0);
-
-    // SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
+    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
 }
 
