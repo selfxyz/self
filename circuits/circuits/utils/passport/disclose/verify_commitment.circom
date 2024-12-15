@@ -1,8 +1,8 @@
 pragma circom 2.1.9;
 
-include "../utils/circomlib/utils/bytes.circom";
-include "../utils/circomlib/merkle-trees/binary-merkle-root.circom";
-include "../utils/passport/computeCommitment.circom";
+include "../../circomlib/utils/bytes.circom";
+include "../../circomlib/merkle-trees/binary-merkle-root.circom";
+include "../computeCommitment.circom";
 
 template VERIFY_COMMITMENT( nLevels) {
 
