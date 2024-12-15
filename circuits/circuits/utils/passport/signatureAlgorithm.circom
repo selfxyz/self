@@ -227,7 +227,10 @@ function getExponentBits(signatureAlgorithm) {
 
 function getPadding(signatureAlgorithm) {
     var padding[5];
-    if (signatureAlgorithm == 3) {
+    if (
+        signatureAlgorithm == 3 ||
+        signatureAlgorithm == 11
+    ) {
         padding[0] = 83887124; // 5000414
         padding[1] = 650212878678426138; // 906052B0E03021A
         padding[2] = 18446744069417738544; // FFFFFFFF00302130

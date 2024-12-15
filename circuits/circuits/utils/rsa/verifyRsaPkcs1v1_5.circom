@@ -72,6 +72,23 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
             bigPow.out[i] === padding[3];
         }
         bigPow.out[CHUNK_NUMBER - 1] === padding[4];
+    } else if (signatureAlgorithm == 11) {
+        for (var i = 0; i < 2; i++) {
+            bigPow.out[i] === message[i];
+        }
+        component getBits = GetLastNBits(32);
+        getBits.in <== bigPow.out[2];
+        component bitsToNum = Bits2Num(32);
+        bitsToNum.in <== getBits.out;
+        bitsToNum.out === message[2];
+
+        getBits.div === padding[0];
+        bigPow.out[3] === padding[1];
+        bigPow.out[4] === padding[2];
+        for (var i = 5; i < CHUNK_NUMBER - 1; i++) {
+            bigPow.out[i] === padding[3];
+        }
+        bigPow.out[CHUNK_NUMBER - 1] === padding[4];
     } else if (signatureAlgorithm == 14) {
         for (var i = 0; i < 2; i++) {
             bigPow.out[i] === message[i];
