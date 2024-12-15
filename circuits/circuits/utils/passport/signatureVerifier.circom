@@ -4,7 +4,8 @@ pragma circom 2.1.9;
 // include "secp256r1Verifier.circom";
 // include "../rsapss/rsapss.circom";
 // include "../rsa/rsa.circom";
-// include "../rsa/verifyRsaPkcs1v1_5.circom";
+include "../rsa/verifyRsaPkcs1v1_5.circom";
+include "../circomlib/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -16,9 +17,9 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    var msg_len = (HASH_LEN_BITS + n) \ n;
+    // var msg_len = (HASH_LEN_BITS + n) \ n;
 
-    signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
+    // signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
     if (signatureAlgorithm == 1 || signatureAlgorithm == 10) { 
         // component rsa = RSAVerifier65537(n, k);
@@ -30,8 +31,14 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         // }
         // rsa.modulus <== pubKey;
         // rsa.signature <== signature;
+
     }
     if (signatureAlgorithm == 3 || signatureAlgorithm == 11) {
+        component SplitSignalsToWords = SplitSignalsToWords(1, 160, 64, 32);
+        SplitSignalsToWords.in <== hash;
+        signal hashParsedWords[32];
+        hashParsedWords <== SplitSignalsToWords.out;
+        
         // component rsa_pkcs1 = RSAVerifier65537Pkcs1(n, k);
         // for (var i = 0; i < msg_len; i++) {
         //     rsa_pkcs1.message[i] <== hashParsed[i];
@@ -41,7 +48,11 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         // }
         // rsa_pkcs1.modulus <== pubKey;
         // rsa_pkcs1.signature <== signature;
-       
+        // component rsa = VerifyRsaPkcs1v1_5(3, 64, 32, 65537, 160);
+        // rsa.message <== hashParsedWords;
+        // rsa.modulus <== pubKey;
+        // rsa.signature <== signature;
+        // rsa.dummy <== 0;
     }
 
     if (signatureAlgorithm == 4 || signatureAlgorithm == 12) {
