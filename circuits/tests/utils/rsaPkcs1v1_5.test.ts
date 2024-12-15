@@ -30,7 +30,6 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
           include: [
             'node_modules',
             './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            // './node_modules/circomlib/circuits',a
           ],
         }
       );
