@@ -4,7 +4,7 @@ pragma circom 2.1.9;
 // include "secp256r1Verifier.circom";
 include "../circomlib/signature/rsapss/rsapss.circom";
 // include "../rsa/rsa.circom";
-include "../rsa/verifyRsaPkcs1v1_5.circom";
+include "../circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom";
 include "../circomlib/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {

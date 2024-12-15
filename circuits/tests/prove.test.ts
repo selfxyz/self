@@ -18,9 +18,9 @@ const sigAlgs = [
   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha384', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'rsapss', hashFunction: 'sha384', domainParameter: '65537', keyLength: '3072' },
   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
   // { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
@@ -48,8 +48,6 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     const selector_mode = [1, 1];
     const selector_ofac = 1;
     const forbidden_countries_list = ['DZA'];
-
-    const dummy = 0;
 
     let name_smt = new SMT(poseidon2, true);
     name_smt.import(namejson);

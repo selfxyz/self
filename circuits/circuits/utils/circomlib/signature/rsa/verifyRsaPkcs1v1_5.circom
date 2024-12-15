@@ -1,9 +1,9 @@
 pragma circom 2.1.9;
 
-include "../circomlib/bitify/bitify.circom";
-include "../circomlib/bigInt/bigInt.circom";
-include "../passport/signatureAlgorithm.circom";
-include "../circomlib/int/arithmetic.circom";
+include "../../bitify/bitify.circom";
+include "../../bigInt/bigInt.circom";
+include "../../../passport/signatureAlgorithm.circom";
+include "../../int/arithmetic.circom";
 
 // For exponent is 3, use E_BITS = 2
 // For exponent is 65537, use E_BITS = 17
