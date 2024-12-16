@@ -138,6 +138,8 @@ export function generateCircuitInputsDSC(
 
   }
 
+  const dummy = 0;
+
   return {
     signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${4096}`,
     inputs: {
@@ -151,6 +153,7 @@ export function generateCircuitInputsDSC(
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
       siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
+      dummy: dummy,
     },
   };
 }

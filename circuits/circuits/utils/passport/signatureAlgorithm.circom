@@ -14,6 +14,10 @@ pragma circom 2.1.9;
  13: rsa_sha256_3_2048
  14: rsa_sha256_65537_3072
  15: rsa_sha512_65537_4096
+ 16: rsapss_sha256_3_3072
+ 17: rsapss_sha256_3_4096
+ 18: rsapss_sha384_65537_3072
+ 19: rsapss_sha256_65537_3072
 */
 
 function getHashLength(signatureAlgorithm) {
@@ -52,6 +56,21 @@ function getHashLength(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 15) {
         return 512;
+    }
+    if (signatureAlgorithm == 16) {
+        return 256;
+    }
+    if (signatureAlgorithm == 17) {
+        return 256;
+    }
+    if (signatureAlgorithm == 18) {
+        return 384;
+    }
+    if (signatureAlgorithm == 19) {
+        return 256;
+    }
+    if (signatureAlgorithm == 20) {
+        return 256;
     }
     return 0;
 }
@@ -92,6 +111,18 @@ function getKeyLength(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 15) {
         return 4096;
+    }
+    if (signatureAlgorithm == 16) {
+        return 3072;
+    }
+    if (signatureAlgorithm == 17) {
+        return 4096;
+    }
+    if (signatureAlgorithm == 18) {
+        return 3072;
+    }
+    if (signatureAlgorithm == 19) {
+        return 3072;
     }
     return 0;
 }
@@ -134,6 +165,18 @@ function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 15) {
         return 1;
     }
+    if (signatureAlgorithm == 16) {
+        return 1;
+    }
+    if (signatureAlgorithm == 17) {
+        return 1;
+    }
+    if (signatureAlgorithm == 18) {
+        return 1;
+    }
+    if (signatureAlgorithm == 19) {
+        return 1;
+    }
     return 0;
 
 }
@@ -155,6 +198,9 @@ function getExponentBits(signatureAlgorithm) {
     if (signatureAlgorithm == 11) {
         return 17;
     }
+    if (signatureAlgorithm == 12) {
+        return 17;
+    }
     if (signatureAlgorithm == 13) {
         return 2; // 3
     }
@@ -164,12 +210,27 @@ function getExponentBits(signatureAlgorithm) {
     if (signatureAlgorithm == 15) {
         return 17;
     }
+    if (signatureAlgorithm == 16) {
+        return 2;
+    }
+    if (signatureAlgorithm == 17) {
+        return 2;
+    }
+    if (signatureAlgorithm == 18) {
+        return 17;
+    }
+    if (signatureAlgorithm == 19) {
+        return 17;
+    }
     return 0;
 }
 
 function getPadding(signatureAlgorithm) {
     var padding[5];
-    if (signatureAlgorithm == 3) {
+    if (
+        signatureAlgorithm == 3 ||
+        signatureAlgorithm == 11
+    ) {
         padding[0] = 83887124; // 5000414
         padding[1] = 650212878678426138; // 906052B0E03021A
         padding[2] = 18446744069417738544; // FFFFFFFF00302130

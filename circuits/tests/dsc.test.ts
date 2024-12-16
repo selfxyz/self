@@ -15,8 +15,8 @@ import { getCircuitName } from '../../common/src/utils/certificates/handleCertif
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '4096' },
-  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
@@ -56,9 +56,9 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         ),
         {
           include: [
-            'node_modules',
-            './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            './node_modules/circomlib/circuits',
+            // 'node_modules',
+            // './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            // './node_modules/circomlib/circuits',
           ],
         }
       );

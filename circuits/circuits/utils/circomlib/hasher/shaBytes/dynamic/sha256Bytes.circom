@@ -1,21 +1,10 @@
 pragma circom 2.1.9;
 
-// include "circomlib/circuits/bitify.circom";
-include "../../circomlib/bitify/bitify.circom";
-
-include "../../sha2/circomlib/sha256/constants.circom";
-include "../../sha2/circomlib/sha256/sha256compression.circom";
-include "../../circomlib/bitify/comparators.circom";
-// include "../../sha2/circomlib/comparators.circom";
-
-// include "./fp.circom";
-// include "../utils/array.circom";
-// include "../utils/functions.circom";
-// include "@zk-email/circuits/lib/fp.circom";
-// include "@zk-email/circuits/utils/array.circom";
-// include "../../other/fp.circom";
-// include "../../other/array.circom";
-include "../../circomlib/utils/array.circom";
+include "../../sha2/sha256_temp/constants.circom";
+include "../../sha2/sha256_temp/sha256compression.circom";
+include "../../../bitify/comparators.circom";
+include "../../../bitify/bitify.circom";
+include "../../../utils/array.circom";
 
 
 /// @title Sha256Bytes
