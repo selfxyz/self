@@ -70,7 +70,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         path.join(
           __dirname,
           `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
-        ),
+        )
       );
     });
 
