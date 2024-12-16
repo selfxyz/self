@@ -34,7 +34,7 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal input dummy;
+    signal dummy <== 0;
 
     // leaf
     signal leaf  <== LeafHasher(kScaled)(csca_pubKey, signatureAlgorithm);

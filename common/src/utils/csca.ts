@@ -121,7 +121,6 @@ export function generateCircuitInputsDSC(
   const parsedCSCAPem: CertificateData = parseCertificateSimple(cscaPem);
 
   let csca_pubKey_formatted;
-  console.log("parsedCSCAPem", parsedCSCAPem);
   if (parsedCSCAPem.signatureAlgorithm === 'rsa' || parsedCSCAPem.signatureAlgorithm === 'rsapss') {
     const csca_modulus = (parsedCSCAPem.publicKeyDetails as PublicKeyDetailsRSA).modulus;
     const { n: n_csca, k: k_csca } = getNAndKCSCA(parsedCSCAPem.signatureAlgorithm);
@@ -152,8 +151,7 @@ export function generateCircuitInputsDSC(
       secret: [dscSecret],
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
-      siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
-      dummy: dummy,
+      siblings: proof.siblings.flat().map((sibling) => sibling.toString())
     },
   };
 }
