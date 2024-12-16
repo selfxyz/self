@@ -39,11 +39,10 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         for (var j = 0; j < 8; j++) {
             dg1Bits[i * 8 + j] <== n2b[i].out[7 - j];
         }
+    }
 
-    }
     signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits, 0);
-    for (var i = 0; i < HASH_LEN_BITS; i++) {
-    }
+    
 
     component dg1ShaBytes[HASH_LEN_BYTES];
     for (var i = 0; i < HASH_LEN_BYTES; i++) {
