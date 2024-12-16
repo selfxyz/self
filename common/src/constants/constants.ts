@@ -127,8 +127,8 @@ export const k_dsc_3072 = 32;  //48;
 export const k_dsc_4096 = 64;
 export const n_csca = 64;
 export const k_csca = 64;
-export const n_dsc_ecdsa = 43;
-export const k_dsc_ecdsa = 6;
+export const n_dsc_ecdsa = 64;
+export const k_dsc_ecdsa = 4;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   AFG: 'Afghanistan',
