@@ -4,7 +4,7 @@ pragma circom 2.1.9;
 // include "secp256r1Verifier.circom";
 include "../circomlib/signature/rsapss/rsapss.circom";
 // include "../rsa/rsa.circom";
-include "../rsa/verifyRsaPkcs1v1_5.circom";
+include "../circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom";
 include "../circomlib/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
@@ -17,42 +17,36 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    // var msg_len = (HASH_LEN_BITS + n) \ n;
+    signal input dummy;
 
-    // signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
+    var msg_len = (HASH_LEN_BITS + n) \ n;
+
+    signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
-    if (signatureAlgorithm == 1 || signatureAlgorithm == 10) { 
-        // component rsa = RSAVerifier65537(n, k);
-        // for (var i = 0; i < msg_len; i++) {
-        //     rsa.message[i] <== hashParsed[i];
-        // }
-        // for (var i = msg_len; i < k; i++) {
-        //     rsa.message[i] <== 0;
-        // }
-        // rsa.modulus <== pubKey;
-        // rsa.signature <== signature;
+    if (signatureAlgorithm == 1) { 
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
 
     }
-    if (signatureAlgorithm == 3 || signatureAlgorithm == 11) {
-        component SplitSignalsToWords = SplitSignalsToWords(1, 160, 64, 32);
-        SplitSignalsToWords.in <== hash;
-        signal hashParsedWords[32];
-        hashParsedWords <== SplitSignalsToWords.out;
-        
-        // component rsa_pkcs1 = RSAVerifier65537Pkcs1(n, k);
-        // for (var i = 0; i < msg_len; i++) {
-        //     rsa_pkcs1.message[i] <== hashParsed[i];
-        // }
-        // for (var i = msg_len; i < k; i++) {
-        //     rsa_pkcs1.message[i] <== 0;
-        // }
-        // rsa_pkcs1.modulus <== pubKey;
-        // rsa_pkcs1.signature <== signature;
-        // component rsa = VerifyRsaPkcs1v1_5(3, 64, 32, 65537, 160);
-        // rsa.message <== hashParsedWords;
-        // rsa.modulus <== pubKey;
-        // rsa.signature <== signature;
-        // rsa.dummy <== 0;
+    if (signatureAlgorithm == 3) {
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 160);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
     }
 
     if (
@@ -87,6 +81,60 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         // Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
     }
     if (signatureAlgorithm == 9) {
+    }
+    if (signatureAlgorithm == 10) {
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
+    }
+    if (signatureAlgorithm == 11) {
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 160);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
+    }
+    if (signatureAlgorithm == 12) {
+
+    }
+    if (signatureAlgorithm == 13) {
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 3, 256);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
+    }
+    if (signatureAlgorithm == 14) {
+        component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);
+        for (var i = 0; i < msg_len; i++) {
+            rsa.message[i] <== hashParsed[i];
+        }
+        for (var i = msg_len; i < k; i++) {
+            rsa.message[i] <== 0;
+        }
+        rsa.modulus <== pubKey;
+        rsa.signature <== signature;
+        rsa.dummy <== dummy;
+    }
+    if (signatureAlgorithm == 15) {
+
     }
 }
 

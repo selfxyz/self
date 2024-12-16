@@ -34,6 +34,8 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
     signal input path[nLevels];
     signal input siblings[nLevels];
 
+    signal input dummy;
+
     // leaf
     signal leaf  <== LeafHasher(kScaled)(csca_pubKey, signatureAlgorithm);
 
@@ -55,7 +57,7 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
     signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
     // for now 512 but it can be 1024 as well
     // signal hashedCertificate[hashLength] <== ShaHashChunks((max_cert_bytes * 8) \ 512, hashLength)(raw_dsc_cert_bits, 0);
-    SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature);
+    SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature, dummy);
 
     // verify DSC csca_pubKey
     component shiftLeft = VarShiftLeft(max_cert_bytes, dscPubkeyBytesLength); // use select subarray for dscPubKey variable length 
