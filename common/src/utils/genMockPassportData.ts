@@ -166,6 +166,7 @@ export function genMockPassportData(
 
   const { hashFunction, hashLen } = parseCertificate(dsc);
 
+  console.log(mrz);
   const mrzHash = hash(hashFunction, formatMrz(mrz));
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],

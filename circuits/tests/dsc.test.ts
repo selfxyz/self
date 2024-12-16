@@ -46,7 +46,13 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         throw new Error('Unsupported signature algorithm and hash function combination');
     }
 
-    const inputs = generateCircuitInputsDSC(BigInt(salt).toString(), dscCertPem, max_cert_bytes, true);
+    const inputs = generateCircuitInputsDSC(
+      BigInt(salt).toString(),
+      dscCertPem,
+      max_cert_bytes,
+      true
+    );
+    console.log('inputs', inputs.inputs);
 
     before(async () => {
       circuit = await wasm_tester(

@@ -3,6 +3,8 @@ pragma circom 2.1.9;
 // include "../rsa/rsaPkcs1.circom";
 // include "secp256r1Verifier.circom";
 include "../circomlib/signature/rsapss/rsapss.circom";
+include "secp256r1Verifier.circom";
+// include "../rsapss/rsapss.circom";
 // include "../rsa/rsa.circom";
 include "../circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom";
 include "../circomlib/utils/bytes.circom";
@@ -75,10 +77,10 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     }
     if (signatureAlgorithm == 7) {
-        // Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
+        Secp256r1Verifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
     }
     if (signatureAlgorithm == 8) {
-        // Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey,hashParsed);
+        Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey, hash);
     }
     if (signatureAlgorithm == 9) {
     }
