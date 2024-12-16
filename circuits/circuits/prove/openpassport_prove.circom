@@ -47,7 +47,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input secret;
     signal input dsc_secret;
 
-    signal input dummy;
+    signal dummy <== 0;
 
     signal attestation_id <== 1;
 

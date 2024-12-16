@@ -156,17 +156,16 @@ export function genMockPassportData(
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsapss_65537_3072;
       dsc = mock_dsc_sha256_rsapss_65537_3072;
-      break;  
+      break;
     case 'rsapss_sha256_65537_4096':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_rsapss_65537_4096;
       dsc = mock_dsc_sha256_rsapss_65537_4096;
-      break;  
+      break;
   }
 
   const { hashFunction, hashLen } = parseCertificate(dsc);
 
-  console.log(mrz);
   const mrzHash = hash(hashFunction, formatMrz(mrz));
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],

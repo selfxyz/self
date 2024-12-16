@@ -188,7 +188,7 @@ export function generateCircuitInputsProve(
   let pubKey: any;
   let signature: any;
 
-  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`);
+  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(encryptedDigest);
@@ -272,8 +272,7 @@ export function generateCircuitInputsProve(
     smt_leaf_value: formatInput(smt_leaf_value),
     smt_siblings: formatInput(smt_siblings),
     selector_ofac: formatInput(selector_ofac),
-    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
-    dummy: dummy,
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
   };
 }
 

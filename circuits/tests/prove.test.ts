@@ -14,16 +14,16 @@ import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 import { log } from 'console';
 
 const sigAlgs = [
-  // { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
-  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
-  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
-  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  // { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
+  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
@@ -73,13 +73,6 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
           __dirname,
           `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
         ),
-        {
-          include: [
-            // 'node_modules',
-            // './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            // './node_modules/circomlib/circuits',
-          ],
-        }
       );
     });
 
@@ -104,8 +97,8 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         .blinded_dsc_commitment;
       console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
 
-      // const ofac_result = (await circuit.getOutput(w, ['ofac_result'])).ofac_result;
-      // console.log('\x1b[34m%s\x1b[0m', 'ofac_result', ofac_result);`
+      const ofac_result = (await circuit.getOutput(w, ['ofac_result'])).ofac_result;
+      console.log('\x1b[34m%s\x1b[0m', 'ofac_result', ofac_result);
 
       expect(blinded_dsc_commitment).to.be.not.null;
       expect(nullifier).to.be.not.null;
