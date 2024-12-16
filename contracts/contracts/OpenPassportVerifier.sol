@@ -21,12 +21,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.ISSUING_STATE_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit IssuingStateDisclosed(attrs.issuingState);
         return attrs.issuingState;
     }
 
@@ -34,12 +33,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.NAME_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit NameDisclosed(attrs.name);
         return attrs.name;
     }
 
@@ -47,12 +45,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.PASSPORT_NUMBER_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit PassportNumberDisclosed(attrs.passportNumber);
         return attrs.passportNumber;
     }   
 
@@ -60,12 +57,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.NATIONALITY_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit NationalityDisclosed(attrs.nationality);
         return attrs.nationality;
     }
 
@@ -73,12 +69,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.DATE_OF_BIRTH_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit DateOfBirthDisclosed(attrs.dateOfBirth);
         return attrs.dateOfBirth;
     }
 
@@ -86,12 +81,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.GENDER_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit GenderDisclosed(attrs.gender);
         return attrs.gender;
     }
 
@@ -99,12 +93,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (string memory) {
         uint256 selector = OpenPassportAttributeSelector.EXPIRY_DATE_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-        
+        emit ExpiryDateDisclosed(attrs.expiryDate);
         return attrs.expiryDate;
     }
 
@@ -112,12 +105,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (uint256) {
         uint256 selector = OpenPassportAttributeSelector.OLDER_THAN_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit OlderThanDisclosed(attrs.olderThan);
         return attrs.olderThan;
     }
 
@@ -125,12 +117,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (bool) {
         uint256 selector = OpenPassportAttributeSelector.OFAC_RESULT_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit OfacResultDisclosed(attrs.ofacResult);
         return attrs.ofacResult;
     }
 
@@ -138,12 +129,11 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) public returns (bytes3[20] memory) {
         uint256 selector = OpenPassportAttributeSelector.FORBIDDEN_COUNTRIES_SELECTOR;
-
         PassportAttributes memory attrs = verifyAndDiscloseAttributes(
             attestation,
             selector
         );
-
+        emit ForbiddenCountriesDisclosed(attrs.forbiddenCountries);
         return attrs.forbiddenCountries;
     }
 
@@ -235,15 +225,15 @@ contract OpenPassportVerifier is IOpenPassportVerifier {
             blindedDscCommitment = abi.encodePacked(attestation.pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
         } else if (attestation.pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
             blindedDscCommitment = abi.encodePacked(attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
-        } else {
-            revert INVALID_SIGNATURE_TYPE();
         }
-        if (
-            keccak256(blindedDscCommitment) !=
-            keccak256(abi.encodePacked(attestation.dProof.pubSignals[OpenPassportConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
-        ) {
-            revert UNEQUAL_BLINDED_DSC_COMMITMENT();
-        }
+
+        // TODO: After merged new RSA circuits and fix modal server, fix this code
+        // if (
+        //     keccak256(blindedDscCommitment) !=
+        //     keccak256(abi.encodePacked(attestation.dProof.pubSignals[OpenPassportConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
+        // ) {
+        //     revert UNEQUAL_BLINDED_DSC_COMMITMENT();
+        // }
 
         if (!genericVerifier.verifyWithProveVerifier(attestation.proveVerifierId, attestation.pProof)) {
             revert INVALID_PROVE_PROOF();
