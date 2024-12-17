@@ -15,20 +15,20 @@ build_circuit() {
     echo "building zkey"
     yarn snarkjs groth16 setup build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_${POWEROFTAU}.ptau build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
-    echo "building vkey"
     yarn snarkjs zkey contribute build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
     yarn snarkjs zkey export verificationkey build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
-
-    yarn snarkjs zkey export solidityverifier build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
-    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
+    
+    echo "building vkey"
+    yarn snarkjs zkey export solidityverifier build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
     mkdir -p ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/
     cp build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/Verifier_${CIRCUIT_NAME}.sol
     echo "copied Verifier_${CIRCUIT_NAME}.sol to contracts"
 
     echo "Build of $CIRCUIT_NAME completed in $(($(date +%s) - START_TIME)) seconds"
-    echo "Size of ${CIRCUIT_NAME}.r1cs: $(wc -c <build/${CIRCUIT_NAME}.r1cs) bytes"
-    echo "Size of ${CIRCUIT_NAME}.wasm: $(wc -c <build/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes"
-    echo "Size of ${CIRCUIT_NAME}_final.zkey: $(wc -c <build/${CIRCUIT_NAME}_final.zkey) bytes"
+    echo "Size of ${CIRCUIT_NAME}.r1cs: $(wc -c < build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs) bytes"
+    echo "Size of ${CIRCUIT_NAME}.wasm: $(wc -c < build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_js/${CIRCUIT_NAME}.wasm) bytes"
+    echo "Size of ${CIRCUIT_NAME}_final.zkey: $(wc -c < build/${CIRCUIT_TYPE}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey) bytes"
 }
 
 # Define circuits and their types
