@@ -30,7 +30,7 @@ interface IGenericVerifier {
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
-        uint[1] pubSignals;
+        uint[2] pubSignals;
     }
 
     function verifyWithProveVerifier(
@@ -69,6 +69,6 @@ interface IDscVerifier {
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,
-        uint[1] calldata _pubSignals
+        uint[2] calldata _pubSignals
     ) external view returns (bool);
 }
