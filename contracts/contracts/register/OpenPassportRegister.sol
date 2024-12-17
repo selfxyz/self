@@ -64,8 +64,13 @@ contract OpenPassportRegister is IOpenPassportRegister, Ownable {
                 attestation.pProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_COMMITMENT_INDEX]
             );
         } else if (attestation.pProof.signatureType == IGenericVerifier.SignatureType.ECDSA) {
-             nullifiers[attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]] = true;
-             _addCommitment(attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
+            nullifiers[attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]] = true;
+            _addCommitment(attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
+            emit ProofValidated(
+                attestation.dProof.pubSignals[OpenPassportConstants.DSC_MERKLE_ROOT_INDEX],
+                attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_NULLIFIER_INDEX],
+                attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]
+            );
         } else {
             revert Register__InvalidProveProof();
         }

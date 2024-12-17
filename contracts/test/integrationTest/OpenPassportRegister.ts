@@ -5,8 +5,11 @@ import fs from 'fs';
 import {
     VERIFICATION_TYPE_ENUM_PROVE,
     VERIFICATION_TYPE_ENUM_DSC,
+    PROVE_RSA_COMMITMENT_INDEX,
+    PROVE_RSA_NULLIFIER_INDEX,
     PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX,
-    PROVE_RSA_CURRENT_DATE_INDEX
+    PROVE_RSA_CURRENT_DATE_INDEX,
+    DSC_MERKLE_ROOT_INDEX
 } from "../../../common/src/constants/contractConstants";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
@@ -36,7 +39,7 @@ type CircuitArtifacts = {
 }
 
 // Just test for mint function
-describe("Test one time verification flow", async function () {
+describe("Test register flow", async function () {
     this.timeout(0);
 
     const PROVE_RSA_65537_SHA256_VERIFIER_ID = 0;
@@ -142,6 +145,7 @@ describe("Test one time verification flow", async function () {
             PROVE_RSA_65537_SHA256_VERIFIER_ID,
             verifierProveRsa65537Sha256.target
         );
+
         await genericVerifier.updateVerifier(
             VERIFICATION_TYPE_ENUM_DSC,
             DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -186,6 +190,163 @@ describe("Test one time verification flow", async function () {
             let afterRoot = await openPassportRegister.getMerkleRoot();
         });
 
+        it("Should revert with invalid merkle root", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    // Invalid merkle root
+                    pubSignals: [...dsc_proof[3].slice(0, -1), "0x1234"]
+                }
+            };
+        
+            await expect(
+                openPassportRegister.registerCommitment(attestation)
+            ).to.be.revertedWith("Register__InvalidMerkleRoot");
+        });
+
+        // it("Should not allow registering same commitment twice", async function() {
+        //     const attestation = {
+        //         proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+        //         dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+        //         pProof: {
+        //             signatureType: 0,
+        //             a: prove_proof[0],
+        //             b: prove_proof[1],
+        //             c: prove_proof[2],
+        //             pubSignalsRSA: prove_proof[3],
+        //             pubSignalsECDSA: new Array(28).fill(0)
+        //         },
+        //         dProof: {
+        //             a: dsc_proof[0],
+        //             b: dsc_proof[1],
+        //             c: dsc_proof[2],
+        //             pubSignals: dsc_proof[3]
+        //         }
+        //     };
+            
+        //     await openPassportRegister.registerCommitment(attestation);
+            
+        //     // Try to register the same commitment again
+        //     await expect(
+        //         openPassportRegister.registerCommitment(attestation)
+        //     ).not.to.be.reverted();
+        // });
+
+        it("Should emit AddCommitment event with correct values", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(openPassportRegister.registerCommitment(attestation))
+                .to.emit(openPassportRegister, "ProofValidated")
+                .withArgs(
+                    dsc_proof[3][DSC_MERKLE_ROOT_INDEX],
+                    prove_proof[3][PROVE_RSA_NULLIFIER_INDEX],
+                    prove_proof[3][PROVE_RSA_COMMITMENT_INDEX],
+                );
+        });
+    });
+
+    describe("test merkle tree functions", async function() {
+        it("Should correctly track merkle tree size", async function() {
+            const initialSize = await openPassportRegister.getMerkleTreeSize();
+            
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await openPassportRegister.registerCommitment(attestation);
+            
+            expect(await openPassportRegister.getMerkleTreeSize())
+                .to.equal(initialSize + BigInt(1));
+        });
+
+        it("Should correctly verify created roots", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await openPassportRegister.registerCommitment(attestation);
+            const root = await openPassportRegister.getMerkleRoot();
+            
+            expect(await openPassportRegister.checkRoot(root)).to.be.true;
+            expect(await openPassportRegister.checkRoot("0x1234")).to.be.false;
+        });
+    });
+
+    describe("test owner functions", async function() {
+        it("Should allow owner to add commitment directly", async function() {
+            const commitment = "123456";
+            await openPassportRegister.connect(owner).devAddCommitment(commitment);
+            
+            const index = await openPassportRegister.indexOf(commitment);
+            expect(index).to.equal(BigInt(0));
+        });
+
+        it("Should not allow non-owner to add commitment directly", async function() {
+            const commitment = "123456";
+            await expect(
+                openPassportRegister.connect(addr1).devAddCommitment(commitment)
+            ).to.be.revertedWithCustomError(openPassportRegister, "OwnableUnauthorizedAccount")
+            .withArgs(addr1.address);
+        });
     });
 
     // TODO: make this function able to take inputs
