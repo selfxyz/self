@@ -83,4 +83,15 @@ interface IOpenPassportVerifier {
         OpenPassportAttestation memory attestation
     ) external returns (IGenericVerifier.ProveCircuitProof memory);
 
+    event IssuingStateDisclosed(string issuingState);
+    event NameDisclosed(string name);
+    event PassportNumberDisclosed(string passportNumber);
+    event NationalityDisclosed(string nationality);
+    event DateOfBirthDisclosed(string dateOfBirth);
+    event GenderDisclosed(string gender);
+    event ExpiryDateDisclosed(string expiryDate);
+    event OlderThanDisclosed(uint256 olderThan);
+    event OfacResultDisclosed(bool ofacResult);
+    event ForbiddenCountriesDisclosed(bytes3[20] forbiddenCountries);
+
 }
