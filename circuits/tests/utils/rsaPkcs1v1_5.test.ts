@@ -21,7 +21,6 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       // Generate inputs using the utility function
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
       let dummy = 0;
-      // console.log('signature', signature);
 
       // Run circuit with inputs
       const circuit = await wasmTester(
