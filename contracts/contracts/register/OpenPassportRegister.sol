@@ -3,7 +3,7 @@
 pragma solidity ^0.8.3;
 
 import {IOpenPassportRegister} from "../interfaces/IOpenPassportRegister.sol";
-import {Registry} from "./Registry.sol";
+import {OpenPassportRegistry} from "./OpenPassportRegistry.sol";
 import {IOpenPassportVerifier} from "../interfaces/IOpenPassportVerifier.sol";
 import {IGenericVerifier} from "../interfaces/IGenericVerifier.sol";
 import {Base64} from "../libraries/Base64.sol";
@@ -13,7 +13,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 
 contract OpenPassportRegister is IOpenPassportRegister, Ownable {
-    Registry public immutable registry;
+    OpenPassportRegistry public immutable openPassportRegistry;
     IOpenPassportVerifier public immutable openPassportVerifier;
 
     using Base64 for *;
@@ -31,8 +31,8 @@ contract OpenPassportRegister is IOpenPassportRegister, Ownable {
     mapping(uint256 => bool) public nullifiers;
     mapping(uint256 => bool) public merkleRootsCreated;
 
-    constructor(Registry r, address _openPassportVerifier) Ownable(msg.sender) {
-        registry = r;
+    constructor(OpenPassportRegistry _openPassportRegistry, address _openPassportVerifier) Ownable(msg.sender) {
+        openPassportRegistry = _openPassportRegistry;
         openPassportVerifier = IOpenPassportVerifier(_openPassportVerifier);
 
         transferOwnership(msg.sender);
@@ -43,10 +43,10 @@ contract OpenPassportRegister is IOpenPassportRegister, Ownable {
     ) external {
         openPassportVerifier.verify(attestation);
 
-        if (!registry.checkRoot(bytes32(attestation.dProof.pubSignals[OpenPassportConstants.DSC_MERKLE_ROOT_INDEX]))) {
+        if (!openPassportRegistry.checkRoot(bytes32(attestation.dProof.pubSignals[OpenPassportConstants.DSC_MERKLE_ROOT_INDEX]))) {
             revert("Register__InvalidMerkleRoot");
         }
-        
+
         // if (nullifiers[proof.nullifier]) {
         //     revert("YouAreUsingTheSameNullifierTwice");
         // }
@@ -67,7 +67,7 @@ contract OpenPassportRegister is IOpenPassportRegister, Ownable {
              nullifiers[attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]] = true;
              _addCommitment(attestation.pProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
         } else {
-            revert Register__InvalidProveProof();;
+            revert Register__InvalidProveProof();
         }
     }
 
