@@ -137,7 +137,6 @@ export function generateCircuitInputsDSC(
 
   }
 
-  const dummy = 0;
 
   return {
     signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${4096}`,

@@ -7,8 +7,6 @@ include "./constants.circom";
 include "../../int/arithmetic.circom";
 
 template T(t) {
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal input a[32];
     signal input b[32];
@@ -32,7 +30,6 @@ template T(t) {
     }
     
     component sumBinary = BinSum(5, 32);
-    sumBinary.dummy <== dummy;
     var nout = 35; 
     
     for (k = 0; k < 32; k++) {

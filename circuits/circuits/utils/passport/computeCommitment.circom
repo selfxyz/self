@@ -17,7 +17,6 @@ template ComputeCommitment() {
     poseidon_hasher.in[0] <== secret;
     poseidon_hasher.in[1] <== attestation_id;
     poseidon_hasher.in[2] <== leaf;
-    poseidon_hasher.dummy <== 0;
 
     signal dg1_packed[3] <== PackBytes(93)(dg1);
     for (var i = 0; i < 3; i++) {

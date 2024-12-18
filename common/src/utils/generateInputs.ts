@@ -246,7 +246,6 @@ export function generateCircuitInputsProve(
     siblings: smt_siblings,
   } = generateSMTProof(name_smt, name_leaf);
 
-  const dummy = 0;
 
   return {
     selector_mode: formatInput(selector_mode),

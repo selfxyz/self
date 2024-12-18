@@ -8,8 +8,6 @@ include "sha224InitialValue.circom";
 template Sha224HashBits(LEN) {
     
     signal input in[LEN];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[224];
 
     component addPadding = ShaPadding(LEN, 512);
@@ -28,9 +26,7 @@ template Sha224HashBits(LEN) {
     for (var m = 0; m < BLOCK_NUM; m++) {
         
         sch[m] = Sha2_224_256Shedule();
-        sch[m].dummy <== dummy;
         rds[m] = Sha2_224_256Rounds(64);
-        rds[m].dummy <== dummy;
         
         for (var k = 0; k < 16; k++) {
             for (var i = 0; i < 32; i++) {

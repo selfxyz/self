@@ -17,9 +17,8 @@ template OFAC_NAME_DOB() {
         for (var i = 0; i < 13; i++) {
             poseidon_hasher[j].in[i] <== dg1[10 + 13 * j + i];
         }
-        poseidon_hasher[j].dummy <== 0;
     }
-    signal name_hash <== PoseidonHash(3)([poseidon_hasher[0].out, poseidon_hasher[1].out, poseidon_hasher[2].out], 0);
+    signal name_hash <== PoseidonHash(3)([poseidon_hasher[0].out, poseidon_hasher[1].out, poseidon_hasher[2].out]);
 
     // Dob hash
     component pos_dob = PoseidonHash(6);
@@ -27,10 +26,9 @@ template OFAC_NAME_DOB() {
         pos_dob.in[i] <== dg1[62 + i];
     }
 
-    pos_dob.dummy <== 0;
     
     // NameDob hash
-    signal name_dob_hash <== PoseidonHash(2)([pos_dob.out, name_hash], 0);
+    signal name_dob_hash <== PoseidonHash(2)([pos_dob.out, name_hash]);
 
     signal output ofacCheckResult <== SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
 }

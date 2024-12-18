@@ -20,7 +20,6 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
     it(`should verify RSA signature using the circuit for ${algorithm}`, async function () {
       // Generate inputs using the utility function
       const { signature, modulus, message } = generateMockRsaPkcs1v1_5Inputs(algorithm);
-      let dummy = 0;
 
       // Run circuit with inputs
       const circuit = await wasmTester(
@@ -36,8 +35,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const witness = await circuit.calculateWitness({
         signature,
         modulus,
-        message,
-        dummy,
+        message
       });
 
       // Check constraints

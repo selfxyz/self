@@ -15,7 +15,6 @@ template ValidateCountry(nLevels) {
     for (var i = 0; i < 6; i++) {
         poseidon_hasher.inputs[i] <== host_user[i];
     }
-    poseidon_hasher.dummy <== 0;
 
     SMTVerify(nLevels)(poseidon_hasher.out, smt_leaf_value, smt_root, smt_siblings, 0);
 }

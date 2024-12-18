@@ -8,12 +8,9 @@ include "sha256Rounds.circom";
 template Sha256HashChunks(BLOCK_NUM) {
     
     signal input  in[BLOCK_NUM * 512];
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal output out[256];
     
-    dummy * dummy === 0;
 
     signal states[BLOCK_NUM + 1][8][32];
     
@@ -26,9 +23,7 @@ template Sha256HashChunks(BLOCK_NUM) {
     for (var m = 0; m < BLOCK_NUM; m++) {
         
         sch[m] = Sha2_224_256Shedule();
-        sch[m].dummy <== dummy;
         rds[m] = Sha2_224_256Rounds(64);
-        rds[m].dummy <== dummy;
         
         for (var k = 0; k < 16; k++) {
             for (var i = 0; i < 32; i++) {
