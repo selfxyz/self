@@ -33,37 +33,31 @@ template ShaHashChunks(BLOCK_NUM, ALGO){
         BLOCK_SIZE = 1024;
     }
     signal input in[BLOCK_SIZE * BLOCK_NUM];
-    signal input dummy;
     signal output out[ALGO];
 
     if (ALGO == 160) {
         component hash160 = Sha1HashChunks(BLOCK_NUM);
         hash160.in <== in;
-        hash160.dummy <== dummy;
         hash160.out ==> out;
     }
     if (ALGO == 224) {
         component hash224 = Sha224HashChunks(BLOCK_NUM);
         hash224.in <== in;
-        hash224.dummy <== dummy;
         hash224.out ==> out;
     }
     if (ALGO == 256) {
         component hash256 = Sha256HashChunks(BLOCK_NUM);
         hash256.in <== in;
-        hash256.dummy <== dummy;
         hash256.out ==> out;
     }
     if (ALGO == 384) {
         component hash384 = Sha384HashChunks(BLOCK_NUM);
         hash384.in <== in;
-        hash384.dummy <== dummy;
         hash384.out ==> out;
     }
     if (ALGO == 512) {
         component hash512 = Sha512HashChunks(BLOCK_NUM);
         hash512.in <== in;
-        hash512.dummy <== dummy;
         hash512.out ==> out;
     }
 }
@@ -76,37 +70,31 @@ template ShaHashBits(LEN, ALGO){
         BLOCK_SIZE = 1024;
     }
     signal input in[LEN];
-    signal input dummy;
     signal output out[ALGO];
 
     if (ALGO == 160) {
         component hash160 = Sha1HashBits(LEN);
         hash160.in <== in;
-        hash160.dummy <== dummy;
         hash160.out ==> out;
     }
     if (ALGO == 224) {
         component hash224 = Sha224HashBits(LEN);
         hash224.in <== in;
-        hash224.dummy <== dummy;
         hash224.out ==> out;
     }
     if (ALGO == 256) {
         component hash256 = Sha256HashBits(LEN);
         hash256.in <== in;
-        hash256.dummy <== dummy;
         hash256.out ==> out;
     }
     if (ALGO == 384) {
         component hash384 = Sha384HashBits(LEN);
         hash384.in <== in;
-        hash384.dummy <== dummy;
         hash384.out ==> out;
     }
     if (ALGO == 512) {
         component hash512 = Sha512HashBits(LEN);
         hash512.in <== in;
-        hash512.dummy <== dummy;
         hash512.out ==> out;
     }
 }
@@ -121,12 +109,9 @@ template PoseidonHash(LEN){
     assert (LEN <= 16);
     assert (LEN > 0);
     signal input in[LEN];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out;
 
     component poseidon = Poseidon(LEN);
     poseidon.in <== in;
-    poseidon.dummy <== dummy;
     out <== poseidon.out;
 }

@@ -20,7 +20,6 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
 
     signal input message[CHUNK_NUMBER];
 
-    signal input dummy;
 
     // Range check which is came from old openpassport impl
     component signatureRangeCheck[CHUNK_NUMBER];
@@ -39,7 +38,6 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
     }
-    bigPow.dummy <== dummy;
 
     var padding[5] = getPadding(signatureAlgorithm);
 
