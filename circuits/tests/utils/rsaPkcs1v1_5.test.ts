@@ -35,7 +35,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
       const witness = await circuit.calculateWitness({
         signature,
         modulus,
-        message
+        message,
       });
 
       // Check constraints
