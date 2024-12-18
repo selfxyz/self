@@ -4,6 +4,7 @@ on:
     branches:
       - dev
       - main
+      - openpassportv2
     paths:
       - 'circuits/**'
       - 'common/**'
@@ -11,6 +12,7 @@ on:
     branches:
       - dev
       - main
+      - openpassportv2
     paths:
       - 'circuits/**'
       - 'common/**'
@@ -59,6 +61,8 @@ jobs:
 
       - name: Run Tests (Circuits)
         working-directory: ./circuits
+        env:
+          FULL_TEST_SUITE: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/openpassportv2' }}
         run: yarn test
 
       - name: Run Tests (Common)

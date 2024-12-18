@@ -14,12 +14,19 @@ import { max_cert_bytes } from '../../common/src/constants/constants';
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 
 const sigAlgs = [
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+];
+
+const fullSigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '4096' },
   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
 ];
 
-sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
+// Use environment variable to determine which test suite to run
+const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+
+testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
   describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
