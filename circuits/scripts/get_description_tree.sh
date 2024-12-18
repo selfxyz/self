@@ -11,6 +11,7 @@ NC='\033[0m' # No Color
 echo -e "${GREEN}green${NC}: audited file"
 echo -e "${BLUE}blue${NC}: part of the file is audited"
 echo -e "${PURPLE}purple${NC}: tweaked implementation of an audited file"
+
 # Initialize arrays
 file_paths=()
 file_colors=()
@@ -36,7 +37,7 @@ done < "$0"
 
 # Change to circuits subdirectory and use tree command
 cd "$(dirname "$0")/../circuits" || exit
-tree_output=$(tree -I 'tests|node_modules|.git|build|instances' --prune -F -f)
+tree_output=$(tree -I 'tests|node_modules|.git|build|instances|sha256' --prune -F -f)
 
 # Iterate over the tree output
 while IFS= read -r line; do
@@ -85,6 +86,7 @@ circuits/utils/circomlib/mux/mux1.circom:green:"circomlib"
 circuits/utils/circomlib/hasher/poseidon/poseidon.circom:green:"circomlib"
 circuits/utils/circomlib/hasher/poseidon/poseidonConstants.circom:green:"circomlib"
 circuits/utils/circomlib/merkle-trees/binary-merkle-root.circom:green:"@zk-kit"
-circuits/utils/circomlib/hasher/sha2:purple:"@zk-kit"
+circuits/utils/circomlib/hasher/sha2:purple:"@zkemail"
 circuits/utils/circomlib/hasher/sha1/t.circom:purple:"circomlib"
 circuits/utils/circomlib/hasher/sha1/xor4.circom:purple:"circomlib"
+circuits/utils/circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom:purple:"@zkemail"
