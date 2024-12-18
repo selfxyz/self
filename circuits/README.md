@@ -53,8 +53,16 @@ OpenPassport currently supports the following sig/hash algorithms:
 
 ## Installation
 
+Go to the `/circuits` directory and run `yarn install`
+
 ```bash
-yarn install-circuits
+cd circuits && yarn install && cd ..
+```
+
+Go to the `/common` directory and run `yarn install`
+
+```bash
+cd common && yarn install && cd ..
 ```
 
 ## Build circuits (dev only)

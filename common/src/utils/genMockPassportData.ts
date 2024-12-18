@@ -24,6 +24,16 @@ import {
   mock_dsc_sha256_rsa_3_2048,
   mock_dsc_key_sha256_rsa_65537_3072,
   mock_dsc_sha256_rsa_65537_3072,
+  mock_dsc_key_sha256_rsapss_3_4096,
+  mock_dsc_sha256_rsapss_3_4096,
+  mock_dsc_key_sha256_rsapss_3_3072,
+  mock_dsc_sha256_rsapss_3_3072,
+  mock_dsc_key_sha384_rsapss_65537_3072,
+  mock_dsc_sha384_rsapss_65537_3072,
+  mock_dsc_key_sha256_rsapss_65537_3072,
+  mock_dsc_sha256_rsapss_65537_3072,
+  mock_dsc_key_rsapss_65537_4096,
+  mock_dsc_sha256_rsapss_65537_4096,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
@@ -97,6 +107,21 @@ export function genMockPassportData(
       privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
       dsc = mock_dsc_sha256_rsapss_4096;
       break;
+    case 'rsapss_sha256_3_4096':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_3_4096;
+      dsc = mock_dsc_sha256_rsapss_3_4096;
+      break;
+    case 'rsapss_sha256_3_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_3_3072;
+      dsc = mock_dsc_sha256_rsapss_3_3072;
+      break;
+    case 'rsapss_sha384_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha384_rsapss_65537_3072;
+      dsc = mock_dsc_sha384_rsapss_65537_3072;
+      break;
     case 'ecdsa_sha256_secp256r1_256':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_ecdsa;
@@ -126,6 +151,16 @@ export function genMockPassportData(
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsa_65537_3072;
       dsc = mock_dsc_sha256_rsa_65537_3072;
+      break;
+    case 'rsapss_sha256_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_65537_3072;
+      dsc = mock_dsc_sha256_rsapss_65537_3072;
+      break;
+    case 'rsapss_sha256_65537_4096':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_rsapss_65537_4096;
+      dsc = mock_dsc_sha256_rsapss_65537_4096;
       break;
   }
 

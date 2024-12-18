@@ -13,19 +13,19 @@ import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
 import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import axios from 'axios';
-import { parseCertificate } from './certificates/handleCertificate';
+import { parseCertificate, parseCertificateSimple } from './certificate_parsing/parseCertificate';
 import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
+import { CertificateData, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
+import { formatInput } from './generateInputs';
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
-  console.log('messagePadded', messagePadded);
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     const hexPair = modulus.slice(i, i + 2);
     const number = parseInt(hexPair, 16);
     modulusNumArray.push(number);
   }
-  console.log('modulusNumArray', modulusNumArray);
   const messagePaddedNumber = [];
   for (let i = 0; i < messagePadded.length; i += 1) {
     const number = Number(messagePadded[i]);
@@ -67,70 +67,77 @@ export function generateCircuitInputsDSC(
   const {
     signatureAlgorithm,
     hashFunction,
-    publicKeyDetails,
-    x,
-    y,
-    modulus,
-    curve,
-    exponent,
-    bits,
-    subjectKeyIdentifier,
     authorityKeyIdentifier,
-  } = parseCertificate(dscCertificate);
+    publicKeyDetails
+  } = parseCertificateSimple(dscCertificate);
+  console.log("authorityKeyIdentifier", authorityKeyIdentifier);
+
   let dsc_message_padded;
   let dsc_messagePaddedLen;
   [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
 
   const { n, k } = getNAndK(signatureAlgorithm);
-  // Extract the signature from the DSC certificate
   const dscSignature = dscCert.signature;
   const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
     char.charCodeAt(0)
   );
 
-  let pubKey, signature;
+  let pubKey_dsc, signature, startIndex, dsc_message_padded_formatted, dsc_messagePaddedLen_formatted: any;
+  let curve, exponent;
 
-  const startIndex = findStartIndex(modulus, dsc_message_padded);
-  const startIndex_formatted = startIndex.toString();
-  const dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString());
-  const dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString();
+  if (signatureAlgorithm === 'rsa' || signatureAlgorithm === 'rsapss') {
+    const modulus = publicKeyDetails.modulus;
+    exponent = publicKeyDetails.exponent;
+    startIndex = findStartIndex(publicKeyDetails.modulus, dsc_message_padded).toString();
+    dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString());
+    dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString();
+    console.log("\x1b[34m", "startIndex: ", startIndex, "\x1b[0m");
+
+    pubKey_dsc = formatInput(splitToWords(BigInt(hexToDecimal(modulus)), n, k));
+
+  }
+
+  else {
+    console.log("\x1b[34m", "signatureAlgorithm: ", signatureAlgorithm, "\x1b[0m");
+    // TODO: implement ecdsa
+    //   const { r, s } = extractRSFromSignature(encryptedDigest);
+    //   const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_csca, k_csca);
+    //   const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_csca, k_csca);
+    //   signature = [...signature_r, ...signature_s];
+    //   const dsc_x_formatted = splitToWords(BigInt(hexToDecimal(x)), n, k);
+    //   const dsc_y_formatted = splitToWords(BigInt(hexToDecimal(y)), n, k);
+    //   pubKey = [...dsc_x_formatted, ...dsc_y_formatted];
+    // } else {
+    //   signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n_csca, k_csca);
+
+    //   pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+  }
 
   const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, devMode);
-  console.log('cscaPem', cscaPem);
-
-  const {
-    x: csca_x,
-    y: csca_y,
-    modulus: csca_modulus,
-    signature_algorithm: csca_signature_algorithm,
-  } = parseCertificate(cscaPem);
-  const { n: n_csca, k: k_csca } = getNAndKCSCA(csca_signature_algorithm);
-
   const leaf = getLeafCSCA(cscaPem);
   const [root, proof] = getCSCAModulusProof(leaf);
 
-  if (signatureAlgorithm === 'ecdsa') {
-    const { r, s } = extractRSFromSignature(encryptedDigest);
-    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_csca, k_csca);
-    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_csca, k_csca);
-    signature = [...signature_r, ...signature_s];
-    const dsc_x_formatted = splitToWords(BigInt(hexToDecimal(x)), n, k);
-    const dsc_y_formatted = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    pubKey = [...dsc_x_formatted, ...dsc_y_formatted];
-  } else {
-    signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n_csca, k_csca);
 
-    pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-  }
+  const parsedCSCAPem: CertificateData = parseCertificateSimple(cscaPem);
 
   let csca_pubKey_formatted;
-  if (csca_signature_algorithm === 'ecdsa') {
-    const csca_x_formatted = splitToWords(BigInt(hexToDecimal(csca_x)), n_csca, k_csca);
-    const csca_y_formatted = splitToWords(BigInt(hexToDecimal(csca_y)), n_csca, k_csca);
-    csca_pubKey_formatted = [...csca_x_formatted, ...csca_y_formatted];
-  } else {
+  if (parsedCSCAPem.signatureAlgorithm === 'rsa' || parsedCSCAPem.signatureAlgorithm === 'rsapss') {
+    const csca_modulus = (parsedCSCAPem.publicKeyDetails as PublicKeyDetailsRSA).modulus;
+    const { n: n_csca, k: k_csca } = getNAndKCSCA(parsedCSCAPem.signatureAlgorithm);
     csca_pubKey_formatted = splitToWords(BigInt(hexToDecimal(csca_modulus)), n_csca, k_csca);
+    const signature_raw = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
+      char.charCodeAt(0)
+    );
+    signature = formatInput(splitToWords(BigInt(bytesToBigDecimal(signature_raw)), n_csca, k_csca));
+
+  } else {
+    //   const csca_x_formatted = splitToWords(BigInt(hexToDecimal(csca_x)), n_csca, k_csca);
+    //   const csca_y_formatted = splitToWords(BigInt(hexToDecimal(csca_y)), n_csca, k_csca);
+    //   csca_pubKey_formatted = [...csca_x_formatted, ...csca_y_formatted];
+
   }
+
+  const dummy = 0;
 
   return {
     signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${4096}`,
@@ -139,12 +146,12 @@ export function generateCircuitInputsDSC(
       raw_dsc_cert_padded_bytes: [dsc_messagePaddedLen_formatted],
       csca_pubKey: csca_pubKey_formatted,
       signature: signature,
-      dsc_pubKey: pubKey,
-      dsc_pubKey_offset: [startIndex_formatted],
+      dsc_pubKey: pubKey_dsc,
+      dsc_pubKey_offset: [startIndex],
       secret: [dscSecret],
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
-      siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
+      siblings: proof.siblings.flat().map((sibling) => sibling.toString())
     },
   };
 }

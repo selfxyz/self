@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../node_modules/circomlib/circuits/comparators.circom";
-include "../node_modules/circomlib/circuits/bitify.circom";
+include "../../circomlib/bitify/comparators.circom";
+include "../../circomlib/bitify/bitify.circom";
 include "./dateIsLess.circom";
 
 template IsValid() {

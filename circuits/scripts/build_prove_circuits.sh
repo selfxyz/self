@@ -38,8 +38,8 @@ CIRCUITS=(
     "prove_rsa_sha256_65537_2048:prove:20:true"
     "prove_rsa_65537_sha1:prove:20:false"
     "prove_rsapss_65537_sha256:prove:20:false"
-    "prove_ecdsa_secp256r1_sha256:prove:22:false"
-    "prove_ecdsa_secp256r1_sha1:prove:22:false"
+    "prove_ecdsa_secp256r1_sha256_256:prove:22:false"
+    "prove_ecdsa_secp256r1_sha1_256:prove:22:false"
 )
 
 TOTAL_START_TIME=$(date +%s)

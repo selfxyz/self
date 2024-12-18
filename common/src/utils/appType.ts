@@ -3,7 +3,7 @@ import { UserIdType } from './utils';
 
 export type CircuitName = 'prove' | 'disclose';
 export type CircuitMode = 'prove_onchain' | 'register' | 'prove_offchain';
-export type Mode = 'prove_offchain' | 'prove_onchain' | 'register' | 'vc_and_disclose';
+export type Mode = 'prove_offchain' | 'prove_onchain' | 'register' | 'vc_and_disclose' | 'dsc';
 
 // OpenPassportAppType
 export interface OpenPassportAppPartial {

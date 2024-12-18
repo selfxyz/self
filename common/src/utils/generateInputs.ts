@@ -188,7 +188,7 @@ export function generateCircuitInputsProve(
   let pubKey: any;
   let signature: any;
 
-  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`);
+  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(encryptedDigest);
@@ -245,6 +245,9 @@ export function generateCircuitInputsProve(
     closestleaf: smt_leaf_value,
     siblings: smt_siblings,
   } = generateSMTProof(name_smt, name_leaf);
+
+  const dummy = 0;
+
   return {
     selector_mode: formatInput(selector_mode),
     dg1: formatInput(formattedMrz),
@@ -269,7 +272,7 @@ export function generateCircuitInputsProve(
     smt_leaf_value: formatInput(smt_leaf_value),
     smt_siblings: formatInput(smt_siblings),
     selector_ofac: formatInput(selector_ofac),
-    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
   };
 }
 

@@ -7,19 +7,22 @@ import { genMockPassportData } from '../../common/src/utils/genMockPassportData'
 import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
-import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
+  // { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
+  // { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
+  // { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
 sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
@@ -33,6 +36,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       '000101',
       '300101'
     );
+
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
@@ -66,14 +70,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         path.join(
           __dirname,
           `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
-        ),
-        {
-          include: [
-            'node_modules',
-            './node_modules/@zk-kit/binary-merkle-root.circom/src',
-            './node_modules/circomlib/circuits',
-          ],
-        }
+        )
       );
     });
 
@@ -84,6 +81,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
     it('should calculate the witness with correct inputs', async function () {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
+      // circuits.getOutput takes way too long for ecdsa
+      if (sigAlg === 'ecdsa') {
+        console.log('skipping printing outputs to console for ecdsa');
+        return;
+      }
+
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
       console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
       const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;

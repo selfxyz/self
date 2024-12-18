@@ -29,6 +29,11 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<
   rsa_sha256_65537_2048: 384,
   rsa_sha1_65537_2048: 320,
   rsapss_sha256_65537_2048: 384,
+  rsapss_sha256_3_3072: 384,
+  rsapss_sha256_65537_3072: 384,
+  rsapss_sha256_65537_4096: 384,
+  rsapss_sha256_3_4096: 384,
+  rsapss_sha384_65537_3072: 384,
   ecdsa_sha1_secp256r1_256: 320,
   ecdsa_sha256_secp256r1_256: 384,
   ecdsa_sha384_secp384r1_384: 512,
@@ -42,6 +47,11 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
   rsa_sha256_65537_2048: 192,
   rsa_sha1_65537_2048: 192,
   rsapss_sha256_65537_2048: 192,
+  rsapss_sha256_65537_3072: 192,
+  rsapss_sha256_65537_4096: 192,
+  rsapss_sha256_3_3072: 192,
+  rsapss_sha256_3_4096: 192,
+  rsapss_sha384_65537_3072: 256,
   ecdsa_sha1_secp256r1_256: 192,
   ecdsa_sha256_secp256r1_256: 192,
   ecdsa_sha384_secp384r1_384: 192,
@@ -52,7 +62,12 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
   rsa_sha256_65537_4096: 512,
   rsa_sha1_65537_4096: 640,
+  rsapss_sha256_65537_2048: 640,
+  rsapss_sha256_65537_3072: 640,
   rsapss_sha256_65537_4096: 768,
+  rsapss_sha256_3_3072: 768,
+  rsapss_sha256_3_4096: 768,
+  rsapss_sha384_65537_3072: 768,
 };
 
 export const ECDSA_K_LENGTH_FACTOR = 2;
@@ -79,6 +94,11 @@ export enum SignatureAlgorithmIndex {
   rsapss_sha256_65537_4096 = 12,
   rsa_sha256_3_2048 = 13,
   rsa_sha256_65537_3072 = 14,
+  rsa_sha512_65537_4096 = 15,
+  rsapss_sha256_3_3072 = 16,
+  rsapss_sha256_3_4096 = 17,
+  rsapss_sha384_65537_3072 = 18,
+  rsapss_sha256_65537_3072 = 19
 }
 
 export const attributeToPosition = {
@@ -103,11 +123,12 @@ export const n_dsc = 64;
 export const n_dsc_3072 = 96;
 export const n_dsc_4096 = 64;
 export const k_dsc = 32;
+export const k_dsc_3072 = 32;  //48;
 export const k_dsc_4096 = 64;
-export const n_csca = 120;
-export const k_csca = 35;
-export const n_dsc_ecdsa = 43;
-export const k_dsc_ecdsa = 6;
+export const n_csca = 64;
+export const k_csca = 64;
+export const n_dsc_ecdsa = 64;
+export const k_dsc_ecdsa = 4;
 export const max_cert_bytes = 1664;
 export const countryCodes = {
   AFG: 'Afghanistan',

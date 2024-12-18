@@ -52,9 +52,9 @@ build_circuit() {
 # Define circuits and their deployment flags
 # name:deploy_flag
 CIRCUITS=(
-    "dsc_rsapss_65537_sha256_4096:true"
-    "dsc_rsa_65537_sha256_4096:true"
-    "dsc_rsa_65537_sha1_4096:true"
+    "dsc_rsapss_sha256_65537_4096:true"
+    "dsc_rsa_sha256_65537_4096:true"
+    "dsc_rsa_sha1_65537_4096:true"
 )
 
 for circuit in "${CIRCUITS[@]}"; do
