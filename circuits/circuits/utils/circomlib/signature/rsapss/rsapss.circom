@@ -2,7 +2,7 @@ pragma circom 2.1.6;
 
 include "../../bigInt/bigInt.circom";
 include "./mgf1.circom";
-include "../../bitify/bitGates.circom";
+include "../../bitify/gates.circom";
 include "../../hasher/hash.circom";
 
 /*
