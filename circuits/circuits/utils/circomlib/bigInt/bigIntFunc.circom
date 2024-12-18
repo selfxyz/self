@@ -1,8 +1,6 @@
 pragma circom 2.1.6;
 
-function isNegative(x) {
-    return x > 10944121435919637611123202872628637544274182200208017171849102093287904247808 ? 1 : 0;
-}
+// @zkemail
 
 function div_ceil(m, n) {
     var ret = 0;
@@ -24,6 +22,112 @@ function log_ceil(n) {
     }
     return 254;
 }
+
+// 1 if true, 0 if false
+function long_gt(n, k, a, b) {
+    for (var i = k - 1; i >= 0; i--) {
+        if (a[i] > b[i]) {
+            return 1;
+        }
+        if (a[i] < b[i]) {
+            return 0;
+        }
+    }
+    return 0;
+}
+
+// n bits per register
+// a has k registers
+// b has k registers
+// a >= b
+function long_sub(n, k, a, b) {
+    var diff[200];
+    var borrow[200];
+    for (var i = 0; i < k; i++) {
+        if (i == 0) {
+            if (a[i] >= b[i]) {
+                diff[i] = a[i] - b[i];
+                borrow[i] = 0;
+            } else {
+                diff[i] = a[i] - b[i] + (1 << n);
+                borrow[i] = 1;
+            }
+        } else {
+            if (a[i] >= b[i] + borrow[i - 1]) {
+                diff[i] = a[i] - b[i] - borrow[i - 1];
+                borrow[i] = 0;
+            } else {
+                diff[i] = (1 << n) + a[i] - b[i] - borrow[i - 1];
+                borrow[i] = 1;
+            }
+        }
+    }
+    return diff;
+}
+
+// a is a n-bit scalar
+// b has k registers
+function long_scalar_mult(n, k, a, b) {
+    var out[200];
+    for (var i = 0; i < 200; i++) {
+        out[i] = 0;
+    }
+    for (var i = 0; i < k; i++) {
+        var temp = out[i] + (a * b[i]);
+        out[i] = temp % (1 << n);
+        out[i + 1] = out[i + 1] + temp \ (1 << n);
+    }
+    return out;
+}
+
+// n bits per register
+// a has k + 1 registers
+// b has k registers
+// assumes leading digit of b is at least 2 ** (n - 1)
+// 0 <= a < (2**n) * b
+function short_div_norm(n, k, a, b) {
+    var qhat = (a[k] * (1 << n) + a[k - 1]) \ b[k - 1];
+    if (qhat > (1 << n) - 1) {
+        qhat = (1 << n) - 1;
+    }
+    
+    var mult[200] = long_scalar_mult(n, k, qhat, b);
+    if (long_gt(n, k + 1, mult, a) == 1) {
+        mult = long_sub(n, k + 1, mult, b);
+        if (long_gt(n, k + 1, mult, a) == 1) {
+            return qhat - 2;
+        } else {
+            return qhat - 1;
+        }
+    } else {
+        return qhat;
+    }
+}
+
+// n bits per register
+// a has k + 1 registers
+// b has k registers
+// assumes leading digit of b is non-zero
+// 0 <= a < (2**n) * b
+function short_div(n, k, a, b) {
+    var scale = (1 << n) \ (1 + b[k - 1]);
+    
+    // k + 2 registers now
+    var norm_a[200] = long_scalar_mult(n, k + 1, scale, a);
+    // k + 1 registers now
+    var norm_b[200] = long_scalar_mult(n, k, scale, b);
+    
+    var ret;
+    if (norm_b[k] != 0) {
+        ret = short_div_norm(n, k + 1, norm_a, norm_b);
+    } else {
+        ret = short_div_norm(n, k, norm_a, norm_b);
+    }
+    return ret;
+}
+
+
+// beginning of the UNAUDITED section
 
 function SplitFn(in, n, m) {
     return [in % (1 << n), (in \ (1 << n)) % (1 << m)];
@@ -119,64 +223,7 @@ function getProperRepresentation(m, n, k, in) {
     return out;
 }
 
-// 1 if true, 0 if false
-function long_gt(n, k, a, b) {
-    for (var i = k - 1; i >= 0; i--) {
-        if (a[i] > b[i]) {
-            return 1;
-        }
-        if (a[i] < b[i]) {
-            return 0;
-        }
-    }
-    return 0;
-}
-
-// n bits per register
-// a has k registers
-// b has k registers
-// a >= b
-function long_sub(n, k, a, b) {
-    var diff[200];
-    var borrow[200];
-    for (var i = 0; i < k; i++) {
-        if (i == 0) {
-            if (a[i] >= b[i]) {
-                diff[i] = a[i] - b[i];
-                borrow[i] = 0;
-            } else {
-                diff[i] = a[i] - b[i] + (1 << n);
-                borrow[i] = 1;
-            }
-        } else {
-            if (a[i] >= b[i] + borrow[i - 1]) {
-                diff[i] = a[i] - b[i] - borrow[i - 1];
-                borrow[i] = 0;
-            } else {
-                diff[i] = (1 << n) + a[i] - b[i] - borrow[i - 1];
-                borrow[i] = 1;
-            }
-        }
-    }
-    return diff;
-}
-
-// a is a n-bit scalar
-// b has k registers
-function long_scalar_mult(n, k, a, b) {
-    var out[200];
-    for (var i = 0; i < 200; i++) {
-        out[i] = 0;
-    }
-    for (var i = 0; i < k; i++) {
-        var temp = out[i] + (a * b[i]);
-        out[i] = temp % (1 << n);
-        out[i + 1] = out[i + 1] + temp \ (1 << n);
-    }
-    return out;
-}
-
-
+// tweaked from @zkemail implementation
 // n bits per register
 // a has k + m registers
 // b has k registers
@@ -228,51 +275,7 @@ function long_div(n, k, m, a, b){
     return out;
 }
 
-// n bits per register
-// a has k + 1 registers
-// b has k registers
-// assumes leading digit of b is at least 2 ** (n - 1)
-// 0 <= a < (2**n) * b
-function short_div_norm(n, k, a, b) {
-    var qhat = (a[k] * (1 << n) + a[k - 1]) \ b[k - 1];
-    if (qhat > (1 << n) - 1) {
-        qhat = (1 << n) - 1;
-    }
-    
-    var mult[200] = long_scalar_mult(n, k, qhat, b);
-    if (long_gt(n, k + 1, mult, a) == 1) {
-        mult = long_sub(n, k + 1, mult, b);
-        if (long_gt(n, k + 1, mult, a) == 1) {
-            return qhat - 2;
-        } else {
-            return qhat - 1;
-        }
-    } else {
-        return qhat;
-    }
-}
 
-// n bits per register
-// a has k + 1 registers
-// b has k registers
-// assumes leading digit of b is non-zero
-// 0 <= a < (2**n) * b
-function short_div(n, k, a, b) {
-    var scale = (1 << n) \ (1 + b[k - 1]);
-    
-    // k + 2 registers now
-    var norm_a[200] = long_scalar_mult(n, k + 1, scale, a);
-    // k + 1 registers now
-    var norm_b[200] = long_scalar_mult(n, k, scale, b);
-    
-    var ret;
-    if (norm_b[k] != 0) {
-        ret = short_div_norm(n, k + 1, norm_a, norm_b);
-    } else {
-        ret = short_div_norm(n, k, norm_a, norm_b);
-    }
-    return ret;
-}
 
 // n bits per register
 // a and b both have k registers
@@ -558,4 +561,8 @@ function exp_to_bits(exp){
 
     return indexes;
 
+}
+
+function isNegative(x) {
+    return x > 10944121435919637611123202872628637544274182200208017171849102093287904247808 ? 1 : 0;
 }

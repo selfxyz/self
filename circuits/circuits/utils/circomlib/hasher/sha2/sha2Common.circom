@@ -68,25 +68,11 @@ template Bits2() {
     xy === 2 * hi + lo;
 }
 
-//------------------------------------------------------------------------------
-// XOR 3 bits together
-
-template XOR3_v1() {
-    signal input  x;
-    signal input  y;
-    signal input  z;
-    signal output out;
-    
-    component bs = Bits2();
-    bs.xy <== x + y + z;
-    bs.lo ==> out;
-}
-
 //------------------
 // same number of constraints (that is, 2), in the general case
 // however circom can optimize y=0 or z=0, unlike with the above
 // and hopefully also x=0.
-
+// used in sha256 and sha512
 template XOR3_v2() {
     signal input  x;
     signal input  y;
@@ -98,7 +84,7 @@ template XOR3_v2() {
 }
 
 // for many xors use this one
-
+// used in sha1
 template XOR3_v3(n) {
     signal input a[n];
     signal input b[n];
