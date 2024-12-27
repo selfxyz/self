@@ -5,22 +5,23 @@ include "../../bigInt/bigInt.circom";
 include "../../../passport/signatureAlgorithm.circom";
 include "../../int/arithmetic.circom";
 
-// For exponent is 3, use E_BITS = 2
-// For exponent is 65537, use E_BITS = 17
+// For exponent, EXP is 3
+// For exponent, EXP is 65537
 
-// For 2048bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
-// For 3072bits RSA, CHUNK_SIZE = 96, CHUNK_NUMBER = 32
-// For 4096bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 64
+// For 2048bits, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
+// For 3072bits, CHUNK_SIZE = 96, CHUNK_NUMBER = 32
+// For 4096bits, CHUNK_SIZE = 64, CHUNK_NUMBER = 64
 
 // HASH_SIZE is the size of the hash in bits
+// For SHA256, HASH_SIZE = 256
+// For SHA384, HASH_SIZE = 384
+// For SHA512, HASH_SIZE = 512
 
-template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS, HASH_SIZE) {
+template VerifyLargeRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, EXP, HASH_SIZE) {
     signal input signature[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
 
     signal input message[CHUNK_NUMBER];
-
-    signal input dummy;
 
     // Range check which is came from old openpassport impl
     component signatureRangeCheck[CHUNK_NUMBER];
@@ -34,12 +35,11 @@ template VerifyRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E_BITS
     bigLessThan.out === 1;
 
     // Calc Power Mod
-    component bigPow = PowerMod(CHUNK_SIZE, CHUNK_NUMBER, E_BITS);
+    component bigPow = PowerMod(CHUNK_SIZE, CHUNK_NUMBER, EXP);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
     }
-    bigPow.dummy <== dummy;
 
     var padding[5] = getPadding(signatureAlgorithm);
 
