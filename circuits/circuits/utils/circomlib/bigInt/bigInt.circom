@@ -455,7 +455,7 @@ template BigModInvOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
         out[i] <-- inv[i];
     }
     
-    component mult = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER);
+    component mult = BigMultModPNonOptimised(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in;
     mult.in[1] <== out;
     mult.in[2] <== modulus;

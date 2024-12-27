@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn ts-mocha --max-old-space-size=8192 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",
     "test-dsc": "yarn ts-mocha --max-old-space-size=8192 'tests/dsc.test.ts' --exit",
-    "test-prove": "yarn ts-mocha --max-old-space-size=8192 'tests/prove.test.ts' --exit",
+    "test-prove": "yarn ts-mocha --max-old-space-size=51200 'tests/prove.test.ts' --exit",
     "test-rsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
     "format": "prettier --write .",

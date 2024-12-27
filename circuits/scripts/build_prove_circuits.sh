@@ -16,7 +16,7 @@ build_circuit() {
     yarn snarkjs groth16 setup build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.r1cs build/powersOfTau28_hez_final_${POWEROFTAU}.ptau build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     echo "building vkey"
-    yarn snarkjs zkey contribute build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
+    # yarn snarkjs zkey contribute build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey -e="random text"
     yarn snarkjs zkey export verificationkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_vkey.json
 
     yarn snarkjs zkey export solidityverifier build/prove/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey build/prove/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol

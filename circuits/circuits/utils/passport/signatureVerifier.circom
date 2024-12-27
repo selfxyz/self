@@ -76,13 +76,13 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsaPssShaVerification.dummy <== 0;
 
     }
-    if (signatureAlgorithm == 7) {
+    if (
+        signatureAlgorithm == 7 || 
+        signatureAlgorithm == 8 || 
+        signatureAlgorithm == 9 || 
+        signatureAlgorithm == 21 
+    ) {
         Secp256r1Verifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
-    }
-    if (signatureAlgorithm == 8) {
-        Secp256r1Verifier (signatureAlgorithm,n,k)(signature, pubKey, hash);
-    }
-    if (signatureAlgorithm == 9) {
     }
     if (signatureAlgorithm == 10) {
         component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);

@@ -42,7 +42,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits, 0);
-    
+
 
     component dg1ShaBytes[HASH_LEN_BYTES];
     for (var i = 0; i < HASH_LEN_BYTES; i++) {
@@ -77,7 +77,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     signal signedAttrSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
-
+  
     SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature, dummy);
 }
 

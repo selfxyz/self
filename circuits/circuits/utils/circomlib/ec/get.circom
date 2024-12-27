@@ -5,9 +5,8 @@ pragma circom  2.1.6;
 // Now there is only secp256k1 \ brainpoolP256r1 generator (64 4 chunking) and brainpoolP384r1
 // Other curves / chunking will be added later
 template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    assert (CHUNK_SIZE == 64);
-    
     signal output gen[2][CHUNK_NUMBER];
+    
     if (CHUNK_NUMBER == 4){
         if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
             gen[0] <== [6481385041966929816, 188021827762530521, 6170039885052185351, 8772561819708210092];
@@ -31,9 +30,7 @@ template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
             gen[0] <== [17259960781858189086, 16728304380777219754, 15816583608832692456, 9819997727167172579, 11720119409086381931, 2097662510161151487];
             gen[1] <== [4792396531824874261, 1028586674454626577, 16256874595948243240, 7113166411453454436, 6679378719998465362, 9997460611710698148];
         }
-        
     }
-    
 }
 
 // Get "dummy" point
@@ -43,9 +40,8 @@ template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 // We use this dummy point for such purposes
 // Dummy point = G * 2**256
 template EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    assert (CHUNK_SIZE == 64);
-    
     signal output dummyPoint[2][CHUNK_NUMBER];
+
     if (CHUNK_NUMBER == 4){
         if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
             dummyPoint[0][0] <== 10590052641807177607;
@@ -89,9 +85,6 @@ template EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
             dummyPoint[1] <== [9174881270872499347, 7148726877058227897, 1584493337432922624, 1438582915076653591, 16161625210166602047, 946254366129831718];
         }
     }
-    
-    
-    
 }
 
 // Get order of eliptic curve

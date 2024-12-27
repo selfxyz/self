@@ -230,14 +230,14 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
     
     for (var i = 2; i < PRECOMPUTE_NUMBER; i++){
         if (i % 2 == 0){
-            doublers[i \ 2 - 1] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+            doublers[i \ 2 - 1] = EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             doublers[i \ 2 - 1].in <== out[i \ 2];
             doublers[i \ 2 - 1].dummy <== dummy;
             doublers[i \ 2 - 1].out ==> out[i];
             
         }
         else {
-            adders[i \ 2 - 1] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+            adders[i \ 2 - 1] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             adders[i \ 2 - 1].in1 <== out[1];
             adders[i \ 2 - 1].in2 <== out[i - 1];
             adders[i \ 2 - 1].dummy <== dummy;
@@ -792,7 +792,7 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
     res[0] <== precomputed[0];
     
     for (var i = 0; i < CHUNK_NUMBER * CHUNK_SIZE; i += WINDOW_SIZE){
-        adders[i \ WINDOW_SIZE] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+        adders[i \ WINDOW_SIZE] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         bits2Num[i \ WINDOW_SIZE] = Bits2Num(WINDOW_SIZE);
         for (var j = 0; j < WINDOW_SIZE; j++){
             bits2Num[i \ WINDOW_SIZE].in[j] <== scalarBits[i + (WINDOW_SIZE - 1) - j];
@@ -804,7 +804,7 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
         
         if (i != 0){
             for (var j = 0; j < WINDOW_SIZE; j++){
-                doublers[i + j - WINDOW_SIZE] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+                doublers[i + j - WINDOW_SIZE] = EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
                 doublers[i + j - WINDOW_SIZE].dummy <== dummy;
                 
                 if (j == 0){
@@ -1751,13 +1751,6 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
         }
     }
     out <== resultingPoints[parts - 2];
-    
-    for (var i = 0; i < 6; i++){
-        log(out[0][i]);
-    }
-    for (var i = 0; i < 6; i++){
-        log(out[1][i]);
-    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------
