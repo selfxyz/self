@@ -387,11 +387,11 @@ template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     signal input base[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
     
+    signal input dummy;
+    
     signal output out[CHUNK_NUMBER];
     
     var exp_process[256] = exp_to_bits(EXP);
-
-    var dummy = 0;
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];

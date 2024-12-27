@@ -40,6 +40,7 @@ template VerifyLargeRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
     }
+    bigPow.dummy <== 0;
 
     var padding[5] = getPadding(signatureAlgorithm);
 
