@@ -76,6 +76,7 @@ export function generateCircuitInputsDSC(
   let dsc_messagePaddedLen;
   [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
 
+  console.log("signatureAlgorithm: ", signatureAlgorithm);
   const { n, k } = getNAndK(signatureAlgorithm);
   const dscSignature = dscCert.signature;
   const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>

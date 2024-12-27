@@ -236,7 +236,7 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     signal input base[CHUNK_NUMBER * 2];
     signal input modulus[CHUNK_NUMBER];
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
     
     signal output div[CHUNK_NUMBER + 1];
     signal output mod[CHUNK_NUMBER];
@@ -366,7 +366,7 @@ template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
@@ -422,7 +422,7 @@ template BigModInvOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
     signal output out[CHUNK_NUMBER];
     
     
-    var inv[200] = mod_inv(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
+    var inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         out[i] <-- inv[i];
     }
@@ -642,7 +642,7 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
     signal input base[CHUNK_NUMBER_BASE];
     signal input modulus[CHUNK_NUMBER_MODULUS];
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
     
     signal output div[CHUNK_NUMBER_DIV];
     signal output mod[CHUNK_NUMBER_MODULUS];
@@ -759,7 +759,7 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
@@ -814,7 +814,7 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
 // those are very "expensive" by constraints operations, try to reduse num of usage if these if u can
 
 // in[0] < in[1]
-template BigLessThan(CHUNK_SIZE, CHUNK_NUMBER){
+template BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[2][CHUNK_NUMBER];
     
     signal output out;
@@ -892,7 +892,7 @@ template BigGreaterEqThan(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal output out;
     
-    component lessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    component lessThan = BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER);
     lessThan.in <== in;
     out <== 1 - lessThan.out;
 }
