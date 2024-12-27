@@ -4,16 +4,13 @@ include "../../../zkemail/lib/fp.circom";
 include "./pkcs1v1_5Padding.circom";
 include "../../bitify/bitify.circom";
 
-// For exponent, EXP is 3
-// For exponent, EXP is 65537
-
 // For 2048bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
 // For 3072bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 48
 // For 4096bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 64
 
 // HASH_SIZE is the size of the hash in bits
 
-template VerifyRsa3Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, EXP, HASH_SIZE) {
+template VerifyRsa3Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal input signature[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
 
