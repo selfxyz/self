@@ -229,7 +229,7 @@ template BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER) {
     component reduce = RemoveOverflow(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_BASE + 1);
     reduce.in <== in;
 
-    var div_res[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER, (CHUNK_NUMBER_BASE + 1 - CHUNK_NUMBER), reduce.out, modulus);
+    var div_res[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER, (CHUNK_NUMBER_BASE + 1 - CHUNK_NUMBER), reduce.out, modulus);
     var mod[CHUNK_NUMBER];
     for (var i = 0; i < CHUNK_NUMBER; i++){
         mod[i] = div_res[1][i];

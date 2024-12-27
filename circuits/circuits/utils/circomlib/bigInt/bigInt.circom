@@ -236,7 +236,7 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     signal input base[CHUNK_NUMBER * 2];
     signal input modulus[CHUNK_NUMBER];
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
     
     signal output div[CHUNK_NUMBER + 1];
     signal output mod[CHUNK_NUMBER];
@@ -642,7 +642,7 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
     signal input base[CHUNK_NUMBER_BASE];
     signal input modulus[CHUNK_NUMBER_MODULUS];
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
     
     signal output div[CHUNK_NUMBER_DIV];
     signal output mod[CHUNK_NUMBER_MODULUS];

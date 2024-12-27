@@ -12,8 +12,8 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 
 const sigAlgs = [
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigtion: 'sha256', domainParameter: '3', keyLength: '3072' },
+  { sigAlg: 'rsa', hashFunctioAlg: 'rsapss', hashFuncn: 'sha256', domainParameter: '65537', keyLength: '3072' },
   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
