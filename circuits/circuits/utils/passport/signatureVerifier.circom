@@ -19,7 +19,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    signal input dummy;
 
     var msg_len = (HASH_LEN_BITS + n) \ n;
 
@@ -35,7 +34,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
 
     }
     if (signatureAlgorithm == 3) {
@@ -48,7 +46,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
     }
 
     if (
@@ -73,7 +70,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsaPssShaVerification.pubkey <== pubKey;
         rsaPssShaVerification.signature <== signature;
         rsaPssShaVerification.hashed <== hash; // send the raw hash
-        rsaPssShaVerification.dummy <== 0;
 
     }
     if (signatureAlgorithm == 7) {
@@ -94,7 +90,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
     }
     if (signatureAlgorithm == 11) {
         component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 160);
@@ -106,7 +101,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
     }
     if (signatureAlgorithm == 12) {
 
@@ -121,7 +115,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
     }
     if (signatureAlgorithm == 14) {
         component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);
@@ -133,7 +126,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
-        rsa.dummy <== dummy;
     }
     if (signatureAlgorithm == 15) {
 

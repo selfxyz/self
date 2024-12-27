@@ -12,8 +12,6 @@ template Sha2_384_512Schedule() {
     
     signal input  chunkBits[16][64]; 
     signal output outWords [80]; 
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal outBits[80][64]; 
     
@@ -21,7 +19,6 @@ template Sha2_384_512Schedule() {
     component sumN[16];
     for (var k = 0; k < 16; k++) {
         sumN[k] = GetSumOfNElements(64);
-        sumN[k].dummy <== dummy;
         for (var i = 0; i < 64; i++) {
             sumN[k].in[i] <== (1 << i) * chunkBits[k][i];
         }
@@ -44,9 +41,7 @@ template Sha2_384_512Schedule() {
         var l = m - 2;
         
         s0Sum[m - 16] = GetSumOfNElements(64);
-        s0Sum[m - 16].dummy <== dummy;
         s1Sum[m - 16] = GetSumOfNElements(64);
-        s1Sum[m - 16].dummy <== dummy;
         
         for (var i = 0; i < 64; i++) {
             

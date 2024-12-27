@@ -70,7 +70,6 @@ template Sha1General(maxBitsPadded) {
     for (i=0; i<maxBlocks; i++) {
         
         sha1compression[i] = Sha1compression();
-        sha1compression[i].dummy <== 0;
 
         if (i==0) {
             for (k=0; k<32; k++) {

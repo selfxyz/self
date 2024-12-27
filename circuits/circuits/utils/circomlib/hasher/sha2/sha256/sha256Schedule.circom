@@ -13,15 +13,12 @@ template Sha2_224_256Shedule() {
     signal input  chunkBits[16][32];
     signal output outWords [64];
 
-    signal input dummy;
-    dummy * dummy === 0;
         
     signal outBits[64][32];
     
     component sumN[16];
     for (var k = 0; k < 16; k++) {
         sumN[k] = GetSumOfNElements(32);
-        sumN[k].dummy <== dummy;
         for (var i = 0; i < 32; i++) {
             sumN[k].in[i] <== (1 << i) * chunkBits[k][i];
         }
@@ -43,9 +40,7 @@ template Sha2_224_256Shedule() {
         var l = m - 2;
         
         s0Sum[m - 16] = GetSumOfNElements(32);
-        s0Sum[m - 16].dummy <== dummy;
         s1Sum[m - 16] = GetSumOfNElements(32);
-        s1Sum[m - 16].dummy <== dummy;
         
         for (var i = 0; i < 32; i++) {
             
@@ -68,7 +63,7 @@ template Sha2_224_256Shedule() {
         
         
         modulo[r] = GetLastNBits(32);
-        modulo[r].in <== s1Sum[m - 16].out + outWords[m - 7] + s0Sum[m - 16].out + outWords[m - 16] + dummy * dummy;
+        modulo[r].in <== s1Sum[m - 16].out + outWords[m - 7] + s0Sum[m - 16].out + outWords[m - 16];
         modulo[r].out ==> outBits[m];
         bits2Num[r] = Bits2Num(32);
         bits2Num[r].in <== outBits[m];

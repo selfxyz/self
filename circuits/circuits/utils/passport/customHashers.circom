@@ -10,7 +10,6 @@ template CustomHasher(k) {
     component hash[rounds];
     for (var i = 0; i < rounds ; i ++){
         hash[i] = PoseidonHash(16);
-        hash[i].dummy <== 0;
     }
     
     for (var i = 0; i < rounds ; i ++){
@@ -27,7 +26,6 @@ template CustomHasher(k) {
     for (var i = 0 ; i < rounds ; i++) {
         finalHash.in[i] <== hash[i].out;
     }
-    finalHash.dummy <== 0;
     signal output out <== finalHash.out;
 }
 

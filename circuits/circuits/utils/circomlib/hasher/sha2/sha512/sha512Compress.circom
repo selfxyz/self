@@ -12,8 +12,6 @@ template Sha2_384_512CompressInner() {
     
     signal input inp;
     signal input key;
-    signal input dummy;
-    dummy * dummy === 0;
     
     signal input a[64];
     signal input b[64];
@@ -34,9 +32,7 @@ template Sha2_384_512CompressInner() {
     signal output outHH;
     
     component dSum = GetSumOfNElements(64);
-    dSum.dummy <== dummy;
     component hSum = GetSumOfNElements(64);
-    hSum.dummy <== dummy;
     for (var i = 0; i < 64; i++) {
         outG[i] <== f[i];
         outF[i] <== e[i];
@@ -55,13 +51,9 @@ template Sha2_384_512CompressInner() {
     component s1Xor[64];
     
     component s0Sum = GetSumOfNElements(64);
-    s0Sum.dummy <== dummy;
     component s1Sum = GetSumOfNElements(64);
-    s1Sum.dummy <== dummy;
     component mjSum = GetSumOfNElements(64);
-    mjSum.dummy <== dummy;
     component chSum = GetSumOfNElements(64);
-    chSum.dummy <== dummy;
     
     for (var i = 0; i < 64; i++) {
         

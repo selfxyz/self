@@ -51,15 +51,12 @@ template TangentCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
-    signal input dummy;
     
     
-    dummy * dummy === 0;
     
     component mult = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in1[0];
     mult.in[1] <== in1[0];
-    mult.dummy <== dummy;
     
     component scalarMult = ScalarMultOverflow(CHUNK_NUMBER * 2 - 1);
     scalarMult.scalar <== 3;
@@ -68,7 +65,6 @@ template TangentCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component add = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add.in1 <== scalarMult.out;
     add.in2 <== A;
-    add.dummy <== dummy;
     
     component scalarMult2 = ScalarMultOverflow(CHUNK_NUMBER);
     scalarMult2.in <== in1[1];
@@ -77,54 +73,44 @@ template TangentCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== scalarMult2.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     component mul2 = BigMultNonEqualOverflow(CHUNK_SIZE, 2 * CHUNK_NUMBER - 1, CHUNK_NUMBER);
     mul2.in1 <== add.out;
     mul2.in2 <== modInv.out;
-    mul2.dummy <== dummy;
     
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod.base <== mul2.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== in1[0];
     sub.in2 <== in2[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     component mul3 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     mul3.in1 <== mod.mod;
     mul3.in2 <== sub.out;
-    mul3.dummy <== dummy;
     
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod2.base <== mul3.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     component sub2 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub2.in1 <== mod2.mod;
     sub2.in2 <== in1[1];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     component add2 = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     add2.in[0] <== P;
     add2.in[1] <== in2[1];
-    add2.dummy <== dummy;
     
     component smartEqual = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER);
     smartEqual.in[0] <== sub2.out;
     smartEqual.in[1] <== add2.out;
-    smartEqual.dummy <== dummy;
     
     component smartEqual2 = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER);
     smartEqual2.in[0] <== sub2.out;
     smartEqual2.in[1] <== in2[1];
-    smartEqual2.dummy <== dummy;
     
     smartEqual.out * smartEqual.out + smartEqual2.out === 1;
 }
@@ -139,66 +125,54 @@ template AdditionCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     signal input in3[2][CHUNK_NUMBER];
-    signal input dummy;
     
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== in2[0];
     sub.in2 <== in1[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     component sub2 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub2.in1 <== in2[1];
     sub2.in2 <== in1[1];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     component sub3 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub3.in1 <== in1[0];
     sub3.in2 <== in3[0];
     sub3.modulus <== P;
-    sub3.dummy <== dummy;
     
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== sub.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     component mul = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mul.in[0] <== sub2.out;
     mul.in[1] <== modInv.out;
-    mul.dummy <== dummy;
     
     component mul2 = BigMultNonEqualOverflow(CHUNK_SIZE, 2 * CHUNK_NUMBER - 1, CHUNK_NUMBER);
     mul2.in1 <== mul.out;
     mul2.in2 <== sub3.out;
-    mul2.dummy <== dummy;
     
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 2);
     mod.base <== mul2.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     component sub4 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub4.in1 <== mod.mod;
     sub4.in2 <== in1[1];
     sub4.modulus <== P;
-    sub4.dummy <== dummy;
     
     component add = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     add.in[0] <== P;
     add.in[1] <== in3[1];
-    add.dummy <== dummy;
     
     component smartEqual = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER);
     smartEqual.in[0] <== sub4.out;
     smartEqual.in[1] <== add.out;
-    smartEqual.dummy <== dummy;
     
     component smartEqual2 = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER);
     smartEqual2.in[0] <== sub4.out;
     smartEqual2.in[1] <== in3[1];
-    smartEqual2.dummy <== dummy;
     
     smartEqual.out * smartEqual.out + smartEqual2.out === 1;
     
@@ -210,12 +184,10 @@ template AdditionCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 // Computes 0 * G, 1 * G, 2 * G, ... (2 ** WINDOW_SIZE - 1) * G
 template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZE){
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
     
     var PRECOMPUTE_NUMBER = 2 ** WINDOW_SIZE;
     
     signal output out[PRECOMPUTE_NUMBER][2][CHUNK_NUMBER];
-    dummy * dummy === 0;
     
     for (var i = 0; i < 2; i++){
         for (var j = 0; j < CHUNK_NUMBER; j++){
@@ -232,7 +204,6 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
         if (i % 2 == 0){
             doublers[i \ 2 - 1] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             doublers[i \ 2 - 1].in <== out[i \ 2];
-            doublers[i \ 2 - 1].dummy <== dummy;
             doublers[i \ 2 - 1].out ==> out[i];
             
         }
@@ -240,7 +211,6 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
             adders[i \ 2 - 1] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             adders[i \ 2 - 1].in1 <== out[1];
             adders[i \ 2 - 1].in2 <== out[i - 1];
-            adders[i \ 2 - 1].dummy <== dummy;
             adders[i \ 2 - 1].out ==> out[i];
         }
     }
@@ -257,48 +227,38 @@ template PointOnCurveOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     assert(CHUNK_SIZE == 64);
     
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     component mult = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in[0];
     mult.in[1] <== in[0];
-    mult.dummy <== dummy;
     
     component mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     mult2.in1 <== mult.out;
     mult2.in2 <== in[0];
-    mult2.dummy <== dummy;
     
     component mult3 = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult3.in[0] <== in[0];
     mult3.in[1] <== A;
-    mult3.dummy <== dummy;
     
     component mult4 = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult4.in[0] <== in[1];
     mult4.in[1] <== in[1];
-    mult4.dummy <== dummy;
     
     component add = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER * 2 - 1);
     add.in1 <== mult2.out;
     add.in2 <== mult3.out;
-    add.dummy <== dummy;
     
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER);
     add2.in1 <== add.out;
     add2.in2 <== B;
-    add2.dummy <== dummy;
     
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod.base <== mult4.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
         mod.mod[i] === mod2.mod[i];
@@ -313,14 +273,11 @@ template PointOnCurveOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 template EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     // x * x
     component mult = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in[0];
     mult.in[1] <== in[0];
-    mult.dummy <== dummy;
     
     // 3 * x * x
     component scalarMult = ScalarMultOverflow(CHUNK_NUMBER * 2 - 1);
@@ -331,7 +288,6 @@ template EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component add = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add.in1 <== scalarMult.out;
     add.in2 <== A;
-    add.dummy <== dummy;
     
     // 2 * y
     component scalarMult2 = ScalarMultOverflow(CHUNK_NUMBER);
@@ -342,32 +298,27 @@ template EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== scalarMult2.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     // (3 * x * x + a) * 1 / (2 * y)
     component mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, 2 * CHUNK_NUMBER - 1, CHUNK_NUMBER);
     mult2.in1 <== add.out;
     mult2.in2 <== modInv.out;
-    mult2.dummy <== dummy;
     
     // ((3 * x * x + a) * 1 / (2 * y)) % p ==> λ
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod.base <== mult2.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     // λ * λ
     component mult3 = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult3.in[0] <== mod.mod;
     mult3.in[1] <== mod.mod;
-    mult3.dummy <== dummy;
     
     // P - x
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== P;
     sub.in2 <== in[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     // 2 * P - 2 * x
     component scalarMult3 = ScalarMultOverflow(CHUNK_NUMBER);
@@ -378,13 +329,11 @@ template EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add2.in1 <== mult3.out;
     add2.in2 <== scalarMult3.out;
-    add2.dummy <== dummy;
     
     // (λ * λ + 2 * P - 2 * x) % p ==> x3
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     out[0] <== mod2.mod;
     
@@ -393,32 +342,27 @@ template EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     sub2.in1 <== in[0];
     sub2.in2 <== out[0];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     // λ * (x1 - x3)
     component mult4 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     mult4.in1 <== mod.mod;
     mult4.in2 <== sub2.out;
-    mult4.dummy <== dummy;
     
     // P - y
     component sub3 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub3.in1 <== P;
     sub3.in2 <== in[1];
     sub3.modulus <== P;
-    sub3.dummy <== dummy;
     
     // λ * (x1 - x3) + P - y
     component add3 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add3.in1 <== mult4.out;
     add3.in2 <== sub3.out;
-    add3.dummy <== dummy;
     
     // (λ * (x1 - x3) + P - y) % P ==> y3
     component mod3 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod3.base <== add3.out;
     mod3.modulus <== P;
-    mod3.dummy <== dummy;
     
     out[1] <== mod3.mod;
 }
@@ -432,78 +376,65 @@ template EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     // x2 - x1
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== in2[0];
     sub.in2 <== in1[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     // y2 - y1
     component sub2 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub2.in1 <== in2[1];
     sub2.in2 <== in1[1];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     // (x2 - x1) ** -1
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== sub.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     // (y2 - y1) * 1 / (x2 - x1)
     component mult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== sub2.out;
     mult.in[1] <== modInv.out;
-    mult.dummy <== dummy;
     
     // (y2 - y1) * 1 / (x2 - x1) % P ==> λ
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod.base <== mult.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     // λ * λ
     component mult2 = BigMultOptimisedOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult2.in[0] <== mod.mod;
     mult2.in[1] <== mod.mod;
-    mult2.dummy <== dummy;
     
     // P - in1
     component sub3 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub3.in1 <== P;
     sub3.in2 <== in1[0];
     sub3.modulus <== P;
-    sub3.dummy <== dummy;
     
     // P - in2
     component sub4 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub4.in1 <== P;
     sub4.in2 <== in2[0];
     sub4.modulus <== P;
-    sub4.dummy <== dummy;
     
     // 2 * P - in1 - in2
     component add = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     add.in[0] <== sub3.out;
     add.in[1] <== sub4.out;
-    add.dummy <== dummy;
     
     // λ * λ + 2 * P - in1 - in2
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add2.in1 <== mult2.out;
     add2.in2 <== add.out;
-    add2.dummy <== dummy;
     
     // (λ * λ + 2 * P - in1 - in2) % P ==> x3
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     out[0] <== mod2.mod;
     
@@ -512,32 +443,27 @@ template EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     sub5.in1 <== in1[0];
     sub5.in2 <== out[0];
     sub5.modulus <== P;
-    sub5.dummy <== dummy;
     
     // λ * (x1 - x3)
     component mult3 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     mult3.in1 <== mult.out;
     mult3.in2 <== sub5.out;
-    mult3.dummy <== dummy;
     
     // P - y1
     component sub6 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub6.in1 <== P;
     sub6.in2 <== in1[1];
     sub6.modulus <== P;
-    sub6.dummy <== dummy;
     
     // λ * (x1 - x3) + P - y1
     component add3 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER);
     add3.in1 <== mult3.out;
     add3.in2 <== sub6.out;
-    add3.dummy <== dummy;
     
     // (λ * (x1 - x3) + P - y1) % P ==> y3
     component mod3 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod3.base <== add3.out;
     mod3.modulus <== P;
-    mod3.dummy <== dummy;
     
     out[1] <== mod3.mod;
 }
@@ -553,7 +479,6 @@ template EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NU
     assert(CHUNK_SIZE == 64 && CHUNK_NUMBER == 4);
     
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     
     signal output out[2][CHUNK_NUMBER];
     
@@ -561,7 +486,6 @@ template EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NU
     
     var parts = CHUNK_NUMBER * CHUNK_SIZE \ STRIDE;
     
-    dummy * dummy === 0;
     var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
         powers = get_g_pow_stride8_table_secp256k1(CHUNK_SIZE, CHUNK_NUMBER);
@@ -611,7 +535,6 @@ template EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NU
         for (var j = 0; j < 2; j++){
             for (var axis_idx = 0; axis_idx < CHUNK_NUMBER; axis_idx++){
                 getSumOfNElements[i][j][axis_idx] = GetSumOfNElements(2 ** STRIDE);
-                getSumOfNElements[i][j][axis_idx].dummy <== dummy;
                 for (var stride_idx = 0; stride_idx < 2 ** STRIDE; stride_idx++){
                     getSumOfNElements[i][j][axis_idx].in[stride_idx] <== resultCoordinateComputation[i][stride_idx][j][axis_idx];
                 }
@@ -622,7 +545,7 @@ template EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NU
     component isZero[parts];
     for (var i = 0; i < parts; i++){
         isZero[i] = IsZero();
-        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out + dummy * dummy;
+        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out;
     }
     
     signal precomptedDummy[parts][2][CHUNK_NUMBER];
@@ -660,7 +583,6 @@ template EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NU
     
     for (var i = 0; i < parts - 1; i++){
         adders[i] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-        adders[i].dummy <== dummy;
         isDummyLeft[i] = IsEqual();
         isDummyRight[i] = IsEqual();
         
@@ -738,7 +660,6 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
     
     signal input in[2][CHUNK_NUMBER];
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     
     signal output out[2][CHUNK_NUMBER];
     
@@ -748,7 +669,6 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
     
     component precompute = EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZE);
     precompute.in <== in;
-    precompute.dummy <== dummy;
     precompute.out ==> precomputed;
     
     var DOUBLERS_NUMBER = CHUNK_SIZE * CHUNK_NUMBER - WINDOW_SIZE;
@@ -805,7 +725,6 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
         if (i != 0){
             for (var j = 0; j < WINDOW_SIZE; j++){
                 doublers[i + j - WINDOW_SIZE] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-                doublers[i + j - WINDOW_SIZE].dummy <== dummy;
                 
                 if (j == 0){
                     for (var axis_idx = 0; axis_idx < 2; axis_idx++){
@@ -863,14 +782,12 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
             
             adders[i \ WINDOW_SIZE].in1 <== res [i \ WINDOW_SIZE];
             adders[i \ WINDOW_SIZE].in2 <== tmp2[i \ WINDOW_SIZE];
-            adders[i \ WINDOW_SIZE].dummy <== dummy;
             res[i \ WINDOW_SIZE + 1] <== tmp2[i \ WINDOW_SIZE];
             
         } else {
             
             adders[i \ WINDOW_SIZE].in1 <== doublers[i - 1].out;
             adders[i \ WINDOW_SIZE].in2 <== tmp2[i \ WINDOW_SIZE];
-            adders[i \ WINDOW_SIZE].dummy <== dummy;
             
             zeroEquals[i \ WINDOW_SIZE] = IsEqual();
             
@@ -920,12 +837,10 @@ template EllipicCurveScalarPrecomputeMultiplicationOptimised(CHUNK_SIZE, CHUNK_N
     var parts = CHUNK_NUMBER * CHUNK_SIZE \ STRIDE;
     
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     signal input in[2][CHUNK_NUMBER];
     signal input powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
     
-    dummy * dummy === 0;
     
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------
     // We don`t use point anywhere, we should add any quadratic constraint for secure issues
@@ -974,7 +889,6 @@ template EllipicCurveScalarPrecomputeMultiplicationOptimised(CHUNK_SIZE, CHUNK_N
         for (var j = 0; j < 2; j++){
             for (var axis_idx = 0; axis_idx < CHUNK_NUMBER; axis_idx++){
                 getSumOfNElements[i][j][axis_idx] = GetSumOfNElements(2 ** STRIDE);
-                getSumOfNElements[i][j][axis_idx].dummy <== dummy;
                 for (var stride_idx = 0; stride_idx < 2 ** STRIDE; stride_idx++){
                     getSumOfNElements[i][j][axis_idx].in[stride_idx] <== resultCoordinateComputation[i][stride_idx][j][axis_idx];
                 }
@@ -985,7 +899,7 @@ template EllipicCurveScalarPrecomputeMultiplicationOptimised(CHUNK_SIZE, CHUNK_N
     component isZero[parts];
     for (var i = 0; i < parts; i++){
         isZero[i] = IsZero();
-        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out + dummy * dummy;
+        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out;
     }
     
     signal precomptedDummy[parts][2][CHUNK_NUMBER];
@@ -1023,7 +937,6 @@ template EllipicCurveScalarPrecomputeMultiplicationOptimised(CHUNK_SIZE, CHUNK_N
     
     for (var i = 0; i < parts - 1; i++){
         adders[i] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-        adders[i].dummy <== dummy;
         isDummyLeft[i] = IsEqual();
         isDummyRight[i] = IsEqual();
         
@@ -1098,48 +1011,38 @@ template PointOnCurveNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     assert(CHUNK_SIZE == 64);
     
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     component mult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in[0];
     mult.in[1] <== in[0];
-    mult.dummy <== dummy;
     
     component mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     mult2.in1 <== mult.out;
     mult2.in2 <== in[0];
-    mult2.dummy <== dummy;
     
     component mult3 = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult3.in[0] <== in[0];
     mult3.in[1] <== A;
-    mult3.dummy <== dummy;
     
     component mult4 = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult4.in[0] <== in[1];
     mult4.in[1] <== in[1];
-    mult4.dummy <== dummy;
     
     component add = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER * 2 - 1);
     add.in1 <== mult2.out;
     add.in2 <== mult3.out;
-    add.dummy <== dummy;
     
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER);
     add2.in1 <== add.out;
     add2.in2 <== B;
-    add2.dummy <== dummy;
     
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod.base <== mult4.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
         mod.mod[i] === mod2.mod[i];
@@ -1154,14 +1057,11 @@ template PointOnCurveNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 template EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     // x * x
     component mult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== in[0];
     mult.in[1] <== in[0];
-    mult.dummy <== dummy;
     
     // 3 * x * x
     component scalarMult = ScalarMultOverflow(CHUNK_NUMBER * 2 - 1);
@@ -1172,7 +1072,6 @@ template EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component add = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add.in1 <== scalarMult.out;
     add.in2 <== A;
-    add.dummy <== dummy;
     
     // 2 * y
     component scalarMult2 = ScalarMultOverflow(CHUNK_NUMBER);
@@ -1183,32 +1082,27 @@ template EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== scalarMult2.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     // (3 * x * x + a) * 1 / (2 * y)
     component mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, 2 * CHUNK_NUMBER - 1, CHUNK_NUMBER);
     mult2.in1 <== add.out;
     mult2.in2 <== modInv.out;
-    mult2.dummy <== dummy;
     
     // ((3 * x * x + a) * 1 / (2 * y)) % p ==> λ
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod.base <== mult2.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     // λ * λ
     component mult3 = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult3.in[0] <== mod.mod;
     mult3.in[1] <== mod.mod;
-    mult3.dummy <== dummy;
     
     // P - x
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== P;
     sub.in2 <== in[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     // 2 * P - 2 * x
     component scalarMult3 = ScalarMultOverflow(CHUNK_NUMBER);
@@ -1219,13 +1113,11 @@ template EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add2.in1 <== mult3.out;
     add2.in2 <== scalarMult3.out;
-    add2.dummy <== dummy;
     
     // (λ * λ + 2 * P - 2 * x) % p ==> x3
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     out[0] <== mod2.mod;
     
@@ -1234,32 +1126,27 @@ template EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     sub2.in1 <== in[0];
     sub2.in2 <== out[0];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     // λ * (x1 - x3)
     component mult4 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     mult4.in1 <== mod.mod;
     mult4.in2 <== sub2.out;
-    mult4.dummy <== dummy;
     
     // P - y
     component sub3 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub3.in1 <== P;
     sub3.in2 <== in[1];
     sub3.modulus <== P;
-    sub3.dummy <== dummy;
     
     // λ * (x1 - x3) + P - y
     component add3 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add3.in1 <== mult4.out;
     add3.in2 <== sub3.out;
-    add3.dummy <== dummy;
     
     // (λ * (x1 - x3) + P - y) % P ==> y3
     component mod3 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod3.base <== add3.out;
     mod3.modulus <== P;
-    mod3.dummy <== dummy;
     
     out[1] <== mod3.mod;
 }
@@ -1273,78 +1160,65 @@ template EllipticCurveAddNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     // x2 - x1
     component sub = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub.in1 <== in2[0];
     sub.in2 <== in1[0];
     sub.modulus <== P;
-    sub.dummy <== dummy;
     
     // y2 - y1
     component sub2 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub2.in1 <== in2[1];
     sub2.in2 <== in1[1];
     sub2.modulus <== P;
-    sub2.dummy <== dummy;
     
     // (x2 - x1) ** -1
     component modInv = BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     modInv.in <== sub.out;
     modInv.modulus <== P;
-    modInv.dummy <== dummy;
     
     // (y2 - y1) * 1 / (x2 - x1)
     component mult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult.in[0] <== sub2.out;
     mult.in[1] <== modInv.out;
-    mult.dummy <== dummy;
     
     // (y2 - y1) * 1 / (x2 - x1) % P ==> λ
     component mod = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod.base <== mult.out;
     mod.modulus <== P;
-    mod.dummy <== dummy;
     
     // λ * λ
     component mult2 = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     mult2.in[0] <== mod.mod;
     mult2.in[1] <== mod.mod;
-    mult2.dummy <== dummy;
     
     // P - in1
     component sub3 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub3.in1 <== P;
     sub3.in2 <== in1[0];
     sub3.modulus <== P;
-    sub3.dummy <== dummy;
     
     // P - in2
     component sub4 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub4.in1 <== P;
     sub4.in2 <== in2[0];
     sub4.modulus <== P;
-    sub4.dummy <== dummy;
     
     // 2 * P - in1 - in2
     component add = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     add.in[0] <== sub3.out;
     add.in[1] <== sub4.out;
-    add.dummy <== dummy;
     
     // λ * λ + 2 * P - in1 - in2
     component add2 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     add2.in1 <== mult2.out;
     add2.in2 <== add.out;
-    add2.dummy <== dummy;
     
     // (λ * λ + 2 * P - in1 - in2) % P ==> x3
     component mod2 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER, 2);
     mod2.base <== add2.out;
     mod2.modulus <== P;
-    mod2.dummy <== dummy;
     
     out[0] <== mod2.mod;
     
@@ -1353,32 +1227,27 @@ template EllipticCurveAddNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     sub5.in1 <== in1[0];
     sub5.in2 <== out[0];
     sub5.modulus <== P;
-    sub5.dummy <== dummy;
     
     // λ * (x1 - x3)
     component mult3 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     mult3.in1 <== mult.out;
     mult3.in2 <== sub5.out;
-    mult3.dummy <== dummy;
     
     // P - y1
     component sub6 = BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER);
     sub6.in1 <== P;
     sub6.in2 <== in1[1];
     sub6.modulus <== P;
-    sub6.dummy <== dummy;
     
     // λ * (x1 - x3) + P - y1
     component add3 = BigAddNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER);
     add3.in1 <== mult3.out;
     add3.in2 <== sub6.out;
-    add3.dummy <== dummy;
     
     // (λ * (x1 - x3) + P - y1) % P ==> y3
     component mod3 = BigModOverflow(CHUNK_SIZE, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER, 3);
     mod3.base <== add3.out;
     mod3.modulus <== P;
-    mod3.dummy <== dummy;
     
     out[1] <== mod3.mod;
 }
@@ -1394,7 +1263,6 @@ template EllipticCurveAddNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     
     signal output out[2][CHUNK_NUMBER];
     
@@ -1402,7 +1270,6 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
     
     var parts = CHUNK_NUMBER * CHUNK_SIZE \ STRIDE;
     
-    dummy * dummy === 0;
     var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     if (CHUNK_NUMBER == 6){
         if (P[0] == 9747760000893709395 && P[1] == 12453481191562877553 && P[2] == 1347097566612230435 && P[3] == 1526563086152259252 && P[4] == 1107163671716839903 && P[5] == 10140169582434348328){
@@ -1451,7 +1318,6 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
         for (var j = 0; j < 2; j++){
             for (var axis_idx = 0; axis_idx < CHUNK_NUMBER; axis_idx++){
                 getSumOfNElements[i][j][axis_idx] = GetSumOfNElements(2 ** STRIDE);
-                getSumOfNElements[i][j][axis_idx].dummy <== dummy;
                 for (var stride_idx = 0; stride_idx < 2 ** STRIDE; stride_idx++){
                     getSumOfNElements[i][j][axis_idx].in[stride_idx] <== resultCoordinateComputation[i][stride_idx][j][axis_idx];
                 }
@@ -1462,7 +1328,7 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
     component isZero[parts];
     for (var i = 0; i < parts; i++){
         isZero[i] = IsZero();
-        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out + dummy * dummy;
+        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out;
     }
     
     signal precomptedDummy[parts][2][CHUNK_NUMBER];
@@ -1500,7 +1366,6 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
     
     for (var i = 0; i < parts - 1; i++){
         adders[i] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-        adders[i].dummy <== dummy;
         isDummyLeft[i] = IsEqual();
         isDummyRight[i] = IsEqual();
         
@@ -1587,12 +1452,10 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
     var parts = CHUNK_NUMBER * CHUNK_SIZE \ STRIDE;
     
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     signal input in[2][CHUNK_NUMBER];
     signal input powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
     
-    dummy * dummy === 0;
     
     //----------------------------------------------------------------------------------------------------------------------------------------------------------------
     // We don`t use point anywhere, we should add any quadratic constraint for secure issues
@@ -1641,7 +1504,6 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
         for (var j = 0; j < 2; j++){
             for (var axis_idx = 0; axis_idx < CHUNK_NUMBER; axis_idx++){
                 getSumOfNElements[i][j][axis_idx] = GetSumOfNElements(2 ** STRIDE);
-                getSumOfNElements[i][j][axis_idx].dummy <== dummy;
                 for (var stride_idx = 0; stride_idx < 2 ** STRIDE; stride_idx++){
                     getSumOfNElements[i][j][axis_idx].in[stride_idx] <== resultCoordinateComputation[i][stride_idx][j][axis_idx];
                 }
@@ -1652,7 +1514,7 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
     component isZero[parts];
     for (var i = 0; i < parts; i++){
         isZero[i] = IsZero();
-        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out + dummy * dummy;
+        isZero[i].in <== getSumOfNElements[i][0][0].out + getSumOfNElements[i][0][1].out + getSumOfNElements[i][0][2].out + getSumOfNElements[i][0][3].out + getSumOfNElements[i][1][0].out + getSumOfNElements[i][1][1].out + getSumOfNElements[i][1][2].out + getSumOfNElements[i][1][3].out;
     }
     
     signal precomptedDummy[parts][2][CHUNK_NUMBER];
@@ -1690,7 +1552,6 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
     
     for (var i = 0; i < parts - 1; i++){
         adders[i] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-        adders[i].dummy <== dummy;
         isDummyLeft[i] = IsEqual();
         isDummyRight[i] = IsEqual();
         
@@ -1765,36 +1626,28 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
 
 template PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     
     if (CHUNK_NUMBER == 4 && CHUNK_SIZE == 64){
         component pointOnCurveOptimised = PointOnCurveOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         pointOnCurveOptimised.in <== in;
-        pointOnCurveOptimised.dummy <== dummy;
     } else {
         component pointOnCurveNonOptimised = PointOnCurveNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         pointOnCurveNonOptimised.in <== in;
-        pointOnCurveNonOptimised.dummy <== dummy;
     }
     
 }
 
 template EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[2][CHUNK_NUMBER];
     
     if (CHUNK_NUMBER == 4 && CHUNK_SIZE == 64){
         component ecDoubleOptimised = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecDoubleOptimised.in <== in;
-        ecDoubleOptimised.dummy <== dummy;
         out <== ecDoubleOptimised.out;
     } else {
         component ecDoubleNonOptimised = EllipticCurveDoubleNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecDoubleNonOptimised.in <== in;
-        ecDoubleNonOptimised.dummy <== dummy;
         out <== ecDoubleNonOptimised.out;
     }
 }
@@ -1802,40 +1655,32 @@ template EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 template EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[2][CHUNK_NUMBER];
     
     if (CHUNK_NUMBER == 4 && CHUNK_SIZE == 64){
         component ecAddOptimised = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecAddOptimised.in1 <== in1;
         ecAddOptimised.in2 <== in2;
-        ecAddOptimised.dummy <== dummy;
         out <== ecAddOptimised.out;
     } else {
         component ecAddNonOptimised = EllipticCurveAddNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecAddNonOptimised.in1 <== in1;
         ecAddNonOptimised.in2 <== in2;
-        ecAddNonOptimised.dummy <== dummy;
         out <== ecAddNonOptimised.out;
     }
 }
 
 template EllipicCurveScalarGeneratorMultiplication(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[2][CHUNK_NUMBER];
     
     if (CHUNK_SIZE == 64 && CHUNK_NUMBER == 4){
         component ecGenMultOptimised = EllipicCurveScalarGeneratorMultiplicationOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecGenMultOptimised.scalar <== scalar;
-        ecGenMultOptimised.dummy <== dummy;
         out <== ecGenMultOptimised.out;
     } else {
         component ecGenMultNonOptimised = EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         ecGenMultNonOptimised.scalar <== scalar;
-        ecGenMultNonOptimised.dummy <== dummy;
         out <== ecGenMultNonOptimised.out;
     }
     
@@ -1848,26 +1693,22 @@ template EllipicCurveScalarPrecomputeMultiplication(CHUNK_SIZE, CHUNK_NUMBER, A,
     var parts = CHUNK_NUMBER * CHUNK_SIZE \ STRIDE;
     
     signal input scalar[CHUNK_NUMBER];
-    signal input dummy;
     signal input in[2][CHUNK_NUMBER];
     signal input powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
     
-    dummy * dummy === 0;
     
     if (CHUNK_SIZE == 64 && CHUNK_NUMBER == 4){
         component scalarMultOptimised = EllipicCurveScalarPrecomputeMultiplicationOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         scalarMultOptimised.in <== in;
         scalarMultOptimised.scalar <== scalar;
         scalarMultOptimised.powers <== powers;
-        scalarMultOptimised.dummy <== dummy;
         out <== scalarMultOptimised.out;
     } else {
         component scalarMultNonOptimised = EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         scalarMultNonOptimised.in <== in;
         scalarMultNonOptimised.scalar <== scalar;
         scalarMultNonOptimised.powers <== powers;
-        scalarMultNonOptimised.dummy <== dummy;
         out <== scalarMultNonOptimised.out;
 
     }

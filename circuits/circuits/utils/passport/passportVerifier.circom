@@ -28,7 +28,6 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    signal input dummy;
 
     // compute hash of DG1
     signal dg1Bits[93 * 8];
@@ -41,7 +40,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         }
     }
 
-    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits, 0);
+    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits);
     
 
     component dg1ShaBytes[HASH_LEN_BYTES];
@@ -78,6 +77,6 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     signal signedAttrSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
 
-    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature, dummy);
+    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
 }
 

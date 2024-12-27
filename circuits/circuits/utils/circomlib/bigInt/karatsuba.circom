@@ -7,7 +7,6 @@ pragma circom  2.1.6;
 template KaratsubaNoCarry(CHUNK_NUMBER) {
     signal input in[2][CHUNK_NUMBER];
     signal output out[2 * CHUNK_NUMBER];
-    signal input dummy;
     
     if (CHUNK_NUMBER == 1) {
         out[0] <== in[0][0] * in[1][0];
@@ -15,9 +14,6 @@ template KaratsubaNoCarry(CHUNK_NUMBER) {
         component karatsubaA1B1 = KaratsubaNoCarry(CHUNK_NUMBER / 2);
         component karatsubaA2B2 = KaratsubaNoCarry(CHUNK_NUMBER / 2);
         component karatsubaA1A2B1B2 = KaratsubaNoCarry(CHUNK_NUMBER / 2);
-        karatsubaA2B2.dummy <== dummy;
-        karatsubaA1B1.dummy <== dummy;
-        karatsubaA1A2B1B2.dummy <== dummy;
         
         for (var i = 0; i < CHUNK_NUMBER / 2; i++) {
             karatsubaA1B1.in[0][i] <== in[0][i];
@@ -34,18 +30,18 @@ template KaratsubaNoCarry(CHUNK_NUMBER) {
                     out[i] <== karatsubaA1B1.out[i]
                     + karatsubaA1A2B1B2.out[i - CHUNK_NUMBER / 2]
                     - karatsubaA1B1.out[i - CHUNK_NUMBER / 2]
-                    - karatsubaA2B2.out[i - CHUNK_NUMBER / 2] + dummy * dummy;
+                    - karatsubaA2B2.out[i - CHUNK_NUMBER / 2];
                 } else {
-                    out[i] <== karatsubaA1B1.out[i] + dummy * dummy;
+                    out[i] <== karatsubaA1B1.out[i];
                 }
             } else {
                 if (CHUNK_NUMBER / 2 <= i && i < 3 * (CHUNK_NUMBER / 2)) {
                     out[i] <== karatsubaA2B2.out[i - CHUNK_NUMBER]
                     + karatsubaA1A2B1B2.out[i - CHUNK_NUMBER / 2]
                     - karatsubaA1B1.out[i - CHUNK_NUMBER / 2]
-                    - karatsubaA2B2.out[i - CHUNK_NUMBER / 2] + dummy * dummy;
+                    - karatsubaA2B2.out[i - CHUNK_NUMBER / 2];
                 } else {
-                    out[i] <== karatsubaA2B2.out[i - CHUNK_NUMBER] + dummy * dummy;
+                    out[i] <== karatsubaA2B2.out[i - CHUNK_NUMBER];
                 }
             }
         }

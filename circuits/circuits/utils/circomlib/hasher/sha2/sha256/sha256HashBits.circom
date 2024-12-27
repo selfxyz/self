@@ -8,8 +8,6 @@ include "sha256Rounds.circom";
 template Sha256HashBits(LEN) {
     
     signal input  in[LEN];
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal output out[256];
 
@@ -29,9 +27,7 @@ template Sha256HashBits(LEN) {
     for (var m = 0; m < BLOCK_NUM; m++) {
         
         sch[m] = Sha2_224_256Shedule();
-        sch[m].dummy <== dummy;
         rds[m] = Sha2_224_256Rounds(64);
-        rds[m].dummy <== dummy;
         
         for (var k = 0; k < 16; k++) {
             for (var i = 0; i < 32; i++) {

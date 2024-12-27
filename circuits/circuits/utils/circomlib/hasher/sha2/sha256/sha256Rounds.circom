@@ -18,8 +18,6 @@ template Sha2_224_256Rounds(n) {
     signal input  inpHash[8][32];
     signal output outHash[8][32];
     
-    signal input dummy;
-    dummy * dummy === 0;
     
     signal  a [n + 1][32];
     signal  b [n + 1][32];
@@ -43,9 +41,7 @@ template Sha2_224_256Rounds(n) {
     g[0] <== inpHash[6];
     
     component sumDd = GetSumOfNElements(32);
-    sumDd.dummy <== dummy;
     component sumHh = GetSumOfNElements(32);
-    sumHh.dummy <== dummy;
     for (var i = 0; i < 32; i++) {
         sumDd.in[i] <== inpHash[3][i] * (1 << i);
         sumHh.in[i] <== inpHash[7][i] * (1 << i);
@@ -57,7 +53,6 @@ template Sha2_224_256Rounds(n) {
     component sum[8];
     for (var j = 0; j < 8; j++) {
         sum[j] = GetSumOfNElements(32);
-        sum[j].dummy <== dummy;
         for (var i = 0; i < 32; i++) {
             sum[j].in[i] <== (1 << i) * inpHash[j][i];
         }
@@ -72,7 +67,6 @@ template Sha2_224_256Rounds(n) {
         
         compress[k].inp <== words[k];
         compress[k].key <== ROUND_KEYS[k];
-        compress[k].dummy <== dummy;
         
         compress[k].a <== a [k];
         compress[k].b <== b [k];
@@ -98,17 +92,11 @@ template Sha2_224_256Rounds(n) {
         modulo[j] = GetLastNBits(32);
     }
     component sumA = GetSumOfNElements(32);
-    sumA.dummy <== dummy;
     component sumB = GetSumOfNElements(32);
-    sumB.dummy <== dummy;
     component sumC = GetSumOfNElements(32);
-    sumC.dummy <== dummy;
     component sumE = GetSumOfNElements(32);
-    sumE.dummy <== dummy;
     component sumF = GetSumOfNElements(32);
-    sumF.dummy <== dummy;
     component sumG = GetSumOfNElements(32);
-    sumG.dummy <== dummy;
     
     for (var i = 0; i < 32; i++) {
         sumA.in[i] <== (1 << i) * a[n][i];
@@ -119,14 +107,14 @@ template Sha2_224_256Rounds(n) {
         sumG.in[i] <== (1 << i) * g[n][i];
     }
     
-    modulo[0].in <== hashWords[0] + sumA.out + dummy * dummy;
-    modulo[1].in <== hashWords[1] + sumB.out + dummy * dummy;
-    modulo[2].in <== hashWords[2] + sumC.out + dummy * dummy;
-    modulo[3].in <== hashWords[3] + dd[n] + dummy * dummy;
-    modulo[4].in <== hashWords[4] + sumE.out + dummy * dummy;
-    modulo[5].in <== hashWords[5] + sumF.out + dummy * dummy;
-    modulo[6].in <== hashWords[6] + sumG.out + dummy * dummy;
-    modulo[7].in <== hashWords[7] + hh[n] + dummy * dummy;
+    modulo[0].in <== hashWords[0] + sumA.out;
+    modulo[1].in <== hashWords[1] + sumB.out;
+    modulo[2].in <== hashWords[2] + sumC.out;
+    modulo[3].in <== hashWords[3] + dd[n];
+    modulo[4].in <== hashWords[4] + sumE.out;
+    modulo[5].in <== hashWords[5] + sumF.out;
+    modulo[6].in <== hashWords[6] + sumG.out;
+    modulo[7].in <== hashWords[7] + hh[n];
     
     for (var j = 0; j < 8; j++) {
         modulo[j].out ==> outHash[j];

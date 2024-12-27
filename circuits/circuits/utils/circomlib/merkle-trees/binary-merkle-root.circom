@@ -36,7 +36,7 @@ template BinaryMerkleRoot(MAX_DEPTH) {
         var c[2][2] = [ [nodes[i], siblings[i]], [siblings[i], nodes[i]] ];
         var childNodes[2] = MultiMux1(2)(c, indices[i]);
 
-        nodes[i + 1] <== PoseidonHash(2)(childNodes, 0);
+        nodes[i + 1] <== PoseidonHash(2)(childNodes);
     }
 
     var isDepth = IsEqual()([depth, MAX_DEPTH]);

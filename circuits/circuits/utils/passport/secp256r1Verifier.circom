@@ -59,5 +59,4 @@ template Secp256r1Verifier(signatureAlgorithm, n, k) {
     ecdsa_verify.pubkey <== pubkey_xy;
     ecdsa_verify.signature <== [signature_r, signature_s];
     ecdsa_verify.hashed <== hash;
-    ecdsa_verify.dummy <== 0;
 }

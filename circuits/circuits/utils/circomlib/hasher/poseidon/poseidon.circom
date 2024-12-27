@@ -31,15 +31,12 @@ template Ark(t, C, r) {
 
 template Mix(t, M) {
     signal input in[t];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[t];
     
     component sum[t];
 
     for (var i = 0; i < t; i++) {
         sum[i] = GetSumOfNElements(t);
-        sum[i].dummy <== dummy;
         for (var j = 0; j < t; j++) {
             sum[i].in[j] <== M[j][i] * in[j];
         }
@@ -49,12 +46,9 @@ template Mix(t, M) {
 
 template MixLast(t, M, s) {
     signal input in[t];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out;
     
     component sum = GetSumOfNElements(t);
-    sum.dummy <== dummy;
     for (var j = 0; j < t; j++) {
         sum.in[j] <==  M[j][s] * in[j];
     }
@@ -63,28 +57,23 @@ template MixLast(t, M, s) {
 
 template MixS(t, S, r) {
     signal input in[t];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[t];
     
     
     component sum = GetSumOfNElements(t);
-    sum.dummy <== dummy;
     for (var i = 0; i < t; i++) {
         sum.in[i] <== S[(t * 2 - 1) * r + i] * in[i];
     }
     out[0] <== sum.out;
 
     for (var i = 1; i < t; i++) {
-        out[i] <== in[i] + in[0] * S[(t * 2 - 1) * r + t + i - 1] + dummy * dummy;
+        out[i] <== in[i] + in[0] * S[(t * 2 - 1) * r + t + i - 1];
     }
 }
 
 template PoseidonEx(nInputs, nOuts) {
     signal input inputs[nInputs];
     signal input initialState;
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal output out[nOuts];
     
@@ -130,7 +119,6 @@ template PoseidonEx(nInputs, nOuts) {
         }
         
         mix[r] = Mix(t,M);
-        mix[r].dummy <== dummy;
         for (var j = 0; j < t; j++) {
             mix[r].in[j] <== ark[r + 1].out[j];
         }
@@ -148,7 +136,6 @@ template PoseidonEx(nInputs, nOuts) {
     }
     
     mix[nRoundsF \ 2 - 1] = Mix(t,P);
-    mix[nRoundsF \ 2 - 1].dummy <== dummy;
     for (var j = 0; j < t; j++) {
         mix[nRoundsF \ 2 - 1].in[j] <== ark[nRoundsF \ 2].out[j];
     }
@@ -163,7 +150,6 @@ template PoseidonEx(nInputs, nOuts) {
         }
         
         mixS[r] = MixS(t, S, r);
-        mixS[r].dummy <== dummy;
         for (var j = 0; j < t; j++) {
             if (j == 0) {
                 mixS[r].in[j] <== sigmaP[r].out + C[(nRoundsF \ 2 + 1) * t + r];
@@ -193,7 +179,6 @@ template PoseidonEx(nInputs, nOuts) {
         }
         
         mix[nRoundsF \ 2 + r] = Mix(t,M);
-        mix[nRoundsF \ 2 + r].dummy <== dummy;
         for (var j = 0; j < t; j++) {
             mix[nRoundsF \ 2 + r].in[j] <== ark[nRoundsF \ 2 + r + 1].out[j];
         }
@@ -207,7 +192,6 @@ template PoseidonEx(nInputs, nOuts) {
     
     for (var i = 0; i < nOuts; i++) {
         mixLast[i] = MixLast(t,M,i);
-        mixLast[i].dummy <== dummy;
         for (var j = 0; j < t; j++) {
             mixLast[i].in[j] <== sigmaF[nRoundsF - 1][j].out;
         }
@@ -221,12 +205,9 @@ template PoseidonEx(nInputs, nOuts) {
 // Use this template to calculate to calculate Poseidon hash of your vector (1 elememnt array for one num)
 template Poseidon(nInputs) {
     signal input in[nInputs];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out;
     
     component pEx = PoseidonEx(nInputs, 1);
-    pEx.dummy <== dummy;
     pEx.initialState <== 0;
     for (var i = 0; i < nInputs; i++) {
         pEx.inputs[i] <== in[i];
