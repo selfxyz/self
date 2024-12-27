@@ -366,7 +366,7 @@ template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
@@ -422,7 +422,7 @@ template BigModInvOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
     signal output out[CHUNK_NUMBER];
     
     
-    var inv[200] = mod_inv(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
+    var inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         out[i] <-- inv[i];
     }
@@ -759,7 +759,7 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
@@ -814,7 +814,7 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
 // those are very "expensive" by constraints operations, try to reduse num of usage if these if u can
 
 // in[0] < in[1]
-template BigLessThan(CHUNK_SIZE, CHUNK_NUMBER){
+template BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[2][CHUNK_NUMBER];
     
     signal output out;
@@ -892,7 +892,7 @@ template BigGreaterEqThan(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal output out;
     
-    component lessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    component lessThan = BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER);
     lessThan.in <== in;
     out <== 1 - lessThan.out;
 }

@@ -32,6 +32,7 @@ const fullSigAlgs = [
 ];
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+// const testSuite = fullSigAlgs;
 
 testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
   describe(`Prove - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter} ${keyLength}`, function () {

@@ -234,7 +234,7 @@ template BigModInvOverflow(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER) {
     for (var i = 0; i < CHUNK_NUMBER; i++){
         mod[i] = div_res[1][i];
     }
-    var inv[200] = mod_inv(CHUNK_SIZE, CHUNK_NUMBER, mod, modulus);
+    var inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, mod, modulus);
 
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         out[i] <-- inv[i];

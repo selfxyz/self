@@ -25,7 +25,7 @@ template VerifyLargeRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E
 
     // Range check which is came from old openpassport impl
     component signatureRangeCheck[CHUNK_NUMBER];
-    component bigLessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    component bigLessThan = BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         signatureRangeCheck[i] = Num2Bits(CHUNK_SIZE);
         signatureRangeCheck[i].in <== signature[i];
@@ -40,7 +40,6 @@ template VerifyLargeRsaPkcs1v1_5(signatureAlgorithm, CHUNK_SIZE, CHUNK_NUMBER, E
         bigPow.base[i] <== signature[i];
         bigPow.modulus[i] <== modulus[i];
     }
-    bigPow.dummy <== dummy;
 
     var padding[5] = getPadding(signatureAlgorithm);
 
