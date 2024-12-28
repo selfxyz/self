@@ -20,6 +20,7 @@ pragma circom 2.1.9;
  19: rsapss_sha256_65537_3072
  21: ecdsa_sha256_brainpool256r1_256
  22: ecdsa_sha384_brainpool384r1_384
+ 23: ecdsa_sha256_secp384r1_384
 */
 
 function getHashLength(signatureAlgorithm) {
@@ -80,6 +81,9 @@ function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 22) {
         return 384;
     }
+    if (signatureAlgorithm == 23) { 
+        return 256;
+    }
     return 0;
 }
 
@@ -136,6 +140,9 @@ function getKeyLength(signatureAlgorithm) {
         return 256;
     }
     if (signatureAlgorithm == 22) { 
+        return 384;
+    }
+    if (signatureAlgorithm == 23) { 
         return 384;
     }
     return 0;
@@ -195,6 +202,9 @@ function getKLengthFactor(signatureAlgorithm) {
         return 2;
     }
     if (signatureAlgorithm == 22) { 
+        return 2;
+    }
+    if (signatureAlgorithm == 23) { 
         return 2;
     }
     return 0;

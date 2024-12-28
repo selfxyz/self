@@ -37,6 +37,7 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<
   ecdsa_sha1_secp256r1_256: 320,
   ecdsa_sha256_secp256r1_256: 384,
   ecdsa_sha384_secp384r1_384: 512,
+  ecdsa_sha256_secp384r1_384: 384,
   rsa_sha256_65537_3072: 384,
   rsa_sha256_3_2048: 384,
   ecdsa_sha256_brainpoolP256r1_256: 384,
@@ -57,6 +58,7 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
   ecdsa_sha1_secp256r1_256: 192,
   ecdsa_sha256_secp256r1_256: 192,
   ecdsa_sha384_secp384r1_384: 256,
+  ecdsa_sha256_secp384r1_384: 192,
   rsa_sha256_65537_3072: 192,
   rsa_sha256_3_2048: 192,
   ecdsa_sha256_brainpoolP256r1_256: 192,
@@ -105,6 +107,7 @@ export enum SignatureAlgorithmIndex {
   rsapss_sha256_65537_3072 = 19,
   ecdsa_sha256_brainpoolP256r1_256 = 21,
   ecdsa_sha384_brainpoolP384r1_384 = 22,
+  ecdsa_sha256_secp384r1_384 = 23,
 }
 
 export const attributeToPosition = {

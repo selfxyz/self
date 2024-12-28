@@ -36,6 +36,8 @@ import {
   mock_dsc_sha256_rsapss_65537_4096,
   mock_dsc_key_sha384_brainpoolP384r1,
   mock_dsc_sha384_brainpoolP384r1,
+  mock_dsc_key_sha256_secp384r1,
+  mock_dsc_sha256_secp384r1,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
@@ -141,6 +143,11 @@ export function genMockPassportData(
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
       break;
+    case 'ecdsa_sha256_secp384r1_384':
+      sampleDataHashes = genSampleDataHashes('large', 32);
+      privateKeyPem = mock_dsc_key_sha256_secp384r1;
+      dsc = mock_dsc_sha256_secp384r1;
+      break;
     case 'ecdsa_sha256_brainpoolP256r1_256':
       sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
@@ -174,6 +181,8 @@ export function genMockPassportData(
   }
 
   const { hashFunction, hashLen } = parseCertificate(dsc);
+
+  console.log('hashFUnction', hashFunction);
 
   const mrzHash = hash(hashFunction, formatMrz(mrz));
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
