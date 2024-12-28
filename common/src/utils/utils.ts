@@ -1,7 +1,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
-import { sha384, sha512_256 } from 'js-sha512';
+import { sha384, sha512 } from 'js-sha512';
 import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
 import {
@@ -252,7 +252,7 @@ export function hash(hashFunction: string, bytesArray: number[]): number[] {
       hashResult = sha384(unsignedBytesArray);
       break;
     case 'sha512':
-      hashResult = sha512_256(unsignedBytesArray);
+      hashResult = sha512(unsignedBytesArray);
       break;
     default:
       console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red

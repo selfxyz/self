@@ -211,6 +211,9 @@ export function generateCircuitInputsProve(
   const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash);
   console.log('\x1b[90m%s\x1b[0m', 'dg1HashOffset', dg1HashOffset);
   assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
+  console.log(
+    JSON.stringify(eContent.slice(dg1HashOffset, dg1HashOffset + 512 / 8).map((x) => x & 0xff))
+  );
 
   const eContentHash = hash(hashFunction, eContent);
   const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash);
