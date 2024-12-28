@@ -37,7 +37,7 @@ template Sha1compression() {
     
     component kT[80];
     for (i = 0; i <= 79; i++){
-        kT[i] = K(i);
+        kT[i] = K_sha1(i);
     }
     
     component tTmp[80];
@@ -48,7 +48,7 @@ template Sha1compression() {
     
     component fSum[5];
     for (i = 0; i < 5; i++){
-        fSum[i] = BinSum(2, 32);
+        fSum[i] = BinSum_sha1(2, 32);
     }
     
     for (var t = 0; t <= 15; t++) {

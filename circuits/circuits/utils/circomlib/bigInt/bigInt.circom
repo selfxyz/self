@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
-include "../bitify/comparators.circom";
-include "../bitify/bitify.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "./bigIntFunc.circom";
 include "./bigIntOverflow.circom";
 include "../int/arithmetic.circom";

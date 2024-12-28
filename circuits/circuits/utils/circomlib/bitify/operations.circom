@@ -1,12 +1,12 @@
 pragma circom  2.1.6;
 
-include "./bitify.circom";
+include "circomlib/circuits/bitify.circom";
 
 //------------------------------------------------------------------------------
 // calculate bin sum of NUM numbers each LEN BITS
 // out is LEN + NUM - 1 LEN bit number
 
-template BinSum(NUM, LEN){
+template BinSum_sha1(NUM, LEN){
     assert (LEN + NUM - 1 <= 253);
     var OUT_LEN = LEN + NUM - 1;
     signal input in[NUM][LEN];

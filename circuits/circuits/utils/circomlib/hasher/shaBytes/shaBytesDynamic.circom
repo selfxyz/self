@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "./dynamic/sha1Bytes.circom";
-include "./dynamic/sha256Bytes.circom";
+include "@zk-email/circuits/lib/sha.circom";
 // include "./dynamic/sha384Bytes.circom";
 // include "./dynamic/sha512Bytes.circom";
 

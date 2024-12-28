@@ -9,7 +9,7 @@ include "secp256r1Verifier.circom";
 // include "../circomlib/signature/rsa/verifyLargeRsaPkcs1v1_5.circom";
 include "../circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 include "../circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
-include "../circomlib/utils/bytes.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);

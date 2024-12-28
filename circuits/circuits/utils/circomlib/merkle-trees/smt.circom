@@ -1,9 +1,9 @@
 pragma circom 2.1.9;
 
 include "../hasher/hash.circom";
-include "../bitify/comparators.circom";
-include "../bitify/bitify.circom";
-include "../utils/array.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
+include "@zk-email/circuits/utils/array.circom";
 include "binary-merkle-root.circom";
 include "getCommonLength.circom";
 

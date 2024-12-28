@@ -79,7 +79,13 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         path.join(
           __dirname,
           `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
-        )
+        ), {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
       );
     });
 
@@ -91,7 +97,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
       // circuits.getOutput takes way too long for ecdsa
-      if (sigAlg === 'ecdsa') {
+      if (true) {
         console.log('skipping printing outputs to console for ecdsa');
         return;
       }

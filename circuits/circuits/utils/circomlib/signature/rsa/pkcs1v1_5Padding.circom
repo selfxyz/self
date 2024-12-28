@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../bitify/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 
 // PKCS1v1.5 Padding Scheme
 // 0x00 || 0x01 || PS || 0x00 || OID || Hash

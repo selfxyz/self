@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
 include "../../circomlib/hasher/hash.circom";
-include "../../circomlib/bitify/comparators.circom";
+include "circomlib/circuits/comparators.circom";
 include "../../circomlib/mux/mux1.circom";
 
 // This circuit is designed to calculate the root of a binary Merkle

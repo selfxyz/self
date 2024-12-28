@@ -1,8 +1,8 @@
 pragma circom 2.1.9;
 
-include "../../../zkemail/lib/fp.circom";
+include "@zk-email/circuits/lib/fp.circom";
 include "./pkcs1v1_5Padding.circom";
-include "../../bitify/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 
 // For 2048bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
 // For 3072bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 48

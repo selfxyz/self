@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../circomlib/bitify/comparators.circom";
+include "circomlib/circuits/comparators.circom";
 
 template DateIsLess() {
     signal input firstDay;

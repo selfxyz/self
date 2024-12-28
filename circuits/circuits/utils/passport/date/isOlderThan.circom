@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../../circomlib/bitify/comparators.circom";
-include "../../circomlib/bitify/bitify.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "./dateIsLess.circom";
 
 template IsOlderThan() {

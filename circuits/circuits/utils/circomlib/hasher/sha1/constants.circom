@@ -1,8 +1,8 @@
 pragma circom 2.1.6;
 
-include "../../bitify/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 
-template H(x) {
+template H_sha1(x) {
     signal output out[32];
     var c[5] = [
     0x67452301,
@@ -20,7 +20,7 @@ template H(x) {
     }
 }
 
-template K(t) {
+template K_sha1(t) {
     signal output out[32];
     var k[4] = [0x5a827999, 0x6ed9eba1, 0x8f1bbcdc, 0xca62c1d6];
     

@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../../../bitify/bitify.circom";
-include "../../../bitify/comparators.circom";
+include "circomlib/circuits/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 include "../../other/fp.circom";
 include "../../other/array.circom";
 include "../../sha2/sha384/sha384_hash_bits.circom";
