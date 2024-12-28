@@ -79,13 +79,14 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         path.join(
           __dirname,
           `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
-        ), {
-        include: [
-          'node_modules',
-          './node_modules/@zk-kit/binary-merkle-root.circom/src',
-          './node_modules/circomlib/circuits',
-        ],
-      }
+        ),
+        {
+          include: [
+            'node_modules',
+            './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            './node_modules/circomlib/circuits',
+          ],
+        }
       );
     });
 
