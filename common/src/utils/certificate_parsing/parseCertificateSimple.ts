@@ -4,11 +4,10 @@ import { extractHashFunction, getFriendlyName } from "./oids";
 import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, PublicKeyDetailsRSAPSS } from "./dataStructure";
 import { getECDSACurveBits, identifyCurve, StandardCurve } from "./curves";
 import { getIssuerCountryCode, getSubjectKeyIdentifier } from "./utils";
-import fs from 'fs';
-import { execSync } from 'child_process';
 import { getAuthorityKeyIdentifier } from "../certificates/handleCertificate";
-import { parseCertificateSimple } from "./parseCertificateSimple";
-export function parseCertificate(pem: string, fileName: string): any {
+
+
+export function parseCertificateSimple(pem: string): any {
     let certificateData: CertificateData = {
         id: '',
         issuer: '',
@@ -25,30 +24,78 @@ export function parseCertificate(pem: string, fileName: string): any {
         rawTxt: ''
     };
     try {
-        certificateData = parseCertificateSimple(pem);
-        const tempCertPath = `/tmp/${fileName}.pem`;
-        fs.writeFileSync(tempCertPath, pem);
-        try {
-            const openSslOutput = execSync(`openssl x509 -in ${tempCertPath} -text -noout`).toString();
-            certificateData.rawTxt = openSslOutput;
-        } catch (error) {
-            console.error(`Error executing OpenSSL command: ${error}`);
-            certificateData.rawTxt = 'Error: Unable to generate human-readable format';
-        } finally {
-            fs.unlinkSync(tempCertPath);
+        const pemFormatted = pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, "");
+        const binary = Buffer.from(pemFormatted, "base64");
+        const arrayBuffer = new ArrayBuffer(binary.length);
+        const view = new Uint8Array(arrayBuffer);
+        for (let i = 0; i < binary.length; i++) {
+            view[i] = binary[i];
         }
 
+        const asn1 = asn1js.fromBER(arrayBuffer);
+        if (asn1.offset === -1) {
+            throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
+        }
+
+        const cert = new Certificate({ schema: asn1.result });
+        const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
+        const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
+        const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
+        const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
+
+
+        let params;
+        if (publicKeyAlgoFN === 'RSA') {
+            if (signatureAlgoFN === 'RSASSA_PSS') {
+                certificateData.signatureAlgorithm = "rsapss";
+                params = getParamsRSAPSS(cert);
+                certificateData.hashAlgorithm = (params as PublicKeyDetailsRSAPSS).hashAlgorithm;
+            }
+            else {
+                certificateData.hashAlgorithm = extractHashFunction(signatureAlgoFN);
+                certificateData.signatureAlgorithm = "rsa";
+                params = getParamsRSA(cert);
+            }
+
+        }
+        else if (publicKeyAlgoFN === 'ECC') {
+            certificateData.hashAlgorithm = extractHashFunction(signatureAlgoFN);
+            certificateData.signatureAlgorithm = "ecdsa";
+            params = getParamsECDSA(cert);
+        }
+        else if (publicKeyAlgoFN === 'RSASSA_PSS') {
+            certificateData.signatureAlgorithm = "rsapss";
+            //different certificate structure than the RSA/RSAPSS mix, we can't retrieve the modulus the same way as for RSA
+            // console.log(cert);
+
+            //TODO: implement the parsing of the RSASSA_PSS certificate
+            params = getParamsRSAPSS2(cert);
+        }
+        else {
+            console.log(publicKeyAlgoFN);
+        }
+        certificateData.publicKeyDetails = params;
+        certificateData.issuer = getIssuerCountryCode(cert);;
+        certificateData.validity = {
+            notBefore: cert.notBefore.value.toString(),
+            notAfter: cert.notAfter.value.toString()
+        };
+        const ski = getSubjectKeyIdentifier(cert);
+        certificateData.id = ski.slice(0, 12);
+        certificateData.subjectKeyIdentifier = ski;
+        certificateData.rawPem = pem;
+
+        const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
+        certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
 
         return certificateData;
 
     } catch (error) {
-        console.error(`Error processing certificate ${fileName}:`, error);
+        console.error(`Error processing certificate`, error);
         throw error;
     }
+
 }
-
-
-
 
 function getParamsRSA(cert: Certificate): PublicKeyDetailsRSA {
     const publicKeyValue = cert.subjectPublicKeyInfo.parsedKey as RSAPublicKey;

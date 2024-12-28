@@ -13,7 +13,7 @@ import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
 import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import axios from 'axios';
-import { parseCertificate, parseCertificateSimple } from './certificate_parsing/parseCertificate';
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 import { CertificateData, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
