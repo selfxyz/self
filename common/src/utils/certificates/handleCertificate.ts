@@ -59,7 +59,7 @@ export function parseCertificate(pem: string) {
 }
 
 export const getCircuitName = (
-  circuitMode: "prove" | "dsc" | "vc_and_disclose",
+  circuitMode: 'prove' | 'dsc' | 'vc_and_disclose',
   signatureAlgorithm: string,
   hashFunction: string,
   domainParameter: string,
@@ -94,20 +94,20 @@ export const getCircuitName = (
     keyLength
   );
 };
-export const getCircuitNameOld = (circuitMode: Mode, signatureAlgorithm: string, hashFunction: string) => {
+export const getCircuitNameOld = (
+  circuitMode: Mode,
+  signatureAlgorithm: string,
+  hashFunction: string
+) => {
   const circuit = circuitNameFromMode[circuitMode];
   if (circuit == 'vc_and_disclose') {
     return 'vc_and_disclose';
+  } else if (signatureAlgorithm === 'ecdsa') {
+    return circuit + '_' + signatureAlgorithm + '_secp256r1_' + hashFunction;
+  } else {
+    return circuit + '_' + signatureAlgorithm + '_65537_' + hashFunction;
   }
-  else if (signatureAlgorithm === 'ecdsa') {
-    return circuit + "_" + signatureAlgorithm + "_secp256r1_" + hashFunction;
-  }
-  else {
-    return circuit + "_" + signatureAlgorithm + "_65537_" + hashFunction;
-  }
-}
-
-
+};
 
 export function getSignatureAlgorithmDetails(oid: string): {
   signatureAlgorithm: string;

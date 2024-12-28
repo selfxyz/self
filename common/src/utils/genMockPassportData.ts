@@ -34,11 +34,15 @@ import {
   mock_dsc_sha256_rsapss_65537_3072,
   mock_dsc_key_rsapss_65537_4096,
   mock_dsc_sha256_rsapss_65537_4096,
+  mock_dsc_key_sha384_brainpoolP384r1,
+  mock_dsc_sha384_brainpoolP384r1,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
 import { parseCertificate } from './certificates/handleCertificate';
 import { SignatureAlgorithm } from './types';
+import { randomBytes } from 'crypto';
+import { getCurveForElliptic } from './certificates/curves';
 export function genMockPassportData(
   signatureType: SignatureAlgorithm,
   nationality: keyof typeof countryCodes,
@@ -93,74 +97,79 @@ export function genMockPassportData(
 
   switch (signatureType) {
     case 'rsa_sha1_65537_2048':
-      sampleDataHashes = sampleDataHashes_small;
+      sampleDataHashes = genSampleDataHashes('small', 20);
       privateKeyPem = mock_dsc_key_sha1_rsa_4096;
       dsc = mock_dsc_sha1_rsa_4096;
       break;
     case 'rsa_sha256_65537_2048':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsa_4096;
       dsc = mock_dsc_sha256_rsa_4096;
       break;
     case 'rsapss_sha256_65537_2048':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
       dsc = mock_dsc_sha256_rsapss_4096;
       break;
     case 'rsapss_sha256_3_4096':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsapss_3_4096;
       dsc = mock_dsc_sha256_rsapss_3_4096;
       break;
     case 'rsapss_sha256_3_3072':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsapss_3_3072;
       dsc = mock_dsc_sha256_rsapss_3_3072;
       break;
     case 'rsapss_sha384_65537_3072':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha384_rsapss_65537_3072;
       dsc = mock_dsc_sha384_rsapss_65537_3072;
       break;
     case 'ecdsa_sha256_secp256r1_256':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_ecdsa;
       dsc = mock_dsc_sha256_ecdsa;
       break;
     case 'ecdsa_sha1_secp256r1_256':
-      sampleDataHashes = sampleDataHashes_small;
+      sampleDataHashes = genSampleDataHashes('small', 20);
       privateKeyPem = mock_dsc_key_sha1_ecdsa;
       dsc = mock_dsc_sha1_ecdsa;
       break;
     case 'ecdsa_sha384_secp384r1_384':
-      sampleDataHashes = sampleDataHashes_small;
+      sampleDataHashes = genSampleDataHashes('large', 48);
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
       break;
     case 'ecdsa_sha256_brainpoolP256r1_256':
-      sampleDataHashes = sampleDataHashes_small;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
       dsc = mock_dsc_sha256_brainpoolP256r1;
       break;
     case 'rsa_sha256_3_2048':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsa_3_2048;
       dsc = mock_dsc_sha256_rsa_3_2048;
       break;
     case 'rsa_sha256_65537_3072':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsa_65537_3072;
       dsc = mock_dsc_sha256_rsa_65537_3072;
       break;
     case 'rsapss_sha256_65537_3072':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_sha256_rsapss_65537_3072;
       dsc = mock_dsc_sha256_rsapss_65537_3072;
       break;
     case 'rsapss_sha256_65537_4096':
-      sampleDataHashes = sampleDataHashes_large;
+      sampleDataHashes = genSampleDataHashes('large', 32);
       privateKeyPem = mock_dsc_key_rsapss_65537_4096;
       dsc = mock_dsc_sha256_rsapss_65537_4096;
+      break;
+    case 'ecdsa_sha384_brainpoolP384r1_384':
+      sampleDataHashes = genSampleDataHashes('large', 48);
+      privateKeyPem = mock_dsc_key_sha384_brainpoolP384r1;
+      dsc = mock_dsc_sha384_brainpoolP384r1;
       break;
   }
 
@@ -190,6 +199,14 @@ export function genMockPassportData(
   };
 }
 
+const genSampleDataHashes = (
+  type: 'small' | 'large',
+  bytes: 20 | 32 | 48 | 64
+): [number, number[]][] => {
+  const groups = type === 'small' ? [2, 3, 14] : [2, 3, 11, 12, 13, 14];
+  return groups.map((group) => [group, Array.from(randomBytes(bytes))]);
+};
+
 function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
   const { signatureAlgorithm, hashFunction, curve } = parseCertificate(dsc);
 
@@ -205,7 +222,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     const signatureBytes = privateKey.sign(md, pss);
     return Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
   } else if (signatureAlgorithm === 'ecdsa') {
-    const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
+    let curveForElliptic = getCurveForElliptic(curve);
     const ec = new elliptic.ec(curveForElliptic);
 
     const privateKeyDer = Buffer.from(
@@ -216,9 +233,9 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
-
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    let md = forge.md[hashFunction].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
 

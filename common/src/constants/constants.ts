@@ -39,6 +39,8 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<
   ecdsa_sha384_secp384r1_384: 512,
   rsa_sha256_65537_3072: 384,
   rsa_sha256_3_2048: 384,
+  ecdsa_sha256_brainpoolP256r1_256: 384,
+  ecdsa_sha384_brainpoolP384r1_384: 512,
 };
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
@@ -54,9 +56,11 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
   rsapss_sha384_65537_3072: 256,
   ecdsa_sha1_secp256r1_256: 192,
   ecdsa_sha256_secp256r1_256: 192,
-  ecdsa_sha384_secp384r1_384: 192,
+  ecdsa_sha384_secp384r1_384: 256,
   rsa_sha256_65537_3072: 192,
   rsa_sha256_3_2048: 192,
+  ecdsa_sha256_brainpoolP256r1_256: 192,
+  ecdsa_sha384_brainpoolP384r1_384: 256,
 };
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -98,7 +102,9 @@ export enum SignatureAlgorithmIndex {
   rsapss_sha256_3_3072 = 16,
   rsapss_sha256_3_4096 = 17,
   rsapss_sha384_65537_3072 = 18,
-  rsapss_sha256_65537_3072 = 19
+  rsapss_sha256_65537_3072 = 19,
+  ecdsa_sha256_brainpoolP256r1_256 = 21,
+  ecdsa_sha384_brainpoolP384r1_384 = 22,
 }
 
 export const attributeToPosition = {
@@ -123,7 +129,7 @@ export const n_dsc = 64;
 export const n_dsc_3072 = 96;
 export const n_dsc_4096 = 64;
 export const k_dsc = 32;
-export const k_dsc_3072 = 32;  //48;
+export const k_dsc_3072 = 32; //48;
 export const k_dsc_4096 = 64;
 export const n_csca = 64;
 export const k_csca = 64;

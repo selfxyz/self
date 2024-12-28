@@ -1,11 +1,7 @@
 pragma circom 2.1.9;
 
-// include "../rsa/rsaPkcs1.circom";
-// include "secp256r1Verifier.circom";
 include "../circomlib/signature/rsapss/rsapss.circom";
-include "secp256r1Verifier.circom";
-// include "../rsapss/rsapss.circom";
-// include "../rsa/rsa.circom";
+include "ecdsaVerifier.circom";
 include "../circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom";
 include "../circomlib/utils/bytes.circom";
 
@@ -77,12 +73,13 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     }
     if (
-        signatureAlgorithm == 7 || 
-        signatureAlgorithm == 8 || 
-        signatureAlgorithm == 9 || 
-        signatureAlgorithm == 21 
+        signatureAlgorithm == 7 
+        || signatureAlgorithm == 8 
+        || signatureAlgorithm == 9 
+        || signatureAlgorithm == 21 
+        || signatureAlgorithm == 22
     ) {
-        Secp256r1Verifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
+        EcdsaVerifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
     }
     if (signatureAlgorithm == 10) {
         component rsa = VerifyRsaPkcs1v1_5(signatureAlgorithm, n, k, 65537, 256);

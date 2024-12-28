@@ -31,7 +31,6 @@ export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, hashFunction, modulus, x, y, bits, curve, exponent } =
     parseCertificate(dsc);
   const { n, k } = getNAndK(signatureAlgorithm);
-  console.log(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`);
   const sigAlgKey = `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`;
   const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 

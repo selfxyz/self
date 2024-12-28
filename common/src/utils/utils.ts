@@ -37,7 +37,15 @@ export function getNAndK(sigAlg: SignatureAlgorithm) {
   }
 
   if (sigAlg.startsWith('ecdsa_')) {
-    return { n: n_dsc_ecdsa, k: k_dsc_ecdsa }; // 256/32 = 8
+    if (sigAlg.endsWith('256')) {
+      return { n: n_dsc_ecdsa, k: 4 };
+    } else if (sigAlg.endsWith('384')) {
+      return { n: n_dsc_ecdsa, k: 6 };
+    } else if (sigAlg.endsWith('512')) {
+      return { n: n_dsc_ecdsa, k: 8 };
+    } else if (sigAlg.endsWith('521')) {
+      return { n: n_dsc_ecdsa, k: 16 };
+    }
   }
 
   if (sigAlg.startsWith('rsapss_')) {

@@ -3,7 +3,7 @@ pragma circom 2.1.9;
 include "./signatureAlgorithm.circom";
 include "../circomlib/signature/ecdsa.circom";
 
-template Secp256r1Verifier(signatureAlgorithm, n, k) {
+template EcdsaVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 

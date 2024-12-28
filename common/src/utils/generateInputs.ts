@@ -4,8 +4,8 @@ import {
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
 } from '../constants/constants';
-import { assert, shaPad } from './shaPad';
-import { PassportData } from './types';
+import { assert, sha384_512Pad, shaPad } from './shaPad';
+import { PassportData, SignatureAlgorithm } from './types';
 import {
   bytesToBigDecimal,
   formatMrz,
@@ -188,7 +188,9 @@ export function generateCircuitInputsProve(
   let pubKey: any;
   let signature: any;
 
-  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
+  const { n, k } = getNAndK(
+    `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as SignatureAlgorithm
+  );
 
   if (signatureAlgorithm === 'ecdsa') {
     const { r, s } = extractRSFromSignature(encryptedDigest);
@@ -224,12 +226,16 @@ export function generateCircuitInputsProve(
     );
   }
 
-  const [eContentPadded, eContentLen] = shaPad(
+  console.log('hashFunction', hashFunction);
+  const paddingFunction =
+    hashFunction == 'sha1' || hashFunction == 'sha256' ? shaPad : sha384_512Pad;
+
+  const [eContentPadded, eContentLen] = paddingFunction(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
   );
 
-  const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
+  const [signedAttrPadded, signedAttrPaddedLen] = paddingFunction(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
   );
@@ -245,8 +251,6 @@ export function generateCircuitInputsProve(
     closestleaf: smt_leaf_value,
     siblings: smt_siblings,
   } = generateSMTProof(name_smt, name_leaf);
-
-  const dummy = 0;
 
   return {
     selector_mode: formatInput(selector_mode),
@@ -272,7 +276,7 @@ export function generateCircuitInputsProve(
     smt_leaf_value: formatInput(smt_leaf_value),
     smt_siblings: formatInput(smt_siblings),
     selector_ofac: formatInput(selector_ofac),
-    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
   };
 }
 
