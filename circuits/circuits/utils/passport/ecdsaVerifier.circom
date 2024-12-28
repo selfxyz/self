@@ -15,11 +15,18 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
 
     signal hash[n * k];
 
-    for (var i = n * k - 1; i >= 0; i--) {
-        if (i <= n * k - 1 - HASH_LEN_BITS) {
-            hash[i] <== 0;
-        }else { 
-            hash[i] <== hashParsed[i - n * k + HASH_LEN_BITS];
+    if (HASH_LEN_BITS >= n * k) { 
+        for (var i = 0; i < n * k; i++) {
+            hash[i] <== hashParsed[i];
+        }
+    }
+    if (HASH_LEN_BITS < n * k) {
+        for (var i = n * k - 1; i >= 0; i--) {
+            if (i <= n * k - 1 - HASH_LEN_BITS) {
+                hash[i] <== 0;
+            } else { 
+                hash[i] <== hashParsed[i - n * k + HASH_LEN_BITS];
+            }
         }
     }
 
@@ -93,7 +100,7 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.hashed <== hash;
         ecdsa_verify.dummy <== 0;
     }
-    if (signatureAlgorithm == 21) {
+    if (signatureAlgorithm == 21 || signatureAlgorithm == 24) {
         component ecdsa_verify = verifyECDSABits(n, k, [
             16810331318623712729,
             18122579188607900780,
