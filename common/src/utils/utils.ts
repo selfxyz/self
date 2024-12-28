@@ -409,8 +409,23 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
   return { merkleProofSiblings, merkleProofIndices, depthForThisOne };
 }
 
-export function findSubarrayIndex(arr: any[], subarray: any[]): number {
-  return arr.findIndex((_, index) => subarray.every((element, i) => element === arr[index + i]));
+export function findSubarrayIndex(arr: number[], subArr: number[]): number {
+  if (!arr || !Array.isArray(arr) || !subArr || !Array.isArray(subArr)) {
+    console.warn('Invalid input to findSubarrayIndex:', { arr, subArr });
+    return -1;
+  }
+
+  if (subArr.length === 0) {
+    return -1;
+  }
+
+  if (subArr.length > arr.length) {
+    return -1;
+  }
+
+  return arr.findIndex((_, i) =>
+    subArr.every((val, j) => arr[i + j] === val)
+  );
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
@@ -479,9 +494,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-      Array.from(str)
-        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-        .join('')
+    Array.from(str)
+      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+      .join('')
   );
 }
 
