@@ -141,7 +141,7 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
             1347097566612230435,
             1526563086152259252,
             1107163671716839903,
-            1014016958243434832
+            10140169582434348328
         ], n * k);
 
         ecdsa_verify.pubkey <== pubkey_xy;
