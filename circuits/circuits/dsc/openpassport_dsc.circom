@@ -1,14 +1,14 @@
 pragma circom 2.1.9;
 
-include "../utils/circomlib/bitify/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 include "../utils/circomlib/hasher/shaBytes/shaBytesDynamic.circom";
-include "../utils/circomlib/bitify/comparators.circom";
+include "circomlib/circuits/comparators.circom";
 include "../utils/circomlib/hasher/hash.circom";
 include "../utils/circomlib/merkle-trees/binary-merkle-root.circom";
 include "../utils/passport/customHashers.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/signatureVerifier.circom";
-include "../utils/circomlib/utils/bytes.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 
 
 template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, dscPubkeyBytesLength, nLevels) {

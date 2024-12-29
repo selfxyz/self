@@ -18,7 +18,7 @@
 */
 pragma circom 2.0.0;
 
-include "../bitify/bitify.circom";
+include "circomlib/circuits/bitify.circom";
 
 // Returns 1 if in (in binary) > ct
 

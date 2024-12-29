@@ -2,8 +2,8 @@ pragma circom 2.1.5;
 
 include "../../sha1/sha1compression.circom";
 include "../../sha1/constants.circom";
-include "../../../bitify/bitify.circom";
-include "../../../utils/array.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "circomlib/circuits/bitify.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
@@ -59,11 +59,11 @@ template Sha1General(maxBitsPadded) {
     bitLengthVerifier.in[1] <== maxBitsPadded;
     bitLengthVerifier.out === 1;
 
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
 
     component sha1compression[maxBlocks];
     

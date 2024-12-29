@@ -9,6 +9,7 @@ include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
+//include "@zk-email/circuits/utils/bytes.circom";
 
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);

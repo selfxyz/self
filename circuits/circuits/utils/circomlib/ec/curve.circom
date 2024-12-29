@@ -7,8 +7,8 @@ include "./powers/brainpoolP256r1pows.circom";
 include "./powers/brainpoolP384r1pows.circom";
 include "./powers/p256pows.circom";
 include "./powers/p384pows.circom";
-include "../bitify/bitify.circom";
-include "../bitify/comparators.circom";
+include "circomlib/circuits/bitify.circom";
+include "circomlib/circuits/comparators.circom";
 include "../int/arithmetic.circom";
 include "./get.circom";
 

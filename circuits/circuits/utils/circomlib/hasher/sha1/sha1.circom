@@ -11,11 +11,11 @@ template Sha1HashChunks(BLOCK_NUM) {
     var i;
     var k;
     
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
     
     component sha1Compression[BLOCK_NUM];
     
@@ -64,11 +64,11 @@ template Sha1HashBits(LEN) {
     var i;
     var k;
     
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
     
     component sha1Compression[BLOCK_NUM];
     
