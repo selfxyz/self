@@ -36,9 +36,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
 
   const { toast } = useNavigationStore();
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    "rsa sha256": "rsa_sha256",
-    "rsa sha1": "rsa_sha1",
-    "rsapss sha256": "rsapss_sha256"
+    "rsa sha256": "rsa_sha256_65537_2048",
+    "rsa sha1": "rsa_sha1_65537_2048",
+    "rsapss sha256": "rsapss_sha256_65537_2048"
   } as const;
 
   const handleGenerate = useCallback(async () => {

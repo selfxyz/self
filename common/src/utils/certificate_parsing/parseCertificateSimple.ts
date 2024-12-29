@@ -7,7 +7,7 @@ import { getIssuerCountryCode, getSubjectKeyIdentifier } from "./utils";
 import { getAuthorityKeyIdentifier } from "../certificates/handleCertificate";
 
 
-export function parseCertificateSimple(pem: string): any {
+export function parseCertificateSimple(pem: string): CertificateData {
     let certificateData: CertificateData = {
         id: '',
         issuer: '',
@@ -87,6 +87,11 @@ export function parseCertificateSimple(pem: string): any {
 
         const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
         certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
+
+        // corner case for rsapss
+        if (certificateData.signatureAlgorithm === "rsapss" && !certificateData.hashAlgorithm) {
+            certificateData.hashAlgorithm = (certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS).hashAlgorithm;
+        }
 
         return certificateData;
 

@@ -9,7 +9,7 @@ import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/ap
 import CustomButton from '../components/CustomButton';
 import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitName, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
+import { getCircuitNameOld, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
@@ -45,7 +45,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
   const [isConnecting, setIsConnecting] = useState(false);
   const { signatureAlgorithm, hashFunction, authorityKeyIdentifier } = parseCertificate(passportData.dsc);
   const { secret, dscSecret } = useUserStore.getState();
-  const circuitName = getCircuitName(selectedApp.mode, signatureAlgorithm, hashFunction);
+  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, hashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {

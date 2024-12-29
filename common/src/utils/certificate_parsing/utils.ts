@@ -1,6 +1,7 @@
 import { asn1 } from "node-forge";
 import * as asn1js from "asn1js";
 import { Certificate } from "pkijs";
+import { sha256 } from 'js-sha256';
 
 export const getSubjectKeyIdentifier = (cert: Certificate): string => {
     const subjectKeyIdentifier = cert.extensions.find(
@@ -13,10 +14,9 @@ export const getSubjectKeyIdentifier = (cert: Certificate): string => {
         return skiValue
     } else {
         // do a sha1 of the certificate tbs
-        const crypto = require('crypto');
-        const sha1 = crypto.createHash('sha1');
-        sha1.update(cert.tbsView);
-        return sha1.digest('hex');
+        const hash = sha256.create();
+        hash.update(cert.tbsView);
+        return hash.hex();
     }
 }
 

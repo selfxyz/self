@@ -8,6 +8,7 @@ import { Buffer } from 'buffer';
 import * as amplitude from '@amplitude/analytics-react-native';
 import useUserStore from '../stores/userStore';
 import useNavigationStore from '../stores/navigationStore';
+import { parsePassportData } from './parsePassportData';
 
 export const scan = async (setModalProofStep: (modalProofStep: number) => void) => {
   const {
@@ -177,17 +178,17 @@ const handleResponseIOS = async (
 
   const encryptedDigestArray = Array.from(Buffer.from(signatureBase64, 'base64')).map(byte => byte > 127 ? byte - 256 : byte);
 
-  amplitude.track('nfc_response_parsed', {
-    dataGroupsPresent: parsed?.dataGroupsPresent,
-    eContentLength: signedEContentArray?.length,
-    concatenatedDataHashesLength: concatenatedDataHashesArraySigned?.length,
-    encryptedDigestLength: encryptedDigestArray?.length,
-    activeAuthenticationPassed: parsed?.activeAuthenticationPassed,
-    isPACESupported: parsed?.isPACESupported,
-    isChipAuthenticationSupported: parsed?.isChipAuthenticationSupported,
-    encapsulatedContentDigestAlgorithm: parsed?.encapsulatedContentDigestAlgorithm,
-    dsc: pem,
-  });
+  // amplitude.track('nfc_response_parsed', {
+  //   dataGroupsPresent: parsed?.dataGroupsPresent,
+  //   eContentLength: signedEContentArray?.length,
+  //   concatenatedDataHashesLength: concatenatedDataHashesArraySigned?.length,
+  //   encryptedDigestLength: encryptedDigestArray?.length,
+  //   activeAuthenticationPassed: parsed?.activeAuthenticationPassed,
+  //   isPACESupported: parsed?.isPACESupported,
+  //   isChipAuthenticationSupported: parsed?.isChipAuthenticationSupported,
+  //   encapsulatedContentDigestAlgorithm: parsed?.encapsulatedContentDigestAlgorithm,
+  //   dsc: pem,
+  // });
 
   const passportData = {
     mrz,
@@ -201,6 +202,8 @@ const handleResponseIOS = async (
     photoBase64: "data:image/jpeg;base64," + parsed.passportPhoto,
     mockUser: false
   };
+  const parsedPassportData = parsePassportData(passportData);
+  amplitude.track('nfc_response_parsed', parsedPassportData);
 
   try {
     useUserStore.getState().registerPassportData(passportData)
@@ -280,16 +283,18 @@ const handleResponseAndroid = async (
   console.log("encapContent", encapContent)
   console.log("documentSigningCertificate", documentSigningCertificate)
 
-  amplitude.track('nfc_response_parsed', {
-    dataGroupHashesLength: passportData?.eContent?.length,
-    eContentLength: passportData?.eContent?.length,
-    encryptedDigestLength: passportData?.encryptedDigest?.length,
-    digestAlgorithm: digestAlgorithm,
-    signerInfoDigestAlgorithm: signerInfoDigestAlgorithm,
-    digestEncryptionAlgorithm: digestEncryptionAlgorithm,
-    dsc: pem,
-    mockUser: false
-  });
+  const parsedPassportData = parsePassportData(passportData);
+  amplitude.track('nfc_response_parsed', parsedPassportData);
+  // amplitude.track('nfc_response_parsed', {
+  //   dataGroupHashesLength: passportData?.eContent?.length,
+  //   eContentLength: passportData?.eContent?.length,
+  //   encryptedDigestLength: passportData?.encryptedDigest?.length,
+  //   digestAlgorithm: digestAlgorithm,
+  //   signerInfoDigestAlgorithm: signerInfoDigestAlgorithm,
+  //   digestEncryptionAlgorithm: digestEncryptionAlgorithm,
+  //   dsc: pem,
+  //   mockUser: false
+  // });
 
   try {
     await useUserStore.getState().registerPassportData(passportData)

@@ -18,6 +18,7 @@ import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 import { CertificateData, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
 import { formatInput } from './generateInputs';
+import { SignatureAlgorithm } from './types';
 
 export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
   const modulusNumArray = [];
@@ -66,7 +67,7 @@ export function generateCircuitInputsDSC(
 
   const {
     signatureAlgorithm,
-    hashFunction,
+    hashAlgorithm,
     authorityKeyIdentifier,
     publicKeyDetails
   } = parseCertificateSimple(dscCertificate);
@@ -77,7 +78,7 @@ export function generateCircuitInputsDSC(
   [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
 
   console.log("signatureAlgorithm: ", signatureAlgorithm);
-  const { n, k } = getNAndK(signatureAlgorithm);
+  const { n, k } = getNAndK(signatureAlgorithm as SignatureAlgorithm);
   const dscSignature = dscCert.signature;
   const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
     char.charCodeAt(0)
@@ -87,9 +88,9 @@ export function generateCircuitInputsDSC(
   let curve, exponent;
 
   if (signatureAlgorithm === 'rsa' || signatureAlgorithm === 'rsapss') {
-    const modulus = publicKeyDetails.modulus;
-    exponent = publicKeyDetails.exponent;
-    startIndex = findStartIndex(publicKeyDetails.modulus, dsc_message_padded).toString();
+    const modulus = (publicKeyDetails as PublicKeyDetailsRSA).modulus;
+    exponent = (publicKeyDetails as PublicKeyDetailsRSA).exponent;
+    startIndex = findStartIndex((publicKeyDetails as PublicKeyDetailsRSA).modulus, dsc_message_padded).toString();
     dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString());
     dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString();
     console.log("\x1b[34m", "startIndex: ", startIndex, "\x1b[0m");
@@ -140,7 +141,7 @@ export function generateCircuitInputsDSC(
 
 
   return {
-    signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashFunction}_${4096}`,
+    signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashAlgorithm}_${4096}`,
     inputs: {
       raw_dsc_cert: dsc_message_padded_formatted,
       raw_dsc_cert_padded_bytes: [dsc_messagePaddedLen_formatted],

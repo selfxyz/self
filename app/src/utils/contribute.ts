@@ -46,7 +46,7 @@ export async function contribute(passportData: any): Promise<void> {
 
         console.log("Data to be sent:", JSON.stringify(data));
 
-        const response = await axios.post('https://contribute.proofofpassport.com', {
+        const response = await axios.post('https://contribute.openpassport.app', {
             nullifier: forge.md.sha256.create().update(passportData.encryptedDigest.toString()).digest().toHex(),
             data: data
         });
