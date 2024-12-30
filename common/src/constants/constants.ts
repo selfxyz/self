@@ -46,6 +46,7 @@ export const MAX_PADDED_ECONTENT_LEN: Partial<
   ecdsa_sha512_brainpoolP256r1_256: 640,
   ecdsa_sha512_brainpoolP384r1_384: 640,
   ecdsa_sha1_brainpoolP224r1_224: 320,
+  ecdsa_sha256_brainpoolP224r1_224: 384,
 };
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
@@ -71,6 +72,7 @@ export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
   ecdsa_sha512_brainpoolP256r1_256: 256,
   ecdsa_sha512_brainpoolP384r1_384: 256,
   ecdsa_sha1_brainpoolP224r1_224: 192,
+  ecdsa_sha256_brainpoolP224r1_224: 192,
 };
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -120,6 +122,7 @@ export enum SignatureAlgorithmIndex {
   ecdsa_sha512_brainpoolP256r1_256 = 25,
   ecdsa_sha512_brainpoolP384r1_384 = 26,
   ecdsa_sha1_brainpoolP224r1_224 = 27,
+  ecdsa_sha256_brainpoolP224r1_224 = 28,
 }
 
 export const attributeToPosition = {

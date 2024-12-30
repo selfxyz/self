@@ -156,7 +156,7 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.hashed <== hash;
         ecdsa_verify.dummy <== 0;
     }
-    if (signatureAlgorithm == 27) { 
+    if (signatureAlgorithm == 27 || signatureAlgorithm == 28) { 
         component ecdsa_verify = verifyECDSABits(n, k, [
             3402800963,
             2953063001,
