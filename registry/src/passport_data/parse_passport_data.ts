@@ -8,20 +8,31 @@ function parsePassportFile(filePath: string) {
         const fileContent = fs.readFileSync(filePath, 'utf8');
         const passportData = JSON.parse(fileContent) as PassportData;
 
-        const info = parsePassportData(passportData);
+        const passportMetaData = parsePassportData(passportData);
 
         // Print the results
         console.log(`\nProcessing file: ${path.basename(filePath)}`);
         console.log('----------------------------------------');
-        if (info.countryCode) console.log(`Country Code: ${info.countryCode}`);
-        console.log(`Data Groups: ${info.dataGroups}`);
-        console.log(`DG1 Hash Function: ${info.dg1HashFunction}`);
-        console.log(`DG1 Hash Offset: ${info.dg1HashOffset}`);
-        console.log(`eContent Size: ${info.eContentSize}`);
-        console.log(`eContent Hash Function: ${info.eContentHashFunction}`);
-        console.log(`eContent Hash Offset: ${info.eContentHashOffset}`);
-        console.log(`Signed Attributes Size: ${info.signedAttrSize}`);
-        console.log(`Signed Attributes Hash Function: ${info.signedAttrHashFunction}`);
+        if (passportMetaData.countryCode) console.log(`Country Code: ${passportMetaData.countryCode}`);
+        console.log(`Data Groups: ${passportMetaData.dataGroups}`);
+        console.log(`DG1 Hash Function: ${passportMetaData.dg1HashFunction}`);
+        console.log(`DG1 Hash Offset: ${passportMetaData.dg1HashOffset}`);
+        console.log(`eContent Size: ${passportMetaData.eContentSize}`);
+        console.log(`eContent Hash Function: ${passportMetaData.eContentHashFunction}`);
+        console.log(`eContent Hash Offset: ${passportMetaData.eContentHashOffset}`);
+        console.log(`Signed Attributes Size: ${passportMetaData.signedAttrSize}`);
+        console.log(`Signed Attributes Hash Function: ${passportMetaData.signedAttrHashFunction}`);
+        console.log(`Signature Algorithm: ${passportMetaData.signatureAlgorithm}`);
+        console.log(`Signature Algorithm Details: ${passportMetaData.signatureAlgorithmDetails}`);
+        console.log(`Curve or Exponent: ${passportMetaData.curveOrExponent}`);
+        console.log(`Signature Algorithm Bits: ${passportMetaData.signatureAlgorithmBits}`);
+        console.log(`CSCA Found: ${passportMetaData.cscaFound}`);
+        console.log(`CSCA Hash Function: ${passportMetaData.cscaHashFunction}`);
+        console.log(`CSCA Signature: ${passportMetaData.cscaSignature}`);
+        console.log(`CSCA Signature Algorithm Details: ${passportMetaData.cscaSignatureAlgorithmDetails}`);
+        console.log(`CSCA Curve or Exponent: ${passportMetaData.cscaCurveOrExponent}`);
+        console.log(`CSCA Signature Algorithm Bits: ${passportMetaData.cscaSignatureAlgorithmBits}`);
+        console.log(`DSC: ${passportMetaData.dsc}`);
 
     } catch (error) {
         console.error(`Error processing file ${filePath}:`, error);
