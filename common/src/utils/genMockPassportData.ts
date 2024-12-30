@@ -1,5 +1,5 @@
 import { PassportData } from './types';
-import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz } from './utils';
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, getHashLen } from './utils';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
@@ -37,8 +37,10 @@ import {
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
-import { parseCertificate } from './certificates/handleCertificate';
+// import { parseCertificate } from './certificates/handleCertificate';
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from './types';
+import { PublicKeyDetailsECDSA } from './certificate_parsing/dataStructure';
 export function genMockPassportData(
   signatureType: SignatureAlgorithm,
   nationality: keyof typeof countryCodes,
@@ -163,17 +165,21 @@ export function genMockPassportData(
       dsc = mock_dsc_sha256_rsapss_65537_4096;
       break;
   }
+  console.log('dsc', dsc);
+  const parsedDsc = parseCertificateSimple(dsc);
+  const hashAlgorithm = parsedDsc.hashAlgorithm;
+  console.log('parsedDsc:', parsedDsc);
 
-  const { hashFunction, hashLen } = parseCertificate(dsc);
 
-  const mrzHash = hash(hashFunction, formatMrz(mrz));
+  const mrzHash = hash(hashAlgorithm, formatMrz(mrz));
+  const hashLen = getHashLen(hashAlgorithm);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],
     hashLen,
     30
   );
 
-  const eContent = assembleEContent(hash(hashFunction, concatenatedDataHashes));
+  const eContent = assembleEContent(hash(hashAlgorithm, concatenatedDataHashes));
 
   const signature = sign(privateKeyPem, dsc, eContent);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
@@ -191,7 +197,7 @@ export function genMockPassportData(
 }
 
 function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
-  const { signatureAlgorithm, hashFunction, curve } = parseCertificate(dsc);
+  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
@@ -205,7 +211,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     const signatureBytes = privateKey.sign(md, pss);
     return Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
   } else if (signatureAlgorithm === 'ecdsa') {
-    const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
+    const curveForElliptic = (publicKeyDetails as PublicKeyDetailsECDSA).curve === 'secp256r1' ? 'p256' : 'p384';
     const ec = new elliptic.ec(curveForElliptic);
 
     const privateKeyDer = Buffer.from(
@@ -217,7 +223,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
 
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    const md = hashAlgorithm === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
@@ -225,7 +231,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     return signatureBytes;
   } else {
     const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    const md = hashAlgorithm === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const forgeSignature = privKey.sign(md);
     return Array.from(forgeSignature, (c: string) => c.charCodeAt(0));

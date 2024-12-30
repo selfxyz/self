@@ -1,12 +1,13 @@
 import { NativeModules, Platform, Linking } from "react-native";
 // import { AppType, reconstructAppType } from "../../../common/src/utils/appType";
 import useNavigationStore from '../stores/navigationStore';
-import { getCircuitName, parseDSC } from "../../../common/src/utils/certificates/handleCertificate";
+import { getCircuitName, getCircuitNameOld, parseDSC } from "../../../common/src/utils/certificates/handleCertificate";
 import useUserStore from "../stores/userStore";
 import { downloadZkey } from "./zkeyDownload";
 import msgpack from "msgpack-lite";
 import pako from "pako";
 import { Mode, OpenPassportApp } from "../../../common/src/utils/appType";
+import { parseCertificateSimple } from "../../../common/src/utils/certificate_parsing/parseCertificateSimple";
 
 const parseUrlParams = (url: string): Map<string, string> => {
     const [, queryString] = url.split('?');
@@ -98,11 +99,11 @@ const handleQRCodeScan = (result: string, toast: any, setSelectedApp: any, setSe
             const openPassportApp: OpenPassportApp = unpackedData;
             setSelectedApp(openPassportApp);
 
-            const sigAlgName = parseDSC(dsc);
+            const parsedDsc = parseCertificateSimple(dsc);
 
             const circuitName = openPassportApp.mode === 'vc_and_disclose'
                 ? 'vc_and_disclose'
-                : getCircuitName("prove" as Mode, sigAlgName.signatureAlgorithm, sigAlgName.hashFunction);
+                : getCircuitNameOld("prove" as Mode, parsedDsc.signatureAlgorithm, parsedDsc.hashAlgorithm);
             downloadZkey(circuitName as any);
 
             setSelectedTab("prove");
