@@ -156,4 +156,38 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.hashed <== hash;
         ecdsa_verify.dummy <== 0;
     }
+    if (signatureAlgorithm == 27) { 
+        component ecdsa_verify = verifyECDSABits(n, k, [
+            3402800963,
+            2953063001,
+            1310206680,
+            3243445073,
+            697828262,
+            2848877596,
+            1755702828
+        ],
+        [
+            946618379,
+            1725674354,
+            1042363858,
+            2837670371,
+            2265387953,
+            3487842616,
+            629208636
+        ],
+        [
+            2127085823,
+            2547681781,
+            2963212119,
+            1976686471,
+            706228261,
+            641951366,
+            3619763370
+        ], n * k);
+
+        ecdsa_verify.pubkey <== pubkey_xy;
+        ecdsa_verify.signature <== [signature_r, signature_s];
+        ecdsa_verify.hashed <== hash;
+        ecdsa_verify.dummy <== 0;   
+    }
 }

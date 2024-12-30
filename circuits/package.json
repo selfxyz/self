@@ -35,6 +35,7 @@
     "circomlibjs": "^0.1.7",
     "crypto": "^1.0.1",
     "elliptic": "^6.5.5",
+    "hash.js": "^1.1.7",
     "js-sha256": "^0.10.1",
     "jsrsasign": "^11.1.0",
     "modpow": "^1.0.0",
