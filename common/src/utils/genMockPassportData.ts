@@ -44,6 +44,8 @@ import {
   mock_dsc_sha512_brainpoolP256r1,
   mock_dsc_key_sha512_brainpoolP384r1,
   mock_dsc_sha512_brainpoolP384r1,
+  mock_dsc_key_sha1_brainpoolP224r1,
+  mock_dsc_sha1_brainpoolP224r1,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
@@ -199,6 +201,11 @@ export function genMockPassportData(
       privateKeyPem = mock_dsc_key_sha512_brainpoolP384r1;
       dsc = mock_dsc_sha512_brainpoolP384r1;
       break;
+    case 'ecdsa_sha1_brainpoolP224r1_224':
+      sampleDataHashes = genSampleDataHashes('large', 20);
+      privateKeyPem = mock_dsc_key_sha1_brainpoolP224r1;
+      dsc = mock_dsc_sha1_brainpoolP224r1;
+      break;
   }
 
   const { hashFunction, hashLen } = parseCertificate(dsc);
@@ -259,13 +266,21 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     );
     const asn1Data = asn1.fromBER(privateKeyDer);
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
+    console.log('sig deets');
+    console.log('pk', privateKeyBuffer);
+    console.log('hashFUnction', hashFunction);
+    console.log('message', Buffer.from(eContent).toString('hex'));
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
     let md = forge.md[hashFunction].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
 
+    console.log('message to sign', md.digest().toHex());
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
+    console.log(Buffer.from(signature.toDER(), 'hex').toString('hex'));
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+
+    console.log('sig', JSON.stringify(signatureBytes));
 
     return signatureBytes;
   } else {

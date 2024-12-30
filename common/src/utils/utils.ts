@@ -37,7 +37,9 @@ export function getNAndK(sigAlg: SignatureAlgorithm) {
   }
 
   if (sigAlg.startsWith('ecdsa_')) {
-    if (sigAlg.endsWith('256')) {
+    if (sigAlg.endsWith('224')) {
+      return { n: 32, k: 7 };
+    } else if (sigAlg.endsWith('256')) {
       return { n: n_dsc_ecdsa, k: 4 };
     } else if (sigAlg.endsWith('384')) {
       return { n: n_dsc_ecdsa, k: 6 };
@@ -45,6 +47,8 @@ export function getNAndK(sigAlg: SignatureAlgorithm) {
       return { n: n_dsc_ecdsa, k: 8 };
     } else if (sigAlg.endsWith('521')) {
       return { n: n_dsc_ecdsa, k: 16 };
+    } else {
+      throw new Error('invalid key size');
     }
   }
 

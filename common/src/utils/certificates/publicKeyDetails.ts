@@ -15,7 +15,7 @@ import {
 } from './curves';
 import { gethashFunctionName } from './handleCertificate';
 import elliptic from 'elliptic';
-
+import hash from 'hash.js';
 const curves = elliptic.curves;
 const PresetCurve = elliptic.curves.PresetCurve;
 
@@ -35,6 +35,21 @@ function defineCurve(name, options) {
   });
 }
 
+defineCurve('brainpoolP224r1', {
+  type: 'short',
+  prime: null,
+  p: 'd7c134aa 26436686 2a183025 75d1d787 b09f0757 97da89f5 7ec8c0ff',
+  a: '68a5e62c a9ce6c1c 299803a6 c1530b51 4e182ad8 b0042a59 cad29f43',
+  b: '2580f63c cfe44138 870713b1 a92369e3 3e2135d2 66dbb372 386c400b',
+  n: 'd7c134aa 26436686 2a183025 75d0fb98 d116bc4b 6ddebca3 a5a7939f',
+  hash: hash.sha1,
+  gRed: false,
+  g: [
+    '0d9029ad 2c7e5cf4 340823b2 a87dc68c 9e4ce317 4c1e6efd ee12c07d',
+    '58aa56f7 72c0726f 24c6b89e 4ecdac24 354b9e99 caa3f6d3 761402cd',
+  ],
+});
+
 defineCurve('brainpoolP256r1', {
   type: 'short',
   prime: null,
@@ -42,7 +57,7 @@ defineCurve('brainpoolP256r1', {
   a: '7d5a0975 fc2c3057 eef67530 417affe7 fb8055c1 26dc5c6c e94a4b44 f330b5d9',
   b: '26dc5c6c e94a4b44 f330b5d9 bbd77cbf 95841629 5cf7e1ce 6bccdc18 ff8c07b6',
   n: 'a9fb57db a1eea9bc 3e660a90 9d838d71 8c397aa3 b561a6f7 901e0e82 974856a7',
-  hash: curves.p256.hash,
+  hash: hash.sha256,
   gRed: false,
   g: [
     '8bd2aeb9 cb7e57cb 2c4b482f fc81b7af b9de27e1 e3bd23c2 3a4453bd 9ace3262',
@@ -57,7 +72,7 @@ defineCurve('brainpoolP384r1', {
   a: '7bc382c6 3d8c150c 3c72080a ce05afa0 c2bea28e 4fb22787 139165ef ba91f90f 8aa5814a 503ad4eb 04a8c7dd 22ce2826',
   b: '04a8c7dd 22ce2826 8b39b554 16f0447c 2fb77de1 07dcd2a6 2e880ea5 3eeb62d5 7cb43902 95dbc994 3ab78696 fa504c11',
   n: '8cb91e82 a3386d28 0f5d6f7e 50e641df 152f7109 ed5456b3 1f166e6c ac0425a7 cf3ab6af 6b7fc310 3b883202 e9046565',
-  hash: curves.p384.hash,
+  hash: hash.sha384,
   gRed: false,
   g: [
     '1d1c64f0 68cf45ff a2a63a81 b7c13f6b 8847a3e7 7ef14fe3 db7fcafe 0cbd10e8 e826e034 36d646aa ef87b2e2 47d4af1e',
@@ -116,6 +131,7 @@ export function parseECParameters(publicKeyInfo: any): PublicKeyDetailsECDSA {
     const fieldSizeMap: { [key: string]: number } = {
       secp256r1: 256,
       secp384r1: 384,
+      brainpoolP224r1: 224,
       brainpoolP256r1: 256,
       brainpoolP384r1: 384,
     };
