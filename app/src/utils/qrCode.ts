@@ -1,14 +1,12 @@
 import { NativeModules, Platform, Linking } from "react-native";
 // import { AppType, reconstructAppType } from "../../../common/src/utils/appType";
 import useNavigationStore from '../stores/navigationStore';
-import { getCircuitName, getCircuitNameOld, parseDSC } from "../../../common/src/utils/certificates/handleCertificate";
 import useUserStore from "../stores/userStore";
 import { downloadZkey } from "./zkeyDownload";
 import msgpack from "msgpack-lite";
 import pako from "pako";
 import { Mode, OpenPassportApp } from "../../../common/src/utils/appType";
-import { parseCertificateSimple } from "../../../common/src/utils/certificate_parsing/parseCertificateSimple";
-
+import { getCircuitNameOld, parseCertificateSimple } from "../../../common/src/utils/certificate_parsing/parseCertificateSimple";
 const parseUrlParams = (url: string): Map<string, string> => {
     const [, queryString] = url.split('?');
     const params = new Map<string, string>();

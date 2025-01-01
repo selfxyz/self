@@ -10,7 +10,7 @@ export interface StandardCurve {
 
 export const standardCurves: StandardCurve[] = [
     {
-        name: "ECDSA_P256",
+        name: "secp256r1",
         p: "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF",
         a: "FFFFFFFF00000001000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFC",
         b: "5AC635D8AA3A93E7B3EBBD55769886BC651D06B0CC53B0F63BCE3C3E27D2604B",
@@ -19,7 +19,7 @@ export const standardCurves: StandardCurve[] = [
         h: "01"
     },
     {
-        name: "ECDSA_P384",
+        name: "secp384r1",
         p: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFF",
         a: "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFEFFFFFFFF0000000000000000FFFFFFFC",
         b: "B3312FA7E23EE7E4988E056BE3F82D19181D9C6EFE8141120314088F5013875AC656398D8A2ED19D2A85C8EDD3EC2AEF",
@@ -28,7 +28,7 @@ export const standardCurves: StandardCurve[] = [
         h: "01"
     },
     {
-        name: "ECDSA_P521",
+        name: "secp521r1",
         p: "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF",
         a: "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFC",
         b: "0051953EB9618E1C9A1F929A21A0B68540EEA2DA725B99B315F3B8B489918EF109E156193951EC7E937B1652C0BD3BB1BF073573DF883D2C34F1EF451FD46B503F00",
@@ -106,9 +106,10 @@ export function identifyCurve(params: any): string {
 
 export function getECDSACurveBits(curveName: string): string {
     const curveBits: { [key: string]: number } = {
-        'ECDSA_P256': 256,
-        'ECDSA_P384': 384,
-        'ECDSA_P521': 521,
+        'secp224r1': 224,
+        'secp256r1': 256,
+        'secp384r1': 384,
+        'secp521r1': 521,
         'brainpoolP224r1': 224,
         'brainpoolP256r1': 256,
         'brainpoolP384r1': 384,
@@ -122,12 +123,14 @@ export function getECDSACurveBits(curveName: string): string {
 }
 export function getCurveForElliptic(curveName: string): string {
     const curves = {
-        ECDSA_P256: 'p256',
-        ECDSA_P384: 'p384',
-        ECDSA_P521: 'p521',
+        secp224r1: 'p224',
+        secp256r1: 'p256',
+        secp384r1: 'p384',
+        secp521r1: 'p521',
         brainpoolP224r1: 'brainpoolP224r1',
         brainpoolP256r1: 'brainpoolP256r1',
         brainpoolP384r1: 'brainpoolP384r1',
+        brainpoolP512r1: 'brainpoolP512r1',
     };
 
     if (!curves[curveName]) {

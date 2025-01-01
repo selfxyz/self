@@ -1,5 +1,4 @@
 import { ECDSA_K_LENGTH_FACTOR, k_dsc, k_dsc_ecdsa } from '../constants/constants';
-import { parseDSC } from './certificates/handleCertificate';
 import {
   bigIntToHex,
   castToScope,

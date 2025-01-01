@@ -6,7 +6,6 @@ import { getECDSACurveBits, identifyCurve, StandardCurve } from "./curves";
 import { getIssuerCountryCode, getSubjectKeyIdentifier } from "./utils";
 import fs from 'fs';
 import { execSync } from 'child_process';
-import { getAuthorityKeyIdentifier } from "../certificates/handleCertificate";
 import { parseCertificateSimple } from "./parseCertificateSimple";
 export function parseCertificate(pem: string, fileName: string): any {
     let certificateData: CertificateData = {

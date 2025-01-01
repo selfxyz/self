@@ -37,7 +37,6 @@ import {
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
-// import { parseCertificate } from './certificates/handleCertificate';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from './types';
 import { PublicKeyDetailsECDSA } from './certificate_parsing/dataStructure';

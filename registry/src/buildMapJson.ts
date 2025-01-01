@@ -1,8 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { argv } from 'process';
-import { parseCertificate } from './utils/certificateParsing/parseCertificate';
-import { CertificateData } from './utils/certificateParsing/dataStructure';
+import { parseCertificate } from '../../common/src/utils/certificate_parsing/parseCertificate';
+import { CertificateData } from '../../common/src/utils/certificate_parsing/dataStructure';
 
 let pemDirectory: string;
 
