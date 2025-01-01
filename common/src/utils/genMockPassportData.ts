@@ -165,10 +165,8 @@ export function genMockPassportData(
       dsc = mock_dsc_sha256_rsapss_65537_4096;
       break;
   }
-  console.log('dsc', dsc);
   const parsedDsc = parseCertificateSimple(dsc);
   const hashAlgorithm = parsedDsc.hashAlgorithm;
-  console.log('parsedDsc:', parsedDsc);
 
 
   const mrzHash = hash(hashAlgorithm, formatMrz(mrz));
@@ -227,6 +225,8 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+    console.log('signatureBytes', signatureBytes);
+    console.log('signatureBytesLength', signatureBytes.length);
 
     return signatureBytes;
   } else {

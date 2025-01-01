@@ -176,6 +176,20 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
             return { curve: 'Unknown', params: {} as StandardCurve, bits: 'Unknown' };
         }
 
+        // Add this check for named curves
+        if (algorithmParams instanceof asn1js.ObjectIdentifier) {
+            // Get the curve name from the OID
+            const curveOid = algorithmParams.valueBlock.toString();
+            // You might want to add a mapping of OIDs to curve names
+            const curveName = getFriendlyName(curveOid) || 'secp256k1'; // Default to secp256k1 if unknown
+            return {
+                curve: curveName,
+                params: {} as StandardCurve, // Empty params since we're using a named curve
+                bits: getECDSACurveBits(curveName)
+            };
+        }
+
+        // Original code for explicit parameters
         const params = asn1js.fromBER(algorithmParams.valueBeforeDecodeView).result;
         const valueBlock: any = params.valueBlock;
 
@@ -221,7 +235,7 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
             else {
                 curveParams.h = '01';
             }
-
+            console.log(cert);
             const identifiedCurve = identifyCurve(curveParams);
             return { curve: identifiedCurve, params: curveParams, bits: getECDSACurveBits(identifiedCurve) };
         } else {
