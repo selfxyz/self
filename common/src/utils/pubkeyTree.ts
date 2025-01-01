@@ -48,8 +48,8 @@ export function getLeaf(dsc: string): string {
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([sigAlgIndex, ...qx, ...qy]);
   } else {
-    const { modulus, bits } = publicKeyDetails as PublicKeyDetailsRSA;
-    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${modulus}_${bits}`;
+    const { modulus, bits, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
+    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
     const { n, k } = getNAndK(sigAlgKey as SignatureAlgorithm);
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
 
@@ -74,8 +74,8 @@ export function getLeafCSCA(dsc: string): string {
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([sigAlgIndex, ...qx, ...qy]);
   } else {
-    const { modulus, bits } = publicKeyDetails as PublicKeyDetailsRSA;
-    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${modulus}_${bits}`;
+    const { modulus, bits, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
+    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
     const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
     if (sigAlgIndex == undefined) {
