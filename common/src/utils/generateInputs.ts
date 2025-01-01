@@ -32,6 +32,7 @@ import { packBytes } from '../utils/utils';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
+import { cp } from 'fs';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -204,8 +205,8 @@ export function generateCircuitInputsProve(
     const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k);
     pubKey = [...dsc_modulus_x, ...dsc_modulus_y];
   } else {
-    const modulus = (publicKeyDetails as PublicKeyDetailsRSA).modulus;
-    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${modulus}_${publicKeyDetails.bits}`;
+    const { modulus, exponent } = (publicKeyDetails as PublicKeyDetailsRSA);
+    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
     ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
     signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n, k);
     pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
@@ -233,6 +234,7 @@ export function generateCircuitInputsProve(
     );
   }
 
+  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
   const [eContentPadded, eContentLen] = shaPad(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
