@@ -120,3 +120,19 @@ export function getECDSACurveBits(curveName: string): string {
     console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
     return "unknown";
 }
+export function getCurveForElliptic(curveName: string): string {
+    const curves = {
+        ECDSA_P256: 'p256',
+        ECDSA_P384: 'p384',
+        ECDSA_P521: 'p521',
+        brainpoolP224r1: 'brainpoolP224r1',
+        brainpoolP256r1: 'brainpoolP256r1',
+        brainpoolP384r1: 'brainpoolP384r1',
+    };
+
+    if (!curves[curveName]) {
+        throw new Error('Invalid curve: ' + curveName);
+    }
+
+    return curves[curveName];
+}

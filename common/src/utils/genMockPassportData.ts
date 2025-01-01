@@ -41,6 +41,7 @@ import { countryCodes } from '../constants/constants';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from './types';
 import { PublicKeyDetailsECDSA } from './certificate_parsing/dataStructure';
+import { getCurveForElliptic } from './certificate_parsing/curves';
 export function genMockPassportData(
   signatureType: SignatureAlgorithm,
   nationality: keyof typeof countryCodes,
@@ -196,6 +197,7 @@ export function genMockPassportData(
 
 function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
   const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
+  const curve = (publicKeyDetails as PublicKeyDetailsECDSA).curve;
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
@@ -209,7 +211,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     const signatureBytes = privateKey.sign(md, pss);
     return Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
   } else if (signatureAlgorithm === 'ecdsa') {
-    const curveForElliptic = (publicKeyDetails as PublicKeyDetailsECDSA).curve === 'secp256r1' ? 'p256' : 'p384';
+    let curveForElliptic = getCurveForElliptic(curve);
     const ec = new elliptic.ec(curveForElliptic);
 
     const privateKeyDer = Buffer.from(
@@ -218,20 +220,26 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     );
     const asn1Data = asn1.fromBER(privateKeyDer);
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
+    // console.log('sig deets');
+    // console.log('pk', privateKeyBuffer);
+    // console.log('hashFUnction', hashAlgorithm);
+    // console.log('message', Buffer.from(eContent).toString('hex'));
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
-
-    const md = hashAlgorithm === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    let md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+
+    console.log('message to sign', md.digest().toHex());
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
+    console.log(Buffer.from(signature.toDER(), 'hex').toString('hex'));
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
-    console.log('signatureBytes', signatureBytes);
-    console.log('signatureBytesLength', signatureBytes.length);
+
+    console.log('sig', JSON.stringify(signatureBytes));
 
     return signatureBytes;
   } else {
     const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = hashAlgorithm === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    const md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const forgeSignature = privKey.sign(md);
     return Array.from(forgeSignature, (c: string) => c.charCodeAt(0));
