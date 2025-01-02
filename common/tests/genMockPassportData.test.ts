@@ -86,16 +86,16 @@ function verify(passportData: PassportData): boolean {
     const signature = Buffer.from(encryptedDigest).toString('binary');
 
     if (signatureAlgorithm === 'rsapss') {
-      const saltLenght = (publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength;
       const pss = forge.pss.create({
         md: forge.md[hashAlgorithm].create(),
         mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
-        saltLength: saltLenght,
+        saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
       });
       return publicKey.verify(md.digest().bytes(), signature, pss);
     } else {
       return publicKey.verify(md.digest().bytes(), signature);
     }
+
   }
 }
 
