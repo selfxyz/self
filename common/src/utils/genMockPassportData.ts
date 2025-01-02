@@ -1,10 +1,5 @@
 import { PassportData } from './types';
-import {
-  hash,
-  assembleEContent,
-  formatAndConcatenateDataHashes,
-  formatMrz,
-} from './utils';
+import { hash, assembleEContent, formatAndConcatenateDataHashes, formatMrz, getHashLen } from './utils';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
@@ -25,30 +20,52 @@ import {
   mock_dsc_sha384_ecdsa,
   mock_dsc_key_sha256_brainpoolP256r1,
   mock_dsc_sha256_brainpoolP256r1,
+  mock_dsc_key_sha256_rsa_3_2048,
+  mock_dsc_sha256_rsa_3_2048,
+  mock_dsc_key_sha256_rsa_65537_3072,
+  mock_dsc_sha256_rsa_65537_3072,
+  mock_dsc_key_sha256_rsapss_3_4096,
+  mock_dsc_sha256_rsapss_3_4096,
+  mock_dsc_key_sha256_rsapss_3_3072,
+  mock_dsc_sha256_rsapss_3_3072,
+  mock_dsc_key_sha384_rsapss_65537_3072,
+  mock_dsc_sha384_rsapss_65537_3072,
+  mock_dsc_key_sha256_rsapss_65537_3072,
+  mock_dsc_sha256_rsapss_65537_3072,
+  mock_dsc_key_rsapss_65537_4096,
+  mock_dsc_sha256_rsapss_65537_4096,
 } from '../constants/mockCertificates';
 import { sampleDataHashes_small, sampleDataHashes_large } from '../constants/sampleDataHashes';
 import { countryCodes } from '../constants/constants';
-import { parseCertificate } from './certificates/handleCertificate';
-
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
+import { SignatureAlgorithm } from './types';
+import { PublicKeyDetailsECDSA } from './certificate_parsing/dataStructure';
+import { getCurveForElliptic } from './certificate_parsing/curves';
 export function genMockPassportData(
-  signatureType: 'rsa_sha1' | 'rsa_sha256' | 'rsapss_sha256' | 'ecdsa_sha256' | 'ecdsa_sha1' | 'ecdsa_sha384' | 'brainpoolP256r1_sha256',
+  signatureType: SignatureAlgorithm,
   nationality: keyof typeof countryCodes,
   birthDate: string,
   expiryDate: string,
-  passportNumber: string = "15AA81234",
-  lastName: string = "DUPONT",
-  firstName: string = "ALPHONSE HUGHUES ALBERT"
+  passportNumber: string = '15AA81234',
+  lastName: string = 'DUPONT',
+  firstName: string = 'ALPHONSE HUGHUES ALBERT'
 ): PassportData {
   if (birthDate.length !== 6 || expiryDate.length !== 6) {
     throw new Error('birthdate and expiry date have to be in the "YYMMDD" format');
   }
 
   // Prepare last name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
-  const lastNameParts = lastName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const lastNameParts = lastName
+    .toUpperCase()
+    .replace(/[^A-Z< ]/g, '')
+    .split(' ');
   const formattedLastName = lastNameParts.join('<');
 
   // Prepare first name: Convert to uppercase, remove invalid characters, split by spaces, and join with '<'
-  const firstNameParts = firstName.toUpperCase().replace(/[^A-Z< ]/g, '').split(' ');
+  const firstNameParts = firstName
+    .toUpperCase()
+    .replace(/[^A-Z< ]/g, '')
+    .split(' ');
   const formattedFirstName = firstNameParts.join('<');
 
   // Build the first line of MRZ
@@ -77,53 +94,90 @@ export function genMockPassportData(
   let sampleDataHashes: [number, number[]][];
 
   switch (signatureType) {
-    case 'rsa_sha1':
+    case 'rsa_sha1_65537_2048':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha1_rsa_4096;
       dsc = mock_dsc_sha1_rsa_4096;
       break;
-    case 'rsa_sha256':
+    case 'rsa_sha256_65537_2048':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsa_4096;
       dsc = mock_dsc_sha256_rsa_4096;
       break;
-    case 'rsapss_sha256':
+    case 'rsapss_sha256_65537_2048':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
       dsc = mock_dsc_sha256_rsapss_4096;
       break;
-    case 'ecdsa_sha256':
+    case 'rsapss_sha256_3_4096':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_3_4096;
+      dsc = mock_dsc_sha256_rsapss_3_4096;
+      break;
+    case 'rsapss_sha256_3_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_3_3072;
+      dsc = mock_dsc_sha256_rsapss_3_3072;
+      break;
+    case 'rsapss_sha384_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha384_rsapss_65537_3072;
+      dsc = mock_dsc_sha384_rsapss_65537_3072;
+      break;
+    case 'ecdsa_sha256_secp256r1_256':
       sampleDataHashes = sampleDataHashes_large;
       privateKeyPem = mock_dsc_key_sha256_ecdsa;
       dsc = mock_dsc_sha256_ecdsa;
       break;
-    case 'ecdsa_sha1':
+    case 'ecdsa_sha1_secp256r1_256':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha1_ecdsa;
       dsc = mock_dsc_sha1_ecdsa;
       break;
-    case 'ecdsa_sha384':
+    case 'ecdsa_sha384_secp384r1_384':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
       break;
-    case 'brainpoolP256r1_sha256':
+    case 'ecdsa_sha256_brainpoolP256r1_256':
       sampleDataHashes = sampleDataHashes_small;
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
       dsc = mock_dsc_sha256_brainpoolP256r1;
       break;
+    case 'rsa_sha256_3_2048':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsa_3_2048;
+      dsc = mock_dsc_sha256_rsa_3_2048;
+      break;
+    case 'rsa_sha256_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsa_65537_3072;
+      dsc = mock_dsc_sha256_rsa_65537_3072;
+      break;
+    case 'rsapss_sha256_65537_3072':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_sha256_rsapss_65537_3072;
+      dsc = mock_dsc_sha256_rsapss_65537_3072;
+      break;
+    case 'rsapss_sha256_65537_4096':
+      sampleDataHashes = sampleDataHashes_large;
+      privateKeyPem = mock_dsc_key_rsapss_65537_4096;
+      dsc = mock_dsc_sha256_rsapss_65537_4096;
+      break;
   }
+  const parsedDsc = parseCertificateSimple(dsc);
+  const hashAlgorithm = parsedDsc.hashAlgorithm;
 
-  const { hashFunction, hashLen } = parseCertificate(dsc);
 
-  const mrzHash = hash(hashFunction, formatMrz(mrz));
+  const mrzHash = hash(hashAlgorithm, formatMrz(mrz));
+  const hashLen = getHashLen(hashAlgorithm);
   const concatenatedDataHashes = formatAndConcatenateDataHashes(
     [[1, mrzHash], ...sampleDataHashes],
     hashLen,
     30
   );
 
-  const eContent = assembleEContent(hash(hashFunction, concatenatedDataHashes));
+  const eContent = assembleEContent(hash(hashAlgorithm, concatenatedDataHashes));
 
   const signature = sign(privateKeyPem, dsc, eContent);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
@@ -140,12 +194,9 @@ export function genMockPassportData(
   };
 }
 
-function sign(
-  privateKeyPem: string,
-  dsc: string,
-  eContent: number[]
-): number[] {
-  const { signatureAlgorithm, hashFunction, curve } = parseCertificate(dsc);
+function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
+  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
+  const curve = (publicKeyDetails as PublicKeyDetailsECDSA).curve;
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
@@ -159,7 +210,7 @@ function sign(
     const signatureBytes = privateKey.sign(md, pss);
     return Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
   } else if (signatureAlgorithm === 'ecdsa') {
-    const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
+    let curveForElliptic = getCurveForElliptic(curve);
     const ec = new elliptic.ec(curveForElliptic);
 
     const privateKeyDer = Buffer.from(
@@ -168,18 +219,26 @@ function sign(
     );
     const asn1Data = asn1.fromBER(privateKeyDer);
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
+    // console.log('sig deets');
+    // console.log('pk', privateKeyBuffer);
+    // console.log('hashFUnction', hashAlgorithm);
+    // console.log('message', Buffer.from(eContent).toString('hex'));
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
-
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    let md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+
+    console.log('message to sign', md.digest().toHex());
     const signature = keyPair.sign(md.digest().toHex(), 'hex');
+    console.log(Buffer.from(signature.toDER(), 'hex').toString('hex'));
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
+
+    console.log('sig', JSON.stringify(signatureBytes));
 
     return signatureBytes;
   } else {
     const privKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    const md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const forgeSignature = privKey.sign(md);
     return Array.from(forgeSignature, (c: string) => c.charCodeAt(0));

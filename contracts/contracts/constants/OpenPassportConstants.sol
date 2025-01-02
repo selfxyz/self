@@ -27,5 +27,6 @@ library OpenPassportConstants {
     uint256 constant PROVE_ECDSA_SCOPE_INDEX = 30;
 
     uint256 constant DSC_BLINDED_DSC_COMMITMENT_INDEX = 0;
+    uint256 constant DSC_MERKLE_ROOT_INDEX = 1;
 
 }

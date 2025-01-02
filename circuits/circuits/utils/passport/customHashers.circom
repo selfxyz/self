@@ -1,30 +1,30 @@
 pragma circom 2.1.9;
-include "../other/fp.circom";
-include "circomlib/circuits/poseidon.circom";
+include "../circomlib/bigInt/bigIntFunc.circom";
+include "../circomlib/hasher/hash.circom";
 
 template CustomHasher(k) {
     signal input in[k];
-    var rounds =  div_ceil(k, 16);
+    var rounds =  div_ceil_dl(k, 16);
     assert(rounds < 17);
     
     component hash[rounds];
     for (var i = 0; i < rounds ; i ++){
-       hash[i] = Poseidon(16);
+        hash[i] = PoseidonHash(16);
     }
     
     for (var i = 0; i < rounds ; i ++){
-       for (var j = 0; j < 16 ; j ++){
-        if (i * 16 + j < k){
-            hash[i].inputs[j] <== in[i * 16 + j];
-        } else {
-            hash[i].inputs[j] <== 0;
+        for (var j = 0; j < 16 ; j ++){
+            if (i * 16 + j < k){
+                hash[i].in[j] <== in[i * 16 + j];
+            } else {
+                hash[i].in[j] <== 0;
+            }
         }
-       }
     }
 
-    component finalHash = Poseidon(rounds);
-    for (var i = 0 ; i < rounds ; i++){
-        finalHash.inputs[i] <== hash[i].out;
+    component finalHash = PoseidonHash(rounds);
+    for (var i = 0 ; i < rounds ; i++) {
+        finalHash.in[i] <== hash[i].out;
     }
     signal output out <== finalHash.out;
 }

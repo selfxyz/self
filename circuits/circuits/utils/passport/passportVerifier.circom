@@ -1,13 +1,15 @@
 pragma circom 2.1.9;
 
-include "../other/array.circom";
-include "../other/bytes.circom";
-include "../shaBytes/shaBytesStatic.circom";
-include "../shaBytes/shaBytesDynamic.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "@zk-email/circuits/utils/bytes.circom";
+include "../circomlib/hasher/shaBytes/shaBytesDynamic.circom";
+include "../circomlib/hasher/hash.circom";
 include "./signatureAlgorithm.circom";
 include "./signatureVerifier.circom";
 
 template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN) {
+    assert(MAX_ECONTENT_LEN % 64 == 0);
+
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -26,8 +28,20 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
+
     // compute hash of DG1
-    signal dg1Sha[HASH_LEN_BITS] <== ShaBytesStatic(HASH_LEN_BITS, 93)(dg1);
+    signal dg1Bits[93 * 8];
+    component n2b[93];
+    for (var i = 0; i < 93; i++) {
+        n2b[i] = Num2Bits(8);
+        n2b[i].in <== dg1[i];
+        for (var j = 0; j < 8; j++) {
+            dg1Bits[i * 8 + j] <== n2b[i].out[7 - j];
+        }
+    }
+
+    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits);
+    
 
     component dg1ShaBytes[HASH_LEN_BYTES];
     for (var i = 0; i < HASH_LEN_BYTES; i++) {
@@ -46,6 +60,7 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
 
     // compute hash of eContent
     signal eContentSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS,MAX_ECONTENT_LEN)(eContent, eContent_padded_length);
+
     component eContentShaBytes[HASH_LEN_BYTES];
     for (var i = 0; i < HASH_LEN_BYTES; i++) {
         eContentShaBytes[i] = Bits2Num(8);
@@ -60,11 +75,8 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
     }
 
-    // compute hash of signedAttr
     signal signedAttrSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
 
     SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
-
-
 }
 

@@ -21,6 +21,7 @@ export const PROVE_RSA_USER_IDENTIFIER_INDEX = 49;
 export const PROVE_RSA_SCOPE_INDEX = 50;
 
 export const DSC_BLINDED_DSC_COMMITMENT_INDEX = 0;
+export const DSC_MERKLE_ROOT_INDEX = 1;
 
 // Enum in VerifiersManager.sol
 export const VERIFICATION_TYPE_ENUM_PROVE = 0;

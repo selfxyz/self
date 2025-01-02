@@ -47,10 +47,17 @@ target 'OpenPassport' do
   post_install do |installer|
     installer.generated_projects.each do |project|
       project.targets.each do |target|
+        if target.name == 'RNZipArchive'
+          target.source_build_phase.files.each do |file|
+            if file.settings && file.settings['COMPILER_FLAGS']
+              file.settings['COMPILER_FLAGS'] = ''
+            end
+          end
+        end
           target.build_configurations.each do |config|
               config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
               config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
-           end
+          end
       end
     end
 

@@ -13,6 +13,7 @@ interface UserState {
   passportNumber: string
   dateOfBirth: string
   dateOfExpiry: string
+  countryCode: string
   registered: boolean
   passportData: PassportData | null
   secret: string
@@ -39,6 +40,7 @@ const useUserStore = create<UserState>((set, get) => ({
   passportNumber: DEFAULT_PNUMBER ?? "",
   dateOfBirth: DEFAULT_DOB ?? "",
   dateOfExpiry: DEFAULT_DOE ?? "",
+  countryCode: "",
   dscSecret: null,
   registered: false,
   passportData: null,

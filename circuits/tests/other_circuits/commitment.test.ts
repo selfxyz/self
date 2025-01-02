@@ -26,7 +26,7 @@ describe('commitment hasher', function () {
     });
   });
   describe('generate commitment', async () => {
-    const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
+    const passportData = genMockPassportData('rsa_sha256_65537_2048', 'FRA', '000101', '300101');
     const formattedMrz = formatMrz(passportData.mrz);
     const dg2HashFormatted = formatDg2Hash(passportData.dg2Hash);
     const secret = 0;

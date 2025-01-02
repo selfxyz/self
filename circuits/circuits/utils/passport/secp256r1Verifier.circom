@@ -1,29 +1,27 @@
 pragma circom 2.1.9;
 
 include "./signatureAlgorithm.circom";
-include "../circom-ecdsa/ecdsa.circom";
+include "../circomlib/signatures/ecdsa.circom";
 
 template Secp256r1Verifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
-    var msg_len = (HASH_LEN_BITS + n) \ n;
 
     signal input signature[kScaled];
     signal input pubKey[kScaled];
-    signal input hashParsed[msg_len];
+    signal input hashParsed[HASH_LEN_BITS];
 
-    signal msgHash[6];
+    signal hash[n * k];
 
-    for(var i = 0; i < 6; i++) {
-        if (i < msg_len) {
-            msgHash[i] <== hashParsed[i];
-        } else {
-            msgHash[i] <== 0;
+    for (var i = n * k - 1; i >= 0; i--) {
+        if (i <= n * k - 1 - HASH_LEN_BITS) {
+            hash[i] <== 0;
+        }else { 
+            hash[i] <== hashParsed[i - n * k + HASH_LEN_BITS];
         }
     }
-
 
     signal signature_r[k]; // ECDSA signature component r
     signal signature_s[k]; // ECDSA signature component s
@@ -39,13 +37,26 @@ template Secp256r1Verifier(signatureAlgorithm, n, k) {
     signal pubkey_xy[2][k] <== [pubKey_x, pubKey_y];
 
     // verify eContentHash signature
-    component ecdsa_verify = ECDSAVerifyNoPubkeyCheck(n, k);
+    component ecdsa_verify = verifyECDSABits(n, k, [ 
+        18446744073709551612, 
+        4294967295, 
+        0, 
+        18446744069414584321 
+    ], 
+    [
+        4309448131093880907,
+        7285987128567378166,
+        12964664127075681980,
+        6540974713487397863
+    ],
+    [ 
+        18446744073709551615, 
+        4294967295, 
+        0, 
+        18446744069414584321 
+    ], n * k);
 
-    ecdsa_verify.r <== signature_r;
-    ecdsa_verify.s <== signature_s;
-    ecdsa_verify.msghash <== msgHash;
     ecdsa_verify.pubkey <== pubkey_xy;
-
-    1 === ecdsa_verify.result;
-
+    ecdsa_verify.signature <== [signature_r, signature_s];
+    ecdsa_verify.hashed <== hash;
 }

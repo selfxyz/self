@@ -21,7 +21,7 @@ describe('Disclose', function () {
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockPassportData('rsa_sha256', 'FRA', '000101', '300101');
+  const passportData = genMockPassportData('rsa_sha256_65537_2048', 'FRA', '000101', '300101');
   let tree: any;
 
   before(async () => {
@@ -77,7 +77,6 @@ describe('Disclose', function () {
       forbidden_countries_list,
       user_identifier
     );
-    console.log('inputs', inputs);
   });
 
   it('should compile and load the circuit', async function () {
@@ -85,7 +84,6 @@ describe('Disclose', function () {
   });
 
   it('should have nullifier == poseidon(secret, scope)', async function () {
-    // console.log("inputs", inputs);
     w = await circuit.calculateWitness(inputs);
     const nullifier_js = poseidon2([inputs.secret, inputs.scope]).toString();
     const nullifier_circom = (await circuit.getOutput(w, ['nullifier'])).nullifier;
@@ -182,7 +180,6 @@ describe('Disclose', function () {
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
     const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-    //console.log("reveal_unpacked", reveal_unpacked)
 
     expect(reveal_unpacked[88]).to.equal('\x00');
     expect(reveal_unpacked[89]).to.equal('\x00');

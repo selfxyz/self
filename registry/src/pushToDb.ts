@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { argv } from 'process';
 import { getPrismaClientFromEnv, prepareDataForInsertion } from './utils/prisma';
-import { parseCertificate } from './utils/certificateParsing/parseCertificate';
+import { parseCertificate } from '../../common/src/utils/certificate_parsing/parseCertificate';
 
 let pemDirectory: string;
 let tableName: 'csca_masterlist' | 'dsc_masterlist';
@@ -33,10 +33,17 @@ async function processBatch(files: string[], prisma: any, startIdx: number, batc
                 const certificateData = parseCertificate(pemContent, file);
 
                 if (certificateData && certificateData.id) {
-                    const notAfterDate = new Date(certificateData.validity.notAfter);
+                    let notAfterDate = new Date(certificateData.validity.notAfter);
+
+                    // Add extra validity years based on certificate type
+                    if (certType === 'dsc') {
+                        notAfterDate.setFullYear(notAfterDate.getFullYear() + 10);
+                    } else if (certType === 'csca') {
+                        notAfterDate.setFullYear(notAfterDate.getFullYear() + 20);
+                    }
+
                     if (notAfterDate > new Date()) {
                         batchData.push(prepareDataForInsertion(certificateData));
-
                     } else {
                         console.log('\x1b[90m%s\x1b[0m', `certificate ${file} is expired.`);
                     }

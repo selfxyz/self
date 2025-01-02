@@ -18,8 +18,8 @@ import {
   vkey_dsc_rsapss_65537_sha256,
   vkey_vc_and_disclose,
 } from '../../../common/src/constants/vkey';
-import { getCircuitName } from '../../../common/src/utils/certificates/handleCertificate';
 import { Mode } from 'fs';
+import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 
 export function getCurrentDateFormatted() {
   return getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString());
@@ -35,7 +35,7 @@ export function getVkeyFromArtifacts(
   if (circuit === 'vc_and_disclose') {
     circuitName = circuit;
   } else {
-    circuitName = getCircuitName(circuit, signatureAlgorithm, hashFunction);
+    circuitName = getCircuitNameOld(circuit, signatureAlgorithm, hashFunction);
   }
   // console.log('\x1b[90m%s\x1b[0m', 'circuit name:', circuitName);
   switch (circuitName) {

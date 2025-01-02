@@ -4,32 +4,47 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
 import { genMockPassportData } from '../../common/src/utils/genMockPassportData';
-import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
 import { SignatureAlgorithm } from '../../common/src/utils/types';
 import crypto from 'crypto';
-import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
+import { getCircuitName } from '../../common/src/utils/certificate_parsing/parseCertificateSimple';
 const sigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha1' },
-  { sigAlg: 'rsa', hashFunction: 'sha256' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
-sigAlgs.forEach(({ sigAlg, hashFunction }) => {
-  describe(`Prove - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()}`, function () {
+const fullSigAlgs = [
+  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
+  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
+  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
+];
+
+const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+// const testSuite = fullSigAlgs;
+
+testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
+  describe(`Prove - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter} ${keyLength}`, function () {
     this.timeout(0);
     let circuit: any;
 
     const passportData = genMockPassportData(
-      `${sigAlg}_${hashFunction}` as SignatureAlgorithm,
+      `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
       'FRA',
       '000101',
       '300101'
     );
+
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
@@ -62,7 +77,7 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
       circuit = await wasm_tester(
         path.join(
           __dirname,
-          `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction)}.circom`
+          `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
         ),
         {
           include: [
@@ -81,6 +96,12 @@ sigAlgs.forEach(({ sigAlg, hashFunction }) => {
     it('should calculate the witness with correct inputs', async function () {
       const w = await circuit.calculateWitness(inputs);
       await circuit.checkConstraints(w);
+      // circuits.getOutput takes way too long for ecdsa
+      if (true) {
+        console.log('skipping printing outputs to console for ecdsa');
+        return;
+      }
+
       const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
       console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
       const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;

@@ -3,10 +3,13 @@ pragma circom 2.1.9;
 include "../utils/passport/customHashers.circom";
 include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
+include "../utils/passport/date/isValid.circom";
+include "../utils/circomlib/hasher/poseidon/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
-include "../disclose/disclose.circom";
-include "../disclose/proveCountryIsNotInList.circom";
-include "../ofac/ofac_name.circom";
+include "../utils/passport/disclose/disclose.circom";
+include "../utils/passport/disclose/proveCountryIsNotInList.circom";
+include "../utils/passport/ofac/ofac_name.circom";
+//include "@zk-email/circuits/utils/bytes.circom";
 
 template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -45,6 +48,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input secret;
     signal input dsc_secret;
 
+
     signal attestation_id <== 1;
 
     signal selectorModeDisclosure <== selector_mode[0];
@@ -53,7 +57,6 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal selectorModeCommitment <== (1- selector_mode[0]) * (1 - selector_mode[1]);
     signal isWrongSelectorMode <== IsEqual()([2*selector_mode[0] + selector_mode[1], 1]);
     isWrongSelectorMode === 0;
-
 
     // verify passport signature
     PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
@@ -65,8 +68,11 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     }
 
     // nulifier
-    signal signatureHashed <== CustomHasher(kScaled)(signature); // generate nullifier
-    signal output nullifier <== Poseidon(2)([signatureHashed, scope]);
+    signal signatureHashed <== CustomHasher(kScaled)(signature);
+    component poseidon_hasher = PoseidonHash(2);
+    poseidon_hasher.in[0] <== signatureHashed;
+    poseidon_hasher.in[1] <== scope;
+    signal output nullifier <== poseidon_hasher.out;
 
     // DISCLOSE (optional)
     // optionally disclose data
@@ -102,13 +108,13 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
 
-    // REGISTRATION (optional)
-    // generate the commitment
+    // // REGISTRATION (optional)
+    // // generate the commitment
     signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
     signal commitmentPrivate <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
     signal output commitment <== commitmentPrivate * selectorModeCommitment;
-    // blinded dsc commitment
+    // // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal blindedDscCommitmenPrivate <== Poseidon(2)([dsc_secret, pubkeyHash]);
+    signal blindedDscCommitmenPrivate <== PoseidonHash(2)([dsc_secret, pubkeyHash]);
     signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selectorModeBlindedDscCommitment;
 }
