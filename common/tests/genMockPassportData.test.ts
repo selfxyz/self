@@ -4,10 +4,12 @@ import { genMockPassportData } from '../src/utils/genMockPassportData';
 import * as forge from 'node-forge';
 import { PassportData, SignatureAlgorithm } from '../src/utils/types';
 import { formatMrz, hash, arraysAreEqual, findSubarrayIndex } from '../src/utils/utils';
-import { parseCertificate } from '../src/utils/certificates/handleCertificate';
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
+import { parseCertificateSimple } from '../src/utils/certificate_parsing/parseCertificateSimple';
+import { getCurveForElliptic } from '../src/utils/certificate_parsing/curves';
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from '../src/utils/certificate_parsing/dataStructure';
 
 const sigAlgs: SignatureAlgorithm[] = [
   'rsa_sha1_65537_2048',
@@ -32,26 +34,26 @@ describe('Mock Passport Data Generator', function () {
 
 function verify(passportData: PassportData): boolean {
   const { mrz, dsc, eContent, signedAttr, encryptedDigest } = passportData;
-  const { signatureAlgorithm, hashFunction, hashLen, curve } = parseCertificate(dsc);
+  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
   const formattedMrz = formatMrz(mrz);
-  const mrzHash = hash(hashFunction, formattedMrz);
+  const mrzHash = hash(hashAlgorithm, formattedMrz);
   const dg1HashOffset = findSubarrayIndex(eContent, mrzHash);
   assert(dg1HashOffset !== -1, 'MRZ hash index not found in eContent');
   console.error(
     '\x1b[32m',
     'signatureAlgorithm',
     signatureAlgorithm,
-    ' hashFunction',
-    hashFunction,
+    ' hashAlgorithm',
+    hashAlgorithm,
     'eContent size',
     eContent.length,
     'signedAttr size',
     signedAttr.length,
     '\x1b[0m'
   );
-  const concatHash = hash(hashFunction, eContent);
+  const concatHash = hash(hashAlgorithm, eContent);
   assert(
-    arraysAreEqual(concatHash, signedAttr.slice(signedAttr.length - hashLen)),
+    arraysAreEqual(concatHash, signedAttr.slice(signedAttr.length - getHashLen(hashAlgorithm))),
     'concatHash is not at the right place in signedAttr'
   );
 
@@ -64,11 +66,11 @@ function verify(passportData: PassportData): boolean {
     const cert = new Certificate({ schema: asn1Data.result });
     const publicKeyInfo = cert.subjectPublicKeyInfo;
     const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-    const curveForElliptic = curve === 'secp256r1' ? 'p256' : 'p384';
+    const curveForElliptic = getCurveForElliptic((publicKeyDetails as PublicKeyDetailsECDSA).curve);
     const ec = new elliptic.ec(curveForElliptic);
 
     const key = ec.keyFromPublic(publicKeyBuffer);
-    const md = hashFunction === 'sha1' ? forge.md.sha1.create() : forge.md.sha256.create();
+    const md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
     const msgHash = md.digest().toHex();
     const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
@@ -78,20 +80,36 @@ function verify(passportData: PassportData): boolean {
     const cert = forge.pki.certificateFromPem(dsc);
     const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
 
-    const md = forge.md[hashFunction].create();
+    const md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
 
     const signature = Buffer.from(encryptedDigest).toString('binary');
 
     if (signatureAlgorithm === 'rsapss') {
       const pss = forge.pss.create({
-        md: forge.md[hashFunction].create(),
-        mgf: forge.mgf.mgf1.create(forge.md[hashFunction].create()),
-        saltLength: hashLen,
+        md: forge.md[hashAlgorithm].create(),
+        mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+        saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
       });
       return publicKey.verify(md.digest().bytes(), signature, pss);
     } else {
       return publicKey.verify(md.digest().bytes(), signature);
     }
+
   }
 }
+
+function getHashLen(hashAlgorithm: string): number {
+  if (hashAlgorithm === 'sha1') {
+    return 20;
+  } else if (hashAlgorithm === 'sha256') {
+    return 32;
+  } else if (hashAlgorithm === 'sha384') {
+    return 48;
+  } else if (hashAlgorithm === 'sha512') {
+    return 64;
+  } else {
+    throw new Error('Unsupported hash algorithm');
+  }
+}
+

@@ -29,6 +29,8 @@ export interface PublicKeyDetailsRSAPSS extends PublicKeyDetailsRSA {
 }
 
 export interface PublicKeyDetailsECDSA {
+    x: string;
+    y: string;
     curve: string;
     params: StandardCurve;
     bits: string;

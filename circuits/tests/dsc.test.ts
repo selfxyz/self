@@ -11,7 +11,7 @@ import {
   mock_csca_sha256_rsapss_4096,
 } from '../../common/src/constants/mockCertificates';
 import { max_cert_bytes } from '../../common/src/constants/constants';
-import { getCircuitName } from '../../common/src/utils/certificates/handleCertificate';
+import { getCircuitName } from '../../common/src/utils/certificate_parsing/parseCertificateSimple';
 
 const sigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },

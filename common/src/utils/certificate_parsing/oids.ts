@@ -104,8 +104,19 @@ export const oidMap: { [key: string]: string } = {
     "1.2.840.10045.3.1.6": "x962P239v3",
 };
 
+export const mapSecpCurves: { [key: string]: string } = {
+    "ECDSA_224": "secp224r1",
+    "ECDSA_P256": "secp256r1",
+    "ECDSA_P384": "secp384r1",
+    "ECDSA_P521": "secp521r1",
+}
+
+function getFriendlyNameSecpCurves(friendlyName: string): string {
+    return mapSecpCurves[friendlyName] || friendlyName;
+}
+
 export function getFriendlyName(oid: string): string {
-    return oidMap[oid] || "Unknown Algorithm";
+    return getFriendlyNameSecpCurves(oidMap[oid]) || "Unknown Algorithm";
 }
 
 export function extractHashFunction(friendlyName: string): string {

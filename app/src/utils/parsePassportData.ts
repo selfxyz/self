@@ -88,12 +88,10 @@ export function getSimplePublicKeyDetails(certData: CertificateData): string {
 }
 
 export function parsePassportData(passportData: PassportData): PassportMetadata {
-    // Extract DG1 hash info
     const dg1HashInfo = passportData.mrz ?
         findDG1HashInEContent(passportData.mrz, passportData.eContent) :
         null;
 
-    // Use extracted DG1 hash if found, otherwise use provided dg1Hash
     const dg1Hash = dg1HashInfo?.hash || passportData.dg1Hash;
     const dg1HashFunction = dg1HashInfo?.hashFunction || 'unknown';
 
@@ -107,54 +105,36 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
     const { hashFunction: eContentHashFunction, offset: eContentHashOffset } =
         findHashSizeOfEContent(passportData.eContent, passportData.signedAttr);
 
-    const parsedDsc: CertificateData | null = passportData.dsc ?
-        parseCertificateSimple(passportData.dsc) :
-        null;
+    let parsedDsc = null;
+    let parsedCsca = null;
+    let csca = null;
+    let dscHashFunction = 'unknown';
+    let dscSignature = 'unknown';
+    let dscSignatureAlgorithmDetails = 'unknown';
+    let dscSignatureAlgorithmBits = 0;
+    let cscaHashFunction = 'unknown';
+    let cscaSignature = 'unknown';
+    let cscaSignatureAlgorithmDetails = 'unknown';
+    let cscaSignatureAlgorithmBits = 0;
 
-    const dscHashFunction = parsedDsc ?
-        parsedDsc.hashAlgorithm :
-        'unknown';
+    if (passportData.dsc) {
+        parsedDsc = parseCertificateSimple(passportData.dsc);
+        dscHashFunction = parsedDsc.hashAlgorithm;
+        dscSignature = parsedDsc.signatureAlgorithm;
+        dscSignatureAlgorithmDetails = getSimplePublicKeyDetails(parsedDsc);
+        dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
-    const dscSignature = parsedDsc ?
-        parsedDsc.signatureAlgorithm :
-        'unknown';
-
-    const dscSignatureAlgorithmDetails = parsedDsc ?
-        getSimplePublicKeyDetails(parsedDsc) :
-        'unknown';
-
-    const dscSignatureAlgorithmBits = parsedDsc ?
-        parsedDsc.publicKeyDetails?.bits :
-        'unknown';
-
-    const dscAKI = parsedDsc ?
-        parsedDsc.authorityKeyIdentifier :
-        'unknown';
-
-    let csca: string | null = null;
-    if (dscAKI) {
-        csca = getCSCAFromSKI(dscAKI, true);
+        if (parsedDsc.authorityKeyIdentifier) {
+            csca = getCSCAFromSKI(parsedDsc.authorityKeyIdentifier, true);
+            if (csca) {
+                parsedCsca = parseCertificateSimple(csca);
+                cscaHashFunction = parsedCsca.hashAlgorithm;
+                cscaSignature = parsedCsca.signatureAlgorithm;
+                cscaSignatureAlgorithmDetails = getSimplePublicKeyDetails(parsedCsca);
+                cscaSignatureAlgorithmBits = parseInt(parsedCsca.publicKeyDetails?.bits || '0');
+            }
+        }
     }
-    const parsedCsca = csca ?
-        parseCertificateSimple(csca) :
-        null;
-
-    const cscaHashFunction = parsedCsca ?
-        parsedCsca.hashAlgorithm :
-        'unknown';
-
-    const cscaSignature = parsedCsca ?
-        parsedCsca.signatureAlgorithm :
-        'unknown';
-
-    const cscaSignatureAlgorithmDetails = parsedCsca ?
-        getCurveOrExponent(parsedCsca) :
-        'unknown';
-
-    const cscaSignatureAlgorithmBits = parsedCsca ?
-        parsedCsca.publicKeyDetails?.bits :
-        'unknown';
-
 
     return {
         dataGroups: passportData.dgPresents?.toString().split(',').map(item => item.replace('DG', '')).join(',') || 'None',
@@ -168,14 +148,14 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
         signatureAlgorithm: dscSignature,
         signatureAlgorithmDetails: dscSignatureAlgorithmDetails,
         curveOrExponent: parsedDsc ? getCurveOrExponent(parsedDsc) : 'unknown',
-        signatureAlgorithmBits: dscSignatureAlgorithmBits ? parseInt(dscSignatureAlgorithmBits) : 0,
+        signatureAlgorithmBits: dscSignatureAlgorithmBits,
         countryCode: passportData.mrz ? getCountryCodeFromMrz(passportData.mrz) : 'unknown',
         cscaFound: !!csca,
         cscaHashFunction,
         cscaSignature,
         cscaSignatureAlgorithmDetails,
         cscaCurveOrExponent: parsedCsca ? getCurveOrExponent(parsedCsca) : 'unknown',
-        cscaSignatureAlgorithmBits: cscaSignatureAlgorithmBits ? parseInt(cscaSignatureAlgorithmBits) : 0,
+        cscaSignatureAlgorithmBits: cscaSignatureAlgorithmBits,
         dsc: passportData.dsc
     };
 }

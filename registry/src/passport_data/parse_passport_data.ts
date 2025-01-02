@@ -32,7 +32,6 @@ function parsePassportFile(filePath: string) {
         console.log(`CSCA Signature Algorithm Details: ${passportMetaData.cscaSignatureAlgorithmDetails}`);
         console.log(`CSCA Curve or Exponent: ${passportMetaData.cscaCurveOrExponent}`);
         console.log(`CSCA Signature Algorithm Bits: ${passportMetaData.cscaSignatureAlgorithmBits}`);
-        console.log(`DSC: ${passportMetaData.dsc}`);
 
     } catch (error) {
         console.error(`Error processing file ${filePath}:`, error);

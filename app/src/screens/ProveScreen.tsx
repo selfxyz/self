@@ -9,7 +9,7 @@ import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/ap
 import CustomButton from '../components/CustomButton';
 import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitNameOld, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
+import { getCircuitNameOld, parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
@@ -43,9 +43,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashFunction, authorityKeyIdentifier } = parseCertificate(passportData.dsc);
+  const { signatureAlgorithm, hashAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(passportData.dsc);
   const { secret, dscSecret } = useUserStore.getState();
-  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, hashFunction);
+  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, hashAlgorithm);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -165,18 +165,18 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             )
           ]);
           const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, DEVELOPMENT_MODE);
-          const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificate(cscaPem);
+          const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificateSimple(cscaPem);
           attestation = buildAttestation({
             mode: selectedApp.mode,
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashFunction,
+            hashFunction: hashAlgorithm,
             userIdType: selectedApp.userIdType,
             dscProof: (dscProof as any).proof,
             dscPublicSignals: (dscProof as any).pub_signals,
             signatureAlgorithmDsc: signatureAlgorithmDsc,
-            hashFunctionDsc: hashFunction,
+            hashFunctionDsc: hashAlgorithm,
           });
           break;
         default:
@@ -190,7 +190,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashFunction,
+            hashFunction: hashAlgorithm,
             dsc: passportData.dsc,
           });
           break;

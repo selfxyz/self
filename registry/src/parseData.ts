@@ -1,9 +1,9 @@
-import { parseCertificate } from "./utils/certificateParsing/parseCertificate";
+import { parseCertificate } from "../../common/src/utils/certificate_parsing/parseCertificate";
 import path from 'path';
 import fs from 'fs';
 const csca_pem_directory_path = path.join(__dirname, '..', 'outputs', 'csca', 'pem_masterlist copy');
 const dsc_pem_directory_path = path.join(__dirname, '..', 'outputs', 'dsc', 'pem_masterlist');
-import { CertificateData } from './utils/certificateParsing/dataStructure';
+import { CertificateData } from "../../common/src/utils/certificate_parsing/dataStructure";
 
 function main(arg: string) {
 

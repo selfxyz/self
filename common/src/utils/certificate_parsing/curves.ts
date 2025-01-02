@@ -1,4 +1,3 @@
-
 export interface StandardCurve {
     name: string;
     p: string;
@@ -36,8 +35,7 @@ export const standardCurves: StandardCurve[] = [
         G: "0400C6858E06B70404E9CD9E3ECB662395B4429C648139053FB521F828AF606B4D3DBAA14B5E77EFE75928FE1DC127A2FFA8DE3348B3C1856A429BF97E7E31C2E5BD66011839296A789A3BC0045C8A5FB42C7D1BD998F54449579B446817AFBD17273E662C97EE72995EF42640C550B9013FAD0761353C7086A272C24088BE94769FD16650",
         n: "01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFA51868783BF2F966B7FCC0148F709A5D03BB5C9B8899C47AEBB6FB71E91386409",
         h: "01"
-    }
-    ,
+    },
     {
         name: "brainpoolP224r1",
         p: "d7c134aa264366862a18302575d1d787b09f075797da89f57ec8c0ff",
@@ -108,22 +106,36 @@ export function identifyCurve(params: any): string {
 
 export function getECDSACurveBits(curveName: string): string {
     const curveBits: { [key: string]: number } = {
+        'secp224r1': 224,
         'secp256r1': 256,
         'secp384r1': 384,
         'secp521r1': 521,
         'brainpoolP224r1': 224,
         'brainpoolP256r1': 256,
         'brainpoolP384r1': 384,
-        'brainpoolP512r1': 512,
-        'secp256r1 (NIST P-256)': 256,
-        'secp384r1 (NIST P-384)': 384,
-        'secp521r1 (NIST P-521)': 521,
-
+        'brainpoolP512r1': 512
     };
     if (curveName in curveBits) {
         return curveBits[curveName].toString();
     }
     console.log('\x1b[31m%s\x1b[0m', `curve name ${curveName} not found in curveBits`);
     return "unknown";
+}
+export function getCurveForElliptic(curveName: string): string {
+    const curves = {
+        secp224r1: 'p224',
+        secp256r1: 'p256',
+        secp384r1: 'p384',
+        secp521r1: 'p521',
+        brainpoolP224r1: 'brainpoolP224r1',
+        brainpoolP256r1: 'brainpoolP256r1',
+        brainpoolP384r1: 'brainpoolP384r1',
+        brainpoolP512r1: 'brainpoolP512r1',
+    };
 
+    if (!curves[curveName]) {
+        throw new Error('Invalid curve: ' + curveName);
+    }
+
+    return curves[curveName];
 }

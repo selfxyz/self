@@ -5,7 +5,7 @@ import {
   MAX_PADDED_SIGNED_ATTR_LEN,
 } from '../constants/constants';
 import { assert, shaPad } from './shaPad';
-import { PassportData } from './types';
+import { PassportData, SignatureAlgorithm } from './types';
 import {
   bytesToBigDecimal,
   formatMrz,
@@ -30,7 +30,9 @@ import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from './smtTree';
 import { packBytes } from '../utils/utils';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { parseCertificate } from './certificates/handleCertificate';
+import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
+import { cp } from 'fs';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -181,16 +183,20 @@ export function generateCircuitInputsProve(
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
   const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
-  const { signatureAlgorithm, hashFunction, hashLen, x, y, modulus, curve, exponent, bits } =
-    parseCertificate(passportData.dsc);
-
-  const signatureAlgorithmFullName = `${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}`;
+  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
   let pubKey: any;
   let signature: any;
+  let signatureAlgorithmFullName: string;
+  let n, k;
+  // const 
 
-  const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
+
+  // const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
 
   if (signatureAlgorithm === 'ecdsa') {
+    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
+    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
+    const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
     const { r, s } = extractRSFromSignature(encryptedDigest);
     const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
     const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
@@ -199,18 +205,22 @@ export function generateCircuitInputsProve(
     const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k);
     pubKey = [...dsc_modulus_x, ...dsc_modulus_y];
   } else {
+    const { modulus, exponent } = (publicKeyDetails as PublicKeyDetailsRSA);
+    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
+    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
     signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n, k);
-
     pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
   }
 
+  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
+
   const formattedMrz = formatMrz(mrz);
-  const dg1Hash = hash(hashFunction, formattedMrz);
+  const dg1Hash = hash(hashAlgorithm, formattedMrz);
   const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash);
   console.log('\x1b[90m%s\x1b[0m', 'dg1HashOffset', dg1HashOffset);
   assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
 
-  const eContentHash = hash(hashFunction, eContent);
+  const eContentHash = hash(hashAlgorithm, eContent);
   const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash);
   console.log('\x1b[90m%s\x1b[0m', 'eContentHashOffset', eContentHashOffset);
   assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
@@ -224,6 +234,7 @@ export function generateCircuitInputsProve(
     );
   }
 
+  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
   const [eContentPadded, eContentLen] = shaPad(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]

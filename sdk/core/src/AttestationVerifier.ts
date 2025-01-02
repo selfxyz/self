@@ -21,7 +21,6 @@ import {
 } from '../../../common/src/utils/openPassportAttestation';
 import { Mode } from 'fs';
 import forge from 'node-forge';
-import { parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
 import {
   castToScope,
   formatForbiddenCountriesListFromCircuitOutput,
@@ -33,6 +32,8 @@ import { unpackReveal } from '../../../common/src/utils/revealBitmap';
 import { getCSCAModulusMerkleTree } from '../../../common/src/utils/csca';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
 import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
 
 export class AttestationVerifier {
   protected devMode: boolean;
@@ -211,12 +212,13 @@ export class AttestationVerifier {
       console.log('\x1b[32m%s\x1b[0m', '- certificate verified');
     }
 
-    const parsedDsc = parseCertificate(attestation.dsc.value);
+    const parsedDsc = parseCertificateSimple(attestation.dsc.value);
     const signatureAlgorithmDsc = parsedDsc.signatureAlgorithm;
     if (signatureAlgorithmDsc === 'ecdsa') {
       throw new Error('ECDSA not supported yet');
     } else {
-      const dscModulus = parsedDsc.modulus;
+      const publicKeyDetails: PublicKeyDetailsRSA = parsedDsc.publicKeyDetails as PublicKeyDetailsRSA;
+      const dscModulus = publicKeyDetails.modulus;
       const dscModulusBigInt = BigInt(`0x${dscModulus}`);
       const dscModulusWords = splitToWords(dscModulusBigInt, n_dsc, k_dsc);
       const pubKeyFromProof = parsePublicSignalsProve(
