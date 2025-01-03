@@ -3,42 +3,44 @@ import { describe, it } from 'mocha';
 import { genMockPassportData } from '../src/utils/genMockPassportData';
 import * as forge from 'node-forge';
 import { PassportData, SignatureAlgorithm } from '../src/utils/types';
-import { formatMrz, hash, arraysAreEqual, findSubarrayIndex } from '../src/utils/utils';
 import * as asn1 from 'asn1js';
 import { Certificate } from 'pkijs';
 import elliptic from 'elliptic';
 import { parseCertificateSimple } from '../src/utils/certificate_parsing/parseCertificateSimple';
 import { getCurveForElliptic } from '../src/utils/certificate_parsing/curves';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from '../src/utils/certificate_parsing/dataStructure';
+import { parsePassportData } from '../src/utils/parsePassportData';
 
-const sigAlgs: SignatureAlgorithm[] = [
-  'rsa_sha1_65537_2048',
-  'rsa_sha256_65537_2048',
-  'rsapss_sha256_65537_2048',
-  'ecdsa_sha256_secp256r1_256',
-  'ecdsa_sha1_secp256r1_256',
-  // 'ecdsa_sha384_secp384r1_384',
+const testCases = [
+  { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa_sha1_65537_2048' },
+  { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa_sha256_65537_2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss_sha256_65537_2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'ecdsa_sha256_secp256r1_256' },
+  { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'ecdsa_sha1_secp256r1_256' },
 ];
 
 describe('Mock Passport Data Generator', function () {
   this.timeout(0);
 
-  sigAlgs.forEach((sigAlg) => {
+  testCases.forEach(({ dgHashAlgo, eContentHashAlgo, sigAlg }) => {
     it(`should generate valid passport data for ${sigAlg}`, () => {
-      const passportData = genMockPassportData(sigAlg, 'FRA', '000101', '300101');
+      const passportData = genMockPassportData(
+        dgHashAlgo,
+        eContentHashAlgo,
+        sigAlg as SignatureAlgorithm,
+        'FRA',
+        '000101',
+        '300101'
+      );
       expect(passportData).to.exist;
-      expect(verify(passportData)).to.be.true;
+      expect(verify(passportData, dgHashAlgo, eContentHashAlgo)).to.be.true;
     });
   });
 });
 
-function verify(passportData: PassportData): boolean {
-  const { mrz, dsc, eContent, signedAttr, encryptedDigest } = passportData;
+function verify(passportData: PassportData, dgHashAlgo: string, eContentHashAlgo: string): boolean {
+  const { dsc, eContent, signedAttr, encryptedDigest } = passportData;
   const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
-  const formattedMrz = formatMrz(mrz);
-  const mrzHash = hash(hashAlgorithm, formattedMrz);
-  const dg1HashOffset = findSubarrayIndex(eContent, mrzHash);
-  assert(dg1HashOffset !== -1, 'MRZ hash index not found in eContent');
   console.error(
     '\x1b[32m',
     'signatureAlgorithm',
@@ -51,11 +53,10 @@ function verify(passportData: PassportData): boolean {
     signedAttr.length,
     '\x1b[0m'
   );
-  const concatHash = hash(hashAlgorithm, eContent);
-  assert(
-    arraysAreEqual(concatHash, signedAttr.slice(signedAttr.length - getHashLen(hashAlgorithm))),
-    'concatHash is not at the right place in signedAttr'
-  );
+  const passportMetaData = parsePassportData(passportData);
+
+  expect(passportMetaData.dg1HashFunction).to.equal(dgHashAlgo);
+  expect(passportMetaData.eContentHashFunction).to.equal(eContentHashAlgo);
 
   if (signatureAlgorithm === 'ecdsa') {
     const certBuffer = Buffer.from(

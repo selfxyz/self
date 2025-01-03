@@ -77,7 +77,6 @@ export function formatDg2Hash(dg2Hash: number[]) {
 
 export function formatAndConcatenateDataHashes(
   dataHashes: [number, number[]][],
-  hashLen: number,
   dg1HashOffset: number
 ) {
   // concatenating dataHashes :
@@ -159,7 +158,7 @@ export function formatAndConcatenateDataHashes(
   return concat;
 }
 
-export function assembleEContent(messageDigest: number[]) {
+export function generateSignedAttr(messageDigest: number[]) {
   const constructedEContent = [];
 
   // Detailed description is in private file r&d.ts for now

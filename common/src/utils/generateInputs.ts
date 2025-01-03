@@ -32,7 +32,7 @@ import { packBytes } from '../utils/utils';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
-import { cp } from 'fs';
+import { parsePassportData } from './parsePassportData';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -183,6 +183,7 @@ export function generateCircuitInputsProve(
   user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
 ) {
   const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
+  const passportMetadata = parsePassportData(passportData);
   const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
   let pubKey: any;
   let signature: any;
@@ -215,19 +216,11 @@ export function generateCircuitInputsProve(
   console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
 
   const formattedMrz = formatMrz(mrz);
-  const dg1Hash = hash(hashAlgorithm, formattedMrz);
-  const dg1HashOffset = findSubarrayIndex(eContent, dg1Hash);
-  console.log('\x1b[90m%s\x1b[0m', 'dg1HashOffset', dg1HashOffset);
-  assert(dg1HashOffset !== -1, `DG1 hash ${dg1Hash} not found in eContent`);
 
-  const eContentHash = hash(hashAlgorithm, eContent);
-  const eContentHashOffset = findSubarrayIndex(signedAttr, eContentHash);
-  console.log('\x1b[90m%s\x1b[0m', 'eContentHashOffset', eContentHashOffset);
-  assert(eContentHashOffset !== -1, `eContent hash ${eContentHash} not found in signedAttr`);
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
     console.error(
-      `Data hashes too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`
+      `eContent too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`
     );
     throw new Error(
       `This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`
@@ -237,12 +230,12 @@ export function generateCircuitInputsProve(
   console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
   const [eContentPadded, eContentLen] = shaPad(
     new Uint8Array(eContent),
-    MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]
+    MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
   );
 
   const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
     new Uint8Array(signedAttr),
-    MAX_PADDED_SIGNED_ATTR_LEN[signatureAlgorithmFullName]
+    MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
@@ -261,13 +254,13 @@ export function generateCircuitInputsProve(
   return {
     selector_mode: formatInput(selector_mode),
     dg1: formatInput(formattedMrz),
-    dg1_hash_offset: formatInput(dg1HashOffset),
+    dg1_hash_offset: formatInput(passportMetadata.dg1HashOffset),
     dg2_hash: formatInput(formatDg2Hash(dg2Hash)),
     eContent: Array.from(eContentPadded).map((x) => x.toString()),
     eContent_padded_length: formatInput(eContentLen),
     signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
     signed_attr_padded_length: formatInput(signedAttrPaddedLen),
-    signed_attr_econtent_hash_offset: formatInput(eContentHashOffset),
+    signed_attr_econtent_hash_offset: formatInput(passportMetadata.eContentHashOffset),
     signature: signature,
     pubKey: pubKey,
     current_date: formatInput(getCurrentDateYYMMDD()),

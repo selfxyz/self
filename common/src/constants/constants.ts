@@ -23,40 +23,41 @@ export const RPC_URL = 'https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
+// export const MAX_PADDED_ECONTENT_LEN: Partial<
+//   Record<keyof typeof SignatureAlgorithmIndex, number>
+// > = {
+//   rsa_sha256_65537_2048: 448,
+//   rsa_sha1_65537_2048: 320,
+//   rsapss_sha256_65537_2048: 384,
+//   rsapss_sha256_3_3072: 384,
+//   rsapss_sha256_65537_3072: 384,
+//   rsapss_sha256_65537_4096: 384,
+//   rsapss_sha256_3_4096: 384,
+//   rsapss_sha384_65537_3072: 384,
+//   ecdsa_sha1_secp256r1_256: 320,
+//   ecdsa_sha256_secp256r1_256: 384,
+//   ecdsa_sha384_secp384r1_384: 512,
+//   rsa_sha256_65537_3072: 384,
+//   rsa_sha256_3_2048: 384,
+// };
+const hashAlgos = ['sha1', 'sha256', 'sha384', 'sha512'];
 export const MAX_PADDED_ECONTENT_LEN: Partial<
-  Record<keyof typeof SignatureAlgorithmIndex, number>
+  Record<typeof hashAlgos[number], number>
 > = {
-  rsa_sha256_65537_2048: 384,
-  rsa_sha1_65537_2048: 320,
-  rsapss_sha256_65537_2048: 384,
-  rsapss_sha256_3_3072: 384,
-  rsapss_sha256_65537_3072: 384,
-  rsapss_sha256_65537_4096: 384,
-  rsapss_sha256_3_4096: 384,
-  rsapss_sha384_65537_3072: 384,
-  ecdsa_sha1_secp256r1_256: 320,
-  ecdsa_sha256_secp256r1_256: 384,
-  ecdsa_sha384_secp384r1_384: 512,
-  rsa_sha256_65537_3072: 384,
-  rsa_sha256_3_2048: 384,
+  sha1: 320,
+  sha256: 448,
+  sha384: 576,
+  sha512: 704,
 };
 
+
 export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
-  Record<keyof typeof SignatureAlgorithmIndex, number>
+  Record<typeof hashAlgos[number], number>
 > = {
-  rsa_sha256_65537_2048: 192,
-  rsa_sha1_65537_2048: 192,
-  rsapss_sha256_65537_2048: 192,
-  rsapss_sha256_65537_3072: 192,
-  rsapss_sha256_65537_4096: 192,
-  rsapss_sha256_3_3072: 192,
-  rsapss_sha256_3_4096: 192,
-  rsapss_sha384_65537_3072: 256,
-  ecdsa_sha1_secp256r1_256: 192,
-  ecdsa_sha256_secp256r1_256: 192,
-  ecdsa_sha384_secp384r1_384: 192,
-  rsa_sha256_65537_3072: 192,
-  rsa_sha256_3_2048: 192,
+  sha1: 128,
+  sha256: 128,
+  sha384: 128,
+  sha512: 192,
 };
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -119,10 +120,10 @@ export const circuitToSelectorMode = {
 };
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-export const n_dsc = 64;
+export const n_dsc = 120;
 export const n_dsc_3072 = 96;
 export const n_dsc_4096 = 120;
-export const k_dsc = 32;
+export const k_dsc = 35;
 export const k_dsc_3072 = 32;  //48;
 export const k_dsc_4096 = 35;
 export const n_csca = 120;

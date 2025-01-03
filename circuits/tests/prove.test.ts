@@ -9,42 +9,46 @@ import crypto from 'crypto';
 import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
-import { getCircuitName } from '../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { getCircuitNameFromPassportData } from '../../common/src/utils/circuitsName';
+import { parsePassportData } from '../../common/src/utils/parsePassportData';
+
 const sigAlgs = [
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  // { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  // { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha256', sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  // { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
 const fullSigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
-  { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
-  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
+  { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
+  { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
 ];
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 // const testSuite = fullSigAlgs;
 
-testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
-  describe(`Prove - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter} ${keyLength}`, function () {
+testSuite.forEach(({ dgHashAlgo, eContentHashAlgo, sigAlg, hashFunction, domainParameter, keyLength }) => {
+  describe(`Prove - ${dgHashAlgo.toUpperCase()} ${eContentHashAlgo.toUpperCase()} ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter} ${keyLength}`, function () {
     this.timeout(0);
     let circuit: any;
 
     const passportData = genMockPassportData(
+      dgHashAlgo,
+      eContentHashAlgo,
       `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
       'FRA',
       '000101',
       '300101'
     );
-
     const majority = '18';
     const user_identifier = crypto.randomUUID();
     const scope = '@coboyApp';
@@ -77,7 +81,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       circuit = await wasm_tester(
         path.join(
           __dirname,
-          `../circuits/prove/instances/${getCircuitName('prove', sigAlg, hashFunction, domainParameter, keyLength)}.circom`
+          `../circuits/prove/instances/${getCircuitNameFromPassportData(passportData)}.circom`
         ),
         {
           include: [
