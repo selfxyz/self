@@ -10,6 +10,7 @@ template Sha384Bytes(maxByteLength) {
     signal output out[384];
 
     component sha = Sha384HashChunks((maxByteLength * 8) \ 1024);
+    sha.paddedInLength <== paddedInLength * 8;
 
     component bytes[maxByteLength];
     for (var i = 0; i < maxByteLength; i++) {

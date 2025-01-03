@@ -10,6 +10,7 @@ template Sha512Bytes(maxByteLength) {
     signal output out[512];
 
     component sha = Sha512HashChunks((maxByteLength * 8) \ 1024);
+    sha.paddedInLength <== paddedInLength * 8;
 
     component bytes[maxByteLength];
     for (var i = 0; i < maxByteLength; i++) {

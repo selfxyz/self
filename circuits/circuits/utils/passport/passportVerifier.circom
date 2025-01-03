@@ -51,10 +51,6 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         }
     }
 
-    for (var i = 0; i < HASH_LEN_BYTES; i++) {
-        log(dg1ShaBytes[i].out);
-    }
-
     // assert DG1 and DG2 hashes match the ones in eContent input
     signal dg1AndDg2Hash[2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN)(eContent, dg1_hash_offset);
 
