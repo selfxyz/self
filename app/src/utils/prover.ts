@@ -1,19 +1,17 @@
-import { NativeModules, Platform } from 'react-native';
-import { parseProofAndroid } from './utils';
-import RNFS from 'react-native-fs';
 import * as amplitude from '@amplitude/analytics-react-native';
+import { NativeModules, Platform } from 'react-native';
+import RNFS from 'react-native-fs';
 
-export const generateProof = async (
-  circuit: string,
-  inputs: any,
-) => {
+import { parseProofAndroid } from './utils';
+
+export const generateProof = async (circuit: string, inputs: any) => {
   console.log('launching generateProof function');
   console.log('inputs in prover.ts', inputs);
   console.log('circuit', circuit);
 
-  const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`
   // Example: "/data/user/0/com.proofofpassportapp/files/register_sha256WithRSAEncryption_65537.zkey" on android
-  const dat_path = `${RNFS.DocumentDirectoryPath}/${circuit}.dat`
+  const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`;
+  const dat_path = `${RNFS.DocumentDirectoryPath}/${circuit}.dat`;
 
   const witness_calculator = circuit;
 
@@ -29,7 +27,7 @@ export const generateProof = async (
       zkey_path,
       witness_calculator,
       dat_path,
-      inputs
+      inputs,
     );
 
     // console.log('local proof:', response);
@@ -37,7 +35,7 @@ export const generateProof = async (
     if (Platform.OS === 'android') {
       const parsedResponse = parseProofAndroid(response);
       console.log('parsedResponse', parsedResponse);
-      return formatProof(parsedResponse)
+      return formatProof(parsedResponse);
     } else {
       const parsedResponse = JSON.parse(response);
       console.log('parsedResponse', parsedResponse);
@@ -45,7 +43,7 @@ export const generateProof = async (
       return formatProof({
         proof: parsedResponse.proof,
         pub_signals: parsedResponse.inputs,
-      })
+      });
     }
   } catch (err: any) {
     console.log('err', err);
@@ -63,24 +61,16 @@ export const generateProof = async (
 export const formatProof = (rawProof: any): any => {
   return {
     proof: {
-      pi_a: [
-        rawProof.proof.a[0],
-        rawProof.proof.a[1],
-        "1"
-      ],
+      pi_a: [rawProof.proof.a[0], rawProof.proof.a[1], '1'],
       pi_b: [
         [rawProof.proof.b[0][0], rawProof.proof.b[0][1]],
         [rawProof.proof.b[1][0], rawProof.proof.b[1][1]],
-        ["1", "0"]
+        ['1', '0'],
       ],
-      pi_c: [
-        rawProof.proof.c[0],
-        rawProof.proof.c[1],
-        "1"
-      ],
-      protocol: "groth16",
-      curve: "bn128"
+      pi_c: [rawProof.proof.c[0], rawProof.proof.c[1], '1'],
+      protocol: 'groth16',
+      curve: 'bn128',
     },
-    publicSignals: (rawProof as any).pub_signals
-  }
-}
+    publicSignals: (rawProof as any).pub_signals,
+  };
+};
