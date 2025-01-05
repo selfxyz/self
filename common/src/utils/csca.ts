@@ -2,7 +2,6 @@ import { shaPad } from './shaPad';
 import * as forge from 'node-forge';
 import {
   bytesToBigDecimal,
-  extractRSFromSignature,
   getNAndK,
   getNAndKCSCA,
   hexToDecimal,

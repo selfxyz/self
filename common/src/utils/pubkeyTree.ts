@@ -1,11 +1,6 @@
-import {
-  PUBKEY_TREE_DEPTH,
-  COMMITMENT_TREE_TRACKER_URL,
-  SignatureAlgorithmIndex,
-} from '../constants/constants';
+import { SignatureAlgorithmIndex } from '../constants/constants';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import axios from 'axios';
-import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
+import { poseidon16, poseidon2, poseidon7 } from 'poseidon-lite';
 import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
 import { flexiblePoseidon } from './poseidon';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
@@ -30,7 +25,7 @@ export function customHasher(pubKeyFormatted: string[]) {
 }
 
 export function getLeaf(dsc: string): string {
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
+  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
 
 
@@ -62,7 +57,7 @@ export function getLeaf(dsc: string): string {
   }
 }
 export function getLeafCSCA(dsc: string): string {
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
+  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
   const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
 
 

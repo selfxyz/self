@@ -1,12 +1,12 @@
 import * as asn1js from "asn1js";
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from "pkijs";
-import { extractHashFunction, getFriendlyName } from "./oids";
+import { getFriendlyName } from "./oids";
 import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, PublicKeyDetailsRSAPSS } from "./dataStructure";
 import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } from "./curves";
 import { getIssuerCountryCode, getSubjectKeyIdentifier } from "./utils";
-import elliptic from 'elliptic';
 import { circuitNameFromMode } from "../../constants/constants";
 import { Mode } from "../appType";
+import { initElliptic } from "../elliptic";
 
 
 export function parseCertificateSimple(pem: string): CertificateData {
@@ -20,7 +20,6 @@ export function parseCertificateSimple(pem: string): CertificateData {
         subjectKeyIdentifier: '',
         authorityKeyIdentifier: '',
         signatureAlgorithm: '',
-        hashAlgorithm: '',
         publicKeyDetails: undefined,
         rawPem: '',
         rawTxt: ''
@@ -42,36 +41,19 @@ export function parseCertificateSimple(pem: string): CertificateData {
         const cert = new Certificate({ schema: asn1.result });
         const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
         const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
-        const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
-        const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
-
 
         let params;
         if (publicKeyAlgoFN === 'RSA') {
-            if (signatureAlgoFN === 'RSASSA_PSS') {
-                certificateData.signatureAlgorithm = "rsapss";
-                params = getParamsRSAPSS(cert);
-                certificateData.hashAlgorithm = (params as PublicKeyDetailsRSAPSS).hashAlgorithm;
-            }
-            else {
-                certificateData.hashAlgorithm = extractHashFunction(signatureAlgoFN);
-                certificateData.signatureAlgorithm = "rsa";
-                params = getParamsRSA(cert);
-            }
-
+            certificateData.signatureAlgorithm = "rsa";
+            params = getParamsRSA(cert);
         }
         else if (publicKeyAlgoFN === 'ECC') {
-            certificateData.hashAlgorithm = extractHashFunction(signatureAlgoFN);
             certificateData.signatureAlgorithm = "ecdsa";
             params = getParamsECDSA(cert);
         }
         else if (publicKeyAlgoFN === 'RSASSA_PSS') {
             certificateData.signatureAlgorithm = "rsapss";
-            //different certificate structure than the RSA/RSAPSS mix, we can't retrieve the modulus the same way as for RSA
-            // console.log(cert);
-
-            //TODO: implement the parsing of the RSASSA_PSS certificate
-            params = getParamsRSAPSS2(cert);
+            params = getParamsRSAPSS(cert);
         }
         else {
             console.log(publicKeyAlgoFN);
@@ -90,18 +72,12 @@ export function parseCertificateSimple(pem: string): CertificateData {
         const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
         certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
 
-        // corner case for rsapss
-        if (certificateData.signatureAlgorithm === "rsapss" && !certificateData.hashAlgorithm) {
-            certificateData.hashAlgorithm = (certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS).hashAlgorithm;
-        }
-
         return certificateData;
 
     } catch (error) {
         console.error(`Error processing certificate`, error);
         throw error;
     }
-
 }
 
 function getParamsRSA(cert: Certificate): PublicKeyDetailsRSA {
@@ -120,23 +96,6 @@ function getParamsRSA(cert: Certificate): PublicKeyDetailsRSA {
 }
 
 function getParamsRSAPSS(cert: Certificate): PublicKeyDetailsRSAPSS {
-    const { modulus, exponent, bits } = getParamsRSA(cert);
-    const sigAlgParams = cert.signatureAlgorithm.algorithmParams;
-    const pssParams = new RSASSAPSSParams({ schema: sigAlgParams });
-    const hashAlgorithm = getFriendlyName(pssParams.hashAlgorithm.algorithmId);
-    const mgf = getFriendlyName(pssParams.maskGenAlgorithm.algorithmId);
-
-    return {
-        modulus: modulus,
-        exponent: exponent,
-        bits: bits,
-        hashAlgorithm: hashAlgorithm,
-        mgf: mgf,
-        saltLength: pssParams.saltLength.toString()
-    };
-}
-
-function getParamsRSAPSS2(cert: Certificate): PublicKeyDetailsRSAPSS {
     // Get the subjectPublicKey BitString
     const spki = cert.subjectPublicKeyInfo;
     const spkiValueHex = spki.subjectPublicKey.valueBlock.valueHexView;
@@ -176,7 +135,7 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
         const algorithmParams = cert.subjectPublicKeyInfo.algorithm.algorithmParams;
 
         if (!algorithmParams) {
-            console.log('No algorithm params found');
+            console.error('No algorithm params found');
             return { curve: 'Unknown', params: {} as StandardCurve, bits: 'Unknown', x: 'Unknown', y: 'Unknown' };
         }
 
@@ -252,12 +211,12 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
         // Get the public key x and y parameters
         const publicKeyBuffer = cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
         if (publicKeyBuffer && curveName !== 'Unknown') {
+            const elliptic = initElliptic();
             const ec = new elliptic.ec(getCurveForElliptic(curveName));
             const key = ec.keyFromPublic(publicKeyBuffer);
             x = key.getPublic().getX().toString('hex');
             y = key.getPublic().getY().toString('hex');
         }
-
         return { curve: curveName, params: curveParams, bits: bits, x: x, y: y };
 
 

@@ -184,15 +184,12 @@ export function generateCircuitInputsProve(
 ) {
   const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
   const passportMetadata = parsePassportData(passportData);
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
+  const hashAlgorithm = passportMetadata.signedAttrHashFunction;
+  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
   let pubKey: any;
   let signature: any;
   let signatureAlgorithmFullName: string;
   let n, k;
-  // const 
-
-
-  // const { n, k } = getNAndK(`${signatureAlgorithm}_${hashFunction}_${curve || exponent}_${bits}` as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
@@ -213,7 +210,6 @@ export function generateCircuitInputsProve(
     pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
   }
 
-  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
 
   const formattedMrz = formatMrz(mrz);
 

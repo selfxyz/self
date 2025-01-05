@@ -175,8 +175,6 @@ export function genMockPassportData(
       break;
   }
 
-  const parsedDsc = parseCertificateSimple(dsc);
-  const hashAlgorithm = parsedDsc.hashAlgorithm;
 
   // Generate MRZ hash first
   const mrzHash = hash(dgHashAlgo, formatMrz(mrz));
@@ -190,8 +188,8 @@ export function genMockPassportData(
   );
 
   const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent));
-
-  const signature = sign(privateKeyPem, dsc, signedAttr);
+  const hashAlgo = signatureType.split('_')[1];
+  const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
 
   return {
@@ -206,9 +204,8 @@ export function genMockPassportData(
   };
 }
 
-function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] {
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
-  const curve = (publicKeyDetails as PublicKeyDetailsECDSA).curve;
+function sign(privateKeyPem: string, dsc: string, hashAlgorithm: string, eContent: number[]): number[] {
+  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
@@ -222,6 +219,7 @@ function sign(privateKeyPem: string, dsc: string, eContent: number[]): number[] 
     const signatureBytes = privateKey.sign(md, pss);
     return Array.from(signatureBytes, (c: string) => c.charCodeAt(0));
   } else if (signatureAlgorithm === 'ecdsa') {
+    const curve = (publicKeyDetails as PublicKeyDetailsECDSA).curve;
     let curveForElliptic = getCurveForElliptic(curve);
     const ec = new elliptic.ec(curveForElliptic);
 
