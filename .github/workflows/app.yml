@@ -19,8 +19,9 @@ jobs:
 
   lint:
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     steps:
+      - uses: actions/checkout@v4
       - name: Run linter
         run: yarn lint
         working-directory: ./app
@@ -30,8 +31,9 @@ jobs:
 
   test:
     needs: install
-    runs-on: ubuntu-latest
+    runs-on: macos-14
     steps:
+      - uses: actions/checkout@v4
       - name: Install app dependencies
         run: yarn install-app
         working-directory: ./app
