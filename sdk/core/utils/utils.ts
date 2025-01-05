@@ -3,7 +3,6 @@ import { getCurrentDateYYMMDD } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   circuitNameFromMode,
-  REGISTER_ABI,
   REGISTER_CONTRACT_ADDRESS,
 } from '../../../common/src/constants/constants';
 import { derToBytes } from '../../../common/src/utils/csca';
