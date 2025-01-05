@@ -12,9 +12,18 @@ import { genMockPassportData } from '../../../common/src/utils/genMockPassportDa
 let circuit: any;
 
 // Mock passport added in ofac list to test circuits
-const passportData = genMockPassportData('rsa_sha256_65537_2048', 'FRA', '040211', '300101');
+const passportData = genMockPassportData(
+  'sha256',
+  'sha256',
+  'rsa_sha256_65537_2048',
+  'FRA',
+  '040211',
+  '300101'
+);
 // Mock passport not added in ofac list to test circuits
 const passportDataInOfac = genMockPassportData(
+  'sha256',
+  'sha256',
   'rsa_sha256_65537_2048',
   'FRA',
   '541007',
