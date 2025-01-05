@@ -1,0 +1,35 @@
+name: Yarn Install
+
+description: Install Yarn v4 and run yarn install.
+
+inputs:
+  working_directory:
+    description: The directory to install dependencies in.
+    required: false
+    default: "."
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
+    - name: Install Yarn v4
+      shell: bash
+      run: |
+        corepack enable
+        corepack prepare yarn@4.5.0 --activate
+    - name: Cache Yarn dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ${{ inputs.working_directory }}/node_modules
+          ~/.cache/yarn
+        key: ${{ runner.os }}-yarn-${{ hashFiles('${{ inputs.working_directory }}/yarn.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-yarn-
+    - name: Install dependencies
+      shell: bash
+      run: yarn install --immutable
+      working-directory: ${{ inputs.working_directory }}

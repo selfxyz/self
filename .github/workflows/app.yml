@@ -1,0 +1,40 @@
+name: App CI
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - ".github/workflows/app.yml"
+      - ".github/actions/**"
+
+jobs:
+  install:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Dependencies
+        uses: ./.github/actions/yarn-install
+        with:
+          working_directory: ./app
+
+  lint:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run linter
+        run: yarn lint
+        working-directory: ./app
+      - name: Run prettier
+        run: yarn fmt
+        working-directory: ./app
+
+  test:
+    needs: install
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install app dependencies
+        run: yarn install-app
+        working-directory: ./app
+      - name: Test
+        run: yarn test
+        working-directory: ./app
