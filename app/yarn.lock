@@ -10352,7 +10352,7 @@ __metadata:
   peerDependencies:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
-  checksum: 10c0/c7280b8d2466e9a945d0e484a878a3741ba3abd2449d7c3a49fc80ca2063b712119bd7711641adec530bcbe70f8f51500add4b6973735a241e09d353ef2fd95c
+  checksum: 10c0/b726f4f71892f01633f4bc007c97c6878f28621dcb91f88b98b1b9153df4c57260c91c1a4e9e43e82a95edf1d38d686d24728916c391a45bb10677ede194295a
   languageName: node
   linkType: hard
 
