@@ -9870,7 +9870,7 @@ __metadata:
     react-native: "npm:0.75.4"
     react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#35100c40d8c5c9ae9a66a8d4af7b3130df692199"
     react-native-dialog: "npm:^9.3.0"
-    react-native-dotenv: "npm:^3.4.9"
+    react-native-dotenv: "npm:^3.4.11"
     react-native-fs: "npm:^2.20.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keychain: "npm:^8.2.0"
@@ -10365,7 +10365,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-dotenv@npm:^3.4.9":
+"react-native-dotenv@npm:^3.4.11":
   version: 3.4.11
   resolution: "react-native-dotenv@npm:3.4.11"
   dependencies:
