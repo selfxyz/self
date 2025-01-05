@@ -13,7 +13,14 @@ import { getCircuitNameFromPassportData } from '../../common/src/utils/circuitsN
 import { parsePassportData } from '../../common/src/utils/parsePassportData';
 
 const sigAlgs = [
-  // { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    domainParameter: '3',
+    keyLength: '3072',
+  },
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
@@ -175,6 +182,7 @@ testSuite.forEach(
         forbidden_countries_list,
         user_identifier
       );
+      console.log(inputs);
 
       before(async () => {
         circuit = await wasm_tester(

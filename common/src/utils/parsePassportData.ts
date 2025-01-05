@@ -194,13 +194,17 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
     dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
     if (parsedDsc.authorityKeyIdentifier) {
-      csca = getCSCAFromSKI(parsedDsc.authorityKeyIdentifier, true);
-      if (csca) {
-        parsedCsca = parseCertificateSimple(csca);
-        cscaHashFunction = parsedCsca.hashAlgorithm;
-        cscaSignature = parsedCsca.signatureAlgorithm;
-        cscaSignatureAlgorithmDetails = getSimplePublicKeyDetails(parsedCsca);
-        cscaSignatureAlgorithmBits = parseInt(parsedCsca.publicKeyDetails?.bits || '0');
+      try {
+        csca = getCSCAFromSKI(parsedDsc.authorityKeyIdentifier, true);
+        if (csca) {
+          parsedCsca = parseCertificateSimple(csca);
+          cscaHashFunction = parsedCsca.hashAlgorithm;
+          cscaSignature = parsedCsca.signatureAlgorithm;
+          cscaSignatureAlgorithmDetails = getSimplePublicKeyDetails(parsedCsca);
+          cscaSignatureAlgorithmBits = parseInt(parsedCsca.publicKeyDetails?.bits || '0');
+        }
+      } catch (error) {
+        console.error('Error getting CSCA from SKI', error);
       }
     }
   }
