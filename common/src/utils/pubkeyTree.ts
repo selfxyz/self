@@ -4,7 +4,11 @@ import { poseidon16, poseidon2, poseidon7 } from 'poseidon-lite';
 import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
 import { flexiblePoseidon } from './poseidon';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA, PublicKeyDetailsRSAPSS } from './certificate_parsing/dataStructure';
+import {
+  PublicKeyDetailsECDSA,
+  PublicKeyDetailsRSA,
+  PublicKeyDetailsRSAPSS,
+} from './certificate_parsing/dataStructure';
 import { SignatureAlgorithm } from './types';
 
 export function customHasher(pubKeyFormatted: string[]) {
@@ -26,7 +30,6 @@ export function customHasher(pubKeyFormatted: string[]) {
 
 export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
-
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
@@ -59,7 +62,6 @@ export function getLeafCSCA(dsc: string): string {
   const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
 
   const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
-
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;

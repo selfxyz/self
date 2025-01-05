@@ -41,19 +41,14 @@ export const DEFAULT_MAJORITY = '18';
 //   rsa_sha256_3_2048: 384,
 // };
 export const hashAlgos = ['sha1', 'sha256', 'sha384', 'sha512'];
-export const MAX_PADDED_ECONTENT_LEN: Partial<
-  Record<typeof hashAlgos[number], number>
-> = {
+export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 320,
   sha256: 448,
   sha384: 576,
   sha512: 704,
 };
 
-
-export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<
-  Record<typeof hashAlgos[number], number>
-> = {
+export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 128,
   sha256: 128,
   sha384: 128,
@@ -99,7 +94,7 @@ export enum SignatureAlgorithmIndex {
   rsapss_sha256_3_3072 = 16,
   rsapss_sha256_3_4096 = 17,
   rsapss_sha384_65537_3072 = 18,
-  rsapss_sha256_65537_3072 = 19
+  rsapss_sha256_65537_3072 = 19,
 }
 
 export const attributeToPosition = {
@@ -124,7 +119,7 @@ export const n_dsc = 120;
 export const n_dsc_3072 = 96;
 export const n_dsc_4096 = 120;
 export const k_dsc = 35;
-export const k_dsc_3072 = 32;  //48;
+export const k_dsc_3072 = 32; //48;
 export const k_dsc_4096 = 35;
 export const n_csca = 120;
 export const k_csca = 35;
@@ -657,4 +652,3 @@ qzOBhID0Nxk4k9sW1uT6ocW1xp1SB2WotORssOKIAOLJM8IbPl6n/DkYNcfvyXI7
 export const DEFAULT_RPC_URL = 'https://mainnet.optimism.io';
 export const REGISTER_CONTRACT_ADDRESS = '0x3F346FFdC5d583e4126AF01A02Ac5b9CdB3f1909';
 export const SBT_CONTRACT_ADDRESS = '0x601Fd54FD11C5E77DE84d877e55B829aff20f0A6';
-

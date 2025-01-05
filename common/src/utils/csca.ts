@@ -1,12 +1,6 @@
 import { shaPad } from './shaPad';
 import * as forge from 'node-forge';
-import {
-  bytesToBigDecimal,
-  getNAndK,
-  getNAndKCSCA,
-  hexToDecimal,
-  splitToWords,
-} from './utils';
+import { bytesToBigDecimal, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from '../constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
@@ -64,42 +58,42 @@ export function generateCircuitInputsDSC(
     dscTbsCertBytes.map((byte) => parseInt(byte.toString(16), 16))
   );
 
-  const {
-    signatureAlgorithm,
-    hashAlgorithm,
-    authorityKeyIdentifier,
-    publicKeyDetails
-  } = parseCertificateSimple(dscCertificate);
-  console.log("authorityKeyIdentifier", authorityKeyIdentifier);
+  const { signatureAlgorithm, hashAlgorithm, authorityKeyIdentifier, publicKeyDetails } =
+    parseCertificateSimple(dscCertificate);
+  console.log('authorityKeyIdentifier', authorityKeyIdentifier);
 
   let dsc_message_padded;
   let dsc_messagePaddedLen;
   [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
 
-  console.log("signatureAlgorithm: ", signatureAlgorithm);
+  console.log('signatureAlgorithm: ', signatureAlgorithm);
   const { n, k } = getNAndK(signatureAlgorithm as SignatureAlgorithm);
   const dscSignature = dscCert.signature;
   const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
     char.charCodeAt(0)
   );
 
-  let pubKey_dsc, signature, startIndex, dsc_message_padded_formatted, dsc_messagePaddedLen_formatted: any;
+  let pubKey_dsc,
+    signature,
+    startIndex,
+    dsc_message_padded_formatted,
+    dsc_messagePaddedLen_formatted: any;
   let curve, exponent;
 
   if (signatureAlgorithm === 'rsa' || signatureAlgorithm === 'rsapss') {
     const modulus = (publicKeyDetails as PublicKeyDetailsRSA).modulus;
     exponent = (publicKeyDetails as PublicKeyDetailsRSA).exponent;
-    startIndex = findStartIndex((publicKeyDetails as PublicKeyDetailsRSA).modulus, dsc_message_padded).toString();
+    startIndex = findStartIndex(
+      (publicKeyDetails as PublicKeyDetailsRSA).modulus,
+      dsc_message_padded
+    ).toString();
     dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString());
     dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString();
-    console.log("\x1b[34m", "startIndex: ", startIndex, "\x1b[0m");
+    console.log('\x1b[34m', 'startIndex: ', startIndex, '\x1b[0m');
 
     pubKey_dsc = formatInput(splitToWords(BigInt(hexToDecimal(modulus)), n, k));
-
-  }
-
-  else {
-    console.log("\x1b[34m", "signatureAlgorithm: ", signatureAlgorithm, "\x1b[0m");
+  } else {
+    console.log('\x1b[34m', 'signatureAlgorithm: ', signatureAlgorithm, '\x1b[0m');
     // TODO: implement ecdsa
     //   const { r, s } = extractRSFromSignature(encryptedDigest);
     //   const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_csca, k_csca);
@@ -118,7 +112,6 @@ export function generateCircuitInputsDSC(
   const leaf = getLeafCSCA(cscaPem);
   const [root, proof] = getCSCAModulusProof(leaf);
 
-
   const parsedCSCAPem: CertificateData = parseCertificateSimple(cscaPem);
 
   let csca_pubKey_formatted;
@@ -130,12 +123,10 @@ export function generateCircuitInputsDSC(
       char.charCodeAt(0)
     );
     signature = formatInput(splitToWords(BigInt(bytesToBigDecimal(signature_raw)), n_csca, k_csca));
-
   } else {
     //   const csca_x_formatted = splitToWords(BigInt(hexToDecimal(csca_x)), n_csca, k_csca);
     //   const csca_y_formatted = splitToWords(BigInt(hexToDecimal(csca_y)), n_csca, k_csca);
     //   csca_pubKey_formatted = [...csca_x_formatted, ...csca_y_formatted];
-
   }
 
   console.log('dsc_pubKey_length', pubKey_dsc.length);
@@ -151,7 +142,7 @@ export function generateCircuitInputsDSC(
       secret: [dscSecret],
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
-      siblings: proof.siblings.flat().map((sibling) => sibling.toString())
+      siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
     },
   };
 }

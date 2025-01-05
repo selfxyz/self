@@ -203,16 +203,14 @@ export function generateCircuitInputsProve(
     const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k);
     pubKey = [...dsc_modulus_x, ...dsc_modulus_y];
   } else {
-    const { modulus, exponent } = (publicKeyDetails as PublicKeyDetailsRSA);
+    const { modulus, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
     signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
     ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
     signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n, k);
     pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
   }
 
-
   const formattedMrz = formatMrz(mrz);
-
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
     console.error(
@@ -246,7 +244,6 @@ export function generateCircuitInputsProve(
     siblings: smt_siblings,
   } = generateSMTProof(name_smt, name_leaf);
 
-
   return {
     selector_mode: formatInput(selector_mode),
     dg1: formatInput(formattedMrz),
@@ -271,7 +268,7 @@ export function generateCircuitInputsProve(
     smt_leaf_value: formatInput(smt_leaf_value),
     smt_siblings: formatInput(smt_siblings),
     selector_ofac: formatInput(selector_ofac),
-    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list))
+    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
   };
 }
 

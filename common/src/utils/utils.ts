@@ -422,9 +422,7 @@ export function findSubarrayIndex(arr: number[], subArr: number[]): number {
     return -1;
   }
 
-  return arr.findIndex((_, i) =>
-    subArr.every((val, j) => arr[i + j] === val)
-  );
+  return arr.findIndex((_, i) => subArr.every((val, j) => arr[i + j] === val));
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
@@ -493,9 +491,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-    Array.from(str)
-      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-      .join('')
+      Array.from(str)
+        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join('')
   );
 }
 

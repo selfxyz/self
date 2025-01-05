@@ -1,5 +1,11 @@
 import { PassportData } from './types';
-import { hash, generateSignedAttr, formatAndConcatenateDataHashes, formatMrz, getHashLen } from './utils';
+import {
+  hash,
+  generateSignedAttr,
+  formatAndConcatenateDataHashes,
+  formatMrz,
+  getHashLen,
+} from './utils';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
@@ -57,7 +63,7 @@ function generateDataGroupHashes(mrzHash: number[], hashLen: number): [number, n
     [7, generateRandomBytes(hashLen)],
     [11, generateRandomBytes(hashLen)],
     [12, generateRandomBytes(hashLen)],
-    [14, generateRandomBytes(hashLen)]
+    [14, generateRandomBytes(hashLen)],
   ];
 
   return dataGroups;
@@ -175,17 +181,13 @@ export function genMockPassportData(
       break;
   }
 
-
   // Generate MRZ hash first
   const mrzHash = hash(dgHashAlgo, formatMrz(mrz));
 
   // Generate random hashes for other DGs, passing mrzHash for DG1
   const dataGroupHashes = generateDataGroupHashes(mrzHash, getHashLen(dgHashAlgo));
 
-  const eContent = formatAndConcatenateDataHashes(
-    dataGroupHashes,
-    63
-  );
+  const eContent = formatAndConcatenateDataHashes(dataGroupHashes, 63);
 
   const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent));
   const hashAlgo = signatureType.split('_')[1];
@@ -204,7 +206,12 @@ export function genMockPassportData(
   };
 }
 
-function sign(privateKeyPem: string, dsc: string, hashAlgorithm: string, eContent: number[]): number[] {
+function sign(
+  privateKeyPem: string,
+  dsc: string,
+  hashAlgorithm: string,
+  eContent: number[]
+): number[] {
   const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
