@@ -138,7 +138,7 @@ export function generateCircuitInputsDSC(
 
   }
 
-
+  console.log('dsc_pubKey_length', pubKey_dsc.length);
   return {
     signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashAlgorithm}_${4096}`,
     inputs: {

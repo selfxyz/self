@@ -10,6 +10,7 @@ export interface CertificateData {
     subjectKeyIdentifier: string;
     authorityKeyIdentifier: string;
     signatureAlgorithm: string;
+    hashAlgorithm: string;
     publicKeyDetails: PublicKeyDetailsRSA | PublicKeyDetailsECDSA | PublicKeyDetailsRSAPSS | undefined;
     rawPem: string;
     rawTxt: string;

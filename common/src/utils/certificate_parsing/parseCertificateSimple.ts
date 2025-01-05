@@ -20,6 +20,7 @@ export function parseCertificateSimple(pem: string): CertificateData {
         subjectKeyIdentifier: '',
         authorityKeyIdentifier: '',
         signatureAlgorithm: '',
+        hashAlgorithm: '',
         publicKeyDetails: undefined,
         rawPem: '',
         rawTxt: ''
@@ -41,7 +42,9 @@ export function parseCertificateSimple(pem: string): CertificateData {
         const cert = new Certificate({ schema: asn1.result });
         const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
         const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
-
+        const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
+        const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
+        certificateData.hashAlgorithm = getHashAlgorithm(signatureAlgoFN);
         let params;
         if (publicKeyAlgoFN === 'RSA') {
             certificateData.signatureAlgorithm = "rsa";
@@ -71,6 +74,12 @@ export function parseCertificateSimple(pem: string): CertificateData {
 
         const authorityKeyIdentifier = getAuthorityKeyIdentifier(cert);
         certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
+
+        // corner case for rsapss
+        if (certificateData.signatureAlgorithm === "rsapss" && !certificateData.hashAlgorithm) {
+            certificateData.hashAlgorithm = (certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS).hashAlgorithm;
+        }
+
 
         return certificateData;
 
@@ -287,4 +296,24 @@ export const getCircuitNameOld = (circuitMode: Mode, signatureAlgorithm: string,
     else {
         return circuit + "_" + signatureAlgorithm + "_65537_" + hashFunction;
     }
+}
+
+export function getHashAlgorithm(rawSignatureAlgorithm: string) {
+    const input = rawSignatureAlgorithm.toLowerCase();
+    const patterns = [
+        /sha-?1/i,
+        /sha-?256/i,
+        /sha-?384/i,
+        /sha-?512/i
+    ];
+
+    for (const pattern of patterns) {
+        const match = input.match(pattern);
+        if (match) {
+            // Remove any hyphens and return standardized format
+            return match[0].replace('-', '');
+        }
+    }
+
+    return 'unknown';
 }

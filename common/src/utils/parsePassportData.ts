@@ -151,6 +151,7 @@ export function brutforceHashAlgorithm(passportData: PassportData): any {
     return null;
 }
 
+
 export function parsePassportData(passportData: PassportData): PassportMetadata {
     const dg1HashInfo = passportData.mrz ?
         findDG1HashInEContent(passportData.mrz, passportData.eContent) :
