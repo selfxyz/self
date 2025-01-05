@@ -10,7 +10,7 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "start": "watchman watch-del-all && react-native start",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "install-app": "cd ../common && yarn && cd ../app && yarn"
   },
   "dependencies": {
