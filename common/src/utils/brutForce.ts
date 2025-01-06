@@ -2,7 +2,6 @@ import { PassportData } from '../../../common/src/utils/types';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
     PublicKeyDetailsECDSA,
-    PublicKeyDetailsRSAPSS,
 } from './certificate_parsing/dataStructure';
 import forge from 'node-forge';
 import * as asn1js from 'asn1js';
@@ -15,7 +14,7 @@ import { hashAlgos, saltLengths } from '../constants/constants';
 export function brutforceSignatureAlgorithm(passportData: PassportData) {
     const parsedDsc = parseCertificateSimple(passportData.dsc);
     if (parsedDsc.signatureAlgorithm === 'ecdsa') {
-        const hashAlgorithm = brutforceHashAlgorithm(passportData);
+        const hashAlgorithm = brutforceHashAlgorithm(passportData, 'ecdsa');
         return {
             signatureAlgorithm: 'ecdsa',
             hashAlgorithm: hashAlgorithm,
@@ -23,7 +22,7 @@ export function brutforceSignatureAlgorithm(passportData: PassportData) {
         };
     }
     else if (parsedDsc.signatureAlgorithm === 'rsa') {
-        const hashAlgorithm = brutforceHashAlgorithm(passportData);
+        const hashAlgorithm = brutforceHashAlgorithm(passportData, 'rsa');
         if (hashAlgorithm) {
             return {
                 signatureAlgorithm: 'rsa',
@@ -32,8 +31,9 @@ export function brutforceSignatureAlgorithm(passportData: PassportData) {
             };
         }
     }
+    // it's important to not put 'else if' statement here, because a rsapss signature can use rsa key certificate.
     for (const saltLength of saltLengths) {
-        const hashAlgorithm = brutforceHashAlgorithm(passportData, saltLength);
+        const hashAlgorithm = brutforceHashAlgorithm(passportData, 'rsapss', saltLength);
         if (hashAlgorithm) {
             return {
                 signatureAlgorithm: 'rsapss',
@@ -45,9 +45,9 @@ export function brutforceSignatureAlgorithm(passportData: PassportData) {
 
 }
 
-function brutforceHashAlgorithm(passportData: PassportData, saltLength?: number): any {
+function brutforceHashAlgorithm(passportData: PassportData, signatureAlgorithm: string, saltLength?: number): any {
     for (const hashFunction of hashAlgos) {
-        if (verifySignature(passportData, hashFunction, saltLength)) {
+        if (verifySignature(passportData, signatureAlgorithm, hashFunction, saltLength)) {
             return hashFunction;
         }
     }
@@ -55,55 +55,77 @@ function brutforceHashAlgorithm(passportData: PassportData, saltLength?: number)
 }
 
 
-export function verifySignature(passportData: PassportData, hashAlgorithm: string, saltLength: number = 0): boolean {
+export function verifySignature(passportData: PassportData, signatureAlgorithm: string, hashAlgorithm: string, saltLength: number = 0): boolean {
+
+    switch (signatureAlgorithm) {
+        case 'ecdsa':
+            return verifyECDSA(passportData, hashAlgorithm);
+        case 'rsa':
+            return verifyRSA(passportData, hashAlgorithm);
+        case 'rsapss':
+            return verifyRSAPSS(passportData, hashAlgorithm, saltLength);
+    }
+
+}
+
+function verifyECDSA(passportData: PassportData, hashAlgorithm: string) {
     const elliptic = initElliptic();
     const { dsc, signedAttr, encryptedDigest } = passportData;
-    const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
+    const { publicKeyDetails } = parseCertificateSimple(dsc);
+    const certBuffer = Buffer.from(
+        dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+        'base64'
+    );
+    const asn1Data = asn1js.fromBER(certBuffer);
+    const cert = new Certificate({ schema: asn1Data.result });
+    const publicKeyInfo = cert.subjectPublicKeyInfo;
+    const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
+    const curveForElliptic = getCurveForElliptic((publicKeyDetails as PublicKeyDetailsECDSA).curve);
+    const ec = new elliptic.ec(curveForElliptic);
 
-    if (signatureAlgorithm === 'ecdsa') {
-        const certBuffer = Buffer.from(
-            dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-            'base64'
-        );
-        const asn1Data = asn1js.fromBER(certBuffer);
-        const cert = new Certificate({ schema: asn1Data.result });
-        const publicKeyInfo = cert.subjectPublicKeyInfo;
-        const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-        const curveForElliptic = getCurveForElliptic((publicKeyDetails as PublicKeyDetailsECDSA).curve);
-        const ec = new elliptic.ec(curveForElliptic);
+    const key = ec.keyFromPublic(publicKeyBuffer);
+    const md = forge.md[hashAlgorithm].create();
+    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
+    const msgHash = md.digest().toHex();
+    const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
 
-        const key = ec.keyFromPublic(publicKeyBuffer);
-        const md = forge.md[hashAlgorithm].create();
-        md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-        const msgHash = md.digest().toHex();
-        const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
+    return key.verify(msgHash, signature_crypto);
+}
 
-        return key.verify(msgHash, signature_crypto);
-    } else {
-        const cert = forge.pki.certificateFromPem(dsc);
-        const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
+function verifyRSA(passportData: PassportData, hashAlgorithm: string) {
+    const { dsc, signedAttr, encryptedDigest } = passportData;
+    const cert = forge.pki.certificateFromPem(dsc);
+    const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
 
-        const md = forge.md[hashAlgorithm].create();
-        md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
+    const md = forge.md[hashAlgorithm].create();
+    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
 
-        const signature = Buffer.from(encryptedDigest).toString('binary');
+    const signature = Buffer.from(encryptedDigest).toString('binary');
+    try {
+        return publicKey.verify(md.digest().bytes(), signature);
+    } catch (error) {
+        return false;
+    }
+}
 
-        if (signatureAlgorithm === 'rsapss') {
-            if (saltLength === 0) {
-                throw new Error('Salt length is required for RSA-PSS');
-            }
-            try {
-                const pss = forge.pss.create({
-                    md: forge.md[hashAlgorithm].create(),
-                    mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
-                    saltLength: saltLength || parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
-                });
-                return publicKey.verify(md.digest().bytes(), signature, pss);
-            } catch (error) {
-                return false;
-            }
-        } else {
-            return publicKey.verify(md.digest().bytes(), signature);
-        }
+function verifyRSAPSS(passportData: PassportData, hashAlgorithm: string, saltLength: number) {
+    const { dsc, signedAttr, encryptedDigest } = passportData;
+    const cert = forge.pki.certificateFromPem(dsc);
+    const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
+    const md = forge.md[hashAlgorithm].create();
+    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
+    const signature = Buffer.from(encryptedDigest).toString('binary');
+    if (saltLength === 0) {
+        throw new Error('Salt length is required for RSA-PSS');
+    }
+    try {
+        const pss = forge.pss.create({
+            md: forge.md[hashAlgorithm].create(),
+            mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
+            saltLength: saltLength,
+        });
+        return publicKey.verify(md.digest().bytes(), signature, pss);
+    } catch (error) {
+        return false;
     }
 }
