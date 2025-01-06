@@ -229,7 +229,6 @@ export function generateCircuitInputsProve(
     );
   }
 
-  console.log('hashFunction', hashFunction);
   const paddingFunction =
     hashFunction == 'sha1' || hashFunction == 'sha256' ? shaPad : sha384_512Pad;
 

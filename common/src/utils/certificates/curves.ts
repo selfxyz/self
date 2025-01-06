@@ -102,6 +102,7 @@ export function getNamedCurve(oid: string): string {
     '1.3.132.0.35': 'secp521r1',
     '1.3.36.3.3.2.8.1.1.7': 'brainpoolP256r1',
     '1.3.36.3.3.2.8.1.1.11': 'brainpoolP384r1',
+    '1.3.36.3.3.2.8.1.1.13': 'brainpoolP512r1',
     // Add more curve OIDs as needed
   };
   if (!curves[oid]) {
@@ -118,6 +119,7 @@ export function getCurveForElliptic(curveName: string): string {
     brainpoolP224r1: 'brainpoolP224r1',
     brainpoolP256r1: 'brainpoolP256r1',
     brainpoolP384r1: 'brainpoolP384r1',
+    brainpoolP512r1: 'brainpoolP512r1',
   };
 
   if (!curves[curveName]) {

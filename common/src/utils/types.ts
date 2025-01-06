@@ -36,7 +36,8 @@ export type SignatureAlgorithm =
   | 'ecdsa_sha384_brainpoolP384r1_384'
   | 'ecdsa_sha512_brainpoolP384r1_384'
   | 'ecdsa_sha1_brainpoolP224r1_224'
-  | 'ecdsa_sha256_brainpoolP224r1_224';
+  | 'ecdsa_sha256_brainpoolP224r1_224'
+  | 'ecdsa_sha512_brainpoolP512r1_512';
 
 export type Proof = {
   proof: {

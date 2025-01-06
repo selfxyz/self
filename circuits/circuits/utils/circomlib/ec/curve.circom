@@ -2,10 +2,12 @@ pragma circom  2.1.6;
 
 include "../bigInt/bigIntOverflow.circom";
 include "../bigInt/bigIntFunc.circom";
-include "./powers/brainpoolP224r1pows.circom";
 include "./powers/secp256k1pows.circom";
+include "./powers/brainpoolP224r1pows.circom";
 include "./powers/brainpoolP256r1pows.circom";
 include "./powers/brainpoolP384r1pows.circom";
+include "./powers/brainpoolP512r1pows.circom";
+include "./powers/p224pows.circom";
 include "./powers/p256pows.circom";
 include "./powers/p384pows.circom";
 include "../bitify/bitify.circom";
@@ -1415,6 +1417,14 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
     if (CHUNK_NUMBER == 7) { 
 		if (P[0] == 2127085823 && P[1] == 2547681781 && P[2] == 2963212119 && P[3] == 1976686471 && P[4] == 706228261 && P[5] == 641951366 && P[6] == 3619763370 ){
 			powers = get_g_pow_stride8_table_brainpoolP224r1(CHUNK_SIZE, CHUNK_NUMBER);
+		}
+        if (P[0] == 1 && P[1] == 0 && P[2] == 0 && P[3] == 4294967295 && P[4] == 4294967295 && P[5] == 4294967295 && P[6] == 4294967295 ){
+            powers = get_g_pow_stride8_table_p224(CHUNK_SIZE, CHUNK_NUMBER);
+		}
+    }
+    if (CHUNK_NUMBER == 8) { 
+		if (P[0] == 2930260431521597683 && P[1] == 2918894611604883077 && P[2] == 12595900938455318758 && P[3] == 9029043254863489090 && P[4] == 15448363540090652785 && P[5] == 14641358191536493070 && P[6] == 4599554755319692295 && P[7] == 12312170373589877899 ){
+			powers = get_g_pow_stride8_table_brainpoolP512r1(CHUNK_SIZE, CHUNK_NUMBER);
 		}
     }
     
