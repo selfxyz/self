@@ -15,6 +15,7 @@ import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
 import { generateCircuitInputsDSC, getCSCAFromSKI } from '../../../common/src/utils/csca';
 import { sendCSCARequest } from '../../../common/src/utils/csca';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -43,9 +44,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(passportData.dsc);
+  const { signatureAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(passportData.dsc);
+  const parsedPassportData = parsePassportData(passportData);
   const { secret, dscSecret } = useUserStore.getState();
-  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, hashAlgorithm);
+  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, parsedPassportData.signedAttrHashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -171,12 +173,12 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashAlgorithm,
+            hashFunction: parsedPassportData.signedAttrHashFunction,
             userIdType: selectedApp.userIdType,
             dscProof: (dscProof as any).proof,
             dscPublicSignals: (dscProof as any).pub_signals,
             signatureAlgorithmDsc: signatureAlgorithmDsc,
-            hashFunctionDsc: hashAlgorithm,
+            hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
           });
           break;
         default:
@@ -190,7 +192,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashAlgorithm,
+            hashFunction: parsedPassportData.signedAttrHashFunction,
             dsc: passportData.dsc,
           });
           break;

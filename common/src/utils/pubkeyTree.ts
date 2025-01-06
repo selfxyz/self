@@ -1,15 +1,14 @@
-import {
-  PUBKEY_TREE_DEPTH,
-  COMMITMENT_TREE_TRACKER_URL,
-  SignatureAlgorithmIndex,
-} from '../constants/constants';
+import { SignatureAlgorithmIndex } from '../constants/constants';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import axios from 'axios';
-import { poseidon16, poseidon2, poseidon6, poseidon7 } from 'poseidon-lite';
+import { poseidon16, poseidon2, poseidon7 } from 'poseidon-lite';
 import { formatDg2Hash, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
 import { flexiblePoseidon } from './poseidon';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
+import {
+  PublicKeyDetailsECDSA,
+  PublicKeyDetailsRSA,
+  PublicKeyDetailsRSAPSS,
+} from './certificate_parsing/dataStructure';
 import { SignatureAlgorithm } from './types';
 
 export function customHasher(pubKeyFormatted: string[]) {
@@ -30,9 +29,7 @@ export function customHasher(pubKeyFormatted: string[]) {
 }
 
 export function getLeaf(dsc: string): string {
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
-
-
+  const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
@@ -62,9 +59,9 @@ export function getLeaf(dsc: string): string {
   }
 }
 export function getLeafCSCA(dsc: string): string {
-  const { signatureAlgorithm, hashAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
-  const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
+  const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
 
+  const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
@@ -73,11 +70,20 @@ export function getLeafCSCA(dsc: string): string {
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([sigAlgIndex, ...qx, ...qy]);
-  } else {
+  } else if (signatureAlgorithm === 'rsa') {
     const { modulus, bits, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
     const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
     const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
-
+    const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+    return customHasher([sigAlgIndex, ...pubkeyChunked]);
+    if (sigAlgIndex == undefined) {
+      console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
+      throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
+    }
+  } else if (signatureAlgorithm === 'rsapss') {
+    const { modulus, bits, exponent, hashAlgorithm } = publicKeyDetails as PublicKeyDetailsRSAPSS;
+    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
+    const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
     if (sigAlgIndex == undefined) {
       console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
       throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);

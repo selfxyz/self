@@ -2,7 +2,7 @@ import React from 'react';
 import { YStack, Text, XStack, Separator, ScrollView } from 'tamagui';
 import useUserStore from '../stores/userStore';
 import { textBlack, separatorColor } from '../utils/colors';
-import { parsePassportData } from '../utils/parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 const UserInfo: React.FC = () => {
     const { passportData } = useUserStore();

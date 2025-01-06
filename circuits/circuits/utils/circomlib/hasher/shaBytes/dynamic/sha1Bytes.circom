@@ -36,7 +36,7 @@ template Sha1Bytes(max_num_bytes) {
 template Sha1General(maxBitsPadded) {
     assert(maxBitsPadded % 512 == 0);
     var maxBitsPaddedBits = log2Ceil(maxBitsPadded);
-    assert(2 ** maxBitsPaddedBits > maxBitsPadded);
+    assert(2 ** maxBitsPaddedBits >= maxBitsPadded);
 
     signal input paddedIn[maxBitsPadded];
     signal output out[160];
@@ -49,7 +49,7 @@ template Sha1General(maxBitsPadded) {
     var maxBlocks;
     maxBlocks = (maxBitsPadded\512);
     var maxBlocksBits = log2Ceil(maxBlocks);
-    assert(2 ** maxBlocksBits > maxBlocks);
+    assert(2 ** maxBlocksBits >= maxBlocks);
 
     inBlockIndex <-- (in_len_padded_bits >> 9);
     in_len_padded_bits === inBlockIndex * 512;

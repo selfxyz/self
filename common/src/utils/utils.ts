@@ -77,7 +77,6 @@ export function formatDg2Hash(dg2Hash: number[]) {
 
 export function formatAndConcatenateDataHashes(
   dataHashes: [number, number[]][],
-  hashLen: number,
   dg1HashOffset: number
 ) {
   // concatenating dataHashes :
@@ -159,7 +158,7 @@ export function formatAndConcatenateDataHashes(
   return concat;
 }
 
-export function assembleEContent(messageDigest: number[]) {
+export function generateSignedAttr(messageDigest: number[]) {
   const constructedEContent = [];
 
   // Detailed description is in private file r&d.ts for now
@@ -423,9 +422,7 @@ export function findSubarrayIndex(arr: number[], subArr: number[]): number {
     return -1;
   }
 
-  return arr.findIndex((_, i) =>
-    subArr.every((val, j) => arr[i + j] === val)
-  );
+  return arr.findIndex((_, i) => subArr.every((val, j) => arr[i + j] === val));
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
@@ -494,9 +491,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-    Array.from(str)
-      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-      .join('')
+      Array.from(str)
+        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join('')
   );
 }
 
