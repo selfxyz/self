@@ -1,16 +1,12 @@
 import React from 'react';
-import { YStack, Text, XStack, Separator } from 'tamagui';
+import { YStack, Text, XStack, Separator, ScrollView } from 'tamagui';
 import useUserStore from '../stores/userStore';
 import { textBlack, separatorColor } from '../utils/colors';
-import { findSubarrayIndex } from '../../../common/src/utils/utils';
-import { PassportData } from '../../../common/src/utils/types';
-import { hash } from '../../../common/src/utils/utils';
-import { parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 const UserInfo: React.FC = () => {
     const { passportData } = useUserStore();
-    const { eContent, signedAttr, dg1Hash, dgPresents } = passportData as PassportData;
-    const dg1HashOffset = dg1Hash ? findSubarrayIndex(eContent, dg1Hash.map(byte => byte > 127 ? byte - 256 : byte)) : undefined;
+    const passportMetaData = passportData ? parsePassportData(passportData) : null;
 
     const InfoRow = ({ label, value }: { label: string; value: string | number }) => (
         <XStack py="$2" justifyContent="space-between">
@@ -19,70 +15,61 @@ const UserInfo: React.FC = () => {
         </XStack>
     );
 
-    function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
-        const allHashes = ['sha512', 'sha384', 'sha256', 'sha1'];
-        for (const hashFunction of allHashes) {
-            const hashValue = hash(hashFunction, eContent);
-            const hashOffset = findSubarrayIndex(signedAttr, hashValue);
-            if (hashOffset !== -1) {
-                return { hashFunction, offset: hashOffset };
-            }
-        }
-    }
-
-    const { hashFunction: eContentHashFunction, offset: eContentHashOffset } = findHashSizeOfEContent(eContent, signedAttr) || { hashFunction: '', offset: 0 };
-    const dscHashFunction = parseCertificate(passportData?.dsc || '').hashFunction;
-
-
-
     return (
-        <YStack f={1} p="$0" gap="$2" jc="flex-start" mt="$10">
-            <Text fontSize="$8" color={textBlack} mb="$4">Passport Data Info</Text>
-            <Separator borderColor={separatorColor} />
+        <ScrollView>
+            <YStack f={1} p="$0" gap="$2" jc="flex-start" py="$2" >
+                <Text fontSize="$8" color={textBlack} mb="$4">Passport Data Info</Text>
+                <Separator borderColor={separatorColor} />
 
-            <InfoRow
-                label="Data Groups"
-                value={passportData?.dgPresents?.toString().split(',').map(item => item.replace('DG', '')).join(',') || 'None'}
-            />
-            <Separator borderColor={separatorColor} />
+                <InfoRow label="Data Groups" value={passportMetaData?.dataGroups || 'None'} />
+                <Separator borderColor={separatorColor} />
 
-            <InfoRow
-                label="DG1 Hash Size"
-                value={`${passportData?.dg1Hash?.length || 0} ${passportData?.dg1Hash?.length === 32 ? '(sha256)' : passportData?.dg1Hash?.length === 20 ? '(sha1)' : passportData?.dg1Hash?.length === 48 ? '(sha384)' : passportData?.dg1Hash?.length === 64 ? '(sha512)' : ''}`}
-            />
-            <Separator borderColor={separatorColor} />
-            <InfoRow
-                label="DG1 Hash Offset"
-                value={dg1HashOffset || 0}
-            />
-            <Separator borderColor={separatorColor} />
+                <InfoRow label="DG1 Hash Function" value={passportMetaData?.dg1HashFunction || 'None'} />
+                <Separator borderColor={separatorColor} />
 
-            <InfoRow
-                label="eContent Size"
-                value={passportData?.eContent?.length || 0}
-            />
-            <Separator borderColor={separatorColor} />
-            <InfoRow
-                label="eContent Hash Function"
-                value={eContentHashFunction}
-            />
-            <Separator borderColor={separatorColor} />
-            <InfoRow
-                label="eContent Hash Offset"
-                value={eContentHashOffset}
-            />
-            <Separator borderColor={separatorColor} />
+                <InfoRow label="DG1 Hash Offset" value={passportMetaData?.dg1HashOffset || 'None'} />
+                <Separator borderColor={separatorColor} />
 
-            <InfoRow
-                label="Signed Attributes Size"
-                value={passportData?.signedAttr?.length || 0}
-            />
-            <Separator borderColor={separatorColor} />
-            <InfoRow
-                label="Signed Attributes Hash Function"
-                value={dscHashFunction}
-            />
-        </YStack>
+                <InfoRow label="eContent Size" value={passportMetaData?.eContentSize || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="eContent Hash Function" value={passportMetaData?.eContentHashFunction || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="eContent Hash Offset" value={passportMetaData?.eContentHashOffset || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="Signed Attributes Size" value={passportMetaData?.signedAttrSize || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="Signed Attributes Hash Function" value={passportMetaData?.signedAttrHashFunction || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="Signature Algorithm" value={passportMetaData?.signatureAlgorithm || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="Signature Algorithm Details" value={passportMetaData?.curveOrExponent || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="Signature Algorithm Bits" value={passportMetaData?.signatureAlgorithmBits || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="CSCA Found" value={passportMetaData?.cscaFound ? 'Yes' : 'No'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="CSCA Hash Function" value={passportMetaData?.cscaHashFunction || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="CSCA Signature Algorithm" value={passportMetaData?.cscaSignature || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="CSCA Signature Algorithm Details" value={passportMetaData?.cscaCurveOrExponent || 'None'} />
+                <Separator borderColor={separatorColor} />
+
+                <InfoRow label="CSCA Signature Algorithm Bits" value={passportMetaData?.cscaSignatureAlgorithmBits || 'None'} />
+                <Separator borderColor={separatorColor} />
+            </YStack>
+        </ScrollView>
     );
 };
 

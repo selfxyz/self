@@ -5,25 +5,22 @@ include "sha1compression.circom";
 include "../sha2/sha2Common.circom";
 
 template Sha1HashChunks(BLOCK_NUM) {
-    signal input dummy;
-    dummy * dummy === 0;
     signal input in[BLOCK_NUM * 512];
     signal output out[160];
     
     var i;
     var k;
     
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
     
     component sha1Compression[BLOCK_NUM];
     
     for (i = 0; i < BLOCK_NUM; i++) {
         sha1Compression[i] = Sha1compression();
-        sha1Compression[i].dummy <== dummy;
         
         if (i == 0) {
             for (k = 0; k < 32; k++) {
@@ -56,8 +53,6 @@ template Sha1HashChunks(BLOCK_NUM) {
 }
 
 template Sha1HashBits(LEN) {
-    signal input dummy;
-    dummy * dummy === 0;
     signal input in[LEN];
     signal output out[160];
     
@@ -69,17 +64,16 @@ template Sha1HashBits(LEN) {
     var i;
     var k;
     
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
     
     component sha1Compression[BLOCK_NUM];
     
     for (i = 0; i < BLOCK_NUM; i++) {
         sha1Compression[i] = Sha1compression();
-        sha1Compression[i].dummy <== dummy;
         
         if (i == 0) {
             for (k = 0; k < 32; k++) {

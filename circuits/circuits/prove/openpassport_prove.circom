@@ -10,7 +10,7 @@ include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 
-template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -47,7 +47,6 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal input secret;
     signal input dsc_secret;
 
-    signal dummy <== 0;
 
     signal attestation_id <== 1;
 
@@ -59,7 +58,7 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     isWrongSelectorMode === 0;
 
     // verify passport signature
-    PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature, dummy);
+    PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
     // verify passport is not expired
     component isValid = IsValid();
     isValid.currDate <== current_date;
@@ -72,7 +71,6 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     component poseidon_hasher = PoseidonHash(2);
     poseidon_hasher.in[0] <== signatureHashed;
     poseidon_hasher.in[1] <== scope;
-    poseidon_hasher.dummy <== 0;
     signal output nullifier <== poseidon_hasher.out;
 
     // DISCLOSE (optional)
@@ -116,6 +114,6 @@ template OPENPASSPORT_PROVE(signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, M
     signal output commitment <== commitmentPrivate * selectorModeCommitment;
     // // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal blindedDscCommitmenPrivate <== PoseidonHash(2)([dsc_secret, pubkeyHash],0);
+    signal blindedDscCommitmenPrivate <== PoseidonHash(2)([dsc_secret, pubkeyHash]);
     signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selectorModeBlindedDscCommitment;
 }

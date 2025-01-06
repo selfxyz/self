@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
-include "../bitify/comparators.circom";
-include "../bitify/bitify.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "./bigIntFunc.circom";
 include "./bigIntOverflow.circom";
 include "../int/arithmetic.circom";
@@ -47,10 +47,9 @@ template BigAddNoCarry(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal input in[2][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
-    signal input dummy;
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
-        out[i] <== in[0][i] + in[1][i] + dummy * dummy;
+        out[i] <== in[0][i] + in[1][i];
     }
 }
 
@@ -60,11 +59,9 @@ template BigAdd(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal input in[2][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER + 1];
-    signal input dummy;
     
     component bigAddNoCarry = BigAddNoCarry(CHUNK_SIZE, CHUNK_NUMBER);
     bigAddNoCarry.in <== in;
-    bigAddNoCarry.dummy <== dummy;
     
     component num2bits[CHUNK_NUMBER];
     
@@ -75,16 +72,16 @@ template BigAdd(CHUNK_SIZE, CHUNK_NUMBER){
         if (i == 0){
             num2bits[i].in <== bigAddNoCarry.out[i];
         } else {
-            num2bits[i].in <== bigAddNoCarry.out[i] + num2bits[i - 1].out[CHUNK_SIZE] + dummy * dummy;
+            num2bits[i].in <== bigAddNoCarry.out[i] + num2bits[i - 1].out[CHUNK_SIZE];
         }
     }
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
         if (i == 0) {
-            out[i] <== bigAddNoCarry.out[i] - (num2bits[i].out[CHUNK_SIZE]) * (2 ** CHUNK_SIZE) + dummy * dummy;
+            out[i] <== bigAddNoCarry.out[i] - (num2bits[i].out[CHUNK_SIZE]) * (2 ** CHUNK_SIZE);
         }
         else {
-            out[i] <== bigAddNoCarry.out[i] - (num2bits[i].out[CHUNK_SIZE]) * (2 ** CHUNK_SIZE) + num2bits[i - 1].out[CHUNK_SIZE] + dummy * dummy;
+            out[i] <== bigAddNoCarry.out[i] - (num2bits[i].out[CHUNK_SIZE]) * (2 ** CHUNK_SIZE) + num2bits[i - 1].out[CHUNK_SIZE];
         }
     }
     out[CHUNK_NUMBER] <== num2bits[CHUNK_NUMBER - 1].out[CHUNK_SIZE];
@@ -97,7 +94,6 @@ template BigMultNoCarry(CHUNK_SIZE, CHUNK_NUMBER){
     assert(CHUNK_SIZE <= 126);
     
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
     signal output out[CHUNK_NUMBER * 2 - 1];
     
     signal tmpMults[CHUNK_NUMBER][CHUNK_NUMBER];
@@ -127,7 +123,7 @@ template BigMultNoCarry(CHUNK_SIZE, CHUNK_NUMBER){
                 if (j == 0){
                     tmpResult[i][j] <== tmpMults[i - j][j];
                 } else {
-                    tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1] + dummy * dummy;
+                    tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1];
                 }
             }
             out[i] <== tmpResult[i][i];
@@ -137,7 +133,7 @@ template BigMultNoCarry(CHUNK_SIZE, CHUNK_NUMBER){
                 if (j == 0){
                     tmpResult[i][j] <== tmpMults[CHUNK_NUMBER - 1 - j][i + j - CHUNK_NUMBER + 1];
                 } else {
-                    tmpResult[i][j] <== tmpMults[CHUNK_NUMBER - 1 - j][i + j - CHUNK_NUMBER + 1] + tmpResult[i][j - 1] + dummy * dummy;
+                    tmpResult[i][j] <== tmpMults[CHUNK_NUMBER - 1 - j][i + j - CHUNK_NUMBER + 1] + tmpResult[i][j - 1];
                 }
             }
             out[i] <== tmpResult[i][2 * CHUNK_NUMBER - 2 - i];
@@ -151,15 +147,12 @@ template BigMultNoCarry(CHUNK_SIZE, CHUNK_NUMBER){
 template BigMult(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal input in[2][CHUNK_NUMBER];
-    signal input dummy;
     
-    dummy * dummy === 0;
     
     signal output out[CHUNK_NUMBER * 2];
     
     component bigMultNoCarry = BigMultNoCarry(CHUNK_SIZE, CHUNK_NUMBER);
     bigMultNoCarry.in <== in;
-    bigMultNoCarry.dummy <== dummy;
     
     component num2bits[CHUNK_NUMBER * 2 - 1];
     component bits2numOverflow[CHUNK_NUMBER * 2 - 1];
@@ -179,7 +172,7 @@ template BigMult(CHUNK_SIZE, CHUNK_NUMBER){
         if (i == 0){
             num2bits[i].in <== bigMultNoCarry.out[i];
         } else {
-            num2bits[i].in <== dummy * dummy + bigMultNoCarry.out[i] + bits2numOverflow[i - 1].out;
+            num2bits[i].in <== bigMultNoCarry.out[i] + bits2numOverflow[i - 1].out;
         }
         
         bits2numOverflow[i] = Bits2Num(CHUNK_SIZE + ADDITIONAL_LEN);
@@ -206,15 +199,12 @@ template BigMult(CHUNK_SIZE, CHUNK_NUMBER){
 // use only for CHUNK_NUMBER == 2 ** x
 template BigMultOptimised(CHUNK_SIZE, CHUNK_NUMBER){
     
-    signal input dummy;
     signal input in[2][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER * 2];
     
     component karatsuba = KaratsubaNoCarry(CHUNK_NUMBER);
     karatsuba.in <== in;
-    karatsuba.dummy <== dummy;
     
-    dummy * dummy === 0;
     
     component getLastNBits[CHUNK_NUMBER * 2 - 1];
     component bits2Num[CHUNK_NUMBER * 2 - 1];
@@ -245,9 +235,8 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal input base[CHUNK_NUMBER * 2];
     signal input modulus[CHUNK_NUMBER];
-    signal input dummy;
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, base, modulus);
     
     signal output div[CHUNK_NUMBER + 1];
     signal output mod[CHUNK_NUMBER];
@@ -265,7 +254,6 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     
     multChecks.in1 <== div;
     multChecks.in2 <== modulus;
-    multChecks.dummy <== dummy;
     
     component greaterThan = BigGreaterThan(CHUNK_SIZE, CHUNK_NUMBER);
     
@@ -279,7 +267,6 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     
     bigAddCheck.in1 <== multChecks.out;
     bigAddCheck.in2 <== mod;
-    bigAddCheck.dummy <== dummy;
     
     
     component smartEqual = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER * 2 + 2);
@@ -289,7 +276,6 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
     }
     smartEqual.in[1][CHUNK_NUMBER * 2] <== 0;
     smartEqual.in[1][CHUNK_NUMBER * 2 + 1] <== 0;
-    smartEqual.dummy <== dummy;
     
     smartEqual.out === 1;
 }
@@ -300,17 +286,14 @@ template BigMod(CHUNK_SIZE, CHUNK_NUMBER){
 template BigMultModP(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[3][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
-    signal input dummy;
     
     component bigMult = BigMultOptimised(CHUNK_SIZE, CHUNK_NUMBER);
     bigMult.in[0] <== in[0];
     bigMult.in[1] <== in[1];
-    bigMult.dummy <== dummy;
     
     component bigMod = BigMod(CHUNK_SIZE, CHUNK_NUMBER);
     bigMod.base <== bigMult.out;
     bigMod.modulus <== in[2];
-    bigMod.dummy <== dummy;
     
     out <== bigMod.mod;
 }
@@ -321,17 +304,14 @@ template BigMultModP(CHUNK_SIZE, CHUNK_NUMBER){
 template BigMultModPNonOptimised(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[3][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
-    signal input dummy;
     
     component bigMult = BigMult(CHUNK_SIZE, CHUNK_NUMBER);
     bigMult.in[0] <== in[0];
     bigMult.in[1] <== in[1];
-    bigMult.dummy <== dummy;
     
     component bigMod = BigMod(CHUNK_SIZE, CHUNK_NUMBER);
     bigMod.base <== bigMult.out;
     bigMod.modulus <== in[2];
-    bigMod.dummy <== dummy;
     
     out <== bigMod.mod;
 }
@@ -345,10 +325,9 @@ template BigSubNoBorrow(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal input in[2][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
-    signal input dummy;
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
-        out[i] <== in[0][i] - in[1][i] + dummy * dummy;
+        out[i] <== in[0][i] - in[1][i];
     }
 }
 
@@ -358,10 +337,8 @@ template BigSubNoBorrow(CHUNK_SIZE, CHUNK_NUMBER){
 template BigSub(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[2][CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
-    signal input dummy;
     component bigSubNoBorrow = BigSubNoBorrow(CHUNK_SIZE, CHUNK_NUMBER);
     bigSubNoBorrow.in <== in;
-    bigSubNoBorrow.dummy <== dummy;
     
     component lessThan[CHUNK_NUMBER];
     for (var i = 0; i < CHUNK_NUMBER; i++){
@@ -369,11 +346,11 @@ template BigSub(CHUNK_SIZE, CHUNK_NUMBER){
         lessThan[i].in[1] <== 2 ** CHUNK_SIZE;
         
         if (i == 0){
-            lessThan[i].in[0] <== bigSubNoBorrow.out[i] + 2 ** CHUNK_SIZE + dummy * dummy;
-            out[i] <== bigSubNoBorrow.out[i] + (2 ** CHUNK_SIZE) * (lessThan[i].out) + dummy * dummy;
+            lessThan[i].in[0] <== bigSubNoBorrow.out[i] + 2 ** CHUNK_SIZE;
+            out[i] <== bigSubNoBorrow.out[i] + (2 ** CHUNK_SIZE) * (lessThan[i].out);
         } else {
-            lessThan[i].in[0] <== bigSubNoBorrow.out[i] - lessThan[i - 1].out + 2 ** CHUNK_SIZE + dummy * dummy;
-            out[i] <== bigSubNoBorrow.out[i] + (2 ** CHUNK_SIZE) * (lessThan[i].out) - lessThan[i - 1].out + dummy * dummy;
+            lessThan[i].in[0] <== bigSubNoBorrow.out[i] - lessThan[i - 1].out + 2 ** CHUNK_SIZE;
+            out[i] <== bigSubNoBorrow.out[i] + (2 ** CHUNK_SIZE) * (lessThan[i].out) - lessThan[i - 1].out;
         }
     }
 }
@@ -386,24 +363,21 @@ template PowerMod(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal input base[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
-    signal input dummy;
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
     
     for (var i = 0; i < exp_process[0]; i++){
         muls[i] = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER);
-        muls[i].dummy <== dummy;
         muls[i].in[2] <== modulus;
     }
     
     for (var i = 0; i < exp_process[1] - 1; i++){
         resultMuls[i] = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER);
-        resultMuls[i].dummy <== dummy;
         resultMuls[i].in[2] <== modulus;
     }
     
@@ -447,10 +421,8 @@ template BigModInvOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
     signal input modulus[CHUNK_NUMBER];
     signal output out[CHUNK_NUMBER];
     
-    signal input dummy;
-    dummy * dummy === 0;
     
-    var inv[200] = mod_inv(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
+    var inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
         out[i] <-- inv[i];
     }
@@ -459,7 +431,6 @@ template BigModInvOptimised(CHUNK_SIZE, CHUNK_NUMBER) {
     mult.in[0] <== in;
     mult.in[1] <== out;
     mult.in[2] <== modulus;
-    mult.dummy <== dummy;
     
     mult.out[0] === 1;
     for (var i = 1; i < CHUNK_NUMBER; i++) {
@@ -476,7 +447,6 @@ template BigAddNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
     
     signal input in1[CHUNK_NUMBER_GREATER];
     signal input in2[CHUNK_NUMBER_LESS];
-    signal input dummy;
     
     signal output out[CHUNK_NUMBER_GREATER + 1];
     
@@ -489,7 +459,6 @@ template BigAddNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
         bigAdd.in[0][i] <== in1[i];
         bigAdd.in[1][i] <== 0;
     }
-    bigAdd.dummy <== dummy;
     
     out <== bigAdd.out;
 }
@@ -504,7 +473,6 @@ template BigMultNoCarryNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_L
     
     signal input in1[CHUNK_NUMBER_GREATER];
     signal input in2[CHUNK_NUMBER_LESS];
-    signal input dummy;
     signal output out[CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS - 1];
     
     
@@ -539,7 +507,7 @@ template BigMultNoCarryNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_L
                 if (j == 0){
                     tmpResult[i][j] <== tmpMults[i - j][j];
                 } else {
-                    tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1] + dummy * dummy;
+                    tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1];
                 }
             }
             out[i] <== tmpResult[i][i];
@@ -550,7 +518,7 @@ template BigMultNoCarryNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_L
                     if (j == 0){
                         tmpResult[i][j] <== tmpMults[i - j][j];
                     } else {
-                        tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1] + dummy * dummy;
+                        tmpResult[i][j] <== tmpMults[i - j][j] + tmpResult[i][j - 1];
                     }
                 }
                 out[i] <== tmpResult[i][CHUNK_NUMBER_LESS - 1];
@@ -576,7 +544,6 @@ template BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
     
     signal input in1[CHUNK_NUMBER_GREATER];
     signal input in2[CHUNK_NUMBER_LESS];
-    signal input dummy;
     signal output out[CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS];
     var isPowerOfTwo = 0;
     for (var i = 0; i < CHUNK_NUMBER_GREATER; i++){
@@ -585,12 +552,10 @@ template BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
         }
     }
     if (isPowerOfTwo == 0){
-        dummy * dummy === 0;
         
         component bigMultNoCarry = BigMultNoCarryNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS);
         bigMultNoCarry.in1 <== in1;
         bigMultNoCarry.in2 <== in2;
-        bigMultNoCarry.dummy <== dummy;
         
         component num2bits[CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS - 1];
         component bits2numOverflow[CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS - 1];
@@ -614,7 +579,7 @@ template BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
             if (i == 0){
                 num2bits[i].in <== bigMultNoCarry.out[i];
             } else {
-                num2bits[i].in <== bigMultNoCarry.out[i] + bits2numOverflow[i - 1].out + dummy * dummy;
+                num2bits[i].in <== bigMultNoCarry.out[i] + bits2numOverflow[i - 1].out;
             }
             
             bits2numOverflow[i] = Bits2Num(CHUNK_SIZE + ADDITIONAL_LEN);
@@ -644,7 +609,6 @@ template BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
             bigMult.in[0][i] <== in1[i];
             bigMult.in[1][i] <== 0;
         }
-        bigMult.dummy <== dummy;
         for (var i = 0; i < CHUNK_NUMBER_LESS + CHUNK_NUMBER_GREATER; i++){
             out[i] <== bigMult.out[i];
         }
@@ -677,9 +641,8 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
     
     signal input base[CHUNK_NUMBER_BASE];
     signal input modulus[CHUNK_NUMBER_MODULUS];
-    signal input dummy;
     
-    var long_division[2][200] = long_div(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, base, modulus);
     
     signal output div[CHUNK_NUMBER_DIV];
     signal output mod[CHUNK_NUMBER_MODULUS];
@@ -698,13 +661,11 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
         
         multChecks.in1 <== div;
         multChecks.in2 <== modulus;
-        multChecks.dummy <== dummy;
     } else {
         multChecks = BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV);
         
         multChecks.in2 <== div;
         multChecks.in1 <== modulus;
-        multChecks.dummy <== dummy;
     }
     
     component greaterThan = BigGreaterThan(CHUNK_SIZE, CHUNK_NUMBER_MODULUS);
@@ -719,7 +680,6 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
     
     bigAddCheck.in1 <== multChecks.out;
     bigAddCheck.in2 <== mod;
-    bigAddCheck.dummy <== dummy;
     
     component smartEqual = SmartEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE + 2);
     smartEqual.in[0] <== bigAddCheck.out;
@@ -728,7 +688,6 @@ template BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_BASE, CHUNK_NUMBER_MODULUS){
     }
     smartEqual.in[1][CHUNK_NUMBER_BASE] <== 0;
     smartEqual.in[1][CHUNK_NUMBER_BASE + 1] <== 0;
-    smartEqual.dummy <== dummy;
     
     smartEqual.out === 1;
 }
@@ -740,20 +699,16 @@ template BigMultModPNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS
     signal input in1[CHUNK_NUMBER_GREATER];
     signal input in2[CHUNK_NUMBER_LESS];
     signal input modulus[CHUNK_NUMBER_MODULUS];
-    signal input dummy;
-    dummy * dummy === 0;
     
     signal output out[CHUNK_NUMBER_MODULUS];
     
     component bigMult = BigMultNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS);
     bigMult.in1 <== in1;
     bigMult.in2 <== in2;
-    bigMult.dummy <== dummy;
     
     component bigMod = BigModNonEqual(CHUNK_SIZE, CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS, CHUNK_NUMBER_MODULUS);
     bigMod.base <== bigMult.out;
     bigMod.modulus <== modulus;
-    bigMod.dummy <== dummy;
     
     out <== bigMod.mod;
 }
@@ -801,24 +756,21 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
     
     signal input base[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
-    signal input dummy;
     
     signal output out[CHUNK_NUMBER];
     
-    var exp_process[256] = exp_to_bits(EXP);
+    var exp_process[256] = exp_to_bits_dl(EXP);
     
     component muls[exp_process[0]];
     component resultMuls[exp_process[1] - 1];
     
     for (var i = 0; i < exp_process[0]; i++){
         muls[i] = BigMultModPNonOptimised(CHUNK_SIZE, CHUNK_NUMBER);
-        muls[i].dummy <== dummy;
         muls[i].in[2] <== modulus;
     }
     
     for (var i = 0; i < exp_process[1] - 1; i++){
         resultMuls[i] = BigMultModPNonOptimised(CHUNK_SIZE, CHUNK_NUMBER);
-        resultMuls[i].dummy <== dummy;
         resultMuls[i].in[2] <== modulus;
     }
     
@@ -862,7 +814,7 @@ template PowerModNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, EXP) {
 // those are very "expensive" by constraints operations, try to reduse num of usage if these if u can
 
 // in[0] < in[1]
-template BigLessThan(CHUNK_SIZE, CHUNK_NUMBER){
+template BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER){
     signal input in[2][CHUNK_NUMBER];
     
     signal output out;
@@ -940,7 +892,7 @@ template BigGreaterEqThan(CHUNK_SIZE, CHUNK_NUMBER){
     
     signal output out;
     
-    component lessThan = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    component lessThan = BigLessThan_dl(CHUNK_SIZE, CHUNK_NUMBER);
     lessThan.in <== in;
     out <== 1 - lessThan.out;
 }

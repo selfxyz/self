@@ -1,3 +1,4 @@
 .env
 .env.local
 outputs/
+src/passport_data/passport_data/

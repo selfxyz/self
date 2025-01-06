@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
 include "../../circomlib/hasher/hash.circom";
-include "../../circomlib/bitify/comparators.circom";
+include "circomlib/circuits/comparators.circom";
 include "../../circomlib/mux/mux1.circom";
 
 // This circuit is designed to calculate the root of a binary Merkle
@@ -36,7 +36,7 @@ template BinaryMerkleRoot(MAX_DEPTH) {
         var c[2][2] = [ [nodes[i], siblings[i]], [siblings[i], nodes[i]] ];
         var childNodes[2] = MultiMux1(2)(c, indices[i]);
 
-        nodes[i + 1] <== PoseidonHash(2)(childNodes, 0);
+        nodes[i + 1] <== PoseidonHash(2)(childNodes);
     }
 
     var isDepth = IsEqual()([depth, MAX_DEPTH]);

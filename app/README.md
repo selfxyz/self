@@ -7,6 +7,7 @@
 | nodejs      | > v18     | [Install nodejs](https://nodejs.org/) |
 | circom      | Latest  | [Install circom](https://docs.circom.io/) |
 | snarkjs     | Latest  | [Install snarkjs](https://github.com/iden3/snarkjs) |
+| watchman   | Latest  | [Install watchman](https://facebook.github.io/watchman/) |
 
 
 ### Android

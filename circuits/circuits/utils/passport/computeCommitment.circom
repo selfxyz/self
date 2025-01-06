@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "../circomlib/hasher/hash.circom";
-include "../circomlib/utils/bytes.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 include "./customHashers.circom";
 
 template ComputeCommitment() {
@@ -17,7 +17,6 @@ template ComputeCommitment() {
     poseidon_hasher.in[0] <== secret;
     poseidon_hasher.in[1] <== attestation_id;
     poseidon_hasher.in[2] <== leaf;
-    poseidon_hasher.dummy <== 0;
 
     signal dg1_packed[3] <== PackBytes(93)(dg1);
     for (var i = 0; i < 3; i++) {

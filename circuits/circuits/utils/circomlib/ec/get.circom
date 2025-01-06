@@ -49,11 +49,9 @@ template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     }
 }
 
-// Get "dummy" point
 // We can`t "if" signal in circom, so we always need to do all opertions, even we won`t use results of them
 // For example, in scalar mult we can have case where we shouln`t add anything (bits = [0,0, .. ,0])
 // We will ignore result, but we still should get it, so we need to pout something anyway
-// We use this dummy point for such purposes
 // Dummy point = G * 2**256
 template EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal output dummyPoint[2][CHUNK_NUMBER];

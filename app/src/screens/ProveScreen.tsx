@@ -9,12 +9,13 @@ import { DisclosureOptions, OpenPassportApp } from '../../../common/src/utils/ap
 import CustomButton from '../components/CustomButton';
 import { generateProof } from '../utils/prover';
 import io, { Socket } from 'socket.io-client';
-import { getCircuitName, parseCertificate } from '../../../common/src/utils/certificates/handleCertificate';
+import { getCircuitNameOld, parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { CircuitName } from '../utils/zkeyDownload';
 import { generateCircuitInputsInApp } from '../utils/generateInputsInApp';
 import { buildAttestation } from '../../../common/src/utils/openPassportAttestation';
 import { generateCircuitInputsDSC, getCSCAFromSKI } from '../../../common/src/utils/csca';
 import { sendCSCARequest } from '../../../common/src/utils/csca';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 interface ProveScreenProps {
   setSheetRegisterIsOpen: (value: boolean) => void;
@@ -43,9 +44,10 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
 
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnecting, setIsConnecting] = useState(false);
-  const { signatureAlgorithm, hashFunction, authorityKeyIdentifier } = parseCertificate(passportData.dsc);
+  const { signatureAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(passportData.dsc);
+  const parsedPassportData = parsePassportData(passportData);
   const { secret, dscSecret } = useUserStore.getState();
-  const circuitName = getCircuitName(selectedApp.mode, signatureAlgorithm, hashFunction);
+  const circuitName = getCircuitNameOld(selectedApp.mode, signatureAlgorithm, parsedPassportData.signedAttrHashFunction);
 
   const waitForSocketConnection = (socket: Socket): Promise<void> => {
     return new Promise((resolve) => {
@@ -165,18 +167,18 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             )
           ]);
           const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, DEVELOPMENT_MODE);
-          const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificate(cscaPem);
+          const { signatureAlgorithm: signatureAlgorithmDsc } = parseCertificateSimple(cscaPem);
           attestation = buildAttestation({
             mode: selectedApp.mode,
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashFunction,
+            hashFunction: parsedPassportData.signedAttrHashFunction,
             userIdType: selectedApp.userIdType,
             dscProof: (dscProof as any).proof,
             dscPublicSignals: (dscProof as any).pub_signals,
             signatureAlgorithmDsc: signatureAlgorithmDsc,
-            hashFunctionDsc: hashFunction,
+            hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
           });
           break;
         default:
@@ -190,7 +192,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({ setSheetRegisterIsOpen }) => 
             proof: proof.proof,
             publicSignals: proof.publicSignals,
             signatureAlgorithm: signatureAlgorithm,
-            hashFunction: hashFunction,
+            hashFunction: parsedPassportData.signedAttrHashFunction,
             dsc: passportData.dsc,
           });
           break;

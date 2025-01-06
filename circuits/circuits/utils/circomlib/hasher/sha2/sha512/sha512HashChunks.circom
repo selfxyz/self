@@ -7,7 +7,6 @@ include "../../../utils/array.circom";
 include "sha512Rounds.circom";
 
 template Sha512HashChunks(MAX_BLOCKS) {
-    
     signal input in[MAX_BLOCKS * 1024];
     signal input paddedInLength;
     signal input dummy;
@@ -31,9 +30,7 @@ template Sha512HashChunks(MAX_BLOCKS) {
     for (var m = 0; m < MAX_BLOCKS; m++) {
         
         sch[m] = Sha2_384_512Schedule();
-        sch[m].dummy <== dummy;
         rds[m] = Sha2_384_512Rounds(80);
-        rds[m].dummy <== dummy;
         
         for (var k = 0; k < 16; k++) {
             for (var i = 0; i < 64; i++) {

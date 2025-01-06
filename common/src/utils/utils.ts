@@ -89,7 +89,6 @@ export function formatDg2Hash(dg2Hash: number[]) {
 
 export function formatAndConcatenateDataHashes(
   dataHashes: [number, number[]][],
-  hashLen: number,
   dg1HashOffset: number
 ) {
   // concatenating dataHashes :
@@ -171,7 +170,7 @@ export function formatAndConcatenateDataHashes(
   return concat;
 }
 
-export function assembleEContent(messageDigest: number[]) {
+export function generateSignedAttr(messageDigest: number[]) {
   const constructedEContent = [];
 
   // Detailed description is in private file r&d.ts for now
@@ -421,8 +420,21 @@ export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: numb
   return { merkleProofSiblings, merkleProofIndices, depthForThisOne };
 }
 
-export function findSubarrayIndex(arr: any[], subarray: any[]): number {
-  return arr.findIndex((_, index) => subarray.every((element, i) => element === arr[index + i]));
+export function findSubarrayIndex(arr: number[], subArr: number[]): number {
+  if (!arr || !Array.isArray(arr) || !subArr || !Array.isArray(subArr)) {
+    console.warn('Invalid input to findSubarrayIndex:', { arr, subArr });
+    return -1;
+  }
+
+  if (subArr.length === 0) {
+    return -1;
+  }
+
+  if (subArr.length > arr.length) {
+    return -1;
+  }
+
+  return arr.findIndex((_, i) => subArr.every((val, j) => arr[i + j] === val));
 }
 
 export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {

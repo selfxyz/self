@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../circomlib/utils/bytes.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 include "../../circomlib/merkle-trees/binary-merkle-root.circom";
 include "../computeCommitment.circom";
 

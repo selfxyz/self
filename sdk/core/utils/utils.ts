@@ -3,7 +3,6 @@ import { getCurrentDateYYMMDD } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   circuitNameFromMode,
-  REGISTER_ABI,
   REGISTER_CONTRACT_ADDRESS,
 } from '../../../common/src/constants/constants';
 import { derToBytes } from '../../../common/src/utils/csca';
@@ -18,8 +17,8 @@ import {
   vkey_dsc_rsapss_65537_sha256,
   vkey_vc_and_disclose,
 } from '../../../common/src/constants/vkey';
-import { getCircuitNameOld } from '../../../common/src/utils/certificates/handleCertificate';
 import { Mode } from 'fs';
+import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 
 export function getCurrentDateFormatted() {
   return getCurrentDateYYMMDD().map((datePart) => BigInt(datePart).toString());

@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { argv } from 'process';
 import { getPrismaClientFromEnv, prepareDataForInsertion } from './utils/prisma';
-import { parseCertificate } from './utils/certificateParsing/parseCertificate';
+import { parseCertificate } from '../../common/src/utils/certificate_parsing/parseCertificate';
 
 let pemDirectory: string;
 let tableName: 'csca_masterlist' | 'dsc_masterlist';

@@ -2,8 +2,8 @@ pragma circom 2.1.5;
 
 include "../../sha1/sha1compression.circom";
 include "../../sha1/constants.circom";
-include "../../../bitify/bitify.circom";
-include "../../../utils/array.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "circomlib/circuits/bitify.circom";
 
 //Adapted from @zk-email/circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
@@ -36,7 +36,7 @@ template Sha1Bytes(max_num_bytes) {
 template Sha1General(maxBitsPadded) {
     assert(maxBitsPadded % 512 == 0);
     var maxBitsPaddedBits = log2Ceil(maxBitsPadded);
-    assert(2 ** maxBitsPaddedBits > maxBitsPadded);
+    assert(2 ** maxBitsPaddedBits >= maxBitsPadded);
 
     signal input paddedIn[maxBitsPadded];
     signal output out[160];
@@ -49,7 +49,7 @@ template Sha1General(maxBitsPadded) {
     var maxBlocks;
     maxBlocks = (maxBitsPadded\512);
     var maxBlocksBits = log2Ceil(maxBlocks);
-    assert(2 ** maxBlocksBits > maxBlocks);
+    assert(2 ** maxBlocksBits >= maxBlocks);
 
     inBlockIndex <-- (in_len_padded_bits >> 9);
     in_len_padded_bits === inBlockIndex * 512;
@@ -59,18 +59,17 @@ template Sha1General(maxBitsPadded) {
     bitLengthVerifier.in[1] <== maxBitsPadded;
     bitLengthVerifier.out === 1;
 
-    component ha0 = H(0);
-    component hb0 = H(1);
-    component hc0 = H(2);
-    component hd0 = H(3);
-    component he0 = H(4);
+    component ha0 = H_sha1(0);
+    component hb0 = H_sha1(1);
+    component hc0 = H_sha1(2);
+    component hd0 = H_sha1(3);
+    component he0 = H_sha1(4);
 
     component sha1compression[maxBlocks];
     
     for (i=0; i<maxBlocks; i++) {
         
         sha1compression[i] = Sha1compression();
-        sha1compression[i].dummy <== 0;
 
         if (i==0) {
             for (k=0; k<32; k++) {

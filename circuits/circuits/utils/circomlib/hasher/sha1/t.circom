@@ -1,14 +1,12 @@
 pragma circom 2.1.6;
 
 include "./rotate.circom";
-include "../../bitify/comparators.circom";
+include "circomlib/circuits/comparators.circom";
 include "./f.circom";
 include "./constants.circom";
 include "../../int/arithmetic.circom";
 
 template T(t) {
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal input a[32];
     signal input b[32];
@@ -31,8 +29,7 @@ template T(t) {
         f.d[k] <== d[k];
     }
     
-    component sumBinary = BinSum(5, 32);
-    sumBinary.dummy <== dummy;
+    component sumBinary = BinSum_sha1(5, 32);
     var nout = 35; 
     
     for (k = 0; k < 32; k++) {
