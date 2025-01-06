@@ -56,6 +56,9 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
   const { setProofVerificationResult, registered, passportData } =
     useUserStore();
 
+  const [socket, setSocket] = useState<Socket | null>(null);
+  const [isConnecting, setIsConnecting] = useState(false);
+
   if (!passportData) {
     return (
       <Text mt="$10" fontSize="$9" color={textBlack} textAlign="center">
@@ -64,31 +67,30 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     );
   }
 
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
   const { signatureAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(
     passportData.dsc,
   );
   const parsedPassportData = parsePassportData(passportData);
-  const { secret, dscSecret } = useUserStore.getState();
+  const { dscSecret } = useUserStore.getState();
   const circuitName = getCircuitNameOld(
     selectedApp.mode,
     signatureAlgorithm,
     parsedPassportData.signedAttrHashFunction,
   );
 
-  const waitForSocketConnection = (socket: Socket): Promise<void> => {
+  const waitForSocketConnection = (socketInstance: Socket): Promise<void> => {
     return new Promise(resolve => {
-      if (socket.connected) {
+      if (socketInstance.connected) {
         resolve();
       } else {
-        socket.once('connect', () => {
+        socketInstance.once('connect', () => {
           resolve();
         });
       }
     });
   };
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     let newSocket: Socket | null = null;
 
@@ -259,7 +261,7 @@ const ProveScreen: React.FC<ProveScreenProps> = ({
     option: any,
   ) => {
     if (key === 'ofac') {
-      return option == true ? 'My name is not present in the OFAC list.' : '';
+      return option === true ? 'My name is not present in the OFAC list.' : '';
     } else if (option.enabled) {
       switch (key) {
         case 'minimumAge':

@@ -1,3 +1,5 @@
+import React, { useEffect, useState } from 'react';
+
 import {
   ArrowRight,
   CalendarSearch,
@@ -11,7 +13,6 @@ import {
   ShieldCheck,
   X,
 } from '@tamagui/lucide-icons';
-import React, { useEffect, useState } from 'react';
 
 import {
   Linking,
@@ -36,7 +37,6 @@ import {
   Switch,
   Tabs,
   Text,
-  useWindowDimensions,
   View,
   XStack,
   YStack,
@@ -107,7 +107,7 @@ const MainScreen: React.FC = () => {
   const [sheetIsOpen, setSheetIsOpen] = useState(false);
   const [sheetAppListOpen, setSheetAppListOpen] = useState(false);
   const [sheetRegisterIsOpen, setSheetRegisterIsOpen] = useState(false);
-  const [modalProofStep, setModalProofStep] = useState(0);
+  const [_modalProofStep, setModalProofStep] = useState(0);
   const [dateOfBirthDatePicker, setDateOfBirthDatePicker] =
     useState<Date | null>(null);
   const [dateOfExpiryDatePicker, setDateOfExpiryDatePicker] =
@@ -130,12 +130,7 @@ const MainScreen: React.FC = () => {
     update,
     clearPassportDataFromStorage,
     clearSecretFromStorage,
-    clearProofsFromStorage,
     passportData,
-    registered,
-    setRegistered,
-    cscaProof,
-    localProof,
   } = useUserStore();
 
   const {
@@ -155,6 +150,8 @@ const MainScreen: React.FC = () => {
     setSelectedTab('start');
     deleteMrzFields();
   };
+
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const handleHideData = () => {
     updateNavigationStore({
       hideData: !hideData,
@@ -271,8 +268,6 @@ const MainScreen: React.FC = () => {
         dateOfExpiry?.length >= 6,
     );
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
-
-  const { height } = useWindowDimensions();
 
   const handleCountrySelect = (countryCode: string) => {
     setSelectedCountry(countryCode);

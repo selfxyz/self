@@ -6,28 +6,25 @@ import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 import useUserStore from '../stores/userStore';
 import { separatorColor, textBlack } from '../utils/colors';
 
+const InfoRow: React.FC<{
+  label: string;
+  value: string | number;
+}> = ({ label, value }) => (
+  <XStack py="$2" justifyContent="space-between">
+    <Text color={textBlack} fontSize="$5">
+      {label}
+    </Text>
+    <Text color={textBlack} fontSize="$5">
+      {value}
+    </Text>
+  </XStack>
+);
+
 const UserInfo: React.FC = () => {
   const { passportData } = useUserStore();
   const passportMetaData = passportData
     ? parsePassportData(passportData)
     : null;
-
-  const InfoRow = ({
-    label,
-    value,
-  }: {
-    label: string;
-    value: string | number;
-  }) => (
-    <XStack py="$2" justifyContent="space-between">
-      <Text color={textBlack} fontSize="$5">
-        {label}
-      </Text>
-      <Text color={textBlack} fontSize="$5">
-        {value}
-      </Text>
-    </XStack>
-  );
 
   return (
     <ScrollView>

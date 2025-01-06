@@ -50,7 +50,7 @@ export function formatAttribute(key: string, attribute: string) {
   } else if (key === 'date_of_birth') {
     let year = '19' + attribute.substring(0, 2);
     const currentYear = 2024;
-    const birthYear = parseInt(year);
+    const birthYear = parseInt(year); // eslint-disable-line radix
     if (currentYear - birthYear > 100) {
       year = '20' + attribute.substring(0, 2);
     }

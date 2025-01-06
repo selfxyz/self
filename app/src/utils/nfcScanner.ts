@@ -132,7 +132,7 @@ const scanIOS = async (setModalProofStep: (modalProofStep: number) => void) => {
 
 const handleResponseIOS = async (
   response: any,
-  setModalProofStep: (modalProofStep: number) => void,
+  _setModalProofStep: (modalProofStep: number) => void,
 ) => {
   const { toast } = useNavigationStore.getState();
 
@@ -229,7 +229,7 @@ const handleResponseIOS = async (
 
 const handleResponseAndroid = async (
   response: any,
-  setModalProofStep: (modalProofStep: number) => void,
+  _setModalProofStep: (modalProofStep: number) => void,
 ) => {
   const { toast } = useNavigationStore.getState();
 
@@ -258,7 +258,7 @@ const handleResponseAndroid = async (
     '-----END CERTIFICATE-----';
 
   const dgPresents = Object.keys(dgHashesObj)
-    .map(key => parseInt(key))
+    .map(key => parseInt(key)) // eslint-disable-line radix
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 

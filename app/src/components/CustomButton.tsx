@@ -19,7 +19,6 @@ const CustomButton: React.FC<CustomButtonProps> = ({
   onPress,
   Icon,
   bgColor,
-  h,
   isDisabled,
   disabledOnPress,
   blueVariant,

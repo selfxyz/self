@@ -17,7 +17,7 @@ const SplashScreen = () => {
         setSelectedTab('start');
       }
     }
-  }, [userLoaded]); // eslint-disable-line
+  }, [userLoaded]);
   return (
     <YStack ai="center" f={1} gap="$8" mt="$18" mb="$8">
       <Text fontSize="$9">OpenPassport</Text>
