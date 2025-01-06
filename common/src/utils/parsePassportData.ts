@@ -9,7 +9,7 @@ import {
 } from './certificate_parsing/dataStructure';
 import { getCSCAFromSKI } from './csca';
 import { hashAlgos } from '../constants/constants';
-import { brutforceSignatureAlgorithm } from './brutForce';
+import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
 
 export interface PassportMetadata {
     dataGroups: string;

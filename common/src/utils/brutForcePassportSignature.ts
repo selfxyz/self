@@ -1,11 +1,11 @@
-import { PassportData } from '../../../common/src/utils/types';
+import { PassportData } from './types';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
     PublicKeyDetailsECDSA,
 } from './certificate_parsing/dataStructure';
 import forge from 'node-forge';
 import * as asn1js from 'asn1js';
-import { initElliptic } from './elliptic';
+import { initElliptic } from './certificate_parsing/elliptic';
 import { getCurveForElliptic } from './certificate_parsing/curves';
 import { Certificate } from 'pkijs';
 import { hashAlgos, saltLengths } from '../constants/constants';

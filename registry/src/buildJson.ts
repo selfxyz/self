@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { parseCertificateSimple } from '../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { parseCertificate } from '../../common/src/utils/certificate_parsing/parseCertificate';
+import { CertificateData } from '../../common/src/utils/certificate_parsing/dataStructure';
 
 const pemDirectory = path.join(__dirname, '..', 'outputs', 'csca', 'pem_masterlist');
 const ski_pem_path = path.join(__dirname, '..', 'outputs', 'ski_pem.json');
@@ -51,6 +53,9 @@ async function main() {
         console.log('\x1b[90m%s\x1b[0m', `processing ${prodCertificate}`);
         try {
             const certificateData = parseCertificateSimple(pemContent);
+
+
+
             skiPemJson[certificateData.subjectKeyIdentifier] = pemContent;
         } catch (error) {
             console.log('\x1b[90m%s\x1b[0m', `certificate ${prodCertificate} is invalid.`);
@@ -60,13 +65,15 @@ async function main() {
         try {
             const certificateData = parseCertificateSimple(devCertificate);
             skiPemDevJson[certificateData.subjectKeyIdentifier] = devCertificate;
+
+
         } catch (error) {
             console.log('\x1b[90m%s\x1b[0m', `certificate ${devCertificate} is invalid.`);
         }
     }
 
-    fs.writeFileSync(ski_pem_path, JSON.stringify(skiPemJson, null, 2));
-    fs.writeFileSync(ski_pem_dev_path, JSON.stringify(skiPemDevJson, null, 2));
+    // fs.writeFileSync(ski_pem_path, JSON.stringify(skiPemJson, null, 2));
+    // fs.writeFileSync(ski_pem_dev_path, JSON.stringify(skiPemDevJson, null, 2));
 
 }
 

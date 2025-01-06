@@ -20,8 +20,14 @@ export function parseCertificate(pem: string, fileName: string): any {
   };
   try {
     certificateData = parseCertificateSimple(pem);
-    const tempCertPath = `/tmp/${fileName}.pem`;
-    fs.writeFileSync(tempCertPath, pem);
+    const baseFileName = fileName.replace('.pem', '');
+    const tempCertPath = `/tmp/${baseFileName}.pem`;
+
+    const formattedPem = pem.includes('-----BEGIN CERTIFICATE-----')
+      ? pem
+      : `-----BEGIN CERTIFICATE-----\n${pem}\n-----END CERTIFICATE-----`;
+
+    fs.writeFileSync(tempCertPath, formattedPem);
     try {
       const openSslOutput = execSync(`openssl x509 -in ${tempCertPath} -text -noout`).toString();
       certificateData.rawTxt = openSslOutput;
@@ -29,7 +35,11 @@ export function parseCertificate(pem: string, fileName: string): any {
       console.error(`Error executing OpenSSL command: ${error}`);
       certificateData.rawTxt = 'Error: Unable to generate human-readable format';
     } finally {
-      fs.unlinkSync(tempCertPath);
+      try {
+        fs.unlinkSync(tempCertPath);
+      } catch (e) {
+        // Ignore cleanup errors
+      }
     }
 
     return certificateData;
