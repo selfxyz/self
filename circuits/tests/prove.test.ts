@@ -182,7 +182,6 @@ testSuite.forEach(
         forbidden_countries_list,
         user_identifier
       );
-      console.log(inputs);
 
       before(async () => {
         circuit = await wasm_tester(
