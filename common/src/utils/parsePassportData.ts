@@ -9,11 +9,7 @@ import {
 } from './certificate_parsing/dataStructure';
 import { getCSCAFromSKI } from './csca';
 import { hashAlgos } from '../constants/constants';
-import { Certificate } from 'pkijs';
-import forge from 'node-forge';
-import * as asn1js from 'asn1js';
-import { initElliptic } from './elliptic';
-import { getCurveForElliptic } from './certificate_parsing/curves';
+import { brutforceSignatureAlgorithm } from './brutForce';
 
 export interface PassportMetadata {
     dataGroups: string;
@@ -25,7 +21,7 @@ export interface PassportMetadata {
     signedAttrSize: number;
     signedAttrHashFunction: string;
     signatureAlgorithm: string;
-    signatureAlgorithmDetails: string;
+    saltLength: number;
     curveOrExponent: string;
     signatureAlgorithmBits: number;
     countryCode: string;
@@ -38,7 +34,7 @@ export interface PassportMetadata {
     dsc: string;
 }
 
-export function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
+function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
     for (const hashFunction of hashAlgos) {
         const hashValue = hash(hashFunction, eContent);
         const hashOffset = findSubarrayIndex(signedAttr, hashValue);
@@ -49,7 +45,7 @@ export function findHashSizeOfEContent(eContent: number[], signedAttr: number[])
     return { hashFunction: 'unknown', offset: -1 };
 }
 
-export function findDG1HashInEContent(
+function findDG1HashInEContent(
     mrz: string,
     eContent: number[]
 ): { hash: number[]; hashFunction: string; offset: number } | null {
@@ -78,7 +74,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
     return (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 }
 
-export function getSimplePublicKeyDetails(certData: CertificateData): string {
+function getSimplePublicKeyDetails(certData: CertificateData): string {
     interface SimplePublicKeyDetails {
         exponent?: string;
         curve?: string;
@@ -102,64 +98,7 @@ export function getSimplePublicKeyDetails(certData: CertificateData): string {
     return JSON.stringify(simplePublicKeyDetails);
 }
 
-export function verifySignature(passportData: PassportData, hashAlgorithm: string): boolean {
-    const elliptic = initElliptic();
-    const { dsc, signedAttr, encryptedDigest } = passportData;
-    const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
-    if (signatureAlgorithm === 'ecdsa') {
-        const certBuffer = Buffer.from(
-            dsc.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-            'base64'
-        );
-        const asn1Data = asn1js.fromBER(certBuffer);
-        const cert = new Certificate({ schema: asn1Data.result });
-        const publicKeyInfo = cert.subjectPublicKeyInfo;
-        const publicKeyBuffer = publicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-        const curveForElliptic = getCurveForElliptic((publicKeyDetails as PublicKeyDetailsECDSA).curve);
-        const ec = new elliptic.ec(curveForElliptic);
-
-        const key = ec.keyFromPublic(publicKeyBuffer);
-        const md = forge.md[hashAlgorithm].create();
-        md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-        const msgHash = md.digest().toHex();
-        const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
-
-        return key.verify(msgHash, signature_crypto);
-    } else {
-        const cert = forge.pki.certificateFromPem(dsc);
-        const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
-
-        const md = forge.md[hashAlgorithm].create();
-        md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-
-        const signature = Buffer.from(encryptedDigest).toString('binary');
-
-        if (signatureAlgorithm === 'rsapss') {
-            try {
-                const pss = forge.pss.create({
-                    md: forge.md[hashAlgorithm].create(),
-                    mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
-                    saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
-                });
-                return publicKey.verify(md.digest().bytes(), signature, pss);
-            } catch (error) {
-                return false;
-            }
-        } else {
-            return publicKey.verify(md.digest().bytes(), signature);
-        }
-    }
-}
-
-export function brutforceHashAlgorithm(passportData: PassportData): any {
-    for (const hashFunction of hashAlgos) {
-        if (verifySignature(passportData, hashFunction)) {
-            return hashFunction;
-        }
-    }
-    return null;
-}
 
 export function parsePassportData(passportData: PassportData): PassportMetadata {
     const dg1HashInfo = passportData.mrz
@@ -174,13 +113,11 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
         passportData.signedAttr
     );
 
-    const signatureHashAlgo = brutforceHashAlgorithm(passportData);
+    const brutForcedPublicKeyDetails = brutforceSignatureAlgorithm(passportData);
 
     let parsedDsc = null;
     let parsedCsca = null;
     let csca = null;
-    let dscSignature = 'unknown';
-    let dscSignatureAlgorithmDetails = 'unknown';
     let dscSignatureAlgorithmBits = 0;
     let cscaHashFunction = 'unknown';
     let cscaSignature = 'unknown';
@@ -189,8 +126,6 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
 
     if (passportData.dsc) {
         parsedDsc = parseCertificateSimple(passportData.dsc);
-        dscSignature = parsedDsc.signatureAlgorithm;
-        dscSignatureAlgorithmDetails = getSimplePublicKeyDetails(parsedDsc);
         dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
         if (parsedDsc.authorityKeyIdentifier) {
@@ -221,9 +156,9 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
         eContentHashFunction,
         eContentHashOffset,
         signedAttrSize: passportData.signedAttr?.length || 0,
-        signedAttrHashFunction: signatureHashAlgo,
-        signatureAlgorithm: dscSignature,
-        signatureAlgorithmDetails: dscSignatureAlgorithmDetails,
+        signedAttrHashFunction: brutForcedPublicKeyDetails.hashAlgorithm,
+        signatureAlgorithm: brutForcedPublicKeyDetails.signatureAlgorithm,
+        saltLength: brutForcedPublicKeyDetails.saltLength,
         curveOrExponent: parsedDsc ? getCurveOrExponent(parsedDsc) : 'unknown',
         signatureAlgorithmBits: dscSignatureAlgorithmBits,
         countryCode: passportData.mrz ? getCountryCodeFromMrz(passportData.mrz) : 'unknown',
