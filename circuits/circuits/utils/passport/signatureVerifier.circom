@@ -61,7 +61,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
-        component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS);
+        component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
         rsaPss65537ShaVerification.pubkey <== pubKey;
         rsaPss65537ShaVerification.signature <== signature;
         rsaPss65537ShaVerification.hashed <== hash; // send the raw hash
@@ -75,7 +75,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
 
-        component rsaPss3ShaVerification = VerifyRsaPss3Sig(n, k, SALT_LEN, HASH_LEN_BITS);
+        component rsaPss3ShaVerification = VerifyRsaPss3Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
         rsaPss3ShaVerification.pubkey <== pubKey;
         rsaPss3ShaVerification.signature <== signature;
         rsaPss3ShaVerification.hashed <== hash; // send the raw hash

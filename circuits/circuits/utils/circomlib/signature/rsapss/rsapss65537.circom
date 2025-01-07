@@ -16,23 +16,27 @@ include "../FpPowMod.circom";
 * This is because salt len can`t be % 8 != 0 so we use bytes len (8 bites).
 * For now, only HASH_TYPE == 384 && SALT_LEN == 48, HASH_TYPE == 256 && SALT_LEN == 64, HASH_TYPE == 256 && SALT_LEN == 32 cases supported.
 * Use this for CHUNK_NUMBER == 2**n, otherwise error will occur.
+
+* Singature length will not exceed the modulus length of the public key (which is the keylength), because the signature is
+* calculated as mod Modulus_of_pubkey .
 */
-template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE) {
+template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LENGTH) {
     assert((HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32));
-    
+
     signal input pubkey[CHUNK_NUMBER]; 
     signal input signature[CHUNK_NUMBER];
     signal input hashed[HASH_TYPE]; 
 
 
-    var EM_LEN = (CHUNK_SIZE * CHUNK_NUMBER) \ 8; 
+    var EM_LEN = KEY_LENGTH \ 8; 
+
     var HASH_LEN = HASH_TYPE \ 8; 
     var SALT_LEN_BITS = SALT_LEN * 8; 
-    var EM_LEN_BITS = CHUNK_SIZE * CHUNK_NUMBER; 
+    var EM_LEN_BITS = KEY_LENGTH;
     
     signal eM[EM_LEN];
     signal eMsgInBits[EM_LEN_BITS];
-    
+
     //computing encoded message
     component bigPow = FpPow65537Mod(CHUNK_SIZE, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER; i++) {
@@ -50,7 +54,11 @@ template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE) {
         num2Bits[i].in <== encoded[CHUNK_NUMBER - 1 - i];
         
         for (var j = 0; j < CHUNK_SIZE; j++) {
-            eMsgInBits[i * CHUNK_SIZE + j] <== num2Bits[i].out[CHUNK_SIZE - j - 1];
+            var sourcePos = i * CHUNK_SIZE + j;
+            var targetPos = sourcePos - (CHUNK_NUMBER * CHUNK_SIZE - EM_LEN_BITS);
+            if (targetPos >= 0 && targetPos < EM_LEN_BITS) {
+                eMsgInBits[targetPos] <== num2Bits[i].out[CHUNK_SIZE - j - 1];
+            }
         }
     }
     
