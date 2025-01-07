@@ -9,6 +9,7 @@ const testCases = [
   { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa_sha256_65537_2048' },
   { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'rsapss_sha256_65537_2048' },
   { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'ecdsa_sha256_secp256r1_256' },
+  { dgHashAlgo: 'sha256', eContentHashAlgo: 'sha256', sigAlg: 'ecdsa_sha256_brainpoolP256r1_256' },
   { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'ecdsa_sha1_secp256r1_256' },
 ];
 
@@ -32,7 +33,7 @@ describe('Mock Passport Data Generator', function () {
 
 function verify(passportData: PassportData, dgHashAlgo: string, eContentHashAlgo: string, sigAlg: string): boolean {
   const passportMetaData = parsePassportData(passportData);
-  console.log('passportMetaData', passportMetaData);
+  // console.log('passportMetaData', passportMetaData);
 
   expect(passportMetaData.dg1HashFunction).to.equal(dgHashAlgo);
   expect(passportMetaData.eContentHashFunction).to.equal(eContentHashAlgo);

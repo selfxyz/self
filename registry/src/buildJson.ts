@@ -72,8 +72,8 @@ async function main() {
         }
     }
 
-    // fs.writeFileSync(ski_pem_path, JSON.stringify(skiPemJson, null, 2));
-    // fs.writeFileSync(ski_pem_dev_path, JSON.stringify(skiPemDevJson, null, 2));
+    fs.writeFileSync(ski_pem_path, JSON.stringify(skiPemJson, null, 2));
+    fs.writeFileSync(ski_pem_dev_path, JSON.stringify(skiPemDevJson, null, 2));
 
 }
 
