@@ -9,33 +9,7 @@ import crypto from 'crypto';
 import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
-import { log } from 'console';
-
-// const sigAlgs = [
-//   { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' },
-//   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-//   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' },
-//   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-//   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '65537', keyLength: '4096' },
-//   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '4096' },
-//   { sigAlg: 'rsapss', hashFunction: 'sha256', domainParameter: '3', keyLength: '3072' },
-//   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '3', keyLength: '2048' },
-//   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '3072' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'brainpoolP224r1', keyLength: '224' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'brainpoolP224r1', keyLength: '224' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'brainpoolP256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'brainpoolP256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'brainpoolP256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'brainpoolP256r1', keyLength: '256' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'secp384r1', keyLength: '384' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp384r1', keyLength: '384' },
-//   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'brainpoolP384r1', keyLength: '384' },
-// ];
-// { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'brainpoolP384r1', keyLength: '384' },
 import { getCircuitNameFromPassportData } from '../../common/src/utils/circuitsName';
-import { parsePassportData } from '../../common/src/utils/parsePassportData';
 
 const sigAlgs = [
   {
@@ -67,6 +41,86 @@ const sigAlgs = [
     eContentHashAlgo: 'sha1',
     sigAlg: 'ecdsa',
     hashFunction: 'sha1',
+    domainParameter: 'secp256r1',
+    keyLength: '256',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha256',
+    domainParameter: 'brainpoolP256r1',
+    keyLength: '256',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha256',
+    domainParameter: 'secp384r1',
+    keyLength: '384',
+  },
+  {
+    dgHashAlgo: 'sha384',
+    eContentHashAlgo: 'sha384',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha384',
+    domainParameter: 'brainpoolP256r1',
+    keyLength: '256',
+  },
+  {
+    dgHashAlgo: 'sha384',
+    eContentHashAlgo: 'sha384',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha384',
+    domainParameter: 'brainpoolP384r1',
+    keyLength: '384',
+  },
+  {
+    dgHashAlgo: 'sha384',
+    eContentHashAlgo: 'sha384',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha384',
+    domainParameter: 'secp384r1',
+    keyLength: '384',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha512',
+    domainParameter: 'brainpoolP256r1',
+    keyLength: '256',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha224',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha224',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha256',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha1',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha256',
     domainParameter: 'secp256r1',
     keyLength: '256',
   },

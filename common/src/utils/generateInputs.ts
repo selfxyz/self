@@ -221,11 +221,12 @@ export function generateCircuitInputsProve(
     );
   }
 
-  // const paddingFunction =
-  //   hashFunction == 'sha1' || hashFunction == 'sha256' ? shaPad : sha384_512Pad;
-
   const dg1PaddingFunction =
-    MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction] <= 256 ? shaPad : sha384_512Pad;
+    passportMetadata.dg1HashFunction === 'sha1' ||
+    passportMetadata.dg1HashFunction === 'sha224' ||
+    passportMetadata.dg1HashFunction === 'sha256'
+      ? shaPad
+      : sha384_512Pad;
 
   const [eContentPadded, eContentLen] = dg1PaddingFunction(
     new Uint8Array(eContent),
@@ -233,7 +234,11 @@ export function generateCircuitInputsProve(
   );
 
   const eContentPaddingFunction =
-    MAX_PADDED_ECONTENT_LEN[passportMetadata.eContentHashFunction] <= 256 ? shaPad : sha384_512Pad;
+    passportMetadata.eContentHashFunction === 'sha1' ||
+    passportMetadata.eContentHashFunction === 'sha224' ||
+    passportMetadata.eContentHashFunction === 'sha256'
+      ? shaPad
+      : sha384_512Pad;
   const [signedAttrPadded, signedAttrPaddedLen] = eContentPaddingFunction(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]

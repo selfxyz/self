@@ -40,19 +40,21 @@ export const DEFAULT_MAJORITY = '18';
 //   rsa_sha256_65537_3072: 384,
 //   rsa_sha256_3_2048: 384,
 // };
-export const hashAlgos = ['sha1', 'sha256', 'sha384', 'sha512'] as const;
+export const hashAlgos = ['sha1', 'sha224', 'sha256', 'sha384', 'sha512'] as const;
 export const MAX_PADDED_ECONTENT_LEN: Record<(typeof hashAlgos)[number], number> = {
   sha1: 320,
+  sha224: 384,
   sha256: 448,
-  sha384: 576,
-  sha512: 704,
+  sha384: 640,
+  sha512: 768,
 };
 
-export const MAX_PADDED_SIGNED_ATTR_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
+export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], number> = {
   sha1: 128,
+  sha224: 128,
   sha256: 128,
-  sha384: 128,
-  sha512: 192,
+  sha384: 256,
+  sha512: 256,
 };
 
 export const MAX_CERT_BYTES: Partial<Record<keyof typeof SignatureAlgorithmIndex, number>> = {
@@ -104,6 +106,7 @@ export enum SignatureAlgorithmIndex {
   ecdsa_sha1_brainpoolP224r1_224 = 27,
   ecdsa_sha256_brainpoolP224r1_224 = 28,
   ecdsa_sha512_brainpoolP512r1_512 = 29,
+  ecdsa_sha224_brainpoolP224r1_224 = 30,
 }
 
 export const attributeToPosition = {

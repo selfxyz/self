@@ -2,14 +2,14 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
-include "../../sha2/sha384/sha384HashChunks.circom";
+include "../../sha2/sha224/sha224HashChunks.circom";
 
-template Sha384Bytes(maxByteLength) {
+template Sha224Bytes(maxByteLength) {
     signal input paddedIn[maxByteLength];
     signal input paddedInLength;
-    signal output out[384];
+    signal output out[224];
 
-    component sha = Sha384HashChunks((maxByteLength * 8) \ 1024);
+    component sha = Sha224HashChunks((maxByteLength * 8) \ 512);
     sha.paddedInLength <== paddedInLength * 8;
 
     component bytes[maxByteLength];
@@ -21,7 +21,7 @@ template Sha384Bytes(maxByteLength) {
         }
     }
 
-    for (var i = 0; i < 384; i++) {
+    for (var i = 0; i < 224; i++) {
         out[i] <== sha.out[i];
     }
 }

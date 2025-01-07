@@ -67,7 +67,6 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;
     }
     if (signatureAlgorithm == 9 || signatureAlgorithm == 23) {
         component ecdsa_verify = verifyECDSABits(n, k, [
@@ -98,7 +97,6 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;
     }
     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25) {
         component ecdsa_verify = verifyECDSABits(n, k, [
@@ -123,7 +121,6 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;
     }
     if (signatureAlgorithm == 22 || signatureAlgorithm == 26) { 
         component ecdsa_verify = verifyECDSABits(n, k, [
@@ -154,9 +151,8 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;
     }
-    if (signatureAlgorithm == 27 || signatureAlgorithm == 28) { 
+    if (signatureAlgorithm == 27 || signatureAlgorithm == 28 || signatureAlgorithm == 30) { 
         component ecdsa_verify = verifyECDSABits(n, k, [
             3402800963,
             2953063001,
@@ -188,7 +184,6 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;   
     }
     if (signatureAlgorithm == 29) { 
          component ecdsa_verify = verifyECDSABits(n, k, [
@@ -225,6 +220,5 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
         ecdsa_verify.pubkey <== pubkey_xy;
         ecdsa_verify.signature <== [signature_r, signature_s];
         ecdsa_verify.hashed <== hash;
-        ecdsa_verify.dummy <== 0;   
     }
 }

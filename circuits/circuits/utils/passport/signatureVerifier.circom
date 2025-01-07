@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "../circomlib/signature/rsapss/rsapss.circom";
-include "secp256r1Verifier.circom";
+include "ecdsaVerifier.circom";
 include "../circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 include "../circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
 include "@zk-email/circuits/utils/bytes.circom";
@@ -82,6 +82,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 27
         || signatureAlgorithm == 28
         || signatureAlgorithm == 29
+        || signatureAlgorithm == 30
     ) {
         EcdsaVerifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
     }

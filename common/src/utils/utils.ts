@@ -1,5 +1,5 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { sha256 } from 'js-sha256';
+import { sha224, sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
 import { sha384, sha512 } from 'js-sha512';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -248,6 +248,9 @@ export function hash(hashFunction: string, bytesArray: number[]): number[] {
     case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
+    case 'sha224':
+      hashResult = sha224(unsignedBytesArray);
+      break;
     case 'sha256':
       hashResult = sha256(unsignedBytesArray);
       break;
@@ -323,6 +326,8 @@ export function getHashLen(hashFunction: string) {
   switch (hashFunction) {
     case 'sha1':
       return 20;
+    case 'sha224':
+      return 28;
     case 'sha256':
       return 32;
     case 'sha384':

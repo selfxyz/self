@@ -49,7 +49,6 @@ include "./get.circom";
 // λ = (3 * x ** 2 + a) / (2 * y)
 // y3 = λ * (x - x3) - y
 template TangentCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     assert(CHUNK_SIZE == 64);
     
     signal input in1[2][CHUNK_NUMBER];
@@ -728,7 +727,6 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
         if (i != 0){
             for (var j = 0; j < WINDOW_SIZE; j++){
                 doublers[i + j - WINDOW_SIZE] = EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
-                doublers[i + j - WINDOW_SIZE].dummy <== dummy;
                 
                 if (j == 0){
                     for (var axis_idx = 0; axis_idx < 2; axis_idx++){

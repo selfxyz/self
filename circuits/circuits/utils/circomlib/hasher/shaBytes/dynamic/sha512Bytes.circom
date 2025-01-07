@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "../../../bitify/bitify.circom";
-include "../../../bitify/comparators.circom";
+include "circomlib/circuits/bitify.circom";
+include "circomlib/circuits/comparators.circom";
 include "../../sha2/sha512/sha512HashChunks.circom";
 
 template Sha512Bytes(maxByteLength) {
