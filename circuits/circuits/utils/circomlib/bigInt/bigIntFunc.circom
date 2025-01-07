@@ -332,7 +332,7 @@ function prod_dl(n, k, a, b) {
 // p is a prime
 // computes a^e mod p
 function mod_exp_dl(n, k, a, p, e) {
-    var eBits[500]; 
+    var eBits[512]; 
     for (var i = 0; i < k; i++) {
         for (var j = 0; j < n; j++) {
             eBits[j + n * i] = (e[i] >> j) & 1;

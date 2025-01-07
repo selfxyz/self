@@ -3,8 +3,11 @@ pragma circom  2.1.6;
 include "../bigInt/bigIntOverflow.circom";
 include "../bigInt/bigIntFunc.circom";
 include "./powers/secp256k1pows.circom";
+include "./powers/brainpoolP224r1pows.circom";
 include "./powers/brainpoolP256r1pows.circom";
 include "./powers/brainpoolP384r1pows.circom";
+include "./powers/brainpoolP512r1pows.circom";
+include "./powers/p224pows.circom";
 include "./powers/p256pows.circom";
 include "./powers/p384pows.circom";
 include "circomlib/circuits/bitify.circom";
@@ -46,7 +49,6 @@ include "./get.circom";
 // λ = (3 * x ** 2 + a) / (2 * y)
 // y3 = λ * (x - x3) - y
 template TangentCheck(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     assert(CHUNK_SIZE == 64);
     
     signal input in1[2][CHUNK_NUMBER];
@@ -202,13 +204,13 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
     
     for (var i = 2; i < PRECOMPUTE_NUMBER; i++){
         if (i % 2 == 0){
-            doublers[i \ 2 - 1] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+            doublers[i \ 2 - 1] = EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             doublers[i \ 2 - 1].in <== out[i \ 2];
             doublers[i \ 2 - 1].out ==> out[i];
             
         }
         else {
-            adders[i \ 2 - 1] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+            adders[i \ 2 - 1] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
             adders[i \ 2 - 1].in1 <== out[1];
             adders[i \ 2 - 1].in2 <== out[i - 1];
             adders[i \ 2 - 1].out ==> out[i];
@@ -712,7 +714,7 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
     res[0] <== precomputed[0];
     
     for (var i = 0; i < CHUNK_NUMBER * CHUNK_SIZE; i += WINDOW_SIZE){
-        adders[i \ WINDOW_SIZE] = EllipticCurveAddOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+        adders[i \ WINDOW_SIZE] = EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
         bits2Num[i \ WINDOW_SIZE] = Bits2Num(WINDOW_SIZE);
         for (var j = 0; j < WINDOW_SIZE; j++){
             bits2Num[i \ WINDOW_SIZE].in[j] <== scalarBits[i + (WINDOW_SIZE - 1) - j];
@@ -724,7 +726,7 @@ template EllipticCurvePipingerMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZ
         
         if (i != 0){
             for (var j = 0; j < WINDOW_SIZE; j++){
-                doublers[i + j - WINDOW_SIZE] = EllipticCurveDoubleOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
+                doublers[i + j - WINDOW_SIZE] = EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
                 
                 if (j == 0){
                     for (var axis_idx = 0; axis_idx < 2; axis_idx++){
@@ -1261,7 +1263,6 @@ template EllipticCurveAddNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
 // This chunking will be added late
 // Complexity is field \ 8 - 1 additions
 template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     signal input scalar[CHUNK_NUMBER];
     
     signal output out[2][CHUNK_NUMBER];
@@ -1278,6 +1279,19 @@ template EllipicCurveScalarGeneratorMultiplicationNonOptimised(CHUNK_SIZE, CHUNK
         if (P[0] == 4294967295 && P[1] == 18446744069414584320 && P[2] == 18446744073709551614 && P[3] == 18446744073709551615 && P[4] == 18446744073709551615 && P[5] == 18446744073709551615 ){
             powers = get_g_pow_stride8_table_p384(CHUNK_SIZE, CHUNK_NUMBER);
         }
+    }
+    if (CHUNK_NUMBER == 7) { 
+		if (P[0] == 2127085823 && P[1] == 2547681781 && P[2] == 2963212119 && P[3] == 1976686471 && P[4] == 706228261 && P[5] == 641951366 && P[6] == 3619763370 ){
+			powers = get_g_pow_stride8_table_brainpoolP224r1(CHUNK_SIZE, CHUNK_NUMBER);
+		}
+        if (P[0] == 1 && P[1] == 0 && P[2] == 0 && P[3] == 4294967295 && P[4] == 4294967295 && P[5] == 4294967295 && P[6] == 4294967295 ){
+            powers = get_g_pow_stride8_table_p224(CHUNK_SIZE, CHUNK_NUMBER);
+		}
+    }
+    if (CHUNK_NUMBER == 8) { 
+		if (P[0] == 2930260431521597683 && P[1] == 2918894611604883077 && P[2] == 12595900938455318758 && P[3] == 9029043254863489090 && P[4] == 15448363540090652785 && P[5] == 14641358191536493070 && P[6] == 4599554755319692295 && P[7] == 12312170373589877899 ){
+			powers = get_g_pow_stride8_table_brainpoolP512r1(CHUNK_SIZE, CHUNK_NUMBER);
+		}
     }
     
     component num2bits[CHUNK_NUMBER];
@@ -1612,13 +1626,6 @@ template EllipicCurveScalarPrecomputeMultiplicationNonOptimised(CHUNK_SIZE, CHUN
         }
     }
     out <== resultingPoints[parts - 2];
-    
-    for (var i = 0; i < 6; i++){
-        log(out[0][i]);
-    }
-    for (var i = 0; i < 6; i++){
-        log(out[1][i]);
-    }
 }
 
 //--------------------------------------------------------------------------------------------------------------------------------------------------------------------

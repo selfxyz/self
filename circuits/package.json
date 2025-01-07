@@ -6,7 +6,7 @@
   "scripts": {
     "test": "yarn ts-mocha --max-old-space-size=8192 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",
     "test-dsc": "yarn ts-mocha --max-old-space-size=8192 'tests/dsc.test.ts' --exit",
-    "test-prove": "yarn ts-mocha --max-old-space-size=8192 'tests/prove.test.ts' --exit",
+    "test-prove": "yarn ts-mocha --max-old-space-size=40960 'tests/prove.test.ts' --exit",
     "test-rsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
     "format": "prettier --write .",
@@ -35,6 +35,7 @@
     "circomlibjs": "^0.1.7",
     "crypto": "^1.0.1",
     "elliptic": "^6.5.5",
+    "hash.js": "^1.1.7",
     "js-sha256": "^0.10.1",
     "jsrsasign": "^11.1.0",
     "modpow": "^1.0.0",

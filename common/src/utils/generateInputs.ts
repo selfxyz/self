@@ -4,7 +4,7 @@ import {
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
 } from '../constants/constants';
-import { assert, shaPad } from './shaPad';
+import { assert, sha384_512Pad, shaPad } from './shaPad';
 import { PassportData, SignatureAlgorithm } from './types';
 import {
   bytesToBigDecimal,
@@ -221,13 +221,25 @@ export function generateCircuitInputsProve(
     );
   }
 
-  console.log('signatureAlgorithmFullName', signatureAlgorithmFullName);
-  const [eContentPadded, eContentLen] = shaPad(
+  const dg1PaddingFunction =
+    passportMetadata.dg1HashFunction === 'sha1' ||
+    passportMetadata.dg1HashFunction === 'sha224' ||
+    passportMetadata.dg1HashFunction === 'sha256'
+      ? shaPad
+      : sha384_512Pad;
+
+  const [eContentPadded, eContentLen] = dg1PaddingFunction(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
   );
 
-  const [signedAttrPadded, signedAttrPaddedLen] = shaPad(
+  const eContentPaddingFunction =
+    passportMetadata.eContentHashFunction === 'sha1' ||
+    passportMetadata.eContentHashFunction === 'sha224' ||
+    passportMetadata.eContentHashFunction === 'sha256'
+      ? shaPad
+      : sha384_512Pad;
+  const [signedAttrPadded, signedAttrPaddedLen] = eContentPaddingFunction(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );

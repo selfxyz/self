@@ -1,7 +1,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { sha256 } from 'js-sha256';
+import { sha224, sha256 } from 'js-sha256';
 import { sha1 } from 'js-sha1';
-import { sha384, sha512_256 } from 'js-sha512';
+import { sha384, sha512 } from 'js-sha512';
 import { SMT } from '@openpassport/zk-kit-smt';
 import forge from 'node-forge';
 import {
@@ -37,7 +37,19 @@ export function getNAndK(sigAlg: SignatureAlgorithm) {
   }
 
   if (sigAlg.startsWith('ecdsa_')) {
-    return { n: n_dsc_ecdsa, k: k_dsc_ecdsa }; // 256/32 = 8
+    if (sigAlg.endsWith('224')) {
+      return { n: 32, k: 7 };
+    } else if (sigAlg.endsWith('256')) {
+      return { n: n_dsc_ecdsa, k: 4 };
+    } else if (sigAlg.endsWith('384')) {
+      return { n: n_dsc_ecdsa, k: 6 };
+    } else if (sigAlg.endsWith('512')) {
+      return { n: n_dsc_ecdsa, k: 8 };
+    } else if (sigAlg.endsWith('521')) {
+      return { n: n_dsc_ecdsa, k: 16 };
+    } else {
+      throw new Error('invalid key size');
+    }
   }
 
   if (sigAlg.startsWith('rsapss_')) {
@@ -236,6 +248,9 @@ export function hash(hashFunction: string, bytesArray: number[]): number[] {
     case 'sha1':
       hashResult = sha1(unsignedBytesArray);
       break;
+    case 'sha224':
+      hashResult = sha224(unsignedBytesArray);
+      break;
     case 'sha256':
       hashResult = sha256(unsignedBytesArray);
       break;
@@ -243,7 +258,7 @@ export function hash(hashFunction: string, bytesArray: number[]): number[] {
       hashResult = sha384(unsignedBytesArray);
       break;
     case 'sha512':
-      hashResult = sha512_256(unsignedBytesArray);
+      hashResult = sha512(unsignedBytesArray);
       break;
     default:
       console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red
@@ -311,6 +326,8 @@ export function getHashLen(hashFunction: string) {
   switch (hashFunction) {
     case 'sha1':
       return 20;
+    case 'sha224':
+      return 28;
     case 'sha256':
       return 32;
     case 'sha384':
