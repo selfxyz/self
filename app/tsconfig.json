@@ -1,13 +1,7 @@
 {
   "extends": "@react-native/typescript-config/tsconfig.json",
   "compilerOptions": {
-    "lib": [
-      "dom",
-      "esnext"
-    ]
+    "lib": ["dom", "esnext"]
   },
-  "typeRoots": [
-    "./node_modules/@types",
-    "./src/types"
-  ]
+  "typeRoots": ["./node_modules/@types", "./src/types"]
 }

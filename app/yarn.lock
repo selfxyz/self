@@ -9868,9 +9868,9 @@ __metadata:
     prettier: "npm:2.8.8"
     react: "npm:^18.3.1"
     react-native: "npm:0.75.4"
-    react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#35100c40d8c5c9ae9a66a8d4af7b3130df692199"
+    react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35"
     react-native-dialog: "npm:^9.3.0"
-    react-native-dotenv: "npm:^3.4.9"
+    react-native-dotenv: "npm:^3.4.11"
     react-native-fs: "npm:^2.20.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keychain: "npm:^8.2.0"
@@ -10346,13 +10346,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-date-picker@https://github.com/norman-kapschefsky/react-native-date-picker#35100c40d8c5c9ae9a66a8d4af7b3130df692199":
+"react-native-date-picker@https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35":
   version: 4.3.7
-  resolution: "react-native-date-picker@https://github.com/norman-kapschefsky/react-native-date-picker.git#commit=35100c40d8c5c9ae9a66a8d4af7b3130df692199"
+  resolution: "react-native-date-picker@https://github.com/norman-kapschefsky/react-native-date-picker.git#commit=07b13884e392f386611248bab0f2f9b1093b2f35"
   peerDependencies:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
-  checksum: 10c0/c7280b8d2466e9a945d0e484a878a3741ba3abd2449d7c3a49fc80ca2063b712119bd7711641adec530bcbe70f8f51500add4b6973735a241e09d353ef2fd95c
+  checksum: 10c0/ebb3dfb9a111bf6082866999d31e10f952fcd12bcf2a81210ff9f44a4cb4d25e1b4caac5fdec512b367685e56a37e61de3e6648c2af45b93fcbaf704355dbaa6
   languageName: node
   linkType: hard
 
@@ -10365,7 +10365,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-dotenv@npm:^3.4.9":
+"react-native-dotenv@npm:^3.4.11":
   version: 3.4.11
   resolution: "react-native-dotenv@npm:3.4.11"
   dependencies:

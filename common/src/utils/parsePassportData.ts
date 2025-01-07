@@ -37,7 +37,7 @@ export interface PassportMetadata {
 function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
     for (const hashFunction of hashAlgos) {
         const hashValue = hash(hashFunction, eContent);
-        const hashOffset = findSubarrayIndex(signedAttr, hashValue);
+        const hashOffset = findSubarrayIndex(signedAttr, hashValue as number[]);
         if (hashOffset !== -1) {
             return { hashFunction, offset: hashOffset };
         }
@@ -53,11 +53,11 @@ function findDG1HashInEContent(
 
     for (const hashFunction of hashAlgos) {
         const hashValue = hash(hashFunction, formattedMrz);
-        const normalizedHash = hashValue.map((byte) => (byte > 127 ? byte - 256 : byte));
+        const normalizedHash = (hashValue as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
         const hashOffset = findSubarrayIndex(eContent, normalizedHash);
 
         if (hashOffset !== -1) {
-            return { hash: hashValue, hashFunction, offset: hashOffset };
+            return { hash: hashValue as number[], hashFunction, offset: hashOffset };
         }
     }
     return null;

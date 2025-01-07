@@ -3,12 +3,13 @@ import { parseCertificateSimple } from './certificate_parsing/parseCertificateSi
 import {
     PublicKeyDetailsECDSA,
 } from './certificate_parsing/dataStructure';
-import forge from 'node-forge';
+import forge, { md } from 'node-forge';
 import * as asn1js from 'asn1js';
 import { initElliptic } from './certificate_parsing/elliptic';
 import { getCurveForElliptic } from './certificate_parsing/curves';
 import { Certificate } from 'pkijs';
 import { hashAlgos, saltLengths } from '../constants/constants';
+import { hash } from './utils';
 
 
 export function brutforceSignatureAlgorithm(passportData: PassportData) {
@@ -84,9 +85,7 @@ function verifyECDSA(passportData: PassportData, hashAlgorithm: string) {
     const ec = new elliptic.ec(curveForElliptic);
 
     const key = ec.keyFromPublic(publicKeyBuffer);
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-    const msgHash = md.digest().toHex();
+    const msgHash = hash(hashAlgorithm, signedAttr, 'hex');
     const signature_crypto = Buffer.from(encryptedDigest).toString('hex');
 
     return key.verify(msgHash, signature_crypto);
@@ -96,13 +95,10 @@ function verifyRSA(passportData: PassportData, hashAlgorithm: string) {
     const { dsc, signedAttr, encryptedDigest } = passportData;
     const cert = forge.pki.certificateFromPem(dsc);
     const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
-
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
-
+    const msgHash = hash(hashAlgorithm, signedAttr, 'binary');
     const signature = Buffer.from(encryptedDigest).toString('binary');
     try {
-        return publicKey.verify(md.digest().bytes(), signature);
+        return publicKey.verify(msgHash as string, signature);
     } catch (error) {
         return false;
     }
@@ -112,8 +108,8 @@ function verifyRSAPSS(passportData: PassportData, hashAlgorithm: string, saltLen
     const { dsc, signedAttr, encryptedDigest } = passportData;
     const cert = forge.pki.certificateFromPem(dsc);
     const publicKey = cert.publicKey as forge.pki.rsa.PublicKey;
-    const md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(signedAttr)));
+    const msgHash = hash(hashAlgorithm, signedAttr, 'binary');
+
     const signature = Buffer.from(encryptedDigest).toString('binary');
     if (saltLength === 0) {
         throw new Error('Salt length is required for RSA-PSS');
@@ -124,7 +120,7 @@ function verifyRSAPSS(passportData: PassportData, hashAlgorithm: string, saltLen
             mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
             saltLength: saltLength,
         });
-        return publicKey.verify(md.digest().bytes(), signature, pss);
+        return publicKey.verify(msgHash as string, signature, pss);
     } catch (error) {
         return false;
     }

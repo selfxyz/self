@@ -40,12 +40,31 @@ import {
   mock_dsc_sha256_rsapss_65537_3072,
   mock_dsc_key_rsapss_65537_4096,
   mock_dsc_sha256_rsapss_65537_4096,
+  mock_dsc_key_sha384_brainpoolP384r1,
+  mock_dsc_sha384_brainpoolP384r1,
+  mock_dsc_key_sha256_secp384r1,
+  mock_dsc_sha256_secp384r1,
+  mock_dsc_key_sha384_brainpoolP256r1,
+  mock_dsc_sha384_brainpoolP256r1,
+  mock_dsc_key_sha512_brainpoolP256r1,
+  mock_dsc_sha512_brainpoolP256r1,
+  mock_dsc_key_sha512_brainpoolP384r1,
+  mock_dsc_sha512_brainpoolP384r1,
+  mock_dsc_key_sha1_brainpoolP224r1,
+  mock_dsc_sha1_brainpoolP224r1,
+  mock_dsc_key_sha256_brainpoolP224r1,
+  mock_dsc_sha256_brainpoolP224r1,
+  mock_dsc_key_sha512_brainpoolP512r1,
+  mock_dsc_sha512_brainpoolP512r1,
+  mock_dsc_key_sha224_braipoolP224r1,
+  mock_dsc_sha224_brainpoolP224r1,
 } from '../constants/mockCertificates';
 import { countryCodes } from '../constants/constants';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from './types';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from './certificate_parsing/dataStructure';
 import { getCurveForElliptic } from './certificate_parsing/curves';
+import { createHash } from 'crypto';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -159,9 +178,21 @@ export function genMockPassportData(
       privateKeyPem = mock_dsc_key_sha384_ecdsa;
       dsc = mock_dsc_sha384_ecdsa;
       break;
+    case 'ecdsa_sha256_secp384r1_384':
+      privateKeyPem = mock_dsc_key_sha256_secp384r1;
+      dsc = mock_dsc_sha256_secp384r1;
+      break;
     case 'ecdsa_sha256_brainpoolP256r1_256':
       privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
       dsc = mock_dsc_sha256_brainpoolP256r1;
+      break;
+    case 'ecdsa_sha384_brainpoolP256r1_256':
+      privateKeyPem = mock_dsc_key_sha384_brainpoolP256r1;
+      dsc = mock_dsc_sha384_brainpoolP256r1;
+      break;
+    case 'ecdsa_sha512_brainpoolP256r1_256':
+      privateKeyPem = mock_dsc_key_sha512_brainpoolP256r1;
+      dsc = mock_dsc_sha512_brainpoolP256r1;
       break;
     case 'rsa_sha256_3_2048':
       privateKeyPem = mock_dsc_key_sha256_rsa_3_2048;
@@ -179,17 +210,41 @@ export function genMockPassportData(
       privateKeyPem = mock_dsc_key_rsapss_65537_4096;
       dsc = mock_dsc_sha256_rsapss_65537_4096;
       break;
+    case 'ecdsa_sha384_brainpoolP384r1_384':
+      privateKeyPem = mock_dsc_key_sha384_brainpoolP384r1;
+      dsc = mock_dsc_sha384_brainpoolP384r1;
+      break;
+    case 'ecdsa_sha512_brainpoolP384r1_384':
+      privateKeyPem = mock_dsc_key_sha512_brainpoolP384r1;
+      dsc = mock_dsc_sha512_brainpoolP384r1;
+      break;
+    case 'ecdsa_sha1_brainpoolP224r1_224':
+      privateKeyPem = mock_dsc_key_sha1_brainpoolP224r1;
+      dsc = mock_dsc_sha1_brainpoolP224r1;
+      break;
+    case 'ecdsa_sha224_brainpoolP224r1_224':
+      privateKeyPem = mock_dsc_key_sha224_braipoolP224r1;
+      dsc = mock_dsc_sha224_brainpoolP224r1;
+      break;
+    case 'ecdsa_sha256_brainpoolP224r1_224':
+      privateKeyPem = mock_dsc_key_sha256_brainpoolP224r1;
+      dsc = mock_dsc_sha256_brainpoolP224r1;
+      break;
+    case 'ecdsa_sha512_brainpoolP512r1_512':
+      privateKeyPem = mock_dsc_key_sha512_brainpoolP512r1;
+      dsc = mock_dsc_sha512_brainpoolP512r1;
+      break;
   }
 
   // Generate MRZ hash first
   const mrzHash = hash(dgHashAlgo, formatMrz(mrz));
 
   // Generate random hashes for other DGs, passing mrzHash for DG1
-  const dataGroupHashes = generateDataGroupHashes(mrzHash, getHashLen(dgHashAlgo));
+  const dataGroupHashes = generateDataGroupHashes(mrzHash as number[], getHashLen(dgHashAlgo));
 
   const eContent = formatAndConcatenateDataHashes(dataGroupHashes, 63);
 
-  const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent));
+  const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent) as number[]);
   const hashAlgo = signatureType.split('_')[1];
   const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
@@ -236,21 +291,15 @@ function sign(
     );
     const asn1Data = asn1.fromBER(privateKeyDer);
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
-    // console.log('sig deets');
-    // console.log('pk', privateKeyBuffer);
-    // console.log('hashFUnction', hashAlgorithm);
-    // console.log('message', Buffer.from(eContent).toString('hex'));
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
-    let md = forge.md[hashAlgorithm].create();
-    md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    // let md = forge.md[hashAlgorithm].create();
+    // md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
+    const hasher = createHash(hashAlgorithm);
+    const msgHash = hasher.update(new Uint8Array(eContent)).digest('hex');
 
-    // console.log('message to sign', md.digest().toHex());
-    const signature = keyPair.sign(md.digest().toHex(), 'hex');
-    // console.log(Buffer.from(signature.toDER(), 'hex').toString('hex'));
+    const signature = keyPair.sign(msgHash, 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
-
-    // console.log('sig', JSON.stringify(signatureBytes));
 
     return signatureBytes;
   } else {

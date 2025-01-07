@@ -6,9 +6,9 @@ import * as asn1js from "asn1js";
 import * as forge from "node-forge";
 import { getCurveForElliptic } from "./certificate_parsing/curves";
 import { Certificate } from "pkijs";
+import { hash } from "./utils";
 
 export function brutforceSignatureAlgorithmDsc(dsc: CertificateData, csca: CertificateData) {
-    console.error("Brute forcing signature algorithm for DSC:", csca.signatureAlgorithm);
     if (csca.signatureAlgorithm === 'ecdsa') {
         const hashAlgorithm = brutforceHashAlgorithmDsc(dsc, csca, 'ecdsa');
         return {
@@ -157,9 +157,8 @@ export function getTBSHash(
     const cert = new Certificate({ schema: asn1Data_cert.result });
     const tbsAsn1 = cert.encodeTBS();
     const tbsDer = tbsAsn1.toBER(false);
-    const tbsBytes = Buffer.from(tbsDer).toString('binary');
-    const md = forge.md[hashFunction].create();
-    md.update(tbsBytes);
-    const tbsCertificateHash = md.digest();
-    return format === 'hex' ? tbsCertificateHash.toHex() : tbsCertificateHash.data;
+    const tbsBytes = Buffer.from(tbsDer);
+    const tbsBytesArray = Array.from(tbsBytes);
+    const msgHash = hash(hashFunction, tbsBytesArray, format === 'hex' ? 'hex' : 'binary');
+    return msgHash as string;
 }

@@ -1,8 +1,9 @@
-import { NativeModules, Platform } from 'react-native';
-import { formatDateToYYMMDD, extractMRZInfo } from './utils';
 import * as amplitude from '@amplitude/analytics-react-native';
-import useUserStore from '../stores/userStore';
+import { NativeModules, Platform } from 'react-native';
+
 import useNavigationStore from '../stores/navigationStore';
+import useUserStore from '../stores/userStore';
+import { extractMRZInfo, formatDateToYYMMDD } from './utils';
 
 export const startCameraScan = async () => {
   const { toast, setSelectedTab } = useNavigationStore.getState();
@@ -10,22 +11,24 @@ export const startCameraScan = async () => {
   if (Platform.OS === 'ios') {
     try {
       const result = await NativeModules.MRZScannerModule.startScanning();
-      console.log("Scan result:", result);
-      console.log(`Document Number: ${result.documentNumber}, Expiry Date: ${result.expiryDate}, Birth Date: ${result.birthDate}`);
+      console.log('Scan result:', result);
+      console.log(
+        `Document Number: ${result.documentNumber}, Expiry Date: ${result.expiryDate}, Birth Date: ${result.birthDate}`,
+      );
 
       useUserStore.setState({
         passportNumber: result.documentNumber,
         dateOfBirth: formatDateToYYMMDD(result.birthDate),
         dateOfExpiry: formatDateToYYMMDD(result.expiryDate),
-      })
+      });
 
-      setSelectedTab("nfc");
-      toast.show("✔︎", {
+      setSelectedTab('nfc');
+      toast.show('✔︎', {
         message: 'Scan successful',
         customData: {
-          type: "success",
+          type: 'success',
         },
-      })
+      });
     } catch (e) {
       console.error(e);
       amplitude.track('camera_scan_error', { error: e });
@@ -34,21 +37,22 @@ export const startCameraScan = async () => {
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
         try {
-          const { documentNumber, birthDate, expiryDate } = extractMRZInfo(mrzInfo);
+          const { documentNumber, birthDate, expiryDate } =
+            extractMRZInfo(mrzInfo);
 
           useUserStore.setState({
             passportNumber: documentNumber,
             dateOfBirth: birthDate,
             dateOfExpiry: expiryDate,
-          })
+          });
 
-          setSelectedTab("nfc");
-          toast.show("✔︎", {
+          setSelectedTab('nfc');
+          toast.show('✔︎', {
             message: 'Scan successful',
             customData: {
-              type: "success",
+              type: 'success',
             },
-          })
+          });
         } catch (error: any) {
           console.error('Invalid MRZ format:', error.message);
           amplitude.track('invalid_mrz_format', { error: error.message });
