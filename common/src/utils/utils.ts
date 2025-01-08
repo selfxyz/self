@@ -240,7 +240,7 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(hashFunction: string, bytesArray: number[]): number[] {
+export function hash(hashFunction: string, bytesArray: number[], format: string = 'bytes'): string | number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
@@ -264,7 +264,16 @@ export function hash(hashFunction: string, bytesArray: number[]): number[] {
       console.log('\x1b[31m%s\x1b[0m', `${hashFunction} not found in hash`); // Log in red
       hashResult = sha256(unsignedBytesArray); // Default to sha256
   }
-  return hexToSignedBytes(hashResult);
+  if (format === 'hex') {
+    return hashResult;
+  }
+  if (format === 'bytes') {
+    return hexToSignedBytes(hashResult);
+  }
+  if (format === 'binary') {
+    return forge.util.binary.raw.encode(new Uint8Array(hexToSignedBytes(hashResult)));
+  }
+  throw new Error(`Invalid format: ${format}`);
 }
 
 export function hexToSignedBytes(hexString: string): number[] {
@@ -508,9 +517,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-      Array.from(str)
-        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-        .join('')
+    Array.from(str)
+      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+      .join('')
   );
 }
 

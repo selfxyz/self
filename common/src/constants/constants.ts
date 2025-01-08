@@ -40,8 +40,10 @@ export const DEFAULT_MAJORITY = '18';
 //   rsa_sha256_65537_3072: 384,
 //   rsa_sha256_3_2048: 384,
 // };
-export const hashAlgos = ['sha1', 'sha224', 'sha256', 'sha384', 'sha512'] as const;
-export const MAX_PADDED_ECONTENT_LEN: Record<(typeof hashAlgos)[number], number> = {
+export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
+export const saltLengths = [64, 48, 32];
+
+export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 320,
   sha224: 384,
   sha256: 448,

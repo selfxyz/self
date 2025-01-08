@@ -8,7 +8,7 @@ import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { checkInputs } from '../utils/utils';
-import { parsePassportData } from './parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 export const scan = async (
   setModalProofStep: (modalProofStep: number) => void,
