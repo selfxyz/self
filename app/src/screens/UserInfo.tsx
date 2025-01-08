@@ -89,8 +89,14 @@ const UserInfo: React.FC = () => {
         <Separator borderColor={separatorColor} />
 
         <InfoRow
-          label="Signature Algorithm Details"
+          label="Curve or Exponent"
           value={passportMetaData?.curveOrExponent || 'None'}
+        />
+        <Separator borderColor={separatorColor} />
+
+        <InfoRow
+          label="Salt Length"
+          value={passportMetaData?.saltLength || 'None'}
         />
         <Separator borderColor={separatorColor} />
 
@@ -119,8 +125,13 @@ const UserInfo: React.FC = () => {
         <Separator borderColor={separatorColor} />
 
         <InfoRow
-          label="CSCA Signature Algorithm Details"
+          label="CSCA Curve or Exponent"
           value={passportMetaData?.cscaCurveOrExponent || 'None'}
+        />
+        <Separator borderColor={separatorColor} />
+        <InfoRow
+          label="CSCA Salt Length"
+          value={passportMetaData?.cscaSaltLength || 'None'}
         />
         <Separator borderColor={separatorColor} />
 

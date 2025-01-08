@@ -67,8 +67,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
         let mockPassportData;
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
+            'sha256',
+            'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
@@ -79,8 +81,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
           );
         } else {
           mockPassportData = genMockPassportData(
+            'sha256',
+            'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),

@@ -64,7 +64,6 @@ import { parseCertificateSimple } from './certificate_parsing/parseCertificateSi
 import { SignatureAlgorithm } from './types';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from './certificate_parsing/dataStructure';
 import { getCurveForElliptic } from './certificate_parsing/curves';
-import { createHash } from 'crypto';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -293,10 +292,7 @@ function sign(
     const privateKeyBuffer = (asn1Data.result.valueBlock as any).value[1].valueBlock.valueHexView;
 
     const keyPair = ec.keyFromPrivate(privateKeyBuffer);
-    // let md = forge.md[hashAlgorithm].create();
-    // md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
-    const hasher = createHash(hashAlgorithm);
-    const msgHash = hasher.update(new Uint8Array(eContent)).digest('hex');
+    const msgHash = hash(hashAlgorithm, eContent, 'hex');
 
     const signature = keyPair.sign(msgHash, 'hex');
     const signatureBytes = Array.from(Buffer.from(signature.toDER(), 'hex'));
