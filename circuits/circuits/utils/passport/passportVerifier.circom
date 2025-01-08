@@ -81,5 +81,17 @@ template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, 
     signal signedAttrSha[SIGNED_ATTR_HASH_ALGO] <== ShaBytesDynamic(SIGNED_ATTR_HASH_ALGO, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
 
     SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
+
+    signal output signedAttrShaBytes[SIGNED_ATTR_HASH_ALGO_BYTES];
+    component signedAttrShaBytesComp[SIGNED_ATTR_HASH_ALGO_BYTES];
+    
+    for (var i = 0; i < SIGNED_ATTR_HASH_ALGO_BYTES; i++) {
+        signedAttrShaBytesComp[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            signedAttrShaBytesComp[i].in[7 - j] <== signedAttrSha[i * 8 + j];
+        }
+        signedAttrShaBytes[i] <== signedAttrShaBytesComp[i].out;
+    }
+
 }
 
