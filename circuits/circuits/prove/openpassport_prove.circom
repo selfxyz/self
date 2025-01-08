@@ -58,7 +58,7 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     isWrongSelectorMode === 0;
 
     // verify passport signature
-    PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+    signal signedAttrShaBytes[HASH_LEN_BYTES] <== PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
     // verify passport is not expired
     component isValid = IsValid();
     isValid.currDate <== current_date;
@@ -67,13 +67,8 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     }
 
     // nulifier
-    component passportDataHashed = CustomHasher(93 + MAX_SIGNED_ATTR_PADDED_LEN);
-    for (var i = 0; i < 93; i++) { 
-        passportDataHashed.in[i] <== dg1[i];
-    }
-    for (var i = 0; i < MAX_SIGNED_ATTR_PADDED_LEN; i++) { 
-        passportDataHashed.in[93 + i] <== signed_attr[i];
-    }
+    component passportDataHashed = CustomHasher(HASH_LEN_BYTES);
+    passportDataHashed.in <== signedAttrShaBytes;
     component poseidon_hasher = PoseidonHash(2);
     poseidon_hasher.in[0] <== passportDataHashed.out;
     poseidon_hasher.in[1] <== scope;

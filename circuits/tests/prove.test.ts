@@ -1,5 +1,5 @@
 import { describe } from 'mocha';
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsProve } from '../../common/src/utils/generateInputs';
@@ -10,6 +10,8 @@ import { poseidon2 } from 'poseidon-lite';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../common/src/utils/circuitsName';
+import { customHasher } from '../../common/src/utils/pubkeyTree';
+import { hash } from '../../common/src/utils/utils';
 
 const sigAlgs = [
   {
@@ -19,6 +21,7 @@ const sigAlgs = [
     hashFunction: 'sha256',
     domainParameter: '3',
     keyLength: '3072',
+    checkNullifier: true,
   },
   {
     dgHashAlgo: 'sha256',
@@ -62,6 +65,7 @@ const fullSigAlgs = [
     hashFunction: 'sha1',
     domainParameter: '65537',
     keyLength: '2048',
+    checkNullifier: true,
   },
   {
     dgHashAlgo: 'sha256',
@@ -229,7 +233,15 @@ const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs
 // const testSuite = fullSigAlgs;
 
 testSuite.forEach(
-  ({ dgHashAlgo, eContentHashAlgo, sigAlg, hashFunction, domainParameter, keyLength }) => {
+  ({
+    dgHashAlgo,
+    eContentHashAlgo,
+    sigAlg,
+    hashFunction,
+    domainParameter,
+    keyLength,
+    checkNullifier,
+  }) => {
     describe(`Prove - ${dgHashAlgo.toUpperCase()} ${eContentHashAlgo.toUpperCase()} ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter} ${keyLength}`, function () {
       this.timeout(0);
       let circuit: any;
@@ -293,13 +305,22 @@ testSuite.forEach(
       it('should calculate the witness with correct inputs', async function () {
         const w = await circuit.calculateWitness(inputs);
         await circuit.checkConstraints(w);
-        // circuits.getOutput takes way too long for ecdsa
-        if (true) {
-          console.log('skipping printing outputs to console for ecdsa');
+        if (!checkNullifier) {
           return;
         }
 
+        const passportDataHash = customHasher(
+          hash(
+            hashFunction,
+            inputs.signed_attr.slice(0, inputs.signed_attr.lastIndexOf('128')).map((x) => +x)
+          ).map((x) => (x & 0xff).toString())
+        );
+
+        const expectedNullifier = poseidon2([passportDataHash, inputs.scope[0]]).toString();
+
         const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
+        assert(expectedNullifier == nullifier);
+
         console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
         const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
         console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
