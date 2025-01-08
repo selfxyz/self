@@ -67,9 +67,15 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     }
 
     // nulifier
-    signal signatureHashed <== CustomHasher(kScaled)(signature);
+    component passportDataHashed = CustomHasher(93 + MAX_SIGNED_ATTR_PADDED_LEN);
+    for (var i = 0; i < 93; i++) { 
+        passportDataHashed.in[i] <== dg1[i];
+    }
+    for (var i = 0; i < MAX_SIGNED_ATTR_PADDED_LEN; i++) { 
+        passportDataHashed.in[93 + i] <== signed_attr[i];
+    }
     component poseidon_hasher = PoseidonHash(2);
-    poseidon_hasher.in[0] <== signatureHashed;
+    poseidon_hasher.in[0] <== passportDataHashed.out;
     poseidon_hasher.in[1] <== scope;
     signal output nullifier <== poseidon_hasher.out;
 
