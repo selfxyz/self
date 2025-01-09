@@ -1,5 +1,3 @@
 {
-  "plugins": [
-    ["module:react-native-dotenv"]
-  ]
+  "plugins": [["module:react-native-dotenv"]]
 }

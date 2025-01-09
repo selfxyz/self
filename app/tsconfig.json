@@ -4,10 +4,10 @@
     "lib": [
       "dom",
       "esnext"
+    ],
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
     ]
-  },
-  "typeRoots": [
-    "./node_modules/@types",
-    "./src/types"
-  ]
+  }
 }

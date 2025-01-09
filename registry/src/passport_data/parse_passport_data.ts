@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { PassportData } from '../../../common/src/utils/types';
-import { parsePassportData } from '../../../app/src/utils/parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 function parsePassportFile(filePath: string) {
     try {

@@ -1,34 +1,46 @@
 import React from 'react';
-import { Text, YStack, Image } from 'tamagui';
-import { XStack } from 'tamagui';
-import CustomButton from '../components/CustomButton';
+
 import { QrCode } from '@tamagui/lucide-icons';
-import { textBlack } from '../utils/colors';
-import useUserStore from '../stores/userStore';
-import { scanQRCode } from '../utils/qrCode';
+import { Image, Text, XStack, YStack } from 'tamagui';
+
+import CustomButton from '../components/CustomButton';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';
+import useUserStore from '../stores/userStore';
+import { textBlack } from '../utils/colors';
+import { scanQRCode } from '../utils/qrCode';
 
 interface AppScreenProps {
   setSheetAppListOpen: (value: boolean) => void;
   setSheetRegisterIsOpen: (value: boolean) => void;
 }
 
-const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegisterIsOpen }) => {
-  const {
-    registered,
-  } = useUserStore();
-
-
+const AppScreen: React.FC<AppScreenProps> = ({ setSheetRegisterIsOpen }) => {
+  const { registered } = useUserStore();
 
   return (
-    <YStack f={1} >
+    <YStack f={1}>
       <XStack f={1} minHeight="$1" />
 
-      <Image alignSelf='center' src={OPENPASSPORT_LOGO} width={400} height={150} />
-      <Text mt="$2.5" textAlign='center' fontSize="$9" fontWeight='bold' color={textBlack}>OpenPassport</Text>
+      <Image
+        alignSelf="center"
+        src={OPENPASSPORT_LOGO}
+        width={400}
+        height={150}
+      />
+      <Text
+        mt="$2.5"
+        textAlign="center"
+        fontSize="$9"
+        fontWeight="bold"
+        color={textBlack}
+      >
+        OpenPassport
+      </Text>
 
       <XStack f={1} minHeight="$1" />
-      <Text textAlign='center' mb="$2" fontSize="$3" color={textBlack}>To use OpenPassport, scan the QR code displayed by an app.</Text>
+      <Text textAlign="center" mb="$2" fontSize="$3" color={textBlack}>
+        To use OpenPassport, scan the QR code displayed by an app.
+      </Text>
       <YStack gap="$2.5">
         <CustomButton
           text="Scan QR Code"
@@ -44,6 +56,6 @@ const AppScreen: React.FC<AppScreenProps> = ({ setSheetAppListOpen, setSheetRegi
       </YStack>
     </YStack>
   );
-}
+};
 
 export default AppScreen;
