@@ -3,30 +3,34 @@ pragma circom 2.0.0;
 include "../sha2Common.circom";
 include "sha512InitialValue.circom";
 include "sha512Schedule.circom";
+include "@zk-email/circuits/utils/array.circom";
 include "sha512Rounds.circom";
 
-template Sha512HashChunks(BLOCK_NUM) {
-    
-    signal input in[BLOCK_NUM * 1024];
+template Sha512HashChunks(MAX_BLOCKS) {
+    signal input in[MAX_BLOCKS * 1024];
+    signal input paddedInLength;
     signal input dummy;
     dummy * dummy === 0;
 
     signal output out[512];
+
+    signal inBlockIndex;
+
+    inBlockIndex <-- (paddedInLength >> 10); 
+    paddedInLength === inBlockIndex * 1024;
     
-    signal states[BLOCK_NUM + 1][8][64];
+    signal states[MAX_BLOCKS + 1][8][64];
     
     component iv = Sha512InitialValue();
     iv.out ==> states[0];
     
-    component sch[BLOCK_NUM];
-    component rds[BLOCK_NUM];
+    component sch[MAX_BLOCKS];
+    component rds[MAX_BLOCKS];
     
-    for (var m = 0; m < BLOCK_NUM; m++) {
+    for (var m = 0; m < MAX_BLOCKS; m++) {
         
         sch[m] = Sha2_384_512Schedule();
-        sch[m].dummy <== dummy;
         rds[m] = Sha2_384_512Rounds(80);
-        rds[m].dummy <== dummy;
         
         for (var k = 0; k < 16; k++) {
             for (var i = 0; i < 64; i++) {
@@ -40,9 +44,15 @@ template Sha512HashChunks(BLOCK_NUM) {
         rds[m].outHash ==> states[m + 1];
     }
     
+    component arraySelectors[512];
     for (var j = 0; j < 8; j++) {
         for (var i = 0; i < 64; i++){
-            out[j * 64 + i] <== states[BLOCK_NUM][j][63 - i];
+            arraySelectors[j * 64 + i] = ItemAtIndex(MAX_BLOCKS + 1);
+            for (var k = 0; k <= MAX_BLOCKS; k++) {
+                arraySelectors[j * 64 + i].in[k] <== states[k][j][63 - i];
+            }
+            arraySelectors[j * 64 + i].index <== inBlockIndex;
+            out[j * 64 + i] <== arraySelectors[j * 64 + i].out;
         }
     }
 }

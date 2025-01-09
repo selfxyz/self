@@ -1,7 +1,7 @@
 pragma circom 2.1.6;
 
-include "../bitify/comparators.circom";
-include "../bitify/bitify.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Some templates for num operations
@@ -56,14 +56,10 @@ template GetLastNBits(N){
 
 // Get sum of N elements with 1 constraint.
 // Use this instead of a + b + ... + c;
-// Circom will drop linear constaraint because of optimisation
-// This one adds dummy * dummy (0) to make it quadratic 
 template GetSumOfNElements(N){ 
     assert (N >= 2);
     
     signal input in[N];
-    signal input dummy;
-	dummy * dummy === 0;
     signal output out;
     
     signal sum[N - 1];
@@ -75,5 +71,5 @@ template GetSumOfNElements(N){
             sum[i] <== sum[i - 1] + in[i + 1];
         }
     }
-    out <== sum[N - 2] + dummy * dummy;
+    out <== sum[N - 2];
 }

@@ -9,8 +9,6 @@ include "../../bitify/operations.circom";
 template Sha1compression() {
     signal input hin[160];
     signal input inp[512];
-    signal input dummy;
-    dummy * dummy === 0;
     signal output out[160];
     
     signal a[81][32];
@@ -39,20 +37,18 @@ template Sha1compression() {
     
     component kT[80];
     for (i = 0; i <= 79; i++){
-        kT[i] = K(i);
+        kT[i] = K_sha1(i);
     }
     
     component tTmp[80];
     for (i = 0; i <= 79; i++){
         tTmp[i] = T(i);
-        tTmp[i].dummy <== dummy;
 
     }
     
     component fSum[5];
     for (i = 0; i < 5; i++){
-        fSum[i] = BinSum(2, 32);
-        fSum[i].dummy <== dummy;
+        fSum[i] = BinSum_sha1(2, 32);
     }
     
     for (var t = 0; t <= 15; t++) {

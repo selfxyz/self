@@ -1,0 +1,79 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            75:2e:4a:fd:8e:53:cb:40:bc:84:31:62:6e:39:af:05:e4:2b:e1:28
+        Signature Algorithm: rsassaPss        
+        Hash Algorithm: sha256
+        Mask Algorithm: mgf1 with sha256
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        Issuer: CN=Mock CSCA
+        Validity
+            Not Before: Jun 29 15:43:50 2024 GMT
+            Not After : Jun 28 15:43:50 2029 GMT
+        Subject: CN=Mock DSC
+        Subject Public Key Info:
+            Public Key Algorithm: rsassaPss
+                Public-Key: (2048 bit)
+                Modulus:
+                    00:f0:37:bd:56:86:bf:3a:38:8c:ab:2c:54:7c:db:
+                    fc:e7:1e:97:e2:b6:4d:19:f0:51:3b:56:31:e7:70:
+                    3e:3e:9c:c5:a8:80:77:1f:d0:a4:13:c3:57:b9:43:
+                    20:05:70:58:61:11:08:99:2b:28:5e:a6:cc:37:06:
+                    47:e7:3e:00:d6:e6:31:8f:6c:5b:e9:52:ad:24:8a:
+                    d1:5c:9c:44:a9:aa:89:28:8e:01:82:c6:7f:bd:0e:
+                    c2:af:a5:ab:11:2e:de:81:5e:5c:b2:c9:ec:2e:a8:
+                    5d:66:98:c8:35:04:07:c9:6a:b3:cb:3c:70:dc:5b:
+                    fe:e5:1c:a9:89:2e:19:ac:ae:fe:9b:b9:7f:62:f1:
+                    5c:cd:bf:89:e6:98:75:f5:0b:40:f9:64:58:08:64:
+                    6e:ce:20:11:15:56:35:f9:d4:15:12:b8:81:81:4b:
+                    11:66:93:e9:f0:07:21:a1:e7:9d:14:8e:26:de:f1:
+                    42:5f:78:16:9b:85:08:bc:c1:ed:a8:20:fe:3c:2e:
+                    3a:67:d5:41:2f:08:49:d6:b6:3b:cb:83:68:80:dd:
+                    03:6e:77:e8:77:fc:f6:f0:d9:5d:9d:04:6e:83:ea:
+                    26:80:d8:4f:70:46:8e:83:98:44:e6:ab:8b:2c:20:
+                    25:cd:41:dc:91:f1:0d:d5:f8:c3:91:4a:81:8d:37:
+                    3c:87
+                Exponent: 65537 (0x10001)
+                No PSS parameter restrictions
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                A1:4B:DD:6B:CA:C6:78:2A:75:65:FD:D3:D4:0B:B2:BE:1D:FC:90:D5
+            X509v3 Authority Key Identifier: 
+                3C:A5:DF:44:8B:1F:18:A9:1F:AA:66:4C:26:21:EB:88:15:01:7D:BB
+    Signature Algorithm: rsassaPss
+    Signature Value:        
+        Hash Algorithm: sha256
+        Mask Algorithm: mgf1 with sha256
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        0b:2c:a3:44:0a:1e:d5:df:21:cc:cb:4d:4b:ec:2f:4e:ed:28:
+        29:0d:93:6c:8d:5d:a5:82:8c:a8:47:53:c4:df:81:23:12:b1:
+        6e:58:9e:08:34:e4:c7:67:37:56:69:41:40:58:e9:7f:87:3a:
+        46:aa:46:d1:2a:a2:86:d3:da:e9:73:fd:65:48:98:8e:b1:e0:
+        4c:67:9b:79:0f:da:5d:2f:36:e2:f0:80:a2:c0:ad:e3:9b:04:
+        a9:34:88:57:9b:81:bc:1a:8a:0c:d7:70:2f:53:4f:f2:5c:62:
+        9e:e3:46:2e:bf:bb:9b:4c:19:d6:ca:0b:42:1e:77:b4:ff:c6:
+        ed:25:3c:ab:56:7f:64:88:6e:60:c0:57:f7:42:ec:0e:54:78:
+        87:c7:62:3c:0b:d8:26:11:64:6f:af:ff:af:1d:e7:80:b1:a6:
+        4a:24:1d:6e:d6:3d:12:19:0d:86:c3:f1:da:d3:a3:f1:e0:8a:
+        72:05:a1:d5:31:18:96:5c:17:09:c7:d6:f9:fb:3d:c0:b0:f4:
+        97:ce:de:45:45:b9:6f:3b:81:1f:d8:e8:ce:91:1b:77:61:c2:
+        9f:bc:4b:b0:b9:fc:b2:39:8e:e0:ff:10:73:3c:74:d1:7f:9e:
+        63:81:64:8c:c9:38:c3:e1:c3:c2:89:0f:5c:f4:d5:c8:15:f9:
+        65:7e:29:aa:c1:c7:47:3f:ba:b8:b4:92:63:fa:ba:1d:37:1d:
+        1c:50:9a:72:cd:55:11:32:38:8b:d5:06:d1:88:d8:e0:0d:c4:
+        3c:05:0d:be:0c:ff:18:89:fb:2e:36:bf:27:14:87:c2:f2:68:
+        3d:52:73:a2:9c:f2:66:c5:14:78:3d:46:a5:41:3a:c9:58:00:
+        df:5f:c4:d7:e7:62:27:94:bf:64:a1:c7:9b:29:7c:9d:ff:c7:
+        d6:1c:d4:97:da:3f:4b:3f:fb:a4:2a:d9:1b:85:9f:51:8f:22:
+        7e:08:11:78:72:e8:2d:64:85:17:c4:b8:26:a0:4a:ca:44:6e:
+        eb:b7:db:91:72:de:e7:65:60:9d:84:af:e8:65:71:bd:fd:4d:
+        ee:68:43:3b:9d:22:15:83:43:5c:87:74:4a:02:fe:69:d4:f2:
+        96:a2:2c:af:99:79:05:0c:3c:e2:f7:f6:9b:e3:ce:f3:15:f6:
+        3c:f1:53:3b:a9:14:b2:2b:eb:f5:de:5c:52:05:61:76:e0:df:
+        25:63:da:b3:87:77:14:a7:66:b9:2a:a7:51:48:7b:b4:65:99:
+        72:dc:d7:9c:0d:24:05:55:da:d6:3e:4e:b5:4e:70:fb:5a:a9:
+        f6:96:ed:bf:f9:1c:8b:63:87:16:7b:cb:5a:cd:67:ce:48:f9:
+        f0:57:23:a5:51:b4:f9:93

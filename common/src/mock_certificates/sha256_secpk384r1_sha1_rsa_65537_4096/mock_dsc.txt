@@ -1,0 +1,68 @@
+Certificate:
+    Data:
+        Version: 3 (0x2)
+        Serial Number:
+            0d:87:19:b1:c1:96:8a:e5:2b:ca:6b:5f:f0:c7:19:57:51:cf:b8:e9
+        Signature Algorithm: rsassaPss        
+        Hash Algorithm: sha1 (default)
+        Mask Algorithm: mgf1 with sha1 (default)
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        Issuer: CN=Mock CSCA
+        Validity
+            Not Before: Jan  5 12:12:10 2025 GMT
+            Not After : Jan  5 12:12:10 2026 GMT
+        Subject: CN=Mock DSC
+        Subject Public Key Info:
+            Public Key Algorithm: id-ecPublicKey
+                Public-Key: (384 bit)
+                pub:
+                    04:97:07:92:4b:5c:38:48:a6:e3:d0:89:f5:72:60:
+                    c9:b6:33:c0:0e:fa:f9:d0:0e:db:7e:21:f1:18:97:
+                    76:83:06:f9:f0:35:44:23:a2:69:64:f0:7d:93:4f:
+                    67:ee:16:55:92:fa:f7:ea:8a:7c:6a:11:11:6e:f4:
+                    0a:26:f2:08:49:49:ba:02:3d:d5:f0:2d:f8:3f:29:
+                    18:fc:4d:38:cc:e6:b2:de:5c:35:82:c3:5c:e3:3c:
+                    51:9f:3f:83:e7:eb:3a
+                ASN1 OID: secp384r1
+                NIST CURVE: P-384
+        X509v3 extensions:
+            X509v3 Subject Key Identifier: 
+                D4:85:A1:59:6D:74:A9:E6:F9:6A:16:1A:21:06:0A:A2:21:08:FD:79
+            X509v3 Authority Key Identifier: 
+                D8:69:81:B4:FD:E9:45:1F:D9:FD:A6:C4:31:9C:84:5C:3C:B2:A5:6A
+    Signature Algorithm: rsassaPss
+    Signature Value:        
+        Hash Algorithm: sha1 (default)
+        Mask Algorithm: mgf1 with sha1 (default)
+         Salt Length: 0x20
+        Trailer Field: 0x01 (default)
+        40:8c:eb:7c:97:36:a2:eb:39:4a:28:11:d0:e7:45:65:f4:b6:
+        7a:3c:f8:62:54:65:96:bf:04:59:b8:65:f3:93:0a:dc:37:70:
+        7e:5a:ab:9f:b9:5d:00:28:3c:5c:fb:1b:46:cc:c8:dd:ff:dd:
+        7b:f1:67:62:f8:97:e9:4c:93:60:63:cc:82:22:5a:fa:f7:b2:
+        c9:e5:65:f8:c8:63:04:ae:61:d5:72:d5:70:1c:ba:b8:81:72:
+        6b:bc:a4:dd:15:64:69:29:e8:85:f0:21:c8:95:34:18:fd:48:
+        df:56:ee:bb:1a:72:a9:aa:0b:1e:9e:e9:66:0c:8b:ce:40:f0:
+        3b:25:89:e4:a8:6e:95:eb:8a:11:4f:7d:e8:a9:d0:7a:45:13:
+        5b:5c:83:80:d8:15:75:8a:8a:de:04:b8:64:07:ba:16:b1:d6:
+        96:b2:62:c8:a0:5e:37:94:b1:e6:ae:9f:f3:e3:a9:f5:ee:d4:
+        b5:48:ad:bf:d3:e8:2b:dc:31:9e:e7:b6:d5:01:6e:bd:79:9c:
+        27:21:ae:45:16:c0:3d:0e:d2:5e:71:a8:8e:a2:b8:cb:65:4b:
+        74:a9:87:fb:4c:42:8f:28:6e:e5:6f:83:20:60:17:e3:d9:62:
+        d2:b6:16:e3:42:f0:b4:66:bb:e9:5f:e8:9d:d3:54:20:2b:c3:
+        99:fa:5e:ce:1b:56:af:40:15:df:a1:ab:ec:ec:0b:9f:b3:44:
+        75:5c:b5:02:93:bd:81:c3:65:66:53:ca:43:d4:06:80:47:a0:
+        aa:0a:23:0f:4f:89:b7:41:c1:7a:ee:54:38:24:61:53:7c:b8:
+        e8:bd:80:db:60:c4:04:fc:8b:68:04:95:1c:99:03:92:06:a4:
+        0e:8e:bf:ac:86:da:18:4c:b9:76:33:db:2d:f2:4c:21:a2:73:
+        d9:f6:92:98:13:2a:21:0d:fd:21:45:93:02:a0:35:81:60:c7:
+        1e:bc:13:f2:d0:4d:11:c4:4f:45:3c:8d:df:35:30:c9:39:8d:
+        f9:1d:da:ad:2b:32:6b:94:9d:1f:54:25:a3:0b:e8:a4:7e:b8:
+        38:a6:98:9e:6c:16:00:79:e7:86:e2:e1:c7:a5:b8:7c:1e:2b:
+        92:66:6b:50:1a:48:68:32:c2:1a:a6:8a:c7:a8:eb:e6:74:44:
+        8d:ff:42:0e:88:ab:df:58:69:46:5d:26:fe:c4:8b:fc:54:c3:
+        23:bf:00:b3:3f:0e:76:5d:02:98:05:3b:e7:29:10:e0:dd:b7:
+        95:37:b2:e9:00:fc:e1:25:7b:e1:74:3c:e0:cc:7d:ad:b5:e3:
+        49:83:12:8d:2b:e4:99:fe:01:98:d1:e5:5b:30:cc:3b:f6:e4:
+        4c:2c:cb:28:6b:3e:43:1e

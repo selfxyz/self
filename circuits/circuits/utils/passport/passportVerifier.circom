@@ -1,20 +1,24 @@
 pragma circom 2.1.9;
 
-include "../circomlib/utils/array.circom";
-include "../circomlib/utils/bytes.circom";
+include "@zk-email/circuits/utils/array.circom";
+include "@zk-email/circuits/utils/bytes.circom";
 include "../circomlib/hasher/shaBytes/shaBytesDynamic.circom";
 include "../circomlib/hasher/hash.circom";
 include "./signatureAlgorithm.circom";
 include "./signatureVerifier.circom";
 
-template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN) {
+template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED_ATTR_LEN) {
     assert(MAX_ECONTENT_LEN % 64 == 0);
 
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
-    var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
-    var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
+
+    var DG_HASH_ALGO_BYTES = DG_HASH_ALGO / 8;
+    var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
+    var SIGNED_ATTR_HASH_ALGO = getHashLength(signatureAlgorithm);
+    var SIGNED_ATTR_HASH_ALGO_BYTES = SIGNED_ATTR_HASH_ALGO / 8;
+
     var DG_PADDING_BYTES_LEN = 7;
 
     signal input dg1[93];
@@ -28,7 +32,6 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    signal input dummy;
 
     // compute hash of DG1
     signal dg1Bits[93 * 8];
@@ -41,11 +44,10 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
         }
     }
 
-    signal dg1Sha[HASH_LEN_BITS] <== ShaHashBits(93 * 8, HASH_LEN_BITS)(dg1Bits, 0);
-    
+    signal dg1Sha[DG_HASH_ALGO] <== ShaHashBits(93 * 8, DG_HASH_ALGO)(dg1Bits);
 
-    component dg1ShaBytes[HASH_LEN_BYTES];
-    for (var i = 0; i < HASH_LEN_BYTES; i++) {
+    component dg1ShaBytes[DG_HASH_ALGO_BYTES];
+    for (var i = 0; i < DG_HASH_ALGO_BYTES; i++) {
         dg1ShaBytes[i] = Bits2Num(8);
         for (var j = 0; j < 8; j++) {
             dg1ShaBytes[i].in[7 - j] <== dg1Sha[i * 8 + j];
@@ -53,17 +55,17 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     // assert DG1 and DG2 hashes match the ones in eContent input
-    signal dg1AndDg2Hash[2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * HASH_LEN_BYTES + DG_PADDING_BYTES_LEN)(eContent, dg1_hash_offset);
-    for(var i = 0; i < HASH_LEN_BYTES; i++) {
+    signal dg1AndDg2Hash[2 * DG_HASH_ALGO_BYTES + DG_PADDING_BYTES_LEN] <== VarShiftLeft(MAX_ECONTENT_LEN, 2 * DG_HASH_ALGO_BYTES + DG_PADDING_BYTES_LEN)(eContent, dg1_hash_offset);
+    for(var i = 0; i < DG_HASH_ALGO_BYTES; i++) {
         dg1AndDg2Hash[i] === dg1ShaBytes[i].out;
-        dg1AndDg2Hash[i + HASH_LEN_BYTES + DG_PADDING_BYTES_LEN] === dg2_hash[i];
+        dg1AndDg2Hash[i + DG_HASH_ALGO_BYTES + DG_PADDING_BYTES_LEN] === dg2_hash[i];
     }
 
     // compute hash of eContent
-    signal eContentSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS,MAX_ECONTENT_LEN)(eContent, eContent_padded_length);
+    signal eContentSha[ECONTENT_HASH_ALGO] <== ShaBytesDynamic(ECONTENT_HASH_ALGO,MAX_ECONTENT_LEN)(eContent, eContent_padded_length);
 
-    component eContentShaBytes[HASH_LEN_BYTES];
-    for (var i = 0; i < HASH_LEN_BYTES; i++) {
+    component eContentShaBytes[ECONTENT_HASH_ALGO_BYTES];
+    for (var i = 0; i < ECONTENT_HASH_ALGO_BYTES; i++) {
         eContentShaBytes[i] = Bits2Num(8);
         for (var j = 0; j < 8; j++) {
             eContentShaBytes[i].in[7 - j] <== eContentSha[i * 8 + j];
@@ -71,13 +73,25 @@ template PassportVerifier(signatureAlgorithm, n, k, MAX_ECONTENT_LEN, MAX_SIGNED
     }
 
     // assert eContent hash matches the one in signedAttr
-    signal eContentHashInSignedAttr[HASH_LEN_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, HASH_LEN_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
-    for(var i = 0; i < HASH_LEN_BYTES; i++) {
+    signal eContentHashInSignedAttr[ECONTENT_HASH_ALGO_BYTES] <== VarShiftLeft(MAX_SIGNED_ATTR_LEN, ECONTENT_HASH_ALGO_BYTES)(signed_attr, signed_attr_econtent_hash_offset);
+    for(var i = 0; i < ECONTENT_HASH_ALGO_BYTES; i++) {
         eContentHashInSignedAttr[i] === eContentShaBytes[i].out;
     }
 
-    signal signedAttrSha[HASH_LEN_BITS] <== ShaBytesDynamic(HASH_LEN_BITS, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
+    signal signedAttrSha[SIGNED_ATTR_HASH_ALGO] <== ShaBytesDynamic(SIGNED_ATTR_HASH_ALGO, MAX_SIGNED_ATTR_LEN)(signed_attr, signed_attr_padded_length);
 
-    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature, dummy);
+    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrSha, pubKey, signature);
+
+    signal output signedAttrShaBytes[SIGNED_ATTR_HASH_ALGO_BYTES];
+    component signedAttrShaBytesComp[SIGNED_ATTR_HASH_ALGO_BYTES];
+    
+    for (var i = 0; i < SIGNED_ATTR_HASH_ALGO_BYTES; i++) {
+        signedAttrShaBytesComp[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            signedAttrShaBytesComp[i].in[7 - j] <== signedAttrSha[i * 8 + j];
+        }
+        signedAttrShaBytes[i] <== signedAttrShaBytesComp[i].out;
+    }
+
 }
 

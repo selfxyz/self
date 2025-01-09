@@ -26,7 +26,14 @@ describe('ProveCountryIsNotInList', function () {
   });
 
   describe('ProveCountryIsNotInList', async () => {
-    const passportData = genMockPassportData('rsa_sha256_65537_2048', 'FRA', '000101', '300101');
+    const passportData = genMockPassportData(
+      'sha256',
+      'sha256',
+      'rsa_sha256_65537_2048',
+      'FRA',
+      '000101',
+      '300101'
+    );
     const dg1 = formatMrz(passportData.mrz);
 
     it('should succeed', async () => {

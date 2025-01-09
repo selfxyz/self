@@ -1,9 +1,9 @@
 pragma circom 2.1.9;
 
 include "../hasher/hash.circom";
-include "../bitify/comparators.circom";
-include "../bitify/bitify.circom";
-include "../utils/array.circom";
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
+include "@zk-email/circuits/utils/array.circom";
 include "binary-merkle-root.circom";
 include "getCommonLength.circom";
 
@@ -31,7 +31,7 @@ template SMTVerify(nLength) {
     path <== ct1.out; 
 
     // Closest_key to leaf
-    signal leaf <== PoseidonHash(3)([value, 1, 1], 0); // compute the leaf from the value
+    signal leaf <== PoseidonHash(3)([value, 1, 1]); // compute the leaf from the value
     signal isClosestZero <== IsEqual()([value,0]); // check if the inital value is 0, in that case the leaf will be 0 too, not Hash(0,1,1);
     signal leafOrZero <== leaf * (1 - isClosestZero);
 
@@ -40,7 +40,7 @@ template SMTVerify(nLength) {
     signal computedRootIsValid <== IsEqual()([computedRoot,root]);
 
     // check is leaf equals virtual leaf
-    signal virtualLeaf <== PoseidonHash(3)([virtualValue, 1,1], 0);
+    signal virtualLeaf <== PoseidonHash(3)([virtualValue, 1,1]);
     signal areLeafAndVirtualLeafEquals <== IsEqual()([virtualLeaf, leaf]);
 
     signal isInclusionOrNonInclusionValid <== IsEqual()([mode,areLeafAndVirtualLeafEquals]);

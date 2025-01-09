@@ -18,10 +18,9 @@ template OFAC_NAME() {
         for (var i = 0; i < 13; i++) {
             poseidon_hasher[j].in[i] <== dg1[10 + 13 * j + i];
         }
-        poseidon_hasher[j].dummy <== 0;
     }
 
-    signal name_hash <== PoseidonHash(3)([poseidon_hasher[0].out, poseidon_hasher[1].out, poseidon_hasher[2].out], 0);
+    signal name_hash <== PoseidonHash(3)([poseidon_hasher[0].out, poseidon_hasher[1].out, poseidon_hasher[2].out]);
     
     signal output ofacCheckResult <== SMTVerify(256)(name_hash, smt_leaf_value, smt_root, smt_siblings, 0);
 }

@@ -1,15 +1,14 @@
 pragma circom 2.1.9;
 
-include "../../../utils/circomlib/signature/rsa/verifyRsaPkcs1v1_5.circom";
+include "../../../utils/circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
 
 template VerifyRsaPkcs1v1_5Tester() {
-    signal input signature[32];
-    signal input modulus[32];
-    signal input message[32];
+    signal input signature[35];
+    signal input modulus[35];
+    signal input message[35];
 
-    signal input dummy;
 
-    VerifyRsaPkcs1v1_5(1, 64, 32, 65537, 256)(signature, modulus, message, dummy);
+    VerifyRsa65537Pkcs1v1_5(120, 35, 256)(signature, modulus, message);
 }
 
 component main = VerifyRsaPkcs1v1_5Tester();

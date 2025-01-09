@@ -1,5 +1,5 @@
 PODS:
-  - amplitude-react-native (1.4.10):
+  - amplitude-react-native (1.4.11):
     - React-Core
   - boost (1.84.0)
   - DoubleConversion (1.1.6)
@@ -1225,7 +1225,7 @@ PODS:
     - React-Core
   - react-native-netinfo (11.4.1):
     - React-Core
-  - react-native-nfc-manager (3.16.0):
+  - react-native-nfc-manager (3.16.1):
     - React-Core
   - React-nativeconfig (0.75.4)
   - React-NativeModulesApple (0.75.4):
@@ -1735,7 +1735,7 @@ CHECKOUT OPTIONS:
     :git: https://github.com/vinodiOS/SwiftQRScanner
 
 SPEC CHECKSUMS:
-  amplitude-react-native: 3fc003fed8453ac8131703869cc52ea626196a83
+  amplitude-react-native: 9d57e1bcc4175039e36283390aa3daeaea9441a5
   boost: 4cb898d0bf20404aab1850c656dcea009429d6c1
   DoubleConversion: 76ab83afb40bddeeee456813d9c04f67f78771b5
   FBLazyVector: 430e10366de01d1e3d57374500b1b150fe482e6d
@@ -1778,7 +1778,7 @@ SPEC CHECKSUMS:
   react-native-date-picker: 5637f417bb0c1981bc9d483324d5eb5929a1651c
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
-  react-native-nfc-manager: 1bcdf6f96c9065a8f4c8d9a0c6fb2db625205b2c
+  react-native-nfc-manager: 5213321cf6c18d879c8092c0bf56806b771ec5ac
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
   React-NativeModulesApple: 5df767d9a2197ac25f4d8dd2d4ae1af3624022e2
   React-perflogger: 59e1a3182dca2cee7b9f1f7aab204018d46d1914
@@ -1815,6 +1815,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: fff5f0fc97e17fb53d7fd9198944714a37fed0a6
+PODFILE CHECKSUM: cc6778e0dcd4c510b705f4dc458411547dc1d00c
 
-COCOAPODS: 1.15.2
+COCOAPODS: 1.16.2
