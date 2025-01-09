@@ -96,7 +96,12 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
 
     const dg1HashFunction = dg1HashInfo?.hashFunction || 'unknown';
     const dg1HashOffset = dg1HashInfo?.offset || 0;
-    const dgPaddingBytes = getDgPaddingBytes(passportData, dg1HashFunction);
+    let dgPaddingBytes = -1;
+    try {
+        dgPaddingBytes = getDgPaddingBytes(passportData, dg1HashFunction);
+    } catch (error) {
+        console.error('Error getting DG padding bytes:', error);
+    }
     const { hashFunction: eContentHashFunction, offset: eContentHashOffset } = findHashSizeOfEContent(
         passportData.eContent,
         passportData.signedAttr
