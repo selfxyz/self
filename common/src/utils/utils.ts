@@ -19,6 +19,16 @@ import {
 } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';
 import { SignatureAlgorithm } from './types';
+import { customHasher } from './pubkeyTree';
+
+export function getNullifier(signedAttr_padded: string[], hashFunction: string) {
+  return customHasher(
+    (hash(
+      hashFunction,
+      signedAttr_padded.slice(0, signedAttr_padded.lastIndexOf('128')).map((x) => +x)
+    ) as any).map((x) => (x & 0xff).toString())
+  );
+}
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
