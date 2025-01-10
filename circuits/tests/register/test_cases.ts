@@ -211,5 +211,5 @@ export const fullSigAlgs = [
         hashFunction: 'sha512',
         domainParameter: 'brainpoolP512r1',
         keyLength: '512',
-    },
+    }
 ];
