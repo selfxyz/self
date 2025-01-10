@@ -55,22 +55,22 @@ const sigAlgs = [
   //   domainParameter: '65537',
   //   keyLength: '4096',
   // },
-  {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    sigAlg: 'rsa',
-    hashFunction: 'sha256',
-    domainParameter: '3',
-    keyLength: '2048',
-  },
-  {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    sigAlg: 'rsa',
-    hashFunction: 'sha256',
-    domainParameter: '3',
-    keyLength: '4096',
-  },
+  // {
+  //   dgHashAlgo: 'sha256',
+  //   eContentHashAlgo: 'sha256',
+  //   sigAlg: 'rsa',
+  //   hashFunction: 'sha256',
+  //   domainParameter: '3',
+  //   keyLength: '2048',
+  // },
+  // {
+  //   dgHashAlgo: 'sha256',
+  //   eContentHashAlgo: 'sha256',
+  //   sigAlg: 'rsa',
+  //   hashFunction: 'sha256',
+  //   domainParameter: '3',
+  //   keyLength: '4096',
+  // },
   {
     dgHashAlgo: 'sha512',
     eContentHashAlgo: 'sha512',
@@ -96,14 +96,14 @@ const sigAlgs = [
   //   keyLength: '3072',
   //   checkNullifier: true,
   // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
   // {
   //   dgHashAlgo: 'sha1',
   //   eContentHashAlgo: 'sha256',
@@ -358,6 +358,7 @@ testSuite.forEach(
       this.timeout(0);
       let circuit: any;
 
+      console.log("nico", `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}`)
       const passportData = genMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
@@ -394,6 +395,7 @@ testSuite.forEach(
         user_identifier
       );
 
+      console.log("hello", getCircuitNameFromPassportData(passportData));
       before(async () => {
         circuit = await wasm_tester(
           path.join(
