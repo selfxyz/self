@@ -70,7 +70,7 @@ template Mgf1Sha384(SEED_LEN, MASK_LEN) { //in bytes
     component num2Bits[ITERATIONS];
 
     for (var i = 0; i < ITERATIONS; i++) {
-        sha384[i] = ShaHashChunks(1 , 384); //32 bits for counter
+        sha384[i] = ShaHashBits(416, 384); //32 bits for counter
         
         num2Bits[i] = Num2Bits(32);
     }
@@ -90,24 +90,9 @@ template Mgf1Sha384(SEED_LEN, MASK_LEN) { //in bytes
             concated[SEED_LEN_BITS + j] = num2Bits[i].out[31-j];
         }
 
-        //adding padding (len = 416 = 110100000)
-        for (var j = 417; j < 1015; j++) {
-            concated[j] = 0;
+        for (var k =0; k < 416; k++) {
+            sha384[i].in[k] <== concated[k];
         }
-
-        concated[416] = 1;
-        concated[1023] = 0;
-        concated[1022] = 0;
-        concated[1021] = 0;
-        concated[1020] = 0;
-        concated[1019] = 0;
-        concated[1018] = 1;
-        concated[1017] = 0;
-        concated[1016] = 1;
-        concated[1015] = 1;
-
-        //hashing value
-        sha384[i].in <== concated;
 
         for (var j = 0; j < HASH_LEN_BITS; j++) {
             hashed[i * HASH_LEN_BITS + j] <== sha384[i].out[j];

@@ -231,38 +231,18 @@ template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY
 
     if (HASH_TYPE == 384 && SALT_LEN == 48) {        
         //padding
-        //len = 64+48*16 = 832 = 1101000000
-        for (var i = 833; i < 1014; i++) {
-            mDash[i] <== 0;
-        }
+        //len = 64+(48*8)+384 = 832 = 1101000000
 
-        mDash[832] <== 1;
-        mDash[1023] <== 0;
-        mDash[1022] <== 0;
-        mDash[1021] <== 0;
-        mDash[1020] <== 0;
-        mDash[1019] <== 0;
-        mDash[1018] <== 0;
-        mDash[1017] <== 1;
-        mDash[1016] <== 0;
-        mDash[1015] <== 1;
-        mDash[1014] <== 1;
-
-        signal mDash384[1024];
-        for (var i = 0; i < 1024; i++){
-            mDash384[i] <== mDash[i];
+        component hDash384 = ShaHashBits(64 + SALT_LEN_BITS + HASH_LEN * 8, 384);
+        for (var i = 0; i < 832; i++) {
+            hDash384.in[i] <== mDash[i];
         }
-        
-        //hashing mDash
-        component hDash384 = ShaHashChunks(1, HASH_TYPE);
-        hDash384.in <== mDash384;
 
         hDash384.out === hash;
     }
     if (HASH_TYPE == 512 && SALT_LEN == 64) {
         // 64 + 512 + 512 = 1088
         component hDash512 = ShaHashBits(64 + SALT_LEN_BITS + HASH_LEN * 8, 512);
-        // hDash512.dummy <== dummy;
 
         for (var i = 0; i < 1088; i++) {
             hDash512.in[i] <== mDash[i];
