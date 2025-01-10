@@ -119,11 +119,11 @@ export const circuitToSelectorMode = {
 };
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-export const n_dsc = 64;
-export const n_dsc_3072 = 96;
+export const n_dsc = 120;
+export const n_dsc_3072 = 120;
 export const n_dsc_4096 = 120;
-export const k_dsc = 32;
-export const k_dsc_3072 = 32;  //48;
+export const k_dsc = 35;
+export const k_dsc_3072 = 35;  //48;
 export const k_dsc_4096 = 35;
 export const n_csca = 120;
 export const k_csca = 35;

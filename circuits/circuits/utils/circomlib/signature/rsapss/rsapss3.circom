@@ -18,7 +18,7 @@ include "../FpPowMod.circom";
 * Use this for CHUNK_NUMBER == 2**n, otherwise error will occur.
 */
 template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LENGTH) {
-    assert((HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32));
+    assert((HASH_TYPE == 512 && SALT_LEN == 64) || (HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32));
     
     signal input pubkey[CHUNK_NUMBER]; 
     signal input signature[CHUNK_NUMBER];
@@ -74,7 +74,7 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
     assert(EM_LEN >= HASH_LEN + SALT_LEN + 2);
     
     //should end with 0xBC (188 in decimal)
-    assert(eM[0] == 188); 
+    eM[0] === 188;
     
     var DB_MASK_LEN = EM_LEN - HASH_LEN - 1;
 
@@ -117,6 +117,17 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
             dbMask[i] <== MGF1_384.out[i];
         }
     }
+    if (HASH_TYPE == 512) {
+        component MGF1_512 = Mgf1Sha512(HASH_LEN, DB_MASK_LEN);
+
+        for (var i = 0; i < (HASH_TYPE); i++) {
+            MGF1_512.seed[i] <== hash[i];
+        }
+
+        for (var i = 0; i < DB_MASK_LEN * 8; i++) {
+            dbMask[i] <== MGF1_512.out[i];
+        }
+    }
 
     component xor = Xor2(DB_MASK_LEN * 8);
 
@@ -139,7 +150,7 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
         salt[SALT_LEN_BITS - 1 - i] <== db[(DB_MASK_LEN * 8) - 1 - i];
     }
     
-    signal mDash[1024];
+    signal mDash[2048];
     //adding 0s
     for (var i = 0; i < 64; i++) {
         mDash[i] <== 0;
@@ -173,10 +184,15 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
         mDash[1016] <== 0;
         mDash[1015] <== 0;
         mDash[1014] <== 1;
+
+        signal mDash256[1024];
+        for (var i = 0; i < 1024; i++){
+            mDash256[i] <== mDash[i];
+        }
         
         //hashing
         component hDash256 = ShaHashChunks(2, HASH_TYPE);
-        hDash256.in <== mDash;
+        hDash256.in <== mDash256;
 
         hDash256.out === hash;
     }
@@ -198,8 +214,13 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
         mDash[1015] <== 1;
         mDash[1014] <== 1;
 
+        signal mDash256[1024];
+        for (var i = 0; i < 1024; i++){
+            mDash256[i] <== mDash[i];
+        }
+
         component hDash256 = ShaHashChunks(2, HASH_TYPE);
-        hDash256.in <== mDash;
+        hDash256.in <== mDash256;
 
         hDash256.out === hash;
     }
@@ -222,12 +243,28 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
         mDash[1016] <== 0;
         mDash[1015] <== 1;
         mDash[1014] <== 1;
+
+        signal mDash384[1024];
+        for (var i = 0; i < 1024; i++){
+            mDash384[i] <== mDash[i];
+        }
         
         //hashing mDash
         component hDash384 = ShaHashChunks(1, HASH_TYPE);
-        hDash384.in <== mDash;
+        hDash384.in <== mDash384;
 
         hDash384.out === hash;
+    }
+    if (HASH_TYPE == 512 && SALT_LEN == 64) {
+        // 64 + 512 + 512 = 1088
+        component hDash512 = ShaHashBits(64 + SALT_LEN_BITS + HASH_LEN * 8, 512);
+        // hDash512.dummy <== dummy;
+
+        for (var i = 0; i < 1088; i++) {
+            hDash512.in[i] <== mDash[i];
+        }
+
+        hDash512.out === hash;
     }
 }
 
