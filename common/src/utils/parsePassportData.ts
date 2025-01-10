@@ -1,5 +1,5 @@
 import { PassportData } from '../../../common/src/utils/types';
-import { findSubarrayIndex, formatMrz, hash } from './utils';
+import { findSubarrayIndex, formatMrz, getHashLen, hash } from './utils';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
     CertificateData,
@@ -15,6 +15,7 @@ export interface PassportMetadata {
     dataGroups: string;
     dg1HashFunction: string;
     dg1HashOffset: number;
+    dgPaddingBytes: number;
     eContentSize: number;
     eContentHashFunction: string;
     eContentHashOffset: number;
@@ -62,6 +63,16 @@ function findDG1HashInEContent(
     }
     return null;
 }
+function getDgPaddingBytes(passportData: PassportData, dg1HashFunction: string): number {
+    const formattedMrz = formatMrz(passportData.mrz);
+    const hashValue = hash(dg1HashFunction, formattedMrz);
+    const normalizedHash = (hashValue as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
+    const dg1HashOffset = findSubarrayIndex(passportData.eContent, normalizedHash);
+    const dg2Hash = passportData.dg2Hash;
+    const normalizedDg2Hash = (dg2Hash as number[]).map((byte) => (byte > 127 ? byte - 256 : byte));
+    const dg2HashOffset = findSubarrayIndex(passportData.eContent, normalizedDg2Hash);
+    return dg2HashOffset - dg1HashOffset - getHashLen(dg1HashFunction);
+}
 
 export function getCountryCodeFromMrz(mrz: string): string {
     return mrz.substring(2, 5);
@@ -74,29 +85,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
     return (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 }
 
-function getSimplePublicKeyDetails(certData: CertificateData): string {
-    interface SimplePublicKeyDetails {
-        exponent?: string;
-        curve?: string;
-        hashAlgorithm?: string;
-        saltLength?: string;
-    }
-    const simplePublicKeyDetails: SimplePublicKeyDetails = {};
-    if (certData.signatureAlgorithm === 'rsapss' || certData.signatureAlgorithm === 'rsa') {
-        simplePublicKeyDetails.exponent = (certData.publicKeyDetails as PublicKeyDetailsRSA).exponent;
-        if (certData.signatureAlgorithm === 'rsapss') {
-            simplePublicKeyDetails.hashAlgorithm = (
-                certData.publicKeyDetails as PublicKeyDetailsRSAPSS
-            ).hashAlgorithm;
-            simplePublicKeyDetails.saltLength = (
-                certData.publicKeyDetails as PublicKeyDetailsRSAPSS
-            ).saltLength;
-        }
-    } else if (certData.signatureAlgorithm === 'ecdsa') {
-        simplePublicKeyDetails.curve = (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
-    }
-    return JSON.stringify(simplePublicKeyDetails);
-}
+
 
 
 
@@ -107,7 +96,12 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
 
     const dg1HashFunction = dg1HashInfo?.hashFunction || 'unknown';
     const dg1HashOffset = dg1HashInfo?.offset || 0;
-
+    let dgPaddingBytes = -1;
+    try {
+        dgPaddingBytes = getDgPaddingBytes(passportData, dg1HashFunction);
+    } catch (error) {
+        console.error('Error getting DG padding bytes:', error);
+    }
     const { hashFunction: eContentHashFunction, offset: eContentHashOffset } = findHashSizeOfEContent(
         passportData.eContent,
         passportData.signedAttr
@@ -138,6 +132,7 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
                 .join(',') || 'None',
         dg1HashFunction,
         dg1HashOffset,
+        dgPaddingBytes,
         eContentSize: passportData.eContent?.length || 0,
         eContentHashFunction,
         eContentHashOffset,
