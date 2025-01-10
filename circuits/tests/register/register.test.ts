@@ -41,11 +41,7 @@ testSuite.forEach(
 
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
-      const inputs = generateCircuitInputsRegister(
-        secret,
-        dsc_secret,
-        passportData,
-      );
+      const inputs = generateCircuitInputsRegister(secret, dsc_secret, passportData);
 
       before(async () => {
         circuit = await wasm_tester(
