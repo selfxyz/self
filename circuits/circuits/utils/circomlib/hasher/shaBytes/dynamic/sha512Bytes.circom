@@ -20,7 +20,6 @@ template Sha512Bytes(maxByteLength) {
             sha.in[i*8+j] <== bytes[i].out[7-j];
         }
     }
-    sha.dummy <== 0;
 
     for (var i = 0; i < 512; i++) {
         out[i] <== sha.out[i];
