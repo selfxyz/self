@@ -124,15 +124,14 @@ const handleQRCodeScan = (
       setSelectedApp(openPassportApp);
       const passportMetadata = parsePassportData(passportData);
 
-
       const circuitName =
         openPassportApp.mode === 'vc_and_disclose'
           ? 'vc_and_disclose'
           : getCircuitNameOld(
-            'prove' as Mode,
-            passportMetadata.signatureAlgorithm,
-            passportMetadata.signedAttrHashFunction,
-          );
+              'prove' as Mode,
+              passportMetadata.signatureAlgorithm,
+              passportMetadata.signedAttrHashFunction,
+            );
       downloadZkey(circuitName as any);
 
       setSelectedTab('prove');
