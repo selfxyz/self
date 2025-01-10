@@ -275,6 +275,14 @@ const fullSigAlgs = [
     domainParameter: 'secp256r1',
     keyLength: '256',
   },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha512',
+    domainParameter: 'brainpoolP512r1',
+    keyLength: '512',
+  },
 ];
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -314,6 +322,7 @@ testSuite.forEach(
 
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
+
       const inputs = generateCircuitInputsProve(
         selector_mode,
         secret,

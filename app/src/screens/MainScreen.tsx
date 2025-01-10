@@ -264,8 +264,8 @@ const MainScreen: React.FC = () => {
   useEffect(() => {
     setIsFormComplete(
       passportNumber?.length >= 3 &&
-      dateOfBirth?.length >= 6 &&
-      dateOfExpiry?.length >= 6,
+        dateOfBirth?.length >= 6 &&
+        dateOfExpiry?.length >= 6,
     );
   }, [passportNumber, dateOfBirth, dateOfExpiry]);
 
@@ -302,15 +302,15 @@ const MainScreen: React.FC = () => {
               onPress={decrementStep}
               opacity={
                 selectedTab !== 'start' &&
-                  selectedTab !== 'app' &&
-                  selectedTab !== 'splash'
+                selectedTab !== 'app' &&
+                selectedTab !== 'splash'
                   ? 1
                   : 0
               }
               pointerEvents={
                 selectedTab !== 'start' &&
-                  selectedTab !== 'app' &&
-                  selectedTab !== 'splash'
+                selectedTab !== 'app' &&
+                selectedTab !== 'splash'
                   ? 'auto'
                   : 'none'
               }
@@ -1017,7 +1017,7 @@ const MainScreen: React.FC = () => {
                         <Text fontSize="$4">
                           {
                             countryCodes[
-                            countryCode as keyof typeof countryCodes
+                              countryCode as keyof typeof countryCodes
                             ]
                           }{' '}
                           {flag(getCountryISO2(countryCode))}

@@ -53,6 +53,12 @@ const UserInfo: React.FC = () => {
         <Separator borderColor={separatorColor} />
 
         <InfoRow
+          label="DG Padding Bytes"
+          value={passportMetaData?.dgPaddingBytes || 'None'}
+        />
+        <Separator borderColor={separatorColor} />
+
+        <InfoRow
           label="eContent Size"
           value={passportMetaData?.eContentSize || 'None'}
         />

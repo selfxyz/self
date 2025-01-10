@@ -1,6 +1,6 @@
 pragma circom 2.1.6;
 
-function get_g_pow_stride8_table_p224(n, k) {
+function get_g_pow_stride8_table_secp224r1(n, k) {
     assert(n == 32 && k == 7);
     var powers[28][256][2][7];
 
