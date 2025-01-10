@@ -9,8 +9,6 @@ include "sha512Rounds.circom";
 template Sha512HashChunks(MAX_BLOCKS) {
     signal input in[MAX_BLOCKS * 1024];
     signal input paddedInLength;
-    signal input dummy;
-    dummy * dummy === 0;
 
     signal output out[512];
 
