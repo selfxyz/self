@@ -276,7 +276,7 @@ testSuite.forEach(
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
 
-      const inputs: ReturnType<typeof generateCircuitInputsProve> = generateCircuitInputsProve(
+      const inputs = generateCircuitInputsProve(
         selector_mode,
         secret,
         dsc_secret,
