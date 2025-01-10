@@ -298,6 +298,66 @@ template BigMultModP(CHUNK_SIZE, CHUNK_NUMBER){
     out <== bigMod.mod;
 }
 
+// Get in1 * in2 % modulus and in1 * in2 // modulus
+template BigMultModPDl(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS, CHUNK_NUMBER_MODULUS){
+    signal input in1[CHUNK_NUMBER_GREATER];
+    signal input in2[CHUNK_NUMBER_LESS];
+    signal input modulus[CHUNK_NUMBER_MODULUS];
+
+    var CHUNK_NUMBER_BASE = CHUNK_NUMBER_GREATER + CHUNK_NUMBER_LESS;
+    var CHUNK_NUMBER_DIV = CHUNK_NUMBER_BASE - CHUNK_NUMBER_MODULUS + 1;
+
+    signal output div[CHUNK_NUMBER_DIV];
+    signal output mod[CHUNK_NUMBER_MODULUS];
+    
+    component mult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS);
+    mult.in1 <== in1;
+    mult.in2 <== in2;
+
+    var reduced[200] = reduce_overflow_dl(CHUNK_SIZE, CHUNK_NUMBER_BASE - 1, CHUNK_NUMBER_BASE, mult.out);
+    var long_division[2][200] = long_div_dl(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV - 1, reduced, modulus);
+    
+    for (var i = 0; i < CHUNK_NUMBER_DIV; i++){
+        div[i] <-- long_division[0][i];
+
+    }
+    component modChecks[CHUNK_NUMBER_MODULUS];
+    for (var i = 0; i < CHUNK_NUMBER_MODULUS; i++){
+        mod[i] <-- long_division[1][i];
+        // Check to avoid negative numbers
+        modChecks[i] = Num2Bits(CHUNK_SIZE);
+        modChecks[i].in <== mod[i];
+
+    }
+    
+    component greaterThan = BigGreaterThan(CHUNK_SIZE, CHUNK_NUMBER_MODULUS);
+    
+    greaterThan.in[0] <== modulus;
+    greaterThan.in[1] <== mod;
+    greaterThan.out === 1;
+    
+    component mult2;
+    if (CHUNK_NUMBER_DIV >= CHUNK_NUMBER_MODULUS){
+        mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER_DIV, CHUNK_NUMBER_MODULUS);
+        
+        mult2.in1 <== div;
+        mult2.in2 <== modulus;
+    } else {
+        mult2 = BigMultNonEqualOverflow(CHUNK_SIZE, CHUNK_NUMBER_MODULUS, CHUNK_NUMBER_DIV);
+        
+        mult2.in2 <== div;
+        mult2.in1 <== modulus;
+    }
+    
+    component isZero = BigIntIsZero(CHUNK_SIZE, CHUNK_SIZE * 2 + log_ceil(CHUNK_NUMBER_MODULUS + CHUNK_NUMBER_DIV - 1), CHUNK_NUMBER_BASE - 1);
+    for (var i = 0; i < CHUNK_NUMBER_MODULUS; i++) {
+        isZero.in[i] <== mult.out[i] - mult2.out[i] - mod[i];
+    }
+    for (var i = CHUNK_NUMBER_MODULUS; i < CHUNK_NUMBER_BASE - 1; i++) {
+        isZero.in[i] <== mult.out[i] - mult2.out[i];
+    }
+}
+
 // calculates in[0] * in[1] % in[2], all in[i] has CHUNK_NUMBER chunks
 // if in[2] last chunk == 0, error will occur
 // use only for CHUNK_NUMBER != 2 ** x, otherwise unefficient
@@ -919,4 +979,29 @@ template BigIsEqual(CHUNK_SIZE, CHUNK_NUMBER) {
         }
     }
     out <== equalResults[CHUNK_NUMBER - 1];
+}
+
+// calculates in ^ (-1) % modulus;
+// in, modulus has CHUNK_NUMBER
+template BigModInv(CHUNK_SIZE, CHUNK_NUMBER) {
+    assert(CHUNK_SIZE <= 252);
+    signal input in[CHUNK_NUMBER];
+    signal input modulus[CHUNK_NUMBER];
+    signal output out[CHUNK_NUMBER];
+    
+    
+    var inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, in, modulus);
+    for (var i = 0; i < CHUNK_NUMBER; i++) {
+        out[i] <-- inv[i];
+    }
+    
+    component mult = BigMultModPDl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, CHUNK_NUMBER);
+    mult.in1 <== in;
+    mult.in2 <== out;
+    mult.modulus <== modulus;
+    
+    mult.mod[0] === 1;
+    for (var i = 1; i < CHUNK_NUMBER; i++) {
+        mult.mod[i] === 0;
+    }
 }

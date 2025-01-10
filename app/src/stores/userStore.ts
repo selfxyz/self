@@ -1,50 +1,51 @@
-import { create } from 'zustand'
-import {
-  DEFAULT_PNUMBER,
-  DEFAULT_DOB,
-  DEFAULT_DOE,
-} from '@env';
-import { PassportData, Proof } from '../../../common/src/utils/types';
-import * as Keychain from 'react-native-keychain';
-import { loadPassportData, loadSecret, loadSecretOrCreateIt, storePassportData } from '../utils/keychain';
+import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
+import { resetGenericPassword } from 'react-native-keychain';
+import { create } from 'zustand';
+
 import { generateDscSecret } from '../../../common/src/utils/csca';
+import { PassportData, Proof } from '../../../common/src/utils/types';
+import {
+  loadPassportData,
+  loadSecretOrCreateIt,
+  storePassportData,
+} from '../utils/keychain';
 
 interface UserState {
-  passportNumber: string
-  dateOfBirth: string
-  dateOfExpiry: string
-  countryCode: string
-  registered: boolean
-  passportData: PassportData | null
-  secret: string
-  cscaProof: Proof | null
-  localProof: Proof | null
-  dscSecret: string | null
-  userLoaded: boolean
-  initUserStore: () => void
-  registerPassportData: (passportData: PassportData) => Promise<void>
-  clearPassportDataFromStorage: () => void
-  clearSecretFromStorage: () => void
-  clearProofsFromStorage: () => void
-  update: (patch: any) => void
-  deleteMrzFields: () => void
-  setRegistered: (registered: boolean) => void
-  setDscSecret: (dscSecret: string) => void
-  setUserLoaded: (userLoaded: boolean) => void
-  proofVerificationResult: string,
-  setProofVerificationResult: (proofVerificationResult: string) => void
+  passportNumber: string;
+  dateOfBirth: string;
+  dateOfExpiry: string;
+  countryCode: string;
+  registered: boolean;
+  passportData: PassportData | null;
+  secret: string;
+  cscaProof: Proof | null;
+  localProof: Proof | null;
+  dscSecret: string | null;
+  userLoaded: boolean;
+  initUserStore: () => void;
+  registerPassportData: (passportData: PassportData) => Promise<void>;
+  clearPassportDataFromStorage: () => void;
+  clearSecretFromStorage: () => void;
+  clearProofsFromStorage: () => void;
+  update: (patch: any) => void;
+  deleteMrzFields: () => void;
+  setRegistered: (registered: boolean) => void;
+  setDscSecret: (dscSecret: string) => void;
+  setUserLoaded: (userLoaded: boolean) => void;
+  proofVerificationResult: string;
+  setProofVerificationResult: (proofVerificationResult: string) => void;
 }
 
 const useUserStore = create<UserState>((set, get) => ({
   userLoaded: false,
-  passportNumber: DEFAULT_PNUMBER ?? "",
-  dateOfBirth: DEFAULT_DOB ?? "",
-  dateOfExpiry: DEFAULT_DOE ?? "",
-  countryCode: "",
+  passportNumber: DEFAULT_PNUMBER ?? '',
+  dateOfBirth: DEFAULT_DOB ?? '',
+  dateOfExpiry: DEFAULT_DOE ?? '',
+  countryCode: '',
   dscSecret: null,
   registered: false,
   passportData: null,
-  secret: "",
+  secret: '',
   cscaProof: null,
   localProof: null,
   setRegistered: (registered: boolean) => {
@@ -56,7 +57,7 @@ const useUserStore = create<UserState>((set, get) => ({
   setUserLoaded: (userLoaded: boolean) => {
     set({ userLoaded });
   },
-  proofVerificationResult: "null",
+  proofVerificationResult: 'null',
   setProofVerificationResult: (proofVerificationResult: string) => {
     set({ proofVerificationResult });
   },
@@ -75,7 +76,7 @@ const useUserStore = create<UserState>((set, get) => ({
 
     const passportDataString = await loadPassportData();
     if (!passportDataString) {
-      console.log("No passport data found, starting onboarding flow")
+      console.log('No passport data found, starting onboarding flow');
       set({
         userLoaded: true,
       });
@@ -83,11 +84,13 @@ const useUserStore = create<UserState>((set, get) => ({
     }
 
     // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
-    const isAlreadyRegistered = true
-    const passportData: PassportData = JSON.parse(passportDataString)
+    const isAlreadyRegistered = true;
+    const passportData: PassportData = JSON.parse(passportDataString);
 
     if (!isAlreadyRegistered) {
-      console.log("not registered but passport data found, skipping to nextScreen")
+      console.log(
+        'not registered but passport data found, skipping to nextScreen',
+      );
       set({
         passportData: passportData,
         userLoaded: true,
@@ -96,7 +99,9 @@ const useUserStore = create<UserState>((set, get) => ({
       return;
     }
 
-    console.log("registered and passport data found, skipping to app selection screen")
+    console.log(
+      'registered and passport data found, skipping to app selection screen',
+    );
     set({
       passportData: passportData,
       registered: true,
@@ -107,19 +112,21 @@ const useUserStore = create<UserState>((set, get) => ({
   // When reading passport for the first time:
   // - Check presence of secret. If there is none, create one and store it
   // 	- Store the passportData and try registering the commitment in the background
-  registerPassportData: async (passportData) => {
+  registerPassportData: async passportData => {
     const alreadyStoredPassportData = await loadPassportData();
 
     if (alreadyStoredPassportData) {
-      console.log("a passportData is already stored, replacing it with the new one")
+      console.log(
+        'a passportData is already stored, replacing it with the new one',
+      );
     }
 
-    await storePassportData(passportData)
+    await storePassportData(passportData);
     set({ passportData });
   },
 
   clearPassportDataFromStorage: async () => {
-    await Keychain.resetGenericPassword({ service: "passportData" });
+    await resetGenericPassword({ service: 'passportData' });
   },
 
   clearProofsFromStorage: async () => {
@@ -128,21 +135,22 @@ const useUserStore = create<UserState>((set, get) => ({
   },
 
   clearSecretFromStorage: async () => {
-    await Keychain.resetGenericPassword({ service: "secret" });
+    await resetGenericPassword({ service: 'secret' });
   },
 
-  update: (patch) => {
+  update: patch => {
     set({
       ...get(),
       ...patch,
     });
   },
 
-  deleteMrzFields: () => set({
-    passportNumber: "",
-    dateOfBirth: "",
-    dateOfExpiry: "",
-  }),
-}))
+  deleteMrzFields: () =>
+    set({
+      passportNumber: '',
+      dateOfBirth: '',
+      dateOfExpiry: '',
+    }),
+}));
 
-export default useUserStore
+export default useUserStore;

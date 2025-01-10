@@ -6,9 +6,13 @@
     "android": "react-native run-android",
     "ios": "react-native run-ios",
     "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
     "start": "watchman watch-del-all && react-native start",
-    "test": "jest",
-    "install-app": "cd ../common && yarn && cd ../app && yarn"
+    "test": "jest --passWithNoTests",
+    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd ..",
+    "ia": "yarn install-app "
   },
   "dependencies": {
     "@amplitude/analytics-react-native": "^1.4.7",
@@ -40,7 +44,7 @@
     "poseidon-lite": "^0.2.0",
     "react": "^18.3.1",
     "react-native": "0.75.4",
-    "react-native-date-picker": "https://github.com/norman-kapschefsky/react-native-date-picker#35100c40d8c5c9ae9a66a8d4af7b3130df692199",
+    "react-native-date-picker": "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35",
     "react-native-dialog": "^9.3.0",
     "react-native-fs": "^2.20.0",
     "react-native-get-random-values": "^1.11.0",

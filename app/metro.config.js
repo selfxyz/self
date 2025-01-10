@@ -1,11 +1,11 @@
-const {getDefaultConfig, mergeConfig} = require('@react-native/metro-config');
+const { getDefaultConfig, mergeConfig } = require('@react-native/metro-config');
 const path = require('path');
+
+const commonPath = path.join(__dirname, '/../common');
 const extraNodeModules = {
-  'common': path.resolve(__dirname + '/../common'),
+  common: path.resolve(commonPath),
 };
-const watchFolders = [
-  path.resolve(__dirname + '/../common')
-];
+const watchFolders = [path.resolve(commonPath)];
 
 /**
  * Metro configuration

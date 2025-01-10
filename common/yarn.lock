@@ -1610,10 +1610,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"js-sha256@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "js-sha256@npm:0.10.1"
-  checksum: 10c0/c63119f7c7f8afc24bfa24c1a6b51147c3b562316b6341a375a1cef88569340ec0dbf2cda429ecf472cabfbae47a0b93a0cb82b8730883de066593c3f816c53b
+"js-sha256@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "js-sha256@npm:0.11.0"
+  checksum: 10c0/90980fe01ca01fbd166751fb16c4caa09c1ab997e8bf77c0764cc05c772c6044946f4c1b3bad266ce78357280d2131d3dc0cf2dd7646e78272996bd4d590aa4f
   languageName: node
   linkType: hard
 
@@ -2086,7 +2086,7 @@ __metadata:
     elliptic: "npm:^6.5.5"
     fs: "npm:^0.0.1-security"
     js-sha1: "npm:^0.7.0"
-    js-sha256: "npm:^0.10.1"
+    js-sha256: "npm:^0.11.0"
     js-sha512: "npm:^0.9.0"
     json-to-ts: "npm:^2.1.0"
     jsrsasign: "npm:^11.1.0"
