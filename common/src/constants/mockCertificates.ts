@@ -1692,7 +1692,7 @@ qgjmXHPgHwanzAC0FdFj5d7yICoHOiBEj6mmDYRoB9inGnoyjj3g+ge/aJvQmNn2
 SLV08wwczovgh3fdFBf9FQcfT77ggcJd4vJXiDfNBbQghzkh5EAugC6nlG3zcVqP
 ZPOzG68rtudy
 -----END CERTIFICATE-----
-`
+`;
 
 export const mock_dsc_key_sha512_rsa_65537_4096 = `-----BEGIN PRIVATE KEY-----
 MIIJQQIBADANBgkqhkiG9w0BAQEFAASCCSswggknAgEAAoICAQDYE46jsM/etoGW
@@ -1746,7 +1746,7 @@ PqwX8vDwEt4aZWx19Au7LIoIuPmaYQ7U1GycxmEEbqjz5FM1YxauwHb/uuLSbnBO
 kzynFPdnN3N/J/NuvOk1zniXvuOE7PgDjEuGAt0d8i4y42Yal/SDMzf5qFt32ge6
 5oD/m9q2ACiOw9Hmu/folOkgH1oP
 -----END PRIVATE KEY-----
-`
+`;
 
 export const mock_dsc_sha512_rsa_65537_4096 = `-----BEGIN CERTIFICATE-----
 MIIFpzCCA4+gAwIBAgIUbF0yyV/2z6BHATd9xXIi1a30aTEwDQYJKoZIhvcNAQEN
@@ -1781,7 +1781,7 @@ RguFdjhoHMVLuwUE8cDSa++8SJYaEt+hz4maeFJSPNcmjLtMj6sh6fN18a6tn8ot
 TyD3WNptht093KKhpBzjSnsQfHyZy0kZv1ExLrHOHAZeLiD+0EYWATPhEBaE47Eg
 j9Sia6tiYeI4rSQ=
 -----END CERTIFICATE-----
-`
+`;
 
 export const mock_dsc_key_sha512_rsa_65537_2048 = `-----BEGIN PRIVATE KEY-----
 MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDSvKqw2u9u4+Qz
@@ -1811,7 +1811,7 @@ hvAVZ2dT/HZj7wbAFATO/C69r7sbG5SF2TrxBHGI+fhLwI1wXSURE/oCYpfkUmsS
 dIDFa1lQSaf44x11efTrWhjvU3gB6z7Y/lutrvFdihebWOJDRmxUkDJ7fxNDKssJ
 robTDzXXBGlHrGJRKHwKxow=
 -----END PRIVATE KEY-----
-`
+`;
 
 export const mock_dsc_sha512_rsa_65537_2048 = `-----BEGIN CERTIFICATE-----
 MIIEpzCCAo+gAwIBAgIUUD90GVlb8r8b3X9dBiU3w+hDICYwDQYJKoZIhvcNAQEN
@@ -1840,4 +1840,4 @@ ZxnwjCKuBSKSWE3MlFZ4KYpt0Tu4NjfgQwcpd9jNGh2ju4cW2y94+aZHYjY1S/61
 fCwuoiDeII65pXx8lO2nk51Cidz6utia9gHit8U8xxjoeQhlb9SScPzuAK5vn63r
 ZywzAe8hoV47K1/m1GnJL/1T4qOOeomQngQGtn+ydO/+m0NHwYwRFW5DLg==
 -----END CERTIFICATE-----
-`
+`;
