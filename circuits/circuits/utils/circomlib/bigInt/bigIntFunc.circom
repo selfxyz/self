@@ -209,7 +209,7 @@ function long_div_dl(n, k, m, a, b){
             }
         }
         
-        out[0][i] = short_div(n, k, dividend, b);
+        out[0][i] = short_div_dl(n, k, dividend, b);
         
         var mult_shift[200] = long_scalar_mult_dl(n, k, out[0][i], b);
         var subtrahend[200];
@@ -294,7 +294,7 @@ function short_div_norm_dl(n, k, a, b) {
     }
     
     var mult[200] = long_scalar_mult_dl(n, k, qhat, b);
-    if (long_gt(n, k + 1, mult, a) == 1) {
+    if (long_gt_dl(n, k + 1, mult, a) == 1) {
         mult = long_sub_dl(n, k + 1, mult, b);
         if (long_gt_dl(n, k + 1, mult, a) == 1) {
             return qhat - 2;
@@ -515,7 +515,7 @@ function long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B){
 
 function long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B, P) {
     if (long_gt_dl(CHUNK_SIZE, CHUNK_NUMBER, B, A) == 1){
-        return long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, long_sub(CHUNK_SIZE,CHUNK_NUMBER,P,B));
+        return long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, long_sub_dl(CHUNK_SIZE,CHUNK_NUMBER,P,B));
     } else {
         return long_sub_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B);
     }
