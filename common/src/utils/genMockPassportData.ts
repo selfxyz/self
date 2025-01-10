@@ -79,7 +79,7 @@ function generateDataGroupHashes(mrzHash: number[], hashLen: number): [number, n
     [4, generateRandomBytes(hashLen)],
     [5, generateRandomBytes(hashLen)],
     [7, generateRandomBytes(hashLen)],
-    [11, generateRandomBytes(hashLen)],
+    // [11, generateRandomBytes(hashLen)],
     [12, generateRandomBytes(hashLen)],
     [14, generateRandomBytes(hashLen)],
   ];
