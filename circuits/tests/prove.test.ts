@@ -14,120 +14,47 @@ import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { hash } from '../../common/src/utils/utils';
 
 const sigAlgs = [
-  // {
-  //   dgHashAlgo: 'sha1',
-  //   eContentHashAlgo: 'sha1',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha1',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  //   checkNullifier: true,
-  // },
-  // {
-  //   dgHashAlgo: 'sha1',
-  //   eContentHashAlgo: 'sha1',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha1',
-  //   domainParameter: '65537',
-  //   keyLength: '4096',
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '3072',
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '4096',
-  // },
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
-    sigAlg: 'rsa',
+    sigAlg: 'rsapss',
     hashFunction: 'sha256',
     domainParameter: '3',
-    keyLength: '2048',
+    keyLength: '3072',
+    checkNullifier: true,
   },
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
     sigAlg: 'rsa',
     hashFunction: 'sha256',
-    domainParameter: '3',
-    keyLength: '4096',
-  },
-  {
-    dgHashAlgo: 'sha512',
-    eContentHashAlgo: 'sha512',
-    sigAlg: 'rsa',
-    hashFunction: 'sha512',
     domainParameter: '65537',
     keyLength: '2048',
   },
   {
-    dgHashAlgo: 'sha512',
-    eContentHashAlgo: 'sha512',
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha256',
     sigAlg: 'rsa',
-    hashFunction: 'sha512',
+    hashFunction: 'sha256',
     domainParameter: '65537',
-    keyLength: '4096',
+    keyLength: '2048',
   },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsapss',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '3',
-  //   keyLength: '3072',
-  //   checkNullifier: true,
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
-  // {
-  //   dgHashAlgo: 'sha1',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
-  // {
-  //   dgHashAlgo: 'sha1',
-  //   eContentHashAlgo: 'sha1',
-  //   sigAlg: 'ecdsa',
-  //   hashFunction: 'sha1',
-  //   domainParameter: 'secp256r1',
-  //   keyLength: '256',
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha224',
-  //   sigAlg: 'ecdsa',
-  //   hashFunction: 'sha224',
-  //   domainParameter: 'brainpoolP224r1',
-  //   keyLength: '224',
-  // },
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha1',
+    domainParameter: 'secp256r1',
+    keyLength: '256',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha224',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha224',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
 ];
 
 const fullSigAlgs = [
@@ -150,6 +77,14 @@ const fullSigAlgs = [
   },
   {
     dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha1',
     eContentHashAlgo: 'sha256',
     sigAlg: 'rsa',
     hashFunction: 'sha256',
@@ -358,7 +293,6 @@ testSuite.forEach(
       this.timeout(0);
       let circuit: any;
 
-      console.log("nico", `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}`)
       const passportData = genMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
@@ -395,7 +329,6 @@ testSuite.forEach(
         user_identifier
       );
 
-      console.log("hello", getCircuitNameFromPassportData(passportData));
       before(async () => {
         circuit = await wasm_tester(
           path.join(
