@@ -9,6 +9,7 @@ import "../libraries/Dg1Disclosure.sol";
 import "../libraries/OpenPassportAttributeHandler.sol";
 import "../interfaces/IOpenPassportVerifierRouterV1.sol";
 import "../interfaces/IOpenPassportPortalV1.sol";
+import "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 // This is the contract to implement external callable logics
 
 // here I would implement
@@ -20,7 +21,7 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
 
     IOpenPassportVerifierRouterV1 public verifierRouter;
     address public registry;
-    address public vcAndDiscloseCircuit;
+    IVcAndDiscloseCircuitVerifier public vcAndDiscloseCircuitVerifier;
 
     mapping(uint256 => bool) public nullifiers;
 
@@ -39,11 +40,11 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
 
     error INVALID_SIGNATURE_TYPE();
 
-    function initialize(address _verifierRouter, address _registry, address _vcAndDiscloseCircuit) external initializer {
+    function initialize(address _verifierRouter, address _registry, address _vcAndDiscloseCircuitVerifier) external initializer {
         __Ownable_init(msg.sender);
         verifierRouter = _verifierRouter;
         registry = _registry;
-        vcAndDiscloseCircuit = _vcAndDiscloseCircuit;
+        vcAndDiscloseCircuitVerifier = _vcAndDiscloseCircuitVerifier;
     }
 
     function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
@@ -56,14 +57,14 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         registry = _registry;
     }
 
-    function updateVcAndDiscloseCircuit(address _vcAndDiscloseCircuit) external onlyOwner {
-        vcAndDiscloseCircuit = _vcAndDiscloseCircuit;
+    function updateVcAndDiscloseCircuit(address _vcAndDiscloseCircuitVerifier) external onlyOwner {
+        vcAndDiscloseCircuitVerifier = _vcAndDiscloseCircuitVerifier;
     }
 
     function verifyVcAndDiscloseCircuit(
-        IOpenPassportVerifierRouterV1.OpenPassportProof memory proof
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) external returns (bool) {
-        IOpenPassportVerifierRouterV1.OpenPassportProof memory proof = verifierRouter.verify(proof);
+        return vcAndDiscloseCircuitVerifier.verifyProof(proof);
     }
 
     function verifyAndDiscloseAttributes(
