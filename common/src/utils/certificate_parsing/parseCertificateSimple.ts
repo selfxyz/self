@@ -11,7 +11,7 @@ import { getCurveForElliptic, getECDSACurveBits, identifyCurve, StandardCurve } 
 import { getIssuerCountryCode, getSubjectKeyIdentifier } from './utils';
 import { circuitNameFromMode } from '../../constants/constants';
 import { Mode } from '../appType';
-import { initElliptic } from '../elliptic';
+import { initElliptic } from './elliptic';
 
 export function parseCertificateSimple(pem: string): CertificateData {
   let certificateData: CertificateData = {

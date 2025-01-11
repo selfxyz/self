@@ -6,3 +6,4 @@ dist
 **/node_modules/
 showcase
 .codegpt
+**/.yarn/

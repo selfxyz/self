@@ -148,15 +148,24 @@ export function generateCircuitInputsDSC(
 }
 
 export function getCSCAFromSKI(ski: string, devMode: boolean): string {
-  const cscaPemPROD = (SKI_PEM as any)[ski];
-  const cscaPemDEV = (SKI_PEM_DEV as any)[ski];
-  const cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
+  const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
+
+  const cscaPemPROD = (SKI_PEM as any)[normalizedSki];
+  const cscaPemDEV = (SKI_PEM_DEV as any)[normalizedSki];
+
+  let cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
+
   if (!cscaPem) {
-    console.log('\x1b[31m%s\x1b[0m', `CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
+    console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
     throw new Error(
-      `CSCA not found, authorityKeyIdentifier: ${ski},  areMockPassportsAllowed: ${devMode},`
+      `CSCA not found, authorityKeyIdentifier: ${ski}, areMockPassportsAllowed: ${devMode}`
     );
   }
+
+  if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
+    cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
+  }
+
   return cscaPem;
 }
 

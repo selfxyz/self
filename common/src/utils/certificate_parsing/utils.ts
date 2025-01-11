@@ -1,4 +1,3 @@
-import { asn1 } from 'node-forge';
 import * as asn1js from 'asn1js';
 import { Certificate } from 'pkijs';
 import { sha256 } from 'js-sha256';
@@ -13,6 +12,7 @@ export const getSubjectKeyIdentifier = (cert: Certificate): string => {
     skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
     return skiValue;
   } else {
+    console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found');
     // do a sha1 of the certificate tbs
     const hash = sha256.create();
     hash.update(cert.tbsView);
@@ -36,6 +36,8 @@ export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
         }
       }
     }
+  } else {
+    console.log('\x1b[31m%s\x1b[0m', 'no authority key identifier found');
   }
   return '';
 };

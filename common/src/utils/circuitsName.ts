@@ -39,11 +39,3 @@ export function getCircuitNameFromPassportData(passportData: PassportData) {
     throw new Error('Unsupported signature algorithm');
   }
 }
-
-export function getCurveOrExponent(dsc: any) {
-  const parsedDsc = parseCertificateSimple(dsc);
-  if (parsedDsc.signatureAlgorithm === 'ecdsa') {
-    return (parsedDsc.publicKeyDetails as PublicKeyDetailsECDSA).curve;
-  }
-  return (parsedDsc.publicKeyDetails as PublicKeyDetailsRSA).exponent;
-}
