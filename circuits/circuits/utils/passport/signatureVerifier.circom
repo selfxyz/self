@@ -1,6 +1,7 @@
 pragma circom 2.1.9;
 
-include "../circomlib/signature/rsapss/rsapss.circom";
+include "../circomlib/signature/rsapss/rsapss3.circom";
+include "../circomlib/signature/rsapss/rsapss65537.circom";
 include "ecdsaVerifier.circom";
 include "../circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 include "../circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
@@ -47,30 +48,35 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     if (
         signatureAlgorithm == 4 
-        || signatureAlgorithm == 12 
-        || signatureAlgorithm == 16
-        || signatureAlgorithm == 17
+        || signatureAlgorithm == 12
         || signatureAlgorithm == 18
         || signatureAlgorithm == 19
     ) {
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
-        var EXP;
-        if (E_BITS == 17) {
-            EXP = 65537;
-        } else {
-            EXP = 3;
-        }
-
-        component rsaPssShaVerification = VerifyRsaPssSig(n, k, SALT_LEN, EXP, HASH_LEN_BITS);
-        rsaPssShaVerification.pubkey <== pubKey;
-        rsaPssShaVerification.signature <== signature;
-        rsaPssShaVerification.hashed <== hash; // send the raw hash
+        component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
+        rsaPss65537ShaVerification.pubkey <== pubKey;
+        rsaPss65537ShaVerification.signature <== signature;
+        rsaPss65537ShaVerification.hashed <== hash; // send the raw hash
 
     }
     if (
-        signatureAlgorithm == 7 
+        signatureAlgorithm == 16
+        || signatureAlgorithm == 17
+    ) {
+        var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+        var SALT_LEN = HASH_LEN_BITS / 8;
+        var E_BITS = getExponentBits(signatureAlgorithm);
+
+        component rsaPss3ShaVerification = VerifyRsaPss3Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
+        rsaPss3ShaVerification.pubkey <== pubKey;
+        rsaPss3ShaVerification.signature <== signature;
+        rsaPss3ShaVerification.hashed <== hash; // send the raw hash
+
+    }
+    if (signatureAlgorithm == 9 
+        || signatureAlgorithm == 7 
         || signatureAlgorithm == 8 
         || signatureAlgorithm == 9 
         || signatureAlgorithm == 21 
@@ -107,6 +113,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa.modulus <== pubKey;
         rsa.signature <== signature;
+
     }
     if (signatureAlgorithm == 12) {
 
