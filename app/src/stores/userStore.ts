@@ -9,6 +9,7 @@ import {
   loadSecretOrCreateIt,
   storePassportData,
 } from '../utils/keychain';
+import { PassportMetadata } from '../../../common/src/utils/parsePassportData';
 
 interface UserState {
   passportNumber: string;
@@ -17,6 +18,7 @@ interface UserState {
   countryCode: string;
   registered: boolean;
   passportData: PassportData | null;
+  passportMetadata: PassportMetadata | null;
   secret: string;
   cscaProof: Proof | null;
   localProof: Proof | null;
@@ -32,6 +34,7 @@ interface UserState {
   setRegistered: (registered: boolean) => void;
   setDscSecret: (dscSecret: string) => void;
   setUserLoaded: (userLoaded: boolean) => void;
+  setPassportMetadata: (passportMetadata: PassportMetadata) => void;
   proofVerificationResult: string;
   setProofVerificationResult: (proofVerificationResult: string) => void;
 }
@@ -45,6 +48,7 @@ const useUserStore = create<UserState>((set, get) => ({
   dscSecret: null,
   registered: false,
   passportData: null,
+  passportMetadata: null,
   secret: '',
   cscaProof: null,
   localProof: null,
@@ -56,6 +60,9 @@ const useUserStore = create<UserState>((set, get) => ({
   },
   setUserLoaded: (userLoaded: boolean) => {
     set({ userLoaded });
+  },
+  setPassportMetadata: (passportMetadata: PassportMetadata) => {
+    set({ passportMetadata });
   },
   proofVerificationResult: 'null',
   setProofVerificationResult: (proofVerificationResult: string) => {

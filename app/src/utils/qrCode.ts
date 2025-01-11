@@ -7,7 +7,6 @@ import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { downloadZkey } from './zkeyDownload';
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 const parseUrlParams = (url: string): Map<string, string> => {
   const [, queryString] = url.split('?');
@@ -109,8 +108,8 @@ const handleQRCodeScan = (
   setSelectedTab: any,
 ) => {
   try {
-    const passportData = useUserStore.getState().passportData;
-    if (passportData) {
+    const { passportData, passportMetadata } = useUserStore.getState();
+    if (passportData && passportMetadata) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
         decodedResult.split('').map(char => char.charCodeAt(0)),
@@ -119,16 +118,15 @@ const handleQRCodeScan = (
       const unpackedData = msgpack.decode(decompressedData);
       const openPassportApp: OpenPassportApp = unpackedData;
       setSelectedApp(openPassportApp);
-      const passportMetadata = parsePassportData(passportData);
 
       const circuitName =
         openPassportApp.mode === 'vc_and_disclose'
           ? 'vc_and_disclose'
           : getCircuitNameOld(
-              'prove' as Mode,
-              passportMetadata.signatureAlgorithm,
-              passportMetadata.signedAttrHashFunction,
-            );
+            'prove' as Mode,
+            passportMetadata.signatureAlgorithm,
+            passportMetadata.signedAttrHashFunction,
+          );
       downloadZkey(circuitName as any);
 
       setSelectedTab('prove');

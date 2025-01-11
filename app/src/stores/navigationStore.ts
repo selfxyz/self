@@ -26,7 +26,7 @@ interface NavigationState {
 }
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
-  zkeyDownloadedPercentage: 100,
+  zkeyDownloadedPercentage: 0,
   setZkeyDownloadedPercentage: (percentage: number) =>
     set({ zkeyDownloadedPercentage: percentage }),
   isZkeyDownloading: {

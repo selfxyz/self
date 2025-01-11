@@ -210,6 +210,7 @@ const handleResponseIOS = async (
     mockUser: false,
   };
   const parsedPassportData = parsePassportData(passportData);
+  useUserStore.getState().setPassportMetadata(parsedPassportData);
   amplitude.track('nfc_response_parsed', parsedPassportData);
 
   try {
@@ -318,6 +319,7 @@ const handleResponseAndroid = async (
 
   try {
     await useUserStore.getState().registerPassportData(passportData);
+    useUserStore.getState().setPassportMetadata(parsedPassportData);
     useNavigationStore.getState().setSelectedTab('next');
   } catch (e: any) {
     console.log('error during parsing:', e);

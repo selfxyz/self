@@ -46,9 +46,9 @@ const NextScreen: React.FC = () => {
             h={height > 750 ? 190 : 130}
             borderRadius={height > 750 ? '$7' : '$6'}
             source={{
-              uri: passportData.mockUser
+              uri: passportData?.mockUser
                 ? USER_PROFILE
-                : passportData.photoBase64 ?? USER_PROFILE,
+                : passportData?.photoBase64 ?? USER_PROFILE,
             }}
           />
         )}
@@ -64,8 +64,8 @@ const NextScreen: React.FC = () => {
           }}
         >
           {hideData
-            ? maskString(getFirstName(passportData.mrz))
-            : getFirstName(passportData.mrz)}
+            ? maskString(getFirstName(passportData?.mrz ?? ''))
+            : getFirstName(passportData?.mrz ?? '')}
         </Text>
       </Text>
 
@@ -79,11 +79,11 @@ const NextScreen: React.FC = () => {
             .split(' ')
             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-          const mrzAttribute = passportData.mrz.slice(
+          const mrzAttribute = passportData?.mrz?.slice(
             indexes[0],
             indexes[1] + 1,
           );
-          const mrzAttributeFormatted = formatAttribute(key_, mrzAttribute);
+          const mrzAttributeFormatted = formatAttribute(key_, mrzAttribute ?? '');
 
           return (
             <Fieldset horizontal key={key} gap="$3" alignItems="center">

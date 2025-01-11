@@ -198,8 +198,8 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
 
     console.log(
       'zkey and dat download succeeded, took ' +
-        (Date.now() - startTime) / 1000 +
-        ' seconds',
+      (Date.now() - startTime) / 1000 +
+      ' seconds',
     );
 
     await saveFileSize(circuit, 'zkey');
