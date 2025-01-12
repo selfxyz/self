@@ -7,6 +7,7 @@ import {Base64} from "../libraries/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 
+// TODO: Add modifier named onlyPortal
 contract OpenPassportRegisterV1 is UUPSUpgradeable, OwnableUpgradeable {
 
     address public portal;
@@ -26,54 +27,111 @@ contract OpenPassportRegisterV1 is UUPSUpgradeable, OwnableUpgradeable {
 
     event AddCommitment(uint256 index, uint256 commitment, uint256 imtRoot);
 
-    function initialize(address _portal, bytes32 _cscaKeyMerkleRoot) external initializer {
+    function initialize(
+        address _portal, 
+        bytes32 _cscaKeyMerkleRoot
+    ) 
+        external 
+        initializer 
+    {
         __Ownable_init(msg.sender);
         portal = _portal;
         cscaKeyMerkleRoot = _cscaKeyMerkleRoot;
     }
 
-    function _authorizeUpgrade(address newImplementation) internal override onlyOwner {}
+    function _authorizeUpgrade(
+        address newImplementation
+    ) 
+        internal 
+        override 
+        onlyOwner 
+    {}
 
-    function updatePortal(address _portal) external onlyOwner { 
+    ///////////////////////////////////////////////////////////////////
+    ///                     UPDATE FUNCTIONS                        ///
+    ///////////////////////////////////////////////////////////////////
+
+    function updatePortal(
+        address _portal
+    ) 
+        external 
+        onlyOwner 
+    { 
         portal = _portal;
     }
 
     function registerCommitment(
         uint256 commitment
-    ) external {
+    ) 
+        external 
+    {
         if (portal == address(0)) revert PORTAL_NOT_SET();
         if (msg.sender != portal) revert ONLY_PORTAL_CAN_REGISTER_COMMITMENT();
         _addCommitment(commitment);
     }
 
-    function _addCommitment(uint256 commitment) internal {
+    function _addCommitment(
+        uint256 commitment
+    ) 
+        internal 
+    {
         uint256 index = getMerkleTreeSize();
         uint256 imt_root = imt._insert(commitment);
         merkleRootsCreated[imt_root] = true;
         emit AddCommitment(index, commitment, imt_root);
     }
 
-    function checkRoot(uint256 root) external view returns (bool) {
+    function checkRoot(
+        uint256 root
+    ) 
+        external 
+        view 
+        returns (bool) 
+    {
         return merkleRootsCreated[root];
     }
 
-    function getMerkleTreeSize() public view returns (uint256) {
+    function getMerkleTreeSize() 
+        public 
+        view 
+        returns (uint256) 
+    {
         return imt.size;
     }
 
-    function getMerkleRoot() public view returns (uint256) {
+    function getMerkleRoot() 
+        public 
+        view 
+        returns (uint256) 
+    {
         return imt._root();
     }
 
-    function indexOf(uint commitment) public view returns (uint256) {
+    function indexOf(
+        uint commitment
+    ) 
+        public 
+        view 
+        returns (uint256) 
+    {
         return imt._indexOf(commitment);
     }
 
-    function getCommitment(uint256 index) public view returns (uint256) {
+    function getCommitment(
+        uint256 index
+    ) 
+        public 
+        view 
+        returns (uint256) 
+    {
         return imt.leaves[index];
     }
 
-    function getAllCommitments() public view returns (uint256[] memory) {
+    function getAllCommitments() 
+        public 
+        view 
+        returns (uint256[] memory) 
+    {
         uint256[] memory commitments = new uint256[](imt.size);
         for (uint256 i = 0; i < imt.size; i++) {
             commitments[i] = imt.leaves[i];
@@ -81,19 +139,44 @@ contract OpenPassportRegisterV1 is UUPSUpgradeable, OwnableUpgradeable {
         return commitments;
     }
 
-    function devAddCommitment(uint commitment) external onlyOwner {
+    function devAddCommitment(
+        uint commitment
+    ) 
+        external 
+        onlyOwner 
+    {
         _addCommitment(commitment);
     }
 
-    function updateCscaKeyMerkleRoot(bytes32 _cscaKeyMerkleRoot) external onlyOwner {
+    
+    ///////////////////////////////////////////////////////////////////
+    ///                     CSCA HANDLE FUNCTIONS                   ///
+    ///////////////////////////////////////////////////////////////////
+
+    function updateCscaKeyMerkleRoot(
+        bytes32 _cscaKeyMerkleRoot
+    ) 
+        external
+        onlyOwner 
+    {
         cscaKeyMerkleRoot = _cscaKeyMerkleRoot;
     }
 
-    function checkCscaKeyMerkleRoot(bytes32 _cscaKeyMerkleRoot) external view returns (bool) {
+    function checkCscaKeyMerkleRoot(
+        bytes32 _cscaKeyMerkleRoot
+    ) 
+        external 
+        view 
+        returns (bool) 
+    {
         return cscaKeyMerkleRoot == _cscaKeyMerkleRoot;
     }
 
-    function getCscaKeyMerkleRoot() external view returns (bytes32) {
+    function getCscaKeyMerkleRoot() 
+        external 
+        view 
+        returns (bytes32) 
+    {
         return cscaKeyMerkleRoot;
     }
 }
