@@ -6,8 +6,10 @@ import { generateDscSecret } from '../../../common/src/utils/csca';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import {
   loadPassportData,
+  loadPassportMetadata,
   loadSecretOrCreateIt,
   storePassportData,
+  storePassportMetadata,
 } from '../utils/keychain';
 import { PassportMetadata } from '../../../common/src/utils/parsePassportData';
 
@@ -34,9 +36,10 @@ interface UserState {
   setRegistered: (registered: boolean) => void;
   setDscSecret: (dscSecret: string) => void;
   setUserLoaded: (userLoaded: boolean) => void;
-  setPassportMetadata: (passportMetadata: PassportMetadata) => void;
   proofVerificationResult: string;
   setProofVerificationResult: (proofVerificationResult: string) => void;
+  setPassportMetadata: (metadata: PassportMetadata) => void;
+  clearPassportMetadataFromStorage: () => void;
 }
 
 const useUserStore = create<UserState>((set, get) => ({
@@ -61,8 +64,9 @@ const useUserStore = create<UserState>((set, get) => ({
   setUserLoaded: (userLoaded: boolean) => {
     set({ userLoaded });
   },
-  setPassportMetadata: (passportMetadata: PassportMetadata) => {
-    set({ passportMetadata });
+  setPassportMetadata: async (metadata: PassportMetadata) => {
+    await storePassportMetadata(metadata);
+    set({ passportMetadata: metadata });
   },
   proofVerificationResult: 'null',
   setProofVerificationResult: (proofVerificationResult: string) => {
@@ -74,16 +78,16 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is present in the tree, proceed to main screen
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
-    // download zkeys if they are not already downloaded
-
     const secret = await loadSecretOrCreateIt();
     set({ secret });
     const dscSecret = await generateDscSecret();
     set({ dscSecret });
 
     const passportDataString = await loadPassportData();
-    if (!passportDataString) {
-      console.log('No passport data found, starting onboarding flow');
+    const passportMetadataString = await loadPassportMetadata();
+
+    if (!passportDataString || !passportMetadataString) {
+      console.log('No passport data or metadata found, starting onboarding flow');
       set({
         userLoaded: true,
       });
@@ -93,27 +97,25 @@ const useUserStore = create<UserState>((set, get) => ({
     // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
     const isAlreadyRegistered = true;
     const passportData: PassportData = JSON.parse(passportDataString);
+    const passportMetadata: PassportMetadata = JSON.parse(passportMetadataString);
 
     if (!isAlreadyRegistered) {
-      console.log(
-        'not registered but passport data found, skipping to nextScreen',
-      );
+      console.log('not registered but passport data found, skipping to nextScreen');
       set({
         passportData: passportData,
+        passportMetadata: passportMetadata,
         userLoaded: true,
       });
-
       return;
     }
 
-    console.log(
-      'registered and passport data found, skipping to app selection screen',
-    );
+    console.log('registered and passport data found, skipping to app selection screen');
     set({
       passportData: passportData,
+      passportMetadata: passportMetadata,
       registered: true,
+      userLoaded: true,
     });
-    set({ userLoaded: true });
   },
 
   // When reading passport for the first time:
@@ -158,6 +160,11 @@ const useUserStore = create<UserState>((set, get) => ({
       dateOfBirth: '',
       dateOfExpiry: '',
     }),
+
+  clearPassportMetadataFromStorage: async () => {
+    await resetGenericPassword({ service: 'passportMetadata' });
+    set({ passportMetadata: null });
+  },
 }));
 
 export default useUserStore;
