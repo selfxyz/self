@@ -4,7 +4,7 @@ Contracts for OpenPassport.
 
 ## OpenPassport Contract Architecture
 
-![OpenPassport Contract Architecture](./assets/openpassport_contract.drawio (2).png)
+![OpenPassport Contract Architecture](./assets/openpassport_contract.png)
 
 Try running some of the following tasks:
 
