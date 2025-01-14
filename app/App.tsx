@@ -1,13 +1,16 @@
-import React, { useEffect } from 'react';
-
-import * as amplitude from '@amplitude/analytics-react-native';
-import { AMPLITUDE_KEY } from '@env';
+import 'react-native-get-random-values';
 import '@ethersproject/shims';
 import { Buffer } from 'buffer';
-import 'react-native-get-random-values';
+import { NativeModules } from 'react-native';
 
+global.Buffer = Buffer;
+
+import React, { useEffect } from 'react';
+import * as amplitude from '@amplitude/analytics-react-native';
+import { AMPLITUDE_KEY, SEGMENT_KEY } from '@env';
 import { useToastController } from '@tamagui/toast';
 import { YStack } from 'tamagui';
+import { createClient } from '@segment/analytics-react-native';
 
 import MainScreen from './src/screens/MainScreen';
 import useNavigationStore from './src/stores/navigationStore';
@@ -15,13 +18,23 @@ import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
 
-global.Buffer = Buffer;
+// Create the client at the module level
+const segmentClient = SEGMENT_KEY
+  ? createClient({
+    writeKey: SEGMENT_KEY,
+    trackAppLifecycleEvents: true,
+    trackDeepLinks: true,
+    debug: true,
+  })
+  : null;
+
+// Export it for use in other components
+export { segmentClient };
 
 function App(): React.JSX.Element {
   const toast = useToastController();
-  const setToast = useNavigationStore(state => state.setToast);
+  const { setToast, setSelectedTab, trackEvent } = useNavigationStore();
   const initUserStore = useUserStore(state => state.initUserStore);
-  const setSelectedTab = useNavigationStore(state => state.setSelectedTab);
 
   useEffect(() => {
     initUserStore();
@@ -34,12 +47,6 @@ function App(): React.JSX.Element {
   useEffect(() => {
     setSelectedTab('splash');
   }, [setSelectedTab]);
-
-  useEffect(() => {
-    if (AMPLITUDE_KEY) {
-      amplitude.init(AMPLITUDE_KEY);
-    }
-  }, []);
 
   useEffect(() => {
     const cleanup = setupUniversalLinkListener();
