@@ -24,7 +24,7 @@
     "@zk-email/circuits": "^6.1.1",
     "@zk-email/helpers": "^6.1.1",
     "@zk-email/zk-regex-circom": "^1.2.1",
-    "@zk-kit/binary-merkle-root.circom": "^1.0.0-beta",
+    "@zk-kit/binary-merkle-root.circom": "^1.0.0",
     "@zk-kit/circuits": "^1.0.0-beta",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",

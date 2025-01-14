@@ -1,6 +1,6 @@
 pragma circom 2.1.5;
 
-include "circom-dl/circuits/hasher/hash.circom";
+include "circomlib/circuits/poseidon.circom";
 include "../../other/smt.circom";
 
 template ValidateCountry(nLevels) {
@@ -11,7 +11,7 @@ template ValidateCountry(nLevels) {
 
 
     // Country hash aka key
-    component poseidon_hasher = PoseidonHash(6);
+    component poseidon_hasher = Poseidon(6);
     for (var i = 0; i < 6; i++) {
         poseidon_hasher.inputs[i] <== host_user[i];
     }

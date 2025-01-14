@@ -1,37 +1,45 @@
 pragma circom 2.1.9;
 
-include "../hasher/hash.circom";
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 include "@zk-email/circuits/utils/array.circom";
-include "binary-merkle-root.circom";
-include "getCommonLength.circom";
+include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
+include "circomlib/circuits/poseidon.circom";
 
+/// @title SMTVerify
+/// @notice Verifies inclusion or non-inclusion of a value in a Sparse Merkle Tree
+/// @param nLength Maximum depth of the tree
+/// @input virtualValue The value to verify (user's input value)
+/// @input value The value stored in the tree at the path
+/// @input root The root of the Sparse Merkle Tree
+/// @input siblings Array of sibling nodes
+/// @input mode Verification mode (0 for non-inclusion, 1 for inclusion)
+/// @output out 1 if verification succeeds, 0 otherwise
 template SMTVerify(nLength) {
-    signal input virtualValue;  // value from user's data
-    signal input value; // value included in the tree
+    signal input virtualValue;
+    signal input value;
     signal input root;
     signal input siblings[nLength];
-    signal input mode; // 0 for non inclusion, 1 for inclusion
-    signal depth <== SiblingsLength()(siblings);
+    signal input mode;
+    signal depth <-- getSiblingsLength(siblings); // no need to constraint this as bad input will give the wrong root
 
-    // Calulate the path
+    // Calculate path
     signal path[nLength];
     signal path_in_bits_reversed[nLength] <== Num2Bits(256)(virtualValue);
     var path_in_bits[nLength];
-    
+
     for (var i = 0; i < nLength; i++) {
         path_in_bits[i] = path_in_bits_reversed[nLength-1-i];
     }
     
     // Shift the path to the left by depth to make it compatible for BinaryMerkleRoot function
-    component ct1 = VarShiftLeft(nLength,nLength);
-    ct1.in <== path_in_bits;
-    ct1.shift <== (nLength-depth);
-    path <== ct1.out; 
+    component pathShifter = VarShiftLeft(nLength, nLength);
+    pathShifter.in <== path_in_bits;
+    pathShifter.shift <== (nLength - depth);
+    path <== pathShifter.out;
 
     // Closest_key to leaf
-    signal leaf <== PoseidonHash(3)([value, 1, 1]); // compute the leaf from the value
+    signal leaf <== Poseidon(3)([value, 1, 1]); // compute the leaf from the value
     signal isClosestZero <== IsEqual()([value,0]); // check if the inital value is 0, in that case the leaf will be 0 too, not Hash(0,1,1);
     signal leafOrZero <== leaf * (1 - isClosestZero);
 
@@ -40,10 +48,26 @@ template SMTVerify(nLength) {
     signal computedRootIsValid <== IsEqual()([computedRoot,root]);
 
     // check is leaf equals virtual leaf
-    signal virtualLeaf <== PoseidonHash(3)([virtualValue, 1,1]);
+    signal virtualLeaf <== Poseidon(3)([virtualValue, 1,1]);
     signal areLeafAndVirtualLeafEquals <== IsEqual()([virtualLeaf, leaf]);
 
     signal isInclusionOrNonInclusionValid <== IsEqual()([mode,areLeafAndVirtualLeafEquals]);
 
     signal output out <== computedRootIsValid * isInclusionOrNonInclusionValid;
+}
+
+/// @title SiblingsLength
+/// @notice Computes the effective length of a Merkle proof siblings array by finding the last non-zero element
+/// @dev Handles arrays that may have zeros in between valid elements
+/// @input siblings[256] Array of sibling nodes in a Merkle proof
+/// @output length The effective length of the siblings array (position of last non-zero element)
+function getSiblingsLength(siblings) {
+    var length;
+
+    for (var i = 0; i < 256; i++) {
+        if (siblings[i] != 0) {
+            length = i;
+        }
+    }
+    return length + 1;
 }

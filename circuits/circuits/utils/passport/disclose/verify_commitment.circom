@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
 include "@zk-email/circuits/utils/bytes.circom";
-include "../../circomlib/merkle-trees/binary-merkle-root.circom";
+include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../computeCommitment.circom";
 
 template VERIFY_COMMITMENT( nLevels) {

@@ -9,7 +9,6 @@ include "./sha2/sha224/sha224HashBits.circom";
 include "./sha2/sha256/sha256HashBits.circom";
 include "./sha2/sha384/sha384HashBits.circom";
 include "./sha2/sha512/sha512HashBits.circom";
-include "./poseidon/poseidon.circom";
 
 //------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Here is secure implementation of sha-1 and sha-2 hash algoritms.
@@ -97,21 +96,4 @@ template ShaHashBits(LEN, ALGO){
         hash512.in <== in;
         hash512.out ==> out;
     }
-}
-
-//------------------------------------------------------------------------------------------------------------------------------------------------------------
-// Here is secure implementation of Poseidon hash algoritm.
-// LEN in lenght of input vector
-// Poseidon works with vectors, not just nums or bits, so use 1 element arr in case of one number
-// Max LEN is 16, but if u want to connect this to solidity smart contracts, remember that they have only Poseidon(6)
-// U can use this for verification: https://poseidon-hash.online/
-template PoseidonHash(LEN){
-    assert (LEN <= 16);
-    assert (LEN > 0);
-    signal input in[LEN];
-    signal output out;
-
-    component poseidon = Poseidon(LEN);
-    poseidon.in <== in;
-    out <== poseidon.out;
 }

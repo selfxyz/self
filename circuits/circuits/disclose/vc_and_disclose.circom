@@ -45,9 +45,9 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     disclose.majority <== majority;
     
     // generate scope nullifier
-    component poseidon_nullifier = PoseidonHash(2);
-    poseidon_nullifier.in[0] <== secret;
-    poseidon_nullifier.in[1] <== scope;
+    component poseidon_nullifier = Poseidon(2);
+    poseidon_nullifier.inputs[0] <== secret;
+    poseidon_nullifier.inputs[1] <== scope;
     signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;
