@@ -2,6 +2,24 @@ pragma circom 2.1.6;
 
 include "circomlib/circuits/bitify.circom";
 
+/*
+ * MGF1 (Mask Generation Function) Implementation
+ * ============================================
+ * MGF1 is used in RSA-PSS to generate a mask of specified length from a seed value.
+ * It uses an underlying hash function (SHA-512/384/256) to generate the mask.
+ *
+ * The function works by:
+ * 1. Concatenating the seed with a 4-byte counter
+ * 2. Hashing the concatenated value
+ * 3. Incrementing counter and repeating until enough output bits are generated
+ */
+
+/// @title MGF1 with SHA-512
+/// @notice Implements MGF1 using SHA-512 as the underlying hash function
+/// @param seedLen Length of the input seed in bytes
+/// @param maskLen Desired length of the output mask in bytes
+/// @input seed Input seed value as array of bits
+/// @output out Generated mask as array of bits
 template Mgf1Sha512(seedLen, maskLen) { //in bytes
     var seedLenBits = seedLen * 8;
     var maskLenBits = maskLen * 8;
@@ -11,8 +29,13 @@ template Mgf1Sha512(seedLen, maskLen) { //in bytes
     signal input seed[seedLenBits]; //each represents a bit
     signal output out[maskLenBits];
 
+    // Verify mask length doesn't exceed maximum allowed
     assert(maskLen <= 0xffffffff * hashLen );
+
+    // Calculate number of iterations needed
     var iterations = (maskLen \ hashLen) + 1; //adding 1, in-case maskLen \ hashLen is 0
+
+    // Initialize components for SHA-512 hashing and counter conversion
     component sha512[iterations];
     component num2Bits[iterations];
 

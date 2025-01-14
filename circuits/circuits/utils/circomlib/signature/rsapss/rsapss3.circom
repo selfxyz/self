@@ -17,6 +17,54 @@ include "../FpPowMod.circom";
 * For now, only HASH_TYPE == 384 && SALT_LEN == 48, HASH_TYPE == 256 && SALT_LEN == 64, HASH_TYPE == 256 && SALT_LEN == 32 cases supported.
 * Use this for CHUNK_NUMBER == 2**n, otherwise error will occur.
 */
+
+/*
+* RSA-PSS (Probabilistic Signature Scheme) Signature Verification
+* ============================================================
+*
+* This template implements RSA-PSS signature verification according to PKCS#1 v2.2 (RFC 8017).
+* It verifies that a signature is valid for a given message and public key.
+*
+* Process Overview:
+* 1. Computes s^e mod n where s is the signature, e is public exponent (3), n is modulus
+* 2. Validates the encoded message format
+* 3. Extracts the salt and hash from the encoded message
+* 4. Verifies the signature using MGF1 mask generation and hash comparison
+*
+* Parameters:
+* - CHUNK_SIZE: Size of each chunk in bits (recommended: 120)
+* - CHUNK_NUMBER: Number of chunks in modulus (must be 2^n)
+* - SALT_LEN: Salt length in bytes
+* - HASH_TYPE: Hash function output size in bits (256/384/512)
+* - KEY_LENGTH: RSA key length in bits
+*
+* Supported Configurations:
+* - SHA-512 with 64-byte salt
+* - SHA-384 with 48-byte salt
+* - SHA-256 with 64-byte salt
+* - SHA-256 with 32-byte salt
+*
+* Inputs:
+* - pubkey[CHUNK_NUMBER]: Public key modulus split into chunks
+* - signature[CHUNK_NUMBER]: RSA signature split into chunks
+* - hashed[HASH_TYPE]: Hash of the original message
+*
+* Important Notes:
+* - CHUNK_NUMBER must be a power of 2 (2^n)
+* - Salt length is specified in bytes (not bits)
+*/
+
+/// @title RSA-PSS Signature Verification Circuit
+/// @notice Verifies RSA-PSS signatures according to PKCS#1 v2.1
+/// @dev Implements core RSA-PSS verification logic including MGF1 mask generation
+/// @param CHUNK_SIZE Size of each chunk in bits (recommended: 120)
+/// @param CHUNK_NUMBER Number of chunks in modulus (must be 2^n)
+/// @param SALT_LEN Salt length in bytes
+/// @param HASH_TYPE Hash function output size in bits (256/384/512)
+/// @param KEY_LENGTH RSA key length in bits
+/// @input pubkey The public key modulus split into chunks
+/// @input signature The RSA signature split into chunks
+/// @input hashed The hash of the original message
 template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LENGTH) {
     assert((HASH_TYPE == 512 && SALT_LEN == 64) || (HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32));
     
