@@ -115,9 +115,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsa.signature <== signature;
 
     }
-    if (signatureAlgorithm == 12) {
-
-    }
     if (
         signatureAlgorithm == 13
         || signatureAlgorithm == 32
