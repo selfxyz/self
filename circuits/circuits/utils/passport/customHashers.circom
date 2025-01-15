@@ -1,5 +1,5 @@
 pragma circom 2.1.9;
-include "../circomlib/bigInt/bigIntFunc.circom";
+include "../crypto/bigInt/bigIntFunc.circom";
 include "circomlib/circuits/poseidon.circom";
 
 template CustomHasher(k) {

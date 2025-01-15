@@ -1,9 +1,9 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
-include "../utils/circomlib/hasher/shaBytes/shaBytesDynamic.circom";
+include "../utils/crypto/hasher/shaBytes/shaBytesDynamic.circom";
 include "circomlib/circuits/comparators.circom";
-include "../utils/circomlib/hasher/hash.circom";
+include "../utils/crypto/hasher/hash.circom";
 include "circomlib/circuits/poseidon.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../utils/passport/customHashers.circom";

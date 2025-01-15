@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../circomlib/merkle-trees/smt.circom";
+include "../../crypto/merkle-trees/smt.circom";
 
 template OFAC_PASSPORT_NUMBER() {
 
