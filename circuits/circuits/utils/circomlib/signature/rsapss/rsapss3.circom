@@ -7,18 +7,6 @@ include "../../hasher/hash.circom";
 include "../FpPowMod.circom";
 
 /*
-* Verification for RSAPSS signature.
-* hashed is hashed message of hash_type algo, hash_type is algo hash algo for mgf1 mask generation.
-* There is no assert for CHUNK_SIZE == 64 and it may work with other chunking, but this one wasn`t tested, 
-* so better use 64 signature and pubkey - chunked numbers (CHUNK_SIZE, CHUNK_NUMBER).
-* default exp = 65537 
-* SALT_LEN is salt lenght in bytes! (NOT IN BITES LIKE HASH_TYPE!).
-* This is because salt len can`t be % 8 != 0 so we use bytes len (8 bites).
-* For now, only HASH_TYPE == 384 && SALT_LEN == 48, HASH_TYPE == 256 && SALT_LEN == 64, HASH_TYPE == 256 && SALT_LEN == 32 cases supported.
-* Use this for CHUNK_NUMBER == 2**n, otherwise error will occur.
-*/
-
-/*
 * RSA-PSS (Probabilistic Signature Scheme) Signature Verification
 * ============================================================
 *
@@ -32,7 +20,7 @@ include "../FpPowMod.circom";
 * 4. Verifies the signature using MGF1 mask generation and hash comparison
 *
 * Parameters:
-* - CHUNK_SIZE: Size of each chunk in bits (recommended: 120)
+* - CHUNK_SIZE: Size of each chunk in bits (recommended: 64)
 * - CHUNK_NUMBER: Number of chunks in modulus (must be 2^n)
 * - SALT_LEN: Salt length in bytes
 * - HASH_TYPE: Hash function output size in bits (256/384/512)
@@ -52,6 +40,8 @@ include "../FpPowMod.circom";
 * Important Notes:
 * - CHUNK_NUMBER must be a power of 2 (2^n)
 * - Salt length is specified in bytes (not bits)
+* - The signature and EM length is bounded by the public key modulus length (KEY_LENGTH). This is because RSA signatures are computed using modular exponentiation with the public key modulus (n)
+* - The KEY_LENGTH parameter represents this modulus length in bits.
 */
 
 /// @title RSA-PSS Signature Verification Circuit
@@ -221,6 +211,7 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
             mDash[i] <== 0;
         }
 
+        //sha256 padding
         mDash[576] <== 1;
         mDash[1023] <== 0;
         mDash[1022] <== 0;
