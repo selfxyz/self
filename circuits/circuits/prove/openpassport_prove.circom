@@ -10,6 +10,50 @@ include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 
+/// @title OPENPASSPORT_PROVE
+/// @notice Main circuit to verify passport data and be used to several purposes to enable passport
+/// @dev Handles passport verification, OFAC checks, selective disclosure, and commitment generation
+/// @param DG_HASH_ALGO Hash algorithm used for DG (Document Group) hashing
+/// @param ECONTENT_HASH_ALGO Hash algorithm used for eContent
+/// @param signatureAlgorithm Algorithm used for passport signature verification
+/// @param n Number of bits per chunk the key is split into.
+/// @param k Number of chunks the key is split into.
+/// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
+/// @param MAX_SIGNED_ATTR_PADDED_LEN Maximum length of padded signed attributes
+/// @param FORBIDDEN_COUNTRIES_LIST_LENGTH Length of the forbidden countries list
+/// @input dg1 Document Group 1 data (93 bytes)
+/// @input dg1_hash_offset Offset for DG1 hash
+/// @input dg2_hash Document Group 2 hash (64 bytes)
+/// @input eContent eContent data
+/// @input eContent_padded_length Padded length of eContent
+/// @input signed_attr Signed attributes data
+/// @input signed_attr_padded_length Padded length of signed attributes
+/// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
+/// @input pubKey Public key for signature verification
+/// @input signature Passport signature
+/// @input selector_mode Mode selectors for different operations
+/// @input smt_leaf_value SMT leaf value for OFAC check
+/// @input smt_root SMT root for OFAC check
+/// @input smt_siblings SMT siblings for OFAC check
+/// @input selector_ofac Selector for OFAC check
+/// @input forbidden_countries_list List of forbidden countries
+/// @input selector_dg1 Selectors for DG1 disclosure
+/// @input selector_older_than Selector for age verification
+/// @input current_date Current date for age verification
+/// @input majority Majority age threshold
+/// @input user_identifier User identifier for commitment
+/// @input scope Scope for nullifier
+/// @input secret Secret for commitment generation. Supposed to be saved by the user to access this commitment.
+/// @input dsc_secret One time secret data to generate the blinded commitment. This blinded dsc commitment is used to find the link between a proof from this circuit and a proof from the dsc circuit.
+/// @output nullifier Generated nullifier
+/// @output revealedData_packed Selectively disclosed data in the passport
+/// @output older_than Age verification result
+/// @output pubKey_disclosed Disclosed public key
+/// @output forbidden_countries_list_packed_disclosed Packed forbidden countries list
+/// @output ofac_result OFAC check result
+/// @output commitment Unique commitment for the passport data and their secret
+/// @output blinded_dsc_commitment To find the link between a proof from this circuit and a proof from the dsc circuit.
+
 template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN, FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;

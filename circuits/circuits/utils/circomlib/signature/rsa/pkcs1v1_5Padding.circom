@@ -9,8 +9,17 @@ include "circomlib/circuits/bitify.circom";
 // For SHA1,   the OID is 0x3021300906052b0e03021a05000414
 // For SHA256, the OID is 0x3031300d060960864801650304020105000420
 // For SHA384, the OID is 0x3041300d060960864801650304020205000430
-// For SHA512, the OID is 0x3051300d060960864801650304020305000440 
+// For SHA512, the OID is 0x3051300d060960864801650304020305000440
 
+/// @title Pkcs1v1_5Padding
+/// @notice Verify PKCS#1 v1.5 padding scheme for RSA signatures
+/// @dev Pads the message according to PKCS#1 v1.5 and verifies the padding
+/// @param CHUNK_SIZE Number of bits per chunk
+/// @param CHUNK_NUMBER Number of chunks the message is split into
+/// @param HASH_SIZE Size of the hash in bits (160 for SHA1, 256 for SHA256, 384 for SHA384, 512 for SHA512)
+/// @input modulus The RSA modulus split into chunks
+/// @input message The message hash to be padded
+/// @output out The padded message split into chunks
 template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal input modulus[CHUNK_NUMBER];
     signal input message[CHUNK_NUMBER];
@@ -88,6 +97,10 @@ template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     }
 }
 
+/// @title getOID
+/// @notice Returns the OID (Object Identifier) for the specified hash function
+/// @param HASH_SIZE Size of the hash function in bits
+/// @return The OID value as a hex number
 function getOID(HASH_SIZE) {
     if (HASH_SIZE == 160) {
         return 0x3021300906052b0e03021a05000414;
@@ -104,6 +117,10 @@ function getOID(HASH_SIZE) {
     return 0;
 }
 
+/// @title getOIDSize
+/// @notice Returns the size of the OID for the specified hash function
+/// @param HASH_SIZE Size of the hash function in bits
+/// @return The size of the OID in bits
 function getOIDSize(HASH_SIZE) {
     if (HASH_SIZE == 160) {
         return 120;
