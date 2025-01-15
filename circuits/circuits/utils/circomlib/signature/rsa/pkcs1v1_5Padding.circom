@@ -6,10 +6,10 @@ include "circomlib/circuits/bitify.circom";
 // 0x00 || 0x01 || PS || 0x00 || OID || Hash
 // PS is a sequence of 0xFF bytes that is padded so that the data to be signed matches the length of the key.
 // OID is the object identifier for the hash function used.
-// For SHA1,   the OID is 0x3021300906052b0e03021a05000414
-// For SHA256, the OID is 0x3031300d060960864801650304020105000420
-// For SHA384, the OID is 0x3041300d060960864801650304020205000430
-// For SHA512, the OID is 0x3051300d060960864801650304020305000440 
+// For SHA1,   the OID is 0x3021300906052b0e03021a05000414 and the size is 120
+// For SHA256, the OID is 0x3031300d060960864801650304020105000420 and the size is 152
+// For SHA384, the OID is 0x3041300d060960864801650304020205000430 and the size is 152
+// For SHA512, the OID is 0x3051300d060960864801650304020305000440 and the size is 152
 
 template Pkcs1v1_5Padding(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal input modulus[CHUNK_NUMBER];
