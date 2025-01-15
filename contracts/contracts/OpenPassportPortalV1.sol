@@ -77,7 +77,7 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
     error CURRENT_DATE_NOT_IN_VALID_RANGE();
     error INVALID_PROVE_PROOF();
     error INVALID_DSC_PROOF();
-
+    error INVALID_MERKLE_ROOT();
     event ProveVerifierUpdated(uint256 typeId, address verifier);
     event DscVerifierUpdated(uint256 typeId, address verifier);
 
@@ -181,8 +181,27 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         external 
+        view
         returns (bool) 
     {
+        if (!registry.checkRoot(proof.pubSignals[OpenPassportConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
+            revert INVALID_MERKLE_ROOT();
+        }
+
+        // TODO: add smt root verification
+
+        uint[6] memory dateNum;
+        dateNum[0] = proof.pubSignals[OpenPassportConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX];
+        uint currentTimestamp = OpenPassportFormatter.proofDateToUnixTimestamp(dateNum);
+
+        // Check that the current date is within a +/- 1 day range
+        if(
+            currentTimestamp < block.timestamp - 1 days ||
+            currentTimestamp > block.timestamp + 1 days
+        ) {
+            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
+        }
+
         return vcAndDiscloseCircuitVerifier.verifyProof(proof);
     }
 
