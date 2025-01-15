@@ -7,17 +7,17 @@ include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "circomlib/circuits/poseidon.circom";
 
 /// @title SMTVerify
-/// @notice Verifies inclusion or non-inclusion of a value in a Sparse Merkle Tree
+/// @notice Verifies inclusion or non-inclusion of a key in a Sparse Merkle Tree
 /// @param nLength Maximum depth of the tree
-/// @input virtualValue The value to verify (user's input value)
-/// @input value The value stored in the tree at the path
+/// @input virtualKey The key to verify (user's input key)
+/// @input key The key stored in the tree at the path
 /// @input root The root of the Sparse Merkle Tree
 /// @input siblings Array of sibling nodes
 /// @input mode Verification mode (0 for non-inclusion, 1 for inclusion)
 /// @output out 1 if verification succeeds, 0 otherwise
 template SMTVerify(nLength) {
-    signal input virtualValue;
-    signal input value;
+    signal input virtualKey;
+    signal input key;
     signal input root;
     signal input siblings[nLength];
     signal input mode;
@@ -25,7 +25,7 @@ template SMTVerify(nLength) {
 
     // Calculate path
     signal path[nLength];
-    signal path_in_bits_reversed[nLength] <== Num2Bits(256)(virtualValue);
+    signal path_in_bits_reversed[nLength] <== Num2Bits(256)(virtualKey);
     var path_in_bits[nLength];
 
     for (var i = 0; i < nLength; i++) {
@@ -39,8 +39,8 @@ template SMTVerify(nLength) {
     path <== pathShifter.out;
 
     // Closest_key to leaf
-    signal leaf <== Poseidon(3)([value, 1, 1]); // compute the leaf from the value
-    signal isClosestZero <== IsEqual()([value,0]); // check if the inital value is 0, in that case the leaf will be 0 too, not Hash(0,1,1);
+    signal leaf <== Poseidon(3)([key, 1, 1]); // compute the leaf from the key
+    signal isClosestZero <== IsEqual()([key,0]); // check if the inital key is 0, in that case the leaf will be 0 too, not Hash(0,1,1);
     signal leafOrZero <== leaf * (1 - isClosestZero);
 
     // Verification
@@ -48,7 +48,7 @@ template SMTVerify(nLength) {
     signal computedRootIsValid <== IsEqual()([computedRoot,root]);
 
     // check is leaf equals virtual leaf
-    signal virtualLeaf <== Poseidon(3)([virtualValue, 1,1]);
+    signal virtualLeaf <== Poseidon(3)([virtualKey, 1,1]);
     signal areLeafAndVirtualLeafEquals <== IsEqual()([virtualLeaf, leaf]);
 
     signal isInclusionOrNonInclusionValid <== IsEqual()([mode,areLeafAndVirtualLeafEquals]);

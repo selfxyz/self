@@ -7,7 +7,7 @@ template OFAC_NAME_DOB() {
 
     signal input dg1[93];
 
-    signal input smt_leaf_value;
+    signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     // Name Hash
@@ -30,5 +30,5 @@ template OFAC_NAME_DOB() {
     // NameDob hash
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
 
-    signal output ofacCheckResult <== SMTVerify(256)(name_dob_hash, smt_leaf_value, smt_root, smt_siblings, 0);
+    signal output ofacCheckResult <== SMTVerify(256)(name_dob_hash, smt_leaf_key, smt_root, smt_siblings, 0);
 }

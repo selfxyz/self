@@ -26,7 +26,7 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input user_identifier;
 
     // ofac check
-    signal input smt_leaf_value;
+    signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
@@ -56,7 +56,7 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal output forbidden_countries_list_packed_disclosed[2] <== ProveCountryIsNotInList(FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
 
     // OFAC
-    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_key,smt_root,smt_siblings);
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
 }

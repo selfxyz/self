@@ -30,7 +30,7 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     signal input selector_mode[2];
 
     // ofac check
-    signal input smt_leaf_value;
+    signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
@@ -104,7 +104,7 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     }
 
     // OFAC
-    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_key,smt_root,smt_siblings);
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
 

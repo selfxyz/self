@@ -91,7 +91,7 @@ describe('OFAC - Passport number match', function () {
   it('should pass - wrong merkleroot, level 3', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
-      smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
     let w = await circuit.calculateWitness(wrongInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
@@ -158,7 +158,7 @@ describe('OFAC - Name and DOB match', function () {
   it('should pass - wrong merkleroot, level 2', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
-      smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
 
     let w = await circuit.calculateWitness(wrongInputs);
@@ -226,7 +226,7 @@ describe('OFAC - Name match', function () {
   it('should pass - wrong merkleroot, level 1', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
-      smt_leaf_value: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
+      smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
     let w = await circuit.calculateWitness(wrongInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
