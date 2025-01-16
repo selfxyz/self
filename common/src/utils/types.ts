@@ -31,6 +31,7 @@ export type SignatureAlgorithm =
   | 'rsa_sha256_65537_3072'
   | 'rsa_sha256_65537_4096'
   | 'rsa_sha512_65537_4096'
+  | 'rsa_sha224_65537_2048'
   | 'rsapss_sha256_65537_3072'
   | 'rsapss_sha256_65537_4096'
   | 'rsapss_sha256_3_2048'

@@ -6,6 +6,7 @@ import {
   getNAndK,
 } from '../../../common/src/utils/utils';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
+import { sha224 } from 'hash.js';
 
 export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgorithm) => {
   let privateKey: string;
@@ -31,6 +32,11 @@ export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgo
     case 'rsa_sha512_65537_4096':
       modulusLength = 4096;
       signAlgorithm = signatureAlgorithm.includes('sha256') ? 'sha256' : 'sha512';
+      publicExponent = 65537;
+      break;
+    case 'rsa_sha224_65537_2048':
+      modulusLength = 2048;
+      signAlgorithm = 'sha224';
       publicExponent = 65537;
       break;
     default:
