@@ -133,38 +133,13 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
     }
     
     //getting mask
-    if (HASH_TYPE == 256) {
-        component MGF1_256 = Mgf1Sha256(HASH_LEN, DB_MASK_LEN);
-
-        for (var i = 0; i < (HASH_TYPE); i++) {
-            MGF1_256.seed[i] <== hash[i];
-        }
-
-        for (var i = 0; i < DB_MASK_LEN * 8; i++) {
-            dbMask[i] <== MGF1_256.out[i];
-        }
+    component MGF1 = Mgf1(HASH_TYPE, HASH_LEN, DB_MASK_LEN);
+    for (var i = 0; i < (HASH_TYPE); i++) {
+        MGF1.seed[i] <== hash[i];
     }
-    if (HASH_TYPE == 384) {
-        component MGF1_384 = Mgf1Sha384(HASH_LEN, DB_MASK_LEN);
 
-        for (var i = 0; i < (HASH_TYPE); i++) {
-            MGF1_384.seed[i] <== hash[i];
-        }
-
-        for (var i = 0; i < DB_MASK_LEN * 8; i++) {
-            dbMask[i] <== MGF1_384.out[i];
-        }
-    }
-    if (HASH_TYPE == 512) {
-        component MGF1_512 = Mgf1Sha512(HASH_LEN, DB_MASK_LEN);
-
-        for (var i = 0; i < (HASH_TYPE); i++) {
-            MGF1_512.seed[i] <== hash[i];
-        }
-
-        for (var i = 0; i < DB_MASK_LEN * 8; i++) {
-            dbMask[i] <== MGF1_512.out[i];
-        }
+    for (var i = 0; i < DB_MASK_LEN * 8; i++) {
+        dbMask[i] <== MGF1.out[i];
     }
 
     component xor = Xor2(DB_MASK_LEN * 8);
