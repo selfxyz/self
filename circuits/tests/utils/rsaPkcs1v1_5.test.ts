@@ -47,10 +47,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
 
       const invalidSignature = signature.map((byte: string) => String((parseInt(byte) + 1) % 256));
       const circuit = await wasmTester(
-        path.join(
-          __dirname,
-          `../../circuits/tests/utils/rsa/test_${algorithm}.circom`
-        ),
+        path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
@@ -72,10 +69,7 @@ describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
 
       const invalidMessage = message.map((byte: string) => String((parseInt(byte) + 1) % 256));
       const circuit = await wasmTester(
-        path.join(
-          __dirname,
-          `../../circuits/tests/utils/rsa/test_${algorithm}.circom`
-        ),
+        path.join(__dirname, `../../circuits/tests/utils/rsa/test_${algorithm}.circom`),
         {
           include: ['node_modules', './node_modules/@zk-kit/binary-merkle-root.circom/src'],
         }
