@@ -223,8 +223,8 @@ export function generateCircuitInputsProve(
 
   const dg1PaddingFunction =
     passportMetadata.dg1HashFunction === 'sha1' ||
-      passportMetadata.dg1HashFunction === 'sha224' ||
-      passportMetadata.dg1HashFunction === 'sha256'
+    passportMetadata.dg1HashFunction === 'sha224' ||
+    passportMetadata.dg1HashFunction === 'sha256'
       ? shaPad
       : sha384_512Pad;
 
@@ -235,8 +235,8 @@ export function generateCircuitInputsProve(
 
   const eContentPaddingFunction =
     passportMetadata.eContentHashFunction === 'sha1' ||
-      passportMetadata.eContentHashFunction === 'sha224' ||
-      passportMetadata.eContentHashFunction === 'sha256'
+    passportMetadata.eContentHashFunction === 'sha224' ||
+    passportMetadata.eContentHashFunction === 'sha256'
       ? shaPad
       : sha384_512Pad;
   const [signedAttrPadded, signedAttrPaddedLen] = eContentPaddingFunction(

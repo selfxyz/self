@@ -6,7 +6,6 @@ import {
   getNAndK,
 } from '../../../common/src/utils/utils';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { sha224 } from 'hash.js';
 
 export const generateMockRsaPkcs1v1_5Inputs = (signatureAlgorithm: SignatureAlgorithm) => {
   let privateKey: string;
