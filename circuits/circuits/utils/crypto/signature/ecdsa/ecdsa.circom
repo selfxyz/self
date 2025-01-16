@@ -45,13 +45,13 @@ template verifyECDSABits(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, ALGO){
     modInv.out ==> sinv;
     
     // (s ^ -1 mod n) * h mod n
-    component mult = BigMultModPDl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, CHUNK_NUMBER);
+    component mult = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, CHUNK_NUMBER);
     mult.in1 <== sinv;
     mult.in2 <== hashedChunked;
     mult.modulus <== order;
 
     // (s ^ -1 mod n) * r mod n
-    component mult2 = BigMultModPDl(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, CHUNK_NUMBER);
+    component mult2 = BigMultModP(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER, CHUNK_NUMBER);
     mult2.in1 <== sinv;
     mult2.in2 <== signature[0];
     mult2.modulus <== order;

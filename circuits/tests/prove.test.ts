@@ -14,31 +14,31 @@ import { customHasher } from '../../common/src/utils/pubkeyTree';
 import { hash } from '../../common/src/utils/utils';
 
 const sigAlgs = [
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsapss',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '3',
-  //   keyLength: '3072',
-  //   checkNullifier: true,
-  // },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
-  // {
-  //   dgHashAlgo: 'sha1',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsa',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '65537',
-  //   keyLength: '2048',
-  // },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    domainParameter: '3',
+    keyLength: '3072',
+    checkNullifier: true,
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
   {
     dgHashAlgo: 'sha1',
     eContentHashAlgo: 'sha1',
@@ -47,14 +47,14 @@ const sigAlgs = [
     domainParameter: 'secp256r1',
     keyLength: '256',
   },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha224',
-  //   sigAlg: 'ecdsa',
-  //   hashFunction: 'sha224',
-  //   domainParameter: 'brainpoolP224r1',
-  //   keyLength: '224',
-  // },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha224',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha224',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
 ];
 
 const fullSigAlgs = [

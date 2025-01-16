@@ -1,12 +1,17 @@
 
 pragma circom  2.1.6;
 
-// Get generator by curve params
-// Now there is only secp256k1 \ brainpoolP256r1 generator (64 4 chunking) and brainpoolP384r1
-// Other curves / chunking will be added later
+/// @title EllipticCurveGetGenerator
+/// @notice Returns the generator point for a given elliptic curve defined by parameters A, B, and P.
+/// @param CHUNK_SIZE The size of each chunk for the scalar multiplication.
+/// @param CHUNK_NUMBER The number of chunks used in the scalar multiplication.
+/// @param A The parameter A of the elliptic curve equation.
+/// @param B The parameter B of the elliptic curve equation.
+/// @param P The curve's prime field parameter.
+/// @return gen The generator point for the elliptic curve, with coordinates in the field represented by two arrays of CHUNK_NUMBER elements.
 template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     signal output gen[2][CHUNK_NUMBER];
+
     if (CHUNK_NUMBER == 4){
         if (P[0] == 2311270323689771895 && P[1] == 7943213001558335528 && P[2] == 4496292894210231666 && P[3] == 12248480212390422972){
             gen[0] <== [4198572826427273826, 13393186192988382146, 3191724131859150767, 10075307429387458507];
@@ -63,18 +68,21 @@ template EllipticCurveGetGenerator(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
             gen[1] <== [8356842117447370769, 7138225120784731605, 511487955924736632];
         }
     }
-    
 }
 
-// Get "dummy" point
-// We can`t "if" signal in circom, so we always need to do all opertions, even we won`t use results of them
-// For example, in scalar mult we can have case where we shouln`t add anything (bits = [0,0, .. ,0])
-// We will ignore result, but we still should get it, so we need to pout something anyway
-// We use this dummy point for such purposes
-// Dummy point = G * 2**256
+/// @title EllipticCurveGetDummy
+/// @notice Returns a "dummy" point on the elliptic curve. This dummy point is used to handle cases where operations are required but the result is not used.
+///         The dummy point is defined as G * 2^256, where G is the generator point of the elliptic curve.
+/// @param CHUNK_SIZE The size of each chunk for the scalar multiplication.
+/// @param CHUNK_NUMBER The number of chunks used in the scalar multiplication.
+/// @param A The parameter A of the elliptic curve equation.
+/// @param B The parameter B of the elliptic curve equation.
+/// @param P The curve's prime field parameter.
+/// @return dummyPoint The dummy point, calculated as G * 2^256, represented in two arrays of CHUNK_NUMBER elements.
+
 template EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     signal output dummyPoint[2][CHUNK_NUMBER];
+    
     if (CHUNK_NUMBER == 4){
         if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
             dummyPoint[0] <== [10590052641807177607, 9925333800925632128, 8387557479920400525, 15939969690812260448];
@@ -135,10 +143,18 @@ template EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     }
 }
 
-// Get order of eliptic curve
+/// @title EllipticCurveGetOrder
+/// @notice Returns the order of the elliptic curve, which is the number of points on the curve.
+/// @dev The order of an elliptic curve is an important value used in cryptographic operations, particularly for elliptic curve discrete logarithm problems and key generation.
+/// @param CHUNK_SIZE The size of each chunk for the scalar multiplication.
+/// @param CHUNK_NUMBER The number of chunks used in the scalar multiplication.
+/// @param A The parameter A of the elliptic curve equation.
+/// @param B The parameter B of the elliptic curve equation.
+/// @param P The curve's prime field parameter (the modulus of the finite field).
+/// @return order The order of the elliptic curve, represented as a signal array of CHUNK_NUMBER elements. This is the number of points on the curve.
 template EllipicCurveGetOrder(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
-    
     signal output order[CHUNK_NUMBER];
+
     if (CHUNK_NUMBER == 4){
         if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
             order <== [13822214165235122497, 13451932020343611451, 18446744073709551614, 18446744073709551615];

@@ -1,7 +1,6 @@
 pragma circom 2.1.6;
 
-include "./dontOpenPlease.circom";
-
+include "./shouldUseKaratsuba.circom";
 
 function is_negative_dl(x) {
     return x > 10944121435919637611123202872628637544274182200208017171849102093287904247808 ? 1 : 0;
