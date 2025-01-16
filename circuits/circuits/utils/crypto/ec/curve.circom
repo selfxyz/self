@@ -5,11 +5,10 @@ include "../bigInt/bigInt.circom";
 include "../bigInt/bigIntOverflow.circom";
 include "../bigInt/bigIntHelpers.circom";
 include "./get.circom";
+include "./powers/p224pows.circom";
 include "./powers/p256pows.circom";
 include "./powers/p384pows.circom";
-include "./powers/secp224r1pows.circom"; 
-include "./powers/secp256k1pows.circom"; 
-include "./powers/secp521r1pows.circom"; 
+include "./powers/p521pows.circom";
 include "./powers/brainpoolP224r1pows.circom"; 
 include "./powers/brainpoolP256r1pows.circom"; 
 include "./powers/brainpoolP384r1pows.circom"; 
@@ -19,63 +18,39 @@ include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
 include "../int/arithmetic.circom";
 
-// Operation for any Weierstrass prime-field eliptic curve (for now 256-bit)
-// A, B, P in every function - params of needed curve, chunked the same as every other chunking (64 4 for now)
-// Example usage of operation (those are params for secp256k1 ec):
-// EllipticCurveDoubleOptimised(64, 4, [0,0,0,0], [7,0,0,0], [18446744069414583343, 18446744073709551615, 18446744073709551615, 18446744073709551615]);
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// To add a new curve u should do next steps:
-// Get curve params(A, B, P) in chunked representation
-// Add order, dummyPoint (G * 2**256), and generator to "./get.circom" for chunking:
-// if (CHUNK_NUMBER == 4){
-//     if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-//         gen[0] <== [6481385041966929816, 188021827762530521, 6170039885052185351, 8772561819708210092];
-//         gen[1] <== [11261198710074299576, 18237243440184513561, 6747795201694173352, 5204712524664259685];
-//     }
-// }
-// This is example for generator for 64 4 chunked secp256r1 curve
-// This steps can be simplified by "../../helpers/generate_get_for_new_curve.py", but it can be broken in some cases, make a copy of "./get.circom" before it 
-// But for new curve with already existing chunks should work fine
-// Won`t work fine for new chunking, or already existing curve, will be fixed later
-// Use "../../helpers/get.py" to get str to paste, this one works fine, but it isn`t pasting, u should do it by yourself
-// Change first 8 lines with your parameters and get your code lines.
-// Change params at 4..8 lines in "../../helpers/generate_pow_table_for_curve.py" for your curve params, then execute script from root, this will create file in ./powers
-// Also change chunking in 140 line and curve name at 145
-// execute script from root, it will create new file in "./powers", import it here
-// include "./powers/p256pows.circom"; for example
-// add same case for EllipicCurveScalarGeneratorMult template:
-//   var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
-// if (CHUNK_NUMBER == 4){
-//     if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-//         powers = get_g_pow_stride8_table_secp256k1(CHUNK_SIZE, CHUNK_NUMBER);
-//     }
-// ...
-// } 
-// add here your chunking and get generated pow table
-// 
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// Those are helpers template, don`t use them outside without knowing what are u doing!!!
-// Check is input is point on curve
-// (x^3 + a * x + b - y * 2 % p) === 0
+
+/// @title PointOnCurve
+/// @notice Verifies if a given point lies on an elliptic curve defined by the equation `y^2 = x^3 + ax + b mod p`
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer
+/// @param A The coefficient `a` of the elliptic curve equation
+/// @param B The coefficient `b` of the elliptic curve equation
+/// @param P The prime number defining the finite field for the elliptic curve
+/// @input in The point to verify, represented as a 2D array of chunks [x, y]
 template PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
-    
+
+    // Compute x^2
     component squareX = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     squareX.in1 <== in[0];
     squareX.in2 <== in[0];
     
+    // Compute x^3
     component cubeX = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     cubeX.in1 <== squareX.out;
     cubeX.in2 <== in[0];
     
+    // Compute y^2
     component squareY = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     squareY.in1 <== in[1];
     squareY.in2 <== in[1];
     
+    // Compute a * x
     component coefMult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     coefMult.in1 <== in[0];
     coefMult.in2 <== A;
     
+    // Verify if y^2 - (x^3 + a * x + b) mod p == 0
     component isZeroModP = BigIntIsZeroModP(CHUNK_SIZE, CHUNK_SIZE * 3 + 2 * CHUNK_NUMBER, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER * 3, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER; i++){
         isZeroModP.in[i] <== cubeX.out[i] + coefMult.out[i] - squareY.out[i] + B[i];
@@ -89,48 +64,64 @@ template PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     isZeroModP.modulus <== P;
 }
 
-// Check is point on tangent (for doubling check)
-// (x, y), point that was doubled, (x3, y3) - result 
-// λ = (3 * x ** 2 + a) / (2 * y)
-// y3 = λ * (x - x3) - y
-// 2 * y * (y3 + y) = (3 * x ** 2 + a) * (x - x3)
+/// @title PointOnTangent
+/// @notice Verifies if the given point lies on the tangent line used during elliptic curve point doubling.
+///         λ = (3 * x ** 2 + a) / (2 * y)
+///         y3 = λ * (x - x3) - y
+///         2 * y * (y3 + y) = (3 * x ** 2 + a) * (x - x3)
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation.
+/// @param B The coefficient `b` of the elliptic curve equation (not used explicitly here).
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @input in1 The point being doubled, represented as a 2D array of chunks [x, y].
+/// @input in2 The resulting point from doubling, represented as a 2D array of chunks [x3, y3].
 template PointOnTangent(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     
+    // Compute x^2
     component squareX = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     squareX.in1 <== in1[0];
     squareX.in2 <== in1[0];
-    
+
+    // Compute 3 * x^2
     component scalarMult = ScalarMultOverflow(CHUNK_NUMBER * 2 - 1);
     scalarMult.in <== squareX.out;
     scalarMult.scalar <== 3;
-    
+    // Compute 3 * x^2 + a
+
     component bigAdd = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     bigAdd.in1 <== scalarMult.out;
     bigAdd.in2 <== A;
-    
+
+    // Compute x - x3
     component bigSub = BigSubModP(CHUNK_SIZE, CHUNK_NUMBER);
     bigSub.in1 <== in1[0];
     bigSub.in2 <== in2[0];
     bigSub.modulus <== P;
-    
+
+    // Compute (3 * x^2 + a) * (x - x3)
     component rightMult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER);
     rightMult.in1 <== bigAdd.out;
     rightMult.in2 <== bigSub.out;
-    
+
+    // Compute 2 * y
     component scalarMult2 = ScalarMultOverflow(CHUNK_NUMBER);
     scalarMult2.in <== in1[1];
     scalarMult2.scalar <== 2;
-    
+
+    // Compute y3 + y
     component bigAdd2 = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     bigAdd2.in1 <== in1[1];
     bigAdd2.in2 <== in2[1];
-    
+
+    // Compute 2 * y * (y3 + y)
     component leftMult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     leftMult.in1 <== bigAdd2.out;
     leftMult.in2 <== scalarMult2.out;
-    
+
+    // Verify if 2 * y * (y3 + y) == (3 * x^2 + a) * (x - x3) mod p
     component isZeroModP = BigIntIsZeroModP(CHUNK_SIZE, CHUNK_SIZE * 3 + 2 * CHUNK_NUMBER, CHUNK_NUMBER * 3 - 2, CHUNK_NUMBER * 3 + 1, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER * 2 - 1; i++){
         isZeroModP.in[i] <== rightMult.out[i] - leftMult.out[i];
@@ -143,44 +134,57 @@ template PointOnTangent(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     
 }
 
-// in1 = (x1, y1)
-// in2 = (x2, y2)
-// in3 = (x3, y3) (sum of (x1, y1), (x2, y2))
-// Implements constraint: (y1 + y3) * (x2 - x1) - (y2 - y1) * (x1 - x3) = 0 mod P
-// used to show (x1, y1), (x2, y2), (x3, -y3) are co-linear
+/// @title PointOnLine
+/// @notice Verifies if three points are co-linear on the elliptic curve, implementing the constraint:
+///         (y1 + y3) * (x2 - x1) = (y2 - y1) * (x1 - x3) mod P.
+///         Used to confirm that (x1, y1), (x2, y2), and (x3, -y3) are co-linear.
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation (not used explicitly here).
+/// @param B The coefficient `b` of the elliptic curve equation (not used explicitly here).
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @input in1 The first point (x1, y1), represented as a 2D array of chunks.
+/// @input in2 The second point (x2, y2), represented as a 2D array of chunks.
+/// @input in3 The third point (x3, y3), where y3 represents -y3 for co-linearity, represented as a 2D array of chunks.
 template PointOnLine(CHUNK_SIZE, CHUNK_NUMBER, A, B, P) {
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     signal input in3[2][CHUNK_NUMBER];
     
+    // Compute y1 + y3
     component bigAdd = BigAddOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     bigAdd.in1 <== in1[1];
     bigAdd.in2 <== in3[1];
     
+    // Compute x2 - x1
     component bigSub = BigSubModP(CHUNK_SIZE, CHUNK_NUMBER);
     bigSub.in1 <== in2[0];
     bigSub.in2 <== in1[0];
     bigSub.modulus <== P;
     
+    // Compute y2 - y1
     component bigSub2 = BigSubModP(CHUNK_SIZE, CHUNK_NUMBER);
     bigSub2.in1 <== in2[1];
     bigSub2.in2 <== in1[1];
     bigSub2.modulus <== P;
     
+    // Compute x1 - x3
     component bigSub3 = BigSubModP(CHUNK_SIZE, CHUNK_NUMBER);
     bigSub3.in1 <== in1[0];
     bigSub3.in2 <== in3[0];
     bigSub3.modulus <== P;
     
+    // Compute (y1 + y3) * (x2 - x1)
     component leftMult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     leftMult.in1 <== bigAdd.out;
     leftMult.in2 <== bigSub.out;
     
+    // Compute (y2 - y1) * (x1 - x3)
     component rightMult = BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER, CHUNK_NUMBER);
     rightMult.in1 <== bigSub2.out;
     rightMult.in2 <== bigSub3.out;
     
-    
+    // Verify if (y1 + y3) * (x2 - x1) == (y2 - y1) * (x1 - x3) mod P
     component isZeroModP = BigIntIsZeroModP(CHUNK_SIZE, CHUNK_SIZE * 2 + 2 * CHUNK_NUMBER, CHUNK_NUMBER * 2 - 1, CHUNK_NUMBER * 2 + 1, CHUNK_NUMBER);
     for (var i = 0; i < CHUNK_NUMBER * 2 - 1; i++){
         isZeroModP.in[i] <== leftMult.out[i] - rightMult.out[i];
@@ -189,8 +193,17 @@ template PointOnLine(CHUNK_SIZE, CHUNK_NUMBER, A, B, P) {
     isZeroModP.modulus <== P;
 }
 
-// Precomputes for pipinger optimised multiplication
-// Computes 0 * G, 1 * G, 2 * G, ... (2 ** WINDOW_SIZE - 1) * G
+/// @title EllipticCurvePrecomputePipinger
+/// @notice Precomputes points for Pippenger's optimized scalar multiplication algorithm.
+///         Computes 0 * G, 1 * G, 2 * G, ..., (2^WINDOW_SIZE - 1) * G, where G is the base point.
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation.
+/// @param B The coefficient `b` of the elliptic curve equation.
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @param WINDOW_SIZE The size of the window in bits for the Pippenger algorithm.
+/// @input in The base point G, represented as a 2D array of chunks.
+/// @output out Precomputed points, where out[i] = i * G for i in [0, 2^WINDOW_SIZE - 1].
 template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZE){
     signal input in[2][CHUNK_NUMBER];
     
@@ -198,11 +211,14 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
     
     signal output out[PRECOMPUTE_NUMBER][2][CHUNK_NUMBER];
     
+    // Initialize the point for 0 * G (dummy point)
     component getDummy = EllipticCurveGetDummy(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
     out[0] <== getDummy.dummyPoint;
     
+    // Initialize the point for 1 * G (base point)
     out[1] <== in;
     
+    // Precompute the remaining points using doubling and addition
     component doublers[PRECOMPUTE_NUMBER \ 2 - 1];
     component adders  [PRECOMPUTE_NUMBER \ 2 - 1];
     
@@ -225,20 +241,34 @@ template EllipticCurvePrecomputePipinger(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WIND
 //-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Use next templates for elliptic curve oprations
 
-// λ = (3 * x ** 2 + a) / (2 * y)
-// x3 = λ * λ - 2 * x
-// y3 = λ * (x - x3) - y
-// We check is point is lies both on tangent and curve to assume that point is result of doubling
+/// @title EllipticCurveDouble
+/// @notice Computes the doubling of a point on an elliptic curve using the formula:
+///         λ = (3 * x^2 + a) / (2 * y)
+///         x3 = λ^2 - 2 * x
+///         y3 = λ * (x - x3) - y
+///         Additionally checks if the resulting point lies on both the tangent and the curve.
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation.
+/// @param B The coefficient `b` of the elliptic curve equation.
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @input in The input point to be doubled, represented as a 2D array of chunks.
+/// @output out The resulting doubled point, represented as a 2D array of chunks.
 template EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in[2][CHUNK_NUMBER];
     signal output out[2][CHUNK_NUMBER];
 
     var long_3[CHUNK_NUMBER];
     long_3[0] = 3;
+    // Precompute λ numerator: (3 * x^2 + a)
     var lamb_num[200] = long_add_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, A, prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, long_3, prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in[0], in[0], P), P), P);
+    // Compute λ denominator: (2 * y)
     var lamb_denom[200] = long_add_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in[1], in[1], P);
+    // Compute λ: (lamb_num / lamb_denom) mod P
     var lamb[200] = prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lamb_num, mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, lamb_denom, P), P);
+    // Compute x3 = λ^2 - 2 * x
     var x3[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lamb, lamb, P), long_add_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in[0], in[0], P), P);
+    // Compute y3 = λ * (x - x3) - y
     var y3[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lamb, long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in[0], x3, P), P), in[1], P);
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
@@ -246,11 +276,11 @@ template EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
         out[1][i] <-- y3[i];
     }
     
-    // We check for result point be both on tangent and curve
+    // Check if the resulting point lies on the tangent
     component onTangentCheck = PointOnTangent(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
     onTangentCheck.in1 <== in;
     onTangentCheck.in2 <== out;
-    
+    // Check if the resulting point lies on the curve
     component onCurveCheck = PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
     onCurveCheck.in <== out;
     
@@ -263,19 +293,35 @@ template EllipticCurveDouble(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     // cause we work with overflowed values.
 }
 
-// We check is point both on curve and line ((x1, y1), (x2, y2), (x3, -y3) are co-linear) to assume that this is result of addition
+/// @title EllipticCurveAdd
+/// @notice Computes the addition of two points on an elliptic curve using the formula:
+///         λ = (y2 - y1) / (x2 - x1)
+///         x3 = λ^2 - x1 - x2
+///         y3 = λ * (x1 - x3) - y1
+///         Additionally checks if the resulting point lies on both the curve and the line formed by the input points.
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation.
+/// @param B The coefficient `b` of the elliptic curve equation.
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @input in1 The first input point, represented as a 2D array of chunks.
+/// @input in2 The second input point, represented as a 2D array of chunks.
+/// @output out The resulting point after addition, represented as a 2D array of chunks.
 template EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input in1[2][CHUNK_NUMBER];
     signal input in2[2][CHUNK_NUMBER];
     
     signal output out[2][CHUNK_NUMBER];
     
+    // Compute the slope λ = (y2 - y1) / (x2 - x1)
     var dy[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in2[1], in1[1], P);
     var dx[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in2[0], in1[0], P);
     var dx_inv[200] = mod_inv_dl(CHUNK_SIZE, CHUNK_NUMBER, dx, P);
     var lambda[200] = prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, dy, dx_inv, P);
     var lambda_sq[200] = prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lambda, lambda, P);
+    // Compute x3 = λ^2 - x1 - x2
     var x3[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lambda_sq, in1[0], P), in2[0], P);
+    // Compute y3 = λ * (x1 - x3) - y1
     var y3[200] = long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, prod_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, lambda, long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, in1[0], x3, P), P), in1[1], P);
     
     for (var i = 0; i < CHUNK_NUMBER; i++){
@@ -283,10 +329,11 @@ template EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
         out[1][i] <-- y3[i];
     }
     
-    
+    // Check if the resulting point lies on the elliptic curve
     component onCurveCheck = PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
     onCurveCheck.in <== out;
     
+    // Check if the points (x1, y1), (x2, y2), and (x3, -y3) are collinear
     component onLineCheck = PointOnLine(CHUNK_SIZE, CHUNK_NUMBER, A, B, P);
     onLineCheck.in1 <== in1;
     onLineCheck.in2 <== in2;
@@ -295,15 +342,24 @@ template EllipticCurveAdd(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     // same as previous, this checks should be enought, no need in range checks
 }
 
-// Optimised scalar point multiplication, use it if u can`t add precompute table
-// Algo:
-// Precompute (see "PrecomputePipinger" template)
-// Convert each WINDOW_SIZE bits into num IDX, double WINDOW_SIZE times, add to result IDX * G (from precomputes), repeat
-// Double add and algo complexity:
-// 255 doubles + 255 adds
-// Our algo complexity:
-// 256 - WINDOW_SIZE doubles, (256 - WINDOW_SIZE) / WINDOW_SIZE adds, 2 ** WINDOW_SIZE - 2 adds and doubles for precompute
-// for 256 curve best WINDOW_SIZE = 4 with 252 + 63 + 14 = 329 operations with points
+/// @title EllipticCurveScalarMult
+/// @notice Optimized scalar multiplication for elliptic curve points. (to be used if you can`t use precomputation table) 
+///         Precompute (see "PrecomputePipinger" template)
+//          Convert each WINDOW_SIZE bits into num IDX, double WINDOW_SIZE times, add to result IDX * G (from precomputes), repeat
+//          Double add and algo complexity:
+//          255 doubles + 255 adds
+//          Algo complexity:
+//          256 - WINDOW_SIZE doubles, (256 - WINDOW_SIZE) / WINDOW_SIZE adds, 2 ** WINDOW_SIZE - 2 adds and doubles for precompute
+//          for 256 curve best WINDOW_SIZE = 4 with 252 + 63 + 14 = 329 operations with points
+/// @param CHUNK_SIZE The size of each chunk in bits, used for representing large integers.
+/// @param CHUNK_NUMBER The number of chunks used to represent each large integer.
+/// @param A The coefficient `a` of the elliptic curve equation.
+/// @param B The coefficient `b` of the elliptic curve equation.
+/// @param P The prime number defining the finite field for the elliptic curve.
+/// @param WINDOW_SIZE The size of each window in bits for precomputation and scalar conversion.
+/// @input in The input point on the elliptic curve, represented as a 2D array of chunks.
+/// @input scalar The scalar value for multiplication, represented as an array of chunks.
+/// @output out The resulting point after scalar multiplication, represented as a 2D array of chunks.
 template EllipticCurveScalarMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZE){
     
     signal input in[2][CHUNK_NUMBER];
@@ -457,15 +513,15 @@ template EllipticCurveScalarMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P, WINDOW_SIZE)
     out <== resultingPoints[ADDERS_NUMBER];
 }
 
-// calculate G * scalar
-// To make it work for other curve u should generate generator pow table
-// Other curves will be added by ourself soon
-// Will fail if scalar == 0, don`t do it
-// Use chunking that CHUNK_NUMBER * CHUNK_SIZE % 8 != 0
-// And don`t use for 43 * 6 % 8 == 2, for example
-// This chunking will be added late
-// Complexity is field \ 8 - 1 additions
-// For 256 field is 31 additions
+/// @title EllipicCurveScalarGeneratorMult
+/// @notice Calculates the elliptic curve scalar multiplication: G * scalar
+/// @dev This function works for multiple elliptic curve types. The generator power tables for each curve are pre-generated. It performs the scalar multiplication in chunks using the specified chunk size and number of chunks.
+/// @param CHUNK_SIZE The size of each chunk used for scalar multiplication. 
+/// @param CHUNK_NUMBER The number of chunks used for scalar multiplication. 
+/// @param A The curve parameter A (used for curve equation: y^2 = x^3 + Ax + B).
+/// @param B The curve parameter B (used for curve equation: y^2 = x^3 + Ax + B).
+/// @param P The elliptic curve parameters [P0, P1, P2, P3] defining the curve.
+/// @return out The resulting elliptic curve point after multiplying the generator G with the scalar.
 template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     signal input scalar[CHUNK_NUMBER];
     
@@ -477,9 +533,6 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     
     if (CHUNK_NUMBER == 4){
-        if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-            powers = get_g_pow_stride8_table_secp256k1(CHUNK_SIZE, CHUNK_NUMBER);
-        }
         if (P[0] == 2311270323689771895 && P[1] == 7943213001558335528 && P[2] == 4496292894210231666 && P[3] == 12248480212390422972){
             powers = get_g_pow_stride8_table_brainpoolP256r1(CHUNK_SIZE, CHUNK_NUMBER);
         }
@@ -489,7 +542,7 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     }
     if (CHUNK_NUMBER == 8 && CHUNK_SIZE == 66){
         if (P[0] == 73786976294838206463 && P[1] == 73786976294838206463 && P[2] == 73786976294838206463 && P[3] == 73786976294838206463 && P[4] == 73786976294838206463 && P[5] == 73786976294838206463 && P[6] == 73786976294838206463 && P[7] == 576460752303423487){
-            powers = get_g_pow_stride8_table_secp521r1(CHUNK_SIZE, CHUNK_NUMBER);
+            powers = get_g_pow_stride8_table_p521(CHUNK_SIZE, CHUNK_NUMBER);
         }
     }
     if (CHUNK_NUMBER == 8 && CHUNK_SIZE == 64){
@@ -510,7 +563,7 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
             powers = get_g_pow_stride8_table_brainpoolP224r1(CHUNK_SIZE, CHUNK_NUMBER);
         }
         if (P[0] == 1 && P[1] == 0 && P[2] == 0 && P[3] == 4294967295 && P[4] == 4294967295 && P[5] == 4294967295 && P[6] == 4294967295){
-            powers = get_g_pow_stride8_table_secp224r1(CHUNK_SIZE, CHUNK_NUMBER);
+            powers = get_g_pow_stride8_table_p224(CHUNK_SIZE, CHUNK_NUMBER);
         }
     }
     // if (CHUNK_NUMBER == 5 && CHUNK_SIZE == 64){
