@@ -3,10 +3,12 @@ pragma circom 2.1.9;
 include "circomlib/circuits/bitify.circom";
 
 // PKCS1v1.5 Padding Scheme
+// Reference: https://datatracker.ietf.org/doc/html/rfc8017#section-9.2
 // 0x00 || 0x01 || PS || 0x00 || OID || Hash
 // PS is a sequence of 0xFF bytes that is padded so that the data to be signed matches the length of the key.
 // OID is the object identifier for the hash function used.
 // For SHA1,   the OID is 0x3021300906052b0e03021a05000414
+// For SHA224, the OID is 0x302d300d06096086480165030402040500041c
 // For SHA256, the OID is 0x3031300d060960864801650304020105000420
 // For SHA384, the OID is 0x3041300d060960864801650304020205000430
 // For SHA512, the OID is 0x3051300d060960864801650304020305000440
@@ -105,6 +107,9 @@ function getOID(HASH_SIZE) {
     if (HASH_SIZE == 160) {
         return 0x3021300906052b0e03021a05000414;
     }
+    if (HASH_SIZE == 224) {
+        return 0x302d300d06096086480165030402040500041c;
+    }
     if (HASH_SIZE == 256) {
         return 0x3031300d060960864801650304020105000420;
     }
@@ -124,6 +129,9 @@ function getOID(HASH_SIZE) {
 function getOIDSize(HASH_SIZE) {
     if (HASH_SIZE == 160) {
         return 120;
+    }
+    if (HASH_SIZE == 224) {
+        return 152;
     }
     if (HASH_SIZE == 256) {
         return 152;

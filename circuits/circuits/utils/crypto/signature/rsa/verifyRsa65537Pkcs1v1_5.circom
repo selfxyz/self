@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "@zk-email/circuits/lib/fp.circom";
+include "@zk-email/circuits/lib/bigint.circom";
 include "./pkcs1v1_5Padding.circom";
 include "../FpPowMod.circom";
 
