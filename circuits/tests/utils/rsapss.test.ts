@@ -52,7 +52,7 @@ describe('VerifyRsapss Circuit Test', function () {
       await circuit.checkConstraints(witness);
     });
 
-    it("Should fail to verify RSA-PSS signature with invalid signature", async function () {
+    it('Should fail to verify RSA-PSS signature with invalid signature', async function () {
       const { signature, modulus, message, saltLength } = generateMockRsaPssInputs(algorithm);
 
       const invalidSignature = signature.map((byte: string) => String((parseInt(byte) + 1) % 256));
@@ -75,10 +75,9 @@ describe('VerifyRsapss Circuit Test', function () {
       } catch (error) {
         expect(error.message).to.include('Assert Failed');
       }
+    });
 
-    })
-
-    it("Should fail to verify RSA-PSS signature with invalid message", async function () {
+    it('Should fail to verify RSA-PSS signature with invalid message', async function () {
       const { signature, modulus, message, saltLength } = generateMockRsaPssInputs(algorithm);
 
       const invalidMessage = message.map((byte: number) => String((byte + 1) % 256));
@@ -101,7 +100,6 @@ describe('VerifyRsapss Circuit Test', function () {
       } catch (error) {
         expect(error.message).to.include('Assert Failed');
       }
-    })
-
+    });
   });
 });
