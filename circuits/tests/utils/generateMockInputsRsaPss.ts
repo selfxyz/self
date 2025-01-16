@@ -7,52 +7,11 @@ import {
 } from '../../../common/src/utils/utils';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
 
-export const generateMockRsaPssInputs = (signatureAlgorithm: SignatureAlgorithm) => {
-  let saltLength: number;
-
+export const generateMockRsaPssInputs = (
+  signatureAlgorithm: SignatureAlgorithm,
+  saltLength: number
+) => {
   const [sigAlg, hashAlgorithm, exponent, modulusLength] = signatureAlgorithm.split('_');
-
-  switch (signatureAlgorithm) {
-    case 'rsapss_sha256_65537_4096':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha256_65537_3072':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha256_65537_2048':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha256_3_4096':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha256_3_3072':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha256_3_2048':
-      saltLength = 32;
-      break;
-    case 'rsapss_sha512_3_4096':
-      saltLength = 64;
-      break;
-    case 'rsapss_sha512_3_2048':
-      saltLength = 64;
-      break;
-    case 'rsapss_sha384_65537_4096':
-      saltLength = 48;
-      break;
-    case 'rsapss_sha384_65537_3072':
-      saltLength = 48;
-      break;
-    case 'rsapss_sha384_3_4096':
-      saltLength = 48;
-      break;
-    case 'rsapss_sha384_3_3072':
-      saltLength = 48;
-      break;
-
-    default:
-      throw new Error(`Unsupported signature algorithm: ${signatureAlgorithm}`);
-  }
 
   // Generate RSA key pair
   const keypair = forge.pki.rsa.generateKeyPair({
@@ -90,6 +49,5 @@ export const generateMockRsaPssInputs = (signatureAlgorithm: SignatureAlgorithm)
     signature: splitToWords(BigInt(bytesToBigDecimal(signature)), n, k),
     modulus: splitToWords(BigInt(hexToDecimal(modulus)), n, k),
     message: messageBits,
-    saltLength: saltLength,
   };
 };
