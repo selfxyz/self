@@ -5,11 +5,10 @@ include "../bigInt/bigInt.circom";
 include "../bigInt/bigIntOverflow.circom";
 include "../bigInt/bigIntHelpers.circom";
 include "./get.circom";
+include "./powers/p224pows.circom";
 include "./powers/p256pows.circom";
 include "./powers/p384pows.circom";
-include "./powers/secp224r1pows.circom"; 
-include "./powers/secp256k1pows.circom"; 
-include "./powers/secp521r1pows.circom"; 
+include "./powers/p521pows.circom";
 include "./powers/brainpoolP224r1pows.circom"; 
 include "./powers/brainpoolP256r1pows.circom"; 
 include "./powers/brainpoolP384r1pows.circom"; 
@@ -19,42 +18,6 @@ include "circomlib/circuits/bitify.circom";
 include "circomlib/circuits/comparators.circom";
 include "../int/arithmetic.circom";
 
-// Operation for any Weierstrass prime-field eliptic curve (for now 256-bit)
-// A, B, P in every function - params of needed curve, chunked the same as every other chunking (64 4 for now)
-// Example usage of operation (those are params for secp256k1 ec):
-// EllipticCurveDoubleOptimised(64, 4, [0,0,0,0], [7,0,0,0], [18446744069414583343, 18446744073709551615, 18446744073709551615, 18446744073709551615]);
-//---------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// To add a new curve u should do next steps:
-// Get curve params(A, B, P) in chunked representation
-// Add order, dummyPoint (G * 2**256), and generator to "./get.circom" for chunking:
-// if (CHUNK_NUMBER == 4){
-//     if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-//         gen[0] <== [6481385041966929816, 188021827762530521, 6170039885052185351, 8772561819708210092];
-//         gen[1] <== [11261198710074299576, 18237243440184513561, 6747795201694173352, 5204712524664259685];
-//     }
-// }
-// This is example for generator for 64 4 chunked secp256r1 curve
-// This steps can be simplified by "../../helpers/generate_get_for_new_curve.py", but it can be broken in some cases, make a copy of "./get.circom" before it 
-// But for new curve with already existing chunks should work fine
-// Won`t work fine for new chunking, or already existing curve, will be fixed later
-// Use "../../helpers/get.py" to get str to paste, this one works fine, but it isn`t pasting, u should do it by yourself
-// Change first 8 lines with your parameters and get your code lines.
-// Change params at 4..8 lines in "../../helpers/generate_pow_table_for_curve.py" for your curve params, then execute script from root, this will create file in ./powers
-// Also change chunking in 140 line and curve name at 145
-// execute script from root, it will create new file in "./powers", import it here
-// include "./powers/p256pows.circom"; for example
-// add same case for EllipicCurveScalarGeneratorMult template:
-//   var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
-// if (CHUNK_NUMBER == 4){
-//     if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-//         powers = get_g_pow_stride8_table_secp256k1(CHUNK_SIZE, CHUNK_NUMBER);
-//     }
-// ...
-// } 
-// add here your chunking and get generated pow table
-// 
-//----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
-// Those are helpers template, don`t use them outside without knowing what are u doing!!!
 // Check is input is point on curve
 // (x^3 + a * x + b - y * 2 % p) === 0
 template PointOnCurve(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
@@ -477,9 +440,6 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     var powers[parts][2 ** STRIDE][2][CHUNK_NUMBER];
     
     if (CHUNK_NUMBER == 4){
-        if (P[0] == 18446744069414583343 && P[1] == 18446744073709551615 && P[2] == 18446744073709551615 && P[3] == 18446744073709551615){
-            powers = get_g_pow_stride8_table_secp256k1(CHUNK_SIZE, CHUNK_NUMBER);
-        }
         if (P[0] == 2311270323689771895 && P[1] == 7943213001558335528 && P[2] == 4496292894210231666 && P[3] == 12248480212390422972){
             powers = get_g_pow_stride8_table_brainpoolP256r1(CHUNK_SIZE, CHUNK_NUMBER);
         }
@@ -489,7 +449,7 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
     }
     if (CHUNK_NUMBER == 8 && CHUNK_SIZE == 66){
         if (P[0] == 73786976294838206463 && P[1] == 73786976294838206463 && P[2] == 73786976294838206463 && P[3] == 73786976294838206463 && P[4] == 73786976294838206463 && P[5] == 73786976294838206463 && P[6] == 73786976294838206463 && P[7] == 576460752303423487){
-            powers = get_g_pow_stride8_table_secp521r1(CHUNK_SIZE, CHUNK_NUMBER);
+            powers = get_g_pow_stride8_table_p521(CHUNK_SIZE, CHUNK_NUMBER);
         }
     }
     if (CHUNK_NUMBER == 8 && CHUNK_SIZE == 64){
@@ -510,7 +470,7 @@ template EllipicCurveScalarGeneratorMult(CHUNK_SIZE, CHUNK_NUMBER, A, B, P){
             powers = get_g_pow_stride8_table_brainpoolP224r1(CHUNK_SIZE, CHUNK_NUMBER);
         }
         if (P[0] == 1 && P[1] == 0 && P[2] == 0 && P[3] == 4294967295 && P[4] == 4294967295 && P[5] == 4294967295 && P[6] == 4294967295){
-            powers = get_g_pow_stride8_table_secp224r1(CHUNK_SIZE, CHUNK_NUMBER);
+            powers = get_g_pow_stride8_table_p224(CHUNK_SIZE, CHUNK_NUMBER);
         }
     }
     // if (CHUNK_NUMBER == 5 && CHUNK_SIZE == 64){
