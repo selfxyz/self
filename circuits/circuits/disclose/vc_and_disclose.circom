@@ -26,7 +26,7 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input user_identifier;
 
     // ofac check
-    signal input smt_leaf_value;
+    signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
@@ -45,9 +45,9 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     disclose.majority <== majority;
     
     // generate scope nullifier
-    component poseidon_nullifier = PoseidonHash(2);
-    poseidon_nullifier.in[0] <== secret;
-    poseidon_nullifier.in[1] <== scope;
+    component poseidon_nullifier = Poseidon(2);
+    poseidon_nullifier.inputs[0] <== secret;
+    poseidon_nullifier.inputs[1] <== scope;
     signal output nullifier <== poseidon_nullifier.out;
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
     signal output older_than[2] <== disclose.older_than;
@@ -56,7 +56,7 @@ template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal output forbidden_countries_list_packed_disclosed[2] <== ProveCountryIsNotInList(FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);
 
     // OFAC
-    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_key,smt_root,smt_siblings);
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
 }

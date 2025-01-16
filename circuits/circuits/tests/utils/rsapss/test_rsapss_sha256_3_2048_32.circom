@@ -1,5 +1,5 @@
 pragma circom 2.1.9;
-include "../../../utils/circomlib/signature/rsapss/rsapss3.circom";
+include "../../../utils/crypto/signature/rsapss/rsapss3.circom";
 
 template VerifyRsaPss3Sig_tester() {
     signal input modulus[35];

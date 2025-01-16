@@ -4,12 +4,15 @@ include "@zk-email/circuits/lib/bigint.circom";
 include "./pkcs1v1_5Padding.circom";
 include "../FpPowMod.circom";
 
-// For 2048bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 32
-// For 3072bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 48
-// For 4096bits RSA, CHUNK_SIZE = 64, CHUNK_NUMBER = 64
-
-// HASH_SIZE is the size of the hash in bits
-
+/// @title VerifyRsa65537Pkcs1v1_5
+/// @notice Verifies RSA signatures with exponent 65537 using PKCS#1 v1.5 padding
+/// @dev Supports RSA key sizes of 2048, 3072, and 4096 bits
+/// @param CHUNK_SIZE Number of bits per chunk (typically 64)
+/// @param CHUNK_NUMBER Number of chunks (32 for 2048-bit RSA, 48 for 3072-bit, 64 for 4096-bit)
+/// @param HASH_SIZE Size of the hash in bits (160 for SHA1, 256 for SHA256, 384 for SHA384 and 512 for SHA512)
+/// @input signature The RSA signature split into chunks
+/// @input modulus The RSA modulus split into chunks
+/// @input message The message hash to verify
 template VerifyRsa65537Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal input signature[CHUNK_NUMBER];
     signal input modulus[CHUNK_NUMBER];
