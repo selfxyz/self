@@ -240,7 +240,11 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(hashFunction: string, bytesArray: number[], format: string = 'bytes'): string | number[] {
+export function hash(
+  hashFunction: string,
+  bytesArray: number[],
+  format: string = 'bytes'
+): string | number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
@@ -517,9 +521,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-    Array.from(str)
-      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-      .join('')
+      Array.from(str)
+        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join('')
   );
 }
 

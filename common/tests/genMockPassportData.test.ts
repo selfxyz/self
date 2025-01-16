@@ -31,7 +31,12 @@ describe('Mock Passport Data Generator', function () {
   });
 });
 
-function verify(passportData: PassportData, dgHashAlgo: string, eContentHashAlgo: string, sigAlg: string): boolean {
+function verify(
+  passportData: PassportData,
+  dgHashAlgo: string,
+  eContentHashAlgo: string,
+  sigAlg: string
+): boolean {
   const passportMetaData = parsePassportData(passportData);
   // console.log('passportMetaData', passportMetaData);
 

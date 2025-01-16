@@ -19,7 +19,7 @@ const StartScreen: React.FC = () => {
         </Text>
         <Image src={OPENPASSPORT_LOGO} width={400} height={300} />
         <Text textAlign="center" fontSize="$4" color={textBlack}>
-          No information will be shared without your explicit consent.
+          No personal information will be shared without your explicit consent.
         </Text>
       </YStack>
 

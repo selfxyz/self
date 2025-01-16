@@ -68,12 +68,76 @@ const fullSigAlgs = [
     checkNullifier: true,
   },
   {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1',
+    sigAlg: 'rsa',
+    hashFunction: 'sha1',
+    domainParameter: '65537',
+    keyLength: '4096',
+  },
+  {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
     sigAlg: 'rsa',
     hashFunction: 'sha256',
     domainParameter: '65537',
     keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '3072',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '65537',
+    keyLength: '4096',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '3',
+    keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsa',
+    hashFunction: 'sha256',
+    domainParameter: '3',
+    keyLength: '4096',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    sigAlg: 'rsa',
+    hashFunction: 'sha512',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    sigAlg: 'rsa',
+    hashFunction: 'sha512',
+    domainParameter: '65537',
+    keyLength: '4096',
   },
   {
     dgHashAlgo: 'sha256',
@@ -113,22 +177,6 @@ const fullSigAlgs = [
     sigAlg: 'rsapss',
     hashFunction: 'sha256',
     domainParameter: '3',
-    keyLength: '3072',
-  },
-  {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    sigAlg: 'rsa',
-    hashFunction: 'sha256',
-    domainParameter: '3',
-    keyLength: '2048',
-  },
-  {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    sigAlg: 'rsa',
-    hashFunction: 'sha256',
-    domainParameter: '65537',
     keyLength: '3072',
   },
   {
@@ -227,10 +275,17 @@ const fullSigAlgs = [
     domainParameter: 'secp256r1',
     keyLength: '256',
   },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha512',
+    domainParameter: 'brainpoolP512r1',
+    keyLength: '512',
+  },
 ];
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
-// const testSuite = fullSigAlgs;
 
 testSuite.forEach(
   ({
@@ -267,6 +322,7 @@ testSuite.forEach(
 
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
+
       const inputs = generateCircuitInputsProve(
         selector_mode,
         secret,
