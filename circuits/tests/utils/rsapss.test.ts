@@ -7,7 +7,7 @@ import { expect } from 'chai';
 
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);
-  const rsaAlgorithms: { algo: SignatureAlgorithm; saltLength: number }[] = [
+  const fullAlgorithms: { algo: SignatureAlgorithm; saltLength: number }[] = [
     { algo: 'rsapss_sha256_65537_4096', saltLength: 32 },
     { algo: 'rsapss_sha256_65537_3072', saltLength: 32 },
     { algo: 'rsapss_sha256_65537_2048', saltLength: 32 },
@@ -28,7 +28,16 @@ describe('VerifyRsapss Circuit Test', function () {
     { algo: 'rsapss_sha384_3_3072', saltLength: 48 },
   ];
 
-  rsaAlgorithms.forEach((algorithm) => {
+  const sigAlgs: { algo: SignatureAlgorithm; saltLength: number }[] = [
+    { algo: 'rsapss_sha256_65537_4096', saltLength: 32 },
+    { algo: 'rsapss_sha256_3_3072', saltLength: 64 },
+    { algo: 'rsapss_sha512_3_2048', saltLength: 64 },
+    { algo: 'rsapss_sha384_65537_3072', saltLength: 48 },
+  ];
+
+  const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullAlgorithms : sigAlgs;
+
+  testSuite.forEach((algorithm) => {
     it(`should verify RSA-PSS signature using the circuit for ${algorithm.algo}_${algorithm.saltLength}`, async function () {
       this.timeout(0);
       // Generate inputs using the utility function
