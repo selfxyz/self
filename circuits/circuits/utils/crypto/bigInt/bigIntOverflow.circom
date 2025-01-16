@@ -68,29 +68,6 @@ template BigMultOverflow(CHUNK_SIZE, CHUNK_NUMBER_GREATER, CHUNK_NUMBER_LESS){
     }
 }
 
-// computes modulus + in1 - in2 (WITHOUT % modulus!!!) with overflows, in1 and in2 shouldn`t have overflows and in1 < modulus, in2 < modulus!
-// use only if you undestand what are you doing!!!
-// Use case if (a * b - c) % p, here u can use (a * b + (p + p - c) % p)
-template BigSubModOverflow(CHUNK_SIZE, CHUNK_NUMBER){
-    signal input in1[CHUNK_NUMBER];
-    signal input in2[CHUNK_NUMBER];
-    signal input modulus[CHUNK_NUMBER];
-
-    signal output out[CHUNK_NUMBER];
-
-    for (var i = 0; i < CHUNK_NUMBER; i++){
-        if (i == 0){
-            out[i] <== 2 ** CHUNK_SIZE + modulus[i] + in1[i] - in2[i];
-        } else {
-            if (i == CHUNK_NUMBER - 1){
-                out[i] <== modulus[i] + in1[i] - in2[i] - 1;
-            } else {
-                out[i] <== 2 ** CHUNK_SIZE + modulus[i] + in1[i] - in2[i] - 1;
-            }
-        }
-    }
-}
-
 // multiplying number with CHUNK_NUMBER by scalar, ignoring overflow
 template ScalarMultOverflow(CHUNK_NUMBER){
     signal input in[CHUNK_NUMBER];
@@ -123,28 +100,4 @@ template BigSubModP(CHUNK_SIZE, CHUNK_NUMBER){
             }
         }
     }
-}
-
-// USE ONLY if u sure it will not affect your security, because it is possible to get 1 in out with non-equal inputs, be carefull with it!!!
-// this compares one chunk representation of nums, and if they are bigger than circom curve prime (~2**254), it will compare modulus by it
-// it always uses 4 constraints and allows to always get 1 for equal inputs
-// there is a way to get "collision" and get 1 for non equal chunks, however
-// it almost impossible to get it randomly (almost the same as hash sha-256 collision), but it can be calculated
-// it still doesn`t allowed to put anything that u want at witness and get valid proof, so it shouldn`t affect on security if it is one of many cheks in your circuit
-template SmartEqual(CHUNK_SIZE, CHUNK_NUMBER){
-	signal input in[2][CHUNK_NUMBER];
-	signal output out;
-	component isEqual = IsEqual();
-	component sumLeft = GetSumOfNElements(CHUNK_NUMBER);
-	component sumRight = GetSumOfNElements(CHUNK_NUMBER);
-
-	for (var i = 0; i < CHUNK_NUMBER; i++){
-		sumLeft.in[i] <== 2 ** (i * CHUNK_SIZE) * in[0][i];
-		sumRight.in[i] <== 2 ** (i * CHUNK_SIZE) * in[1][i];
-	}
-
-	isEqual.in[0] <== sumLeft.out;
-	isEqual.in[1] <== sumRight.out;
-
-	out <== isEqual.out;
 }
