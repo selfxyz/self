@@ -10,6 +10,7 @@
     "test-rsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
     "test-rsa-pss": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsapss.test.ts' --exit",
     "test-ecdsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/ecdsa.test.ts' --exit",
+    "test-ofac": "yarn ts-mocha --max-old-space-size=8192 'tests/ofac/ofac.test.ts' --exit",
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
     "format": "prettier --write .",
     "lint": "prettier --check ."
@@ -25,7 +26,7 @@
     "@zk-email/circuits": "^6.1.1",
     "@zk-email/helpers": "^6.1.1",
     "@zk-email/zk-regex-circom": "^1.2.1",
-    "@zk-kit/binary-merkle-root.circom": "^1.0.0-beta",
+    "@zk-kit/binary-merkle-root.circom": "^1.0.0",
     "@zk-kit/circuits": "^1.0.0-beta",
     "asn1": "^0.2.6",
     "asn1.js": "^5.4.1",

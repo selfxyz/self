@@ -1,10 +1,11 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/bitify.circom";
-include "../utils/circomlib/hasher/shaBytes/shaBytesDynamic.circom";
+include "../utils/crypto/hasher/shaBytes/shaBytesDynamic.circom";
 include "circomlib/circuits/comparators.circom";
-include "../utils/circomlib/hasher/hash.circom";
-include "../utils/circomlib/merkle-trees/binary-merkle-root.circom";
+include "../utils/crypto/hasher/hash.circom";
+include "circomlib/circuits/poseidon.circom";
+include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../utils/passport/customHashers.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/signatureVerifier.circom";
@@ -58,6 +59,6 @@ template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_
 
     // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(k_dsc)(dsc_pubKey);
-    signal output blinded_dsc_commitment <== PoseidonHash(2)([secret, pubkeyHash]);
+    signal output blinded_dsc_commitment <== Poseidon(2)([secret, pubkeyHash]);
 }
 

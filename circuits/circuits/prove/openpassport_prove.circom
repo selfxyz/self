@@ -4,7 +4,7 @@ include "../utils/passport/customHashers.circom";
 include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
-include "../utils/circomlib/hasher/poseidon/poseidon.circom";
+include "circomlib/circuits/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
@@ -74,7 +74,7 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     signal input selector_mode[2];
 
     // ofac check
-    signal input smt_leaf_value;
+    signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
@@ -113,9 +113,9 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     // nulifier
     component passportDataHashed = CustomHasher(HASH_LEN_BYTES);
     passportDataHashed.in <== signedAttrShaBytes;
-    component poseidon_hasher = PoseidonHash(2);
-    poseidon_hasher.in[0] <== passportDataHashed.out;
-    poseidon_hasher.in[1] <== scope;
+    component poseidon_hasher = Poseidon(2);
+    poseidon_hasher.inputs[0] <== passportDataHashed.out;
+    poseidon_hasher.inputs[1] <== scope;
     signal output nullifier <== poseidon_hasher.out;
 
     // DISCLOSE (optional)
@@ -148,7 +148,7 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     }
 
     // OFAC
-    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_value,smt_root,smt_siblings);
+    signal ofacCheckResult <== OFAC_NAME()(dg1,smt_leaf_key,smt_root,smt_siblings);
     signal ofacIntermediaryOutput <== ofacCheckResult * selector_ofac;
     signal output ofac_result <== ofacIntermediaryOutput;
 
@@ -159,6 +159,6 @@ template OPENPASSPORT_PROVE(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm
     signal output commitment <== commitmentPrivate * selectorModeCommitment;
     // // blinded dsc commitment
     signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal blindedDscCommitmenPrivate <== PoseidonHash(2)([dsc_secret, pubkeyHash]);
+    signal blindedDscCommitmenPrivate <== Poseidon(2)([dsc_secret, pubkeyHash]);
     signal output blinded_dsc_commitment <== blindedDscCommitmenPrivate * selectorModeBlindedDscCommitment;
 }

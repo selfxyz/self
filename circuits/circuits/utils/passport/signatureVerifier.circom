@@ -1,10 +1,10 @@
 pragma circom 2.1.9;
 
-include "../circomlib/signature/rsapss/rsapss3.circom";
-include "../circomlib/signature/rsapss/rsapss65537.circom";
-include "../circomlib/signature/ecdsa/ecdsaVerifier.circom";
-include "../circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
-include "../circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
+include "../crypto/signature/rsapss/rsapss3.circom";
+include "../crypto/signature/rsapss/rsapss65537.circom";
+include "../crypto/signature/ecdsa/ecdsaVerifier.circom";
+include "../crypto/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
+include "../crypto/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
 include "@zk-email/circuits/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {

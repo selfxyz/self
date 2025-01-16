@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../../utils/circomlib/signature/ecdsa/ecdsaVerifier.circom";
+include "../../../utils/crypto/signature/ecdsa/ecdsaVerifier.circom";
 
 template VerifyBrainpoolP384r1Sha384() {
     signal input signature[2 * 6];

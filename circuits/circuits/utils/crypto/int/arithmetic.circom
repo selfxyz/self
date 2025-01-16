@@ -6,15 +6,6 @@ include "circomlib/circuits/bitify.circom";
 //----------------------------------------------------------------------------------------------------------------------------------------------------------------
 // Some templates for num operations
 
-// gets inversion in circom prime field
-// out * in === 1
-template Inverse(){
-    signal input in;
-    signal output out;
-    out <-- 1 / in;
-    out * in === 1;
-}
-
 
 // computes last bit of num with any bit len for 2 constraints
 // returns bit (0 or 1) and div = num \ 2

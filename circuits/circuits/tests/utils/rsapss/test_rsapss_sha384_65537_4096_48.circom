@@ -1,5 +1,5 @@
 pragma circom 2.1.9;
-include "../../../utils/circomlib/signature/rsapss/rsapss65537.circom";
+include "../../../utils/crypto/signature/rsapss/rsapss65537.circom";
 
 template VerifyRsaPss65537Sig_tester() {
     signal input modulus[35];
