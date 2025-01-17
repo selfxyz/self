@@ -13,8 +13,6 @@ contract IdentifyCommitmentRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable
 
     address public portal;
 
-    bytes32 public cscaKeyMerkleRoot;
-
     error PORTAL_NOT_SET();
     error ONLY_PORTAL_CAN_REGISTER_COMMITMENT();
 
@@ -37,7 +35,6 @@ contract IdentifyCommitmentRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable
     {
         __Ownable_init(msg.sender);
         portal = _portal;
-        cscaKeyMerkleRoot = _cscaKeyMerkleRoot;
     }
 
     function _authorizeUpgrade(
@@ -149,35 +146,4 @@ contract IdentifyCommitmentRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable
         _addCommitment(commitment);
     }
 
-    
-    ///////////////////////////////////////////////////////////////////
-    ///                     CSCA HANDLE FUNCTIONS                   ///
-    ///////////////////////////////////////////////////////////////////
-
-    function updateCscaKeyMerkleRoot(
-        bytes32 _cscaKeyMerkleRoot
-    ) 
-        external
-        onlyOwner 
-    {
-        cscaKeyMerkleRoot = _cscaKeyMerkleRoot;
-    }
-
-    function checkCscaKeyMerkleRoot(
-        bytes32 _cscaKeyMerkleRoot
-    ) 
-        external 
-        view 
-        returns (bool) 
-    {
-        return cscaKeyMerkleRoot == _cscaKeyMerkleRoot;
-    }
-
-    function getCscaKeyMerkleRoot() 
-        external 
-        view 
-        returns (bytes32) 
-    {
-        return cscaKeyMerkleRoot;
-    }
 }

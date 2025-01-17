@@ -17,8 +17,11 @@
     "contracts/constants/*",
     "contracts/interfaces/*",
     "contracts/libraries/*",
-    "contracts/verifiers/GenericVerifier.sol",
-    "contracts/OpenPassportVerifier.sol"
+    "contracts/proxy/*",
+    "contracts/registry/*",
+    "contracts/verifiers/*",
+    "contracts/IdentityVerificationHub.sol",
+    "contracts/IdentityVerificationHubImplV1.sol"
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
