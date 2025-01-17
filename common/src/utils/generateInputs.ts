@@ -1,6 +1,5 @@
 import {
   PUBKEY_TREE_DEPTH,
-  DEFAULT_USER_ID_TYPE,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
 } from '../constants/constants';
@@ -9,17 +8,14 @@ import { PassportData, SignatureAlgorithm } from './types';
 import {
   bytesToBigDecimal,
   formatMrz,
-  hash,
   splitToWords,
   getCurrentDateYYMMDD,
   generateMerkleProof,
   generateSMTProof,
-  findSubarrayIndex,
   hexToDecimal,
   extractRSFromSignature,
   castFromUUID,
   castFromScope,
-  parseUIDToBigInt,
   formatDg2Hash,
   getNAndK,
   stringToAsciiBigIntArray,
@@ -32,7 +28,7 @@ import { packBytes } from '../utils/utils';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
-import { parsePassportData } from './parsePassportData';
+import { parsePassportData, PassportMetadata } from './parsePassportData';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -167,50 +163,19 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   return index;
 }
 
-export function generateCircuitInputsProve(
-  selector_mode: number[] | string[],
+
+
+export function generateCircuitInputsRegister(
   secret: number | string,
   dsc_secret: number | string,
-  passportData: PassportData,
-  scope: string,
-  selector_dg1: string[],
-  selector_older_than: string | number,
-  majority: string,
-  name_smt: SMT,
-  selector_ofac: string | number,
-  forbidden_countries_list: string[],
-  user_identifier: string,
-  user_identifier_type: 'uuid' | 'hex' | 'ascii' = DEFAULT_USER_ID_TYPE
+  passportData: PassportData
 ) {
-  const { mrz, eContent, signedAttr, encryptedDigest, dsc, dg2Hash } = passportData;
+  const { mrz, eContent, signedAttr, dg2Hash } = passportData;
   const passportMetadata = parsePassportData(passportData);
-  const hashAlgorithm = passportMetadata.signedAttrHashFunction;
-  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
-  let pubKey: any;
-  let signature: any;
-  let signatureAlgorithmFullName: string;
-  let n, k;
 
-  if (signatureAlgorithm === 'ecdsa') {
-    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
-    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
-    const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-    const { r, s } = extractRSFromSignature(encryptedDigest);
-    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
-    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
-    signature = [...signature_r, ...signature_s];
-    const dsc_modulus_x = splitToWords(BigInt(hexToDecimal(x)), n, k);
-    const dsc_modulus_y = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    pubKey = [...dsc_modulus_x, ...dsc_modulus_y];
-  } else {
-    const { modulus, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
-    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
-    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
-    signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n, k);
-    pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-  }
-
-  const formattedMrz = formatMrz(mrz);
+  const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfo(passportData);
+  const mrz_formatted = formatMrz(mrz);
+  const dg2Hash_formatted = formatDg2Hash(dg2Hash);
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
     console.error(
@@ -221,72 +186,102 @@ export function generateCircuitInputsProve(
     );
   }
 
-  const dg1PaddingFunction =
-    passportMetadata.dg1HashFunction === 'sha1' ||
-    passportMetadata.dg1HashFunction === 'sha224' ||
-    passportMetadata.dg1HashFunction === 'sha256'
-      ? shaPad
-      : sha384_512Pad;
-
-  const [eContentPadded, eContentLen] = dg1PaddingFunction(
+  const [eContentPadded, eContentLen] = padDg1(passportMetadata)(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
   );
-
-  const eContentPaddingFunction =
-    passportMetadata.eContentHashFunction === 'sha1' ||
-    passportMetadata.eContentHashFunction === 'sha224' ||
-    passportMetadata.eContentHashFunction === 'sha256'
-      ? shaPad
-      : sha384_512Pad;
-  const [signedAttrPadded, signedAttrPaddedLen] = eContentPaddingFunction(
+  const [signedAttrPadded, signedAttrPaddedLen] = padEContent(passportMetadata)(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
-  const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
-  const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
-
-  // SMT -  OFAC
-  const mrz_bytes = formatMrz(passportData.mrz);
-  const name_leaf = getNameLeaf(mrz_bytes.slice(10, 49)); // [6-44] + 5 shift
-  const {
-    root: smt_root,
-    closestleaf: smt_leaf_key,
-    siblings: smt_siblings,
-  } = generateSMTProof(name_smt, name_leaf);
-
-  return {
-    selector_mode: formatInput(selector_mode),
-    dg1: formatInput(formattedMrz),
-    dg1_hash_offset: formatInput(passportMetadata.dg1HashOffset),
-    dg2_hash: formatInput(formatDg2Hash(dg2Hash)),
-    eContent: Array.from(eContentPadded).map((x) => x.toString()),
-    eContent_padded_length: formatInput(eContentLen),
-    signed_attr: Array.from(signedAttrPadded).map((x) => x.toString()),
-    signed_attr_padded_length: formatInput(signedAttrPaddedLen),
-    signed_attr_econtent_hash_offset: formatInput(passportMetadata.eContentHashOffset),
+  const inputs = {
+    dg1: mrz_formatted,
+    dg1_hash_offset: passportMetadata.dg1HashOffset,
+    dg2_hash: dg2Hash_formatted,
+    eContent: eContentPadded,
+    eContent_padded_length: eContentLen,
+    signed_attr: signedAttrPadded,
+    signed_attr_padded_length: signedAttrPaddedLen,
+    signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
     signature: signature,
     pubKey: pubKey,
-    current_date: formatInput(getCurrentDateYYMMDD()),
-    selector_dg1: formatInput(selector_dg1),
-    selector_older_than: formatInput(selector_older_than),
-    majority: formatInput(majority_ascii),
-    user_identifier: formatInput(parseUIDToBigInt(user_identifier, user_identifier_type)),
-    scope: formatInput(castFromScope(scope)),
-    secret: formatInput(secret),
-    dsc_secret: formatInput(dsc_secret),
-    smt_root: formatInput(smt_root),
-    smt_leaf_key: formatInput(smt_leaf_key),
-    smt_siblings: formatInput(smt_siblings),
-    selector_ofac: formatInput(selector_ofac),
-    forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
+    secret: secret,
+    dsc_secret: dsc_secret,
   };
+
+  return Object.entries(inputs).map(([key, value]) => ({
+    [key]: formatInput(value)
+  })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
+}
+
+function getDscPubKeyInfo(passportData: PassportData) {
+  const passportMetadata = parsePassportData(passportData);
+  const hashAlgorithm = passportMetadata.signedAttrHashFunction;
+  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
+  let n, k;
+  let pubKey: any;
+  let signature: any;
+  let signatureAlgorithmFullName: string;
+
+  if (signatureAlgorithm === 'ecdsa') {
+    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
+    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
+    const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
+    const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+    const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
+    const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
+    signature = [...signature_r, ...signature_s];
+    const x_dsc = splitToWords(BigInt(hexToDecimal(x)), n, k);
+    const y_dsc = splitToWords(BigInt(hexToDecimal(y)), n, k);
+    pubKey = [...x_dsc, ...y_dsc];
+  } else {
+    const { modulus, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
+    signatureAlgorithmFullName = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
+    ({ n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm));
+    signature = splitToWords(BigInt(bytesToBigDecimal(passportData.encryptedDigest)), n, k);
+    pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+  }
+  return {
+    pubKey: pubKey,
+    signature: signature,
+    signatureAlgorithmFullName: signatureAlgorithmFullName,
+  };
+}
+
+function padDg1(passportMetadata: PassportMetadata) {
+  return passportMetadata.dg1HashFunction === 'sha1' ||
+    passportMetadata.dg1HashFunction === 'sha224' ||
+    passportMetadata.dg1HashFunction === 'sha256'
+    ? shaPad
+    : sha384_512Pad;
+}
+
+function padEContent(passportMetadata: PassportMetadata) {
+  return passportMetadata.eContentHashFunction === 'sha1' ||
+    passportMetadata.eContentHashFunction === 'sha224' ||
+    passportMetadata.eContentHashFunction === 'sha256'
+    ? shaPad
+    : sha384_512Pad;
 }
 
 export function formatInput(input: any) {
   if (Array.isArray(input)) {
     return input.map((item) => BigInt(item).toString());
+  } else if (input instanceof Uint8Array) {
+    return Array.from(input).map(num => BigInt(num).toString());
+  } else if (typeof input === 'string' && input.includes(',')) {
+    const numbers = input
+      .split(',')
+      .map(s => s.trim())
+      .filter(s => s !== '' && !isNaN(Number(s)))
+      .map(Number);
+
+    try {
+      return numbers.map(num => BigInt(num).toString());
+    } catch (e) {
+      throw e;
+    }
   } else {
     return [BigInt(input).toString()];
   }
