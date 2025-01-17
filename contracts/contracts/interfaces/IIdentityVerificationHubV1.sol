@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import "./IDscCircuitVerifier.sol";
 
-interface IOpenPassportVerifierV1 {
+interface IIdentityVerificationHubV1 {
 
     enum SignatureType {
         RSA,

@@ -6,9 +6,10 @@ import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import {Base64} from "../libraries/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import "../interfaces/IIdentityCommitmentRegistryV1.sol";
 
 // TODO: Add modifier named onlyPortal
-contract OpenPassportRegisterV1 is UUPSUpgradeable, OwnableUpgradeable {
+contract IdentifyCommitmentRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, IIdentityCommitmentRegistryV1 {
 
     address public portal;
 

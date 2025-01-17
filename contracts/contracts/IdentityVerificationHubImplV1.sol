@@ -3,12 +3,12 @@ pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import "./constants/OpenPassportConstants.sol";
-import "./libraries/OpenPassportFormatter.sol";
+import "./constants/CircuitConstants.sol";
+import "./libraries/Formatter.sol";
 import "./libraries/Dg1Disclosure.sol";
-import "./libraries/OpenPassportAttributeHandler.sol";
-import "./interfaces/IOpenPassportVerifierV1.sol";
-import "./interfaces/IOpenPassportRegistryV1.sol";
+import "./libraries/CircuitAttributeHandler.sol";
+import "./interfaces/IIdentityVerificationHubV1.sol";
+import "./interfaces/IIdentityCommitmentRegistryV1.sol";
 import "./interfaces/IProveCircuitVerifier.sol";
 import "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import "./interfaces/IDscCircuitVerifier.sol";
@@ -19,7 +19,7 @@ import "./interfaces/IDscCircuitVerifier.sol";
 // - verify inclusion
 // - manage nullifiers <- need to consider the architecture of this
 
-contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassportVerifierV1 {
+contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, IIdentityVerificationHubV1 {
 
     ///////////////////////////////////////////////////////////////////////////////
     ///                   A NOTE ON IMPLEMENTATION CONTRACTS                    ///
@@ -50,7 +50,7 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
     //   Care must be taken to ensure that a migration plan can exist for cases where upgrades
     //   cannot recover from an issue or vulnerability.
 
-    IOpenPassportRegistryV1 public registry;
+    IIdentityCommitmentRegistryV1 public registry;
     IVcAndDiscloseCircuitVerifier public vcAndDiscloseCircuitVerifier;
 
     mapping(uint256 => address) public signatureTypeToProveVerifiers;
@@ -86,7 +86,7 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         address _vcAndDiscloseCircuitVerifier
     ) external initializer {
         __Ownable_init(msg.sender);
-        registry = IOpenPassportRegistryV1(_registry);
+        registry = IIdentityCommitmentRegistryV1(_registry);
         vcAndDiscloseCircuitVerifier = IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier);
     }
 
@@ -107,7 +107,7 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         external 
         onlyOwner 
     {
-        registry = IOpenPassportRegistryV1(_registry);
+        registry = IIdentityCommitmentRegistryV1(_registry);
     }
 
     function updateVcAndDiscloseCircuit(
@@ -184,15 +184,15 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         view
         returns (bool) 
     {
-        if (!registry.checkRoot(proof.pubSignals[OpenPassportConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
+        if (!registry.checkRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
             revert INVALID_MERKLE_ROOT();
         }
 
         // TODO: add smt root verification
 
         uint[6] memory dateNum;
-        dateNum[0] = proof.pubSignals[OpenPassportConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX];
-        uint currentTimestamp = OpenPassportFormatter.proofDateToUnixTimestamp(dateNum);
+        dateNum[0] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX];
+        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
         if(
@@ -268,14 +268,14 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         uint[6] memory dateNum;
         if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
             for (uint i = 0; i < 6; i++) {
-                dateNum[i] = proof.proveCircuitProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_CURRENT_DATE_INDEX + i];
+                dateNum[i] = proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_CURRENT_DATE_INDEX + i];
             }
         } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
             for (uint i = 0; i < 6; i++) {
-                dateNum[i] = proof.proveCircuitProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_CURRENT_DATE_INDEX + i];
+                dateNum[i] = proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_CURRENT_DATE_INDEX + i];
             }
         }
-        uint currentTimestamp = OpenPassportFormatter.proofDateToUnixTimestamp(dateNum);
+        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
 
         // Check that the current date is within a +/- 1 day range
         if(
@@ -288,14 +288,14 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         // check blinded dcs
         bytes memory blindedDscCommitment;
         if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
-            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
+            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
         } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
+            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
         }
 
         if (
             keccak256(blindedDscCommitment) !=
-            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[OpenPassportConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
+            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
         ) {
             revert UNEQUAL_BLINDED_DSC_COMMITMENT();
         }
@@ -318,9 +318,9 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
     {
         verify(proof);
         if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {  
-            registry.registerCommitment(proof.proveCircuitProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_COMMITMENT_INDEX]);
+            registry.registerCommitment(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_COMMITMENT_INDEX]);
         } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            registry.registerCommitment(proof.proveCircuitProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
+            registry.registerCommitment(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
         } else {
             revert INVALID_SIGNATURE_TYPE();
         }
@@ -337,14 +337,14 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
         uint[3] memory revealedData_packed;
         for (uint256 i = 0; i < 3; i++) {
             if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
-                revealedData_packed[i] = proof.proveCircuitProof.pubSignalsRSA[OpenPassportConstants.PROVE_RSA_REVEALED_DATA_PACKED_INDEX + i];
+                revealedData_packed[i] = proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_REVEALED_DATA_PACKED_INDEX + i];
             } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-                revealedData_packed[i] = proof.proveCircuitProof.pubSignalsECDSA[OpenPassportConstants.PROVE_ECDSA_REVEALED_DATA_PACKED_INDEX + i];
+                revealedData_packed[i] = proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_REVEALED_DATA_PACKED_INDEX + i];
             } else {
                 revert INVALID_SIGNATURE_TYPE();
             }
         }
-        bytes memory charcodes = OpenPassportFormatter.fieldElementsToBytes(
+        bytes memory charcodes = Formatter.fieldElementsToBytes(
             revealedData_packed
         );
 
@@ -368,11 +368,11 @@ contract OpenPassportPortalV1 is UUPSUpgradeable, OwnableUpgradeable, IOpenPassp
             } else if (attr == AttributeType.EXPIRY_DATE) {
                 attrs.expiryDate = Dg1Disclosure.getExpiryDate(charcodes);
             } else if (attr == AttributeType.OLDER_THAN) {
-                attrs.olderThan = OpenPassportAttributeHandler.extractOlderThan(proof.proveCircuitProof);
+                attrs.olderThan = CircuitAttributeHandler.extractOlderThan(proof.proveCircuitProof);
             } else if (attr == AttributeType.OFAC_RESULT) {
-                attrs.ofacResult = OpenPassportAttributeHandler.extractOfacResult(proof.proveCircuitProof);
+                attrs.ofacResult = CircuitAttributeHandler.extractOfacResult(proof.proveCircuitProof);
             } else if (attr == AttributeType.FORBIDDEN_COUNTRIES) {
-                attrs.forbiddenCountries = OpenPassportAttributeHandler.extractForbiddenCountries(proof.proveCircuitProof);
+                attrs.forbiddenCountries = CircuitAttributeHandler.extractForbiddenCountries(proof.proveCircuitProof);
             }
         }
 

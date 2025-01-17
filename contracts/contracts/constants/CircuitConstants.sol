@@ -1,7 +1,7 @@
 //SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-library OpenPassportConstants {
+library CircuitConstants {
     uint256 constant PROVE_RSA_NULLIFIER_INDEX = 0;
     uint256 constant PROVE_RSA_REVEALED_DATA_PACKED_INDEX = 1;
     uint256 constant PROVE_RSA_OLDER_THAN_INDEX = 4;
