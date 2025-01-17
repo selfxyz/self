@@ -329,8 +329,9 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     function verifyAndDiscloseAttributes(
         OpenPassportProof memory proof,
         AttributeType[] memory attributeTypes
-    ) 
-        public 
+    )
+        public
+        view
         returns (PassportAttributes memory) 
     {
         verify(proof);
