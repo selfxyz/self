@@ -936,7 +936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-kit/binary-merkle-root.circom@npm:^1.0.0-beta":
+"@zk-kit/binary-merkle-root.circom@npm:^1.0.0":
   version: 1.0.0
   resolution: "@zk-kit/binary-merkle-root.circom@npm:1.0.0"
   dependencies:
@@ -1565,7 +1565,7 @@ __metadata:
     "@zk-email/circuits": "npm:^6.1.1"
     "@zk-email/helpers": "npm:^6.1.1"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
-    "@zk-kit/binary-merkle-root.circom": "npm:^1.0.0-beta"
+    "@zk-kit/binary-merkle-root.circom": "npm:^1.0.0"
     "@zk-kit/circuits": "npm:^1.0.0-beta"
     asn1: "npm:^0.2.6"
     asn1.js: "npm:^5.4.1"

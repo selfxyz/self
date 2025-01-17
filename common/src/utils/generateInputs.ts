@@ -72,7 +72,7 @@ export function generateCircuitInputsDisclose(
   const name_leaf = getNameLeaf(formattedMrz.slice(10, 49)); // [6-44] + 5 shift
   const {
     root: smt_root,
-    closestleaf: smt_leaf_value,
+    closestleaf: smt_leaf_key,
     siblings: smt_siblings,
   } = generateSMTProof(name_smt, name_leaf);
 
@@ -93,7 +93,7 @@ export function generateCircuitInputsDisclose(
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
     smt_root: formatInput(smt_root),
-    smt_leaf_value: formatInput(smt_leaf_value),
+    smt_leaf_key: formatInput(smt_leaf_key),
     smt_siblings: formatInput(smt_siblings),
     selector_ofac: formatInput(selector_ofac),
     forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
@@ -123,7 +123,7 @@ export function generateCircuitInputsOfac(
 
   return {
     dg1: formatInput(mrz_bytes),
-    smt_leaf_value: formatInput(closestleaf),
+    smt_leaf_key: formatInput(closestleaf),
     smt_root: formatInput(root),
     smt_siblings: formatInput(siblings),
   };
@@ -141,7 +141,7 @@ export function generateCircuitInputsCountryVerifier(
   return {
     dg1: formatInput(mrz_bytes),
     hostCountry: formatInput(usa_ascii),
-    smt_leaf_value: formatInput(closestleaf),
+    smt_leaf_key: formatInput(closestleaf),
     smt_root: formatInput(root),
     smt_siblings: formatInput(siblings),
   };
@@ -168,7 +168,7 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
 export function generateCircuitInputsRegister(
   secret: number | string,
   dsc_secret: number | string,
-  passportData: PassportData,
+  passportData: PassportData
 ) {
   const { mrz, eContent, signedAttr, dg2Hash } = passportData;
   const passportMetadata = parsePassportData(passportData);

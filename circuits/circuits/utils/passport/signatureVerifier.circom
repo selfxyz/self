@@ -1,9 +1,10 @@
 pragma circom 2.1.9;
 
-include "../circomlib/signature/rsapss/rsapss.circom";
-include "ecdsaVerifier.circom";
-include "../circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
-include "../circomlib/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
+include "../crypto/signature/rsapss/rsapss3.circom";
+include "../crypto/signature/rsapss/rsapss65537.circom";
+include "../crypto/signature/ecdsa/ecdsaVerifier.circom";
+include "../crypto/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
+include "../crypto/signature/rsa/verifyRsa65537Pkcs1v1_5.circom";
 include "@zk-email/circuits/utils/bytes.circom";
 
 template SignatureVerifier(signatureAlgorithm, n, k) {
@@ -21,56 +22,71 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
-    if (signatureAlgorithm == 1) { 
-        component rsa = VerifyRsa65537Pkcs1v1_5(n, k, 256);
+    if (
+        signatureAlgorithm == 1
+        || signatureAlgorithm == 3
+        || signatureAlgorithm == 10
+        || signatureAlgorithm == 11
+        || signatureAlgorithm == 14
+        || signatureAlgorithm == 15
+        || signatureAlgorithm == 31
+    ) { 
+        component rsa65537 = VerifyRsa65537Pkcs1v1_5(n, k, HASH_LEN_BITS);
         for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
+            rsa65537.message[i] <== hashParsed[i];
         }
         for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
+            rsa65537.message[i] <== 0;
         }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
+        rsa65537.modulus <== pubKey;
+        rsa65537.signature <== signature;
 
     }
-    if (signatureAlgorithm == 3) {
-        component rsa = VerifyRsa65537Pkcs1v1_5(n, k, 160);
+    if (
+        signatureAlgorithm == 13
+        || signatureAlgorithm == 32
+    ) {
+        component rsa3 = VerifyRsa3Pkcs1v1_5(n, k, HASH_LEN_BITS);
         for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
+            rsa3.message[i] <== hashParsed[i];
         }
         for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
+            rsa3.message[i] <== 0;
         }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
+        rsa3.modulus <== pubKey;
+        rsa3.signature <== signature;
     }
-
     if (
         signatureAlgorithm == 4 
-        || signatureAlgorithm == 12 
-        || signatureAlgorithm == 16
-        || signatureAlgorithm == 17
+        || signatureAlgorithm == 12
         || signatureAlgorithm == 18
         || signatureAlgorithm == 19
     ) {
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
-        var EXP;
-        if (E_BITS == 17) {
-            EXP = 65537;
-        } else {
-            EXP = 3;
-        }
-
-        component rsaPssShaVerification = VerifyRsaPssSig(n, k, SALT_LEN, EXP, HASH_LEN_BITS);
-        rsaPssShaVerification.pubkey <== pubKey;
-        rsaPssShaVerification.signature <== signature;
-        rsaPssShaVerification.hashed <== hash; // send the raw hash
+        component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
+        rsaPss65537ShaVerification.pubkey <== pubKey;
+        rsaPss65537ShaVerification.signature <== signature;
+        rsaPss65537ShaVerification.hashed <== hash; // send the raw hash
 
     }
     if (
-        signatureAlgorithm == 7 
+        signatureAlgorithm == 16
+        || signatureAlgorithm == 17
+    ) {
+        var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+        var SALT_LEN = HASH_LEN_BITS / 8;
+        var E_BITS = getExponentBits(signatureAlgorithm);
+
+        component rsaPss3ShaVerification = VerifyRsaPss3Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
+        rsaPss3ShaVerification.pubkey <== pubKey;
+        rsaPss3ShaVerification.signature <== signature;
+        rsaPss3ShaVerification.hashed <== hash; // send the raw hash
+
+    }
+    if (signatureAlgorithm == 9 
+        || signatureAlgorithm == 7 
         || signatureAlgorithm == 8 
         || signatureAlgorithm == 9 
         || signatureAlgorithm == 21 
@@ -85,56 +101,6 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 30
     ) {
         EcdsaVerifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
-    }
-    if (signatureAlgorithm == 10) {
-        component rsa = VerifyRsa65537Pkcs1v1_5(n, k, 256);
-        for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
-        }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
-    }
-    if (signatureAlgorithm == 11) {
-        component rsa = VerifyRsa65537Pkcs1v1_5(n, k, 160);
-        for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
-        }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
-    }
-    if (signatureAlgorithm == 12) {
-
-    }
-    if (signatureAlgorithm == 13) {
-        component rsa = VerifyRsa3Pkcs1v1_5(n, k, 256);
-        for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
-        }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
-    }
-    if (signatureAlgorithm == 14) {
-        component rsa = VerifyRsa65537Pkcs1v1_5(n, k, 256);
-        for (var i = 0; i < msg_len; i++) {
-            rsa.message[i] <== hashParsed[i];
-        }
-        for (var i = msg_len; i < k; i++) {
-            rsa.message[i] <== 0;
-        }
-        rsa.modulus <== pubKey;
-        rsa.signature <== signature;
-    }
-    if (signatureAlgorithm == 15) {
-
     }
 }
 
