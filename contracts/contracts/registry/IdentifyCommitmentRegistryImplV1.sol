@@ -27,8 +27,7 @@ contract IdentifyCommitmentRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable
     event AddCommitment(uint256 index, uint256 commitment, uint256 imtRoot);
 
     function initialize(
-        address _portal, 
-        bytes32 _cscaKeyMerkleRoot
+        address _portal
     ) 
         external 
         initializer 
