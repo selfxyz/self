@@ -1,5 +1,4 @@
 export const sigAlgs = [
-
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
