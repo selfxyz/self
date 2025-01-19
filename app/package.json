@@ -54,6 +54,7 @@
     "react-native-nfc-manager": "^3.15.1",
     "react-native-passport-reader": "^1.0.3",
     "react-native-svg": "13.4.0",
+    "react-native-tracking-transparency": "^0.1.2",
     "react-native-zip-archive": "^6.1.0",
     "socket.io-client": "^4.7.5",
     "tamagui": "1.110.0",

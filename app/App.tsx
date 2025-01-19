@@ -1,7 +1,7 @@
 import 'react-native-get-random-values';
 import '@ethersproject/shims';
 import { Buffer } from 'buffer';
-import { NativeModules } from 'react-native';
+import { NativeModules, Platform } from 'react-native';
 
 global.Buffer = Buffer;
 
@@ -11,6 +11,7 @@ import { AMPLITUDE_KEY, SEGMENT_KEY } from '@env';
 import { useToastController } from '@tamagui/toast';
 import { YStack } from 'tamagui';
 import { createClient } from '@segment/analytics-react-native';
+import { requestTrackingPermission } from 'react-native-tracking-transparency';
 
 import MainScreen from './src/screens/MainScreen';
 import useNavigationStore from './src/stores/navigationStore';
@@ -18,18 +19,18 @@ import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
 
-// Create the client at the module level
-const segmentClient = SEGMENT_KEY
-  ? createClient({
+// Remove the segment client creation from here
+// Instead export a function to create it
+export const createSegmentClient = () =>
+  SEGMENT_KEY ? createClient({
     writeKey: SEGMENT_KEY,
     trackAppLifecycleEvents: true,
     trackDeepLinks: true,
     debug: true,
-  })
-  : null;
+  }) : null;
 
-// Export it for use in other components
-export { segmentClient };
+// Export the client variable (will be initialized later)
+export let segmentClient: ReturnType<typeof createClient> | null = null;
 
 function App(): React.JSX.Element {
   const toast = useToastController();
@@ -51,6 +52,24 @@ function App(): React.JSX.Element {
   useEffect(() => {
     const cleanup = setupUniversalLinkListener();
     return cleanup;
+  }, []);
+
+  useEffect(() => {
+    const requestTracking = async () => {
+      if (Platform.OS === 'ios') {
+        const status = await requestTrackingPermission();
+        console.log('Tracking permission status:', status);
+        // Initialize segment client after getting tracking permission
+        if (status === 'authorized') {
+          segmentClient = createSegmentClient();
+        }
+      } else {
+        // On Android, initialize directly
+        segmentClient = createSegmentClient();
+      }
+    };
+
+    requestTracking();
   }, []);
 
   return (

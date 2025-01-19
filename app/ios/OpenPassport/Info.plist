@@ -2,6 +2,8 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>NSUserTrackingUsageDescription</key>
+	<string>✨Help us improve the NFC passport reading experience. We only collect anonymous technical data to make passport scanning faster and more reliable for everyone.</string>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
@@ -32,21 +34,11 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
-	<key>NSAppTransportSecurity</key>
-	<string></string>
-	 <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
-	<key>NSAllowsArbitraryLoads</key>
-	<false/>
-	<key>NSAllowsLocalNetworking</key>
-	<true/>
-	
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Needed to secure the secret</string>
 	<key>NSHumanReadableCopyright</key>
-	<string></string>
-	<key>NSLocationWhenInUseUsageDescription</key>
 	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
