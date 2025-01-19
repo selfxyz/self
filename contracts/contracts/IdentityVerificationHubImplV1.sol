@@ -177,6 +177,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     ///                     VERIFY FUNCTIONS                        ///
     ///////////////////////////////////////////////////////////////////
 
+    // Functions for vc and disclose circuit
     function verifyVcAndDiscloseCircuit(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
@@ -203,127 +204,6 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         }
 
         return vcAndDiscloseCircuitVerifier.verifyProof(proof);
-    }
-
-    function verifyProveCircuit(
-        uint256 proveVerifierId,
-        ProveCircuitProof memory proveCircuitProof
-    ) 
-        public 
-        view 
-        returns (bool result) 
-    {
-        address verifier = signatureTypeToProveVerifiers[proveVerifierId];
-        if (verifier == address(0)) {
-            revert NO_VERIFIER_SET();
-        }
-        if (proveCircuitProof.signatureType == SignatureType.RSA) {
-            result = IRSAProveVerifier(verifier).verifyProof(
-                proveCircuitProof.a,
-                proveCircuitProof.b,
-                proveCircuitProof.c,
-                proveCircuitProof.pubSignalsRSA
-            );
-        } else if (proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            result = IECDSAProveVerifier(verifier).verifyProof(
-                proveCircuitProof.a,
-                proveCircuitProof.b,
-                proveCircuitProof.c,
-                proveCircuitProof.pubSignalsECDSA
-            );
-        } else {
-            revert INVALID_SIGNATURE_TYPE();
-        }
-        return result;
-    }
-
-    function verifyDscCircuit(
-        uint256 dscVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
-    ) 
-        public 
-        view 
-        returns (bool result) 
-    {
-        address verifier = signatureTypeToDscVerifiers[dscVerifierId];
-        if (verifier == address(0)) {
-            revert NO_VERIFIER_SET();
-        }
-        result = IDscCircuitVerifier(verifier).verifyProof(
-            dscCircuitProof.a,
-            dscCircuitProof.b,
-            dscCircuitProof.c,
-            dscCircuitProof.pubSignals
-        );
-        return result;
-    }
-
-    function verify(
-        PassportProof memory proof
-    )
-        public
-        view
-        returns (ProveCircuitProof memory)
-    {
-        uint[6] memory dateNum;
-        if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
-            for (uint i = 0; i < 6; i++) {
-                dateNum[i] = proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_CURRENT_DATE_INDEX + i];
-            }
-        } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            for (uint i = 0; i < 6; i++) {
-                dateNum[i] = proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_CURRENT_DATE_INDEX + i];
-            }
-        }
-        uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
-
-        // Check that the current date is within a +/- 1 day range
-        if(
-            currentTimestamp < block.timestamp - 1 days ||
-            currentTimestamp > block.timestamp + 1 days
-        ) {
-            revert CURRENT_DATE_NOT_IN_VALID_RANGE();
-        }
-
-        // check blinded dcs
-        bytes memory blindedDscCommitment;
-        if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
-            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
-        } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
-        }
-
-        if (
-            keccak256(blindedDscCommitment) !=
-            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
-        ) {
-            revert UNEQUAL_BLINDED_DSC_COMMITMENT();
-        }
-
-        if (!verifyProveCircuit(proof.proveVerifierId, proof.proveCircuitProof)) {
-            revert INVALID_PROVE_PROOF();
-        }
-
-        if (!verifyDscCircuit(proof.dscVerifierId, proof.dscCircuitProof)) {
-            revert INVALID_DSC_PROOF();
-        }
-
-        return proof.proveCircuitProof;
-    }
-
-    function verifyAndRegisterCommitment(
-        PassportProof memory proof
-    ) 
-        external 
-    {
-        verify(proof);
-        if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {  
-            registry.registerCommitment(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_COMMITMENT_INDEX]);
-        } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
-            registry.registerCommitment(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
-        } else {
-            revert INVALID_SIGNATURE_TYPE();
-        }
     }
 
     function verifyAndDiscloseAttributes(
@@ -379,4 +259,108 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
 
         return attrs;
     }
+
+
+    // Functions for register commitment
+    function verifyPassportRegisterCircuit(
+        uint256 proveVerifierId,
+        ProveCircuitProof memory proveCircuitProof
+    ) 
+        public 
+        view 
+        returns (bool result) 
+    {
+        address verifier = signatureTypeToProveVerifiers[proveVerifierId];
+        if (verifier == address(0)) {
+            revert NO_VERIFIER_SET();
+        }
+        if (proveCircuitProof.signatureType == SignatureType.RSA) {
+            result = IRSAProveVerifier(verifier).verifyProof(
+                proveCircuitProof.a,
+                proveCircuitProof.b,
+                proveCircuitProof.c,
+                proveCircuitProof.pubSignalsRSA
+            );
+        } else if (proveCircuitProof.signatureType == SignatureType.ECDSA) {
+            result = IECDSAProveVerifier(verifier).verifyProof(
+                proveCircuitProof.a,
+                proveCircuitProof.b,
+                proveCircuitProof.c,
+                proveCircuitProof.pubSignalsECDSA
+            );
+        } else {
+            revert INVALID_SIGNATURE_TYPE();
+        }
+        return result;
+    }
+
+    function verifyPassportDscCircuit(
+        uint256 dscVerifierId,
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+    ) 
+        public 
+        view 
+        returns (bool result) 
+    {
+        address verifier = signatureTypeToDscVerifiers[dscVerifierId];
+        if (verifier == address(0)) {
+            revert NO_VERIFIER_SET();
+        }
+        result = IDscCircuitVerifier(verifier).verifyProof(
+            dscCircuitProof.a,
+            dscCircuitProof.b,
+            dscCircuitProof.c,
+            dscCircuitProof.pubSignals
+        );
+        return result;
+    }
+
+    function verifyPassport(
+        PassportProof memory proof
+    )
+        public
+        view
+        returns (ProveCircuitProof memory)
+    {
+        // check blinded dcs
+        bytes memory blindedDscCommitment;
+        if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {
+            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX]);
+        } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
+            blindedDscCommitment = abi.encodePacked(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_BLINDED_DSC_COMMITMENT_INDEX]);
+        }
+
+        if (
+            keccak256(blindedDscCommitment) !=
+            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
+        ) {
+            revert UNEQUAL_BLINDED_DSC_COMMITMENT();
+        }
+
+        if (!verifyPassportRegisterCircuit(proof.proveVerifierId, proof.proveCircuitProof)) {
+            revert INVALID_PROVE_PROOF();
+        }
+
+        if (!verifyPassportDscCircuit(proof.dscVerifierId, proof.dscCircuitProof)) {
+            revert INVALID_DSC_PROOF();
+        }
+
+        return proof.proveCircuitProof;
+    }
+
+    function verifyAndRegisterPassportCommitment(
+        PassportProof memory proof
+    ) 
+        external 
+    {
+        verifyPassport(proof);
+        if (proof.proveCircuitProof.signatureType == SignatureType.RSA) {  
+            registry.registerCommitment(proof.proveCircuitProof.pubSignalsRSA[CircuitConstants.PROVE_RSA_COMMITMENT_INDEX]);
+        } else if (proof.proveCircuitProof.signatureType == SignatureType.ECDSA) {
+            registry.registerCommitment(proof.proveCircuitProof.pubSignalsECDSA[CircuitConstants.PROVE_ECDSA_COMMITMENT_INDEX]);
+        } else {
+            revert INVALID_SIGNATURE_TYPE();
+        }
+    }
+
 }
