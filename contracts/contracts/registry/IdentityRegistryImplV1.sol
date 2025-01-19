@@ -82,7 +82,8 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         address newImplementation
     ) 
         internal 
-        override 
+        override
+        onlyProxy
         onlyOwner 
     {}
 
@@ -94,6 +95,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         address _hub
     ) 
         external 
+        onlyProxy
         onlyOwner 
     { 
         hub = _hub;
@@ -103,7 +105,8 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         bytes32 _ofacRoot
     ) 
         external
-        onlyOwner
+        onlyProxy
+        onlyOwner 
     {
         ofacRoot = _ofacRoot;
     }
@@ -113,7 +116,8 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         bytes32 _cscaRoot
     ) 
         external
-        onlyOwner
+        onlyProxy
+        onlyOwner 
     {
         cscaRoot = _cscaRoot;
     }
@@ -231,6 +235,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
 
     function getOfacRoot() 
         external
+        onlyProxy
         view 
         returns (bytes32) 
     {
@@ -239,6 +244,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
 
     function getCscaRoot() 
         external
+        onlyProxy
         view 
         returns (bytes32) 
     {
@@ -249,6 +255,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         bytes32 root
     ) 
         external
+        onlyProxy
         view 
         returns (bool) 
     {
@@ -259,6 +266,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         bytes32 root
     ) 
         external
+        onlyProxy
         view 
         returns (bool) 
     {

@@ -140,6 +140,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     ) 
         internal 
         override 
+        onlyProxy
         onlyOwner
     {}
 
@@ -150,6 +151,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         address _registry
     ) 
         external 
+        onlyProxy
         onlyOwner 
     {
         registry = _registry;
@@ -159,6 +161,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         address _vcAndDiscloseCircuitVerifier
     ) 
         external 
+        onlyProxy
         onlyOwner 
     {
         vcAndDiscloseCircuitVerifier = _vcAndDiscloseCircuitVerifier;
@@ -169,6 +172,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         address verifier
     ) 
         external 
+        onlyProxy
         onlyOwner 
     {
         sigTypeToRegisterCircuitVerifiers[typeId] = verifier;
@@ -180,6 +184,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         address verifier
     ) 
         external 
+        onlyProxy
         onlyOwner 
     {
         sigTypeToDscCircuitVerifiers[typeId] = verifier;
@@ -191,6 +196,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         address[] calldata verifiers
     ) 
         external 
+        onlyProxy
         onlyOwner 
     {
         if (typeIds.length != verifiers.length) {
@@ -206,7 +212,8 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         uint256[] calldata typeIds,
         address[] calldata verifiers
     ) 
-        external 
+        external
+        onlyProxy
         onlyOwner 
     {
         if (typeIds.length != verifiers.length) {
@@ -282,6 +289,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     ) 
         external
         view
+        onlyProxy
         returns (VcAndDiscloseVerificationMinimumResult memory)
     {
         verifyVcAndDiscloseCircuit(proof.vcAndDiscloseProof);
@@ -300,6 +308,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     )
         external
         view
+        onlyProxy
         returns (VcAndDiscloseVerificationFullResult memory)
     {
         verifyVcAndDiscloseCircuit(proof.vcAndDiscloseProof);
@@ -327,6 +336,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     )
         public
         view
+        onlyProxy
         returns (Dg1Attributes memory) 
     {   
         
@@ -432,6 +442,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         PassportProof memory proof
     ) 
         external
+        onlyProxy
     {
         verifyPassport(proof);
         IIdentityRegistryV1(registry).registerCommitment(
