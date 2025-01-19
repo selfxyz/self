@@ -50,36 +50,6 @@ contract IdentityVerificationHubStorageV1{
 
 contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, IdentityVerificationHubStorageV1, IIdentityVerificationHubV1 {
 
-    ///////////////////////////////////////////////////////////////////////////////
-    ///                   A NOTE ON IMPLEMENTATION CONTRACTS                    ///
-    ///////////////////////////////////////////////////////////////////////////////
-
-    // This contract is designed explicitly to operate from behind a proxy contract. As a result,
-    // there are a few important implementation considerations:
-    //
-    // - All updates made after deploying a given version of the implementation should inherit from
-    //   the latest version of the implementation. This prevents storage clashes.
-    // - All functions that are less access-restricted than `private` should be marked `virtual` in
-    //   order to enable the fixing of bugs in the existing interface.
-    // - Any function that reads from or modifies state (i.e. is not marked `pure`) must be
-    //   annotated with the `onlyProxy` and `onlyInitialized` modifiers. This ensures that it can
-    //   only be called when it has access to the data in the proxy, otherwise results are likely to
-    //   be nonsensical.
-    // - This contract deals with important data for the WorldID system. Ensure that all newly-added
-    //   functionality is carefully access controlled using `onlyOwner`, or a more granular access
-    //   mechanism.
-    // - Do not assign any contract-level variables at the definition site unless they are
-    //   `constant`.
-    //
-    // Additionally, the following notes apply:
-    //
-    // - Initialisation and ownership management are not protected behind `onlyProxy` intentionally.
-    //   This ensures that the contract can safely be disposed of after it is no longer used.
-    // - Carefully consider what data recovery options are presented as new functionality is added.
-    //   Care must be taken to ensure that a migration plan can exist for cases where upgrades
-    //   cannot recover from an issue or vulnerability.
-
-
     enum Dg1AttributeType {
         ISSUING_STATE,
         NAME,
