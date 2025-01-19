@@ -12,7 +12,7 @@ include "../utils/passport/signatureVerifier.circom";
 include "@zk-email/circuits/utils/bytes.circom";
 
 
-template OPENPASSPORT_DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, dscPubkeyBytesLength, nLevels) {
+template DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, dscPubkeyBytesLength, nLevels) {
    
     // variables verification
     assert(max_cert_bytes % 64 == 0);
