@@ -33,7 +33,7 @@ interface IIdentityVerificationHubV1 {
         uint[28] pubSignalsECDSA;
     }
 
-    struct OpenPassportProof {
+    struct PassportProof {
         uint256 proveVerifierId;
         uint256 dscVerifierId;
         ProveCircuitProof proveCircuitProof;

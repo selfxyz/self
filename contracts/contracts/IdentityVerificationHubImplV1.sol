@@ -259,7 +259,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     }
 
     function verify(
-        OpenPassportProof memory proof
+        PassportProof memory proof
     )
         public
         view
@@ -312,7 +312,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     }
 
     function verifyAndRegisterCommitment(
-        OpenPassportProof memory proof
+        PassportProof memory proof
     ) 
         external 
     {
@@ -327,7 +327,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     }
 
     function verifyAndDiscloseAttributes(
-        OpenPassportProof memory proof,
+        PassportProof memory proof,
         AttributeType[] memory attributeTypes
     )
         public
