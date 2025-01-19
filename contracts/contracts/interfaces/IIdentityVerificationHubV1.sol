@@ -1,16 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+import "./IRegisterCircuitVerifier.sol";
 import "./IDscCircuitVerifier.sol";
-
+import "./IVcAndDiscloseCircuitVerifier.sol";
 interface IIdentityVerificationHubV1 {
 
-    enum SignatureType {
-        RSA,
-        ECDSA
-    }
-
-    struct PassportAttributes {
+    struct Dg1Attributes {
         string issuingState;
         string name;
         string passportNumber;
@@ -18,26 +14,40 @@ interface IIdentityVerificationHubV1 {
         string dateOfBirth;
         string gender;
         string expiryDate;
-        uint256 olderThan;
-        bool ofacResult;
-        address pubkey;
-        bytes3[20] forbiddenCountries;
     }
 
-    struct ProveCircuitProof {
-        SignatureType signatureType;
-        uint[2] a;
-        uint[2][2] b;
-        uint[2] c;
-        uint[51] pubSignalsRSA;
-        uint[28] pubSignalsECDSA;
+    struct VcAndDiscloseVerificationMinimumResult {
+        bytes32 attestationId;
+        bytes32 scope;
+        bytes32 userIdentifier;
+        bytes32 nullifier;
+    }
+
+    struct VcAndDiscloseVerificationFullResult {
+        bytes32 attestationId;
+        bytes32 scope;
+        bytes32 userIdentifier;
+        bytes32 nullifier;
+        uint256[3] revealedDataPacked;
+        uint256 olderThan;
+        uint256[2] forbiddenCountriesList;
+        bool ofacResult;
     }
 
     struct PassportProof {
-        uint256 proveVerifierId;
-        uint256 dscVerifierId;
-        ProveCircuitProof proveCircuitProof;
+        uint256 registerCircuitVerifierId;
+        uint256 dscCircuitVerifierId;
+        IRegisterCircuitVerifier.RegisterCircuitProof registerCircuitProof;
         IDscCircuitVerifier.DscCircuitProof dscCircuitProof;
+    }
+
+    struct VcAndDiscloseHubProof {
+        bool olderThanEnabled;
+        uint256 olderThan;
+        bool forbiddenCountriesEnabled;
+        uint256[2] forbiddenCountriesList;
+        bool ofacEnabled;
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof vcAndDiscloseProof;
     }
 
 } 
