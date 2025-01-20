@@ -17,17 +17,17 @@ interface IIdentityVerificationHubV1 {
     }
 
     struct VcAndDiscloseVerificationMinimumResult {
-        bytes32 attestationId;
-        bytes32 scope;
-        bytes32 userIdentifier;
-        bytes32 nullifier;
+        uint256 attestationId;
+        uint256 scope;
+        uint256 userIdentifier;
+        uint256 nullifier;
     }
 
     struct VcAndDiscloseVerificationFullResult {
-        bytes32 attestationId;
-        bytes32 scope;
-        bytes32 userIdentifier;
-        bytes32 nullifier;
+        uint256 attestationId;
+        uint256 scope;
+        uint256 userIdentifier;
+        uint256 nullifier;
         uint256[3] revealedDataPacked;
         uint256 olderThan;
         uint256[2] forbiddenCountriesList;

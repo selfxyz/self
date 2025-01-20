@@ -40,20 +40,20 @@ contract IdentityRegistryStorageV1{
     address internal hub;
 
     // CSCA root
-    bytes32 internal cscaRoot;
+    uint256 internal cscaRoot;
 
     // commitment registry
     LeanIMTData internal identityCommitmentIMT;
     // timestamp of when the root was created
-    mapping(bytes32 => uint256) internal rootTimestamps;
+    mapping(uint256 => uint256) internal rootTimestamps;
     // attestation id => nullifier => bool
     // attestation id for each identity type
-    // passport: bytes32(0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24)
+    // passport: 0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24
     // poseidon("E-PASSPORT")
-    mapping(bytes32 => mapping(bytes32 => bool)) internal nullifiers;
+    mapping(uint256 => mapping(uint256 => bool)) internal nullifiers;
 
     // ofac registry
-    bytes32 internal ofacRoot;
+    uint256 internal ofacRoot;
 }
 // TODO: Add modifier named onlyPortal
 contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, IdentityRegistryStorageV1, IIdentityRegistryV1 {
@@ -66,7 +66,9 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     error ONLY_HUB_CAN_REGISTER_COMMITMENT();
     error REGISTERED_IDENTITY();
 
-    event CommitmentRegistered(bytes32 indexed attestationId, bytes32 indexed nullifier, bytes32 indexed commitment, uint256 timestamp, bytes32 imtRoot, uint256 imtIndex);
+    event CommitmentRegistered(uint256 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event CommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
+    event CommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
     
     function initialize(
         address _hub
@@ -102,7 +104,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     }
 
     function updateOfacRoot(
-        bytes32 _ofacRoot
+        uint256 _ofacRoot
     ) 
         external
         onlyProxy
@@ -113,7 +115,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
 
 
     function updateCscaRoot(
-        bytes32 _cscaRoot
+        uint256 _cscaRoot
     ) 
         external
         onlyProxy
@@ -127,9 +129,9 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     ///////////////////////////////////////////////////////////////////
 
     function registerCommitment(
-        bytes32 attestationId,
-        bytes32 nullifier,
-        bytes32 commitment
+        uint256 attestationId,
+        uint256 nullifier,
+        uint256 commitment
     ) 
         external
         onlyProxy
@@ -140,26 +142,15 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
 
         nullifiers[attestationId][nullifier] = true;
         uint256 index = identityCommitmentIMT.size;
-        bytes32 imt_root = _addCommitment(commitment);
+        uint256 imt_root = _addCommitment(commitment);
         emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
-
-    function _addCommitment(
-        bytes32 commitment
-    ) 
-        private
-        returns(bytes32 imt_root)
-    {
-        imt_root = bytes32(identityCommitmentIMT._insert(uint256(commitment)));
-        rootTimestamps[imt_root] = block.timestamp;
-    }
-
 
     ///////////////////////////////////////////////////////////////////
     ///                     VIEW FUNCTIONS                        ///
     ///////////////////////////////////////////////////////////////////
     function checkIdentityCommitmentRoot(
-        bytes32 root
+        uint256 root
     ) 
         external
         onlyProxy
@@ -170,7 +161,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     }
 
     function getIdentityCommitmentRootTimestamp(
-        bytes32 root
+        uint256 root
     ) 
         external
         onlyProxy
@@ -193,20 +184,20 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         onlyProxy
         view 
-        returns (bytes32) 
+        returns (uint256) 
     {
-        return bytes32(identityCommitmentIMT._root());
+        return identityCommitmentIMT._root();
     }
 
     function getIdentityCommitmentIndex(
-        bytes32 commitment
+        uint256 commitment
     ) 
         external
         onlyProxy
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT._indexOf(uint256(commitment));
+        return identityCommitmentIMT._indexOf(commitment);
     }
 
     function getIdentityCommitment(
@@ -215,20 +206,20 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         onlyProxy
         view 
-        returns (bytes32) 
+        returns (uint256) 
     {
-        return bytes32(identityCommitmentIMT.leaves[index]);
+        return identityCommitmentIMT.leaves[index];
     }
 
     function getAllIdentityCommitments() 
         external
         onlyProxy
         view 
-        returns (bytes32[] memory) 
+        returns (uint256[] memory) 
     {
-        bytes32[] memory commitments = new bytes32[](identityCommitmentIMT.size);
+        uint256[] memory commitments = new uint256[](identityCommitmentIMT.size);
         for (uint256 i = 0; i < identityCommitmentIMT.size; i++) {
-            commitments[i] = bytes32(identityCommitmentIMT.leaves[i]);
+            commitments[i] = identityCommitmentIMT.leaves[i];
         }
         return commitments;
     }
@@ -237,7 +228,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         onlyProxy
         view 
-        returns (bytes32) 
+        returns (uint256) 
     {
         return ofacRoot;
     }
@@ -246,13 +237,13 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         onlyProxy
         view 
-        returns (bytes32) 
+        returns (uint256) 
     {
         return cscaRoot;
     }
 
     function checkOfacRoot(
-        bytes32 root
+        uint256 root
     ) 
         external
         onlyProxy
@@ -263,7 +254,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     }
 
     function checkCscaRoot(
-        bytes32 root
+        uint256 root
     ) 
         external
         onlyProxy
@@ -278,13 +269,78 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     ///////////////////////////////////////////////////////////////////
 
     function devAddIdentityCommitment(
-        bytes32 commitment
+        uint256 attestationId,
+        uint256 nullifier,
+        uint256 commitment
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        _addCommitment(commitment);
+        uint256 imt_root = _addCommitment(commitment);
+        uint256 index = identityCommitmentIMT._indexOf(commitment);
+        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
 
+    function devUpdateCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _updateCommitment(oldLeaf, newLeaf, siblingNodes);
+        emit CommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
+    }
+
+    function devRemoveCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _removeCommitment(oldLeaf, siblingNodes);
+        emit CommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ///                     INTERNAL FUNCTIONS                        ///
+    ///////////////////////////////////////////////////////////////////
+    
+    function _addCommitment(
+        uint256 commitment
+    ) 
+        internal
+        returns(uint256 imt_root)
+    {
+        imt_root = identityCommitmentIMT._insert(commitment);
+        rootTimestamps[imt_root] = block.timestamp;
+    }
+
+    function _updateCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    )
+        internal
+        returns(uint256 imt_root)
+    {
+        imt_root = identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
+        rootTimestamps[imt_root] = block.timestamp;
+    }
+
+    function _removeCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    )
+        internal
+        returns(uint256 imt_root)
+    {
+        imt_root = identityCommitmentIMT._remove(oldLeaf, siblingNodes);
+        rootTimestamps[imt_root] = block.timestamp;
+    }
 }

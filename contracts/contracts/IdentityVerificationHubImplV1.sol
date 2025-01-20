@@ -30,7 +30,6 @@ import "./interfaces/IDscCircuitVerifier.sol";
  * 
  * Examples of forbidden changes:
  * - Changing uint256 to uint128
- * - Changing address to address payable
  * - Changing bytes32 to bytes
  * - Changing array type to mapping
  * 
@@ -206,11 +205,11 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         internal
         view
     {
-        if (!IIdentityRegistryV1(registry).checkIdentityCommitmentRoot(bytes32(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]))) {
+        if (!IIdentityRegistryV1(registry).checkIdentityCommitmentRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
             revert INVALID_IDENTITY_COMMITMENT_ROOT();
         }
 
-        if (!IIdentityRegistryV1(registry).checkOfacRoot(bytes32(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX]))) {
+        if (!IIdentityRegistryV1(registry).checkOfacRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
             revert INVALID_OFAC_ROOT();
         }
 
@@ -233,7 +232,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         VcAndDiscloseHubProof memory proof
     ) 
         internal
-        view 
+        pure
     {
         if (proof.olderThanEnabled) {
             if (!CircuitAttributeHandler.compareOlderThan(proof.olderThan, proof.vcAndDiscloseProof)) {
@@ -266,10 +265,10 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         verifyVcAndDiscloseAttributes(proof);
 
         VcAndDiscloseVerificationMinimumResult memory result;
-        result.attestationId = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
-        result.scope = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]);
-        result.userIdentifier = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
-        result.nullifier = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+        result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
+        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
+        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
         return result;
     }
 
@@ -285,10 +284,10 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         verifyVcAndDiscloseAttributes(proof);
 
         VcAndDiscloseVerificationFullResult memory result;
-        result.attestationId = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
-        result.scope = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]);
-        result.userIdentifier = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
-        result.nullifier = bytes32(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+        result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
+        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
+        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
         for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
         }
@@ -373,7 +372,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
             revert NO_VERIFIER_SET();
         }
 
-        if (!IIdentityRegistryV1(registry).checkCscaRoot(bytes32(dscCircuitProof.pubSignals[CircuitConstants.DSC_CSCA_ROOT_INDEX]))) {
+        if (!IIdentityRegistryV1(registry).checkCscaRoot(dscCircuitProof.pubSignals[CircuitConstants.DSC_CSCA_ROOT_INDEX])) {
             revert INVALID_CSCA_ROOT();
         }
 
@@ -417,8 +416,8 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         verifyPassport(proof);
         IIdentityRegistryV1(registry).registerCommitment(
             AttestationId.E_PASSPORT,
-            bytes32(proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]),
-            bytes32(proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX])
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX],
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX]
         );
     }
 
