@@ -50,7 +50,7 @@ contract IdentityRegistryStorageV1{
     // attestation id for each identity type
     // passport: 0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24
     // poseidon("E-PASSPORT")
-    mapping(uint256 => mapping(uint256 => bool)) internal nullifiers;
+    mapping(bytes32 => mapping(uint256 => bool)) internal nullifiers;
 
     // ofac registry
     uint256 internal ofacRoot;
@@ -66,7 +66,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     error ONLY_HUB_CAN_REGISTER_COMMITMENT();
     error REGISTERED_IDENTITY();
 
-    event CommitmentRegistered(uint256 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event CommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     event CommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
     
@@ -129,7 +129,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     ///////////////////////////////////////////////////////////////////
 
     function registerCommitment(
-        uint256 attestationId,
+        bytes32 attestationId,
         uint256 nullifier,
         uint256 commitment
     ) 
@@ -269,7 +269,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     ///////////////////////////////////////////////////////////////////
 
     function devAddIdentityCommitment(
-        uint256 attestationId,
+        bytes32 attestationId,
         uint256 nullifier,
         uint256 commitment
     ) 
