@@ -3,13 +3,11 @@ import pako from 'pako';
 import { Linking, NativeModules, Platform } from 'react-native';
 
 import { Mode, OpenPassportApp } from '../../../common/src/utils/appType';
-import {
-  getCircuitNameOld,
-  parseCertificateSimple,
-} from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { downloadZkey } from './zkeyDownload';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 const parseUrlParams = (url: string): Map<string, string> => {
   const [, queryString] = url.split('?');
@@ -111,8 +109,8 @@ const handleQRCodeScan = (
   setSelectedTab: any,
 ) => {
   try {
-    const dsc = useUserStore.getState().passportData?.dsc;
-    if (dsc) {
+    const passportData = useUserStore.getState().passportData;
+    if (passportData) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
         decodedResult.split('').map(char => char.charCodeAt(0)),
@@ -121,16 +119,15 @@ const handleQRCodeScan = (
       const unpackedData = msgpack.decode(decompressedData);
       const openPassportApp: OpenPassportApp = unpackedData;
       setSelectedApp(openPassportApp);
-
-      const parsedDsc = parseCertificateSimple(dsc);
+      const passportMetadata = parsePassportData(passportData);
 
       const circuitName =
         openPassportApp.mode === 'vc_and_disclose'
           ? 'vc_and_disclose'
           : getCircuitNameOld(
               'prove' as Mode,
-              parsedDsc.signatureAlgorithm,
-              parsedDsc.hashAlgorithm,
+              passportMetadata.signatureAlgorithm,
+              passportMetadata.signedAttrHashFunction,
             );
       downloadZkey(circuitName as any);
 

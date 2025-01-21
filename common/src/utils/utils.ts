@@ -19,6 +19,16 @@ import {
 } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';
 import { SignatureAlgorithm } from './types';
+import { customHasher } from './pubkeyTree';
+
+export function getNullifier(signedAttr_padded: string[], hashFunction: string) {
+  return customHasher(
+    (hash(
+      hashFunction,
+      signedAttr_padded.slice(0, signedAttr_padded.lastIndexOf('128')).map((x) => +x)
+    ) as any).map((x) => (x & 0xff).toString())
+  );
+}
 
 export function formatMrz(mrz: string) {
   const mrzCharcodes = [...mrz].map((char) => char.charCodeAt(0));
@@ -240,7 +250,11 @@ export function hexToDecimal(hex: string): string {
 }
 
 // hash logic here because the one in utils.ts only works with node
-export function hash(hashFunction: string, bytesArray: number[], format: string = 'bytes'): string | number[] {
+export function hash(
+  hashFunction: string,
+  bytesArray: number[],
+  format: string = 'bytes'
+): string | number[] {
   const unsignedBytesArray = bytesArray.map((byte) => byte & 0xff);
   let hashResult: string;
 
@@ -517,9 +531,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-    Array.from(str)
-      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-      .join('')
+      Array.from(str)
+        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join('')
   );
 }
 

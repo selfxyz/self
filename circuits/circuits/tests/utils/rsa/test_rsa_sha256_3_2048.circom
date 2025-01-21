@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "../../../utils/circomlib/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
+include "../../../utils/crypto/signature/rsa/verifyRsa3Pkcs1v1_5.circom";
 
 template VerifyRsaPkcs1v1_5Tester() {
     signal input signature[35];

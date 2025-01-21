@@ -33,7 +33,7 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
     prove_rsa_65537_sha1: false,
     prove_rsa_65537_sha256: false,
     prove_rsapss_65537_sha256: false,
-    disclose: false,
+    vc_and_disclose: false,
   },
   showWarningModal: {
     show: false,

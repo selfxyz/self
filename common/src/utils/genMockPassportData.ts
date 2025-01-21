@@ -58,6 +58,12 @@ import {
   mock_dsc_sha512_brainpoolP512r1,
   mock_dsc_key_sha224_braipoolP224r1,
   mock_dsc_sha224_brainpoolP224r1,
+  mock_dsc_key_sha512_rsa_65537_4096,
+  mock_dsc_sha512_rsa_65537_4096,
+  mock_dsc_key_sha256_rsa_3_4096,
+  mock_dsc_sha256_rsa_3_4096,
+  mock_dsc_key_sha512_rsa_65537_2048,
+  mock_dsc_sha512_rsa_65537_2048,
 } from '../constants/mockCertificates';
 import { countryCodes } from '../constants/constants';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
@@ -142,6 +148,10 @@ export function genMockPassportData(
 
   switch (signatureType) {
     case 'rsa_sha1_65537_2048':
+      privateKeyPem = mock_dsc_key_sha1_rsa_4096;
+      dsc = mock_dsc_sha1_rsa_4096;
+      break;
+    case 'rsa_sha1_65537_4096':
       privateKeyPem = mock_dsc_key_sha1_rsa_4096;
       dsc = mock_dsc_sha1_rsa_4096;
       break;
@@ -232,6 +242,22 @@ export function genMockPassportData(
     case 'ecdsa_sha512_brainpoolP512r1_512':
       privateKeyPem = mock_dsc_key_sha512_brainpoolP512r1;
       dsc = mock_dsc_sha512_brainpoolP512r1;
+      break;
+    case 'rsa_sha256_65537_4096':
+      privateKeyPem = mock_dsc_key_sha256_rsa_4096;
+      dsc = mock_dsc_sha256_rsa_4096;
+      break;
+    case 'rsa_sha512_65537_4096':
+      privateKeyPem = mock_dsc_key_sha512_rsa_65537_4096;
+      dsc = mock_dsc_sha512_rsa_65537_4096;
+      break;
+    case 'rsa_sha512_65537_2048':
+      privateKeyPem = mock_dsc_key_sha512_rsa_65537_2048;
+      dsc = mock_dsc_sha512_rsa_65537_2048;
+      break;
+    case 'rsa_sha256_3_4096':
+      privateKeyPem = mock_dsc_key_sha256_rsa_3_4096;
+      dsc = mock_dsc_sha256_rsa_3_4096;
       break;
   }
 
