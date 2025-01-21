@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "@zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../date/isOlderThan.circom";
 
 template DISCLOSE() {

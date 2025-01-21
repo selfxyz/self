@@ -564,6 +564,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openpassport/zk-email-circuits@npm:^6.1.2":
+  version: 6.1.2
+  resolution: "@openpassport/zk-email-circuits@npm:6.1.2"
+  dependencies:
+    "@zk-email/zk-regex-circom": "npm:^2.1.0"
+    circomlib: "npm:^2.0.5"
+  checksum: 10c0/cc26f12f320643172a614b7a5e53ead6d412cb70be3c256fdd6dcdd1a58ef755c612407a28cfb7f9ee1b41f06e9bee4d8bf4e996b38c845f6a2a3468277da36c
+  languageName: node
+  linkType: hard
+
 "@openpassport/zk-kit-imt@npm:^0.0.4":
   version: 0.0.4
   resolution: "@openpassport/zk-kit-imt@npm:0.0.4"
@@ -926,7 +936,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/zk-regex-circom@npm:^2.3.1":
+"@zk-email/zk-regex-circom@npm:^2.1.0, @zk-email/zk-regex-circom@npm:^2.3.1":
   version: 2.3.2
   resolution: "@zk-email/zk-regex-circom@npm:2.3.2"
   dependencies:
@@ -1189,6 +1199,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"big-integer@npm:^1.6.42, big-integer@npm:^1.6.48":
+  version: 1.6.52
+  resolution: "big-integer@npm:1.6.52"
+  checksum: 10c0/9604224b4c2ab3c43c075d92da15863077a9f59e5d4205f4e7e76acd0cd47e8d469ec5e5dba8d9b32aa233951893b29329ca56ac80c20ce094b4a647a66abae0
+  languageName: node
+  linkType: hard
+
 "binary-extensions@npm:^2.0.0":
   version: 2.3.0
   resolution: "binary-extensions@npm:2.3.0"
@@ -1225,6 +1242,13 @@ __metadata:
     blake2b-wasm: "npm:^2.4.0"
     nanoassert: "npm:^2.0.0"
   checksum: 10c0/5276ee175f7cbbb115ee2003cf577687239ee5931f350e7d799b52cd99793cf6946f03a31d8531f643db5e81ca727f18a0dd4206394ee62c65b5dacea1a86bf8
+  languageName: node
+  linkType: hard
+
+"blakejs@npm:^1.1.0":
+  version: 1.2.1
+  resolution: "blakejs@npm:1.2.1"
+  checksum: 10c0/c284557ce55b9c70203f59d381f1b85372ef08ee616a90162174d1291a45d3e5e809fdf9edab6e998740012538515152471dc4f1f9dbfa974ba2b9c1f7b9aad7
   languageName: node
   linkType: hard
 
@@ -1533,6 +1557,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"circom-bigint@https://github.com/0xbok/circom-bigint":
+  version: 0.0.1
+  resolution: "circom-bigint@https://github.com/0xbok/circom-bigint.git#commit=4f78084327e993136edb2a8f4bd52ffbb437ab78"
+  dependencies:
+    circomlib: "npm:^2.0.2"
+    ethers: "npm:^5.5.2"
+    snarkjs: "npm:^0.4.10"
+  checksum: 10c0/f8d28c131cb341ec279ced8eed63500cbe0fd30292925e954a20c1f968c1287c8e4d327fdb223d24d69ceb30acb3de676cad3574da9b2fc2764dbcc976ca7d1c
+  languageName: node
+  linkType: hard
+
 "circom-dl@https://github.com/distributed-lab/circom-dl":
   version: 1.0.0
   resolution: "circom-dl@https://github.com/distributed-lab/circom-dl.git#commit=9af9efb66bb801e77030596624cffb5fa3383eb9"
@@ -1552,6 +1587,7 @@ __metadata:
   resolution: "circom-passport@workspace:."
   dependencies:
     "@noble/curves": "npm:^1.4.2"
+    "@openpassport/zk-email-circuits": "npm:^6.1.2"
     "@openpassport/zk-kit-imt": "npm:^0.0.4"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.4"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -1572,6 +1608,7 @@ __metadata:
     asn1js: "npm:^3.0.5"
     chai: "npm:4.3.8"
     chai-as-promised: "npm:^7.1.1"
+    circom-bigint: "https://github.com/0xbok/circom-bigint"
     circom-dl: "https://github.com/distributed-lab/circom-dl"
     circom_tester: "github:remicolin/circom_tester#main"
     circomlib: "npm:^2.0.5"
@@ -1592,6 +1629,17 @@ __metadata:
     typescript: "npm:^5.3.3"
   languageName: unknown
   linkType: soft
+
+"circom_runtime@npm:0.1.20":
+  version: 0.1.20
+  resolution: "circom_runtime@npm:0.1.20"
+  dependencies:
+    ffjavascript: "npm:0.2.55"
+  bin:
+    calcwit: calcwit.js
+  checksum: 10c0/fc09e9dc7673e94ff9582f049b8e2c84c3fc64844e4b1287ca255e9ca9d71be706c21059f6b0bbdc06769416aa7bc889e52c5ca60b084b8624a7e4ce3adac348
+  languageName: node
+  linkType: hard
 
 "circom_runtime@npm:0.1.21":
   version: 0.1.21
@@ -1645,7 +1693,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"circomlib@npm:^2.0.5":
+"circomlib@npm:^2.0.2, circomlib@npm:^2.0.5":
   version: 2.0.5
   resolution: "circomlib@npm:2.0.5"
   checksum: 10c0/6709e3df9e16c09015e69f9ee01d5fde340b888743a204be27e37880337db61f013f4a6b9573935fb410ddb02a0e89367edf509b89182a0c2e07c8a4777c91a4
@@ -2068,7 +2116,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ethers@npm:^5.5.1":
+"ethers@npm:^5.5.1, ethers@npm:^5.5.2":
   version: 5.7.2
   resolution: "ethers@npm:5.7.2"
   dependencies:
@@ -2146,6 +2194,18 @@ __metadata:
   dependencies:
     reusify: "npm:^1.0.4"
   checksum: 10c0/7be87ecc41762adbddf558d24182f50a4b1a3ef3ee807d33b7623da7aee5faecdcc94fce5aa13fe91df93e269f383232bbcdb2dc5338cd1826503d6063221f36
+  languageName: node
+  linkType: hard
+
+"ffjavascript@npm:0.2.55":
+  version: 0.2.55
+  resolution: "ffjavascript@npm:0.2.55"
+  dependencies:
+    big-integer: "npm:^1.6.48"
+    wasmbuilder: "npm:^0.0.12"
+    wasmcurves: "npm:0.1.0"
+    web-worker: "npm:^1.2.0"
+  checksum: 10c0/84e5b0d6acc5b7505cd46ba7bffba0f614d564f3c0296650f5e5769b601ff52e24bd7b3c0135e767a46b0db8973887a349c863f080d0affce10b0a9a768133f7
   languageName: node
   linkType: hard
 
@@ -3615,6 +3675,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"r1csfile@npm:0.0.40":
+  version: 0.0.40
+  resolution: "r1csfile@npm:0.0.40"
+  dependencies:
+    "@iden3/bigarray": "npm:0.0.2"
+    "@iden3/binfileutils": "npm:0.0.11"
+    fastfile: "npm:0.0.20"
+    ffjavascript: "npm:0.2.55"
+  checksum: 10c0/55bb953ab875f97d3dc2941ee97459058ccc4be87bbff02ca3084d039d20e8cd78c91c45afb71877156c3201870359171f1bea78557d1a3efea8c899e3cc364a
+  languageName: node
+  linkType: hard
+
 "r1csfile@npm:0.0.41":
   version: 0.0.41
   resolution: "r1csfile@npm:0.0.41"
@@ -3856,6 +3928,26 @@ __metadata:
   bin:
     snarkjs: build/cli.cjs
   checksum: 10c0/44fc2beaf1a0dd7e89b51178a2f179d29f3e235509018f488603614dba049c51cb6f80eaa94329d2882d1edf61d9bf86d0a98480ccfbd9bf4d3dcdda5008431c
+  languageName: node
+  linkType: hard
+
+"snarkjs@npm:^0.4.10":
+  version: 0.4.27
+  resolution: "snarkjs@npm:0.4.27"
+  dependencies:
+    "@iden3/binfileutils": "npm:0.0.11"
+    bfj: "npm:^7.0.2"
+    blake2b-wasm: "npm:^2.4.0"
+    circom_runtime: "npm:0.1.20"
+    ejs: "npm:^3.1.6"
+    fastfile: "npm:0.0.20"
+    ffjavascript: "npm:0.2.55"
+    js-sha3: "npm:^0.8.0"
+    logplease: "npm:^1.2.15"
+    r1csfile: "npm:0.0.40"
+  bin:
+    snarkjs: build/cli.cjs
+  checksum: 10c0/fb764e9a4eef6d1d5e3d8f623d0f92aa965d840a28bcd18f4201cbeeeb8f430da629507b7506c78da0fa3ea4646cfeec5b852c1757f4e71bd96bdde4bc7a8c1c
   languageName: node
   linkType: hard
 
@@ -4325,6 +4417,25 @@ __metadata:
   version: 0.0.16
   resolution: "wasmbuilder@npm:0.0.16"
   checksum: 10c0/9e7e25c0b281fb83b272ba628b2f94c3e5ac7a3a488149be3548c52fa7c4502a76339bf2eb6a92e8f23b46da429dda69fe15e794b55c05ba769fe60ff74c73f3
+  languageName: node
+  linkType: hard
+
+"wasmbuilder@npm:^0.0.12":
+  version: 0.0.12
+  resolution: "wasmbuilder@npm:0.0.12"
+  dependencies:
+    big-integer: "npm:^1.6.48"
+  checksum: 10c0/7b3421a0cc58666ab690833ea6a24be4440ff7861da03812bc82d8498d8ddefde319ee710be3c42c35bfdd8e64568a41b59a28d7865f16b73a4186e0d13cef39
+  languageName: node
+  linkType: hard
+
+"wasmcurves@npm:0.1.0":
+  version: 0.1.0
+  resolution: "wasmcurves@npm:0.1.0"
+  dependencies:
+    big-integer: "npm:^1.6.42"
+    blakejs: "npm:^1.1.0"
+  checksum: 10c0/6ace0476b95e9911be9b588dd04593f977144cf9aa4e74f0d50b95e37dce2c968ac8b433c353b973cfe6436c720c6e4a21cdb2ceb8a8435210ab68d55ea3911d
   languageName: node
   linkType: hard
 
