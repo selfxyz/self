@@ -74,12 +74,22 @@ const NextScreen: React.FC = () => {
           const key_ = key;
           const indexes =
             attributeToPosition[key_ as keyof typeof attributeToPosition];
+          if (!passportData?.mrz || !indexes) {
+            return null;
+          }
+
           const keyFormatted = key_
             .replace(/_/g, ' ')
             .split(' ')
             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
-          const mrzAttribute = passportData?.mrz?.slice(
+
+          if (indexes[0] >= passportData.mrz.length || indexes[1] >= passportData.mrz.length) {
+            console.warn(`Invalid indexes for key ${key_}: [${indexes[0]}, ${indexes[1]}]`);
+            return null;
+          }
+
+          const mrzAttribute = passportData.mrz.slice(
             indexes[0],
             indexes[1] + 1,
           );

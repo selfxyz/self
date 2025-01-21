@@ -222,7 +222,6 @@ const handleResponseIOS = async (
 
   try {
 
-    useNavigationStore.getState().setSelectedTab('next');
     parsePassportDataAsync(passportData);
 
   } catch (e: any) {
@@ -319,7 +318,6 @@ const handleResponseAndroid = async (
   ***/
 
   try {
-    useNavigationStore.getState().setSelectedTab('next');
     parsePassportDataAsync(passportData);
 
   } catch (e: any) {
@@ -367,5 +365,7 @@ async function parsePassportDataAsync(passportData: PassportData) {
     csca_signature_algorithm_bits: parsedPassportData.cscaSignatureAlgorithmBits,
     dsc: parsedPassportData.dsc
   });
+
+  useNavigationStore.getState().setSelectedTab('next');
 
 }
