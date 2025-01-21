@@ -61,12 +61,19 @@ export function getLeaf(dsc: string): string {
 export function getLeafCSCA(dsc: string): string {
   const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
 
-  const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
+  const { n, k } = signatureAlgorithm === 'ecdsa'
+    ? getNAndK(`${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}` as SignatureAlgorithm)
+    : getNAndKCSCA(signatureAlgorithm as any);
+
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
     const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${curve}_${bits}`;
     const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
+    if (sigAlgIndex == undefined) {
+      console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
+      throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
+    }
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([sigAlgIndex, ...qx, ...qy]);

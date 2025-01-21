@@ -10,8 +10,7 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 function processCertificate(pemContent: string, filePath: string) {
     try {
         const certificate = parseCertificate(pemContent, path.basename(filePath));
-
-        const validAlgorithms = ['rsa', 'rsapss'];
+        const validAlgorithms = ['rsa', 'rsapss', 'ecdsa'];
         if (!validAlgorithms.includes(certificate.signatureAlgorithm)) {
             console.log(`Skipping file ${filePath}: Unsupported signature algorithm ${certificate.signatureAlgorithm}`);
             return null;
@@ -69,6 +68,16 @@ async function buildCscaMerkleTree() {
             '../common/src/mock_certificates/sha256_rsa_3_4096/mock_csca.crt',
             '../common/src/mock_certificates/sha384_rsa_65537_4096/mock_csca.pem',
             '../common/src/mock_certificates/sha512_rsa_65537_4096/mock_csca.pem',
+            '../common/src/mock_certificates/sha1_ecdsa_secp256r1/mock_csca.pem',
+            '../common/src/mock_certificates/ecdsa_sha1_brainpoolP256r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_brainpoolP256r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_ecdsa_secpk384r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha384_ecdsa_brainpoolP256r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha384_ecdsa_brainpoolP384r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha384_ecdsa_secp384r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha512_ecdsa_brainpoolP256r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha512_ecdsa_brainpoolP384r1/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_secp256r1/mock_csca.pem',
         ];
 
         for (const mockCscaFile of mockCscaList) {

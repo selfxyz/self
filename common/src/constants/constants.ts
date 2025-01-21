@@ -112,6 +112,7 @@ export enum SignatureAlgorithmIndex {
   rsa_sha256_3_4096 = 32,
   rsa_sha1_3_4096 = 33,
   rsa_sha384_65537_4096 = 34,
+  ecdsa_sha1_brainpoolP256r1_256 = 36,
 }
 
 export const attributeToPosition = {
