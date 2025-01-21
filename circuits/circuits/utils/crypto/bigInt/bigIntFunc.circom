@@ -1,39 +1,7 @@
 pragma circom 2.1.6;
-
+include "circom-bigint/circuits/bigint_func.circom";
 include "./shouldUseKaratsuba.circom";
 
-function is_negative_dl(x) {
-    return x > 10944121435919637611123202872628637544274182200208017171849102093287904247808 ? 1 : 0;
-}
-
-function div_ceil_dl(m, n) {
-    var ret = 0;
-    if (m % n == 0) {
-        ret = m \ n;
-    } else {
-        ret = m \ n + 1;
-    }
-    return ret;
-}
-
-function log_ceil_dl(n) {
-    var n_temp = n;
-    for (var i = 0; i < 254; i++) {
-        if (n_temp == 0) {
-            return i;
-        }
-        n_temp = n_temp \ 2;
-    }
-    return 254;
-}
-
-function SplitFn_dl(in, n, m) {
-    return [in % (1 << n), (in \ (1 << n)) % (1 << m)];
-}
-
-function SplitThreeFn_dl(in, n, m, k) {
-    return [in % (1 << n), (in \ (1 << n)) % (1 << m), (in \ (1 << n + m)) % (1 << k)];
-}
 
 // in is an m bit number
 // split into ceil(m/n) n-bit registers
@@ -44,7 +12,7 @@ function splitOverflowedRegister_dl(m, n, in) {
         out[i] = 0;
     }
     
-    var nRegisters = div_ceil_dl(m, n);
+    var nRegisters = div_ceil(m, n);
     var running = in;
     for (var i = 0; i < nRegisters; i++) {
         out[i] = running % (1 << n);
@@ -74,7 +42,7 @@ function getProperRepresentation_dl(m, n, k, in) {
         for (var j = 0; j < 200; j++) {
             pieces[i][j] = 0;
         }
-        if (is_negative_dl(in[i]) == 1) {
+        if (isNegative(in[i]) == 1) {
             var negPieces[200] = splitOverflowedRegister_dl(m, n, - 1 * in[i]);
             for (var j = 0; j < ceilMN; j++) {
                 pieces[i][j] =  - 1 * negPieces[j];
@@ -108,7 +76,7 @@ function getProperRepresentation_dl(m, n, k, in) {
             }
         }
         
-        if (is_negative_dl(thisRegisterValue) == 1) {
+        if (isNegative(thisRegisterValue) == 1) {
             var thisRegisterAbs =  - 1 * thisRegisterValue;
             out[registerIdx] = (1 << n) - (thisRegisterAbs % (1 << n));
             carries[registerIdx] =  - 1 * (thisRegisterAbs >> n) - 1;
@@ -119,19 +87,6 @@ function getProperRepresentation_dl(m, n, k, in) {
     }
     
     return out;
-}
-
-// 1 if true, 0 if false
-function long_gt_dl(n, k, a, b) {
-    for (var i = k - 1; i >= 0; i--) {
-        if (a[i] > b[i]) {
-            return 1;
-        }
-        if (a[i] < b[i]) {
-            return 0;
-        }
-    }
-    return 0;
 }
 
 // n bits per register
@@ -293,9 +248,9 @@ function short_div_norm_dl(n, k, a, b) {
     }
     
     var mult[200] = long_scalar_mult_dl(n, k, qhat, b);
-    if (long_gt_dl(n, k + 1, mult, a) == 1) {
+    if (long_gt(n, k + 1, mult, a) == 1) {
         mult = long_sub_dl(n, k + 1, mult, b);
-        if (long_gt_dl(n, k + 1, mult, a) == 1) {
+        if (long_gt(n, k + 1, mult, a) == 1) {
             return qhat - 2;
         } else {
             return qhat - 1;
@@ -352,20 +307,20 @@ function prod_dl(n, k, a, b) {
     
     var split[200][3];
     for (var i = 0; i < 2 * k - 1; i++) {
-        split[i] = SplitThreeFn_dl(prod_val[i], n, n, n);
+        split[i] = SplitThreeFn(prod_val[i], n, n, n);
     }
     
     var carry[200];
     carry[0] = 0;
     out[0] = split[0][0];
     if (2 * k - 1 > 1) {
-        var sumAndCarry[2] = SplitFn_dl(split[0][1] + split[1][0], n, n);
+        var sumAndCarry[2] = SplitFn(split[0][1] + split[1][0], n, n);
         out[1] = sumAndCarry[0];
         carry[1] = sumAndCarry[1];
     }
     if (2 * k - 1 > 2) {
         for (var i = 2; i < 2 * k - 1; i++) {
-            var sumAndCarry[2] = SplitFn_dl(split[i][0] + split[i - 1][1] + split[i - 2][2] + carry[i - 1], n, n);
+            var sumAndCarry[2] = SplitFn(split[i][0] + split[i - 1][1] + split[i - 2][2] + carry[i - 1], n, n);
             out[i] = sumAndCarry[0];
             carry[i] = sumAndCarry[1];
         }
@@ -465,7 +420,7 @@ function mod_inv_dl(n, k, a, p) {
 
 // a, b and out are all n bits k registers
 function long_sub_mod_p_dl(n, k, a, b, p){
-    var gt = long_gt_dl(n, k, a, b);
+    var gt = long_gt(n, k, a, b);
     var tmp[200];
     if (gt){
         tmp = long_sub_dl(n, k, a, b);
@@ -503,7 +458,7 @@ function long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B){
     var carry = 0;
     var sum[200];
     for (var i = 0; i < CHUNK_NUMBER; i++){
-        var sumAndCarry[2] = SplitFn_dl(A[i] + B[i] + carry, CHUNK_SIZE, CHUNK_SIZE);
+        var sumAndCarry[2] = SplitFn(A[i] + B[i] + carry, CHUNK_SIZE, CHUNK_SIZE);
         sum[i] = sumAndCarry[0];
         carry = sumAndCarry[1];
     }
@@ -513,7 +468,7 @@ function long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B){
 
 
 function long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B, P) {
-    if (long_gt_dl(CHUNK_SIZE, CHUNK_NUMBER, B, A) == 1){
+    if (long_gt(CHUNK_SIZE, CHUNK_NUMBER, B, A) == 1){
         return long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, long_sub_dl(CHUNK_SIZE,CHUNK_NUMBER,P,B));
     } else {
         return long_sub_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B);
@@ -630,7 +585,7 @@ function is_karatsuba_optimal_dl(a, b){
     return 0;
 }
 
-function is_negative_chunk_dl(x, n) {
+function isNegative_chunk_dl(x, n) {
     var x2 = x;
     for (var i = 0; i < n; i++){
         x2 = x2 \ 2;
@@ -649,7 +604,7 @@ function reduce_overflow_signed_dl(n, k, k2, max_n, in){
         clone[i] = in[i];
     }
     for (var i = 0; i < k2; i++){
-        if (is_negative_chunk_dl(clone[i], max_n) == 0){
+        if (isNegative_chunk_dl(clone[i], max_n) == 0){
             out[i] = clone[i] % 2 ** n;
             clone[i + 1] += clone[i] \ 2 ** n;
         } else {
@@ -674,7 +629,7 @@ function reduce_overflow_signed_dl(n, k, k2, max_n, in){
         }
 
         for (var i = 0; i < k2; i++){
-            if (is_negative_chunk_dl(clone[i], max_n) == 0){
+            if (isNegative_chunk_dl(clone[i], max_n) == 0){
                 out[i] = clone[i] % 2 ** n;
                 clone[i + 1] += clone[i] \ 2 ** n;
             } else {

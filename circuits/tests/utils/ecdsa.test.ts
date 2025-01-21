@@ -28,6 +28,27 @@ const testSuite = [
     k: 6,
     reason: 'when hash bits are the same as curve bits',
   },
+  {
+    hash: 'sha512',
+    curve: 'brainpoolP512r1',
+    n: 64,
+    k: 8,
+    reason: 'when hash bits are the same as curve bits',
+  },
+  {
+    hash: 'sha256',
+    curve: 'p256',
+    n: 64,
+    k: 4,
+    reason: 'when hash bits are the same as curve bits',
+  },
+  {
+    hash: 'sha384',
+    curve: 'p384',
+    n: 64,
+    k: 6,
+    reason: 'when hash bits are the same as curve bits',
+  },
 ];
 
 describe('ecdsa', () => {
