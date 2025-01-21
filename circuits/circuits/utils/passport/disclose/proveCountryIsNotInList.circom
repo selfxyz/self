@@ -1,7 +1,7 @@
 pragma circom 2.1.5;
 
 include "circomlib/circuits/comparators.circom";
-include "@zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 template ProveCountryIsNotInList(forbiddenCountriesListLength) {
     signal input dg1[93];

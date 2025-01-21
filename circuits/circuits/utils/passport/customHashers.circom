@@ -4,7 +4,7 @@ include "circomlib/circuits/poseidon.circom";
 
 template CustomHasher(k) {
     signal input in[k];
-    var rounds =  div_ceil_dl(k, 16);
+    var rounds =  div_ceil(k, 16);
     assert(rounds < 17);
     
     component hash[rounds];

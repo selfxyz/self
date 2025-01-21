@@ -1,6 +1,6 @@
 pragma circom 2.1.9;
 
-include "@zk-email/circuits/lib/fp.circom";
+include "@openpassport/zk-email-circuits/lib/fp.circom";
 include "circomlib/circuits/bitify.circom";
 
 /// @title FpPow3Mod

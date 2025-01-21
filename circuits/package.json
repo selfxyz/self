@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@noble/curves": "^1.4.2",
+    "@openpassport/zk-email-circuits": "^6.1.2",
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",
     "@openpassport/zk-kit-smt": "^0.0.1",
@@ -32,6 +33,7 @@
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
     "chai-as-promised": "^7.1.1",
+    "circom-bigint": "https://github.com/0xbok/circom-bigint",
     "circom-dl": "https://github.com/distributed-lab/circom-dl",
     "circom_tester": "github:remicolin/circom_tester#main",
     "circomlib": "^2.0.5",
