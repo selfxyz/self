@@ -50,13 +50,13 @@ export function parseCertificateSimple(pem: string): CertificateData {
     const signatureAlgoFN = getFriendlyName(signatureAlgoOID);
     certificateData.hashAlgorithm = getHashAlgorithm(signatureAlgoFN);
     let params;
-    if (publicKeyAlgoFN === 'RSA') {
+    if (publicKeyAlgoFN === 'RSA' && signatureAlgoFN != 'RSASSA_PSS') {
       certificateData.signatureAlgorithm = 'rsa';
       params = getParamsRSA(cert);
     } else if (publicKeyAlgoFN === 'ECC') {
       certificateData.signatureAlgorithm = 'ecdsa';
       params = getParamsECDSA(cert);
-    } else if (publicKeyAlgoFN === 'RSASSA_PSS') {
+    } else if (publicKeyAlgoFN === 'RSASSA_PSS' || signatureAlgoFN === 'RSASSA_PSS') {
       certificateData.signatureAlgorithm = 'rsapss';
       params = getParamsRSAPSS(cert);
     } else {
@@ -77,7 +77,7 @@ export function parseCertificateSimple(pem: string): CertificateData {
     certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
 
     // corner case for rsapss
-    if (certificateData.signatureAlgorithm === 'rsapss' && !certificateData.hashAlgorithm) {
+    if (certificateData.signatureAlgorithm === 'rsapss' && (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')) {
       certificateData.hashAlgorithm = (
         certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS
       ).hashAlgorithm;

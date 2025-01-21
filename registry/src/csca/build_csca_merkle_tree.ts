@@ -69,6 +69,12 @@ async function buildCscaMerkleTree() {
             '../common/src/mock_certificates/sha256_rsa_3_4096/mock_csca.crt',
             '../common/src/mock_certificates/sha384_rsa_65537_4096/mock_csca.pem',
             '../common/src/mock_certificates/sha512_rsa_65537_4096/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_rsapss_2048/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_rsapss_3072/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_rsapss_3_3072/mock_csca.pem',
+            '../common/src/mock_certificates/sha256_rsapss_3_4096/mock_csca.pem',
+            '../common/src/mock_certificates/sha384_rsapss_3072/mock_csca.pem',
+            '../common/src/mock_certificates/sha384_rsapsss_4096/mock_csca.pem',
         ];
 
         for (const mockCscaFile of mockCscaList) {
