@@ -2,10 +2,10 @@ pragma circom 2.1.5;
 
 include "../../sha1/sha1compression.circom";
 include "../../sha1/constants.circom";
-include "@zk-email/circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
 include "circomlib/circuits/bitify.circom";
 
-//Adapted from @zk-email/circuits/helpers/sha.circom
+//Adapted from @openpassport/zk-email-circuits/helpers/sha.circom
 template Sha1Bytes(max_num_bytes) {
     signal input in_padded[max_num_bytes];
     signal input in_len_padded_bytes;
@@ -31,7 +31,7 @@ template Sha1Bytes(max_num_bytes) {
    
 }
 
-//Adapted from @zk-email/circuits/helpers/sha256general.circom
+//Adapted from @openpassport/zk-email-circuits/helpers/sha256general.circom
 //Sha1 template from https://github.com/dmpierre/sha1-circom/blob/fe18319cf72b9f3b83d0cea8f49a1f04482c125b/circuits/sha1.circom
 template Sha1General(maxBitsPadded) {
     assert(maxBitsPadded % 512 == 0);

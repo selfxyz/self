@@ -2,7 +2,7 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@zk-email/circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "circomlib/circuits/poseidon.circom";
 
