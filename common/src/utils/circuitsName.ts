@@ -31,7 +31,7 @@ export function getCircuitNameFromPassportData(passportData: PassportData) {
     const saltLength = (parsedDsc.publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength;
     const bits = (parsedDsc.publicKeyDetails as PublicKeyDetailsRSAPSS).bits;
     if (parseInt(bits) <= 4096) {
-      return `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${exponent}_${saltLength}_${4096}`;
+      return `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${exponent}_${saltLength}_${bits}`;
     } else {
       throw new Error(`Unsupported key length: ${bits}`);
     }
