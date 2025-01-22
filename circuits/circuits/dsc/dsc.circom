@@ -11,6 +11,7 @@ include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/signatureVerifier.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../utils/crypto/bitify/bytes.circom";
+include "../utils/crypto/utils/WordToBytes.circom";
 
 template DSC(signatureAlgorithm, n_dsc, k_dsc, n_csca, k_csca, max_cert_bytes, maxPubkeyBytesLength, nLevels) {
 
