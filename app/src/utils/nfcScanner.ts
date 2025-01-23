@@ -215,7 +215,9 @@ const handleResponseIOS = async (
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
-    photoBase64: 'data:image/jpeg;base64,' + parsed.passportPhoto,
+    photoBase64: parsed?.passportPhoto
+      ? 'data:image/jpeg;base64,' + parsed?.passportPhoto
+      : '',
     mockUser: false,
   };
 
@@ -283,7 +285,7 @@ const handleResponseAndroid = async (
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    photoBase64: photo.base64,
+    photoBase64: photo?.base64 ?? '',
     mockUser: false,
   };
 
