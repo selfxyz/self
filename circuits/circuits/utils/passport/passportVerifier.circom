@@ -1,7 +1,7 @@
 pragma circom 2.1.9;
 
-include "@zk-email/circuits/utils/array.circom";
-include "@zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../crypto/hasher/shaBytes/shaBytesDynamic.circom";
 include "../crypto/hasher/hash.circom";
 include "./signatureAlgorithm.circom";

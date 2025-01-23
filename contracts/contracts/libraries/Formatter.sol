@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-library OpenPassportFormatter {
+library Formatter {
 
     error InvalidDateLength();
     error InvalidAsciiCode();
