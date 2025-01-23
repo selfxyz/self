@@ -5,7 +5,7 @@ include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 
-template VC_AND_DISCLOSE( nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+template VC_AND_DISCLOSE(nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input secret;
     signal input attestation_id;

@@ -1,15 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.18;
+pragma solidity ^0.8.28;
 
-import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract OpenPassportRegistry is Ownable {
+contract CscaKeyTree is Ownable {
     bytes32 public merkleRoot;
 
     constructor(bytes32 _merkleRoot) Ownable(msg.sender) {
         merkleRoot = _merkleRoot;
-        transferOwnership(msg.sender);
     }
 
     function update(bytes32 _merkleRoot) public onlyOwner {

@@ -5,20 +5,15 @@ import fs from 'fs';
 import {
     VERIFICATION_TYPE_ENUM_PROVE,
     VERIFICATION_TYPE_ENUM_DSC,
-    PROVE_RSA_COMMITMENT_INDEX,
-    PROVE_RSA_NULLIFIER_INDEX,
     PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX,
-    PROVE_RSA_CURRENT_DATE_INDEX,
-    DSC_MERKLE_ROOT_INDEX
+    PROVE_RSA_CURRENT_DATE_INDEX
 } from "../../../common/src/constants/contractConstants";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
 import { 
     generateCircuitInputsDSC,
-    sendCSCARequest,
-    getCSCAModulusMerkleTree
+    sendCSCARequest
  } from "../../../common/src/utils/csca";
-import { formatRoot } from "../../../common/src/utils/utils";
 import { mock_dsc_sha256_rsa_4096 } from "../../../common/src/constants/mockCertificates";
 import { generateCircuitInputsProve } from "../../../common/src/utils/generateInputs";
 import { buildSMT } from "../../../common/src/utils/smtTree";
@@ -39,7 +34,7 @@ type CircuitArtifacts = {
 }
 
 // Just test for mint function
-describe("Test register flow", async function () {
+describe("Test one time verification flow", async function () {
     this.timeout(0);
 
     const PROVE_RSA_65537_SHA256_VERIFIER_ID = 0;
@@ -47,15 +42,10 @@ describe("Test register flow", async function () {
 
     // contracts
     let genericVerifier: any;
-    let openPassportVerifier: any;
-
-    let openPassportRegistry: any;
-    let openPassportRegister: any;
+    let passportVerifier: any;
 
     let verifierProveRsa65537Sha256: any;
     let verifierDscRsa65537Sha256_4096: any;
-
-    let poseidonT3: any;
 
     // EVM state id
     let snapshotId: any;
@@ -111,41 +101,18 @@ describe("Test register flow", async function () {
         await genericVerifier.waitForDeployment();
         console.log('\x1b[34m%s\x1b[0m', `VerfiersManager deployed to ${genericVerifier.target}`);
 
-        const openPassportVerifierFactory = await ethers.getContractFactory("OpenPassportVerifier", owner);
-        openPassportVerifier = await openPassportVerifierFactory.deploy(
+        const passportVerifierFactory = await ethers.getContractFactory("passportVerifier", owner);
+        passportVerifier = await passportVerifierFactory.deploy(
             genericVerifier
         );
-        await openPassportVerifier.waitForDeployment();
-        console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${openPassportVerifier.target}`);
-
-        const merkleTree = getCSCAModulusMerkleTree();
-        const openPassportRegistryFacotry = await ethers.getContractFactory("OpenPassportRegistry", owner);
-        openPassportRegistry = await openPassportRegistryFacotry.deploy(
-            formatRoot(merkleTree.root)
-        );
-        console.log("root: ", formatRoot(merkleTree.root));
-
-        const PoseidonT3 = await ethers.getContractFactory("PoseidonT3");
-        poseidonT3 = await PoseidonT3.deploy();
-        await poseidonT3.waitForDeployment();
-        console.log('\x1b[34m%s\x1b[0m', `PoseidonT3 deployed to: ${poseidonT3.target}`);
-
-        const openPassportRegisterFactory = await ethers.getContractFactory("OpenPassportRegister", {
-            libraries: {
-              PoseidonT3: poseidonT3
-            }
-        });
-        openPassportRegister = await openPassportRegisterFactory.deploy(
-            openPassportRegistry,
-            openPassportVerifier
-        );
+        await passportVerifier.waitForDeployment();
+        console.log('\x1b[34m%s\x1b[0m', `sbt deployed to ${passportVerifier.target}`);
 
         await genericVerifier.updateVerifier(
             VERIFICATION_TYPE_ENUM_PROVE,
             PROVE_RSA_65537_SHA256_VERIFIER_ID,
             verifierProveRsa65537Sha256.target
         );
-
         await genericVerifier.updateVerifier(
             VERIFICATION_TYPE_ENUM_DSC,
             DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -185,12 +152,15 @@ describe("Test register flow", async function () {
                 }
             };
         
-            let preRoot = await openPassportRegister.getMerkleRoot();
-            await openPassportRegister.registerCommitment(attestation);
-            let afterRoot = await openPassportRegister.getMerkleRoot();
+            await expect(passportVerifier.verify(attestation))
+                .to.not.be.reverted;
         });
 
-        it("Should revert with invalid merkle root", async function() {
+        it("Should revert if current date is out of range", async function() {
+            let outdated_prove_proof = JSON.parse(JSON.stringify(prove_proof));
+            const pastDay = Math.floor((Date.now() - 3 * 24 * 60 * 60 * 1000) / 1000);
+            outdated_prove_proof[3][PROVE_RSA_CURRENT_DATE_INDEX] = pastDay.toString();
+
             const attestation = {
                 proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
                 dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -199,24 +169,26 @@ describe("Test register flow", async function () {
                     a: prove_proof[0],
                     b: prove_proof[1],
                     c: prove_proof[2],
-                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsRSA: outdated_prove_proof[3],
                     pubSignalsECDSA: new Array(28).fill(0)
                 },
                 dProof: {
                     a: dsc_proof[0],
                     b: dsc_proof[1],
                     c: dsc_proof[2],
-                    // Invalid merkle root
-                    pubSignals: [...dsc_proof[3].slice(0, -1), "0x1234"]
+                    pubSignals: dsc_proof[3]
                 }
             };
-        
-            await expect(
-                openPassportRegister.registerCommitment(attestation)
-            ).to.be.revertedWith("Register__InvalidMerkleRoot");
+
+            await expect(passportVerifier.verify(attestation))
+                .to.be.revertedWithCustomError(passportVerifier, "CURRENT_DATE_NOT_IN_VALID_RANGE");
         });
 
-        // it("Should not allow registering same commitment twice", async function() {
+        // TODO: After update modal server, return this code.
+        // it ("Should revert with invalid blinded dsc commitment", async function () {
+        //     let invalid_prove_proof = JSON.parse(JSON.stringify(prove_proof));
+        //     invalid_prove_proof[3][PROVE_RSA_BLINDED_DSC_COMMITMENT_INDEX] = "0";
+
         //     const attestation = {
         //         proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
         //         dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -225,7 +197,7 @@ describe("Test register flow", async function () {
         //             a: prove_proof[0],
         //             b: prove_proof[1],
         //             c: prove_proof[2],
-        //             pubSignalsRSA: prove_proof[3],
+        //             pubSignalsRSA: invalid_prove_proof[3],
         //             pubSignalsECDSA: new Array(28).fill(0)
         //         },
         //         dProof: {
@@ -235,16 +207,118 @@ describe("Test register flow", async function () {
         //             pubSignals: dsc_proof[3]
         //         }
         //     };
-            
-        //     await openPassportRegister.registerCommitment(attestation);
-            
-        //     // Try to register the same commitment again
-        //     await expect(
-        //         openPassportRegister.registerCommitment(attestation)
-        //     ).not.to.be.reverted();
+
+        //     await expect(passportVerifier.verify(attestation))
+        //         .to.be.revertedWithCustomError(passportVerifier, "CUNEQUAL_BLINDED_DSC_COMMITMENT");
         // });
 
-        it("Should emit AddCommitment event with correct values", async function() {
+        it("Should revert with invalid prove proof", async function() {
+            let invalid_prove_proof = JSON.parse(JSON.stringify(prove_proof));
+            invalid_prove_proof[0][0] = "1";
+            
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: invalid_prove_proof[0],
+                    b: invalid_prove_proof[1],
+                    c: invalid_prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+    
+            await expect(passportVerifier.verify(attestation))
+                .to.be.revertedWithCustomError(passportVerifier, "INVALID_PROVE_PROOF");
+        });
+
+        it("Should revert with invalid DSC proof", async function() {
+            let invalid_dsc_proof = JSON.parse(JSON.stringify(dsc_proof));
+            invalid_dsc_proof[0][0] = "1";
+    
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: invalid_dsc_proof[0],
+                    b: invalid_dsc_proof[1],
+                    c: invalid_dsc_proof[2],
+                    pubSignals: invalid_dsc_proof[3]
+                }
+            };
+    
+            await expect(passportVerifier.verify(attestation))
+                .to.be.revertedWithCustomError(passportVerifier, "INVALID_DSC_PROOF");
+        });
+
+        it("Should revert with invalid signature type", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 2,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+    
+            await expect(passportVerifier.verify(attestation))
+                .to.be.reverted;
+        });
+
+    });
+
+    describe("test disclose functions", async function() {
+        it("Should emit IssuingStateDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+        
+            await expect(passportVerifier.discloseIssuingState(attestation))
+                .to.emit(passportVerifier, "IssuingStateDisclosed")
+                .withArgs("FRA");
+        });
+
+        it("Should emit NameDisclosed event with correct value", async function() {
             const attestation = {
                 proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
                 dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
@@ -264,95 +338,264 @@ describe("Test register flow", async function () {
                 }
             };
             
-            await expect(openPassportRegister.registerCommitment(attestation))
-                .to.emit(openPassportRegister, "ProofValidated")
-                .withArgs(
-                    dsc_proof[3][DSC_MERKLE_ROOT_INDEX],
-                    prove_proof[3][PROVE_RSA_NULLIFIER_INDEX],
-                    prove_proof[3][PROVE_RSA_COMMITMENT_INDEX],
-                );
+            await expect(passportVerifier.discloseName(attestation))
+                .to.emit(passportVerifier, "NameDisclosed")
+                .withArgs("DUPONT<<ALPHONSE<HUGHUES<ALBERT<<<<<<<<");
+        });
+
+        it("Should emit PassportNumberDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.disclosePassportNumber(attestation))
+                .to.emit(passportVerifier, "PassportNumberDisclosed")
+                .withArgs("15AA81234");
+        });
+    
+        it("Should emit NationalityDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseNationality(attestation))
+                .to.emit(passportVerifier, "NationalityDisclosed")
+                .withArgs("FRA");
+        });
+    
+        it("Should emit DateOfBirthDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseDateOfBirth(attestation))
+                .to.emit(passportVerifier, "DateOfBirthDisclosed")
+                .withArgs("940131");
+        });
+
+        it("Should emit GenderDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseGender(attestation))
+                .to.emit(passportVerifier, "GenderDisclosed")
+                .withArgs("M");
+        });
+
+        it("Should emit ExpiryDateDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseExpiryDate(attestation))
+                .to.emit(passportVerifier, "ExpiryDateDisclosed")
+                .withArgs("401031");
+        });
+
+        it("Should emit OlderThanDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseOlderThan(attestation))
+                .to.emit(passportVerifier, "OlderThanDisclosed")
+                .withArgs("20");
+        });
+
+        it("Should emit OfacResultDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            await expect(passportVerifier.discloseOfacResult(attestation))
+                .to.emit(passportVerifier, "OfacResultDisclosed")
+                .withArgs(false); 
+        });
+
+        it("Should emit ForbiddenCountriesDisclosed event with correct value", async function() {
+            const attestation = {
+                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                pProof: {
+                    signatureType: 0,
+                    a: prove_proof[0],
+                    b: prove_proof[1],
+                    c: prove_proof[2],
+                    pubSignalsRSA: prove_proof[3],
+                    pubSignalsECDSA: new Array(28).fill(0)
+                },
+                dProof: {
+                    a: dsc_proof[0],
+                    b: dsc_proof[1],
+                    c: dsc_proof[2],
+                    pubSignals: dsc_proof[3]
+                }
+            };
+            
+            let expectedForbiddenCountries = new Array(20).fill("0x000000");
+            expectedForbiddenCountries[0] = "0x414141";
+            await expect(passportVerifier.discloseForbiddenCountries(attestation))
+                .to.emit(passportVerifier, "ForbiddenCountriesDisclosed")
+                .withArgs(expectedForbiddenCountries);
         });
     });
 
-    describe("test merkle tree functions", async function() {
-        it("Should correctly track merkle tree size", async function() {
-            const initialSize = await openPassportRegister.getMerkleTreeSize();
+    describe("test updateVerifier function", async function() {
+        it("Should successfully update verifier for Prove type", async function() {
+            const newVerifierAddress = addr1.address;
             
-            const attestation = {
-                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
-                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
-                pProof: {
-                    signatureType: 0,
-                    a: prove_proof[0],
-                    b: prove_proof[1],
-                    c: prove_proof[2],
-                    pubSignalsRSA: prove_proof[3],
-                    pubSignalsECDSA: new Array(28).fill(0)
-                },
-                dProof: {
-                    a: dsc_proof[0],
-                    b: dsc_proof[1],
-                    c: dsc_proof[2],
-                    pubSignals: dsc_proof[3]
-                }
-            };
-            
-            await openPassportRegister.registerCommitment(attestation);
-            
-            expect(await openPassportRegister.getMerkleTreeSize())
-                .to.equal(initialSize + BigInt(1));
+            await expect(genericVerifier.updateVerifier(
+                VERIFICATION_TYPE_ENUM_PROVE,
+                PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                newVerifierAddress
+            )).to.not.be.reverted;
+    
+            expect(await genericVerifier.signatureTypeIdToVerifiers(PROVE_RSA_65537_SHA256_VERIFIER_ID))
+                .to.equal(newVerifierAddress);
         });
-
-        it("Should correctly verify created roots", async function() {
-            const attestation = {
-                proveVerifierId: PROVE_RSA_65537_SHA256_VERIFIER_ID,
-                dscVerifierId: DSC_RSA65537_SHA256_4096_VERIFIER_ID,
-                pProof: {
-                    signatureType: 0,
-                    a: prove_proof[0],
-                    b: prove_proof[1],
-                    c: prove_proof[2],
-                    pubSignalsRSA: prove_proof[3],
-                    pubSignalsECDSA: new Array(28).fill(0)
-                },
-                dProof: {
-                    a: dsc_proof[0],
-                    b: dsc_proof[1],
-                    c: dsc_proof[2],
-                    pubSignals: dsc_proof[3]
-                }
-            };
+    
+        it("Should successfully update verifier for DSC type", async function() {
+            const newVerifierAddress = addr1.address;
             
-            await openPassportRegister.registerCommitment(attestation);
-            const root = await openPassportRegister.getMerkleRoot();
-            
-            expect(await openPassportRegister.checkRoot(root)).to.be.true;
-            expect(await openPassportRegister.checkRoot("0x1234")).to.be.false;
+            await expect(genericVerifier.updateVerifier(
+                VERIFICATION_TYPE_ENUM_DSC,
+                DSC_RSA65537_SHA256_4096_VERIFIER_ID,
+                newVerifierAddress
+            )).to.not.be.reverted;
+    
+            expect(await genericVerifier.signatureTypeIdToVerifiers(DSC_RSA65537_SHA256_4096_VERIFIER_ID))
+                .to.equal(newVerifierAddress);
         });
-    });
-
-    describe("test owner functions", async function() {
-        it("Should allow owner to add commitment directly", async function() {
-            const commitment = "123456";
-            await openPassportRegister.connect(owner).devAddCommitment(commitment);
+    
+        it("Should revert when called by non-owner", async function() {
+            const newVerifierAddress = addr1.address;
             
-            const index = await openPassportRegister.indexOf(commitment);
-            expect(index).to.equal(BigInt(0));
+            await expect(genericVerifier.connect(addr1).updateVerifier(
+                VERIFICATION_TYPE_ENUM_PROVE,
+                PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                newVerifierAddress
+            )).to.be.revertedWithCustomError(genericVerifier, "OwnableUnauthorizedAccount");
         });
-
-        it("Should not allow non-owner to add commitment directly", async function() {
-            const commitment = "123456";
-            await expect(
-                openPassportRegister.connect(addr1).devAddCommitment(commitment)
-            ).to.be.revertedWithCustomError(openPassportRegister, "OwnableUnauthorizedAccount")
-            .withArgs(addr1.address);
+    
+        it("Should revert when updating with zero address", async function() {
+            await expect(genericVerifier.updateVerifier(
+                VERIFICATION_TYPE_ENUM_PROVE,
+                PROVE_RSA_65537_SHA256_VERIFIER_ID,
+                ethers.ZeroAddress
+            )).to.be.revertedWithCustomError(genericVerifier, "ZERO_ADDRESS");
         });
     });
 
     // TODO: make this function able to take inputs
     // TODO: export check flow in other function
     async function generateProofRSAProve() {
-        let selector_mode = [0, 0];
+        let selector_mode = [1, 0];
         let secret = "42";
         let dsc_secret = "4242";
         let scope = "1";
@@ -420,7 +663,7 @@ describe("Test register flow", async function () {
                 ["0", "0"]
             ],
             ["0", "0"],
-            ["0", "0x2bdb3abdd8ee425d31952c6546d98d9ef96adc43bf4a07df1f76210ca345ec3b"]
+            ["0", "0"]
         ]
         return dsc_proof;
     };

@@ -4,6 +4,8 @@ require("dotenv").config();
 import "hardhat-contract-sizer";
 import "@nomicfoundation/hardhat-ignition-ethers";
 import 'solidity-coverage';
+import "hardhat-gas-reporter";
+import "hardhat-contract-sizer";
 
 const config: HardhatUserConfig = {
   solidity: {
@@ -22,6 +24,9 @@ const config: HardhatUserConfig = {
       },
       viaIR: false,
     },
+  },
+  contractSizer: {
+    runOnCompile: true,
   },
   paths: {
     sources: "./contracts",
