@@ -1,3 +1,11 @@
+/// NEW
+export const amber50 = '#FFFBEB'
+export const black = '#000000'
+export const white = '#ffffff'
+export const slate200 = '#E2E8F0'
+export const slate300 = '#CBD5E1'
+export const slate500 = '#64748B'
+// OLD
 export const borderColor = '#343434';
 export const bgColor = '#161616';
 export const componentBgColor = '#1c1c1c';
