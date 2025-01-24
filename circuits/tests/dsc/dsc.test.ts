@@ -76,6 +76,7 @@ import {
   mock_csca_sha512_rsa_65537_4096,
   mock_dsc_sha256_rsa_3_4096,
   mock_csca_sha256_rsa_3_4096,
+  mock_dsc_rsa_with_brainpoolP256r1_256,
 } from '../../../common/src/constants/mockCertificates';
 import { max_cert_bytes } from '../../../common/src/constants/constants';
 import { getCircuitName } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
@@ -199,6 +200,7 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
         cscaCertPem = mock_csca_sha256_brainpoolP224r1_224;
         break;
       case 'ecdsa_sha384_brainpoolP256r1_256':
+        // dscCertPem = mock_dsc_rsa_with_brainpoolP256r1_256
         dscCertPem = mock_dsc_sha384_brainpoolP256r1_256;
         cscaCertPem = mock_csca_sha384_brainpoolP256r1_256;
         break;
