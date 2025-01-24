@@ -204,7 +204,7 @@ export function generateCircuitInputsRegister(
     signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
     pubKey_dsc: pubKey,
     signature_passport: signature,
-    pubKey_csca_hash: '0',
+    pubKey_csca_bytes_padded_hash: '0',
     secret: secret,
     salt: dsc_secret,
   };
