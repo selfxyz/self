@@ -11,6 +11,9 @@ interface IVcAndDiscloseCircuitVerifier {
     }
 
     function verifyProof (
-        VcAndDiscloseProof memory proof
+        uint[2] calldata a,
+        uint[2][2] calldata b,
+        uint[2] calldata c,
+        uint[20] calldata pubSignals
     ) external view returns (bool);
 }

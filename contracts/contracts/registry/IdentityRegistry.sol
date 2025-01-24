@@ -3,6 +3,6 @@ pragma solidity ^0.8.28;
 
 import "../proxy/PrivacyIDProxy.sol";
 
-contract IdentifyCommitmentRegistry is PrivacyIDProxy {
+contract IdentityRegistry is PrivacyIDProxy {
     constructor(address _logic, bytes memory _data) PrivacyIDProxy(_logic, _data) {}
 }

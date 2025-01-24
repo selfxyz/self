@@ -223,7 +223,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
-        if (!IVcAndDiscloseCircuitVerifier(vcAndDiscloseCircuitVerifier).verifyProof(proof)) {
+        if (!IVcAndDiscloseCircuitVerifier(vcAndDiscloseCircuitVerifier).verifyProof(proof.pA, proof.pB, proof.pC, proof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
     }
@@ -353,7 +353,10 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         }
 
         result = IRegisterCircuitVerifier(verifier).verifyProof(
-            registerCircuitProof
+            registerCircuitProof.a,
+            registerCircuitProof.b,
+            registerCircuitProof.c,
+            registerCircuitProof.pubSignals
         );
         return result;
     }
@@ -416,8 +419,8 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         verifyPassport(proof);
         IIdentityRegistryV1(registry).registerCommitment(
             AttestationId.E_PASSPORT,
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX],
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX]
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
         );
     }
 
