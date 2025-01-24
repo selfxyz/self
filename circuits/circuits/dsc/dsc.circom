@@ -14,6 +14,7 @@ include "../utils/crypto/bitify/bytes.circom";
 include "../utils/crypto/utils/WordToBytes.circom";
 
 ///@input dsc_pubKey public key of the DSC in bytes padded to 525 bytes 
+///@input dsc_pubkey_length_bytes length of the public key in bytes. For ecdsa, this is x+y length
 template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     var maxPubkeyBytesLength = 525;
    
@@ -172,12 +173,12 @@ template AssertValidKeyLength() {
     signal input is_rsa;
     signal input is_ecdsa;
 
-    signal validKeyLength;
-    signal isEcc224 <== IsEqual()([pubkey_length_bytes * 8, 224]);
-    signal isEcc256 <== IsEqual()([pubkey_length_bytes * 8, 256]); 
-    signal isEcc384 <== IsEqual()([pubkey_length_bytes * 8, 384]);
-    signal isEcc512 <== IsEqual()([pubkey_length_bytes * 8, 512]);
-    signal isEcc521 <== IsEqual()([pubkey_length_bytes * 8, 521]);
+    signal ecdsa_key_length <== pubkey_length_bytes / 2;
+    signal isEcc224 <== IsEqual()([ecdsa_key_length * 8, 224]);
+    signal isEcc256 <== IsEqual()([ecdsa_key_length * 8, 256]); 
+    signal isEcc384 <== IsEqual()([ecdsa_key_length * 8, 384]);
+    signal isEcc512 <== IsEqual()([ecdsa_key_length * 8, 512]);
+    signal isEcc521 <== IsEqual()([ecdsa_key_length * 8, 521]);
     signal isRsa2048 <== IsEqual()([pubkey_length_bytes * 8, 2048]);
     signal isRsa3072 <== IsEqual()([pubkey_length_bytes * 8, 3072]); 
     signal isRsa4096 <== IsEqual()([pubkey_length_bytes * 8, 4096]);
