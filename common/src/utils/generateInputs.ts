@@ -170,12 +170,11 @@ export function generateCircuitInputsRegister(
   dsc_secret: number | string,
   passportData: PassportData
 ) {
-  const { mrz, eContent, signedAttr, dg2Hash } = passportData;
+  const { mrz, eContent, signedAttr } = passportData;
   const passportMetadata = parsePassportData(passportData);
 
   const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfo(passportData);
   const mrz_formatted = formatMrz(mrz);
-  const dg2Hash_formatted = formatDg2Hash(dg2Hash);
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
     console.error(
@@ -198,16 +197,16 @@ export function generateCircuitInputsRegister(
   const inputs = {
     dg1: mrz_formatted,
     dg1_hash_offset: passportMetadata.dg1HashOffset,
-    dg2_hash: dg2Hash_formatted,
     eContent: eContentPadded,
     eContent_padded_length: eContentLen,
     signed_attr: signedAttrPadded,
     signed_attr_padded_length: signedAttrPaddedLen,
     signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
-    signature: signature,
-    pubKey: pubKey,
+    pubKey_dsc: pubKey,
+    signature_passport: signature,
+    pubKey_csca_hash: '0',
     secret: secret,
-    dsc_secret: dsc_secret,
+    salt: dsc_secret,
   };
 
   return Object.entries(inputs).map(([key, value]) => ({

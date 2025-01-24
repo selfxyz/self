@@ -78,8 +78,8 @@ testSuite.forEach(
         console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
         const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
         console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
-        const blinded_dsc_commitment = (await circuit.getOutput(w, ['blinded_dsc_commitment']))
-          .blinded_dsc_commitment;
+        const blinded_dsc_commitment = (await circuit.getOutput(w, ['glue']))
+          .glue;
         console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
         expect(blinded_dsc_commitment).to.be.not.null;
         expect(nullifier).to.be.not.null;
@@ -117,7 +117,7 @@ testSuite.forEach(
         try {
           const invalidInputs = {
             ...inputs,
-            signature: inputs.signature.map((byte: string) =>
+            signature_passport: inputs.signature_passport.map((byte: string) =>
               String((parseInt(byte, 10) + 1) % 256)
             ),
           };

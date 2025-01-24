@@ -4,9 +4,16 @@ include "circomlib/circuits/poseidon.circom";
 
 template CustomHasher(k) {
     signal input in[k];
+    if (k < 16){
+        component hash = Poseidon(k);
+        for (var i = 0; i < k; i++){
+            hash.inputs[i] <== in[i];
+        }
+        signal output out <== hash.out;
+    }
+    else{
     var rounds =  div_ceil(k, 16);
     assert(rounds < 17);
-    
     component hash[rounds];
     for (var i = 0; i < rounds ; i ++){
         hash[i] = Poseidon(16);
@@ -27,6 +34,7 @@ template CustomHasher(k) {
         finalHash.inputs[i] <== hash[i].out;
     }
     signal output out <== finalHash.out;
+    }
 }
 
 template LeafHasher(k) {

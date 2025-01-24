@@ -1,7 +1,6 @@
 pragma circom 2.1.9;
 
 include "../utils/passport/customHashers.circom";
-include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
 include "circomlib/circuits/poseidon.circom";
@@ -9,6 +8,8 @@ include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
+include "../utils/passport/constants.circom";
+include "../utils/crypto/bitify/splitWordsToBytes.circom";
 
 /// @title REGISTER
 /// @notice Main circuit to verify passport data and be used to several purposes to enable passport
@@ -45,34 +46,59 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
 
     signal input dg1[93];
     signal input dg1_hash_offset;
-    signal input dg2_hash[64];
     signal input eContent[MAX_ECONTENT_PADDED_LEN];
     signal input eContent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_PADDED_LEN];
     signal input signed_attr_padded_length;
     signal input signed_attr_econtent_hash_offset;
-    signal input pubKey[kScaled];
-    signal input signature[kScaled];
+    signal input pubKey_dsc[kScaled];
+    signal input signature_passport[kScaled];
+
+    signal input pubKey_csca_hash;
     
     signal input secret;
-    signal input dsc_secret;
+    signal input salt;
 
     signal attestation_id <== 1;
 
     // verify passport signature
-    signal signedAttrShaBytes[HASH_LEN_BYTES] <== PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+    component passportVerifier = PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN);
+    passportVerifier.dg1 <== dg1;
+    passportVerifier.dg1_hash_offset <== dg1_hash_offset;
+    passportVerifier.eContent <== eContent;
+    passportVerifier.eContent_padded_length <== eContent_padded_length;
+    passportVerifier.signed_attr <== signed_attr;
+    passportVerifier.signed_attr_padded_length <== signed_attr_padded_length;
+    passportVerifier.signed_attr_econtent_hash_offset <== signed_attr_econtent_hash_offset;
+    passportVerifier.pubKey_dsc <== pubKey_dsc;
+    passportVerifier.signature_passport <== signature_passport;
+
+    signal eContent_shaBytes[ECONTENT_HASH_ALGO / 8] <== passportVerifier.eContentShaBytes;
+    component customHasher = CustomHasher(ECONTENT_HASH_ALGO / 8);
+    customHasher.in <== eContent_shaBytes;
+    signal eContent_shaBytes_hash <== customHasher.out;
 
     // nulifier
-    component passportDataHashed = CustomHasher(HASH_LEN_BYTES);
-    passportDataHashed.in <== signedAttrShaBytes;
-    signal output nullifier <== passportDataHashed.out;
+    component customHasher2 = CustomHasher(HASH_LEN_BYTES);
+    customHasher2.in <== passportVerifier.signedAttrShaBytes;
+    signal output nullifier <== customHasher2.out;
 
-    // // REGISTRATION (optional)
     // // generate the commitment
-    signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    signal dg1_packed[3] <== PackBytes(93)(dg1);
+    signal dg1_packed_hash <== Poseidon(3)(dg1_packed);
 
-    // blinded dsc commitment
-    signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, pubkeyHash]);
+    component customHasher3 = CustomHasher(kScaled);
+    customHasher3.in <== pubKey_dsc;
+    signal pubKeyDscHashForCommitment <== customHasher3.out;
+    signal output commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_hash, pubKeyDscHashForCommitment,pubKey_csca_hash]);
+    
+    // glue to link with DSC proof
+    var maxDscPubKeyLength = getMaxDscPubKeyLength();
+    signal pubKeyPaddedForGlue[525] <== WordsToBytesPadded(n, kScaled, n * kScaled / 8, 525)(pubKey_dsc);
+    var pubKeyPaddedForGlue_packed_length = computeIntChunkLength(525);
+    signal pubKeyPaddedForGlue_packed[pubKeyPaddedForGlue_packed_length] <== PackBytes(525)(pubKeyPaddedForGlue);
+    component customHasher4 = CustomHasher(pubKeyPaddedForGlue_packed_length);
+    customHasher4.in <== pubKeyPaddedForGlue_packed;
+    signal pubKeyHashForGlue <== customHasher4.out;
+    signal output glue <== Poseidon(3)([salt, pubKeyHashForGlue, pubKey_csca_hash]);
 }
