@@ -8,8 +8,8 @@ import {
   PublicKeyDetailsRSAPSS,
 } from './certificate_parsing/dataStructure';
 import { hashAlgos } from '../constants/constants';
-import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
 import { DscCertificateMetaData, parseDscCertificateData } from './parseDscCertificateData';
+import { brutforceSignatureAlgorithm } from './passport_parsing/brutForcePassportSignature';
 
 export interface PassportMetadata {
   dataGroups: string;

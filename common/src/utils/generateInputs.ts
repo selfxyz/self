@@ -21,7 +21,7 @@ import {
   stringToAsciiBigIntArray,
   formatCountriesList,
 } from './utils';
-import { generateCommitment, getLeaf } from './pubkeyTree';
+import { getLeaf } from './pubkeyTree';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from './smtTree';
 import { packBytes } from '../utils/utils';
@@ -29,6 +29,7 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
 import { parsePassportData, PassportMetadata } from './parsePassportData';
+import { generateCommitment, pad } from './passport_parsing/passport';
 
 export function generateCircuitInputsDisclose(
   secret: string,
@@ -170,8 +171,11 @@ export function generateCircuitInputsRegister(
   dsc_secret: number | string,
   passportData: PassportData
 ) {
+  if (!passportData.parsed) {
+    throw new Error('Passport data is not parsed');
+  }
   const { mrz, eContent, signedAttr } = passportData;
-  const passportMetadata = parsePassportData(passportData);
+  const passportMetadata = passportData.passportMetadata;
 
   const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfo(passportData);
   const mrz_formatted = formatMrz(mrz);
@@ -185,11 +189,11 @@ export function generateCircuitInputsRegister(
     );
   }
 
-  const [eContentPadded, eContentLen] = padDg1(passportMetadata)(
+  const [eContentPadded, eContentLen] = pad(passportMetadata)(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
   );
-  const [signedAttrPadded, signedAttrPaddedLen] = padEContent(passportMetadata)(
+  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata)(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
@@ -215,9 +219,12 @@ export function generateCircuitInputsRegister(
 }
 
 function getDscPubKeyInfo(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
+  if (!passportData.parsed) {
+    throw new Error('Passport data is not parsed');
+  }
+  const passportMetadata = passportData.passportMetadata;
   const hashAlgorithm = passportMetadata.signedAttrHashFunction;
-  const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(passportData.dsc);
+  const { signatureAlgorithm, publicKeyDetails } = passportData.dsc_parsed;
   let n, k;
   let pubKey: any;
   let signature: any;
@@ -248,21 +255,6 @@ function getDscPubKeyInfo(passportData: PassportData) {
   };
 }
 
-function padDg1(passportMetadata: PassportMetadata) {
-  return passportMetadata.dg1HashFunction === 'sha1' ||
-    passportMetadata.dg1HashFunction === 'sha224' ||
-    passportMetadata.dg1HashFunction === 'sha256'
-    ? shaPad
-    : sha384_512Pad;
-}
-
-function padEContent(passportMetadata: PassportMetadata) {
-  return passportMetadata.eContentHashFunction === 'sha1' ||
-    passportMetadata.eContentHashFunction === 'sha224' ||
-    passportMetadata.eContentHashFunction === 'sha256'
-    ? shaPad
-    : sha384_512Pad;
-}
 
 export function formatInput(input: any) {
   if (Array.isArray(input)) {

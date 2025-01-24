@@ -64,10 +64,8 @@ template WordsToBytesPadded(n_words, k_words, maxBytesLength, paddedLength) {
     }
 
     for (var i = 0; i < paddedLength; i++) {
-        if (i < maxBytesLength) {
-            paddedBytes[i] <== bytes[i];
-        } else {
-            paddedBytes[i] <== 0;
-        }
+        paddedBytes[i] <== bytes[maxBytesLength - i - 1];
+
     }
+
 }

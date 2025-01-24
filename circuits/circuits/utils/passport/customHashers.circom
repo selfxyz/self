@@ -7,7 +7,7 @@ template CustomHasher(k) {
     signal input in[k];
     signal output out;
 
-    if (k < 16){
+    if (k < 16){ // if k is less than 16, we can use a single poseidon hash
         component hash = Poseidon(k);
         for (var i = 0; i < k; i++){
             hash.inputs[i] <== in[i];

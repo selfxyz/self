@@ -1,4 +1,4 @@
-import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature';
+import { brutforceSignatureAlgorithmDsc } from './passport_parsing/brutForceDscSignature';
 import { CertificateData } from './certificate_parsing/dataStructure';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { getCSCAFromSKI } from './csca';
@@ -35,7 +35,7 @@ export function parseDscCertificateData(dscCert: CertificateData): any {
         cscaSignatureAlgorithmBits = parseInt(parsedCsca.publicKeyDetails.bits);
         cscaSaltLength = details.saltLength;
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   return {
     cscaFound,

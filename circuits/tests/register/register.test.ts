@@ -11,6 +11,7 @@ import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuitsName';
 import { getNullifier } from '../../../common/src/utils/utils';
 import { sigAlgs, fullSigAlgs } from './test_cases';
+import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passport_parsing/passport';
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
@@ -28,7 +29,7 @@ testSuite.forEach(
       this.timeout(0);
       let circuit: any;
 
-      const passportData = genMockPassportData(
+      let passportData = genMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
         `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
@@ -36,6 +37,7 @@ testSuite.forEach(
         '000101',
         '300101'
       );
+      passportData = initPassportDataParsing(passportData);
       const secret = 0;
       const dsc_secret = 0;
 
@@ -66,6 +68,8 @@ testSuite.forEach(
       it('should calculate the witness with correct inputs', async function () {
         const w = await circuit.calculateWitness(inputs);
         await circuit.checkConstraints(w);
+
+        const logDg1PackedHash = generateCommitment('0', '1', passportData);
         if (!checkNullifier) {
           return;
         }

@@ -16,6 +16,7 @@ import {
   k_csca,
   attributeToPosition,
   k_dsc_3072,
+  MAX_BYTES_IN_FIELD,
 } from '../constants/constants';
 import { unpackReveal } from './revealBitmap';
 import { SignatureAlgorithm } from './types';
@@ -363,6 +364,16 @@ export function getHashLen(hashFunction: string) {
   }
 }
 
+export function computeIntChunkLength(byteLength: number) {
+  const packSize = MAX_BYTES_IN_FIELD;
+  const remain = byteLength % packSize;
+  let numChunks = (byteLength - remain) / packSize;
+  if (remain > 0) {
+    numChunks += 1;
+  }
+  return numChunks;
+}
+
 export function packBytes(unpacked) {
   const bytesCount = [31, 31, 31];
   let packed = [0n, 0n, 0n];
@@ -378,6 +389,38 @@ export function packBytes(unpacked) {
   }
   return packed;
 }
+
+
+export function packBytesArray(unpacked: number[]) {
+  const packSize = MAX_BYTES_IN_FIELD;
+  const maxBytes = unpacked.length;
+  const maxInts = computeIntChunkLength(maxBytes);
+  const out: bigint[] = new Array(maxInts).fill(0n);
+
+  for (let i = 0; i < maxInts; i++) {
+    let sum = 0n;
+    for (let j = 0; j < packSize; j++) {
+      const idx = packSize * i + j;
+
+      // Copy previous value if out of bounds
+      if (idx >= maxBytes) {
+        continue;
+      }
+      // First item of chunk is byte itself 
+      else if (j === 0) {
+        sum = BigInt(unpacked[idx]);
+      }
+      // Every other item is 256^j * byte
+      else {
+        sum += (1n << BigInt(8 * j)) * BigInt(unpacked[idx]);
+      }
+    }
+    out[i] = sum;
+  }
+
+  return out;
+}
+
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
@@ -531,9 +574,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-      Array.from(str)
-        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-        .join('')
+    Array.from(str)
+      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+      .join('')
   );
 }
 
