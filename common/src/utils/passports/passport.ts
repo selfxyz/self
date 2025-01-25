@@ -1,4 +1,4 @@
-import { poseidon6 } from 'poseidon-lite';
+import { poseidon4, poseidon6 } from 'poseidon-lite';
 import { hashAlgos, MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
 import {
     CertificateData,
@@ -95,6 +95,33 @@ export function generateNullifier(passportData: PassportData) {
         (signedAttr_shaBytes as number[]).map((byte) => byte & 0xff)
     );
     return signedAttr_packed_hash;
+}
+
+export function generateGlue(salt: string, passportData: PassportData) {
+    const passportMetadata = passportData.passportMetadata;
+    const kLengthFactor = passportMetadata.signatureAlgorithm == 'ecda' ? 2 : 1;
+
+    const pubKey_dsc = getCertificatePubKey(
+        passportData.dsc_parsed,
+        passportMetadata.signatureAlgorithm,
+        passportMetadata.signedAttrHashFunction
+    );
+    const pubKey_dsc_hash = customHasher(pubKey_dsc);
+
+    const pubKey_csca = getCertificatePubKey(
+        passportData.csca_parsed,
+        passportMetadata.cscaSignatureAlgorithm,
+        passportMetadata.cscaHashFunction
+    );
+    const pubKey_csca_hash = customHasher(pubKey_csca);
+
+    console.log('js: salt', salt);
+    console.log('js: kLengthFactor', kLengthFactor);
+    console.log('js: pubKey_dsc_hash', pubKey_dsc_hash);
+    console.log('js: pubKey_csca_hash', pubKey_csca_hash);
+
+    return poseidon4([salt, kLengthFactor, pubKey_dsc_hash, pubKey_csca_hash]).toString();
+
 }
 
 export function pad(hashFunction: (typeof hashAlgos)[number]) {

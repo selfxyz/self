@@ -10,7 +10,7 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 import { sigAlgs, fullSigAlgs } from './test_cases';
-import { generateCommitment, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
+import { generateCommitment, generateGlue, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
@@ -38,12 +38,12 @@ testSuite.forEach(
       );
       passportData = initPassportDataParsing(passportData);
       const secret = 0;
-      const dsc_secret = 0;
+      const salt = 0;
       const attestation_id = '1';
 
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
-      const inputs = generateCircuitInputsRegister(secret, dsc_secret, passportData);
+      const inputs = generateCircuitInputsRegister(secret, salt, passportData);
 
       before(async () => {
         circuit = await wasm_tester(
@@ -54,8 +54,6 @@ testSuite.forEach(
           {
             include: [
               'node_modules',
-              './node_modules/@zk-kit/binary-merkle-root.circom/src',
-              './node_modules/circomlib/circuits',
             ],
           }
         );
@@ -75,15 +73,23 @@ testSuite.forEach(
         }
 
         const nullifier_js = generateNullifier(passportData);
-        console.log('js: nullifier:', nullifier_js);
+        console.log('\x1b[35m%s\x1b[0m', 'js: nullifier:', nullifier_js);
         const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
-        console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
-        const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
-        console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
+        console.log('\x1b[34m%s\x1b[0m', 'circom: nullifier', nullifier);
+
         const commitment_js = generateCommitment(secret.toString(), attestation_id, passportData);
-        console.log('js: commitment:', commitment_js);
+        console.log('\x1b[35m%s\x1b[0m', 'js: commitment:', commitment_js);
+        const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
+        console.log('\x1b[34m%s\x1b[0m', 'circom commitment', commitment);
+
+        const glue_js = generateGlue(salt.toString(), passportData);
+        console.log('\x1b[35m%s\x1b[0m', 'js: glue:', glue_js);
+        const glue = (await circuit.getOutput(w, ['glue'])).glue;
+        console.log('\x1b[34m%s\x1b[0m', 'circom: glue', glue);
+
         expect(commitment).to.be.equal(commitment_js);
         expect(nullifier).to.be.equal(nullifier_js);
+        expect(glue).to.be.equal(glue_js);
       });
 
       it('should fail to calculate witness with invalid mrz', async function () {
