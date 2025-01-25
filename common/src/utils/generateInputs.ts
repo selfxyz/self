@@ -13,13 +13,18 @@ import {
   castFromScope,
   stringToAsciiBigIntArray,
   formatCountriesList,
-  hash
+  hash,
 } from './utils';
 import { customHasher, packBytesAndPoseidon } from './pubkeyTree';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from './smtTree';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { generateCommitment, getCertificatePubKey, getPassportSignatureInfos, pad } from './passport_parsing/passport';
+import {
+  generateCommitment,
+  getCertificatePubKey,
+  getPassportSignatureInfos,
+  pad,
+} from './passport_parsing/passport';
 
 export function generateCircuitInputsRegister(
   secret: number | string,
@@ -53,7 +58,11 @@ export function generateCircuitInputsRegister(
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
-  const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
+  const pubKey_csca = getCertificatePubKey(
+    passportData.csca_parsed,
+    passportMetadata.cscaSignatureAlgorithm,
+    passportMetadata.cscaHashFunction
+  );
   const pubKey_csca_hash = customHasher(pubKey_csca);
 
   const inputs = {
@@ -71,9 +80,11 @@ export function generateCircuitInputsRegister(
     salt: dsc_secret,
   };
 
-  return Object.entries(inputs).map(([key, value]) => ({
-    [key]: formatInput(value)
-  })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
+  return Object.entries(inputs)
+    .map(([key, value]) => ({
+      [key]: formatInput(value),
+    }))
+    .reduce((acc, curr) => ({ ...acc, ...curr }), {});
 }
 
 export function generateCircuitInputsVCandDisclose(
@@ -90,16 +101,29 @@ export function generateCircuitInputsVCandDisclose(
   forbidden_countries_list: string[],
   user_identifier: string
 ) {
-
   const formattedMrz = formatMrz(passportData.mrz);
   const passportMetadata = passportData.passportMetadata;
-  const eContent_shaBytes = hash(passportMetadata.eContentHashFunction, Array.from(passportData.eContent), 'bytes');
-  const eContent_packed_hash = packBytesAndPoseidon((eContent_shaBytes as number[]).map((byte) => byte & 0xff));
+  const eContent_shaBytes = hash(
+    passportMetadata.eContentHashFunction,
+    Array.from(passportData.eContent),
+    'bytes'
+  );
+  const eContent_packed_hash = packBytesAndPoseidon(
+    (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
+  );
 
-  const pubKey_dsc = getCertificatePubKey(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction);
+  const pubKey_dsc = getCertificatePubKey(
+    passportData.dsc_parsed,
+    passportMetadata.signatureAlgorithm,
+    passportMetadata.signedAttrHashFunction
+  );
   const pubKey_dsc_hash = customHasher(pubKey_dsc);
 
-  const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
+  const pubKey_csca = getCertificatePubKey(
+    passportData.csca_parsed,
+    passportMetadata.cscaSignatureAlgorithm,
+    passportMetadata.cscaHashFunction
+  );
   const pubKey_csca_hash = customHasher(pubKey_csca);
 
   const commitment = generateCommitment(secret, attestation_id, passportData);
@@ -212,16 +236,16 @@ export function formatInput(input: any) {
   if (Array.isArray(input)) {
     return input.map((item) => BigInt(item).toString());
   } else if (input instanceof Uint8Array) {
-    return Array.from(input).map(num => BigInt(num).toString());
+    return Array.from(input).map((num) => BigInt(num).toString());
   } else if (typeof input === 'string' && input.includes(',')) {
     const numbers = input
       .split(',')
-      .map(s => s.trim())
-      .filter(s => s !== '' && !isNaN(Number(s)))
+      .map((s) => s.trim())
+      .filter((s) => s !== '' && !isNaN(Number(s)))
       .map(Number);
 
     try {
-      return numbers.map(num => BigInt(num).toString());
+      return numbers.map((num) => BigInt(num).toString());
     } catch (e) {
       throw e;
     }

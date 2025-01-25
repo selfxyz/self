@@ -1,14 +1,25 @@
-import { poseidon6 } from "poseidon-lite";
-import { MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from "../../constants/constants";
-import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from "../certificate_parsing/dataStructure";
-import { parseCertificateSimple } from "../certificate_parsing/parseCertificateSimple";
-import { parsePassportData, PassportMetadata } from "./parsePassportData";
-import { customHasher, packBytesAndPoseidon } from "../pubkeyTree";
-import { shaPad } from "../shaPad";
-import { sha384_512Pad } from "../shaPad";
-import { PassportData, SignatureAlgorithm } from "../types";
-import { bytesToBigDecimal, extractRSFromSignature, formatMrz, getNAndK, hexToDecimal, splitToWords } from "../utils";
-import { hash } from "../utils";
+import { poseidon6 } from 'poseidon-lite';
+import { MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
+import {
+    CertificateData,
+    PublicKeyDetailsECDSA,
+    PublicKeyDetailsRSA,
+} from '../certificate_parsing/dataStructure';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { parsePassportData, PassportMetadata } from './parsePassportData';
+import { customHasher, packBytesAndPoseidon } from '../pubkeyTree';
+import { shaPad } from '../shaPad';
+import { sha384_512Pad } from '../shaPad';
+import { PassportData, SignatureAlgorithm } from '../types';
+import {
+    bytesToBigDecimal,
+    extractRSFromSignature,
+    formatMrz,
+    getNAndK,
+    hexToDecimal,
+    splitToWords,
+} from '../utils';
+import { hash } from '../utils';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -27,25 +38,44 @@ export function initPassportDataParsing(passportData: PassportData) {
 export function generateCommitment(
     secret: string,
     attestation_id: string,
-    passportData: PassportData,
+    passportData: PassportData
 ) {
     const passportMetadata = passportData.passportMetadata;
 
     const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
 
-    const eContent_shaBytes = hash(passportMetadata.eContentHashFunction, Array.from(passportData.eContent), 'bytes');
-    const eContent_packed_hash = packBytesAndPoseidon((eContent_shaBytes as number[]).map((byte) => byte & 0xff));
+    const eContent_shaBytes = hash(
+        passportMetadata.eContentHashFunction,
+        Array.from(passportData.eContent),
+        'bytes'
+    );
+    const eContent_packed_hash = packBytesAndPoseidon(
+        (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
+    );
 
-    const pubKey_dsc = getCertificatePubKey(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction);
+    const pubKey_dsc = getCertificatePubKey(
+        passportData.dsc_parsed,
+        passportMetadata.signatureAlgorithm,
+        passportMetadata.signedAttrHashFunction
+    );
     const pubKey_dsc_hash = customHasher(pubKey_dsc);
 
-    const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
+    const pubKey_csca = getCertificatePubKey(
+        passportData.csca_parsed,
+        passportMetadata.cscaSignatureAlgorithm,
+        passportMetadata.cscaHashFunction
+    );
     const pubKey_csca_hash = customHasher(pubKey_csca);
 
-    return poseidon6([secret, attestation_id, dg1_packed_hash, eContent_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]).toString();
+    return poseidon6([
+        secret,
+        attestation_id,
+        dg1_packed_hash,
+        eContent_packed_hash,
+        pubKey_dsc_hash,
+        pubKey_csca_hash,
+    ]).toString();
 }
-
-
 
 export function pad(passportMetadata: PassportMetadata) {
     return passportMetadata.dg1HashFunction === 'sha1' ||
@@ -68,11 +98,19 @@ export function getPassportSignatureInfos(passportData: PassportData) {
         throw new Error('Passport data is not parsed');
     }
     const passportMetadata = passportData.passportMetadata;
-    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction);
+    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
+        passportData.dsc_parsed,
+        passportMetadata.signatureAlgorithm,
+        passportMetadata.signedAttrHashFunction
+    );
     const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
 
     return {
-        pubKey: getCertificatePubKey(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction),
+        pubKey: getCertificatePubKey(
+            passportData.dsc_parsed,
+            passportMetadata.signatureAlgorithm,
+            passportMetadata.signedAttrHashFunction
+        ),
         signature: getPassportSignature(passportData, n, k),
         signatureAlgorithmFullName: signatureAlgorithmFullName,
     };
@@ -92,8 +130,16 @@ function getPassportSignature(passportData: PassportData, n: number, k: number):
 
 /// @notice Get the public key from the certificate
 /// @dev valid for both DSC and CSCA
-export function getCertificatePubKey(certificateData: CertificateData, signatureAlgorithm: string, hashFunction: string): any {
-    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(certificateData, signatureAlgorithm, hashFunction);
+export function getCertificatePubKey(
+    certificateData: CertificateData,
+    signatureAlgorithm: string,
+    hashFunction: string
+): any {
+    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
+        certificateData,
+        signatureAlgorithm,
+        hashFunction
+    );
     const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
@@ -109,7 +155,11 @@ export function getCertificatePubKey(certificateData: CertificateData, signature
 
 /// @notice Get the signature algorithm full name
 /// @dev valid for both DSC and CSCA
-function getSignatureAlgorithmFullName(certificateData: CertificateData, signatureAlgorithm: string, hashAlgorithm: string): string {
+function getSignatureAlgorithmFullName(
+    certificateData: CertificateData,
+    signatureAlgorithm: string,
+    hashAlgorithm: string
+): string {
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         return `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
@@ -156,13 +206,15 @@ function getRsaPubKeyBytes(parsedCertificate: any): number[] {
 }
 
 function getECDSAPubKeyBytes(parsedCertificate: any): number[] {
-    const { x, y } = (parsedCertificate.publicKeyDetails as PublicKeyDetailsECDSA);
+    const { x, y } = parsedCertificate.publicKeyDetails as PublicKeyDetailsECDSA;
     const pubKeyBytes = [...hexToBytes(x), ...hexToBytes(y)];
     return pubKeyBytes;
 }
 
 function padPubKeyBytes(pubKeyBytes: number[]) {
-    const paddedPubKeyBytes = pubKeyBytes.concat(new Array(MAX_PUBKEY_DSC_BYTES - pubKeyBytes.length).fill(0));
+    const paddedPubKeyBytes = pubKeyBytes.concat(
+        new Array(MAX_PUBKEY_DSC_BYTES - pubKeyBytes.length).fill(0)
+    );
     return paddedPubKeyBytes;
 }
 

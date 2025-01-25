@@ -1,4 +1,4 @@
-import { PassportMetadata } from "./passport_parsing/parsePassportData";
+import { PassportMetadata } from './passport_parsing/parsePassportData';
 
 export type PassportData = {
   mrz: string;

@@ -24,10 +24,12 @@ import { customHasher } from './pubkeyTree';
 
 export function getNullifier(signedAttr_padded: string[], hashFunction: string) {
   return customHasher(
-    (hash(
-      hashFunction,
-      signedAttr_padded.slice(0, signedAttr_padded.lastIndexOf('128')).map((x) => +x)
-    ) as any).map((x) => (x & 0xff).toString())
+    (
+      hash(
+        hashFunction,
+        signedAttr_padded.slice(0, signedAttr_padded.lastIndexOf('128')).map((x) => +x)
+      ) as any
+    ).map((x) => (x & 0xff).toString())
   );
 }
 
@@ -390,7 +392,6 @@ export function packBytes(unpacked) {
   return packed;
 }
 
-
 export function packBytesArray(unpacked: number[]) {
   const packSize = MAX_BYTES_IN_FIELD;
   const maxBytes = unpacked.length;
@@ -406,7 +407,7 @@ export function packBytesArray(unpacked: number[]) {
       if (idx >= maxBytes) {
         continue;
       }
-      // First item of chunk is byte itself 
+      // First item of chunk is byte itself
       else if (j === 0) {
         sum = BigInt(unpacked[idx]);
       }
@@ -420,7 +421,6 @@ export function packBytesArray(unpacked: number[]) {
 
   return out;
 }
-
 
 export function generateSMTProof(smt: SMT, leaf: bigint) {
   const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
@@ -574,9 +574,9 @@ function checkStringLength(str: string) {
 function stringToBigInt(str: string): bigint {
   return BigInt(
     '1' +
-    Array.from(str)
-      .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
-      .join('')
+      Array.from(str)
+        .map((char) => char.charCodeAt(0).toString().padStart(3, '0'))
+        .join('')
   );
 }
 

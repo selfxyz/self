@@ -1,7 +1,16 @@
 import { SignatureAlgorithmIndex } from '../constants/constants';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { poseidon16, poseidon2, poseidon3, poseidon7 } from 'poseidon-lite';
-import { formatDg2Hash, formatMrz, getNAndK, getNAndKCSCA, hexToDecimal, packBytes, packBytesArray, splitToWords } from './utils';
+import {
+  formatDg2Hash,
+  formatMrz,
+  getNAndK,
+  getNAndKCSCA,
+  hexToDecimal,
+  packBytes,
+  packBytesArray,
+  splitToWords,
+} from './utils';
 import { flexiblePoseidon } from './poseidon';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
@@ -13,10 +22,10 @@ import { PassportData, SignatureAlgorithm } from './types';
 import { parseDscCertificateData } from './passport_parsing/parseDscCertificateData';
 
 export function customHasher(pubKeyFormatted: string[]) {
-  if (pubKeyFormatted.length < 16) { // if k is less than 16, we can use a single poseidon hash
+  if (pubKeyFormatted.length < 16) {
+    // if k is less than 16, we can use a single poseidon hash
     return flexiblePoseidon(pubKeyFormatted.map(BigInt)).toString();
-  }
-  else {
+  } else {
     const rounds = Math.ceil(pubKeyFormatted.length / 16); // do up to 16 rounds of poseidon
     if (rounds > 16) {
       throw new Error('Number of rounds is greater than 16');
@@ -82,7 +91,7 @@ export function getLeafCSCA(dsc: string): string {
   const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
-    const { x, y, } = publicKeyDetails as PublicKeyDetailsECDSA;
+    const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([...qx, ...qy]);
@@ -94,8 +103,6 @@ export function getLeafCSCA(dsc: string): string {
   }
 }
 
-
-
 export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   const response = await fetch(url);
   if (!response.ok) {
@@ -106,5 +113,3 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), commitmentMerkleTree);
   return tree;
 }
-
-

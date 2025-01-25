@@ -38,7 +38,7 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
         cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits);
         cscaSaltLength = details.saltLength;
       }
-    } catch (error) { }
+    } catch (error) {}
   }
   return {
     cscaFound: cscaFound,
