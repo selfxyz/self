@@ -5,6 +5,19 @@ include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../computeCommitment.circom";
 include "../customHashers.circom";
 
+/// @notice VerifyCommitment template — verifies user's commitment is included in the merkle tree
+/// @param nLevels Maximum size of the merkle tree
+/// @param secret Secret for commitment generation
+/// @param attestation_id Attestation ID
+/// @param dg1 Data group 1 of the passport
+/// @param eContent_shaBytes_packed_hash hash of the eContent
+/// @param pubKey_dsc_hash Hash of the public key of the DSC
+/// @param pubKey_csca_hash Hash of the public key of the CSCA
+/// @param merkle_root Root of the commitment merkle tree
+/// @param merkletree_size Actual size of the merkle tree
+/// @param path Path to the user's commitment in the merkle tree
+/// @param siblings Siblings of the user's commitment in the merkle tree
+
 template VERIFY_COMMITMENT(nLevels) {
 
     signal input secret;
@@ -26,10 +39,4 @@ template VERIFY_COMMITMENT(nLevels) {
     // Verify commitment inclusion
     signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;
-}
-
-template TemplateAB() {
-    signal input a;
-    signal input b;
-    signal output out <== Poseidon(2)([a, b]);
 }

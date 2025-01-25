@@ -1,7 +1,8 @@
 pragma circom 2.1.9;
 
-/*
- ID to Signature Algorithm
+/***
+
+ID to Signature Algorithm
   1: rsa_sha256_65537_2048
   3: rsa_sha1_65537_2048
   4: rsapss_sha256_65537_2048
@@ -32,8 +33,13 @@ pragma circom 2.1.9;
  32: rsa_sha256_3_4096
  33: rsa_sha1_3_4096
  34: rsa_sha384_65537_4096
-*/
 
+***/
+
+/// @title GetHashLength
+/// @notice Returns the length of the hash in bits for a given signature algorithm
+/// @param signatureAlgorithm ID of the signature algorithm
+/// @output hashLength Length of the hash in bits
 function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 1 ) {
         return 256;
@@ -131,6 +137,10 @@ function getHashLength(signatureAlgorithm) {
     return 0;
 }
 
+/// @title GetKeyLength
+/// @notice Returns the length of the key in bits for a given signature algorithm
+/// @param signatureAlgorithm ID of the signature algorithm
+/// @output keyLength Length of the key in bits
 function getKeyLength(signatureAlgorithm) {
     if (signatureAlgorithm == 1 ) {
         return 2048;
@@ -225,7 +235,11 @@ function getKeyLength(signatureAlgorithm) {
     return 0;
 }
 
-//returns 1 for rsa, 2 for ecdsa
+/// @title GetKLengthFactor
+/// @notice Returns the length factor for the key in bits for a given signature algorithm — 1 for rsa, 2 for ecdsa
+/// @param signatureAlgorithm ID of the signature algorithm
+/// @output kLengthFactor Length factor for the key in bits
+/// @dev needed as ecdsa keys are composed of x and y coordinates, rsa keys are just the modulus (exponent is defined below)
 function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 1) {
         return 1;
@@ -321,8 +335,12 @@ function getKLengthFactor(signatureAlgorithm) {
 
 }
 
+/// @title GetExponentBits
+/// @notice Returns the amounts of bits of the exponent of type 2^n +1
+/// @param signatureAlgorithm ID of the signature algorithm
+/// @output exponentBits Amount of bits of the exponent
 function getExponentBits(signatureAlgorithm) {
-    // returns the amounts of bits of the exponent of type 2^n +1
+    
     if (signatureAlgorithm == 1 ) {
         return 17; // 65537
     }

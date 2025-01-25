@@ -4,6 +4,14 @@ include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
 include "./dateIsLess.circom";
 
+/// @title IsOlderThan
+/// @notice Verifies if user is older than the majority at the current date
+/// @param majorityASCII Majority user wants to prove he is older than: YY — ASCII
+/// @param currDate Current date: YYMMDD — number
+/// @param birthDateASCII Birthdate: YYMMDD — ASCII
+/// @output out Result of the comparison
+/// @dev output is not constrained — verifier has to handle this check
+
 template IsOlderThan() {
     signal input majorityASCII[2];
     signal input currDate[6];

@@ -3,6 +3,10 @@ include "../crypto/bigInt/bigIntFunc.circom";
 include "circomlib/circuits/poseidon.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
+/// @notice CutomHasher circuit - used to Poseidon up to 256 signals
+/// @param k Number of signals to hash
+/// @param in Input signals
+/// @param out Output hash
 template CustomHasher(k) {
     signal input in[k];
     signal output out;
@@ -42,6 +46,10 @@ template CustomHasher(k) {
     }
 }
 
+/// @notice PackBytesAndPoseidon circuit — used to pack a byte array and hash it
+/// @param k Size of the array to pack
+/// @param in Input array
+/// @param out Output hash
 template PackBytesAndPoseidon(k) {
     var packed_length = computeIntChunkLength(k);
     signal input in[k];
