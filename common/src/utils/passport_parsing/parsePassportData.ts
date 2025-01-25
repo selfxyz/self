@@ -1,15 +1,15 @@
-import { PassportData } from '../../../common/src/utils/types';
-import { findSubarrayIndex, formatMrz, getHashLen, hash } from './utils';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
+import { PassportData } from '../types';
+import { findSubarrayIndex, formatMrz, getHashLen, hash } from '../utils';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
-} from './certificate_parsing/dataStructure';
-import { hashAlgos } from '../constants/constants';
+} from '../certificate_parsing/dataStructure';
+import { hashAlgos } from '../../constants/constants';
 import { DscCertificateMetaData, parseDscCertificateData } from './parseDscCertificateData';
-import { brutforceSignatureAlgorithm } from './passport_parsing/brutForcePassportSignature';
+import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
 
 export interface PassportMetadata {
   dataGroups: string;
@@ -28,11 +28,12 @@ export interface PassportMetadata {
   countryCode: string;
   cscaFound: boolean;
   cscaHashFunction: string;
-  cscaSignature: string;
+  cscaSignatureAlgorithm: string;
   cscaSaltLength: number;
   cscaCurveOrExponent: string;
   cscaSignatureAlgorithmBits: number;
   dsc: string;
+  csca: string;
 }
 
 function findHashSizeOfEContent(eContent: number[], signedAttr: number[]) {
@@ -108,13 +109,13 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
   let parsedDsc = null;
   let dscSignatureAlgorithmBits = 0;
 
-  let brutForcedPublicKeyDetailsDsc: DscCertificateMetaData;
+  let dscMetaData: DscCertificateMetaData;
 
   if (passportData.dsc) {
     parsedDsc = parseCertificateSimple(passportData.dsc);
     dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
-    brutForcedPublicKeyDetailsDsc = parseDscCertificateData(parsedDsc);
+    dscMetaData = parseDscCertificateData(parsedDsc);
   }
 
   return {
@@ -137,12 +138,13 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
     curveOrExponent: parsedDsc ? getCurveOrExponent(parsedDsc) : 'unknown',
     signatureAlgorithmBits: dscSignatureAlgorithmBits,
     countryCode: passportData.mrz ? getCountryCodeFromMrz(passportData.mrz) : 'unknown',
-    cscaFound: brutForcedPublicKeyDetailsDsc.cscaFound,
-    cscaHashFunction: brutForcedPublicKeyDetailsDsc.cscaHashAlgorithm,
-    cscaSignature: brutForcedPublicKeyDetailsDsc.cscaSignatureAlgorithm,
-    cscaSaltLength: brutForcedPublicKeyDetailsDsc.cscaSaltLength,
-    cscaCurveOrExponent: brutForcedPublicKeyDetailsDsc.cscaCurveOrExponent,
-    cscaSignatureAlgorithmBits: brutForcedPublicKeyDetailsDsc.cscaSignatureAlgorithmBits,
+    cscaFound: dscMetaData.cscaFound,
+    cscaHashFunction: dscMetaData.cscaHashAlgorithm,
+    cscaSignatureAlgorithm: dscMetaData.cscaSignatureAlgorithm,
+    cscaSaltLength: dscMetaData.cscaSaltLength,
+    cscaCurveOrExponent: dscMetaData.cscaCurveOrExponent,
+    cscaSignatureAlgorithmBits: dscMetaData.cscaSignatureAlgorithmBits,
     dsc: passportData.dsc,
+    csca: dscMetaData?.csca || '',
   };
 }

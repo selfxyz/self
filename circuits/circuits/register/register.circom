@@ -53,7 +53,7 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     signal input pubKey_dsc[kScaled];
     signal input signature_passport[kScaled];
 
-    signal input pubKey_csca_bytes_padded_hash;
+    signal input pubKey_csca_hash;
     
     signal input secret;
     signal input salt;
@@ -62,7 +62,7 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
 
     // verify passport signature
     component passportVerifier = PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN);
-    
+
     passportVerifier.dg1 <== dg1;
     passportVerifier.dg1_hash_offset <== dg1_hash_offset;
     passportVerifier.eContent <== eContent;
@@ -73,21 +73,17 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     passportVerifier.pubKey_dsc <== pubKey_dsc;
     passportVerifier.signature_passport <== signature_passport;
 
-
     // nulifier
     signal output nullifier <== PackBytesAndPoseidon(HASH_LEN_BYTES)(passportVerifier.signedAttrShaBytes);
 
-    // generate the commitment
+    //generate the commitment
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
-
-    var MAX_DSC_PUBKEY_LENGTH = getMaxDscPubKeyLength();
-    signal pubKey_dsc_bytes_padded[MAX_DSC_PUBKEY_LENGTH] <== WordsToBytesPadded(n, kScaled, n * kScaled / 8, MAX_DSC_PUBKEY_LENGTH)(pubKey_dsc);
-    signal pubKey_dsc_bytes_padded_hash <==  PackBytesAndPoseidon(MAX_DSC_PUBKEY_LENGTH)(pubKey_dsc_bytes_padded);
     
-    signal output commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_packed_hash, pubKey_dsc_bytes_padded_hash, pubKey_csca_bytes_padded_hash]);
+    signal pubKey_dsc_hash <==  CustomHasher(kScaled)(pubKey_dsc);
     
-    // glue to link with DSC proof
-    signal output glue <== Poseidon(3)([salt, pubKey_dsc_bytes_padded_hash, pubKey_csca_bytes_padded_hash]);
+    signal output commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]);
+    // // glue to link with DSC proof
+    signal output glue <== Poseidon(3)([salt, pubKey_dsc_hash, pubKey_csca_hash]);
 }
 

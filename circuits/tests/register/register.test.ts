@@ -40,6 +40,7 @@ testSuite.forEach(
       passportData = initPassportDataParsing(passportData);
       const secret = 0;
       const dsc_secret = 0;
+      const attestation_id = '1';
 
       let name_smt = new SMT(poseidon2, true);
       name_smt.import(namejson);
@@ -74,19 +75,17 @@ testSuite.forEach(
           return;
         }
 
-        const expectedNullifier = getNullifier(inputs.signed_attr, hashFunction);
-
+        const nullifier_js = getNullifier(inputs.signed_attr, hashFunction);
+        console.log('js: nullifier:', nullifier_js);
         const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
-        assert(expectedNullifier == nullifier);
-
         console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
         const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
         console.log('\x1b[34m%s\x1b[0m', 'commitment', commitment);
-        const blinded_dsc_commitment = (await circuit.getOutput(w, ['glue']))
-          .glue;
-        console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment', blinded_dsc_commitment);
-        expect(blinded_dsc_commitment).to.be.not.null;
-        expect(nullifier).to.be.not.null;
+        const commitment_js = generateCommitment(secret.toString(), attestation_id, passportData);
+        console.log('js: commitment:', commitment_js);
+        expect(commitment).to.be.equal(commitment_js);
+        expect(nullifier).to.be.equal(nullifier_js);
+
       });
 
       it('should fail to calculate witness with invalid mrz', async function () {

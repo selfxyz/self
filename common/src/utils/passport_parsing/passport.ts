@@ -1,19 +1,24 @@
+import { poseidon6 } from "poseidon-lite";
 import { MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from "../../constants/constants";
-import { PublicKeyDetailsRSA } from "../certificate_parsing/dataStructure";
+import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from "../certificate_parsing/dataStructure";
 import { parseCertificateSimple } from "../certificate_parsing/parseCertificateSimple";
-import { parsePassportData, PassportMetadata } from "../parsePassportData";
-import { packBytesAndPoseidon } from "../pubkeyTree";
+import { parsePassportData, PassportMetadata } from "./parsePassportData";
+import { customHasher, packBytesAndPoseidon } from "../pubkeyTree";
 import { shaPad } from "../shaPad";
 import { sha384_512Pad } from "../shaPad";
-import { PassportData } from "../types";
-import { formatMrz } from "../utils";
+import { PassportData, SignatureAlgorithm } from "../types";
+import { bytesToBigDecimal, extractRSFromSignature, formatMrz, getNAndK, hexToDecimal, splitToWords } from "../utils";
 import { hash } from "../utils";
 
 export function initPassportDataParsing(passportData: PassportData) {
-    const dscParsed = parseCertificateSimple(passportData.dsc);
-    passportData.dsc_parsed = dscParsed;
     const passportMetadata = parsePassportData(passportData);
     passportData.passportMetadata = passportMetadata;
+    const dscParsed = parseCertificateSimple(passportData.dsc);
+    passportData.dsc_parsed = dscParsed;
+    if (passportData.passportMetadata.csca) {
+        const cscaParsed = parseCertificateSimple(passportData.passportMetadata.csca);
+        passportData.csca_parsed = cscaParsed;
+    }
     passportData.parsed = true;
     return passportData;
 }
@@ -23,38 +28,134 @@ export function generateCommitment(
     attestation_id: string,
     passportData: PassportData,
 ) {
-    // dg1
+    const passportMetadata = passportData.passportMetadata;
+
     const dg1_packed_hash = packBytesAndPoseidon(formatMrz(passportData.mrz));
-    //eContent
-    const passportMetadata = parsePassportData(passportData);
 
     const eContent_shaBytes = hash(passportMetadata.eContentHashFunction, Array.from(passportData.eContent), 'bytes');
     const eContent_packed_hash = packBytesAndPoseidon((eContent_shaBytes as number[]).map((byte) => byte & 0xff));
-    // pubKey
-    const pubKeyBytes_padded = getPubKeyBytesPadded(passportData);
-    // console.log('js: pubKeyBytes:', JSON.stringify(pubKeyBytes_padded));
-    const pubKeyBytes_padded_packed_hash = packBytesAndPoseidon(pubKeyBytes_padded);
-    console.log('js: pubKeyBytes_padded_packed_hash:', pubKeyBytes_padded_packed_hash);
+
+    const pubKey_dsc = getCertificatePubKey(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction);
+    const pubKey_dsc_hash = customHasher(pubKey_dsc);
+
+    const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
+    const pubKey_csca_hash = customHasher(pubKey_csca);
+
+    return poseidon6([secret, attestation_id, dg1_packed_hash, eContent_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]).toString();
 }
 
-export function getPubKeyBytesPadded(passportData: PassportData) {
-    const pubKeyBytes = getPubKeyBytes(passportData);
+function validatePassportMetadata(passportData: PassportData): void {
+    if (!passportData.parsed) {
+        throw new Error('Passport data is not parsed');
+    }
+}
+
+export function pad(passportMetadata: PassportMetadata) {
+    return passportMetadata.dg1HashFunction === 'sha1' ||
+        passportMetadata.dg1HashFunction === 'sha224' ||
+        passportMetadata.dg1HashFunction === 'sha256'
+        ? shaPad
+        : sha384_512Pad;
+}
+
+export function getDscPubKeyInfoDsc(passportData: PassportData) {
+    if (!passportData.parsed) {
+        throw new Error('Passport data is not parsed');
+    }
+    const passportMetadata = passportData.passportMetadata;
+    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction);
+    const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
+
+    return {
+        pubKey: getCertificatePubKey(passportData.dsc_parsed, passportMetadata.signatureAlgorithm, passportMetadata.signedAttrHashFunction),
+        signature: getPassportSignature(passportData, n, k),
+        signatureAlgorithmFullName: signatureAlgorithmFullName,
+    };
+}
+
+function getPassportSignature(passportData: PassportData, n: number, k: number): any {
+    const { signatureAlgorithm } = passportData.dsc_parsed;
+    if (signatureAlgorithm === 'ecdsa') {
+        const { r, s } = extractRSFromSignature(passportData.encryptedDigest);
+        const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
+        const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
+        return [...signature_r, ...signature_s];
+    } else {
+        return splitToWords(BigInt(bytesToBigDecimal(passportData.encryptedDigest)), n, k);
+    }
+}
+
+export function getCertificatePubKey(certificateData: CertificateData, signatureAlgorithm: string, hashFunction: string): any {
+    const signatureAlgorithmFullName = getSignatureAlgorithmFullName(certificateData, signatureAlgorithm, hashFunction);
+    const { n, k } = getNAndK(signatureAlgorithmFullName as SignatureAlgorithm);
+    const { publicKeyDetails } = certificateData;
+    if (signatureAlgorithm === 'ecdsa') {
+        const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
+        const x_dsc = splitToWords(BigInt(hexToDecimal(x)), n, k);
+        const y_dsc = splitToWords(BigInt(hexToDecimal(y)), n, k);
+        return [...x_dsc, ...y_dsc];
+    } else {
+        const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
+        return splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+    }
+}
+
+function getSignatureAlgorithmFullName(certificateData: CertificateData, signatureAlgorithm: string, hashAlgorithm: string): string {
+    const { publicKeyDetails } = certificateData;
+    if (signatureAlgorithm === 'ecdsa') {
+        return `${signatureAlgorithm}_${hashAlgorithm}_${(publicKeyDetails as PublicKeyDetailsECDSA).curve}_${publicKeyDetails.bits}`;
+    } else {
+        const { exponent } = publicKeyDetails as PublicKeyDetailsRSA;
+        return `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${publicKeyDetails.bits}`;
+    }
+}
+
+/*** retrieve pubKey bytes unused ***/
+
+export function getPubKeyBytes(passportData: PassportData, type: 'dsc' | 'csca'): number[] {
+    validatePassportMetadata(passportData);
+    if (type === 'dsc') {
+        return getDscPubKeyBytes(passportData);
+    } else if (type === 'csca') {
+        return getCscaPubKeyBytes(passportData);
+    } else {
+        throw new Error('Invalid type');
+    }
+}
+
+function getDscPubKeyBytes(passportData: PassportData): number[] {
+    const signatureAlgorithm = passportData.passportMetadata.signatureAlgorithm;
+    if (signatureAlgorithm === 'ecdsa') {
+        return getECDSAPubKeyBytes(passportData.dsc_parsed);
+    }
+    return getRsaPubKeyBytes(passportData.dsc_parsed);
+}
+
+function getCscaPubKeyBytes(passportData: PassportData): number[] {
+    if (!passportData.passportMetadata.cscaFound) {
+        throw new Error('CSCA not found');
+    }
+    const signatureAlgorithm = passportData.passportMetadata.cscaSignatureAlgorithm;
+    if (signatureAlgorithm === 'ecdsa') {
+        throw new Error('ECDSA signature algorithm not supported for CSCA');
+    }
+    return getRsaPubKeyBytes(passportData.dsc);
+}
+
+function getRsaPubKeyBytes(parsedCertificate: any): number[] {
+    const pubKeyHex = (parsedCertificate.publicKeyDetails as PublicKeyDetailsRSA).modulus;
+    return hexToBytes(pubKeyHex);
+}
+
+function getECDSAPubKeyBytes(parsedCertificate: any): number[] {
+    const { x, y } = (parsedCertificate.publicKeyDetails as PublicKeyDetailsECDSA);
+    const pubKeyBytes = [...hexToBytes(x), ...hexToBytes(y)];
+    return pubKeyBytes;
+}
+
+function padPubKeyBytes(pubKeyBytes: number[]) {
     const paddedPubKeyBytes = pubKeyBytes.concat(new Array(MAX_PUBKEY_DSC_BYTES - pubKeyBytes.length).fill(0));
     return paddedPubKeyBytes;
-}
-
-export function getPubKeyBytes(passportData: PassportData) {
-    if (passportData.passportMetadata == undefined) {
-        throw new Error('Passport metadata is undefined');
-    }
-    const signatureAlgorithm = passportData.passportMetadata.signatureAlgorithm;
-    if (signatureAlgorithm == 'ecdsa') { }
-    else {
-        const parsedDsc = passportData.dsc_parsed;
-        const pubKeyHex = (parsedDsc.publicKeyDetails as PublicKeyDetailsRSA).modulus;
-        const pubKeyBytes = hexToBytes(pubKeyHex);
-        return pubKeyBytes;
-    }
 }
 
 function hexToBytes(hex: string) {
@@ -68,12 +169,4 @@ function hexToBytes(hex: string) {
         bytes.push(parseInt(paddedHex.slice(i, i + 2), 16));
     }
     return bytes;
-}
-
-export function pad(passportMetadata: PassportMetadata) {
-    return passportMetadata.dg1HashFunction === 'sha1' ||
-        passportMetadata.dg1HashFunction === 'sha224' ||
-        passportMetadata.dg1HashFunction === 'sha256'
-        ? shaPad
-        : sha384_512Pad;
 }

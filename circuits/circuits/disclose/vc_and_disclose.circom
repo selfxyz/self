@@ -1,17 +1,18 @@
 pragma circom 2.1.9;
 
-include "../utils/passport/disclose/verify_commitment.circom";
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
+include "../utils/passport/disclose/verify_commitment.circom";
 
 template VC_AND_DISCLOSE(nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input secret;
     signal input attestation_id;
-    signal input pubkey_leaf;
     signal input dg1[93];
-    signal input dg2_hash[64];
+    signal input eContent_shaBytes_packed_hash;
+    signal input pubKey_dsc_hash;
+    signal input pubKey_csca_hash;
 
     signal input merkle_root;
     signal input merkletree_size;
@@ -34,8 +35,8 @@ template VC_AND_DISCLOSE(nLevels,FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input forbidden_countries_list[FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
 
     // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, pubkey_leaf, dg1, dg2_hash, merkle_root, merkletree_size, path, siblings);
-
+    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, dg1, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash, merkle_root, merkletree_size, path, siblings);
+    
     // verify passport validity and disclose optional data
     component disclose = DISCLOSE();
     disclose.dg1 <== dg1;

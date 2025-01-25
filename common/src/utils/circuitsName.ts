@@ -1,5 +1,5 @@
 import { PassportData } from './types';
-import { parsePassportData } from './parsePassportData';
+import { parsePassportData } from './passport_parsing/parsePassportData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
   PublicKeyDetailsECDSA,

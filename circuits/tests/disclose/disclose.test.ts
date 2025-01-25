@@ -8,7 +8,8 @@ import {
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateCommitment, getLeaf } from '../../../common/src/utils/pubkeyTree';
+import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passport_parsing/passport';
+import { getLeaf } from '../../../common/src/utils/pubkeyTree';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';
@@ -21,7 +22,7 @@ describe('Disclose', function () {
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockPassportData(
+  let passportData = genMockPassportData(
     'sha256',
     'sha256',
     'rsa_sha256_65537_2048',
@@ -29,6 +30,7 @@ describe('Disclose', function () {
     '000101',
     '300101'
   );
+  passportData = initPassportDataParsing(passportData);
   let tree: any;
 
   before(async () => {
@@ -50,17 +52,10 @@ describe('Disclose', function () {
     const selector_dg1 = Array(88).fill('1');
     const selector_older_than = '1';
     const scope = '@coboyApp';
+    const attestation_id = PASSPORT_ATTESTATION_ID;
 
     // compute the commitment and insert it in the tree
-    const pubkey_leaf = getLeaf(passportData.dsc).toString();
-    const mrz_bytes = packBytes(formatMrz(passportData.mrz));
-    const commitment = generateCommitment(
-      secret,
-      PASSPORT_ATTESTATION_ID,
-      pubkey_leaf,
-      mrz_bytes,
-      passportData.dg2Hash
-    );
+    const commitment = generateCommitment(secret, attestation_id, passportData);
     console.log('commitment in js ', commitment);
     tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
     tree.insert(BigInt(commitment));
