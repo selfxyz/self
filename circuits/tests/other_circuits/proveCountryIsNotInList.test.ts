@@ -2,10 +2,11 @@ import { expect } from 'chai';
 import { X509Certificate } from 'crypto';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
-import { formatCountriesList, formatMrz } from '../../../common/src/utils/utils';
-import { formatInput } from '../../../common/src/utils/generateInputs';
-import { formatAndUnpackForbiddenCountriesList } from '../../../common/src/utils/revealBitmap';
+import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { formatInput } from '../../../common/src/utils/circuits/generateInputs';
+import { formatMrz } from '../../../common/src/utils/passports/format';
+import { formatCountriesList } from '../../../common/src/utils/circuits/formatInputs';
+import { formatAndUnpackForbiddenCountriesList } from '../../../common/src/utils/circuits/formatOutputs';
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);
@@ -45,7 +46,7 @@ describe('ProveCountryIsNotInList', function () {
       };
       const witness = await circuit.calculateWitness(inputs);
       const forbidden_countries_list_packed = await circuit.getOutput(witness, [
-        'forbidden_countries_list_packed[2]',
+        'forbidden_countries_list_packed[1]',
       ]);
       console.log(
         '\x1b[34m%s\x1b[0m',

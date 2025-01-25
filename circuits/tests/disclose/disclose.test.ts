@@ -1,3 +1,4 @@
+import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
@@ -7,16 +8,13 @@ import {
 } from '../../../common/src/constants/constants';
 import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import {
-  generateCommitment,
-  initPassportDataParsing,
-} from '../../../common/src/utils/passport_parsing/passport';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/generateInputs';
-import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
+import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
 import crypto from 'crypto';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
+import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
+import { formatAndUnpackReveal } from '../../../common/src/utils/circuits/formatOutputs';
+import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -145,7 +143,7 @@ describe('Disclose', function () {
 
         const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
 
-        for (let i = 0; i < reveal_unpacked.length; i++) {
+        for (let i = 0; i < 88; i++) {
           if (selector_dg1[i] == '1') {
             const char = String.fromCharCode(Number(inputs.dg1[i + 5]));
             assert(reveal_unpacked[i] == char, 'Should reveal the right character');
@@ -164,11 +162,11 @@ describe('Disclose', function () {
       ...inputs,
       selector_dg1: selector_dg1.map(String),
     });
+    const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
-    const older_than = formatOlderThan(await circuit.getOutput(w, ['older_than[2]']));
-
-    expect(older_than[0]).to.equal(1);
-    expect(older_than[1]).to.equal(8);
+    const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+    const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than');
+    expect(older_than).to.equal('18');
   });
 
   it("shouldn't allow disclosing wrong majority", async function () {
@@ -183,7 +181,6 @@ describe('Disclose', function () {
     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
 
     const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-
     expect(reveal_unpacked[88]).to.equal('\x00');
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
@@ -191,4 +188,10 @@ describe('Disclose', function () {
 
 const formatOlderThan = (older_than: any) => {
   return Object.values(older_than).map((value: any) => parseInt(value) - 48);
+};
+
+
+const getAttributeFromUnpackedReveal = (unpackedReveal: string[], attributeName: keyof typeof attributeToPosition): string => {
+  const [start, end] = attributeToPosition[attributeName];
+  return unpackedReveal.slice(start, end + 1).join('').replace(/\x00/g, '');
 };
