@@ -76,7 +76,7 @@ export function generateCircuitInputsRegister(
   })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
 }
 
-export function generateCircuitInputsDisclose(
+export function generateCircuitInputsVCandDisclose(
   secret: string,
   attestation_id: string,
   passportData: PassportData,

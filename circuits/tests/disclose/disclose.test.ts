@@ -11,7 +11,7 @@ import {
   generateCommitment,
   initPassportDataParsing,
 } from '../../../common/src/utils/passport_parsing/passport';
-import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
+import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
@@ -66,7 +66,7 @@ describe('Disclose', function () {
     const selector_ofac = 1;
     const forbidden_countries_list = ['ALG', 'DZA'];
 
-    inputs = generateCircuitInputsDisclose(
+    inputs = generateCircuitInputsVCandDisclose(
       secret,
       PASSPORT_ATTESTATION_ID,
       passportData,
