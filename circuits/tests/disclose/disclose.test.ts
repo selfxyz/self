@@ -1,15 +1,16 @@
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { formatMrz, packBytes } from '../../../common/src/utils/utils';
 import {
   attributeToPosition,
   PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
-import { poseidon1, poseidon2, poseidon6 } from 'poseidon-lite';
+import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passport_parsing/passport';
-import { getLeaf } from '../../../common/src/utils/pubkeyTree';
+import {
+  generateCommitment,
+  initPassportDataParsing,
+} from '../../../common/src/utils/passport_parsing/passport';
 import { generateCircuitInputsDisclose } from '../../../common/src/utils/generateInputs';
 import { formatAndUnpackReveal } from '../../../common/src/utils/revealBitmap';
 import crypto from 'crypto';

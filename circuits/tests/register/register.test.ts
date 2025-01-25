@@ -11,7 +11,10 @@ import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuitsName';
 import { getNullifier } from '../../../common/src/utils/utils';
 import { sigAlgs, fullSigAlgs } from './test_cases';
-import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passport_parsing/passport';
+import {
+  generateCommitment,
+  initPassportDataParsing,
+} from '../../../common/src/utils/passport_parsing/passport';
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
@@ -85,7 +88,6 @@ testSuite.forEach(
         console.log('js: commitment:', commitment_js);
         expect(commitment).to.be.equal(commitment_js);
         expect(nullifier).to.be.equal(nullifier_js);
-
       });
 
       it('should fail to calculate witness with invalid mrz', async function () {

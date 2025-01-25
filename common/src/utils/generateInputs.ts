@@ -21,6 +21,61 @@ import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } fr
 import { SMT } from '@openpassport/zk-kit-smt';
 import { generateCommitment, getCertificatePubKey, getDscPubKeyInfoDsc, pad } from './passport_parsing/passport';
 
+export function generateCircuitInputsRegister(
+  secret: number | string,
+  dsc_secret: number | string,
+  passportData: PassportData
+) {
+  if (!passportData.parsed) {
+    throw new Error('Passport data is not parsed');
+  }
+  const { mrz, eContent, signedAttr } = passportData;
+  const passportMetadata = passportData.passportMetadata;
+
+  const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfoDsc(passportData);
+  const mrz_formatted = formatMrz(mrz);
+
+  if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
+    console.error(
+      `eContent too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`
+    );
+    throw new Error(
+      `This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`
+    );
+  }
+
+  const [eContentPadded, eContentLen] = pad(passportMetadata)(
+    new Uint8Array(eContent),
+    MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
+  );
+  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata)(
+    new Uint8Array(signedAttr),
+    MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
+  );
+
+  const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
+  const pubKey_csca_hash = customHasher(pubKey_csca);
+
+  const inputs = {
+    dg1: mrz_formatted,
+    dg1_hash_offset: passportMetadata.dg1HashOffset,
+    eContent: eContentPadded,
+    eContent_padded_length: eContentLen,
+    signed_attr: signedAttrPadded,
+    signed_attr_padded_length: signedAttrPaddedLen,
+    signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
+    pubKey_dsc: pubKey,
+    signature_passport: signature,
+    pubKey_csca_hash: pubKey_csca_hash,
+    secret: secret,
+    salt: dsc_secret,
+  };
+
+  return Object.entries(inputs).map(([key, value]) => ({
+    [key]: formatInput(value)
+  })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
+}
+
 export function generateCircuitInputsDisclose(
   secret: string,
   attestation_id: string,
@@ -152,66 +207,6 @@ export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
   }
   return index;
 }
-
-
-
-export function generateCircuitInputsRegister(
-  secret: number | string,
-  dsc_secret: number | string,
-  passportData: PassportData
-) {
-  if (!passportData.parsed) {
-    throw new Error('Passport data is not parsed');
-  }
-  const { mrz, eContent, signedAttr } = passportData;
-  const passportMetadata = passportData.passportMetadata;
-
-  const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfoDsc(passportData);
-  const mrz_formatted = formatMrz(mrz);
-
-  if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
-    console.error(
-      `eContent too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`
-    );
-    throw new Error(
-      `This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`
-    );
-  }
-
-  const [eContentPadded, eContentLen] = pad(passportMetadata)(
-    new Uint8Array(eContent),
-    MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
-  );
-  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata)(
-    new Uint8Array(signedAttr),
-    MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
-  );
-
-  const pubKey_csca = getCertificatePubKey(passportData.csca_parsed, passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction);
-  const pubKey_csca_hash = customHasher(pubKey_csca);
-
-  const inputs = {
-    dg1: mrz_formatted,
-    dg1_hash_offset: passportMetadata.dg1HashOffset,
-    eContent: eContentPadded,
-    eContent_padded_length: eContentLen,
-    signed_attr: signedAttrPadded,
-    signed_attr_padded_length: signedAttrPaddedLen,
-    signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
-    pubKey_dsc: pubKey,
-    signature_passport: signature,
-    pubKey_csca_hash: pubKey_csca_hash,
-    secret: secret,
-    salt: dsc_secret,
-  };
-
-  return Object.entries(inputs).map(([key, value]) => ({
-    [key]: formatInput(value)
-  })).reduce((acc, curr) => ({ ...acc, ...curr }), {});
-}
-
-
-
 
 export function formatInput(input: any) {
   if (Array.isArray(input)) {
