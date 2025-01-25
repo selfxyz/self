@@ -10,7 +10,7 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 import { sigAlgs, fullSigAlgs } from './test_cases';
-import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
+import { generateCommitment, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
@@ -74,8 +74,8 @@ testSuite.forEach(
           return;
         }
 
-        // const nullifier_js = getNullifier(inputs.signed_attr, hashFunction);
-        // console.log('js: nullifier:', nullifier_js);
+        const nullifier_js = generateNullifier(passportData);
+        console.log('js: nullifier:', nullifier_js);
         const nullifier = (await circuit.getOutput(w, ['nullifier'])).nullifier;
         console.log('\x1b[34m%s\x1b[0m', 'nullifier', nullifier);
         const commitment = (await circuit.getOutput(w, ['commitment'])).commitment;
@@ -83,7 +83,7 @@ testSuite.forEach(
         const commitment_js = generateCommitment(secret.toString(), attestation_id, passportData);
         console.log('js: commitment:', commitment_js);
         expect(commitment).to.be.equal(commitment_js);
-        // expect(nullifier).to.be.equal(nullifier_js);
+        expect(nullifier).to.be.equal(nullifier_js);
       });
 
       it('should fail to calculate witness with invalid mrz', async function () {
