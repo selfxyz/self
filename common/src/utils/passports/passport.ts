@@ -6,20 +6,28 @@ import {
     PublicKeyDetailsRSA,
 } from '../certificate_parsing/dataStructure';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { parsePassportData, PassportMetadata } from './parsePassportData';
-import { customHasher, packBytesAndPoseidon } from '../pubkeyTree';
+import { parsePassportData, PassportMetadata } from './passport_parsing/parsePassportData';
 import { shaPad } from '../shaPad';
 import { sha384_512Pad } from '../shaPad';
 import { PassportData, SignatureAlgorithm } from '../types';
+import { customHasher, hash } from '../hash';
+import { bytesToBigDecimal, hexToDecimal } from '../bytes';
+import { packBytesAndPoseidon } from '../hash';
+import * as forge from 'node-forge';
 import {
-    bytesToBigDecimal,
-    extractRSFromSignature,
-    formatMrz,
-    getNAndK,
-    hexToDecimal,
-    splitToWords,
-} from '../utils';
-import { hash } from '../utils';
+    n_dsc,
+    n_dsc_3072,
+    n_dsc_4096,
+    k_dsc,
+    k_dsc_4096,
+    n_dsc_ecdsa,
+    k_dsc_ecdsa,
+    n_csca,
+    k_csca,
+    k_dsc_3072,
+} from '../../constants/constants';
+import { splitToWords } from '../bytes';
+import { formatMrz } from './format';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -229,4 +237,69 @@ function hexToBytes(hex: string) {
         bytes.push(parseInt(paddedHex.slice(i, i + 2), 16));
     }
     return bytes;
+}
+
+export function extractRSFromSignature(signatureBytes: number[]): { r: string; s: string } {
+    const derSignature = Buffer.from(signatureBytes).toString('binary');
+    const asn1 = forge.asn1.fromDer(derSignature);
+    const signatureAsn1 = asn1.value;
+
+    if (signatureAsn1.length !== 2) {
+        throw new Error('Invalid signature format');
+    }
+
+    if (!Array.isArray(asn1.value) || asn1.value.length !== 2) {
+        throw new Error('Invalid signature format');
+    }
+    const r = forge.util.createBuffer(asn1.value[0].value as string).toHex();
+    const s = forge.util.createBuffer(asn1.value[1].value as string).toHex();
+
+    return { r, s };
+}
+
+export function getNAndK(sigAlg: SignatureAlgorithm) {
+    if (sigAlg === 'rsa_sha256_65537_3072') {
+        return { n: n_dsc_3072, k: k_dsc }; // 3072/32 = 96
+    }
+
+    if (sigAlg.startsWith('ecdsa_')) {
+        if (sigAlg.endsWith('224')) {
+            return { n: 32, k: 7 };
+        } else if (sigAlg.endsWith('256')) {
+            return { n: n_dsc_ecdsa, k: 4 };
+        } else if (sigAlg.endsWith('384')) {
+            return { n: n_dsc_ecdsa, k: 6 };
+        } else if (sigAlg.endsWith('512')) {
+            return { n: n_dsc_ecdsa, k: 8 };
+        } else if (sigAlg.endsWith('521')) {
+            return { n: n_dsc_ecdsa, k: 16 };
+        } else {
+            throw new Error('invalid key size');
+        }
+    }
+
+    if (sigAlg.startsWith('rsapss_')) {
+        const keyLength = parseInt(sigAlg.split('_')[3]);
+
+        if (keyLength === 3072) {
+            return { n: n_dsc_3072, k: k_dsc_3072 }; // 3072/32 = 96
+        }
+
+        if (keyLength === 4096) {
+            return { n: n_dsc_4096, k: k_dsc_4096 }; // 4096/32 = 128
+        }
+        return { n: n_dsc, k: k_dsc }; // 2048/32 = 64
+    }
+
+    if (sigAlg === 'rsa_sha256_65537_4096' || sigAlg === 'rsa_sha512_65537_4096') {
+        return { n: n_dsc_4096, k: k_dsc_4096 }; // 4096/32 = 128
+    }
+
+    return { n: n_dsc, k: k_dsc }; // 2048/32 = 64
+}
+
+export function getNAndKCSCA(sigAlg: 'rsa' | 'ecdsa' | 'rsapss') {
+    const n = sigAlg === 'ecdsa' ? n_dsc_ecdsa : n_csca;
+    const k = sigAlg === 'ecdsa' ? k_dsc_ecdsa : k_csca;
+    return { n, k };
 }

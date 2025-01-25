@@ -11,8 +11,8 @@ import {
   PROVE_RSA_USER_IDENTIFIER_INDEX,
   PROVE_RSA_SCOPE_INDEX,
   DSC_BLINDED_DSC_COMMITMENT_INDEX,
-} from '../../constants/contractConstants';
-import { Proof } from '../types';
+} from '../../../constants/contractConstants';
+import { Proof } from '../../types';
 
 export function generateMockRSAProveVerifierInputs({
   nullifier = '1',

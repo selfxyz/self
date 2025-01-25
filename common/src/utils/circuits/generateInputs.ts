@@ -2,30 +2,25 @@ import {
   PUBKEY_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
-} from '../constants/constants';
-import { PassportData } from './types';
-import {
-  formatMrz,
-  getCurrentDateYYMMDD,
-  generateMerkleProof,
-  generateSMTProof,
-  castFromUUID,
-  castFromScope,
-  stringToAsciiBigIntArray,
-  formatCountriesList,
-  hash,
-} from './utils';
-import { customHasher, packBytesAndPoseidon } from './pubkeyTree';
+} from '../../constants/constants';
+import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from './smtTree';
+import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
   generateCommitment,
   getCertificatePubKey,
   getPassportSignatureInfos,
   pad,
-} from './passport_parsing/passport';
-
+} from '../passports/passport';
+import { toUnsignedByte } from '../bytes';
+import { customHasher, hash, packBytesAndPoseidon } from '../hash';
+import { formatMrz } from '../passports/format';
+import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
+import { getCurrentDateYYMMDD } from '../date';
+import { castFromScope } from './uuid';
+import { formatCountriesList } from './formatInputs';
+import { generateMerkleProof, generateSMTProof } from '../trees';
 export function generateCircuitInputsRegister(
   secret: number | string,
   dsc_secret: number | string,

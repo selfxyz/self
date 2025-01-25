@@ -1,13 +1,13 @@
-import { PassportData } from '../types';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsECDSA } from '../certificate_parsing/dataStructure';
+import { PassportData } from '../../types';
+import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
+import { PublicKeyDetailsECDSA } from '../../certificate_parsing/dataStructure';
 import forge, { md } from 'node-forge';
 import * as asn1js from 'asn1js';
-import { initElliptic } from '../certificate_parsing/elliptic';
-import { getCurveForElliptic } from '../certificate_parsing/curves';
+import { initElliptic } from '../../certificate_parsing/elliptic';
+import { getCurveForElliptic } from '../../certificate_parsing/curves';
 import { Certificate } from 'pkijs';
-import { hashAlgos, saltLengths } from '../../constants/constants';
-import { hash } from '../utils';
+import { hashAlgos, saltLengths } from '../../../constants/constants';
+import { hash } from '../../hash';
 
 export function brutforceSignatureAlgorithm(passportData: PassportData) {
   const parsedDsc = parseCertificateSimple(passportData.dsc);

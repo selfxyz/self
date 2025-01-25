@@ -1,11 +1,11 @@
-import { PassportData } from './types';
-import { parsePassportData } from './passport_parsing/parsePassportData';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
+import { PassportData } from '../types';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
-} from './certificate_parsing/dataStructure';
+} from '../certificate_parsing/dataStructure';
+import { parsePassportData } from '../passports/passport_parsing/parsePassportData';
 
 export function getCircuitNameFromPassportData(passportData: PassportData) {
   const passportMetadata = parsePassportData(passportData);

@@ -1,12 +1,90 @@
 import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13 } from 'poseidon-lite';
-import { stringToAsciiBigIntArray } from './utils';
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
+import { stringToAsciiBigIntArray } from './circuits/uuid';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+
+
+export function formatRoot(root: string): string {
+  let rootHex = BigInt(root).toString(16);
+  return rootHex.length % 2 === 0 ? '0x' + rootHex : '0x0' + rootHex;
+}
+
+export function generateSMTProof(smt: SMT, leaf: bigint) {
+  const { entry, matchingEntry, siblings, root, membership } = smt.createProof(leaf);
+  const depth = siblings.length;
+
+  let closestleaf;
+  if (!matchingEntry) {
+    // we got the 0 leaf or membership
+    // then check if entry[1] exists
+    if (!entry[1]) {
+      // non membership proof
+      closestleaf = BigInt(0); // 0 leaf
+    } else {
+      closestleaf = BigInt(entry[0]); // leaf itself (memb proof)
+    }
+  } else {
+    // non membership proof
+    closestleaf = BigInt(matchingEntry[0]); // actual closest
+  }
+
+  // PATH, SIBLINGS manipulation as per binary tree in the circuit
+  siblings.reverse();
+  while (siblings.length < 256) siblings.push(BigInt(0));
+
+  // ----- Useful for debugging hence leaving as comments -----
+  // const binary = entry[0].toString(2)
+  // const bits = binary.slice(-depth);
+  // let indices = bits.padEnd(256, "0").split("").map(Number)
+  // const pathToMatch = num2Bits(256,BigInt(entry[0]))
+  // while(indices.length < 256) indices.push(0);
+  // // CALCULATED ROOT FOR TESTING
+  // // closestleaf, depth, siblings, indices, root : needed
+  // let calculatedNode = poseidon3([closestleaf,1,1]);
+  // console.log("Initial node while calculating",calculatedNode)
+  // console.log(smt.verifyProof(smt.createProof(leaf)))
+  // for (let i= 0; i < depth ; i++) {
+  //   const childNodes: any = indices[i] ? [siblings[i], calculatedNode] : [calculatedNode, siblings[i]]
+  //   console.log(indices[i],childNodes)
+  //   calculatedNode = poseidon2(childNodes)
+  // }
+  // console.log("Actual node", root)
+  // console.log("calculated node", calculatedNode)
+  // -----------------------------------------------------------
+
+  return {
+    root,
+    depth,
+    closestleaf,
+    siblings,
+  };
+}
+
+export function generateMerkleProof(imt: LeanIMT, _index: number, maxDepth: number) {
+  const { siblings: merkleProofSiblings, index } = imt.generateProof(_index);
+  const depthForThisOne = merkleProofSiblings.length;
+  // The index must be converted to a list of indices, 1 for each tree level.
+  // The circuit tree depth is 20, so the number of siblings must be 20, even if
+  // the tree depth is actually 3. The missing siblings can be set to 0, as they
+  // won't be used to calculate the root in the circuit.
+  const merkleProofIndices: number[] = [];
+
+  for (let i = 0; i < maxDepth; i += 1) {
+    merkleProofIndices.push((index >> i) & 1);
+    if (merkleProofSiblings[i] === undefined) {
+      merkleProofSiblings[i] = BigInt(0);
+    }
+  }
+  return { merkleProofSiblings, merkleProofIndices, depthForThisOne };
+}
+
+
+
 
 // SMT trees for 3 levels :
 // 1. Passport tree  : level 3 (Absolute Match)
 // 2. Names and dob combo tree : level 2 (High Probability Match)
 // 3. Names tree : level 1 (Partial Match)
-
 export function buildSMT(field: any[], treetype: string): [number, number, SMT] {
   let count = 0;
   let startTime = performance.now();

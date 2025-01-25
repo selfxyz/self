@@ -1,55 +1,17 @@
 import { SignatureAlgorithmIndex } from '../constants/constants';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { poseidon16, poseidon2, poseidon3, poseidon7 } from 'poseidon-lite';
-import {
-  formatDg2Hash,
-  formatMrz,
-  getNAndK,
-  getNAndKCSCA,
-  hexToDecimal,
-  packBytes,
-  packBytesArray,
-  splitToWords,
-} from './utils';
-import { flexiblePoseidon } from './poseidon';
+import { poseidon2 } from 'poseidon-lite';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-  PublicKeyDetailsRSAPSS,
 } from './certificate_parsing/dataStructure';
-import { PassportData, SignatureAlgorithm } from './types';
-import { parseDscCertificateData } from './passport_parsing/parseDscCertificateData';
+import { SignatureAlgorithm } from './types';
+import { getNAndK, getNAndKCSCA } from './passports/passport';
+import { splitToWords } from './bytes';
+import { hexToDecimal } from './bytes';
+import { customHasher } from './hash';
 
-export function customHasher(pubKeyFormatted: string[]) {
-  if (pubKeyFormatted.length < 16) {
-    // if k is less than 16, we can use a single poseidon hash
-    return flexiblePoseidon(pubKeyFormatted.map(BigInt)).toString();
-  } else {
-    const rounds = Math.ceil(pubKeyFormatted.length / 16); // do up to 16 rounds of poseidon
-    if (rounds > 16) {
-      throw new Error('Number of rounds is greater than 16');
-    }
-    const hash = new Array(rounds);
-    for (let i = 0; i < rounds; i++) {
-      hash[i] = { inputs: new Array(16).fill(BigInt(0)) };
-    }
-    for (let i = 0; i < rounds; i++) {
-      for (let j = 0; j < 16; j++) {
-        if (i * 16 + j < pubKeyFormatted.length) {
-          hash[i].inputs[j] = BigInt(pubKeyFormatted[i * 16 + j]);
-        }
-      }
-    }
-    const finalHash = flexiblePoseidon(hash.map((h) => poseidon16(h.inputs)));
-    return finalHash.toString();
-  }
-}
-
-export function packBytesAndPoseidon(unpacked: number[]) {
-  const packed = packBytesArray(unpacked);
-  return customHasher(packed.map(String)).toString();
-}
 
 export function getLeaf(dsc: string): string {
   const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);

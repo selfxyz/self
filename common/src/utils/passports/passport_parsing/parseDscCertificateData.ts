@@ -1,7 +1,7 @@
 import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature';
-import { CertificateData } from '../certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { getCSCAFromSKI } from '../csca';
+import { CertificateData } from '../../certificate_parsing/dataStructure';
+import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
+import { getCSCAFromSKI } from '../../csca';
 import { getCurveOrExponent } from './parsePassportData';
 
 export interface DscCertificateMetaData {
@@ -38,7 +38,7 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
         cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits);
         cscaSaltLength = details.saltLength;
       }
-    } catch (error) {}
+    } catch (error) { }
   }
   return {
     cscaFound: cscaFound,

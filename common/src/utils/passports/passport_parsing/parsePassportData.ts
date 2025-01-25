@@ -1,15 +1,17 @@
-import { PassportData } from '../types';
-import { findSubarrayIndex, formatMrz, getHashLen, hash } from '../utils';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { PassportData } from '../../types';
+import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSA,
-  PublicKeyDetailsRSAPSS,
-} from '../certificate_parsing/dataStructure';
-import { hashAlgos } from '../../constants/constants';
+} from '../../certificate_parsing/dataStructure';
+import { hashAlgos } from '../../../constants/constants';
 import { DscCertificateMetaData, parseDscCertificateData } from './parseDscCertificateData';
 import { brutforceSignatureAlgorithm } from './brutForcePassportSignature';
+import { findSubarrayIndex } from '../../arrays';
+import { formatMrz } from '../format';
+import { getHashLen } from '../../hash';
+import { hash } from '../../hash';
 
 export interface PassportMetadata {
   dataGroups: string;

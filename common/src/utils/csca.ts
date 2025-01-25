@@ -1,14 +1,6 @@
 import { sha384_512Pad, shaPad } from './shaPad';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
-import {
-  bytesToBigDecimal,
-  extractRSFromSignature,
-  getNAndK,
-  getNAndKCSCA,
-  hexToDecimal,
-  splitToWords,
-} from './utils';
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from '../constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
@@ -16,12 +8,13 @@ import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import axios from 'axios';
 import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
-import { CertificateData, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
-import { formatInput } from './generateInputs';
+import { formatInput } from './circuits/generateInputs';
 // import { getCertificateFromPem, parseCertificate } from './certificates/handleCertificate';
 import { parseCertificate } from '../utils/certificate_parsing/parseCertificate';
 import { SignatureAlgorithm } from './types';
 import { Certificate } from 'pkijs';
+import { bytesToBigDecimal, hexToDecimal, splitToWords } from './bytes';
+import { extractRSFromSignature, getNAndK } from './passports/passport';
 
 export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): number {
   const modulusNumArray = [];

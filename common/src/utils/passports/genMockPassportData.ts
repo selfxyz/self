@@ -1,14 +1,8 @@
-import { PassportData } from './types';
-import {
-  hash,
-  generateSignedAttr,
-  formatAndConcatenateDataHashes,
-  formatMrz,
-  getHashLen,
-} from './utils';
+import { PassportData } from '../types';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
+import { getHashLen, hash } from '../hash';
 import {
   mock_dsc_key_sha1_rsa_4096,
   mock_dsc_key_sha256_ecdsa,
@@ -64,12 +58,14 @@ import {
   mock_dsc_sha256_rsa_3_4096,
   mock_dsc_key_sha512_rsa_65537_2048,
   mock_dsc_sha512_rsa_65537_2048,
-} from '../constants/mockCertificates';
-import { countryCodes } from '../constants/constants';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { SignatureAlgorithm } from './types';
-import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from './certificate_parsing/dataStructure';
-import { getCurveForElliptic } from './certificate_parsing/curves';
+} from '../../constants/mockCertificates';
+import { countryCodes } from '../../constants/constants';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { SignatureAlgorithm } from '../types';
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from '../certificate_parsing/dataStructure';
+import { getCurveForElliptic } from '../certificate_parsing/curves';
+import { formatAndConcatenateDataHashes, formatMrz } from './format';
+import { generateSignedAttr } from './format';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format

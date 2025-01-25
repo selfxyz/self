@@ -1,6 +1,6 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
-import { genMockPassportData } from '../src/utils/genMockPassportData';
+import { genMockPassportData } from '../src/utils/passports/genMockPassportData';
 import { PassportData, SignatureAlgorithm } from '../src/utils/types';
 import { parsePassportData } from '../src/utils/passport_parsing/parsePassportData';
 
