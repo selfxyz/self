@@ -10,6 +10,7 @@ import {
   PublicKeyDetailsRSAPSS,
 } from './certificate_parsing/dataStructure';
 import { PassportData, SignatureAlgorithm } from './types';
+import { parseDscCertificateData } from './passport_parsing/parseDscCertificateData';
 
 export function customHasher(pubKeyFormatted: string[]) {
   if (pubKeyFormatted.length < 16) { // if k is less than 16, we can use a single poseidon hash
@@ -72,38 +73,24 @@ export function getLeaf(dsc: string): string {
   }
 }
 export function getLeafCSCA(dsc: string): string {
-  const { signatureAlgorithm, publicKeyDetails, hashAlgorithm } = parseCertificateSimple(dsc);
+  const parsedCertificate = parseCertificateSimple(dsc);
+
+  const signatureAlgorithm = parsedCertificate.signatureAlgorithm;
+
+  const { publicKeyDetails } = parsedCertificate;
 
   const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
-    const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
-    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${curve}_${bits}`;
-    const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
+    const { x, y, } = publicKeyDetails as PublicKeyDetailsECDSA;
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    return customHasher([sigAlgIndex, ...qx, ...qy]);
-  } else if (signatureAlgorithm === 'rsa') {
-    const { modulus, bits, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
-    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
-    const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
-    if (sigAlgIndex == undefined) {
-      console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
-      throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
-    }
-    const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-    return customHasher([sigAlgIndex, ...pubkeyChunked]);
-  } else if (signatureAlgorithm === 'rsapss') {
-    const { modulus, bits, exponent, hashAlgorithm } = publicKeyDetails as PublicKeyDetailsRSAPSS;
-    const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${exponent}_${bits}`;
-    const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
-    if (sigAlgIndex == undefined) {
-      console.error(`\x1b[31mInvalid signature algorithm: ${sigAlgKey}\x1b[0m`);
-      throw new Error(`Invalid signature algorithm: ${sigAlgKey}`);
-    }
+    return customHasher([...qx, ...qy]);
+  } else {
+    const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
 
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
-    return customHasher([sigAlgIndex, ...pubkeyChunked]);
+    return customHasher([...pubkeyChunked]);
   }
 }
 

@@ -23,23 +23,6 @@ export const RPC_URL = 'https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
-// export const MAX_PADDED_ECONTENT_LEN: Partial<
-//   Record<keyof typeof SignatureAlgorithmIndex, number>
-// > = {
-//   rsa_sha256_65537_2048: 448,
-//   rsa_sha1_65537_2048: 320,
-//   rsapss_sha256_65537_2048: 384,
-//   rsapss_sha256_3_3072: 384,
-//   rsapss_sha256_65537_3072: 384,
-//   rsapss_sha256_65537_4096: 384,
-//   rsapss_sha256_3_4096: 384,
-//   rsapss_sha384_65537_3072: 384,
-//   ecdsa_sha1_secp256r1_256: 320,
-//   ecdsa_sha256_secp256r1_256: 384,
-//   ecdsa_sha384_secp384r1_384: 512,
-//   rsa_sha256_65537_3072: 384,
-//   rsa_sha256_3_2048: 384,
-// };
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
 

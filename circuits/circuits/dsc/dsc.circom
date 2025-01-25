@@ -57,7 +57,7 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     AssertValidKeyLength()(dsc_pubkey_length_bytes, oid_check.is_rsa, oid_check.is_ecdsa);
 
     // leaf
-    signal leaf  <== LeafHasher(kScaled)(csca_pubKey, signatureAlgorithm);
+    signal leaf  <== CustomHasher(kScaled)(csca_pubKey);
 
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;

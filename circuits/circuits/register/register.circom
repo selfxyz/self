@@ -84,6 +84,6 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     
     signal output commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]);
     // // glue to link with DSC proof
-    signal output glue <== Poseidon(3)([salt, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(4)([salt, kScaled, pubKey_dsc_hash, pubKey_csca_hash]);
 }
 
