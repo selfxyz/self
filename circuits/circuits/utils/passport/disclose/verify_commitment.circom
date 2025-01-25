@@ -22,6 +22,7 @@ template VERIFY_COMMITMENT(nLevels) {
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
 
     signal commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]);
+    
     // Verify commitment inclusion
     signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;

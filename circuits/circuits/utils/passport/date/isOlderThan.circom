@@ -22,6 +22,27 @@ template IsOlderThan() {
     signal currDateYear <== currDate[0] * TEN + currDate[1];
     signal birthYear <== birthdateNum[0] * TEN + birthdateNum[1];
 
+    // assert majority is between 0 and 99 (48-57 in ASCII)
+    component lessThan[4];
+    for (var i = 0; i < 4; i++) {
+        lessThan[i] = LessThan(8);
+    }
+    lessThan[0].in[0] <== 47;
+    lessThan[0].in[1] <== majorityASCII[0];
+    lessThan[1].in[0] <== 47;
+    lessThan[1].in[1] <== majorityASCII[1];
+    lessThan[2].in[0] <== majorityASCII[0];
+    lessThan[2].in[1] <== 58;
+    lessThan[3].in[0] <== majorityASCII[1];
+    lessThan[3].in[1] <== 58;
+
+    signal checkLessThan[4];
+    checkLessThan[0] <== lessThan[0].out;
+    for (var i = 1; i < 4; i++) {
+        checkLessThan[i] <== checkLessThan[i-1] * lessThan[i].out;
+    }
+    checkLessThan[3] === 1;
+
     signal majorityNum;
     majorityNum <== ( majorityASCII[0] - 48 ) * TEN + ( majorityASCII[1] - 48 );
 
