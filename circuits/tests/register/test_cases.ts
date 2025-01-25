@@ -15,7 +15,7 @@ export const sigAlgs = [
     hashFunction: 'sha256',
     domainParameter: '65537',
     keyLength: '2048',
-    checkNullifier: false,
+    checkNullifier: true,
   },
   // {
   //   dgHashAlgo: 'sha256',
