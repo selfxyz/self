@@ -1,5 +1,5 @@
 import { poseidon6 } from 'poseidon-lite';
-import { MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
+import { hashAlgos, MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
 import {
     CertificateData,
     PublicKeyDetailsECDSA,
@@ -85,10 +85,22 @@ export function generateCommitment(
     ]).toString();
 }
 
-export function pad(passportMetadata: PassportMetadata) {
-    return passportMetadata.dg1HashFunction === 'sha1' ||
-        passportMetadata.dg1HashFunction === 'sha224' ||
-        passportMetadata.dg1HashFunction === 'sha256'
+export function generateNullifier(passportData: PassportData) {
+    const signedAttr_shaBytes = hash(
+        passportData.passportMetadata.signedAttrHashFunction,
+        Array.from(passportData.signedAttr),
+        'bytes'
+    );
+    const signedAttr_packed_hash = packBytesAndPoseidon(
+        (signedAttr_shaBytes as number[]).map((byte) => byte & 0xff)
+    );
+    return signedAttr_packed_hash;
+}
+
+export function pad(hashFunction: (typeof hashAlgos)[number]) {
+    return hashFunction === 'sha1' ||
+        hashFunction === 'sha224' ||
+        hashFunction === 'sha256'
         ? shaPad
         : sha384_512Pad;
 }

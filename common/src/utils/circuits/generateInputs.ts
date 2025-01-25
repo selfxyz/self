@@ -44,11 +44,11 @@ export function generateCircuitInputsRegister(
     );
   }
 
-  const [eContentPadded, eContentLen] = pad(passportMetadata)(
+  const [eContentPadded, eContentLen] = pad(passportMetadata.eContentHashFunction)(
     new Uint8Array(eContent),
     MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
   );
-  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata)(
+  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata.signedAttrHashFunction)(
     new Uint8Array(signedAttr),
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
