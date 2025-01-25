@@ -19,7 +19,7 @@ import { customHasher, packBytesAndPoseidon } from './pubkeyTree';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from './smtTree';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { generateCommitment, getCertificatePubKey, getDscPubKeyInfoDsc, pad } from './passport_parsing/passport';
+import { generateCommitment, getCertificatePubKey, getPassportSignatureInfos, pad } from './passport_parsing/passport';
 
 export function generateCircuitInputsRegister(
   secret: number | string,
@@ -32,7 +32,7 @@ export function generateCircuitInputsRegister(
   const { mrz, eContent, signedAttr } = passportData;
   const passportMetadata = passportData.passportMetadata;
 
-  const { pubKey, signature, signatureAlgorithmFullName } = getDscPubKeyInfoDsc(passportData);
+  const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
   const mrz_formatted = formatMrz(mrz);
 
   if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
