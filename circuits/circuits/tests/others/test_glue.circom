@@ -27,11 +27,11 @@ template HashComputationTest(kLengthFactor, n, k, kScaled) {
     component standardizedDSCPubKey = StandardizeDSCPubKey(n, k, kLengthFactor);
     standardizedDSCPubKey.pubKey_dsc <== pubKey_dsc;
     signal standardizedDSCPubKeyOut[35] <== standardizedDSCPubKey.out;
-    signal register_hash <== CustomHasher(35)(standardizedDSCPubKeyOut);
+    signal output register_hash <== CustomHasher(35)(standardizedDSCPubKeyOut);
 
 
     signal standardizedDSCPubKeySignal[35] <== StandardizePubKeyTo35Words(maxPubkeyBytesLength)(pubkey_dsc_padded);
-    signal dsc_hash <== CustomHasher(35)(standardizedDSCPubKeySignal);
+    signal output dsc_hash <== CustomHasher(35)(standardizedDSCPubKeySignal);
 
     register_hash === dsc_hash;
 }
