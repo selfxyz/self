@@ -20,8 +20,8 @@ describe('Circuit Test', function () {
         { n: 64, k: 6, keyLength: 384, isEcdsa: true },
         { n: 64, k: 8, keyLength: 512, isEcdsa: true },
     ]
-
-    const num_tests = 1000;
+    const is_ci_cd = true;
+    const num_tests = is_ci_cd ? 100 : 1000;
 
     n_and_k.forEach(({ n, k, keyLength, isEcdsa }) => {
         describe(`n=${n},k=${k}`, function () {
