@@ -68,7 +68,7 @@ contract IdentityVerificationHubImplV1 is
     error LENGTH_MISMATCH();
     error NO_VERIFIER_SET();
     error VERIFIER_CALL_FAILED();
-    error UNEQUAL_BLINDED_DSC_COMMITMENT();
+    error UNEQUAL_GLUE();
     error CURRENT_DATE_NOT_IN_VALID_RANGE();
 
     error INVALID_OLDER_THAN();
@@ -465,10 +465,10 @@ contract IdentityVerificationHubImplV1 is
         view
     {
         if (
-            keccak256(abi.encodePacked(proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_BLINDED_DSC_COMMITMENT_INDEX])) !=
-            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_BLINDED_DSC_COMMITMENT_INDEX]))
+            keccak256(abi.encodePacked(proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_GLUE_INDEX])) !=
+            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_GLUE_INDEX]))
         ) {
-            revert UNEQUAL_BLINDED_DSC_COMMITMENT();
+            revert UNEQUAL_GLUE();
         }
 
         if (!verifyPassportRegisterCircuit(proof.registerCircuitVerifierId, proof.registerCircuitProof)) {

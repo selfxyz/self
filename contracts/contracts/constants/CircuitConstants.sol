@@ -6,7 +6,7 @@ library CircuitConstants {
     uint256 constant REGISTER_COMMITMENT_INDEX = 1;
     uint256 constant REGISTER_GLUE_INDEX = 2;
 
-    uint256 constant DSC_BLINDED_DSC_COMMITMENT_INDEX = 0;
+    uint256 constant DSC_GLUE_INDEX = 0;
     uint256 constant DSC_CSCA_ROOT_INDEX = 1;
 
     uint256 constant VC_AND_DISCLOSE_NULLIFIER_INDEX = 0;
