@@ -39,7 +39,6 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     var kScaled = k * kLengthFactor;
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
     var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
-    var keyLength = getKeyLength(signatureAlgorithm);
 
     var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
 
@@ -57,6 +56,8 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     
     signal input secret;
     signal input salt;
+
+    signal dsc_pubkey_length_bytes <== GetKLengthBytes(signatureAlgorithm)();
 
     // This means the attestation is a passport
     signal attestation_id <== 1;
@@ -86,7 +87,9 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
 
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
-    
+
+    signal pubKey_dsc_hash_commitement <== CustomHasher(kScaled)(pubKey_dsc);
+        
     //convert DSC public key to 35 words of 120 bits each
     component standardizedDSCPubKey = StandardizeDSCPubKey(n, k, kLengthFactor);
     standardizedDSCPubKey.pubKey_dsc <== pubKey_dsc;
@@ -98,11 +101,11 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
         attestation_id,
         dg1_packed_hash,
         eContent_shaBytes_packed_hash,
-        pubKey_dsc_hash,
+        pubKey_dsc_hash_commitement,
         pubKey_csca_hash
     ]);
     
-    signal output glue <== Poseidon(5)([salt, signatureAlgorithm, keyLength, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(5)([salt, signatureAlgorithm, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
 }
 
 /// @notice Converts DSC public key into standardized 35 words of 120 bits each 

@@ -14,7 +14,9 @@ include "../utils/passport/constants.circom";
 include "../utils/passport/dsc/StandardizePubKeyTo35Words.circom";
 include "../utils/passport/dsc/ExtractPublicKey.circom";
 
-///@input dsc_pubKey public key of the DSC in bytes padded to 525 bytes 
+///@input dsc_pubKey_bytes public key of the DSC in bytes padded to 525 bytes
+///@input dsc_pubKey_offset offset of the DSC public key in the certificate
+///@input dsc_pubkey_length_bytes length of the DSC public key in bytes. For ECDSA, it is x+y length
 template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     var maxPubkeyBytesLength = getMaxDscPubKeyLength();
    
@@ -31,7 +33,7 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     signal input raw_dsc_cert_padded_bytes;
     signal input csca_pubKey[kScaled];
     signal input signature[kScaled];
-    signal input dsc_pubKey[maxPubkeyBytesLength];
+    signal input dsc_pubKey_bytes[maxPubkeyBytesLength];
     signal input dsc_pubKey_offset;
     signal input dsc_pubkey_length_bytes;
     signal input merkle_root;
@@ -62,16 +64,16 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
 
     //compare extracted public key with the one provided
     for (var i=0; i<maxPubkeyBytesLength; i++) {
-        extractPubKey.out[i] === dsc_pubKey[i];
+        extractPubKey.out[i] === dsc_pubKey_bytes[i];
     }
 
     // Standardize public key to 35 words
-    signal pubKey_dsc_words[35] <== StandardizePubKeyTo35Words(maxPubkeyBytesLength)(dsc_pubKey);
+    signal standardizedDSCPubKey[35] <== StandardizePubKeyTo35Words(maxPubkeyBytesLength)(dsc_pubKey_bytes);
 
-    signal pubKey_dsc_hash <== CustomHasher(35)(pubKey_dsc_words);
+    signal pubKey_dsc_hash <== CustomHasher(35)(standardizedDSCPubKey);
     signal pubKey_csca_hash <== CustomHasher(kScaled)(csca_pubKey);
     
 
     // Compute glue values
-    signal output glue <== Poseidon(5)([salt, signatureAlgorithm_dsc, dsc_pubkey_length_bytes * 8, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(5)([salt, signatureAlgorithm_dsc, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
 }
