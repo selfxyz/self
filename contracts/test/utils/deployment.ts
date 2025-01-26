@@ -3,7 +3,8 @@ import { Signer } from "ethers";
 import { SMT } from "@openpassport/zk-kit-smt";
 import { poseidon2 } from "poseidon-lite";
 import { PassportData } from "../../../common/src/utils/types";
-import { genMockPassportData } from "../../../common/src/utils/genMockPassportData";
+import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
+import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";
 import { getCSCAModulusMerkleTree } from "../../../common/src/utils/csca";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 
@@ -49,7 +50,8 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "940131",
         "401031"
     );
-
+    mockPassport = initPassportDataParsing(mockPassport);
+    
     // Deploy verifiers
     const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local" 
         ? VcAndDiscloseVerifierArtifactLocal 

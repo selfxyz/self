@@ -16,13 +16,13 @@ import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import path from "path";
 import { PassportProof, RegisterCircuitProof, DscCircuitProof, CircuitArtifacts, VcAndDiscloseHubProof, VcAndDiscloseProof } from "./types";
 import { PassportData } from "../../../common/src/utils/types";
-import { buildSMT } from "../../../common/src/utils/smtTree";
+import { buildSMT } from "../../../common/src/utils/trees";
 
 import {BigNumberish, ContractTransactionReceipt, Log} from "ethers";
 import { 
     generateCircuitInputsRegister,
-    generateCircuitInputsDisclose
-} from "../../../common/src/utils/generateInputs";
+    generateCircuitInputsVCandDisclose
+} from "../../../common/src/utils/circuits/generateInputs";
 import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
 
 const registerCircuits: CircuitArtifacts = {
@@ -146,7 +146,7 @@ async function generateVcAndDiscloseProof(
 
     smt = getSMT();
     
-    const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsDisclose(
+    const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
         secret,
         attestationId,
         passportData,

@@ -2955,10 +2955,40 @@ workerpool@^6.5.1:
   resolved "https://registry.yarnpkg.com/workerpool/-/workerpool-6.5.1.tgz#060f73b39d0caf97c6db64da004cd01b4c099544"
   integrity sha512-Fs4dNYcsdpYSAfVxhnl1L5zTksjvOJxtC5hzMNl+1t9B8hTJTdKDyZ5ju7ztgPy+ft9tBFXoOlDNiOT9WUXZlA==
 
-wrap-ansi@^7.0.0:
-  version "7.0.0"
-  resolved "https://registry.yarnpkg.com/wrap-ansi/-/wrap-ansi-7.0.0.tgz#67e145cff510a6a6984bdf1152911d69d2eb9e43"
-  integrity sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==
+"typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>":
+  version: 5.7.3
+  resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=8c6c40"
+  bin:
+    tsc: bin/tsc
+    tsserver: bin/tsserver
+  checksum: 10c0/3b56d6afa03d9f6172d0b9cdb10e6b1efc9abc1608efd7a3d2f38773d5d8cfb9bbc68dfb72f0a7de5e8db04fc847f4e4baeddcd5ad9c9feda072234f0d788896
+  languageName: node
+  linkType: hard
+
+"underscore@npm:1.12.1":
+  version: 1.12.1
+  resolution: "underscore@npm:1.12.1"
+  checksum: 10c0/00f392357e363353ac485e7c156b749505087e31ff4fdad22e04ebd2f94a56fbc554cd41a6722e3895a818466cf298b1cae93ff6211d102d373a9b50db63bfd0
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.19.2":
+  version: 6.19.8
+  resolution: "undici-types@npm:6.19.8"
+  checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10c0/68e659a98898d6a836a9a59e6adf14a5d799707f5ea629433e025ac90d239f75e408e2e5ff086afc3cace26f8b26ee52155293564593fbb4a2f666af57fc59bf
+  languageName: node
+  linkType: hard
+
+"unique-filename@npm:^4.0.0":
+  version: 4.0.0
+  resolution: "unique-filename@npm:4.0.0"
   dependencies:
     ansi-styles "^4.0.0"
     string-width "^4.1.0"

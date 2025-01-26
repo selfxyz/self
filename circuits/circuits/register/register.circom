@@ -1,41 +1,37 @@
 pragma circom 2.1.9;
 
 include "../utils/passport/customHashers.circom";
-include "../utils/passport/computeCommitment.circom";
 include "../utils/passport/signatureAlgorithm.circom";
 include "../utils/passport/date/isValid.circom";
 include "circomlib/circuits/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
-include "../utils/passport/disclose/disclose.circom";
-include "../utils/passport/disclose/proveCountryIsNotInList.circom";
-include "../utils/passport/ofac/ofac_name.circom";
+include "../utils/passport/constants.circom";
+include "../utils/crypto/bitify/splitWordsToBytes.circom";
 
 /// @title REGISTER
-/// @notice Main circuit to verify passport data and be used to several purposes to enable passport
-/// @dev Handles passport verification, OFAC checks, selective disclosure, and commitment generation
-/// @param DG_HASH_ALGO Hash algorithm used for DG (Document Group) hashing
+/// @notice Main circuit — verifies the integrity of the passport data, the signature, and generates commitment and nullifier
+/// @param DG_HASH_ALGO Hash algorithm used for DG hashing
 /// @param ECONTENT_HASH_ALGO Hash algorithm used for eContent
-/// @param signatureAlgorithm Algorithm used for passport signature verification
+/// @param signatureAlgorithm Algorithm used for passport signature verification - contains the information about the final hash algorithm
 /// @param n Number of bits per chunk the key is split into.
 /// @param k Number of chunks the key is split into.
 /// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
 /// @param MAX_SIGNED_ATTR_PADDED_LEN Maximum length of padded signed attributes
 /// @input dg1 Document Group 1 data (93 bytes)
 /// @input dg1_hash_offset Offset for DG1 hash
-/// @input dg2_hash Document Group 2 hash (64 bytes)
-/// @input eContent eContent data
+/// @input eContent eContent data - contains all DG hashes
 /// @input eContent_padded_length Padded length of eContent
-/// @input signed_attr Signed attributes data
+/// @input signed_attr Signed attributes
 /// @input signed_attr_padded_length Padded length of signed attributes
 /// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
 /// @input pubKey Public key for signature verification
 /// @input signature Passport signature
-/// @input user_identifier User identifier for commitment
-/// @input secret Secret for commitment generation. Supposed to be saved by the user to access this commitment.
-/// @input dsc_secret One time secret data to generate the blinded commitment. This blinded dsc commitment is used to find the link between a proof from this circuit and a proof from the dsc circuit.
-/// @output nullifier Generated nullifier
-/// @output commitment Unique commitment for the passport data and their secret
-/// @output blinded_dsc_commitment To find the link between a proof from this circuit and a proof from the dsc circuit.
+/// @input pubKey_csca_hash CSCA public key hash
+/// @input secret Secret for commitment generation. Saved by the user to access this commitment
+/// @input salt One time secret to generate the glue
+/// @output nullifier Generated nullifier -  deterministic on the passport data
+/// @output commitment Commitment that will be added to the onchain registration tree
+/// @output glue Used to link register and dsc proofs - the same is generated in the dsc circuit
 
 template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
@@ -43,36 +39,63 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
     var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
 
+    var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
+
     signal input dg1[93];
     signal input dg1_hash_offset;
-    signal input dg2_hash[64];
     signal input eContent[MAX_ECONTENT_PADDED_LEN];
     signal input eContent_padded_length;
     signal input signed_attr[MAX_SIGNED_ATTR_PADDED_LEN];
     signal input signed_attr_padded_length;
     signal input signed_attr_econtent_hash_offset;
-    signal input pubKey[kScaled];
-    signal input signature[kScaled];
+    signal input pubKey_dsc[kScaled];
+    signal input signature_passport[kScaled];
+
+    signal input pubKey_csca_hash;
     
     signal input secret;
-    signal input dsc_secret;
+    signal input salt;
 
+    // This means the attestation is a passport
     signal attestation_id <== 1;
 
     // verify passport signature
-    signal signedAttrShaBytes[HASH_LEN_BYTES] <== PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN)(dg1,dg1_hash_offset, dg2_hash, eContent,eContent_padded_length, signed_attr, signed_attr_padded_length, signed_attr_econtent_hash_offset, pubKey, signature);
+    component passportVerifier = PassportVerifier(
+        DG_HASH_ALGO,
+        ECONTENT_HASH_ALGO,
+        signatureAlgorithm,
+        n,
+        k,
+        MAX_ECONTENT_PADDED_LEN,
+        MAX_SIGNED_ATTR_PADDED_LEN
+    );
 
-    // nulifier
-    component passportDataHashed = CustomHasher(HASH_LEN_BYTES);
-    passportDataHashed.in <== signedAttrShaBytes;
-    signal output nullifier <== passportDataHashed.out;
+    passportVerifier.dg1 <== dg1;
+    passportVerifier.dg1_hash_offset <== dg1_hash_offset;
+    passportVerifier.eContent <== eContent;
+    passportVerifier.eContent_padded_length <== eContent_padded_length;
+    passportVerifier.signed_attr <== signed_attr;
+    passportVerifier.signed_attr_padded_length <== signed_attr_padded_length;
+    passportVerifier.signed_attr_econtent_hash_offset <== signed_attr_econtent_hash_offset;
+    passportVerifier.pubKey_dsc <== pubKey_dsc;
+    passportVerifier.signature_passport <== signature_passport;
 
-    // // REGISTRATION (optional)
-    // // generate the commitment
-    signal leaf <== LeafHasher(kScaled)(pubKey, signatureAlgorithm);
-    signal output commitment <== ComputeCommitment()(secret, attestation_id, leaf, dg1, dg2_hash);
+    signal output nullifier <== PackBytesAndPoseidon(HASH_LEN_BYTES)(passportVerifier.signedAttrShaBytes);
 
-    // blinded dsc commitment
-    signal pubkeyHash <== CustomHasher(kScaled)(pubKey);
-    signal output blinded_dsc_commitment <== Poseidon(2)([dsc_secret, pubkeyHash]);
+    signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
+    signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
+    
+    signal pubKey_dsc_hash <== CustomHasher(kScaled)(pubKey_dsc);
+    
+    signal output commitment <== Poseidon(6)([
+        secret,
+        attestation_id,
+        dg1_packed_hash,
+        eContent_shaBytes_packed_hash,
+        pubKey_dsc_hash,
+        pubKey_csca_hash
+    ]);
+    
+    signal output glue <== Poseidon(4)([salt, kLengthFactor, pubKey_dsc_hash, pubKey_csca_hash]);
 }
+
