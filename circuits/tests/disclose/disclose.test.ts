@@ -13,7 +13,7 @@ import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
-import { formatAndUnpackReveal } from '../../../common/src/utils/circuits/formatOutputs';
+import { formatAndUnpackReveal, formatAndUnpackForbiddenCountriesList } from '../../../common/src/utils/circuits/formatOutputs';
 import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 
 describe('Disclose', function () {
@@ -31,7 +31,7 @@ describe('Disclose', function () {
   );
   passportData = initPassportDataParsing(passportData);
   let tree: any;
-
+  let forbidden_countries_list: any;
   before(async () => {
     circuit = await wasm_tester(
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
@@ -62,7 +62,7 @@ describe('Disclose', function () {
     smt.import(namejson);
 
     const selector_ofac = 1;
-    const forbidden_countries_list = ['ALG', 'DZA'];
+    forbidden_countries_list = ['ALG', 'DZA'];
 
     inputs = generateCircuitInputsVCandDisclose(
       secret,
@@ -151,6 +151,10 @@ describe('Disclose', function () {
             assert(reveal_unpacked[i] == '\x00', 'Should not reveal');
           }
         }
+
+        const forbidden_countries_list_packed = await circuit.getOutput(w, ['forbidden_countries_list_packed[1]'])
+        const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(forbidden_countries_list_packed);
+        expect(forbidden_countries_list_unpacked).to.deep.equal(forbidden_countries_list);
       });
     });
   });
