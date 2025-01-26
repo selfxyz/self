@@ -41,6 +41,9 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     signal input oid_index;
     signal input oid_length;
 
+    // check offsets refer to valid ranges
+    signal dscPubkeyOffsetInRange <== LessEqThan(14)([dsc_pubKey_offset + dsc_pubkey_length_bytes, raw_dsc_cert_padded_bytes]); 
+    dscPubkeyOffsetInRange === 1;
 
     component select_oid = SelectSubArray(max_cert_bytes, 11);
     select_oid.in <== raw_dsc_cert;

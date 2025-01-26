@@ -47,6 +47,13 @@ template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, 
     signal input pubKey_dsc[kScaled];
     signal input signature_passport[kScaled];
 
+    // check offsets refer to valid ranges
+    signal dg1OffsetInRange <== LessEqThan(12)([dg1_hash_offset + DG_HASH_ALGO_BYTES, eContent_padded_length]); 
+    dg1OffsetInRange === 1;
+
+    signal signedAttrOffsetInRange <== LessEqThan(12)([signed_attr_econtent_hash_offset + ECONTENT_HASH_ALGO_BYTES, signed_attr_padded_length]); 
+    signedAttrOffsetInRange === 1;
+
     // compute hash of DG1
     signal dg1Bits[93 * 8] <== BytesToBitsArray(93)(dg1);
     signal dg1ShaBits[DG_HASH_ALGO] <== ShaHashBits(93 * 8, DG_HASH_ALGO)(dg1Bits);
