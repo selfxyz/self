@@ -7,6 +7,7 @@ include "circomlib/circuits/poseidon.circom";
 include "../utils/passport/passportVerifier.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/splitWordsToBytes.circom";
+include "../utils/crypto/bitify/bytes.circom";
 
 /// @title REGISTER
 /// @notice Main circuit — verifies the integrity of the passport data, the signature, and generates commitment and nullifier
@@ -36,6 +37,7 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     var kScaled = k * kLengthFactor;
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
     var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
+    var keyLength = getKeyLength(signatureAlgorithm);
 
     var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
 
@@ -83,7 +85,11 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
     
-    signal pubKey_dsc_hash <== CustomHasher(kScaled)(pubKey_dsc);
+    //convert DSC public key to 35 words of 120 bits each
+    component standardizedDSCPubKey = StandardizeDSCPubKey(n, k, kLengthFactor);
+    standardizedDSCPubKey.pubKey_dsc <== pubKey_dsc;
+
+    signal pubKey_dsc_hash <== CustomHasher(35)(standardizedDSCPubKey.out);
     
     signal output commitment <== Poseidon(6)([
         secret,
@@ -94,6 +100,61 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
         pubKey_csca_hash
     ]);
     
-    signal output glue <== Poseidon(4)([salt, kLengthFactor, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(5)([salt, signatureAlgorithm, keyLength, pubKey_dsc_hash, pubKey_csca_hash]);
 }
 
+/// @notice Converts DSC public key into standardized 35 words of 120 bits each 
+/// @param n Number of bits per input word
+/// @param k Number of input words 
+/// @param kLengthFactor Indicates if key needs to be split (2 for ECDSA)
+/// @input pubKey_dsc Input DSC public key words
+/// @output out 35 standardized words
+template StandardizeDSCPubKey(n, k, kLengthFactor) {
+    signal input pubKey_dsc[k * kLengthFactor];
+    signal output out[35];
+
+    var maxPubkeyBytesLength = getMaxDscPubKeyLength();
+
+    if (kLengthFactor == 1) {
+        // RSA case
+
+        //In our case we always have 35 words of 120 bits each for RSA keys,
+        //So not converting to 8 bits. This is why we have the assert below.
+        assert(k == 35);
+        assert(n == 120);
+        component dsc_bytes = WordsToBytes(n, k, maxPubkeyBytesLength);
+        dsc_bytes.words <== pubKey_dsc;
+
+        component splitToWords = SplitBytesToWords(maxPubkeyBytesLength, 120, 35);
+        splitToWords.in <== dsc_bytes.bytes;
+
+        for (var i=0; i < 35; i++) {
+            out[i] <== splitToWords.out[i];
+        }
+
+    } else if (kLengthFactor == 2) {
+        // ECDSA case
+        component dsc_bytes_x = WordsToBytes(n, k, (n * k) / 8);
+        component dsc_bytes_y = WordsToBytes(n, k, (n * k) / 8);
+
+        for (var i=0; i < k; i++) {
+            dsc_bytes_y.words[i] <== pubKey_dsc[i];
+            dsc_bytes_x.words[i] <== pubKey_dsc[i + k];
+        }
+
+        component splitToWords = SplitBytesToWords(maxPubkeyBytesLength, 120, 35);
+        for (var i=0; i < 525; i++) {
+            if (i < n * k / 8) {
+                splitToWords.in[i] <== dsc_bytes_x.bytes[i];
+            } else if (i < n * k / 4) {
+                splitToWords.in[i] <== dsc_bytes_y.bytes[i - n * k / 8];
+            } else {
+                splitToWords.in[i] <== 0;
+            }
+        }
+
+        for (var i=0; i < 35; i++) {
+            out[i] <== splitToWords.out[i];
+        }
+    }
+}
