@@ -1,7 +1,7 @@
 import { sha384_512Pad, shaPad } from './shaPad';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
-import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from '../constants/constants';
+import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, SignatureAlgorithmIndex } from '../constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
 import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
@@ -166,7 +166,7 @@ export function generateCircuitInputsDSC(
     publicKeyAlgoOID,
   } = parseCertificate(dscCertificate, 'dsc_cert');
 
-  const { bits, x, y, modulus, exponent } = publicKeyDetails;
+  const { bits, x, y, modulus, exponent, curve } = publicKeyDetails;
 
   let dsc_message_padded;
   let dsc_messagePaddedLen;
@@ -189,7 +189,9 @@ export function generateCircuitInputsDSC(
     startIndex,
     dsc_message_padded_formatted,
     dsc_messagePaddedLen_formatted: any;
-  let curve, oidData;
+  let oidData;
+
+  const sigAlgIndex = SignatureAlgorithmIndex[`${signatureAlgorithm}_${hashAlgorithm}_${exponent || curve}_${bits}` as keyof typeof SignatureAlgorithmIndex]
 
   if (signatureAlgorithm === 'rsa' || signatureAlgorithm === 'rsapss') {
     startIndex = findStartIndex(modulus, dsc_message_padded).toString();
@@ -277,13 +279,11 @@ export function generateCircuitInputsDSC(
       signature: signature,
       dsc_pubKey: pubKey_dsc,
       dsc_pubKey_offset: [startIndex],
-      secret: [dscSecret],
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
       siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
-
-      oid_index: oidData.oid_index,
-      oid_length: oidData.oid_length,
+      salt: ['0'],
+      signatureAlgorithm_dsc: sigAlgIndex
     },
   };
 }
