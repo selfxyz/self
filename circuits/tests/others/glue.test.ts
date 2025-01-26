@@ -11,7 +11,7 @@ const n_and_k = [
     { n: 120, k: 35, keyLength: 4096, isEcdsa: false },
     // { n: 64, k: 4, isEcdsa: true, dscCertificate: mock_dsc_secpk256_signed_with_rsa_sha1 },
     // { n: 64, k: 6, isEcdsa: true, dscCertificate: mock_dsc_sha384_brainpoolP384r1_384 },
-    // { n: 64, k: 8, isEcdsa: true, dscCertificate: mock_dsc_sha512_brainpoolP512r1 },
+    { n: 64, k: 8, isEcdsa: true, dscCertificate: mock_dsc_sha512_brainpoolP512r1 },
     { n: 32, k: 7, isEcdsa: true, dscCertificate: mock_dsc_sha1_brainpoolP224r1 },
 
 
