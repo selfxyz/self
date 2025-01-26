@@ -4,15 +4,16 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "clean": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build android/app/build android/build .yarn/cache",
+    "fmt": "prettier --check .",
+    "fmt:fix": "prettier --write .",
+    "ia": "yarn install-app",
+    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd ..",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "fmt": "prettier --check .",
-    "fmt:fix": "prettier --write .",
     "start": "watchman watch-del-all && react-native start",
-    "test": "jest --passWithNoTests",
-    "install-app": "yarn install && cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd ..",
-    "ia": "yarn install && yarn install-app "
+    "test": "jest --passWithNoTests"
   },
   "dependencies": {
     "@amplitude/analytics-react-native": "^1.4.7",
@@ -84,8 +85,8 @@
     "react-test-renderer": "18.3.1",
     "typescript": "5.0.4"
   },
+  "packageManager": "yarn@4.5.0",
   "engines": {
     "node": ">=18"
-  },
-  "packageManager": "yarn@4.5.0"
+  }
 }
