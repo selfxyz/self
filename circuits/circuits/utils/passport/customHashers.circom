@@ -5,8 +5,9 @@ include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 /// @notice CutomHasher circuit - used to Poseidon up to 256 signals
 /// @param k Number of signals to hash
-/// @param in Input signals
-/// @param out Output hash
+/// @input in Input signals
+/// @output out Output hash
+
 template CustomHasher(k) {
     signal input in[k];
     signal output out;

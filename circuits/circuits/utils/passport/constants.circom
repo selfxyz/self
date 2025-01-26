@@ -1,4 +1,4 @@
-pragma circom 2.1.6;
+pragma circom 2.1.9;
 
 /// @title Constants
 /// @notice Contains constants for the passport circuit

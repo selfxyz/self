@@ -26,6 +26,9 @@ include "./signatureVerifier.circom";
 /// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
 /// @input pubKey Public key for signature verification
 /// @input signature Passport signature
+/// @output eContentShaBytes Hash of eContent
+/// @output signedAttrShaBytes Hash of signed attributes
+
 template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     assert(MAX_ECONTENT_PADDED_LEN % 64 == 0);
 

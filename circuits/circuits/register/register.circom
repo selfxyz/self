@@ -26,11 +26,13 @@ include "../utils/crypto/bitify/splitWordsToBytes.circom";
 /// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
 /// @input pubKey Public key for signature verification
 /// @input signature Passport signature
+/// @input pubKey_csca_hash CSCA public key hash
 /// @input secret Secret for commitment generation. Saved by the user to access this commitment
 /// @input salt One time secret to generate the glue
 /// @output nullifier Generated nullifier -  deterministic on the passport data
 /// @output commitment Commitment that will be added to the onchain registration tree
 /// @output glue Used to link register and dsc proofs - the same is generated in the dsc circuit
+
 template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
