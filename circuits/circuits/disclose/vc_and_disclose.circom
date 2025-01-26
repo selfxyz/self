@@ -5,6 +5,34 @@ include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 include "../utils/passport/disclose/verify_commitment.circom";
 
+/// @title VC_AND_DISCLOSE
+/// @notice Verify user's commitment is part of the merkle tree and optionally disclose data from DG1
+/// @param nLevels Maximum number of levels in the merkle tree
+/// @param MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH Maximum number of countries present in the forbidden countries list
+/// @param secret Secret of the user — used to reconstruct commitment and generate nullifier
+/// @param attestation_id Attestation ID of the credential used to generate the commitment
+/// @param dg1 Data group 1 of the passport
+/// @input pubKey_dsc_hash DSCA public key hash
+/// @input pubKey_csca_hash CSCA public key hash
+/// @input scope Scope of the application users generates the proof for
+/// @input merkle_root Root of the commitment merkle tree
+/// @input merkletree_size Actual size of the merkle tree
+/// @input path Path of the commitment in the merkle tree
+/// @input siblings Siblings of the commitment in the merkle tree
+/// @input selector_dg1 bitmap used which bytes from the dg1 are revealed
+/// @input majority Majority user wants to prove he is older than: YY — ASCII
+/// @input current_date Current date: YYMMDD — number
+/// @input selector_older_than bitmap used to reveal the majority
+/// @input forbidden_countries_list Forbidden countries list user wants to prove he is not from
+/// @input smt_leaf_key value of the leaf of the smt corresponding to his path
+/// @input smt_root root of the smt
+/// @input smt_siblings siblings of the smt
+/// @input selector_ofac bitmap used to reveal the OFAC verification result
+/// @input user_identifier User identifier — address or UUID
+/// @output revealedData_packed Packed revealed data
+/// @output forbidden_countries_list_packed Packed forbidden countries list
+/// @output nullifier Scope nullifier - not deterministic on the passport data
+
 template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input secret;
@@ -13,26 +41,27 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input eContent_shaBytes_packed_hash;
     signal input pubKey_dsc_hash;
     signal input pubKey_csca_hash;
+    signal input scope;
 
     signal input merkle_root;
     signal input merkletree_size;
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal input selector_dg1[88]; // 88 for MRZ
-    signal input selector_older_than;
-    signal input scope;
-    signal input current_date[6]; // YYMMDD - num
-    signal input majority[2]; // YY - ASCII
-    signal input user_identifier;
+    signal input selector_dg1[88];
 
-    // ofac check
+    signal input majority[2];
+    signal input current_date[6];
+    signal input selector_older_than;
+
+    signal input forbidden_countries_list[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
+
     signal input smt_leaf_key;
     signal input smt_root;
     signal input smt_siblings[256];
     signal input selector_ofac;
-    // forbidden countries list
-    signal input forbidden_countries_list[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
+
+    signal input user_identifier;
 
     // verify commitment is part of the merkle tree
     VERIFY_COMMITMENT(nLevels)(secret, attestation_id, dg1, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash, merkle_root, merkletree_size, path, siblings);
@@ -52,12 +81,10 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal output revealedData_packed[3] <== disclose.revealedData_packed;
 
-    
-    // generate scope nullifier
-    component poseidon_nullifier = Poseidon(2);
-    poseidon_nullifier.inputs[0] <== secret;
-    poseidon_nullifier.inputs[1] <== scope;
-    signal output nullifier <== poseidon_nullifier.out;
+    var chunkLength = computeIntChunkLength(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3);
+    signal output forbidden_countries_list_packed[chunkLength] <== disclose.forbidden_countries_list_packed;
+
+    signal output nullifier <== Poseidon(2)([secret, scope]);
 }
 
 component main { public [ merkle_root, smt_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16, 10);

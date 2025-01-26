@@ -15,6 +15,7 @@ include "@openpassport/zk-email-circuits/utils/bytes.circom";
 /// @input hash Hash of the data to verify
 /// @input pubKey Public key for signature verification
 /// @input signature Signature to verify
+
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;

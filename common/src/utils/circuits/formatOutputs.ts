@@ -2,15 +2,12 @@ import { attributeToPosition } from '../../constants/constants';
 import { DisclosureOptions } from '../appType';
 
 /*** OpenPassport Attestation ***/
-
 export function formatForbiddenCountriesListFromCircuitOutput(
     forbiddenCountriesList: string[]
 ): string[] {
     const countryList1 = unpackReveal(forbiddenCountriesList[0]);
-    const countryList2 = unpackReveal(forbiddenCountriesList[1]);
-    const concatenatedCountryList = countryList1.concat(countryList2);
     // dump every '\x00' value from the list
-    const cleanedCountryList = concatenatedCountryList.filter((value) => value !== '\x00');
+    const cleanedCountryList = countryList1.filter((value) => value !== '\x00');
     // Concatenate every 3 elements to form country codes
     const formattedCountryList = [];
     for (let i = 0; i < cleanedCountryList.length; i += 3) {
@@ -25,6 +22,10 @@ export function formatForbiddenCountriesListFromCircuitOutput(
 
 
 /*** Disclose circuits ***/
+
+function trimu0000(unpackedReveal: string[]): string[] {
+    return unpackedReveal.filter((value) => value !== '\u0000');
+}
 
 export function getAttributeFromUnpackedReveal(unpackedReveal: string[], attribute: string) {
     const position = attributeToPosition[attribute];
@@ -79,7 +80,15 @@ export function formatAndUnpackForbiddenCountriesList(
     const forbiddenCountriesList_packed_formatted = [
         forbiddenCountriesList_packed['forbidden_countries_list_packed[0]']
     ];
-    return unpackReveal(forbiddenCountriesList_packed_formatted);
+    const trimmed = trimu0000(unpackReveal(forbiddenCountriesList_packed_formatted));
+    const countries: string[] = [];
+    for (let i = 0; i < trimmed.length; i += 3) {
+        const countryCode = trimmed.slice(i, i + 3).join('');
+        if (countryCode.length === 3) {
+            countries.push(countryCode);
+        }
+    }
+    return countries; // Return countries array instead of trimmed
 }
 
 export function revealBitmapFromMapping(attributeToReveal: { [key: string]: string }): string[] {

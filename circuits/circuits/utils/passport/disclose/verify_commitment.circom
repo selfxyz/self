@@ -2,21 +2,20 @@ pragma circom 2.1.9;
 
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
-include "../computeCommitment.circom";
 include "../customHashers.circom";
 
 /// @notice VerifyCommitment template — verifies user's commitment is included in the merkle tree
 /// @param nLevels Maximum size of the merkle tree
-/// @param secret Secret for commitment generation
-/// @param attestation_id Attestation ID
-/// @param dg1 Data group 1 of the passport
-/// @param eContent_shaBytes_packed_hash hash of the eContent
-/// @param pubKey_dsc_hash Hash of the public key of the DSC
-/// @param pubKey_csca_hash Hash of the public key of the CSCA
-/// @param merkle_root Root of the commitment merkle tree
-/// @param merkletree_size Actual size of the merkle tree
-/// @param path Path to the user's commitment in the merkle tree
-/// @param siblings Siblings of the user's commitment in the merkle tree
+/// @input secret Secret for commitment generation
+/// @input attestation_id Attestation ID
+/// @input dg1 Data group 1 of the passport
+/// @input eContent_shaBytes_packed_hash hash of the eContent
+/// @input pubKey_dsc_hash Hash of the public key of the DSC
+/// @input pubKey_csca_hash Hash of the public key of the CSCA
+/// @input merkle_root Root of the commitment merkle tree
+/// @input merkletree_size Actual size of the merkle tree
+/// @input path Path to the user's commitment in the merkle tree
+/// @input siblings Siblings of the user's commitment in the merkle tree
 
 template VERIFY_COMMITMENT(nLevels) {
 
