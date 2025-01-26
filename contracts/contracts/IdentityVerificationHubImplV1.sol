@@ -2,7 +2,7 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "./constants/CircuitConstants.sol";
 import "./constants/AttestationId.sol";
 import "./libraries/Formatter.sol";
@@ -13,6 +13,7 @@ import "./interfaces/IIdentityRegistryV1.sol";
 import "./interfaces/IRegisterCircuitVerifier.sol";
 import "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import "./interfaces/IDscCircuitVerifier.sol";
+import "./proxy/ImplRoot.sol";
 
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
@@ -39,15 +40,20 @@ import "./interfaces/IDscCircuitVerifier.sol";
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
  */
-contract IdentityVerificationHubStorageV1{
-    address internal registry;
-    address internal vcAndDiscloseCircuitVerifier;
+abstract contract IdentityVerificationHubStorageV1 is 
+    ImplRoot 
+{
+    address internal _registry;
+    address internal _vcAndDiscloseCircuitVerifier;
 
-    mapping(uint256 => address) internal sigTypeToRegisterCircuitVerifiers;
-    mapping(uint256 => address) internal sigTypeToDscCircuitVerifiers;
+    mapping(uint256 => address) internal _sigTypeToRegisterCircuitVerifiers;
+    mapping(uint256 => address) internal _sigTypeToDscCircuitVerifiers;
 }
 
-contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, IdentityVerificationHubStorageV1, IIdentityVerificationHubV1 {
+contract IdentityVerificationHubImplV1 is 
+    IdentityVerificationHubStorageV1, 
+    IIdentityVerificationHubV1 
+{
 
     enum Dg1AttributeType {
         ISSUING_STATE,
@@ -76,121 +82,185 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
     error INVALID_IDENTITY_COMMITMENT_ROOT();
     error INVALID_OFAC_ROOT();
     error INVALID_CSCA_ROOT();
+
+    event HubInitialized(
+        address registry, 
+        address vcAndDiscloseCircuitVerifier,
+        uint256[] registerCircuitVerifierIds,
+        address[] registerCircuitVerifiers,
+        uint256[] dscCircuitVerifierIds,
+        address[] dscCircuitVerifiers
+    );
+    event RegistryUpdated(address registry);
+    event VcAndDiscloseCircuitUpdated(address vcAndDiscloseCircuitVerifier);
     event RegisterCircuitVerifierUpdated(uint256 typeId, address verifier);
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
 
-    function initialize(
-        address _registry, 
-        address _vcAndDiscloseCircuitVerifier,
-        uint256[] memory _registerCircuitVerifierIds,
-        address[] memory _registerCircuitVerifiers, 
-        uint256[] memory _dscCircuitVerifierIds,
-        address[] memory _dscCircuitVerifiers
-    ) external initializer {
-        __Ownable_init(msg.sender);
-        registry = _registry;
-        vcAndDiscloseCircuitVerifier = _vcAndDiscloseCircuitVerifier;
-        if (_registerCircuitVerifierIds.length != _registerCircuitVerifiers.length) {
-            revert LENGTH_MISMATCH();
-        }
-        if (_dscCircuitVerifierIds.length != _dscCircuitVerifiers.length) {
-            revert LENGTH_MISMATCH();
-        }
-        for (uint256 i = 0; i < _registerCircuitVerifierIds.length; i++) {
-            sigTypeToRegisterCircuitVerifiers[_registerCircuitVerifierIds[i]] = _registerCircuitVerifiers[i];
-        }
-        for (uint256 i = 0; i < _dscCircuitVerifierIds.length; i++) {
-            sigTypeToDscCircuitVerifiers[_dscCircuitVerifierIds[i]] = _dscCircuitVerifiers[i];
-        }
+    constructor() {
+        _disableInitializers();
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) 
-        internal 
-        override 
-        onlyProxy
-        onlyOwner
-    {}
+    function initialize(
+        address registryAddress, 
+        address vcAndDiscloseCircuitVerifierAddress,
+        uint256[] memory registerCircuitVerifierIds,
+        address[] memory registerCircuitVerifierAddresses, 
+        uint256[] memory dscCircuitVerifierIds,
+        address[] memory dscCircuitVerifierAddresses
+    ) external initializer {
+        __ImplRoot_init();
+        _registry = registryAddress;
+        _vcAndDiscloseCircuitVerifier = vcAndDiscloseCircuitVerifierAddress;
+        if (registerCircuitVerifierIds.length != registerCircuitVerifierAddresses.length) {
+            revert LENGTH_MISMATCH();
+        }
+        if (dscCircuitVerifierIds.length != dscCircuitVerifierAddresses.length) {
+            revert LENGTH_MISMATCH();
+        }
+        for (uint256 i = 0; i < registerCircuitVerifierIds.length; i++) {
+            _sigTypeToRegisterCircuitVerifiers[registerCircuitVerifierIds[i]] = registerCircuitVerifierAddresses[i];
+        }
+        for (uint256 i = 0; i < dscCircuitVerifierIds.length; i++) {
+            _sigTypeToDscCircuitVerifiers[dscCircuitVerifierIds[i]] = dscCircuitVerifierAddresses[i];
+        }
+        emit HubInitialized(
+            registryAddress, 
+            vcAndDiscloseCircuitVerifierAddress,
+            registerCircuitVerifierIds,
+            registerCircuitVerifierAddresses,
+            dscCircuitVerifierIds,
+            dscCircuitVerifierAddresses
+        );
+    }
 
     ///////////////////////////////////////////////////////////////////
-    ///                     UPDATE FUNCTIONS                        ///
+    ///                     VIEW FUNCTIONS                        ///
+    ///////////////////////////////////////////////////////////////////
+
+    function registry() 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _registry;
+    }
+
+    function vcAndDiscloseCircuitVerifier() 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _vcAndDiscloseCircuitVerifier;
+    }
+
+    function sigTypeToRegisterCircuitVerifiers(
+        uint256 typeId
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _sigTypeToRegisterCircuitVerifiers[typeId];
+    }
+
+    function sigTypeToDscCircuitVerifiers(
+        uint256 typeId
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _sigTypeToDscCircuitVerifiers[typeId];
+    }
+
+    ///////////////////////////////////////////////////////////////////
+    ///                 UPDATE FUNCTIONS                        ///
     ///////////////////////////////////////////////////////////////////
     function updateRegistry(
-        address _registry
+        address registryAddress
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        registry = _registry;
+        _registry = registryAddress;
+        emit RegistryUpdated(registryAddress);
     }
 
     function updateVcAndDiscloseCircuit(
-        address _vcAndDiscloseCircuitVerifier
+        address vcAndDiscloseCircuitVerifierAddress
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        vcAndDiscloseCircuitVerifier = _vcAndDiscloseCircuitVerifier;
+        _vcAndDiscloseCircuitVerifier = vcAndDiscloseCircuitVerifierAddress;
+        emit VcAndDiscloseCircuitUpdated(vcAndDiscloseCircuitVerifierAddress);
     }
 
     function updateRegisterCircuitVerifier(
         uint256 typeId, 
-        address verifier
+        address verifierAddress
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        sigTypeToRegisterCircuitVerifiers[typeId] = verifier;
-        emit RegisterCircuitVerifierUpdated(typeId, verifier);
+        _sigTypeToRegisterCircuitVerifiers[typeId] = verifierAddress;
+        emit RegisterCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
     function updateDscVerifier(
         uint256 typeId, 
-        address verifier
+        address verifierAddress
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        sigTypeToDscCircuitVerifiers[typeId] = verifier;
-        emit DscCircuitVerifierUpdated(typeId, verifier);
+        _sigTypeToDscCircuitVerifiers[typeId] = verifierAddress;
+        emit DscCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
     function batchUpdateRegisterCircuitVerifiers(
         uint256[] calldata typeIds,
-        address[] calldata verifiers
+        address[] calldata verifierAddresses
     ) 
         external 
         onlyProxy
         onlyOwner 
     {
-        if (typeIds.length != verifiers.length) {
+        if (typeIds.length != verifierAddresses.length) {
             revert LENGTH_MISMATCH();
         }
         for (uint256 i = 0; i < typeIds.length; i++) {
-            sigTypeToRegisterCircuitVerifiers[typeIds[i]] = verifiers[i];
-            emit RegisterCircuitVerifierUpdated(typeIds[i], verifiers[i]);
+            _sigTypeToRegisterCircuitVerifiers[typeIds[i]] = verifierAddresses[i];
+            emit RegisterCircuitVerifierUpdated(typeIds[i], verifierAddresses[i]);
         }
     }
 
     function batchUpdateDscCircuitVerifiers(
         uint256[] calldata typeIds,
-        address[] calldata verifiers
+        address[] calldata verifierAddresses
     ) 
         external
         onlyProxy
         onlyOwner 
     {
-        if (typeIds.length != verifiers.length) {
+        if (typeIds.length != verifierAddresses.length) {
             revert LENGTH_MISMATCH();
         }
         for (uint256 i = 0; i < typeIds.length; i++) {
-            sigTypeToDscCircuitVerifiers[typeIds[i]] = verifiers[i];
-            emit DscCircuitVerifierUpdated(typeIds[i], verifiers[i]);
+            _sigTypeToDscCircuitVerifiers[typeIds[i]] = verifierAddresses[i];
+            emit DscCircuitVerifierUpdated(typeIds[i], verifierAddresses[i]);
         }
     }
 
@@ -205,11 +275,11 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         internal
         view
     {
-        if (!IIdentityRegistryV1(registry).checkIdentityCommitmentRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
+        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
             revert INVALID_IDENTITY_COMMITMENT_ROOT();
         }
 
-        if (!IIdentityRegistryV1(registry).checkOfacRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
+        if (!IIdentityRegistryV1(_registry).checkOfacRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
             revert INVALID_OFAC_ROOT();
         }
 
@@ -223,7 +293,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
-        if (!IVcAndDiscloseCircuitVerifier(vcAndDiscloseCircuitVerifier).verifyProof(proof.pA, proof.pB, proof.pC, proof.pubSignals)) {
+        if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.pA, proof.pB, proof.pC, proof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
     }
@@ -347,7 +417,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         view
         returns (bool result) 
     {
-        address verifier = sigTypeToRegisterCircuitVerifiers[registerCircuitVerifierId];
+        address verifier = _sigTypeToRegisterCircuitVerifiers[registerCircuitVerifierId];
         if (verifier == address(0)) {
             revert NO_VERIFIER_SET();
         }
@@ -370,12 +440,12 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         returns (bool result) 
     {
 
-        address verifier = sigTypeToDscCircuitVerifiers[dscCircuitVerifierId];
+        address verifier = _sigTypeToDscCircuitVerifiers[dscCircuitVerifierId];
         if (verifier == address(0)) {
             revert NO_VERIFIER_SET();
         }
 
-        if (!IIdentityRegistryV1(registry).checkCscaRoot(dscCircuitProof.pubSignals[CircuitConstants.DSC_CSCA_ROOT_INDEX])) {
+        if (!IIdentityRegistryV1(_registry).checkCscaRoot(dscCircuitProof.pubSignals[CircuitConstants.DSC_CSCA_ROOT_INDEX])) {
             revert INVALID_CSCA_ROOT();
         }
 
@@ -417,7 +487,7 @@ contract IdentityVerificationHubImplV1 is UUPSUpgradeable, OwnableUpgradeable, I
         onlyProxy
     {
         verifyPassport(proof);
-        IIdentityRegistryV1(registry).registerCommitment(
+        IIdentityRegistryV1(_registry).registerCommitment(
             AttestationId.E_PASSPORT,
             proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
             proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]

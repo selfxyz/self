@@ -10,6 +10,15 @@
   "scripts": {
     "test": "npx hardhat test",
     "test:local": "TEST_ENV=local npx hardhat test",
+    "test:integration:local": "TEST_ENV=local npx hardhat test test/Integration.ts",
+    "test:initialize:local": "TEST_ENV=local npx hardhat test test/Initialize.ts",
+    "test:upgrade:local": "TEST_ENV=local npx hardhat test test/upgradeContracts.ts",
+    "test:commitment:local": "TEST_ENV=local npx hardhat test test/commitmentRegistration.ts",
+    "test:view": "npx hardhat test test/view.ts",
+    "test:view:local": "TEST_ENV=local npx hardhat test test/view.ts",
+    "test:updates:local": "TEST_ENV=local npx hardhat test test/updates.ts",
+    "test:coverage": "npx hardhat coverage",
+    "test:coverage:local": "TEST_ENV=local npx hardhat coverage",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
     "compile": "npx hardhat compile",
     "publish": "npm publish --access public"
@@ -42,7 +51,8 @@
     "ethers": "^6.12.1",
     "hardhat": "^2.22.6",
     "hardhat-gas-reporter": "^1.0.10",
-    "solidity-coverage": "^0.8.13",
+    "mochawesome": "^7.1.3",
+    "solidity-coverage": "^0.8.14",
     "ts-node": "^10.9.1",
     "typechain": "^8.3.2",
     "typescript": "^5.1.6"

@@ -2,13 +2,13 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import {Base64} from "../libraries/Base64.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 import "../interfaces/IIdentityRegistryV1.sol";
 import "../interfaces/IIdentityVerificationHubV1.sol";
-
+import "../proxy/ImplRoot.sol";
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
  * =============================================
@@ -36,27 +36,32 @@ import "../interfaces/IIdentityVerificationHubV1.sol";
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
  */
-contract IdentityRegistryStorageV1{
-    address internal hub;
+abstract contract IdentityRegistryStorageV1 is
+    ImplRoot
+{
+    address internal _hub;
 
     // CSCA root
-    uint256 internal cscaRoot;
+    uint256 internal _cscaRoot;
 
     // commitment registry
-    LeanIMTData internal identityCommitmentIMT;
+    LeanIMTData internal _identityCommitmentIMT;
     // timestamp of when the root was created
-    mapping(uint256 => uint256) internal rootTimestamps;
+    mapping(uint256 => uint256) internal _rootTimestamps;
     // attestation id => nullifier => bool
     // attestation id for each identity type
     // passport: 0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24
     // poseidon("E-PASSPORT")
-    mapping(bytes32 => mapping(uint256 => bool)) internal nullifiers;
+    mapping(bytes32 => mapping(uint256 => bool)) internal _nullifiers;
 
     // ofac registry
-    uint256 internal ofacRoot;
+    uint256 internal _ofacRoot;
 }
-// TODO: Add modifier named onlyPortal
-contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, IdentityRegistryStorageV1, IIdentityRegistryV1 {
+
+contract IdentityRegistryImplV1 is 
+    IdentityRegistryStorageV1,  
+    IIdentityRegistryV1 
+{
 
     using Base64 for *;
     using Strings for uint256;
@@ -66,9 +71,17 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
     error ONLY_HUB_CAN_REGISTER_COMMITMENT();
     error REGISTERED_IDENTITY();
 
+    event RegistryInitialized(address hub);
+    event HubUpdated(address hub);
+    event CscaRootUpdated(uint256 cscaRoot);
+    event OfacRootUpdated(uint256 ofacRoot);
     event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event CommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     event CommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+
+    constructor() {
+        _disableInitializers();
+    }
     
     function initialize(
         address _hub
@@ -76,52 +89,86 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         initializer 
     {
-        __Ownable_init(msg.sender);
-        hub = _hub;
+        __ImplRoot_init();
+        _hub = _hub;
+        emit RegistryInitialized(_hub);
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) 
-        internal 
-        override
+    ///////////////////////////////////////////////////////////////////
+    ///                     VIEW FUNCTIONS                        ///
+    ///////////////////////////////////////////////////////////////////
+
+    function hub() 
+        external
+        virtual
         onlyProxy
-        onlyOwner 
-    {}
+        view 
+        returns (address) 
+    {
+        return _hub;
+    }
+
+    function nullifiers(
+        bytes32 attestationId,
+        uint256 nullifier
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (bool) 
+    {
+        return _nullifiers[attestationId][nullifier];
+    }
+
+    function rootTimestamps(
+        uint256 root
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _rootTimestamps[root];
+    }
 
     ///////////////////////////////////////////////////////////////////
     ///                     UPDATE FUNCTIONS                        ///
     ///////////////////////////////////////////////////////////////////
 
     function updateHub(
-        address _hub
-    ) 
-        external 
+        address hub
+    )
+        external
         onlyProxy
         onlyOwner 
     { 
-        hub = _hub;
+        _hub = hub;
+        emit HubUpdated(hub);
     }
 
     function updateOfacRoot(
-        uint256 _ofacRoot
+        uint256 ofacRoot
     ) 
         external
         onlyProxy
         onlyOwner 
     {
-        ofacRoot = _ofacRoot;
+        _ofacRoot = ofacRoot;
+        emit OfacRootUpdated(ofacRoot);
     }
 
 
     function updateCscaRoot(
-        uint256 _cscaRoot
+        uint256 cscaRoot
     ) 
         external
         onlyProxy
         onlyOwner 
     {
-        cscaRoot = _cscaRoot;
+        _cscaRoot = cscaRoot;
+        emit CscaRootUpdated(cscaRoot);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -136,12 +183,12 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         onlyProxy
     {
-        if (address(hub) == address(0)) revert HUB_NOT_SET();
-            if (msg.sender != address(hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
-        if (nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
+        if (address(_hub) == address(0)) revert HUB_NOT_SET();
+        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
+        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
 
-        nullifiers[attestationId][nullifier] = true;
-        uint256 index = identityCommitmentIMT.size;
+        _nullifiers[attestationId][nullifier] = true;
+        uint256 index = _identityCommitmentIMT.size;
         uint256 imt_root = _addCommitment(commitment);
         emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
@@ -157,18 +204,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return rootTimestamps[root] != 0;
-    }
-
-    function getIdentityCommitmentRootTimestamp(
-        uint256 root
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return rootTimestamps[root];
+        return _rootTimestamps[root] != 0;
     }
 
     function getIdentityCommitmentMerkleTreeSize() 
@@ -177,7 +213,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT.size;
+        return _identityCommitmentIMT.size;
     }
 
     function getIdentityCommitmentMerkleRoot() 
@@ -186,7 +222,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT._root();
+        return _identityCommitmentIMT._root();
     }
 
     function getIdentityCommitmentIndex(
@@ -197,31 +233,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT._indexOf(commitment);
-    }
-
-    function getIdentityCommitment(
-        uint256 index
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return identityCommitmentIMT.leaves[index];
-    }
-
-    function getAllIdentityCommitments() 
-        external
-        onlyProxy
-        view 
-        returns (uint256[] memory) 
-    {
-        uint256[] memory commitments = new uint256[](identityCommitmentIMT.size);
-        for (uint256 i = 0; i < identityCommitmentIMT.size; i++) {
-            commitments[i] = identityCommitmentIMT.leaves[i];
-        }
-        return commitments;
+        return _identityCommitmentIMT._indexOf(commitment);
     }
 
     function getOfacRoot() 
@@ -230,7 +242,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return ofacRoot;
+        return _ofacRoot;
     }
 
     function getCscaRoot() 
@@ -239,7 +251,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return cscaRoot;
+        return _cscaRoot;
     }
 
     function checkOfacRoot(
@@ -250,7 +262,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return ofacRoot == root;
+        return _ofacRoot == root;
     }
 
     function checkCscaRoot(
@@ -261,7 +273,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return cscaRoot == root;
+        return _cscaRoot == root;
     }
     
     ///////////////////////////////////////////////////////////////////
@@ -278,7 +290,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         onlyOwner 
     {
         uint256 imt_root = _addCommitment(commitment);
-        uint256 index = identityCommitmentIMT._indexOf(commitment);
+        uint256 index = _identityCommitmentIMT._indexOf(commitment);
         emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
 
@@ -317,8 +329,8 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._insert(commitment);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = _identityCommitmentIMT._insert(commitment);
+        _rootTimestamps[imt_root] = block.timestamp;
     }
 
     function _updateCommitment(
@@ -329,8 +341,8 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
     }
 
     function _removeCommitment(
@@ -340,7 +352,7 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._remove(oldLeaf, siblingNodes);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
     }
 }
