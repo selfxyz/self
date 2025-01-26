@@ -1506,7 +1506,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - lottie-ios
-  - NFCPassportReader (from `https://github.com/thomas-senechal/NFCPassportReader`, commit `8e72f0a2d3ca3bede00304bd22ed10829535dd53`)
+  - NFCPassportReader (from `https://github.com/zk-passport/NFCPassportReader`, commit `8e72f0a2d3ca3bede00304bd22ed10829535dd53`)
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1604,7 +1604,7 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   NFCPassportReader:
     :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
-    :git: https://github.com/thomas-senechal/NFCPassportReader
+    :git: https://github.com/zk-passport/NFCPassportReader
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1745,7 +1745,7 @@ EXTERNAL SOURCES:
 CHECKOUT OPTIONS:
   NFCPassportReader:
     :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
-    :git: https://github.com/thomas-senechal/NFCPassportReader
+    :git: https://github.com/zk-passport/NFCPassportReader
   SwiftQRScanner:
     :commit: fddcabcb431cd6110cea0394660082661dbafa7e
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -1834,6 +1834,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: a9ef4f5c2cd79ad812110525ef61048be6a582a4
 
-PODFILE CHECKSUM: 0d44c642d939bf6fc8087cefee2a4f313dc5f2e8
+PODFILE CHECKSUM: a5761927116120f511f409f5249a18a8c626545c
 
 COCOAPODS: 1.16.2
