@@ -26,7 +26,6 @@ include "./signatureVerifier.circom";
 /// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
 /// @input pubKey Public key for signature verification
 /// @input signature Passport signature
-
 template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     assert(MAX_ECONTENT_PADDED_LEN % 64 == 0);
 
@@ -53,7 +52,6 @@ template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, 
     signal dg1ShaBits[DG_HASH_ALGO] <== ShaHashBits(93 * 8, DG_HASH_ALGO)(dg1Bits);
     signal dg1ShaBytes[DG_HASH_ALGO_BYTES] <== BitsToBytesArray(DG_HASH_ALGO)(dg1ShaBits);
 
-
     // assert DG1 hash matches the one in eContent
     signal dg1Hash[DG_HASH_ALGO_BYTES] <== VarShiftLeft(MAX_ECONTENT_PADDED_LEN, DG_HASH_ALGO_BYTES)(eContent, dg1_hash_offset);
     for(var i = 0; i < DG_HASH_ALGO_BYTES; i++) {
@@ -61,7 +59,7 @@ template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, 
     }
 
     // compute hash of eContent
-    signal eContentShaBits[ECONTENT_HASH_ALGO] <== ShaBytesDynamic(ECONTENT_HASH_ALGO,MAX_ECONTENT_PADDED_LEN)(eContent, eContent_padded_length);
+    signal eContentShaBits[ECONTENT_HASH_ALGO] <== ShaBytesDynamic(ECONTENT_HASH_ALGO, MAX_ECONTENT_PADDED_LEN)(eContent, eContent_padded_length);
     signal output eContentShaBytes[ECONTENT_HASH_ALGO_BYTES] <== BitsToBytesArray(ECONTENT_HASH_ALGO)(eContentShaBits);
 
     // assert eContent hash matches the one in signedAttr
@@ -75,6 +73,6 @@ template PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, 
     signal output signedAttrShaBytes[SIGNED_ATTR_HASH_ALGO_BYTES] <== BitsToBytesArray(SIGNED_ATTR_HASH_ALGO)(signedAttrShaBits);
 
     // verify passport signature
-    // SignatureVerifier(signatureAlgorithm, n, k)(signedAttrShaBits, pubKey_dsc, signature_passport);
+    SignatureVerifier(signatureAlgorithm, n, k)(signedAttrShaBits, pubKey_dsc, signature_passport);
 }
 

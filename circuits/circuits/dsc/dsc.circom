@@ -51,13 +51,13 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     oid_check.oid_input <== select_oid.out;
     oid_check.oid_length <== oid_length;
 
-    //should be either rsa or ecdsa
+    // should be either rsa or ecdsa
     oid_check.is_rsa + oid_check.is_ecdsa === 1;
     
     AssertValidKeyLength()(dsc_pubkey_length_bytes, oid_check.is_rsa, oid_check.is_ecdsa);
 
     // leaf
-    signal leaf  <== CustomHasher(kScaled)(csca_pubKey);
+    signal leaf <== CustomHasher(kScaled)(csca_pubKey);
 
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
@@ -109,7 +109,6 @@ template OidCheck(max_oid_length) {
     // ecdsa OID prefix: 1.2.840.10045
     var ecdsa_prefix[5] = [42, 134, 72, 206, 61];
 
-
     //oid_input[0] has the tag
     //oid_input[1] has the length of the oid without tag and length bytes
     //oid_input[2] oid starts from here
@@ -119,7 +118,7 @@ template OidCheck(max_oid_length) {
     tag_check === 1;
 
     //length check
-    oid_input[1] === oid_length -2;
+    oid_input[1] === oid_length - 2;
 
     signal comparators_rsa[7];
     signal comparators_ec[5];

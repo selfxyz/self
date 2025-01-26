@@ -31,7 +31,6 @@ include "../utils/crypto/bitify/splitWordsToBytes.circom";
 /// @output nullifier Generated nullifier -  deterministic on the passport data
 /// @output commitment Commitment that will be added to the onchain registration tree
 /// @output glue Used to link register and dsc proofs - the same is generated in the dsc circuit
-
 template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
@@ -55,10 +54,19 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     signal input secret;
     signal input salt;
 
+    // This means the attestation is a passport
     signal attestation_id <== 1;
 
     // verify passport signature
-    component passportVerifier = PassportVerifier(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MAX_ECONTENT_PADDED_LEN, MAX_SIGNED_ATTR_PADDED_LEN);
+    component passportVerifier = PassportVerifier(
+        DG_HASH_ALGO,
+        ECONTENT_HASH_ALGO,
+        signatureAlgorithm,
+        n,
+        k,
+        MAX_ECONTENT_PADDED_LEN,
+        MAX_SIGNED_ATTR_PADDED_LEN
+    );
 
     passportVerifier.dg1 <== dg1;
     passportVerifier.dg1_hash_offset <== dg1_hash_offset;
@@ -75,9 +83,16 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
     
-    signal pubKey_dsc_hash <==  CustomHasher(kScaled)(pubKey_dsc);
+    signal pubKey_dsc_hash <== CustomHasher(kScaled)(pubKey_dsc);
     
-    signal output commitment <== Poseidon(6)([secret, attestation_id, dg1_packed_hash, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output commitment <== Poseidon(6)([
+        secret,
+        attestation_id,
+        dg1_packed_hash,
+        eContent_shaBytes_packed_hash,
+        pubKey_dsc_hash,
+        pubKey_csca_hash
+    ]);
     
     signal output glue <== Poseidon(4)([salt, kLengthFactor, pubKey_dsc_hash, pubKey_csca_hash]);
 }
