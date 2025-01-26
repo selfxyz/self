@@ -57,7 +57,8 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
     signal input secret;
     signal input salt;
 
-    signal dsc_pubkey_length_bytes <== GetKLengthBytes(signatureAlgorithm)();
+    signal dsc_pubkey_length_bytes_temp <== GetKLengthBytes(signatureAlgorithm)();
+    signal dsc_pubkey_length_bytes <== dsc_pubkey_length_bytes_temp * kLengthFactor;
 
     // This means the attestation is a passport
     signal attestation_id <== 1;

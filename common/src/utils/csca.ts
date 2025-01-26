@@ -282,7 +282,7 @@ export function generateCircuitInputsDSC(
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
       siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
-      salt: ['0'],
+      salt: dscSecret,
       signatureAlgorithm_dsc: sigAlgIndex
     },
   };
