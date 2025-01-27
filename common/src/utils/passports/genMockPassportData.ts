@@ -3,62 +3,7 @@ import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
 import { getHashLen, hash } from '../hash';
-import {
-  mock_dsc_key_sha1_rsa_4096,
-  mock_dsc_key_sha256_ecdsa,
-  mock_dsc_key_sha256_rsa_4096,
-  mock_dsc_key_sha256_rsapss_2048,
-  mock_dsc_key_sha256_rsapss_4096,
-  mock_dsc_sha1_rsa_4096,
-  mock_dsc_sha256_ecdsa,
-  mock_dsc_sha256_rsa_4096,
-  mock_dsc_sha256_rsapss_2048,
-  mock_dsc_sha256_rsapss_4096,
-  mock_dsc_key_sha1_ecdsa,
-  mock_dsc_sha1_ecdsa,
-  mock_dsc_key_sha384_ecdsa,
-  mock_dsc_sha384_ecdsa,
-  mock_dsc_key_sha256_brainpoolP256r1,
-  mock_dsc_sha256_brainpoolP256r1,
-  mock_dsc_key_sha256_rsa_3_2048,
-  mock_dsc_sha256_rsa_3_2048,
-  mock_dsc_key_sha256_rsa_65537_3072,
-  mock_dsc_sha256_rsa_65537_3072,
-  mock_dsc_key_sha256_rsapss_3_4096,
-  mock_dsc_sha256_rsapss_3_4096,
-  mock_dsc_key_sha256_rsapss_3_3072,
-  mock_dsc_sha256_rsapss_3_3072,
-  mock_dsc_key_sha384_rsapss_65537_3072,
-  mock_dsc_sha384_rsapss_65537_3072,
-  mock_dsc_key_sha256_rsapss_65537_3072,
-  mock_dsc_sha256_rsapss_65537_3072,
-  mock_dsc_key_rsapss_65537_4096,
-  mock_dsc_sha256_rsapss_65537_4096,
-  mock_dsc_key_sha384_brainpoolP384r1,
-  mock_dsc_sha384_brainpoolP384r1,
-  mock_dsc_key_sha256_secp384r1,
-  mock_dsc_sha256_secp384r1,
-  mock_dsc_key_sha384_brainpoolP256r1,
-  mock_dsc_sha384_brainpoolP256r1,
-  mock_dsc_key_sha512_brainpoolP256r1,
-  mock_dsc_sha512_brainpoolP256r1,
-  mock_dsc_key_sha512_brainpoolP384r1,
-  mock_dsc_sha512_brainpoolP384r1,
-  mock_dsc_key_sha1_brainpoolP224r1,
-  mock_dsc_sha1_brainpoolP224r1,
-  mock_dsc_key_sha256_brainpoolP224r1,
-  mock_dsc_sha256_brainpoolP224r1,
-  mock_dsc_key_sha512_brainpoolP512r1,
-  mock_dsc_sha512_brainpoolP512r1,
-  mock_dsc_key_sha224_braipoolP224r1,
-  mock_dsc_sha224_brainpoolP224r1,
-  mock_dsc_key_sha512_rsa_65537_4096,
-  mock_dsc_sha512_rsa_65537_4096,
-  mock_dsc_key_sha256_rsa_3_4096,
-  mock_dsc_sha256_rsa_3_4096,
-  mock_dsc_key_sha512_rsa_65537_2048,
-  mock_dsc_sha512_rsa_65537_2048,
-} from '../../constants/mockCertificates';
+import * as mockCertificates from '../../constants/mockCertificates';
 import { countryCodes } from '../../constants/constants';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from '../types';
@@ -66,6 +11,7 @@ import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from '../certificate_pa
 import { getCurveForElliptic } from '../certificate_parsing/curves';
 import { formatAndConcatenateDataHashes, formatMrz } from './format';
 import { generateSignedAttr } from './format';
+import { mock_dsc_sha256_rsa_3_2048 } from '../../constants/mockCertificates';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -144,116 +90,116 @@ export function genMockPassportData(
 
   switch (signatureType) {
     case 'rsa_sha1_65537_2048':
-      privateKeyPem = mock_dsc_key_sha1_rsa_4096;
-      dsc = mock_dsc_sha1_rsa_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha1_rsa_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha1_rsa_65537_2048;
       break;
     case 'rsa_sha1_65537_4096':
-      privateKeyPem = mock_dsc_key_sha1_rsa_4096;
-      dsc = mock_dsc_sha1_rsa_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha1_rsa_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha1_rsa_65537_4096;
       break;
     case 'rsa_sha256_65537_2048':
-      privateKeyPem = mock_dsc_key_sha256_rsa_4096;
-      dsc = mock_dsc_sha256_rsa_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_65537_2048;
       break;
     case 'rsapss_sha256_65537_2048':
-      privateKeyPem = mock_dsc_key_sha256_rsapss_4096;
-      dsc = mock_dsc_sha256_rsapss_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048;
       break;
-    case 'rsapss_sha256_3_4096':
-      privateKeyPem = mock_dsc_key_sha256_rsapss_3_4096;
-      dsc = mock_dsc_sha256_rsapss_3_4096;
+    case 'rsapss_sha256_3_2048':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_3_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_3_2048;
       break;
     case 'rsapss_sha256_3_3072':
-      privateKeyPem = mock_dsc_key_sha256_rsapss_3_3072;
-      dsc = mock_dsc_sha256_rsapss_3_3072;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_3_3072_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_3_3072;
       break;
     case 'rsapss_sha384_65537_3072':
-      privateKeyPem = mock_dsc_key_sha384_rsapss_65537_3072;
-      dsc = mock_dsc_sha384_rsapss_65537_3072;
+      privateKeyPem = mockCertificates.mock_dsc_sha384_rsapss_48_65537_3072_key;
+      dsc = mockCertificates.mock_dsc_sha384_rsapss_48_65537_3072;
       break;
     case 'ecdsa_sha256_secp256r1_256':
-      privateKeyPem = mock_dsc_key_sha256_ecdsa;
-      dsc = mock_dsc_sha256_ecdsa;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_secp256r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_secp256r1;
       break;
     case 'ecdsa_sha1_secp256r1_256':
-      privateKeyPem = mock_dsc_key_sha1_ecdsa;
-      dsc = mock_dsc_sha1_ecdsa;
+      privateKeyPem = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1_key;
+      dsc = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1;
       break;
     case 'ecdsa_sha384_secp384r1_384':
-      privateKeyPem = mock_dsc_key_sha384_ecdsa;
-      dsc = mock_dsc_sha384_ecdsa;
+      privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1_key;
+      dsc = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1;
       break;
     case 'ecdsa_sha256_secp384r1_384':
-      privateKeyPem = mock_dsc_key_sha256_secp384r1;
-      dsc = mock_dsc_sha256_secp384r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_secp384r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_secp384r1;
       break;
     case 'ecdsa_sha256_brainpoolP256r1_256':
-      privateKeyPem = mock_dsc_key_sha256_brainpoolP256r1;
-      dsc = mock_dsc_sha256_brainpoolP256r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP256r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP256r1;
       break;
     case 'ecdsa_sha384_brainpoolP256r1_256':
-      privateKeyPem = mock_dsc_key_sha384_brainpoolP256r1;
-      dsc = mock_dsc_sha384_brainpoolP256r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP256r1_key;
+      dsc = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP256r1;
       break;
     case 'ecdsa_sha512_brainpoolP256r1_256':
-      privateKeyPem = mock_dsc_key_sha512_brainpoolP256r1;
-      dsc = mock_dsc_sha512_brainpoolP256r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP256r1_key;
+      dsc = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP256r1;
       break;
     case 'rsa_sha256_3_2048':
-      privateKeyPem = mock_dsc_key_sha256_rsa_3_2048;
-      dsc = mock_dsc_sha256_rsa_3_2048;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_3_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_3_2048;
       break;
     case 'rsa_sha256_65537_3072':
-      privateKeyPem = mock_dsc_key_sha256_rsa_65537_3072;
-      dsc = mock_dsc_sha256_rsa_65537_3072;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_65537_3072_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_65537_3072;
       break;
     case 'rsapss_sha256_65537_3072':
-      privateKeyPem = mock_dsc_key_sha256_rsapss_65537_3072;
-      dsc = mock_dsc_sha256_rsapss_65537_3072;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_3072_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_3072;
       break;
     case 'rsapss_sha256_65537_4096':
-      privateKeyPem = mock_dsc_key_rsapss_65537_4096;
-      dsc = mock_dsc_sha256_rsapss_65537_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048;
       break;
     case 'ecdsa_sha384_brainpoolP384r1_384':
-      privateKeyPem = mock_dsc_key_sha384_brainpoolP384r1;
-      dsc = mock_dsc_sha384_brainpoolP384r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP384r1_key;
+      dsc = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP384r1;
       break;
     case 'ecdsa_sha512_brainpoolP384r1_384':
-      privateKeyPem = mock_dsc_key_sha512_brainpoolP384r1;
-      dsc = mock_dsc_sha512_brainpoolP384r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP384r1_key;
+      dsc = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP384r1;
       break;
     case 'ecdsa_sha1_brainpoolP224r1_224':
-      privateKeyPem = mock_dsc_key_sha1_brainpoolP224r1;
-      dsc = mock_dsc_sha1_brainpoolP224r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha1_ecdsa_brainpoolP224r1_key;
+      dsc = mockCertificates.mock_dsc_sha1_ecdsa_brainpoolP224r1;
       break;
     case 'ecdsa_sha224_brainpoolP224r1_224':
-      privateKeyPem = mock_dsc_key_sha224_braipoolP224r1;
-      dsc = mock_dsc_sha224_brainpoolP224r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha224_ecdsa_brainpoolP224r1_key;
+      dsc = mockCertificates.mock_dsc_sha224_ecdsa_brainpoolP224r1;
       break;
     case 'ecdsa_sha256_brainpoolP224r1_224':
-      privateKeyPem = mock_dsc_key_sha256_brainpoolP224r1;
-      dsc = mock_dsc_sha256_brainpoolP224r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP224r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP224r1;
       break;
     case 'ecdsa_sha512_brainpoolP512r1_512':
-      privateKeyPem = mock_dsc_key_sha512_brainpoolP512r1;
-      dsc = mock_dsc_sha512_brainpoolP512r1;
+      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP512r1_key;
+      dsc = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP512r1;
       break;
     case 'rsa_sha256_65537_4096':
-      privateKeyPem = mock_dsc_key_sha256_rsa_4096;
-      dsc = mock_dsc_sha256_rsa_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_65537_4096;
       break;
     case 'rsa_sha512_65537_4096':
-      privateKeyPem = mock_dsc_key_sha512_rsa_65537_4096;
-      dsc = mock_dsc_sha512_rsa_65537_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha512_rsa_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha512_rsa_65537_4096;
       break;
     case 'rsa_sha512_65537_2048':
-      privateKeyPem = mock_dsc_key_sha512_rsa_65537_2048;
-      dsc = mock_dsc_sha512_rsa_65537_2048;
+      privateKeyPem = mockCertificates.mock_dsc_sha512_rsa_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha512_rsa_65537_2048;
       break;
     case 'rsa_sha256_3_4096':
-      privateKeyPem = mock_dsc_key_sha256_rsa_3_4096;
-      dsc = mock_dsc_sha256_rsa_3_4096;
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_3_4096_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsa_3_4096;
       break;
   }
 
@@ -289,6 +235,8 @@ function sign(
   hashAlgorithm: string,
   eContent: number[]
 ): number[] {
+  console.log('privateKeyPem', privateKeyPem);
+  console.log('dsc', dsc);
   const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {

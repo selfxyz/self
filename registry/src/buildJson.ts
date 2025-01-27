@@ -46,21 +46,25 @@ async function main() {
 
     const devCertificates = await getAllDevPem();
     const prodCertificates = fs.readdirSync(pemDirectory);
+    const skipProd = true;
 
-    for (const prodCertificate of prodCertificates) {
-        const pemContent = cleanCertificate(fs.readFileSync(path.join(pemDirectory, prodCertificate), 'utf8'));
-        //log filename
-        console.log('\x1b[90m%s\x1b[0m', `processing ${prodCertificate}`);
-        try {
-            const certificateData = parseCertificateSimple(pemContent);
+    if (!skipProd) {
+        for (const prodCertificate of prodCertificates) {
+            const pemContent = cleanCertificate(fs.readFileSync(path.join(pemDirectory, prodCertificate), 'utf8'));
+            //log filename
+            console.log('\x1b[90m%s\x1b[0m', `processing ${prodCertificate}`);
+            try {
+                const certificateData = parseCertificateSimple(pemContent);
 
 
 
-            skiPemJson[certificateData.subjectKeyIdentifier] = pemContent;
-        } catch (error) {
-            console.log('\x1b[90m%s\x1b[0m', `certificate ${prodCertificate} is invalid.`);
+                skiPemJson[certificateData.subjectKeyIdentifier] = pemContent;
+            } catch (error) {
+                console.log('\x1b[90m%s\x1b[0m', `certificate ${prodCertificate} is invalid.`);
+            }
         }
     }
+
     for (const devCertificate of devCertificates) {
         try {
             const certificateData = parseCertificateSimple(devCertificate);
