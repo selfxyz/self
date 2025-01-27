@@ -3,7 +3,7 @@ import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../components/buttons/SecondaryButton';
 import { Text, XStack, YStack } from 'tamagui';
 import { View } from 'react-native';
-import { componentBgColor } from '../utils/colors';
+import { white } from '../utils/colors';
 
 const DevPlayScreen = () => {
   return (
@@ -15,13 +15,15 @@ const DevPlayScreen = () => {
           alignItems: 'center',
           gap: 20,
           width: '100%',
-          backgroundColor: componentBgColor,
+          backgroundColor: white,
         }}
       >
         <Text fontSize="$9">Hello PASSPORT</Text>
-        <PrimaryButton disabled>Primary Button Disabled</PrimaryButton>
         <PrimaryButton>Primary Button</PrimaryButton>
+        <PrimaryButton disabled>Primary Button Disabled</PrimaryButton>
+
         <SecondaryButton>Secondary Button</SecondaryButton>
+        <SecondaryButton disabled>Secondary Button Disabled</SecondaryButton>
       </View>
       <XStack f={1} />
     </YStack>
