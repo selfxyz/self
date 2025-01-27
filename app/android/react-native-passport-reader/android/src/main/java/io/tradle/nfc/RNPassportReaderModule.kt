@@ -365,8 +365,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
                 dg1File = DG1File(dg1In)   
-                val dg2In = service.getInputStream(PassportService.EF_DG2)
-                dg2File = DG2File(dg2In)                
+//                val dg2In = service.getInputStream(PassportService.EF_DG2)
+//                dg2File = DG2File(dg2In)
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
                 
@@ -402,24 +402,24 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 doChipAuth(service)
                 doPassiveAuth()
 
-                // Log.d(TAG, "============SIGNATURE VERIFIED=============")
-                // sendDataToJS(PassportData(dg1File, dg2File, sodFile))
-                // Log.d(TAG, "============DATA SENT TO JS=============")
+//                 Log.d(TAG, "============SIGNATURE VERIFIED=============")
+//                 sendDataToJS(PassportData(dg1File, dg2File, sodFile))
+//                 Log.d(TAG, "============DATA SENT TO JS=============")
 
-                val allFaceImageInfo: MutableList<FaceImageInfo> = ArrayList()
-                dg2File.faceInfos.forEach {
-                    allFaceImageInfo.addAll(it.faceImageInfos)
-                }
-                if (allFaceImageInfo.isNotEmpty()) {
-                    val faceImageInfo = allFaceImageInfo.first()
-                    val imageLength = faceImageInfo.imageLength
-                    val dataInputStream = DataInputStream(faceImageInfo.imageInputStream)
-                    val buffer = ByteArray(imageLength)
-                    dataInputStream.readFully(buffer, 0, imageLength)
-                    val inputStream: InputStream = ByteArrayInputStream(buffer, 0, imageLength)
-                    bitmap = decodeImage(reactContext, faceImageInfo.mimeType, inputStream)
-                    imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
-                }
+//                val allFaceImageInfo: MutableList<FaceImageInfo> = ArrayList()
+//                dg2File.faceInfos.forEach {
+//                    allFaceImageInfo.addAll(it.faceImageInfos)
+//                }
+//                if (allFaceImageInfo.isNotEmpty()) {
+//                    val faceImageInfo = allFaceImageInfo.first()
+//                    val imageLength = faceImageInfo.imageLength
+//                    val dataInputStream = DataInputStream(faceImageInfo.imageInputStream)
+//                    val buffer = ByteArray(imageLength)
+//                    dataInputStream.readFully(buffer, 0, imageLength)
+//                    val inputStream: InputStream = ByteArrayInputStream(buffer, 0, imageLength)
+////                    bitmap = decodeImage(reactContext, faceImageInfo.mimeType, inputStream)
+//                    imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
+//                }
             } catch (e: Exception) {
                 eventMessageEmitter(Messages.RESET)
                 return e
