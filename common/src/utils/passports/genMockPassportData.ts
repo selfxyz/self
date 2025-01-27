@@ -235,8 +235,6 @@ function sign(
   hashAlgorithm: string,
   eContent: number[]
 ): number[] {
-  console.log('privateKeyPem', privateKeyPem);
-  console.log('dsc', dsc);
   const { signatureAlgorithm, publicKeyDetails } = parseCertificateSimple(dsc);
 
   if (signatureAlgorithm === 'rsapss') {
