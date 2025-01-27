@@ -75,7 +75,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
           castDate(-age),
           castDate(expiryYears),
           randomPassportNumber,
-          ...(isInOfacList ? ['HENAO MONTOYA', 'ARCANGEL DE JESUS'] : [])
+          ...(isInOfacList ? ['HENAO MONTOYA', 'ARCANGEL DE JESUS'] : []),
         );
         useUserStore.getState().registerPassportData(mockPassportData);
         useUserStore.getState().setRegistered(true);
