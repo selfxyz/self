@@ -140,7 +140,7 @@ export async function generateVcAndDiscloseProof(
     merkletree: LeanIMT<bigint>,
     majority: string = "20",
     smt?: SMT,
-    selectorOfac: string | number = "0",
+    selectorOfac: string | number = "1",
     forbiddenCountriesList: string[] = ["AAA"],
     userIdentifier: string = "70997970C51812dc3A010C7d01b50e0d17dc79C8"
 ): Promise<VcAndDiscloseProof> {

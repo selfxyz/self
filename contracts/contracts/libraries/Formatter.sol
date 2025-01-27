@@ -71,8 +71,8 @@ library Formatter {
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
-        uint8[3] memory bytesCount = [31, 31, 28];
-        bytes memory bytesArray = new bytes(90);
+        uint8[3] memory bytesCount = [31, 31, 29];
+        bytes memory bytesArray = new bytes(91);
 
         uint256 index = 0;
         for (uint256 i = 0; i < 3; i++) {

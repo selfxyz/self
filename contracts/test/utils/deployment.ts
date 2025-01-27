@@ -156,7 +156,9 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
 
     return {
         hub: hubContract,
+        hubImpl: identityVerificationHubImpl,
         registry: registryContract,
+        registryImpl: identityRegistryImpl,
         vcAndDisclose: vcAndDiscloseVerifier,
         register: registerVerifier,
         dsc: dscVerifier,
@@ -164,4 +166,37 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         user1: user1,
         mockPassport: mockPassport
     };
+}
+
+export async function deployRegistry(
+    owner: Signer,
+    hubAddress: string
+): Promise<IdentityRegistryImplV1> {
+    const IdentityRegistryImplFactory = await ethers.getContractFactory("IdentityRegistryImplV1", owner);
+    const registry = await IdentityRegistryImplFactory.deploy();
+    await registry.waitForDeployment();
+    return registry;
+}
+
+export async function deployHub(
+    owner: Signer,
+    registryAddress: string,
+    vcAndDiscloseVerifier: VcAndDiscloseVerifier,
+    registerVerifier: RegisterVerifier,
+    dscVerifier: DscVerifier
+): Promise<IdentityVerificationHubImplV1> {
+    const IdentityVerificationHubImplFactory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+    const hub = await IdentityVerificationHubImplFactory.deploy();
+    await hub.waitForDeployment();
+    return hub;
+}
+
+export async function deployVerifier(
+    owner: Signer,
+    verifierCircuit: string,
+) {
+    const VerifierFactory = await ethers.getContractFactory("Verifier", owner);
+    const verifier = await VerifierFactory.deploy();
+    await verifier.waitForDeployment();
+    return verifier;
 }

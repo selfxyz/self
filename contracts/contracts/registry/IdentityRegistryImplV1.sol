@@ -63,8 +63,7 @@ contract IdentityRegistryImplV1 is
     IIdentityRegistryV1 
 {
 
-    using Base64 for *;
-    using Strings for uint256;
+    // using Strings for uint256;
     using InternalLeanIMT for LeanIMTData;
 
     // Events
@@ -281,6 +280,7 @@ contract IdentityRegistryImplV1 is
         onlyProxy
         onlyOwner 
     {
+        _nullifiers[attestationId][nullifier] = true;
         uint256 imt_root = _addCommitment(commitment);
         uint256 index = _identityCommitmentIMT._indexOf(commitment);
         emit DevCommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);

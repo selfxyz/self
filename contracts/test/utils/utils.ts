@@ -1,13 +1,11 @@
-import { randomBytes, toBigInt } from "ethers";
+import { randomBytes, toBigInt, toBeHex, zeroPadValue } from "ethers";
 
-export function generateRandomFieldElement(): bigint {
+export function generateRandomFieldElement(): string {
   const FIELD_PRIME = BigInt(
-    "21888242871839275222246405745257275088548364400416034343698204186575808495617"
+    "21888242871839275222246405745257275088696311157297823662689037894645226208583"
   );
-
-  const randomBytesArray = randomBytes(32);
-  const randomBigInt = toBigInt(randomBytesArray);
-  const fieldElement = randomBigInt % FIELD_PRIME;
-
+  
+  const fieldElement = zeroPadValue(toBeHex(toBigInt(randomBytes(32)) % FIELD_PRIME), 32);
+  
   return fieldElement;
 }

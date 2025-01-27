@@ -1,18 +1,20 @@
 import { expect } from "chai";
-import { deploySystemFixtures } from "./utils/deployment";
-import { DeployedActors } from "./utils/types";
+import { deploySystemFixtures } from "../utils/deployment";
+import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { generateDscSecret } from "../../common/src/utils/csca";
-import { CONTRACT_CONSTANTS } from "./utils/constants";
-import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
+import { generateDscSecret } from "../../../common/src/utils/csca";
+import { CIRCUIT_CONSTANTS } from "../utils/constants";
+import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 
-import { PassportProof } from "./utils/types";
-import { ATTESTATION_ID } from "./utils/constants";
+import { PassportProof } from "../utils/types";
+import { ATTESTATION_ID } from "../utils/constants";
 
-import { generateRegisterProof, generateDscProof } from "./utils/generateProof";
+import { generateRegisterProof, generateDscProof } from "../utils/generateProof";
 
-import { getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
-import { generateRandomFieldElement } from "./utils/utils";
+import { getCSCAModulusMerkleTree } from "../../../common/src/utils/csca";
+import { generateRandomFieldElement } from "../utils/utils";
+
+import { TransactionReceipt } from "ethers";
 
 describe("Commitment Registration Tests", function () {
     this.timeout(0);
@@ -31,6 +33,16 @@ describe("Commitment Registration Tests", function () {
     });
 
     describe("Register Passport Commitment", () => {
+
+        describe("Initialization", () => {
+            it("should have consistent addresses between registry and hub", async () => {
+                const {hub, registry} = deployedActors;
+                
+                expect(await registry.hub()).to.equal(hub.target);
+                expect(await hub.registry()).to.equal(registry.target);
+            });
+        })
+
         it("should register passport commitment successfully", async () => {
             const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
@@ -62,14 +74,14 @@ describe("Commitment Registration Tests", function () {
 
             // Register commitment
             const tx = await hub.verifyAndRegisterPassportCommitment(passportProof);
-            const receipt = await tx.wait();
-            const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            const receipt = await tx.wait() as TransactionReceipt;
+            const blockTimestamp = (await ethers.provider.getBlock(receipt.blockNumber))!.timestamp;
 
             // Get state after registration
             const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
             const size = await registry.getIdentityCommitmentMerkleTreeSize();
             const rootTimestamp = await registry.rootTimestamps(currentRoot);
-            const index = await registry.getIdentityCommitmentIndex(registerProof.pubSignals[CONTRACT_CONSTANTS.REGISTER_COMMITMENT_INDEX]);
+            const index = await registry.getIdentityCommitmentIndex(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]);
 
             // Check event emission
             const event = receipt?.logs.find(
@@ -81,8 +93,8 @@ describe("Commitment Registration Tests", function () {
                 event.topics
             ) : null;
 
-            expect(eventArgs?.nullifier).to.equal(registerProof.pubSignals[CONTRACT_CONSTANTS.REGISTER_NULLIFIER_INDEX]);
-            expect(eventArgs?.commitment).to.equal(registerProof.pubSignals[CONTRACT_CONSTANTS.REGISTER_COMMITMENT_INDEX]);
+            expect(eventArgs?.nullifier).to.equal(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX]);
+            expect(eventArgs?.commitment).to.equal(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]);
             expect(eventArgs?.timestamp).to.equal(blockTimestamp);
             expect(eventArgs?.imtRoot).to.equal(currentRoot);
             expect(eventArgs?.imtIndex).to.equal(0);
@@ -107,7 +119,7 @@ describe("Commitment Registration Tests", function () {
             );
 
             // Modify the proof to make it invalid
-            registerProof.a[0] = "123456789";
+            registerProof.a[0] = generateRandomFieldElement();
 
             const dscProof = await generateDscProof(
                 dscSecret,
@@ -146,7 +158,7 @@ describe("Commitment Registration Tests", function () {
             );
 
             // Modify the DSC proof to make it invalid
-            dscProof.a[0] = "123456789";
+            dscProof.a[0] = generateRandomFieldElement();
 
             const passportProof: PassportProof = {
                 registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,

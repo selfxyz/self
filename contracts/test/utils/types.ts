@@ -42,7 +42,9 @@ export type DscVerifier = typeof process.env.TEST_ENV extends "local" ? LocalDsc
 
 export interface DeployedActors {
     hub: IdentityVerificationHubImplV1;
+    hubImpl: IdentityVerificationHubImplV1;
     registry: IdentityRegistryImplV1;
+    registryImpl: IdentityRegistryImplV1;
     vcAndDisclose: VcAndDiscloseVerifier;
     register: RegisterVerifier;
     dsc: DscVerifier;

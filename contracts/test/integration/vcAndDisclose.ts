@@ -1,16 +1,16 @@
 import { expect } from "chai";
-import { deploySystemFixtures } from "./utils/deployment";
-import { DeployedActors } from "./utils/types";
+import { deploySystemFixtures } from "../utils/deployment";
+import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { generateDscSecret } from "../../common/src/utils/csca";
-import { CONTRACT_CONSTANTS } from "./utils/constants";
-import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
-import { PassportProof, VcAndDiscloseHubProof } from "./utils/types";
-import { ATTESTATION_ID } from "./utils/constants";
-import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "./utils/generateProof";
+import { generateDscSecret } from "../../../common/src/utils/csca";
+import { CIRCUIT_CONSTANTS } from "../utils/constants";
+import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
+import { PassportProof, VcAndDiscloseHubProof } from "../utils/types";
+import { ATTESTATION_ID } from "../utils/constants";
+import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
-import { generateCommitment } from "../../common/src/utils/passports/passport";
+import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { BigNumberish } from "ethers";
 
 describe("VC and Disclose", () => {
@@ -80,10 +80,10 @@ describe("VC and Disclose", () => {
 
             // // Verify the returned results
             expect(result.revealedDataPacked).to.have.lengthOf(3);
-            expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
-            expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
-            expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
-            expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
+            expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+            expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
+            expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
+            expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
         });
 
         it("should fail with invalid identity commitment root", async () => {
@@ -128,7 +128,7 @@ describe("VC and Disclose", () => {
                 imt,
                 "20",
             );
-            vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = "123456789";
+            vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = "123456789";
 
             await expect(
                 hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
@@ -195,7 +195,7 @@ describe("VC and Disclose", () => {
             ];
 
             for (let i = 0; i < 6; i++) {
-                vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
             }
 
             await expect(
@@ -263,7 +263,7 @@ describe("VC and Disclose", () => {
             ];
 
             for (let i = 0; i < 6; i++) {
-                vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
             }
 
             await expect(
