@@ -2,12 +2,13 @@
 
 ## Requirements
 
-| Requirement | Version | Installation Guide                                       |
-| ----------- | ------- | -------------------------------------------------------- |
-| nodejs      | > v18   | [Install nodejs](https://nodejs.org/)                    |
-| circom      | Latest  | [Install circom](https://docs.circom.io/)                |
-| snarkjs     | Latest  | [Install snarkjs](https://github.com/iden3/snarkjs)      |
-| watchman    | Latest  | [Install watchman](https://facebook.github.io/watchman/) |
+| Requirement | Version  | Installation Guide                                                       |
+| ----------- | -------- | ------------------------------------------------------------------------ |
+| ruby        | >= 3.1.0 | [Install ruby](https://www.ruby-lang.org/en/documentation/installation/) |
+| nodejs      | > v18    | [Install nodejs](https://nodejs.org/)                                    |
+| circom      | Latest   | [Install circom](https://docs.circom.io/)                                |
+| snarkjs     | Latest   | [Install snarkjs](https://github.com/iden3/snarkjs)                      |
+| watchman    | Latest   | [Install watchman](https://facebook.github.io/watchman/)                 |
 
 ### Android
 
@@ -28,6 +29,7 @@
 ## Installation
 
 ```bash
+yarn install
 yarn install-app
 ```
 
