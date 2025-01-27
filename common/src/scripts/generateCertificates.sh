@@ -87,7 +87,7 @@ generate_certificate() {
     fi
 
     dir_name="${base_dir}/${dir_name}"
-    echo "=== ROLE: $role, DIR: $dir_name"
+    echo -e "\033[90m=== ROLE: $role, DIR: $dir_name\033[0m"
 
     # Filenames inside the directory
     local key_file="mock_csca.key"
@@ -102,7 +102,7 @@ generate_certificate() {
         rm -f "$dir_name/$key_file" "$dir_name/$crt_file"
     else
         if [ -f "$dir_name/$key_file" ] && [ -f "$dir_name/$crt_file" ]; then
-            echo "[SKIP] $dir_name: $key_file and $crt_file exist (use --force to regenerate)."
+            echo -e "\033[90m[SKIP] $dir_name: $key_file and $crt_file exist (use --force to regenerate).\033[0m"
             return
         fi
     fi
@@ -145,7 +145,7 @@ generate_certificate() {
     elif [ "$role" = "dsc" ]; then
         # We need --signer <csca_directory>
         if [ -z "$signer" ]; then
-            echo "[ERROR] Role 'dsc' requires --signer <csca_directory>."
+            echo -e "\033[31m[ERROR] Role 'dsc' requires --signer <csca_directory>.\033[0m"
             exit 1
         fi
 
@@ -283,3 +283,33 @@ generate_certificate csca sha512 ecdsa brainpoolP384r1
 generate_certificate dsc sha512 ecdsa brainpoolP384r1 --signer sha512_ecdsa_brainpoolP384r1
 generate_certificate csca sha512 ecdsa brainpoolP512r1
 generate_certificate dsc sha512 ecdsa brainpoolP512r1 --signer sha512_ecdsa_brainpoolP512r1
+
+
+##
+echo -e "\033[32mMock certificates generated\033[0m"
+python src/scripts/addCertificatesInTs.py
+echo -e "\033[32mCertificates added in certificates.ts\033[0m"
+
+
+# Parse command line arguments
+CSCA_FLAG=false
+for arg in "$@"; do
+    case $arg in
+        --csca)
+            CSCA_FLAG=true
+            shift # Remove --csca from processing
+            ;;
+    esac
+done
+
+if [ "$CSCA_FLAG" = true ]; then
+    cd ../registry
+    ts-node src/buildSkiPem.ts
+    echo -e "\033[32mSkiPem generated\033[0m"
+    cd ../common
+    python src/scripts/addSkiPemToTs.py
+    echo -e "\033[32mSkiPem added in certificates.ts\033[0m"
+    cd ../registry
+    ts-node src/csca/build_csca_merkle_tree.ts
+    echo -e "\033[32mCSCA Merkle tree updated\033[0m"
+fi

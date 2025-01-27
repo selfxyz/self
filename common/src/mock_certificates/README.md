@@ -11,20 +11,8 @@ This guide explains how to generate and set up mock certificates for testing.
    ```bash
    ./scripts/generateCertificates.sh
    ```
-   Then run 
+
+3. If you are generating new CSCA certificates, include the `--csca` flag:
    ```bash
-   python ./scripts/addCertificatesInTs.py
+   ./scripts/generateCertificates.sh --csca
    ```
-
-## Adding New CSCA Certificates
-
-When adding new CSCA certificates, you'll need to update the SKI-PEM mapping:
-
-1. Navigate to the `/registry` directory and run:
-   ```bash
-   ts-node src/buildSkiPem.ts
-   ```
-
-2. Check the generated output file `ski_pem_dev.json`
-
-3. Copy the contents and update `skiPem.ts` with the new mappings
