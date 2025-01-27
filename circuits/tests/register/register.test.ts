@@ -49,7 +49,7 @@ testSuite.forEach(
         circuit = await wasm_tester(
           path.join(
             __dirname,
-            `../../circuits/register/instances/${getCircuitNameFromPassportData(passportData)}.circom`
+            `../../circuits/register/instances/${getCircuitNameFromPassportData(passportData, 'register')}.circom`
           ),
           {
             include: [
