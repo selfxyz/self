@@ -39,7 +39,6 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     signal input merkle_root;
     signal input path[nLevels];
     signal input siblings[nLevels];
-    signal input signatureAlgorithm_dsc;
     signal input salt;
 
     // check offsets refer to valid ranges
@@ -75,5 +74,5 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     
 
     // Compute glue values
-    signal output glue <== Poseidon(5)([salt, signatureAlgorithm_dsc, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(4)([salt, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
 }

@@ -105,7 +105,6 @@ export function generateCircuitInputsDSC(
       path: proof.pathIndices.map(index => index.toString()),
       siblings: proof.siblings.flat().map(sibling => sibling.toString()),
       salt: dscSecret,
-      signatureAlgorithm_dsc: SignatureAlgorithmIndex[signatureAlgorithmFullName]
     }
   };
 }

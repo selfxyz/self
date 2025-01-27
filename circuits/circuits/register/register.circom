@@ -106,7 +106,7 @@ template REGISTER(DG_HASH_ALGO, ECONTENT_HASH_ALGO, signatureAlgorithm, n, k, MA
         pubKey_csca_hash
     ]);
     
-    signal output glue <== Poseidon(5)([salt, signatureAlgorithm, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
+    signal output glue <== Poseidon(4)([salt, dsc_pubkey_length_bytes, pubKey_dsc_hash, pubKey_csca_hash]);
 }
 
 /// @notice Converts DSC public key into standardized 35 words of 120 bits each 
