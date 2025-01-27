@@ -277,12 +277,12 @@ export function generateCircuitInputsDSC(
       dsc_pubkey_length_bytes: signatureAlgorithm === 'ecdsa' ? [(bits / 8) * 2] : [bits / 8],
       csca_pubKey: csca_pubKey_formatted,
       signature: signature,
-      dsc_pubKey: pubKey_dsc,
+      dsc_pubKey_bytes: pubKey_dsc,
       dsc_pubKey_offset: [startIndex],
       merkle_root: [BigInt(root).toString()],
       path: proof.pathIndices.map((index) => index.toString()),
       siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
-      salt: ['0'],
+      salt: dscSecret,
       signatureAlgorithm_dsc: sigAlgIndex
     },
   };
