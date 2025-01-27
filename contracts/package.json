@@ -17,8 +17,11 @@
     "contracts/constants/*",
     "contracts/interfaces/*",
     "contracts/libraries/*",
-    "contracts/verifiers/GenericVerifier.sol",
-    "contracts/OpenPassportVerifier.sol"
+    "contracts/proxy/*",
+    "contracts/registry/*",
+    "contracts/verifiers/*",
+    "contracts/IdentityVerificationHub.sol",
+    "contracts/IdentityVerificationHubImplV1.sol"
   ],
   "devDependencies": {
     "@nomicfoundation/hardhat-chai-matchers": "^2.0.6",
@@ -48,6 +51,7 @@
     "@eth-optimism/hardhat-ovm": "^0.2.4",
     "@nomiclabs/hardhat-ethers": "^2.2.3",
     "@openzeppelin/contracts": "^5.0.2",
+    "@openzeppelin/contracts-upgradeable": "^5.1.0",
     "@types/circomlibjs": "^0.1.6",
     "@types/jest": "^29.5.12",
     "@zk-kit/imt": "^2.0.0-beta.4",

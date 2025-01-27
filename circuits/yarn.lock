@@ -500,18 +500,18 @@ __metadata:
   linkType: hard
 
 "@noble/curves@npm:^1.4.2":
-  version: 1.8.0
-  resolution: "@noble/curves@npm:1.8.0"
+  version: 1.8.1
+  resolution: "@noble/curves@npm:1.8.1"
   dependencies:
-    "@noble/hashes": "npm:1.7.0"
-  checksum: 10c0/3ebb1795f3f7d74c879bc6262a3444061585a2cab90b7b637dc57d931063dd0c95be858a4c2389e932651825dbc461c215dbcf43984a232de3bd6b2d326ba555
+    "@noble/hashes": "npm:1.7.1"
+  checksum: 10c0/84902c7af93338373a95d833f77981113e81c48d4bec78f22f63f1f7fdd893bc1d3d7a3ee78f01b9a8ad3dec812a1232866bf2ccbeb2b1560492e5e7d690ab1f
   languageName: node
   linkType: hard
 
-"@noble/hashes@npm:1.7.0":
-  version: 1.7.0
-  resolution: "@noble/hashes@npm:1.7.0"
-  checksum: 10c0/1ef0c985ebdb5a1bd921ea6d959c90ba826af3ae05b40b459a703e2a5e9b259f190c6e92d6220fb3800e2385521e4159e238415ad3f6b79c52f91dd615e491dc
+"@noble/hashes@npm:1.7.1":
+  version: 1.7.1
+  resolution: "@noble/hashes@npm:1.7.1"
+  checksum: 10c0/2f8ec0338ccc92b576a0f5c16ab9c017a3a494062f1fbb569ae641c5e7eab32072f9081acaa96b5048c0898f972916c818ea63cbedda707886a4b5ffcfbf94e3
   languageName: node
   linkType: hard
 
@@ -757,20 +757,20 @@ __metadata:
   linkType: hard
 
 "@types/node@npm:*":
-  version: 22.10.5
-  resolution: "@types/node@npm:22.10.5"
+  version: 22.10.9
+  resolution: "@types/node@npm:22.10.9"
   dependencies:
     undici-types: "npm:~6.20.0"
-  checksum: 10c0/6a0e7d1fe6a86ef6ee19c3c6af4c15542e61aea2f4cee655b6252efb356795f1f228bc8299921e82924e80ff8eca29b74d9dd0dd5cc1a90983f892f740b480df
+  checksum: 10c0/ed2d7b2cf20ce520e04711eab48e9cd7d6a835d2859fbdc5d9a8c5e00a97c1f872a409f789783c473062b29beaf1cddf4b1c7ad03ae3fe433b072b7cf9fff741
   languageName: node
   linkType: hard
 
 "@types/node@npm:^20.11.19":
-  version: 20.17.12
-  resolution: "@types/node@npm:20.17.12"
+  version: 20.17.16
+  resolution: "@types/node@npm:20.17.16"
   dependencies:
     undici-types: "npm:~6.19.2"
-  checksum: 10c0/340b65a11e4486e597163991532a08e525beee40f082cf73dc830c060426fa9ea8690a4e3931d91375e946816a884d6140d96e99ac048b51f280f21cc70d22ed
+  checksum: 10c0/50c589dd6a377238bc51b6fb5b8fc60ff6d688df0bde621d4a9fc59f480eb956cdf6d46052e1cb9536f150bc62e9194ddc733aa78b65e812155b4d3a32717de2
   languageName: node
   linkType: hard
 
@@ -899,7 +899,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@zk-email/circuits@npm:^6.1.1":
+"@zk-email/circuits@npm:^6.3.2":
   version: 6.3.2
   resolution: "@zk-email/circuits@npm:6.3.2"
   dependencies:
@@ -964,10 +964,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"abbrev@npm:^2.0.0":
-  version: 2.0.0
-  resolution: "abbrev@npm:2.0.0"
-  checksum: 10c0/f742a5a107473946f426c691c08daba61a1d15942616f300b5d32fd735be88fef5cba24201757b6c407fd564555fb48c751cfa33519b2605c8a7aadd22baf372
+"abbrev@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "abbrev@npm:3.0.0"
+  checksum: 10c0/049704186396f571650eb7b22ed3627b77a5aedf98bb83caf2eac81ca2a3e25e795394b0464cfb2d6076df3db6a5312139eac5b6a126ca296ac53c5008069c28
   languageName: node
   linkType: hard
 
@@ -1570,7 +1570,7 @@ __metadata:
 
 "circom-dl@https://github.com/distributed-lab/circom-dl":
   version: 1.0.0
-  resolution: "circom-dl@https://github.com/distributed-lab/circom-dl.git#commit=9af9efb66bb801e77030596624cffb5fa3383eb9"
+  resolution: "circom-dl@https://github.com/distributed-lab/circom-dl.git#commit=02346f9e8c6722b6fc46627f08efcdd468d5b8dd"
   dependencies:
     chai: "npm:^5.1.2"
     circom_tester: "npm:^0.0.20"
@@ -1578,7 +1578,7 @@ __metadata:
     ffjavascript: "npm:^0.3.1"
     mocha: "npm:^10.7.3"
     path: "npm:^0.12.7"
-  checksum: 10c0/c299d281cb4c3b9ff64d939096dec9b143931d532258a171eb4de7f4888c7e951430895192c899126b6c2913aff6bfcadcd6552e1a888f8594aef1a3c6b7ef51
+  checksum: 10c0/2e5a8b034bad280ccd8e0646f40ed9a1a975cbe49cd18c546cffc3dadc5714f73a6918b524f1150291c73d65190e5be4732e61f0b83a493ffd703a166def66fe
   languageName: node
   linkType: hard
 
@@ -1598,7 +1598,7 @@ __metadata:
     "@types/node": "npm:^20.11.19"
     "@types/node-forge": "npm:^1.3.5"
     "@yarnpkg/sdks": "npm:^3.2.0"
-    "@zk-email/circuits": "npm:^6.1.1"
+    "@zk-email/circuits": "npm:^6.3.2"
     "@zk-email/helpers": "npm:^6.1.1"
     "@zk-email/zk-regex-circom": "npm:^1.2.1"
     "@zk-kit/binary-merkle-root.circom": "npm:^1.0.0"
@@ -2041,11 +2041,11 @@ __metadata:
   linkType: hard
 
 "es-object-atoms@npm:^1.0.0":
-  version: 1.0.0
-  resolution: "es-object-atoms@npm:1.0.0"
+  version: 1.1.1
+  resolution: "es-object-atoms@npm:1.1.1"
   dependencies:
     es-errors: "npm:^1.3.0"
-  checksum: 10c0/1fed3d102eb27ab8d983337bb7c8b159dd2a1e63ff833ec54eea1311c96d5b08223b433060ba240541ca8adba9eee6b0a60cdbf2f80634b784febc9cc8b687b4
+  checksum: 10c0/65364812ca4daf48eb76e2a3b7a89b3f6a2e62a1c420766ce9f692665a29d94fe41fe88b65f24106f449859549711e4b40d9fb8002d862dfd7eb1c512d10be0c
   languageName: node
   linkType: hard
 
@@ -3401,13 +3401,13 @@ __metadata:
   linkType: hard
 
 "nopt@npm:^8.0.0":
-  version: 8.0.0
-  resolution: "nopt@npm:8.0.0"
+  version: 8.1.0
+  resolution: "nopt@npm:8.1.0"
   dependencies:
-    abbrev: "npm:^2.0.0"
+    abbrev: "npm:^3.0.0"
   bin:
     nopt: bin/nopt.js
-  checksum: 10c0/19cb986f79abaca2d0f0b560021da7b32ee6fcc3de48f3eaeb0c324d36755c17754f886a754c091f01f740c17caf7d6aea8237b7fbaf39f476ae5e30a249f18f
+  checksum: 10c0/62e9ea70c7a3eb91d162d2c706b6606c041e4e7b547cbbb48f8b3695af457dd6479904d7ace600856bf923dd8d1ed0696f06195c8c20f02ac87c1da0e1d315ef
   languageName: node
   linkType: hard
 
@@ -4319,22 +4319,22 @@ __metadata:
   linkType: hard
 
 "typescript@npm:^5.3.3":
-  version: 5.7.2
-  resolution: "typescript@npm:5.7.2"
+  version: 5.7.3
+  resolution: "typescript@npm:5.7.3"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/a873118b5201b2ef332127ef5c63fb9d9c155e6fdbe211cbd9d8e65877283797cca76546bad742eea36ed7efbe3424a30376818f79c7318512064e8625d61622
+  checksum: 10c0/b7580d716cf1824736cc6e628ab4cd8b51877408ba2be0869d2866da35ef8366dd6ae9eb9d0851470a39be17cbd61df1126f9e211d8799d764ea7431d5435afa
   languageName: node
   linkType: hard
 
 "typescript@patch:typescript@npm%3A^5.3.3#optional!builtin<compat/typescript>":
-  version: 5.7.2
-  resolution: "typescript@patch:typescript@npm%3A5.7.2#optional!builtin<compat/typescript>::version=5.7.2&hash=cef18b"
+  version: 5.7.3
+  resolution: "typescript@patch:typescript@npm%3A5.7.3#optional!builtin<compat/typescript>::version=5.7.3&hash=8c6c40"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 10c0/c891ccf04008bc1305ba34053db951f8a4584b4a1bf2f68fd972c4a354df3dc5e62c8bfed4f6ac2d12e5b3b1c49af312c83a651048f818cd5b4949d17baacd79
+  checksum: 10c0/3b56d6afa03d9f6172d0b9cdb10e6b1efc9abc1608efd7a3d2f38773d5d8cfb9bbc68dfb72f0a7de5e8db04fc847f4e4baeddcd5ad9c9feda072234f0d788896
   languageName: node
   linkType: hard
 
