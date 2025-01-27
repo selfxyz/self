@@ -23,25 +23,10 @@ export const RPC_URL = 'https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVK
 export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
-// export const MAX_PADDED_ECONTENT_LEN: Partial<
-//   Record<keyof typeof SignatureAlgorithmIndex, number>
-// > = {
-//   rsa_sha256_65537_2048: 448,
-//   rsa_sha1_65537_2048: 320,
-//   rsapss_sha256_65537_2048: 384,
-//   rsapss_sha256_3_3072: 384,
-//   rsapss_sha256_65537_3072: 384,
-//   rsapss_sha256_65537_4096: 384,
-//   rsapss_sha256_3_4096: 384,
-//   rsapss_sha384_65537_3072: 384,
-//   ecdsa_sha1_secp256r1_256: 320,
-//   ecdsa_sha256_secp256r1_256: 384,
-//   ecdsa_sha384_secp384r1_384: 512,
-//   rsa_sha256_65537_3072: 384,
-//   rsa_sha256_3_2048: 384,
-// };
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
+
+export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 320,
@@ -124,6 +109,7 @@ export const attributeToPosition = {
   gender: [64, 64],
   expiry_date: [65, 70],
   older_than: [88, 89],
+  ofac: [90, 90],
 };
 
 export const circuitToSelectorMode = {
@@ -131,6 +117,9 @@ export const circuitToSelectorMode = {
   prove_onchain: [1, 0],
   prove_offchain: [1, 1],
 };
+
+export const MAX_BYTES_IN_FIELD = 31;
+export const MAX_PUBKEY_DSC_BYTES = 525;
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
 export const n_dsc = 120;
