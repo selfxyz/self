@@ -64,34 +64,19 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
       .toUpperCase();
     await new Promise(resolve =>
       setTimeout(() => {
-        let mockPassportData;
-        if (isInOfacList) {
-          mockPassportData = genMockPassportData(
-            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
-            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
-            selectedCountry as keyof typeof countryCodes,
-            castDate(-age),
-            castDate(expiryYears),
-            randomPassportNumber,
-            'HENAO MONTOYA', // this name is the OFAC list
-            'ARCANGEL DE JESUS',
-          );
-        } else {
-          mockPassportData = genMockPassportData(
-            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
-            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
-            selectedCountry as keyof typeof countryCodes,
-            castDate(-age),
-            castDate(expiryYears),
-            randomPassportNumber,
-          );
-        }
+        const hashAlgo = selectedAlgorithm === 'rsa sha1' ? 'sha1' : 'sha256';
+        const mockPassportData = genMockPassportData(
+          hashAlgo,
+          hashAlgo,
+          signatureAlgorithmToStrictSignatureAlgorithm[
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+          ],
+          selectedCountry as keyof typeof countryCodes,
+          castDate(-age),
+          castDate(expiryYears),
+          randomPassportNumber,
+          ...(isInOfacList ? ['HENAO MONTOYA', 'ARCANGEL DE JESUS'] : []),
+        );
         useUserStore.getState().registerPassportData(mockPassportData);
         useUserStore.getState().setRegistered(true);
         resolve(null);

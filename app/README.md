@@ -2,21 +2,22 @@
 
 ## Requirements
 
-| Requirement | Version | Installation Guide                                       |
-| ----------- | ------- | -------------------------------------------------------- |
-| nodejs      | > v18   | [Install nodejs](https://nodejs.org/)                    |
-| circom      | Latest  | [Install circom](https://docs.circom.io/)                |
-| snarkjs     | Latest  | [Install snarkjs](https://github.com/iden3/snarkjs)      |
-| watchman    | Latest  | [Install watchman](https://facebook.github.io/watchman/) |
+| Requirement | Version  | Installation Guide                                                       |
+| ----------- | -------- | ------------------------------------------------------------------------ |
+| nodejs      | > v18    | [Install nodejs](https://nodejs.org/)                                    |
+| ruby        | >= 3.1.0 | [Install ruby](https://www.ruby-lang.org/en/documentation/installation/) |
+| circom      | Latest   | [Install circom](https://docs.circom.io/)                                |
+| snarkjs     | Latest   | [Install snarkjs](https://github.com/iden3/snarkjs)                      |
+| watchman    | Latest   | [Install watchman](https://facebook.github.io/watchman/)                 |
 
 ### Android
 
-| Requirement    | Version      | Installation Guide                                                                                                                  |
-| -------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Java           | 17           | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)                                                |
-| Android Studio | Latest       | [Install Android Studio](https://developer.android.com/studio)                                                                      |
-| Android SDK    | Latest       | [Install Android SDK](https://developer.android.com/studio#downloads)                                                               |
-| Android Ndk    | 23.1.7779620 | [Install NDK](https://developer.android.com/studio) or [GPT4 guide](https://chatgpt.com/share/a6e2544b-d32a-4554-a452-402511d03ffc) |
+| Requirement    | Version       | Installation Guide                                                                                                                  |
+| -------------- | ------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Java           | 17            | [Install Java](https://www.oracle.com/java/technologies/javase-jdk17-downloads.html)                                                |
+| Android Studio | Latest        | [Install Android Studio](https://developer.android.com/studio)                                                                      |
+| Android SDK    | Latest        | [Install Android SDK](https://developer.android.com/studio#downloads)                                                               |
+| Android Ndk    | 26.1.10909125 | [Install NDK](https://developer.android.com/studio) or [GPT4 guide](https://chatgpt.com/share/a6e2544b-d32a-4554-a452-402511d03ffc) |
 
 ### iOS
 
@@ -28,6 +29,7 @@
 ## Installation
 
 ```bash
+yarn install
 yarn install-app
 ```
 
