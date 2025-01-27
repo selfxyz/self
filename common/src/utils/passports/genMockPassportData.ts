@@ -201,6 +201,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha256_rsa_3_4096_key;
       dsc = mockCertificates.mock_dsc_sha256_rsa_3_4096;
       break;
+    case 'rsa_sha384_65537_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha384_rsa_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha384_rsa_65537_4096;
+      break;
   }
 
   // Generate MRZ hash first

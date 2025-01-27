@@ -4,7 +4,6 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsDSC } from '../../../common/src/utils/circuits/generateInputs';
 
 import { max_cert_bytes } from '../../../common/src/constants/constants';
-import { getCircuitName } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { fullSigAlgs, sigAlgs } from './test_cases';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
@@ -19,21 +18,25 @@ testSuite.forEach(({
   domainParameter,
   keyLength,
 }) => {
-  describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter.toUpperCase()} ${keyLength}`, function () {
+
+  let passportData = genMockPassportData(
+    hashFunction,
+    hashFunction,
+    `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+    'FRA',
+    '000101',
+    '300101'
+  );
+  passportData = initPassportDataParsing(passportData);
+  const passportMetadata = passportData.passportMetadata;
+
+  describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${passportData.csca_parsed.publicKeyDetails.bits}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
 
     // Mock certificates based on signature algorithm and hash function
     const salt = '0';
-    let passportData = genMockPassportData(
-      hashFunction,
-      hashFunction,
-      `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
-      'FRA',
-      '000101',
-      '300101'
-    );
-    passportData = initPassportDataParsing(passportData);
+
 
     const inputs = generateCircuitInputsDSC(
       BigInt(salt).toString(),
