@@ -14,7 +14,9 @@ template test_glue_64_4(kLengthFactor, n, k) {
     test.pubkey_dsc_padded <== pubkey_dsc_padded;
     test.salt <== salt;
     test.pubKey_csca_hash <== pubKey_csca_hash;
-
+    
+    signal output register_hash <== test.register_hash;
+    signal output dsc_hash <== test.dsc_hash;
 }
 
 component main = test_glue_64_4(2, 64, 4);
