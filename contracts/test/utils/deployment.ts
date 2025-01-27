@@ -1,6 +1,7 @@
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
 import { SMT } from "@openpassport/zk-kit-smt";
+import { getSMT } from "./generateProof";
 import { poseidon2 } from "poseidon-lite";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
@@ -22,11 +23,11 @@ import {
 
 // Verifier artifacts
 import VcAndDiscloseVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
-import VcAndDiscloseVerifierArtifactProd from "../../artifacts/contracts/verifiers/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
+// import VcAndDiscloseVerifierArtifactProd from "../../artifacts/contracts/verifiers/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
 import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/register/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.sol/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.json";
-import RegisterVerifierArtifactProd from "../../artifacts/contracts/verifiers/register/Verifier_register_rsa_65537_sha256.sol/Verifier_register_rsa_65537_sha256.json";
+// import RegisterVerifierArtifactProd from "../../artifacts/contracts/verifiers/register/Verifier_register_rsa_65537_sha256.sol/Verifier_register_rsa_65537_sha256.json";
 import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/dsc/Verifier_dsc_rsa_sha256_65537_4096.sol/Verifier_dsc_rsa_sha256_65537_4096.json";
-import DscVerifierArtifactProd from "../../artifacts/contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol/Verifier_dsc_rsa_65537_sha256_4096.json";
+// import DscVerifierArtifactProd from "../../artifacts/contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol/Verifier_dsc_rsa_65537_sha256_4096.json";
 
 export async function deploySystemFixtures(): Promise<DeployedActors> {
     let identityVerificationHubProxy: IdentityVerificationHub;
@@ -145,14 +146,12 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "IdentityVerificationHubImplV1",
         identityVerificationHubProxy.target
     ) as IdentityVerificationHubImplV1;
-    console.log("registered registry address", await hubContract.registry());
 
     // Initialize roots
     const cscaModulusMerkleTree = getCSCAModulusMerkleTree();
     await registryContract.updateCscaRoot(cscaModulusMerkleTree.root, {from: owner});
 
-    const nameSMT = new SMT(poseidon2, true);
-    nameSMT.import(nameSMT.export());
+    const nameSMT = getSMT();
     await registryContract.updateOfacRoot(nameSMT.root, {from: owner});
 
     return {

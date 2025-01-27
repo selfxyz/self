@@ -5,132 +5,369 @@ import { ethers } from "hardhat";
 import { generateDscSecret } from "../../common/src/utils/csca";
 import { CONTRACT_CONSTANTS } from "./utils/constants";
 import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
-
-import { PassportProof } from "./utils/types";
+import { PassportProof, VcAndDiscloseHubProof } from "./utils/types";
 import { ATTESTATION_ID } from "./utils/constants";
-
-import { generateRegisterProof, generateDscProof } from "./utils/generateProof";
-
-import { getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
+import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "./utils/generateProof";
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { poseidon2 } from "poseidon-lite";
+import { generateCommitment } from "../../common/src/utils/passports/passport";
+import { BigNumberish } from "ethers";
 
 describe("VC and Disclose", () => {
-    // it("should verify VC and Disclose proof", async () => {
-    //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = await loadFixture(deploySystemFixtures);
+    let deployedActors: DeployedActors;
+    let snapshotId: string;
 
-    //     // First register a passport commitment
-    //     const registerSecret = "1234567890";
-    //     const dscSecret = generateDscSecret();
+    before(async () => {
+        deployedActors = await deploySystemFixtures();
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
 
-    //     const registerProof = await generateRegisterProof(
-    //         registerSecret,
-    //         dscSecret,
-    //         mockPassport
-    //     );
+    afterEach(async () => {
+        await ethers.provider.send("evm_revert", [snapshotId]);
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
 
-    //     const dscProof = await generateDscProof(
-    //         dscSecret,
-    //         mockPassport.dsc,
-    //         1664,
-    //     );
+    describe("Verify VC and Disclose", () => {
+        it("should verify and get result successfully", async () => {
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-    //     const passportProof: PassportProof = {
-    //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-    //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-    //         registerCircuitProof: registerProof,
-    //         dscCircuitProof: dscProof
-    //     };
+            // First register a passport commitment
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
 
-    //     await hub.verifyAndRegisterPassportCommitment(passportProof);
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
 
-    //     // Set up IMT for the VC and Disclose proof
-    //     const commitment = registerProof.pubSignals[CONTRACT_CONSTANTS.REGISTER_COMMITMENT_INDEX];
-    //     const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-    //     const imt = new LeanIMT<bigint>(hashFunction);
-    //     imt.insert(BigInt(commitment));
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
 
-    //     const root = await registry.getIdentityCommitmentMerkleRoot();
-    //     expect(imt.root).to.equal(root);
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
 
-    //     // Generate and verify VC and Disclose proof
-    //     const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-    //         registerSecret,
-    //         ATTESTATION_ID.E_PASSPORT,
-    //         mockPassport,
-    //         "scope",  
-    //         new Array(93).fill("1"),
-    //         "18",
-    //         imt,          
-    //         "20",
-    //         undefined,
-    //         "0",
-    //         ["AAA"],
-    //         "70997970C51812dc3A010C7d01b50e0d17dc79C8"
-    //     );
+            // Set up IMT for the VC and Disclose proof
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+            const imt = new LeanIMT<bigint>(hashFunction);
+            await imt.insert(BigInt(commitment));
+    
+            // Generate VC and Disclose proof
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+            const smtRoot = await registry.getOfacRoot();
 
-    //     const result = await hub.verifyVcAndDiscloseAndGetMinimumResult(
-    //         vcAndDiscloseProof,
-    //     );
+            // Verify and get result
+            const result = await hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof);
 
-    //     expect(result.verified).to.be.true;
-    //     expect(result.olderThan).to.be.true;
-    //     expect(result.forbiddenCountries).to.be.true;
-    //     expect(result.ofac).to.be.true;
-    // });
+            // // Verify the returned results
+            expect(result.revealedDataPacked).to.have.lengthOf(3);
+            expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
+            expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
+            expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
+            expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
+        });
 
-    // it("should fail verification with invalid proof", async () => {
-    //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = await loadFixture(deploySystemFixtures);
+        it("should fail with invalid identity commitment root", async () => {
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-    //     // First register a passport commitment (same setup as above)
-    //     // ... setup code ...
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
 
-    //     const vcAndDiscloseProof = await generateVcAndDiscloseProof(/* ... */);
-        
-    //     // Modify the proof to make it invalid
-    //     vcAndDiscloseProof.vcAndDiscloseProof.a[0] = "123456789";
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
 
-    //     await expect(
-    //         hub.verifyVcAndDiscloseAndGetMinimumResult(vcAndDiscloseProof)
-    //     ).to.be.revertedWithCustomError(hub, "INVALID_VC_AND_DISCLOSE_PROOF");
-    // });
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
 
-    // it("should fail verification with unregistered commitment", async () => {
-    //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = await loadFixture(deploySystemFixtures);
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
 
-    //     // Generate proof without registering commitment first
-    //     const imt = new LeanIMT<bigint>((a: bigint, b: bigint) => poseidon2([a, b]));
-        
-    //     const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-    //         "1234567890",
-    //         ATTESTATION_ID.E_PASSPORT,
-    //         mockPassport,
-    //         "scope",
-    //         new Array(93).fill("1"),
-    //         "18",
-    //         imt,
-    //         "20",
-    //         undefined,
-    //         "0",
-    //         ["AAA"],
-    //         "70997970C51812dc3A010C7d01b50e0d17dc79C8"
-    //     );
+            // Generate proof without registering commitment
+            const imt = new LeanIMT<bigint>((a: bigint, b: bigint) => poseidon2([a, b]));
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            await imt.insert(BigInt(commitment));
+            
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+            vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = "123456789";
 
-    //     await expect(
-    //         hub.verifyVcAndDiscloseAndGetMinimumResult(vcAndDiscloseProof)
-    //     ).to.be.revertedWithCustomError(hub, "INVALID_IDENTITY_COMMITMENT");
-    // });
+            await expect(
+                hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
+            ).to.be.revertedWithCustomError(hub, "INVALID_IDENTITY_COMMITMENT_ROOT");
+        });
 
-    // it("should fail verification when age requirement not met", async () => {
-    //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = await loadFixture(deploySystemFixtures);
+        it("should fail with invalid current date (+ 1 day)", async () => {
+            
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-    //     // ... setup code for registration ...
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
 
-    //     const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-    //         // ... same parameters but with lower age ...
-    //         "25", // Set higher age requirement
-    //         // ... rest of parameters
-    //     );
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
 
-    //     const result = await hub.verifyVcAndDiscloseAndGetMinimumResult(vcAndDiscloseProof);
-    //     expect(result.olderThan).to.be.false;
-    // });
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
+
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
+
+            // Generate proof without registering commitment
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+            const imt = new LeanIMT<bigint>(hashFunction);
+            await imt.insert(BigInt(commitment));
+            
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+
+            const currentBlock = await ethers.provider.getBlock('latest');
+            const oneDayAfter = (currentBlock!.timestamp - 24 * 60 * 60 + 1);
+            
+            // Convert timestamp to 6 digits YYMMDD format
+            const date = new Date(oneDayAfter * 1000);
+            const dateComponents = [
+                Math.floor((date.getUTCFullYear() % 100) / 10),
+                date.getUTCFullYear() % 10,                    
+                Math.floor((date.getUTCMonth() + 1) / 10),     
+                (date.getUTCMonth() + 1) % 10,                 
+                Math.floor(date.getUTCDate() / 10),            
+                date.getUTCDate() % 10                         
+            ];
+
+            for (let i = 0; i < 6; i++) {
+                vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+            }
+
+            await expect(
+                hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
+            ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
+        });
+
+        it("should fail with invalid current date (- 1 day)", async () => {
+            
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
+
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
+
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
+
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
+
+            // Generate proof without registering commitment
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+            const imt = new LeanIMT<bigint>(hashFunction);
+            await imt.insert(BigInt(commitment));
+            
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+
+            const currentBlock = await ethers.provider.getBlock('latest');
+            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60 - 1);
+            
+            // Convert timestamp to 6 digits YYMMDD format
+            const date = new Date(oneDayBefore * 1000);
+            const dateComponents = [
+                Math.floor((date.getUTCFullYear() % 100) / 10),
+                date.getUTCFullYear() % 10,                    
+                Math.floor((date.getUTCMonth() + 1) / 10),     
+                (date.getUTCMonth() + 1) % 10,                 
+                Math.floor(date.getUTCDate() / 10),            
+                date.getUTCDate() % 10                         
+            ];
+
+            for (let i = 0; i < 6; i++) {
+                vcAndDiscloseProof.pubSignals[CONTRACT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+            }
+
+            await expect(
+                hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
+            ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
+        });
+
+        it("should fail with invalid OFAC root", async () => {
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
+
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
+
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
+
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
+
+            await registry.updateOfacRoot("123456789");
+
+            // Generate proof without registering commitment
+            const imt = new LeanIMT<bigint>((a: bigint, b: bigint) => poseidon2([a, b]));
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            await imt.insert(BigInt(commitment));
+            
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+
+            await expect(
+                hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
+            ).to.be.revertedWithCustomError(hub, "INVALID_OFAC_ROOT");
+        });
+
+        it("should fail with invalid VC and Disclose proof", async () => {
+            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+
+            const registerSecret = "1234567890";
+            const dscSecret = generateDscSecret();
+
+            // Register the commitment first
+            const registerProof = await generateRegisterProof(
+                registerSecret, 
+                dscSecret, 
+                mockPassport
+            );
+            const dscProof = await generateDscProof(
+                dscSecret, 
+                mockPassport.dsc, 
+                1664
+            );
+
+            const passportProof: PassportProof = {
+                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+                registerCircuitProof: registerProof,
+                dscCircuitProof: dscProof
+            };
+
+            await hub.verifyAndRegisterPassportCommitment(passportProof);
+
+            // Generate proof without registering commitment
+            const imt = new LeanIMT<bigint>((a: bigint, b: bigint) => poseidon2([a, b]));
+            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+            await imt.insert(BigInt(commitment));
+            
+            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                registerSecret,
+                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                mockPassport,
+                "test-scope",
+                new Array(88).fill("1"),
+                "1",
+                imt,
+                "20",
+            );
+            vcAndDiscloseProof.a[0] = "0";
+
+            await expect(
+                hub.verifyVcAndDiscloseAndGetResult(vcAndDiscloseProof)
+            ).to.be.revertedWithCustomError(hub, "INVALID_VC_AND_DISCLOSE_PROOF");
+        });
+    });
 }); 

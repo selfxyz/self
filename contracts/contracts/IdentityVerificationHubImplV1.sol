@@ -6,8 +6,6 @@ import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "./constants/CircuitConstants.sol";
 import "./constants/AttestationId.sol";
 import "./libraries/Formatter.sol";
-import "./libraries/Dg1Disclosure.sol";
-import "./libraries/CircuitAttributeHandler.sol";
 import "./interfaces/IIdentityVerificationHubV1.sol";
 import "./interfaces/IIdentityRegistryV1.sol";
 import "./interfaces/IRegisterCircuitVerifier.sol";
@@ -54,17 +52,21 @@ contract IdentityVerificationHubImplV1 is
     IdentityVerificationHubStorageV1, 
     IIdentityVerificationHubV1 
 {
+    // Events
+    event HubInitialized(
+        address registry, 
+        address vcAndDiscloseCircuitVerifier,
+        uint256[] registerCircuitVerifierIds,
+        address[] registerCircuitVerifiers,
+        uint256[] dscCircuitVerifierIds,
+        address[] dscCircuitVerifiers
+    );
+    event RegistryUpdated(address registry);
+    event VcAndDiscloseCircuitUpdated(address vcAndDiscloseCircuitVerifier);
+    event RegisterCircuitVerifierUpdated(uint256 typeId, address verifier);
+    event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
 
-    enum Dg1AttributeType {
-        ISSUING_STATE,
-        NAME,
-        PASSPORT_NUMBER,
-        NATIONALITY,
-        DATE_OF_BIRTH,
-        GENDER,
-        EXPIRY_DATE
-    }
-
+    // Errors
     error LENGTH_MISMATCH();
     error NO_VERIFIER_SET();
     error VERIFIER_CALL_FAILED();
@@ -83,19 +85,7 @@ contract IdentityVerificationHubImplV1 is
     error INVALID_OFAC_ROOT();
     error INVALID_CSCA_ROOT();
 
-    event HubInitialized(
-        address registry, 
-        address vcAndDiscloseCircuitVerifier,
-        uint256[] registerCircuitVerifierIds,
-        address[] registerCircuitVerifiers,
-        uint256[] dscCircuitVerifierIds,
-        address[] dscCircuitVerifiers
-    );
-    event RegistryUpdated(address registry);
-    event VcAndDiscloseCircuitUpdated(address vcAndDiscloseCircuitVerifier);
-    event RegisterCircuitVerifierUpdated(uint256 typeId, address verifier);
-    event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
-
+    // Constructor
     constructor() {
         _disableInitializers();
     }
@@ -134,9 +124,10 @@ contract IdentityVerificationHubImplV1 is
     }
 
     ///////////////////////////////////////////////////////////////////
-    ///                     VIEW FUNCTIONS                        ///
+    ///                     EXTERNAL FUNCTIONS                      ///
     ///////////////////////////////////////////////////////////////////
 
+    // view
     function registry() 
         external
         virtual
@@ -181,9 +172,31 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToDscCircuitVerifiers[typeId];
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ///                 UPDATE FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
+    // verify and view
+
+    function verifyVcAndDiscloseAndGetResult(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+    )
+        external
+        view
+        onlyProxy
+        returns (VcAndDiscloseVerificationResult memory)
+    {
+        verifyVcAndDiscloseCircuit(proof);
+
+        VcAndDiscloseVerificationResult memory result;
+         for (uint256 i = 0; i < 3; i++) {
+            result.revealedDataPacked[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
+        }
+        result.forbiddenCountriesListPacked = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+        result.nullifier = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
+        result.attestationId = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
+        result.userIdentifier = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        result.scope = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
+        return result;
+    }
+
+    // updates
     function updateRegistry(
         address registryAddress
     ) 
@@ -264,8 +277,23 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
+    // verify and register
+    function verifyAndRegisterPassportCommitment(
+        PassportProof memory proof
+    ) 
+        external
+        onlyProxy
+    {
+        verifyPassport(proof);
+        IIdentityRegistryV1(_registry).registerCommitment(
+            AttestationId.E_PASSPORT,
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
+            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
+        );
+    }
+
     ///////////////////////////////////////////////////////////////////
-    ///                     VERIFY FUNCTIONS                        ///
+    ///                     INTERNAL FUNCTIONS                        ///
     ///////////////////////////////////////////////////////////////////
 
     // Functions for vc and disclose circuit
@@ -284,7 +312,9 @@ contract IdentityVerificationHubImplV1 is
         }
 
         uint[6] memory dateNum;
-        dateNum[0] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX];
+        for (uint256 i = 0; i < 6; i++) {
+            dateNum[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
+        }
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
             currentTimestamp < block.timestamp - 1 days ||
@@ -293,120 +323,10 @@ contract IdentityVerificationHubImplV1 is
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
-        if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.pA, proof.pB, proof.pC, proof.pubSignals)) {
+        if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.a, proof.b, proof.c, proof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
     }
-
-    function verifyVcAndDiscloseAttributes(
-        VcAndDiscloseHubProof memory proof
-    ) 
-        internal
-        pure
-    {
-        if (proof.olderThanEnabled) {
-            if (!CircuitAttributeHandler.compareOlderThan(proof.olderThan, proof.vcAndDiscloseProof)) {
-                revert INVALID_OLDER_THAN();
-            }
-        }
-
-        if (proof.forbiddenCountriesEnabled) {
-            if (!CircuitAttributeHandler.compareForbiddenCountries(proof.forbiddenCountriesList, proof.vcAndDiscloseProof)) {
-                revert INVALID_FORBIDDEN_COUNTRIES();
-            }
-        }
-
-        if (proof.ofacEnabled) {
-            if (proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_OFAC_RESULT_INDEX] != 0) {
-                revert INVALID_OFAC();
-            }
-        }
-    }
-
-    function verifyVcAndDiscloseAndGetMinimumResult(
-        VcAndDiscloseHubProof memory proof
-    ) 
-        external
-        view
-        onlyProxy
-        returns (VcAndDiscloseVerificationMinimumResult memory)
-    {
-        verifyVcAndDiscloseCircuit(proof.vcAndDiscloseProof);
-        verifyVcAndDiscloseAttributes(proof);
-
-        VcAndDiscloseVerificationMinimumResult memory result;
-        result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
-        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
-        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
-        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
-        return result;
-    }
-
-    function verifyVcAndDiscloseAndGetFullResult(
-        VcAndDiscloseHubProof memory proof
-    )
-        external
-        view
-        onlyProxy
-        returns (VcAndDiscloseVerificationFullResult memory)
-    {
-        verifyVcAndDiscloseCircuit(proof.vcAndDiscloseProof);
-        verifyVcAndDiscloseAttributes(proof);
-
-        VcAndDiscloseVerificationFullResult memory result;
-        result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
-        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
-        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
-        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
-        for (uint256 i = 0; i < 3; i++) {
-            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
-        }
-        result.olderThan = proof.olderThan;
-        for (uint256 i = 0; i < 2; i++) {
-            result.forbiddenCountriesList[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_DISCLOSED_INDEX + i];
-        }
-        result.ofacResult = proof.ofacEnabled;
-        return result;
-    }
-
-    function getReadableDg1Attributes(
-        uint256[3] memory revealedDataPacked,
-        Dg1AttributeType[] memory attributeTypes
-    )
-        public
-        view
-        onlyProxy
-        returns (Dg1Attributes memory) 
-    {   
-        
-        bytes memory charcodes = Formatter.fieldElementsToBytes(
-            revealedDataPacked
-        );
-
-        Dg1Attributes memory attrs;
-
-        for (uint256 i = 0; i < attributeTypes.length; i++) {
-            Dg1AttributeType attr = attributeTypes[i];
-            if (attr == Dg1AttributeType.ISSUING_STATE) {
-                attrs.issuingState = Dg1Disclosure.getIssuingState(charcodes);
-            } else if (attr == Dg1AttributeType.NAME) {
-                attrs.name = Dg1Disclosure.getName(charcodes);
-            } else if (attr == Dg1AttributeType.PASSPORT_NUMBER) {
-                attrs.passportNumber = Dg1Disclosure.getPassportNumber(charcodes);
-            } else if (attr == Dg1AttributeType.NATIONALITY) {
-                attrs.nationality = Dg1Disclosure.getNationality(charcodes);
-            } else if (attr == Dg1AttributeType.DATE_OF_BIRTH) {
-                attrs.dateOfBirth = Dg1Disclosure.getDateOfBirth(charcodes);
-            } else if (attr == Dg1AttributeType.GENDER) {
-                attrs.gender = Dg1Disclosure.getGender(charcodes);
-            } else if (attr == Dg1AttributeType.EXPIRY_DATE) {
-                attrs.expiryDate = Dg1Disclosure.getExpiryDate(charcodes);
-            }
-        }
-
-        return attrs;
-    }
-
 
     // Functions for register commitment
     function verifyPassportRegisterCircuit(
@@ -478,20 +398,6 @@ contract IdentityVerificationHubImplV1 is
         if (!verifyPassportDscCircuit(proof.dscCircuitVerifierId, proof.dscCircuitProof)) {
             revert INVALID_DSC_PROOF();
         }
-    }
-
-    function verifyAndRegisterPassportCommitment(
-        PassportProof memory proof
-    ) 
-        external
-        onlyProxy
-    {
-        verifyPassport(proof);
-        IIdentityRegistryV1(_registry).registerCommitment(
-            AttestationId.E_PASSPORT,
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
-        );
     }
 
 }

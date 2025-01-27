@@ -3,6 +3,7 @@ import { deploySystemFixtures } from "./utils/deployment";
 import { DeployedActors } from "./utils/types";
 import { ethers } from "hardhat";
 import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
+import { generateRandomFieldElement } from "./utils/utils";
 
 describe("Update Function Tests", () => {
     let deployedActors: DeployedActors;
@@ -33,7 +34,7 @@ describe("Update Function Tests", () => {
 
         it("should update OFAC root", async () => {
             const { registry } = deployedActors;
-            const newOfacRoot = ethers.hexlify(ethers.randomBytes(32));
+            const newOfacRoot = generateRandomFieldElement();
 
             // Update OFAC root and check event emission
             await expect(registry.updateOfacRoot(newOfacRoot))
@@ -45,7 +46,7 @@ describe("Update Function Tests", () => {
 
         it("should update CSCA root", async () => {
             const { registry } = deployedActors;
-            const newCscaRoot = ethers.hexlify(ethers.randomBytes(32));
+            const newCscaRoot = generateRandomFieldElement();
 
             // Update CSCA root and check event emission
             await expect(registry.updateCscaRoot(newCscaRoot))
@@ -57,7 +58,7 @@ describe("Update Function Tests", () => {
 
         it("should fail when non-owner tries to update", async () => {
             const { registry, user1 } = deployedActors;
-            const newValue = ethers.hexlify(ethers.randomBytes(32));
+            const newValue = generateRandomFieldElement();
 
             const user1Address = await user1.getAddress();
             // Try to update with non-owner account
@@ -190,6 +191,126 @@ describe("Update Function Tests", () => {
             await expect(
                 hub.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses)
             ).to.be.revertedWithCustomError(hub, "LENGTH_MISMATCH");
+        });
+    });
+
+    describe("Registry Dev Functions", () => {
+        it ("able to add commitment by owner", async () => {
+            const { registry, owner, user1 } = deployedActors;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+
+            const tx = await registry.devAddIdentityCommitment(attestationId, nullifier, commitment);
+            const receipt = await tx.wait();
+            const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevCommitmentRegistered").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevCommitmentRegistered",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
+
+            expect(eventArgs?.nullifier).to.equal(nullifier);
+            expect(eventArgs?.commitment).to.equal(commitment);
+            expect(eventArgs?.timestamp).to.equal(blockTimestamp);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+            expect(eventArgs?.imtIndex).to.equal(0);
+
+
+        });
+
+        it ("able to update commitment by owner", async () => {
+            const { registry, owner, user1 } = deployedActors;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+            await registry.devAddIdentityCommitment(attestationId, nullifier, commitment);
+            const newCommitment = ethers.toBeHex(generateRandomFieldElement());
+            const tx = await registry.devUpdateCommitment(commitment, newCommitment, []);
+            const receipt = await tx.wait();
+            const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevCommitmentUpdated").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevCommitmentUpdated",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
+
+            expect(eventArgs?.oldLeaf).to.equal(commitment);
+            expect(eventArgs?.newLeaf).to.equal(newCommitment);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+            expect(eventArgs?.timestamp).to.equal(blockTimestamp);
+        });
+
+        it ("able to remove commitment by owner", async () => {
+            const { registry, owner, user1 } = deployedActors;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+            await registry.devAddIdentityCommitment(attestationId, nullifier, commitment);
+            const tx = await registry.devRemoveCommitment(commitment, []);
+            const receipt = await tx.wait();
+            const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevCommitmentRemoved").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevCommitmentRemoved",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
+
+            expect(eventArgs?.oldLeaf).to.equal(commitment);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+            expect(eventArgs?.timestamp).to.equal(blockTimestamp);
+        });
+
+        it ("able to remove nullifier by owner", async () => {
+            const { registry, owner, user1 } = deployedActors;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+
+            const tx = await registry.devRemoveNullifier(attestationId, nullifier);
+            const receipt = await tx.wait();
+            const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevNullifierRemoved").topicHash
+            );
+        });
+
+        it("should fail when non-owner tries to use dev functions", async () => {
+            const { registry, user1 } = deployedActors;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+            const siblingNodes: string[] = [];
+            const user1Address = await user1.getAddress();
+
+            await expect(
+                registry.connect(user1).devAddIdentityCommitment(attestationId, nullifier, commitment)
+            ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount")
+                .withArgs(user1Address);
+
+            await expect(
+                registry.connect(user1).devUpdateCommitment(commitment, commitment, siblingNodes)
+            ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount")
+                .withArgs(user1Address);
+
+            await expect(
+                registry.connect(user1).devRemoveCommitment(commitment, siblingNodes)
+            ).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount")
+                .withArgs(user1Address);
         });
     });
 });

@@ -67,18 +67,23 @@ contract IdentityRegistryImplV1 is
     using Strings for uint256;
     using InternalLeanIMT for LeanIMTData;
 
-    error HUB_NOT_SET();
-    error ONLY_HUB_CAN_REGISTER_COMMITMENT();
-    error REGISTERED_IDENTITY();
-
+    // Events
     event RegistryInitialized(address hub);
     event HubUpdated(address hub);
     event CscaRootUpdated(uint256 cscaRoot);
     event OfacRootUpdated(uint256 ofacRoot);
     event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
-    event CommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
-    event CommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevNullifierRemoved(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 timestamp);
 
+    // Errors
+    error HUB_NOT_SET();
+    error ONLY_HUB_CAN_REGISTER_COMMITMENT();
+    error REGISTERED_IDENTITY();
+
+    // Constructor
     constructor() {
         _disableInitializers();
     }
@@ -95,9 +100,10 @@ contract IdentityRegistryImplV1 is
     }
 
     ///////////////////////////////////////////////////////////////////
-    ///                     VIEW FUNCTIONS                        ///
+    ///                     EXTERNAL FUNCTIONS                      ///
     ///////////////////////////////////////////////////////////////////
 
+    // view
     function hub() 
         external
         virtual
@@ -133,69 +139,6 @@ contract IdentityRegistryImplV1 is
         return _rootTimestamps[root];
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ///                     UPDATE FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
-
-    function updateHub(
-        address hub
-    )
-        external
-        onlyProxy
-        onlyOwner 
-    { 
-        _hub = hub;
-        emit HubUpdated(hub);
-    }
-
-    function updateOfacRoot(
-        uint256 ofacRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
-        _ofacRoot = ofacRoot;
-        emit OfacRootUpdated(ofacRoot);
-    }
-
-
-    function updateCscaRoot(
-        uint256 cscaRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
-        _cscaRoot = cscaRoot;
-        emit CscaRootUpdated(cscaRoot);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ///                     REGISTER COMMITMENT                     ///
-    ///////////////////////////////////////////////////////////////////
-
-    function registerCommitment(
-        bytes32 attestationId,
-        uint256 nullifier,
-        uint256 commitment
-    ) 
-        external
-        onlyProxy
-    {
-        if (address(_hub) == address(0)) revert HUB_NOT_SET();
-        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
-        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
-
-        _nullifiers[attestationId][nullifier] = true;
-        uint256 index = _identityCommitmentIMT.size;
-        uint256 imt_root = _addCommitment(commitment);
-        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ///                     VIEW FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
     function checkIdentityCommitmentRoot(
         uint256 root
     ) 
@@ -245,15 +188,6 @@ contract IdentityRegistryImplV1 is
         return _ofacRoot;
     }
 
-    function getCscaRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return _cscaRoot;
-    }
-
     function checkOfacRoot(
         uint256 root
     ) 
@@ -263,6 +197,15 @@ contract IdentityRegistryImplV1 is
         returns (bool) 
     {
         return _ofacRoot == root;
+    }
+
+    function getCscaRoot() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _cscaRoot;
     }
 
     function checkCscaRoot(
@@ -275,10 +218,59 @@ contract IdentityRegistryImplV1 is
     {
         return _cscaRoot == root;
     }
+
+    // register
+    function registerCommitment(
+        bytes32 attestationId,
+        uint256 nullifier,
+        uint256 commitment
+    ) 
+        external
+        onlyProxy
+    {
+        if (address(_hub) == address(0)) revert HUB_NOT_SET();
+        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
+        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
+
+        _nullifiers[attestationId][nullifier] = true;
+        uint256 index = _identityCommitmentIMT.size;
+        uint256 imt_root = _addCommitment(commitment);
+        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+    }
     
-    ///////////////////////////////////////////////////////////////////
-    ///                     DEV FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
+    // onlyOwner
+    function updateHub(
+        address hub
+    )
+        external
+        onlyProxy
+        onlyOwner 
+    { 
+        _hub = hub;
+        emit HubUpdated(hub);
+    }
+
+    function updateOfacRoot(
+        uint256 ofacRoot
+    ) 
+        external
+        onlyProxy
+        onlyOwner 
+    {
+        _ofacRoot = ofacRoot;
+        emit OfacRootUpdated(ofacRoot);
+    }
+
+    function updateCscaRoot(
+        uint256 cscaRoot
+    ) 
+        external
+        onlyProxy
+        onlyOwner 
+    {
+        _cscaRoot = cscaRoot;
+        emit CscaRootUpdated(cscaRoot);
+    }
 
     function devAddIdentityCommitment(
         bytes32 attestationId,
@@ -291,7 +283,7 @@ contract IdentityRegistryImplV1 is
     {
         uint256 imt_root = _addCommitment(commitment);
         uint256 index = _identityCommitmentIMT._indexOf(commitment);
-        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+        emit DevCommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
 
     function devUpdateCommitment(
@@ -304,7 +296,7 @@ contract IdentityRegistryImplV1 is
         onlyOwner
     {
         uint256 imt_root = _updateCommitment(oldLeaf, newLeaf, siblingNodes);
-        emit CommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
+        emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
     }
 
     function devRemoveCommitment(
@@ -316,11 +308,23 @@ contract IdentityRegistryImplV1 is
         onlyOwner
     {
         uint256 imt_root = _removeCommitment(oldLeaf, siblingNodes);
-        emit CommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+        emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+    }
+
+    function devRemoveNullifier(
+        bytes32 attestationId,
+        uint256 nullifier
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _nullifiers[attestationId][nullifier] = false;
+        emit DevNullifierRemoved(attestationId, nullifier, block.timestamp);
     }
 
     ///////////////////////////////////////////////////////////////////
-    ///                     INTERNAL FUNCTIONS                        ///
+    ///                     INTERNAL FUNCTIONS                      ///
     ///////////////////////////////////////////////////////////////////
     
     function _addCommitment(

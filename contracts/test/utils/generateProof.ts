@@ -24,6 +24,7 @@ import {
     generateCircuitInputsVCandDisclose
 } from "../../../common/src/utils/circuits/generateInputs";
 import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
+import { formatCountriesList } from "../../../common/src/utils/circuits/formatInputs";
 
 const registerCircuits: CircuitArtifacts = {
     "register_sha256_sha256_sha256_rsa_65537_4096": {
@@ -129,7 +130,7 @@ export async function generateDscProof(
     return fixedProof;
 }
 
-async function generateVcAndDiscloseProof(
+export async function generateVcAndDiscloseProof(
     secret: string,
     attestationId: string,
     passportData: PassportData,
@@ -142,7 +143,7 @@ async function generateVcAndDiscloseProof(
     selectorOfac: string | number = "0",
     forbiddenCountriesList: string[] = ["AAA"],
     userIdentifier: string = "70997970C51812dc3A010C7d01b50e0d17dc79C8"
-): Promise<VcAndDiscloseHubProof> {
+): Promise<VcAndDiscloseProof> {
 
     smt = getSMT();
     
@@ -181,17 +182,8 @@ async function generateVcAndDiscloseProof(
     const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
     const fixedProof = parseSolidityCalldata(rawCallData, {} as VcAndDiscloseProof);
 
-    const vcAndDiscloseHubProof: VcAndDiscloseHubProof = {
-        olderThanEnabled: true,
-        olderThan: selectorOlderThan,
-        forbiddenCountriesEnabled: true,
-        forbiddenCountriesList: forbiddenCountriesList,
-        ofacEnabled: true,
-        vcAndDiscloseProof: fixedProof
-    };
-
     console.log(CYAN, "=== End generateVcAndDiscloseProof ===", RESET);
-    return vcAndDiscloseHubProof;
+    return fixedProof;
 }
 
 function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
@@ -207,7 +199,7 @@ function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
     } as T;
 }
 
-function getSMT() {
+export function getSMT() {
     let name = fs.readFileSync("../common/ofacdata/inputs/names.json", "utf-8");
     let name_list = JSON.parse(name);
     let mockSmt;
@@ -215,7 +207,7 @@ function getSMT() {
         mockSmt = importSMTFromJsonFile("./test/utils/smt.json") as SMT;
     } else {
         const builtSmt = buildSMT(name_list, "name");
-        exportSMTToJsonFile(builtSmt[0], builtSmt[1], builtSmt[2], "./test/integrationTest/smt.json");
+        exportSMTToJsonFile(builtSmt[0], builtSmt[1], builtSmt[2], "./test/utils/smt.json");
         mockSmt = builtSmt[2] as SMT;
     }
     return mockSmt;

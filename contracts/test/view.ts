@@ -4,10 +4,7 @@ import { DeployedActors } from "./utils/types";
 import { ethers } from "hardhat";
 import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
 import { getCSCAModulusMerkleTree } from "../../common/src/utils/csca";
-import { generateDscSecret } from "../../common/src/utils/csca";
-import { generateRegisterProof, generateDscProof } from "./utils/generateProof";
-import { PassportProof } from "./utils/types";
-import { CONTRACT_CONSTANTS } from "./utils/constants";
+import { generateRandomFieldElement } from "./utils/utils";
 
 describe("View Function Tests", () => {
     let deployedActors: DeployedActors;
@@ -63,20 +60,20 @@ describe("View Function Tests", () => {
             const { registry } = deployedActors;
             const cscaModulusMerkleTree = getCSCAModulusMerkleTree();
             expect(await registry.checkCscaRoot(cscaModulusMerkleTree.root)).to.be.true;
-            expect(await registry.checkCscaRoot(123456789)).to.be.false;
+            expect(await registry.checkCscaRoot(generateRandomFieldElement())).to.be.false;
         });
 
         it("should return correct OFAC root", async () => {
             const { registry } = deployedActors;
             const ofacRoot = await registry.getOfacRoot();
             expect(await registry.checkOfacRoot(ofacRoot)).to.be.true;
-            expect(await registry.checkOfacRoot(123456789)).to.be.false;
+            expect(await registry.checkOfacRoot(generateRandomFieldElement())).to.be.false;
         });
 
         it("should return correct nullifier status", async () => {
             const { registry } = deployedActors;
-            const attestationId = ethers.keccak256(ethers.toUtf8Bytes("E-PASSPORT"));
-            const nullifier = 123456789;
+            const attestationId = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
             
             // Should return false for unused nullifier
             expect(await registry.nullifiers(attestationId, nullifier)).to.be.false;
