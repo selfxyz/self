@@ -13,6 +13,7 @@ export interface DscCertificateMetaData {
   cscaSaltLength: number;
   csca: string;
   cscaParsed: CertificateData;
+  cscaBits: number;
 }
 
 export function parseDscCertificateData(dscCert: CertificateData): DscCertificateMetaData {

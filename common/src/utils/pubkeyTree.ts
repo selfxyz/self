@@ -50,7 +50,7 @@ export function getLeafCSCA(dsc: string): string {
 
   const { publicKeyDetails } = parsedCertificate;
 
-  const { n, k } = getNAndKCSCA(signatureAlgorithm as any);
+  const { n, k } = getNAndK(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;

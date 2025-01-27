@@ -1,13 +1,10 @@
 import { describe } from 'mocha';
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
-import { poseidon2 } from 'poseidon-lite';
-import { SMT } from '@openpassport/zk-kit-smt';
-import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 import { sigAlgs, fullSigAlgs } from './test_cases';
 import { generateCommitment, generateGlue, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
@@ -41,15 +38,13 @@ testSuite.forEach(
       const salt = 0;
       const attestation_id = '1';
 
-      let name_smt = new SMT(poseidon2, true);
-      name_smt.import(namejson);
       const inputs = generateCircuitInputsRegister(secret, salt, passportData);
 
       before(async () => {
         circuit = await wasm_tester(
           path.join(
             __dirname,
-            `../../circuits/register/instances/${getCircuitNameFromPassportData(passportData)}.circom`
+            `../../circuits/register/instances/${getCircuitNameFromPassportData(passportData, 'register')}.circom`
           ),
           {
             include: [
@@ -67,7 +62,6 @@ testSuite.forEach(
         const w = await circuit.calculateWitness(inputs);
         await circuit.checkConstraints(w);
 
-        const logDg1PackedHash = generateCommitment('0', '1', passportData);
         if (!checkNullifier) {
           return;
         }

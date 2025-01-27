@@ -5,7 +5,7 @@ export const sigAlgs = [
     sigAlg: 'rsapss',
     hashFunction: 'sha256',
     domainParameter: '3',
-    keyLength: '4096',
+    keyLength: '3072',
     checkNullifier: true,
   },
   {
