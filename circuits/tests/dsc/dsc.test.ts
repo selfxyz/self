@@ -1,7 +1,7 @@
 import { assert, expect } from 'chai';
 import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsDSC } from '../../../common/src/utils/csca';
+import {generateCircuitInputsDSC} from '../../../common/src/utils/circuits/generateInputs';
 import {
   mock_dsc_sha1_rsa_4096,
   mock_dsc_sha256_rsa_4096,
