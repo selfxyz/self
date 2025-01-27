@@ -140,8 +140,8 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).updateCscaRoot(newCscaRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it ("should be able to add commitment by owner", async () => {
-            const { registry} = deployedActors;
+        it("should be able to add commitment by owner", async () => {
+            const { registry } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
             const commitment = ethers.toBeHex(generateRandomFieldElement());
@@ -149,6 +149,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             const tx = await registry.devAddIdentityCommitment(attestationId, nullifier, commitment);
             const receipt = await tx.wait();
             const blockTimestamp = (await ethers.provider.getBlock("latest"))!.timestamp;
+            
             const event = receipt?.logs.find(
                 log => log.topics[0] === registry.interface.getEvent("DevCommitmentRegistered").topicHash
             );
@@ -159,15 +160,16 @@ describe("Unit Tests for IdentityRegistry", () => {
             ) : null;
 
             const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
+            const rootTimestamp = await registry.rootTimestamps(currentRoot);
 
+            expect(eventArgs?.attestationId).to.equal(attestationId);
             expect(eventArgs?.nullifier).to.equal(nullifier);
             expect(eventArgs?.commitment).to.equal(commitment);
             expect(eventArgs?.timestamp).to.equal(blockTimestamp);
-            expect(eventArgs?.imtRoot).to.equal(currentRoot);
-            expect(eventArgs?.imtIndex).to.equal(0);
+            expect(rootTimestamp).to.equal(blockTimestamp);
         });
 
-        it ("should not add commitment if caller is not owner", async () => {
+        it("should not add commitment if caller is not owner", async () => {
             const { registry, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -176,7 +178,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registry.connect(user1).devAddIdentityCommitment(attestationId, nullifier, commitment)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
-        it ("should not add commitment if caller is not proxy", async () => {
+        it("should not add commitment if caller is not proxy", async () => {
             const { registryImpl, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -185,7 +187,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).devAddIdentityCommitment(attestationId, nullifier, commitment)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it ("should be able to update commitment by owner", async () => {
+        it("should be able to update commitment by owner", async () => {
             const { registry } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -212,7 +214,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             expect(eventArgs?.timestamp).to.equal(blockTimestamp);
         });
 
-        it ("should not update commitment if caller is not owner", async () => {
+        it("should not update commitment if caller is not owner", async () => {
             const { registry, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -222,7 +224,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registry.connect(user1).devUpdateCommitment(commitment, newCommitment, [])).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
-        it ("should not update commitment if caller is not proxy", async () => {
+        it("should not update commitment if caller is not proxy", async () => {
             const { registry, registryImpl, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -232,7 +234,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).devUpdateCommitment(commitment, newCommitment, [])).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it ("able to remove commitment by owner", async () => {
+        it("able to remove commitment by owner", async () => {
             const { registry, owner, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -257,7 +259,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             expect(eventArgs?.timestamp).to.equal(blockTimestamp);
         });
 
-        it ("should not remove commitment if caller is not owner", async () => {
+        it("should not remove commitment if caller is not owner", async () => {
             const { registry, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -266,7 +268,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registry.connect(user1).devRemoveCommitment(commitment, [])).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
-        it ("should not remove commitment if caller is not proxy", async () => {
+        it("should not remove commitment if caller is not proxy", async () => {
             const { registry, registryImpl, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -275,7 +277,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).devRemoveCommitment(commitment, [])).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it ("able to remove nullifier by owner", async () => {
+        it("able to remove nullifier by owner", async () => {
             const { registry, owner, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -298,14 +300,14 @@ describe("Unit Tests for IdentityRegistry", () => {
             expect(nullifierCheck).to.equal(false);
         });
 
-        it ("should not remove nullifier if caller is not owner", async () => {
+        it("should not remove nullifier if caller is not owner", async () => {
             const { registry, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
             await expect(registry.connect(user1).devRemoveNullifier(attestationId, nullifier)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
-        it ("should not remove nullifier if caller is not proxy", async () => {
+        it("should not remove nullifier if caller is not proxy", async () => {
             const { registryImpl, user1 } = deployedActors;
             const attestationId = ethers.toBeHex(generateRandomFieldElement());
             const nullifier = ethers.toBeHex(generateRandomFieldElement());
@@ -377,7 +379,7 @@ describe("Unit Tests for IdentityRegistry", () => {
                 .to.equal(ethers.zeroPadValue(registryV2Implementation.target.toString(), 32));
         });
 
-        it ("should not allow non owner to upgrade implementation", async () => {
+        it("should not allow non owner to upgrade implementation", async () => {
             const {registry, owner, user1} = deployedActors;
             
             const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3", owner);
@@ -404,7 +406,7 @@ describe("Unit Tests for IdentityRegistry", () => {
             )).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
-        it ("should not allow implementation contract to be initialized directly", async () => {
+        it("should not allow implementation contract to be initialized directly", async () => {
             const {owner, hub} = deployedActors;
 
             const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3", owner);

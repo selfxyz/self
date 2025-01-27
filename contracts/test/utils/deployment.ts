@@ -1,8 +1,6 @@
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
-import { SMT } from "@openpassport/zk-kit-smt";
 import { getSMT } from "./generateProof";
-import { poseidon2 } from "poseidon-lite";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";

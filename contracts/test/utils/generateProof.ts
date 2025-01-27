@@ -14,17 +14,16 @@ import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
 import { poseidon2, poseidon3 } from "poseidon-lite";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import path from "path";
-import { PassportProof, RegisterCircuitProof, DscCircuitProof, CircuitArtifacts, VcAndDiscloseHubProof, VcAndDiscloseProof } from "./types";
+import { RegisterCircuitProof, DscCircuitProof, CircuitArtifacts, VcAndDiscloseProof } from "./types";
 import { PassportData } from "../../../common/src/utils/types";
 import { buildSMT } from "../../../common/src/utils/trees";
 
-import {BigNumberish, ContractTransactionReceipt, Log} from "ethers";
+import {BigNumberish} from "ethers";
 import { 
     generateCircuitInputsRegister,
     generateCircuitInputsVCandDisclose
 } from "../../../common/src/utils/circuits/generateInputs";
 import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
-import { formatCountriesList } from "../../../common/src/utils/circuits/formatInputs";
 
 const registerCircuits: CircuitArtifacts = {
     "register_sha256_sha256_sha256_rsa_65537_4096": {

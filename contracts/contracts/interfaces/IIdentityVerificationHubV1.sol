@@ -22,4 +22,11 @@ interface IIdentityVerificationHubV1 {
         IDscCircuitVerifier.DscCircuitProof dscCircuitProof;
     }
 
+    function verifyVcAndDiscloseAndGetResult(
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+    )
+        external
+        view
+        returns (VcAndDiscloseVerificationResult memory);
+
 } 

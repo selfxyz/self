@@ -343,5 +343,38 @@ describe("Commitment Registration Tests", function () {
                 hub.verifyAndRegisterPassportCommitment(passportProof)
             ).to.be.revertedWithCustomError(hub, "NO_VERIFIER_SET");
         });
+
+        it("should fail when hub address is not set", async () => {
+            const {registry, owner} = deployedActors;
+            
+            // Update hub address to zero address
+            await registry.updateHub(ethers.ZeroAddress);
+            
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+
+            await expect(
+                registry.registerCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                )
+            ).to.be.revertedWithCustomError(registry, "HUB_NOT_SET");
+        });
+
+        it("should fail when called directly on implementation", async () => {
+            const {registryImpl} = deployedActors;
+
+            const commitment = ethers.toBeHex(generateRandomFieldElement());
+            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+
+            await expect(
+                registryImpl.registerCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                )
+            ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
     });
 });
