@@ -1,6 +1,7 @@
 import { sha384_512Pad, shaPad } from './shaPad';
 import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
+import * as fs from 'fs';
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, SignatureAlgorithmIndex } from '../constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
@@ -15,6 +16,7 @@ import { SignatureAlgorithm } from './types';
 import { Certificate } from 'pkijs';
 import { bytesToBigDecimal, hexToDecimal, splitToWords } from './bytes';
 import { extractRSFromSignature, getNAndK } from './passports/passport';
+import path from 'path';
 
 export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): number {
   const modulusNumArray = [];
@@ -388,4 +390,8 @@ function getCertificateFromPem(pemContent: string): Certificate {
   );
   const asn1Data = asn1.fromBER(certBuffer);
   return new Certificate({ schema: asn1Data.result });
+}
+
+export function getCsca(signatureAlgorith: string) {
+  return fs.readFileSync(path.join(__dirname, `../mock_certificates/${signatureAlgorith}/mock_csca.pem`), 'base64');
 }
