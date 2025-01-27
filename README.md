@@ -7,7 +7,6 @@ By scanning the NFC chip in their ID document, users can prove their validity wh
 Under the hood, OpenPassport uses zk-SNARKs to make sure personal data is redacted, but the document is verified.
 
 Use cases unlocked include:
-
 - **Airdrop protection**: Protect a token distribution from bots
 - **Social media**: Add humanity checks to user's profiles
 - **Quadratic funding**: Prevent farmers from skewing rewards
@@ -23,7 +22,6 @@ Checkout our [coverage map here](https://map.openpassport.app/)
 #### What exactly is being signed ?
 
 When a country issues a passport, they sign datagroups that include at least:
-
 - First name
 - Last name
 - Nationality
