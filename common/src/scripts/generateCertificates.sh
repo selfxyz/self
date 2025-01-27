@@ -239,20 +239,27 @@ generate_certificate csca sha512 rsa 65537 4096
 generate_certificate dsc sha512 rsa 65537 2048 --signer sha512_rsa_65537_4096
 generate_certificate dsc sha512 rsa 65537 4096 --signer sha512_rsa_65537_4096
 generate_certificate csca sha256 rsa 3 4096
+generate_certificate csca sha1 rsa 3 4096
+generate_certificate dsc sha1 rsa 3 4096 --signer sha1_rsa_3_4096
 generate_certificate dsc sha256 rsa 3 2048 --signer sha256_rsa_3_4096
 generate_certificate dsc sha256 rsa 3 4096 --signer sha256_rsa_3_4096
 
 # RSA-PSS certificates
 generate_certificate csca sha256 rsapss 32 65537 4096
-generate_certificate dsc sha256 rsapss 32 65537 2048 --signer sha256_rsapss_32_65537_4096
-generate_certificate dsc sha256 rsapss 32 65537 3072 --signer sha256_rsapss_32_65537_4096
+generate_certificate csca sha256 rsapss 32 65537 2048
+generate_certificate csca sha256 rsapss 32 65537 3072
+generate_certificate dsc sha256 rsapss 32 65537 4096 --signer sha256_rsapss_32_65537_4096
+generate_certificate dsc sha256 rsapss 32 65537 2048 --signer sha256_rsapss_32_65537_2048
+generate_certificate dsc sha256 rsapss 32 65537 3072 --signer sha256_rsapss_32_65537_3072
 generate_certificate csca sha256 rsapss 32 3 4096
+generate_certificate csca sha256 rsapss 32 3 3072
 generate_certificate dsc sha256 rsapss 32 3 2048 --signer sha256_rsapss_32_3_4096
-generate_certificate dsc sha256 rsapss 32 3 3072 --signer sha256_rsapss_32_3_4096
+generate_certificate dsc sha256 rsapss 32 3 3072 --signer sha256_rsapss_32_3_3072
 generate_certificate dsc sha256 rsapss 32 3 4096 --signer sha256_rsapss_32_3_4096
 generate_certificate csca sha384 rsapss 48 65537 4096
+generate_certificate csca sha384 rsapss 48 65537 3072
 generate_certificate dsc sha384 rsapss 48 65537 2048 --signer sha384_rsapss_48_65537_4096
-generate_certificate dsc sha384 rsapss 48 65537 3072 --signer sha384_rsapss_48_65537_4096
+generate_certificate dsc sha384 rsapss 48 65537 3072 --signer sha384_rsapss_48_65537_3072
 
 # ECDSA certificates
 generate_certificate csca sha1 ecdsa secp256r1
