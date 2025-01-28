@@ -100,9 +100,9 @@ export function generateCircuitInputsDSC(
     raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
     csca_pubKey: csca_pubKey_formatted,
     signature,
-    // merkle_root: [BigInt(root).toString()],
-    // path: proof.pathIndices.map(index => index.toString()),
-    // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    merkle_root: [BigInt(root).toString()],
+    path: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
   };
 }
 

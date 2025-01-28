@@ -47,9 +47,9 @@ template DSC(
     signal input csca_pubKey[kScaled];
     signal input signature[kScaled];
 
-    // signal input merkle_root;
-    // signal input path[nLevels];
-    // signal input siblings[nLevels];
+    signal input merkle_root;
+    signal input path[nLevels];
+    signal input siblings[nLevels];
 
     log("raw_csca_actual_length", raw_csca_actual_length);
     log("csca_pubKey_offset", csca_pubKey_offset);
@@ -66,8 +66,8 @@ template DSC(
 
     // compute leaf in the CSCA Merkle tree and verify inclusion
     signal csca_tree_leaf <== PackBytesAndPoseidon(MAX_CSCA_LENGTH)(raw_csca);
-    // signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_tree_leaf, nLevels, path, siblings);
-    // merkle_root === computed_merkle_root;
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_tree_leaf, nLevels, path, siblings);
+    merkle_root === computed_merkle_root;
 
     // get CSCA public key from the certificate
     signal extracted_csca_pubKey[MAX_CSCA_PUBKEY_LENGTH] <== SelectSubArray(MAX_CSCA_LENGTH, MAX_CSCA_PUBKEY_LENGTH)(raw_csca, csca_pubKey_offset, csca_pubkey_length_bytes);
