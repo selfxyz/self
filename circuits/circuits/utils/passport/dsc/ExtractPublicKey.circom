@@ -1,6 +1,14 @@
 pragma circom 2.1.9;
 include "@openpassport/zk-email-circuits/utils/array.circom";
 
+/// @notice Extracts the public key from the DSC certificate.
+/// @dev This doesn't verify whether the pubkey is part of the certificate as certificate is padded.
+/// @param max_cert_bytes maximum length of the DSC certificate in bytes
+/// @param maxPubkeyBytesLength maximum length of the DSC public key in bytes
+/// @input raw_dsc_cert DSC certificate
+/// @input dsc_pubKey_offset offset of the DSC public key in the certificate
+/// @input dsc_pubkey_length_bytes length of the DSC public key in bytes. For ECDSA, it is length of x and y concatenated (x + y)
+/// @output out DSC public key
 template ExtractPublicKey(max_cert_bytes, maxPubkeyBytesLength) {
     signal input raw_dsc_cert[max_cert_bytes];
     signal input dsc_pubKey_offset;

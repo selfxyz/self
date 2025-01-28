@@ -14,9 +14,22 @@ include "../utils/passport/constants.circom";
 include "../utils/passport/dsc/StandardizePubKeyTo35Words.circom";
 include "../utils/passport/dsc/ExtractPublicKey.circom";
 
-///@input dsc_pubKey_bytes public key of the DSC in bytes padded to 525 bytes
-///@input dsc_pubKey_offset offset of the DSC public key in the certificate
-///@input dsc_pubkey_length_bytes length of the DSC public key in bytes. For ECDSA, it is x+y length
+/// @param signatureAlgorithm signature algorithm of the DSC certificate
+/// @param n_csca number of bits in each chunk of the CSCA public key
+/// @param k_csca number of chunks in the CSCA public key
+/// @param max_cert_bytes maximum length of the DSC certificate in bytes
+/// @param nLevels number of levels in the CSCA merkle tree
+/// @input raw_dsc_cert_padded_bytes length of the DSC certificate in bytes padded to max_cert_bytes bytes
+/// @input csca_pubKey public key of the CSCA split into k_csca chunks of n_csca bits
+/// @input signature signature of the DSC certificate split into k_csca chunks of n_csca bits
+/// @input dsc_pubKey_bytes public key of the DSC in bytes padded to 525 bytes
+/// @input dsc_pubKey_offset offset of the DSC public key in the certificate
+/// @input dsc_pubkey_length_bytes length of the DSC public key in bytes. For ECDSA, it is x+y length
+/// @input merkle_root root of the csca merkle tree
+/// @input path path to the leaf in the csca merkle tree
+/// @input siblings siblings of the path to the leaf in the csca merkle tree
+/// @input salt salt 
+/// @output glue glue value to link the DSC proof with REGISTER proof
 template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     var maxPubkeyBytesLength = getMaxDscPubKeyLength();
    
