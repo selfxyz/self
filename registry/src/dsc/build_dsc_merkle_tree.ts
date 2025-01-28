@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/pubkeyTree';
-import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
+import { DEVELOPMENT_MODE, DSC_TREE_DEPTH } from '../../../common/src/constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
 import { writeFile } from 'fs/promises';
@@ -9,6 +9,7 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 
 let tbs_max_bytes = 0;
 let key_length_max_bytes = 0;
+const countryKeyBitLengths: { [countryCode: string]: number } = {};
 
 function processCertificate(pemContent: string, filePath: string) {
     try {
@@ -32,6 +33,7 @@ function processCertificate(pemContent: string, filePath: string) {
 
         const keyLength = parseInt(certificate.publicKeyDetails.bits);
         if (keyLength > 4096) {
+            countryKeyBitLengths[certificate.issuer] = keyLength;
             console.log(`Skipping file ${filePath}: Key length ${keyLength} bits exceeds 4096 bits`);
             return null;
         }
@@ -52,7 +54,7 @@ function processCertificate(pemContent: string, filePath: string) {
 }
 
 async function buildCscaMerkleTree() {
-    const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+    const tree = new IMT(poseidon2, DSC_TREE_DEPTH, 0, 2);
 
     const path_to_pem_files = "outputs/dsc/pem_masterlist";
     for (const file of fs.readdirSync(path_to_pem_files)) {
@@ -93,6 +95,7 @@ async function buildCscaMerkleTree() {
 
     console.log(`Max TBS bytes: ${tbs_max_bytes}`);
     console.log(`Max Key Length: ${key_length_max_bytes}`);
+    console.log('js: countryKeyBitLengths', countryKeyBitLengths);
     return tree;
 }
 
