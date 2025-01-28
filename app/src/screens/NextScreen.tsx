@@ -15,7 +15,7 @@ const NextScreen: React.FC = () => {
   const { height } = useWindowDimensions();
   const handleNext = () => {
     setRegistered(true);
-    setSelectedTab('app');
+    setSelectedTab('launch');
   };
   const { hideData, setSelectedTab } = useNavigationStore();
 

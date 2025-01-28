@@ -72,6 +72,7 @@ import { CircuitName, fetchZkeyAndDat } from '../utils/zkeyDownload';
 // import screens
 import AppScreen from './AppScreen';
 import CameraScreen from './CameraScreen';
+import LaunchScreen from './LaunchScreen';
 import MockDataScreen from './MockDataScreen';
 import NextScreen from './NextScreen';
 import NfcScreen from './NfcScreen';
@@ -1105,6 +1106,9 @@ const MainScreen: React.FC = () => {
           </Tabs.Content>
           <Tabs.Content value="next" f={1}>
             <NextScreen />
+          </Tabs.Content>
+          <Tabs.Content value="launch" f={1}>
+            <LaunchScreen />
           </Tabs.Content>
           <Tabs.Content value="app" f={1}>
             <AppScreen
