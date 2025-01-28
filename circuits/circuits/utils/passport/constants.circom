@@ -13,9 +13,10 @@ function getMaxDSCLength(){
     return 1664;
 }
 
-/// @notice Maximum length of CSCA certificate — currently 1664 bytes
+/// @notice Maximum length of CSCA certificate — currently 1800 bytes.
+/// @dev Empirically, we saw CSCAs up to 1671 bytes in the master list.
 function getMaxCSCALength(){
-    return 1664; // TODO update with the correct value
+    return 1800;
 }
 
 /// @notice Maximum number of levels in the CSCA Merkle tree — currently 12
