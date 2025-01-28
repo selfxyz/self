@@ -33,7 +33,6 @@ import { generateMerkleProof, generateSMTProof } from '../trees';
 import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCSCAModulusProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
-import { getLeafCSCA } from '../pubkeyTree';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
 
 export function generateCircuitInputsDSC(
@@ -68,7 +67,7 @@ export function generateCircuitInputsDSC(
   );
   console.log('js: dscTbsBytesPadded', dscTbsBytesPadded);
   console.log('js: dscTbsBytesPadded length', dscTbsBytesPadded.length);
-  
+
   // TODO: get the CSCA inclusion proof
   // const leaf = getLeafCSCA(cscaPem);
   // const [root, proof] = getCSCAModulusProof(leaf);
@@ -90,7 +89,7 @@ export function generateCircuitInputsDSC(
 
   const csca_pubkey_length_bytes = Number(cscaCertData.publicKeyDetails.bits) / 8;
   console.log('js: csca_pubkey_length_bytes', csca_pubkey_length_bytes);
-  
+
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
   // console.log('js: signatureRaw', signatureRaw);
   const signature = formatSignatureDSCCircuit(cscaCertData.signatureAlgorithm, cscaCertData.hashAlgorithm, cscaCertData, signatureRaw,);
