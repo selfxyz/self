@@ -31,20 +31,8 @@ export function parseCertificateSimple(pem: string): CertificateData {
     publicKeyAlgoOID: '',
   };
   try {
-    const pemFormatted = pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
-    const binary = Buffer.from(pemFormatted, 'base64');
-    const arrayBuffer = new ArrayBuffer(binary.length);
-    const view = new Uint8Array(arrayBuffer);
-    for (let i = 0; i < binary.length; i++) {
-      view[i] = binary[i];
-    }
+    const cert = getCertificateFromPem(pem);
 
-    const asn1 = asn1js.fromBER(arrayBuffer);
-    if (asn1.offset === -1) {
-      throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
-    }
-
-    const cert = new Certificate({ schema: asn1.result });
     const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
     const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
     const signatureAlgoOID = cert.signatureAlgorithm.algorithmId;
@@ -52,13 +40,13 @@ export function parseCertificateSimple(pem: string): CertificateData {
     certificateData.hashAlgorithm = getHashAlgorithm(signatureAlgoFN);
     certificateData.publicKeyAlgoOID = publicKeyAlgoOID;
     let params;
-    if (publicKeyAlgoFN === 'RSA') {
+    if (publicKeyAlgoFN === 'RSA' && signatureAlgoFN != 'RSASSA_PSS') {
       certificateData.signatureAlgorithm = 'rsa';
       params = getParamsRSA(cert);
     } else if (publicKeyAlgoFN === 'ECC') {
       certificateData.signatureAlgorithm = 'ecdsa';
       params = getParamsECDSA(cert);
-    } else if (publicKeyAlgoFN === 'RSASSA_PSS') {
+    } else if (publicKeyAlgoFN === 'RSASSA_PSS' || signatureAlgoFN === 'RSASSA_PSS') {
       certificateData.signatureAlgorithm = 'rsapss';
       params = getParamsRSAPSS(cert);
     } else {
@@ -79,7 +67,7 @@ export function parseCertificateSimple(pem: string): CertificateData {
     certificateData.authorityKeyIdentifier = authorityKeyIdentifier;
 
     // corner case for rsapss
-    if (certificateData.signatureAlgorithm === 'rsapss' && !certificateData.hashAlgorithm) {
+    if (certificateData.signatureAlgorithm === 'rsapss' && (!certificateData.hashAlgorithm || certificateData.hashAlgorithm === 'unknown')) {
       certificateData.hashAlgorithm = (
         certificateData.publicKeyDetails as PublicKeyDetailsRSAPSS
       ).hashAlgorithm;
@@ -330,4 +318,28 @@ export function getHashAlgorithm(rawSignatureAlgorithm: string) {
   }
 
   return 'unknown';
+}
+
+export function getCertificateFromPem(pemContent: string): Certificate {
+  const pemFormatted = pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n|\r)/g, '');
+  const binary = Buffer.from(pemFormatted, 'base64');
+  const arrayBuffer = new ArrayBuffer(binary.length);
+  const view = new Uint8Array(arrayBuffer);
+  for (let i = 0; i < binary.length; i++) {
+    view[i] = binary[i];
+  }
+
+  const asn1 = asn1js.fromBER(arrayBuffer);
+  if (asn1.offset === -1) {
+    throw new Error(`ASN.1 parsing error: ${asn1.result.error}`);
+  }
+
+  return new Certificate({ schema: asn1.result })
+}
+
+export function getTBSBytes(pemContent: string): Uint8Array {
+  const certificate = getCertificateFromPem(pemContent);
+  return Uint8Array.from(
+    certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
+  );
 }

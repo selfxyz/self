@@ -33,9 +33,10 @@ ID to Signature Algorithm
  32: rsa_sha256_3_4096
  33: rsa_sha1_3_4096
  34: rsa_sha384_65537_4096
+ 35: rsapss_sha384_65537_4096
  36: ecdsa_sha1_brainpoolP256r1_256
+*/
 
-***/
 
 /// @title GetHashLength
 /// @notice Returns the length of the hash in bits for a given signature algorithm
@@ -133,6 +134,9 @@ function getHashLength(signatureAlgorithm) {
         return 160;
     }
     if (signatureAlgorithm == 34) {
+        return 384;
+    }
+    if (signatureAlgorithm == 35) {
         return 384;
     }
     if (signatureAlgorithm == 36) {
@@ -236,6 +240,9 @@ function getKeyLength(signatureAlgorithm) {
     if (signatureAlgorithm == 34) {
         return 4096;
     }
+    if (signatureAlgorithm == 35) {
+        return 4096;
+    }
     if (signatureAlgorithm == 36) {
         return 256;
     }
@@ -309,7 +316,9 @@ template GetKLengthBytes(algo)  {
         kLength <== 512;
     } else if (algo == 34) {
         kLength <== 512;
-    } else if (algo == 36) {
+    }else if (algo == 35) {
+        kLength <== 512;
+    }else if (algo == 36) {
         kLength <== 32;
     }else {
         //default to highest key length
@@ -413,6 +422,9 @@ function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 34) {
         return 1;
     }
+    if (signatureAlgorithm == 35) {
+        return 1;
+    }
     if (signatureAlgorithm == 36) {
         return 2;
     }
@@ -475,6 +487,9 @@ function getExponentBits(signatureAlgorithm) {
         return 2;
     }
     if (signatureAlgorithm == 34) {
+        return 17;
+    }
+    if (signatureAlgorithm == 35) {
         return 17;
     }
     return 0;

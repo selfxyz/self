@@ -60,35 +60,37 @@ async function buildCscaMerkleTree() {
     }
 
     if (DEVELOPMENT_MODE) {
-        const mockCscaList = [
-            '../common/src/mock_certificates/sha256_rsa_4096/mock_csca.pem',
-            '../common/src/mock_certificates/sha256_rsapss_4096/mock_csca.pem',
-            '../common/src/mock_certificates/sha1_rsa_4096/mock_csca.crt',
-            '../common/src/mock_certificates/sha1_rsa_3_4096/mock_csca.pem',
-            '../common/src/mock_certificates/sha256_rsa_3_4096/mock_csca.crt',
-            '../common/src/mock_certificates/sha384_rsa_65537_4096/mock_csca.pem',
-            '../common/src/mock_certificates/sha512_rsa_65537_4096/mock_csca.pem',
-            '../common/src/mock_certificates/sha1_ecdsa_secp256r1/mock_csca.pem',
-            '../common/src/mock_certificates/ecdsa_sha1_brainpoolP256r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha256_brainpoolP256r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha256_ecdsa_secpk384r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha384_ecdsa_brainpoolP256r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha384_ecdsa_brainpoolP384r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha384_ecdsa_secp384r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha512_ecdsa_brainpoolP256r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha512_ecdsa_brainpoolP384r1/mock_csca.pem',
-            '../common/src/mock_certificates/sha256_secp256r1/mock_csca.pem',
-        ];
+        const dev_pem_path = path.join(__dirname, '..', '..', '..', 'common', 'src', 'mock_certificates');
+        const subdirectories = fs.readdirSync(dev_pem_path, { withFileTypes: true })
+            .filter(item => item.isDirectory())
+            .map(item => item.name);
 
-        for (const mockCscaFile of mockCscaList) {
-            try {
-                const pemContent = fs.readFileSync(mockCscaFile, 'utf8');
-                const leafValue = processCertificate(pemContent, mockCscaFile);
-                if (leafValue) {
-                    tree.insert(leafValue);
+        for (const subdirectory of subdirectories) {
+            const pemFilePath = path.join(dev_pem_path, subdirectory, 'mock_csca.pem');
+            const cerFilePath = path.join(dev_pem_path, subdirectory, 'mock_csca.cer');
+
+            if (fs.existsSync(pemFilePath)) {
+                try {
+                    const pemContent = fs.readFileSync(pemFilePath, 'utf8');
+                    const leafValue = processCertificate(pemContent, pemFilePath);
+                    if (leafValue) {
+                        tree.insert(leafValue);
+                    }
+                } catch (error) {
+                    console.error(`Error processing mock file ${pemFilePath}:`, error);
                 }
-            } catch (error) {
-                console.error(`Error processing mock file ${mockCscaFile}:`, error);
+            }
+
+            if (fs.existsSync(cerFilePath)) {
+                try {
+                    const cerContent = fs.readFileSync(cerFilePath, 'utf8');
+                    const leafValue = processCertificate(cerContent, cerFilePath);
+                    if (leafValue) {
+                        tree.insert(leafValue);
+                    }
+                } catch (error) {
+                    console.error(`Error processing mock file ${cerFilePath}:`, error);
+                }
             }
         }
     }

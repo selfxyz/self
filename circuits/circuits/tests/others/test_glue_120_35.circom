@@ -15,6 +15,8 @@ template test_glue_120_35(kLengthFactor, n, k) {
     test.salt <== salt;
     test.pubKey_csca_hash <== pubKey_csca_hash;
 
+    signal output register_hash <== test.register_hash;
+    signal output dsc_hash <== test.dsc_hash;
 }
 
 component main = test_glue_120_35(1, 120, 35);

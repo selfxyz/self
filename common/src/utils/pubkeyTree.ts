@@ -49,11 +49,11 @@ export function getLeaf(dsc: string): string {
 export function getLeafCSCA(dsc: string): string {
   const parsedCertificate = parseCertificateSimple(dsc);
 
-  const {signatureAlgorithm, hashAlgorithm} = parsedCertificate;
+  const { signatureAlgorithm, hashAlgorithm } = parsedCertificate;
 
   const { publicKeyDetails } = parsedCertificate;
 
-
+  const { n, k } = getNAndK(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
     const { x, y, bits, curve } = publicKeyDetails as PublicKeyDetailsECDSA;
@@ -65,7 +65,7 @@ export function getLeafCSCA(dsc: string): string {
   } else {
     const { modulus, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
     const { n, k } = getNAndK(`${signatureAlgorithm}_${hashAlgorithm}_${exponent}` as SignatureAlgorithm);
-    
+
 
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
     return customHasher([...pubkeyChunked]);

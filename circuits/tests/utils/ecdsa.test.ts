@@ -1,8 +1,8 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as crypto from 'crypto';
 import { initElliptic } from '../../../common/src/utils/certificate_parsing/elliptic';
-import { splitToWords } from '../../../common/src/utils/bytes';
 import * as path from 'path';
+import { splitToWords } from '../../../common/src/utils/bytes';
 
 const elliptic = initElliptic();
 

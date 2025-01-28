@@ -38,6 +38,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 14
         || signatureAlgorithm == 15
         || signatureAlgorithm == 31
+        || signatureAlgorithm == 34
     ) { 
         component rsa65537 = VerifyRsa65537Pkcs1v1_5(n, k, HASH_LEN_BITS);
         for (var i = 0; i < msg_len; i++) {
@@ -53,6 +54,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     if (
         signatureAlgorithm == 13
         || signatureAlgorithm == 32
+        || signatureAlgorithm == 33
     ) {
         component rsa3 = VerifyRsa3Pkcs1v1_5(n, k, HASH_LEN_BITS);
         for (var i = 0; i < msg_len; i++) {
@@ -69,6 +71,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 12
         || signatureAlgorithm == 18
         || signatureAlgorithm == 19
+        || signatureAlgorithm == 35
     ) {
         var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;

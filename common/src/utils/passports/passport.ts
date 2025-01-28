@@ -5,7 +5,7 @@ import {
     PublicKeyDetailsECDSA,
     PublicKeyDetailsRSA,
 } from '../certificate_parsing/dataStructure';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { parsePassportData, PassportMetadata } from './passport_parsing/parsePassportData';
 import { shaPad } from '../shaPad';
 import { sha384_512Pad } from '../shaPad';
@@ -28,6 +28,8 @@ import {
 } from '../../constants/constants';
 import { splitToWords } from '../bytes';
 import { formatMrz } from './format';
+import { findStartIndex, findStartIndexEC } from '../csca';
+import { formatInput } from '../circuits/generateInputs';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -200,9 +202,80 @@ export function getCertificatePubKey(
     }
 }
 
+/// @notice Get the public key from the certificate padded as per the DSC circuit's requirements.
+export function formatCertificatePubKeyDSC(
+    certificateData: CertificateData,
+    signatureAlgorithm: string,
+): string[] {
+    const { publicKeyDetails } = certificateData;
+    if (signatureAlgorithm === 'ecdsa') {
+        const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
+        const normalizedX = x.length % 2 === 0 ? x : '0' + x;
+        const normalizedY = y.length % 2 === 0 ? y : '0' + y;
+        const fullPubKey = normalizedX + normalizedY;
+
+        // Splits to 525 words of 8 bits each
+        return splitToWords(BigInt(hexToDecimal(fullPubKey)), 8, 525);
+    } else {
+        // Splits to 525 words of 8 bits each
+        const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
+        return splitToWords(BigInt(hexToDecimal(modulus)), 8, 525);
+    }
+}
+
+export function extractSignatureFromDSC(
+    dscCertificate: string,
+) {
+    const cert = getCertificateFromPem(dscCertificate);
+    const dscSignature = cert.signatureValue.valueBlock.valueHexView;
+    return Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
+      char.charCodeAt(0)
+    );
+}
+
+
+export function formatSignatureDSCCircuit(
+    cscaSignatureAlgorithm: string,
+    cscaPem: string,
+    signature: number[],
+): string[] {
+    const cscaCertData = parseCertificateSimple(cscaPem);
+
+    const { n,k } = getNAndK(cscaSignatureAlgorithm as SignatureAlgorithm);
+    if (cscaSignatureAlgorithm === 'ecdsa') {
+        const { r, s } = extractRSFromSignature(signature);
+        const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
+        const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
+        return [...signature_r, ...signature_s];
+    } else {
+        return formatInput(splitToWords(BigInt(bytesToBigDecimal(signature)), n, k));
+    }
+}
+
+export function findStartPubKeyIndex(
+    certificateData: CertificateData,
+    rawCert: any,
+    signatureAlgorithm: string
+): number { 
+    const { publicKeyDetails } = certificateData;
+    if (signatureAlgorithm === 'ecdsa') {
+        const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
+        const normalizedX = x.length % 2 === 0 ? x : '0' + x;
+        const normalizedY = y.length % 2 === 0 ? y : '0' + y;
+        const fullPubKey = normalizedX + normalizedY;
+        const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
+
+        return findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
+    } else {
+        // Splits to 525 words of 8 bits each
+        const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
+        return findStartIndex(modulus, rawCert);
+    }
+}
+
 /// @notice Get the signature algorithm full name
 /// @dev valid for both DSC and CSCA
-function getSignatureAlgorithmFullName(
+export function getSignatureAlgorithmFullName(
     certificateData: CertificateData,
     signatureAlgorithm: string,
     hashAlgorithm: string
