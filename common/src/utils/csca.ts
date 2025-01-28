@@ -1,22 +1,21 @@
-import { sha384_512Pad, shaPad } from './shaPad';
 import * as forge from 'node-forge';
-import * as asn1 from 'asn1js';
 import * as fs from 'fs';
 import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS, SignatureAlgorithmIndex } from '../constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { IMT } from '@openpassport/zk-kit-imt';
 import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import axios from 'axios';
-import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
-import { formatInput } from './circuits/generateInputs';
-// import { getCertificateFromPem, parseCertificate } from './certificates/handleCertificate';
-import { parseCertificate } from '../utils/certificate_parsing/parseCertificate';
-import { SignatureAlgorithm } from './types';
-import { Certificate } from 'pkijs';
 import { bytesToBigDecimal, hexToDecimal, splitToWords } from './bytes';
-import { extractRSFromSignature, getNAndK } from './passports/passport';
 import path from 'path';
+import { sha384_512Pad } from './shaPad';
+import { shaPad } from './shaPad';
+import { parseCertificate } from './certificate_parsing/parseCertificate';
+import { getCertificateFromPem } from './certificate_parsing/parseCertificateSimple';
+import { formatInput } from './circuits/generateInputs';
+import { getLeafCSCA } from './pubkeyTree';
+import { extractRSFromSignature, getNAndK } from './passports/passport';
+import { SignatureAlgorithm } from './types';
 
 export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): number {
   const modulusNumArray = [];
@@ -382,15 +381,6 @@ export const generateDscSecret = () => {
   const secretBytes = forge.random.getBytesSync(31);
   return BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
 };
-
-function getCertificateFromPem(pemContent: string): Certificate {
-  const certBuffer = Buffer.from(
-    pemContent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
-    'base64'
-  );
-  const asn1Data = asn1.fromBER(certBuffer);
-  return new Certificate({ schema: asn1Data.result });
-}
 
 export function getCsca(signatureAlgorith: string) {
   return fs.readFileSync(path.join(__dirname, `../mock_certificates/${signatureAlgorith}/mock_csca.pem`), 'base64');
