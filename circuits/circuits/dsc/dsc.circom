@@ -55,7 +55,7 @@ template DSC(signatureAlgorithm, n_csca, k_csca, max_cert_bytes, nLevels) {
     signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, max_cert_bytes)(raw_dsc_cert, raw_dsc_cert_padded_bytes);
     SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature);
     
-    //Extract certificate public key from certificate
+    // Extract certificate public key from certificate
     component extractPubKey = ExtractPublicKey(max_cert_bytes, maxPubkeyBytesLength);
     extractPubKey.raw_dsc_cert <== raw_dsc_cert;
     extractPubKey.dsc_pubKey_offset <== dsc_pubKey_offset;

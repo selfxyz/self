@@ -10,7 +10,6 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 function processCertificate(pemContent: string, filePath: string) {
     try {
         const certificate = parseCertificate(pemContent, path.basename(filePath));
-
         const validAlgorithms = ['rsa', 'rsapss', 'ecdsa'];
         if (!validAlgorithms.includes(certificate.signatureAlgorithm)) {
             console.log(`Skipping file ${filePath}: Unsupported signature algorithm ${certificate.signatureAlgorithm}`);

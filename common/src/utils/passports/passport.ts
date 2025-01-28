@@ -229,7 +229,7 @@ export function extractSignatureFromDSC(
     const cert = getCertificateFromPem(dscCertificate);
     const dscSignature = cert.signatureValue.valueBlock.valueHexView;
     return Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
-      char.charCodeAt(0)
+        char.charCodeAt(0)
     );
 }
 
@@ -241,9 +241,11 @@ export function formatSignatureDSCCircuit(
 ): string[] {
     const cscaCertData = parseCertificateSimple(cscaPem);
 
-    const { n,k } = getNAndK(cscaSignatureAlgorithm as SignatureAlgorithm);
+    const { n, k } = getNAndK(cscaSignatureAlgorithm as SignatureAlgorithm);
+    console.log('cscaSignatureAlgorithm', cscaSignatureAlgorithm);
     if (cscaSignatureAlgorithm === 'ecdsa') {
         const { r, s } = extractRSFromSignature(signature);
+        console.log('pog');
         const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
         const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
         return [...signature_r, ...signature_s];
@@ -256,7 +258,7 @@ export function findStartPubKeyIndex(
     certificateData: CertificateData,
     rawCert: any,
     signatureAlgorithm: string
-): number { 
+): number {
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;

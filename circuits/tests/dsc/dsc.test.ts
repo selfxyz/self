@@ -29,6 +29,7 @@ testSuite.forEach(({
   );
   passportData = initPassportDataParsing(passportData);
   const passportMetadata = passportData.passportMetadata;
+  console.log(passportMetadata);
 
   describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${passportData.csca_parsed.publicKeyDetails.bits}`, function () {
     this.timeout(0); // Disable timeout
@@ -40,7 +41,7 @@ testSuite.forEach(({
 
     const inputs = generateCircuitInputsDSC(
       BigInt(salt).toString(),
-      passportData.dsc,
+      passportData,
       max_cert_bytes,
       true
     );

@@ -31,71 +31,71 @@ import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../c
 import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCSCAModulusProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { getLeafCSCA } from '../pubkeyTree';
+import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
 
 export function generateCircuitInputsDSC(
   dscSecret: string,
-  dscCertificate: string,
+  passportData: PassportData,
   max_cert_bytes: number,
   devMode: boolean = false
 ) {
-  const certificateData = parseCertificateSimple(dscCertificate);
-  const TbsBytes = getTBSBytes(dscCertificate);
-  const { 
-    signatureAlgorithm,
-    hashAlgorithm,
+  const passportMetadata = passportData.passportMetadata;
+  const certificateData = parseCertificateSimple(passportData.dsc);
+  const dscMetaData = parseDscCertificateData(certificateData);
+
+
+  const TbsBytes = getTBSBytes(passportData.dsc);
+  const {
     publicKeyDetails,
-    authorityKeyIdentifier, 
+    authorityKeyIdentifier,
   } = certificateData;
 
-  const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
+  const signatureAlgorithmFullName_dsc = getSignatureAlgorithmFullName(
     certificateData,
-    signatureAlgorithm,
-    hashAlgorithm
+    passportMetadata.signatureAlgorithm,
+    passportMetadata.signedAttrHashFunction
   );
 
   const pubKey_dsc = formatCertificatePubKeyDSC(
     certificateData,
-    signatureAlgorithm,
+    passportMetadata.signatureAlgorithm,
   );
 
-  const [raw_dsc_cert_padded, raw_dsc_cert_padded_bytes] = pad(hashAlgorithm)(
+  const [raw_dsc_cert_padded, raw_dsc_cert_padded_bytes] = pad(passportMetadata.cscaHashFunction)(
     TbsBytes,
     max_cert_bytes
   );
 
   // Get start index based on algorithm
-  const startIndex = findStartPubKeyIndex(certificateData, raw_dsc_cert_padded, signatureAlgorithm);
+  const startIndex = findStartPubKeyIndex(certificateData, raw_dsc_cert_padded, passportMetadata.signatureAlgorithm);
 
   // Get CSCA certificate and proof
-  const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, devMode);
-  const leaf = getLeafCSCA(cscaPem);
+  const leaf = getLeafCSCA(passportMetadata.csca);
   const [root, proof] = getCSCAModulusProof(leaf);
 
   // Parse CSCA certificate and get its public key
-  const cscaCertData = parseCertificateSimple(cscaPem);
+  const cscaCertData = parseCertificateSimple(passportMetadata.csca);
   const csca_pubKey_formatted = getCertificatePubKey(
     cscaCertData,
     cscaCertData.signatureAlgorithm,
     cscaCertData.hashAlgorithm
   );
-
   const CSCAsignatureAlgorithmFullName = getSignatureAlgorithmFullName(
-      cscaCertData,
-      cscaCertData.signatureAlgorithm,
-      cscaCertData.hashAlgorithm
+    cscaCertData,
+    cscaCertData.signatureAlgorithm,
+    cscaCertData.hashAlgorithm
   );
-  const signatureRaw = extractSignatureFromDSC(dscCertificate);
-  const signature = formatSignatureDSCCircuit(CSCAsignatureAlgorithmFullName, cscaPem, signatureRaw,);
-
-  const dsc_pubkey_length_bytes = signatureAlgorithm === 'ecdsa'
+  const signatureRaw = extractSignatureFromDSC(passportData.dsc);
+  const signature = formatSignatureDSCCircuit(passportMetadata.cscaSignatureAlgorithm, passportMetadata.csca, signatureRaw,);
+  const dsc_pubkey_length_bytes = passportMetadata.signatureAlgorithm === 'ecdsa'
     ? (Number((publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
     : Number((publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
 
   return {
-    signature_algorithm: signatureAlgorithmFullName,
+    signature_algorithm: passportMetadata.signatureAlgorithm,
     inputs: {
       raw_dsc_cert: Array.from(raw_dsc_cert_padded).map(x => x.toString()),
-      raw_dsc_cert_padded_bytes: [ BigInt(raw_dsc_cert_padded_bytes).toString()],
+      raw_dsc_cert_padded_bytes: [BigInt(raw_dsc_cert_padded_bytes).toString()],
       dsc_pubkey_length_bytes: [dsc_pubkey_length_bytes],
       csca_pubKey: csca_pubKey_formatted,
       signature,
