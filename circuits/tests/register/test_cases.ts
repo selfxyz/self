@@ -1,13 +1,13 @@
 export const sigAlgs = [
-  {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    sigAlg: 'rsapss',
-    hashFunction: 'sha256',
-    domainParameter: '3',
-    keyLength: '3072',
-    checkNullifier: true,
-  },
+  // {
+  //   dgHashAlgo: 'sha256',
+  //   eContentHashAlgo: 'sha256',
+  //   sigAlg: 'rsapss',
+  //   hashFunction: 'sha256',
+  //   domainParameter: '3',
+  //   keyLength: '3072',
+  //   checkNullifier: true,
+  // },
   {
     dgHashAlgo: 'sha1',
     eContentHashAlgo: 'sha256',
