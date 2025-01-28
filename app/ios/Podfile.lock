@@ -7,9 +7,9 @@ PODS:
   - fmt (9.1.0)
   - glog (0.3.5)
   - lottie-ios (4.5.0)
-  - NFCPassportReader (2.0.3):
-    - OpenSSL-Universal (= 1.1.1100)
-  - OpenSSL-Universal (1.1.1100)
+  - NFCPassportReader (2.1.1):
+    - OpenSSL-Universal (= 1.1.1900)
+  - OpenSSL-Universal (1.1.1900)
   - QKMRZParser (2.0.0)
   - QKMRZScanner (3.0.0):
     - QKMRZParser (~> 2.0.0)
@@ -1506,7 +1506,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - lottie-ios
-  - NFCPassportReader (from `https://github.com/0xturboblitz/NFCPassportReader.git`, commit `0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45`)
+  - NFCPassportReader (from `https://github.com/zk-passport/NFCPassportReader`, commit `8e72f0a2d3ca3bede00304bd22ed10829535dd53`)
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1603,8 +1603,8 @@ EXTERNAL SOURCES:
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
   NFCPassportReader:
-    :commit: 0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45
-    :git: https://github.com/0xturboblitz/NFCPassportReader.git
+    :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
+    :git: https://github.com/zk-passport/NFCPassportReader
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -1744,8 +1744,8 @@ EXTERNAL SOURCES:
 
 CHECKOUT OPTIONS:
   NFCPassportReader:
-    :commit: 0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45
-    :git: https://github.com/0xturboblitz/NFCPassportReader.git
+    :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
+    :git: https://github.com/zk-passport/NFCPassportReader
   SwiftQRScanner:
     :commit: fddcabcb431cd6110cea0394660082661dbafa7e
     :git: https://github.com/vinodiOS/SwiftQRScanner
@@ -1758,8 +1758,8 @@ SPEC CHECKSUMS:
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
-  NFCPassportReader: a160b80e3df3b5325c13902f90405f5eef7520b3
-  OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
+  NFCPassportReader: e931c61c189e08a4b4afa0ed4014af19eab2f129
+  OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
   RCT-Folly: 4464f4d875961fce86008d45f4ecf6cef6de0740
@@ -1832,8 +1832,8 @@ SPEC CHECKSUMS:
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
-  Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
+  Yoga: a9ef4f5c2cd79ad812110525ef61048be6a582a4
 
-PODFILE CHECKSUM: cc6778e0dcd4c510b705f4dc458411547dc1d00c
+PODFILE CHECKSUM: a5761927116120f511f409f5249a18a8c626545c
 
 COCOAPODS: 1.16.2

@@ -47,10 +47,11 @@ export const scan = async (
 
 const scanAndroid = async (
   setModalProofStep: (modalProofStep: number) => void,
-  startTime: number
+  startTime: number,
 ) => {
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore.getState();
-  const { toast, setNfcSheetIsOpen, trackEvent } = useNavigationStore.getState();
+  const { toast, setNfcSheetIsOpen, trackEvent } =
+    useNavigationStore.getState();
   setNfcSheetIsOpen(true);
 
   try {
@@ -97,13 +98,12 @@ const scanAndroid = async (
         duration_ms: Date.now() - startTime,
       });
     }
-
   }
 };
 
 const scanIOS = async (
   setModalProofStep: (modalProofStep: number) => void,
-  startTime: number
+  startTime: number,
 ) => {
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore.getState();
   const { toast, trackEvent } = useNavigationStore.getState();
@@ -206,7 +206,6 @@ const handleResponseIOS = async (
     Buffer.from(signatureBase64, 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
-
   const passportData = {
     mrz,
     dsc: pem,
@@ -216,7 +215,9 @@ const handleResponseIOS = async (
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
-    photoBase64: 'data:image/jpeg;base64,' + parsed.passportPhoto,
+    photoBase64: parsed?.passportPhoto
+      ? 'data:image/jpeg;base64,' + parsed?.passportPhoto
+      : '',
     mockUser: false,
   };
 
@@ -284,7 +285,7 @@ const handleResponseAndroid = async (
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    photoBase64: photo.base64,
+    photoBase64: photo?.base64 ?? '',
     mockUser: false,
   };
 
@@ -339,8 +340,8 @@ const handleResponseAndroid = async (
 async function parsePassportDataAsync(passportData: PassportData) {
   const { trackEvent } = useNavigationStore.getState();
   const parsedPassportData = parsePassportData(passportData);
-  useUserStore.getState().setPassportMetadata(parsedPassportData);
-  useUserStore.getState().registerPassportData(passportData);
+  await useUserStore.getState().setPassportMetadata(parsedPassportData);
+  await useUserStore.getState().registerPassportData(passportData);
   trackEvent('Passport Parsed', {
     success: true,
     data_groups: parsedPassportData.dataGroups,
@@ -362,8 +363,9 @@ async function parsePassportDataAsync(passportData: PassportData) {
     csca_signature: parsedPassportData.cscaSignature,
     csca_salt_length: parsedPassportData.cscaSaltLength,
     csca_curve_or_exponent: parsedPassportData.cscaCurveOrExponent,
-    csca_signature_algorithm_bits: parsedPassportData.cscaSignatureAlgorithmBits,
-    dsc: parsedPassportData.dsc
+    csca_signature_algorithm_bits:
+      parsedPassportData.cscaSignatureAlgorithmBits,
+    dsc: parsedPassportData.dsc,
   });
 
   useNavigationStore.getState().setSelectedTab('next');
