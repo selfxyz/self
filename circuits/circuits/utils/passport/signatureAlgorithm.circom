@@ -33,8 +33,10 @@ ID to Signature Algorithm
  32: rsa_sha256_3_4096
  33: rsa_sha1_3_4096
  34: rsa_sha384_65537_4096
+ 35: rsapss_sha384_65537_4096
+ 36: ecdsa_sha1_brainpoolP256r1_256
+*/
 
-***/
 
 /// @title GetHashLength
 /// @notice Returns the length of the hash in bits for a given signature algorithm
@@ -134,6 +136,12 @@ function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 34) {
         return 384;
     }
+    if (signatureAlgorithm == 35) {
+        return 384;
+    }
+    if (signatureAlgorithm == 36) {
+        return 160;
+    }
     return 0;
 }
 
@@ -232,7 +240,90 @@ function getKeyLength(signatureAlgorithm) {
     if (signatureAlgorithm == 34) {
         return 4096;
     }
+    if (signatureAlgorithm == 35) {
+        return 4096;
+    }
+    if (signatureAlgorithm == 36) {
+        return 256;
+    }
     return 4096; // default to highest key length
+}
+
+/// @title GetKLengthBytes
+/// @notice Returns the length of the key in bytes for a given signature algorithm
+/// @param signatureAlgorithm ID of the signature algorithm
+/// @output kLength Length of the key in bytes
+template GetKLengthBytes(algo)  {
+    signal output kLength;
+    
+    if (algo == 1) {
+        kLength <== 256;
+    } else if (algo == 3) {
+        kLength <== 256;
+    } else if (algo == 4) {
+        kLength <== 256;
+    } else if (algo == 7) {
+        kLength <== 32;
+    } else if (algo == 8) {
+        kLength <== 32;
+    } else if (algo == 9) {
+        kLength <== 48;
+    } else if (algo == 10) {
+        kLength <== 512;
+    } else if (algo == 11) {
+        kLength <== 512;
+    } else if (algo == 12) {
+        kLength <== 512;
+    } else if (algo == 13) {
+        kLength <== 256;
+    } else if (algo == 14) {
+        kLength <== 384;
+    } else if (algo == 15) {
+        kLength <== 512;
+    } else if (algo == 16) {
+        kLength <== 384;
+    } else if (algo == 17) {
+        kLength <== 512;
+    } else if (algo == 18) {
+        kLength <== 384;
+    } else if (algo == 19) {
+        kLength <== 384;
+    } else if (algo == 21) {
+        kLength <== 32;
+    } else if (algo == 22) {
+        kLength <== 48;
+    } else if (algo == 23) {
+        kLength <== 48;
+    } else if (algo == 24) {
+        kLength <== 32;
+    } else if (algo == 25) {
+        kLength <== 32;
+    } else if (algo == 26) {
+        kLength <== 48;
+    } else if (algo == 27) {
+        kLength <== 28;
+    } else if (algo == 28) {
+        kLength <== 28;
+    } else if (algo == 29) {
+        kLength <== 64;
+    } else if (algo == 30) {
+        kLength <== 28;
+    } else if (algo == 31) {
+        kLength <== 256;
+    } else if (algo == 32) {
+        kLength <== 512;
+    } else if (algo == 33) {
+        kLength <== 512;
+    } else if (algo == 34) {
+        kLength <== 512;
+    }else if (algo == 35) {
+        kLength <== 512;
+    }else if (algo == 36) {
+        kLength <== 32;
+    }else {
+        //default to highest key length
+        kLength <== 512;
+    }
 }
 
 /// @title GetKLengthFactor
@@ -331,6 +422,12 @@ function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 34) {
         return 1;
     }
+    if (signatureAlgorithm == 35) {
+        return 1;
+    }
+    if (signatureAlgorithm == 36) {
+        return 2;
+    }
     return 0;
 
 }
@@ -390,6 +487,9 @@ function getExponentBits(signatureAlgorithm) {
         return 2;
     }
     if (signatureAlgorithm == 34) {
+        return 17;
+    }
+    if (signatureAlgorithm == 35) {
         return 17;
     }
     return 0;

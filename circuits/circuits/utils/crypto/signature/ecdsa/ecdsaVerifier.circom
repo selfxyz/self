@@ -84,7 +84,7 @@ function get_a(signatureAlgorithm) {
             18446744073709551615
         ];
     }
-     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25) {
+     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25 || signatureAlgorithm == 36) {
         return [
             16810331318623712729,
             18122579188607900780,
@@ -150,7 +150,7 @@ function get_b(signatureAlgorithm) {
             12912154004749740004
         ];
     }
-     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25) {
+     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25 || signatureAlgorithm == 36) {
         return  [
             7767825457231955894,
             10773760575486288334,
@@ -216,7 +216,7 @@ function get_p(signatureAlgorithm) {
             18446744073709551615
         ];
     }
-     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25) {
+     if (signatureAlgorithm == 21 || signatureAlgorithm == 24 || signatureAlgorithm == 25 || signatureAlgorithm == 36) {
         return  [
             2311270323689771895,
             7943213001558335528,

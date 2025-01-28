@@ -17,7 +17,19 @@ testSuite.forEach(({
   domainParameter,
   keyLength,
 }) => {
-  describe(`DSC chain certificate - ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${domainParameter.toUpperCase()} ${keyLength}`, function () {
+
+  let passportData = genMockPassportData(
+    hashFunction,
+    hashFunction,
+    `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+    'FRA',
+    '000101',
+    '300101'
+  );
+  passportData = initPassportDataParsing(passportData);
+  const passportMetadata = passportData.passportMetadata;
+
+  describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${passportData.csca_parsed.publicKeyDetails.bits}`, function () {
     this.timeout(0); // Disable timeout
     let circuit;
 
@@ -54,7 +66,7 @@ testSuite.forEach(({
     });
 
     it('should compute a valid witness', async () => {
-      const witness = await circuit.calculateWitness(inputs.inputs, true);
+      const witness = await circuit.calculateWitness(inputs, true);
       await circuit.checkConstraints(witness);
       console.log('\x1b[34m%s\x1b[0m', 'witness generated ', sigAlg);
       const dsc_tree_leaf = (await circuit.getOutput(witness, ['dsc_tree_leaf']))

@@ -19,6 +19,9 @@ export function getLeaf(dsc: string): string {
     const { x, y, curve, bits } = publicKeyDetails as PublicKeyDetailsECDSA;
     const sigAlgKey = `${signatureAlgorithm}_${hashAlgorithm}_${curve}_${bits}`;
     const { n, k } = getNAndK(sigAlgKey as SignatureAlgorithm);
+    console.log('sigAlgKey: ', sigAlgKey);
+    console.log('getLeaf n: ', n);
+    console.log('getLeaf k: ', k);
     const sigAlgIndex = SignatureAlgorithmIndex[sigAlgKey];
 
     if (sigAlgIndex == undefined) {
@@ -55,19 +58,23 @@ export function getLeafCSCA(dsc: string): string {
 
   const parsedCertificate = parseCertificateSimple(dsc);
 
-  const signatureAlgorithm = parsedCertificate.signatureAlgorithm;
+  const { signatureAlgorithm, hashAlgorithm } = parsedCertificate;
 
   const { publicKeyDetails } = parsedCertificate;
 
   const { n, k } = getNAndK(signatureAlgorithm as any);
 
   if (signatureAlgorithm === 'ecdsa') {
-    const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
+    const { x, y, bits, curve } = publicKeyDetails as PublicKeyDetailsECDSA;
+    const { n, k } = getNAndK(`${signatureAlgorithm}_${hashAlgorithm}_${curve}_${bits}` as SignatureAlgorithm);
+
     let qx = splitToWords(BigInt(hexToDecimal(x)), n, k);
     let qy = splitToWords(BigInt(hexToDecimal(y)), n, k);
     return customHasher([...qx, ...qy]);
   } else {
-    const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
+    const { modulus, exponent } = publicKeyDetails as PublicKeyDetailsRSA;
+    const { n, k } = getNAndK(`${signatureAlgorithm}_${hashAlgorithm}_${exponent}` as SignatureAlgorithm);
+
 
     const pubkeyChunked = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
     return customHasher([...pubkeyChunked]);

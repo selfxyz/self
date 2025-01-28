@@ -34,6 +34,7 @@ import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../c
 import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCSCAModulusProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { getLeafCSCA } from '../pubkeyTree';
+import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -90,15 +91,9 @@ export function generateCircuitInputsDSC(
   const csca_pubkey_length_bytes = Number(cscaCertData.publicKeyDetails.bits) / 8;
   console.log('js: csca_pubkey_length_bytes', csca_pubkey_length_bytes);
   
-  const CSCAsignatureAlgorithmFullName = getSignatureAlgorithmFullName(
-      cscaCertData,
-      cscaCertData.signatureAlgorithm,
-      cscaCertData.hashAlgorithm
-  );
-  console.log('js: CSCAsignatureAlgorithmFullName', CSCAsignatureAlgorithmFullName);
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
   // console.log('js: signatureRaw', signatureRaw);
-  const signature = formatSignatureDSCCircuit(CSCAsignatureAlgorithmFullName, cscaPem, signatureRaw,);
+  const signature = formatSignatureDSCCircuit(cscaCertData.signatureAlgorithm, cscaCertData.hashAlgorithm, cscaCertData, signatureRaw,);
   // console.log('js: signature', signature);
 
   // Get start index of CSCA pubkey based on algorithm
@@ -106,19 +101,16 @@ export function generateCircuitInputsDSC(
   console.log('js: startIndex', startIndex);
 
   return {
-    signature_algorithm: CSCAsignatureAlgorithmFullName,
-    inputs: {
-      raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
-      raw_csca_actual_length: [BigInt(cscaTbsBytes.length).toString()],
-      csca_pubKey_offset: [startIndex.toString()],
-      raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
-      raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
-      csca_pubKey: csca_pubKey_formatted,
-      signature,
-      // merkle_root: [BigInt(root).toString()],
-      // path: proof.pathIndices.map(index => index.toString()),
-      // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
-    }
+    raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
+    raw_csca_actual_length: [BigInt(cscaTbsBytes.length).toString()],
+    csca_pubKey_offset: [startIndex.toString()],
+    raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
+    raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
+    csca_pubKey: csca_pubKey_formatted,
+    signature,
+    // merkle_root: [BigInt(root).toString()],
+    // path: proof.pathIndices.map(index => index.toString()),
+    // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
   };
 }
 
