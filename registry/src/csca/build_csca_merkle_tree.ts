@@ -9,6 +9,8 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 
 let tbs_max_bytes = 0;
 let key_length_max_bytes = 0;
+const countryKeyBitLengths: { [countryCode: string]: number } = {};
+
 
 function processCertificate(pemContent: string, filePath: string) {
     try {
@@ -32,6 +34,7 @@ function processCertificate(pemContent: string, filePath: string) {
 
         const keyLength = parseInt(certificate.publicKeyDetails.bits);
         if (keyLength > 4096) {
+            countryKeyBitLengths[certificate.issuer] = keyLength;
             console.log(`Skipping file ${filePath}: Key length ${keyLength} bits exceeds 4096 bits`);
             return null;
         }
@@ -104,8 +107,9 @@ async function buildCscaMerkleTree() {
         }
     }
 
-    console.log(`Max TBS bytes: ${tbs_max_bytes}`);
-    console.log(`Max Key Length: ${key_length_max_bytes}`);
+    console.log('\x1b[34m%s\x1b[0m', `Max TBS bytes: ${tbs_max_bytes}`);
+    console.log('\x1b[34m%s\x1b[0m', `Max Key Length: ${key_length_max_bytes}`);
+    console.log('\x1b[34m%s\x1b[0m', 'js: countryKeyBitLengths', countryKeyBitLengths);
     return tree;
 }
 
