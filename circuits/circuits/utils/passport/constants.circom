@@ -8,11 +8,6 @@ function getMaxDSCPubKeyLength(){
     return 525;
 }
 
-/// @notice Maximum length of the CSCA public key — maybe should be 1024 bytes padded to 1056
-function getMaxCSCAPubKeyLength(){
-    return 525; // TODO update with the correct value
-}
-
 /// @notice Maximum length of DSC certificate — currently 1664 bytes
 function getMaxDSCLength(){
     return 1664;

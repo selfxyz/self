@@ -33,17 +33,6 @@ testSuite.forEach(({
     this.timeout(0); // Disable timeout
     let circuit;
 
-    // Mock certificates based on signature algorithm and hash function
-    let passportData = genMockPassportData(
-      hashFunction,
-      hashFunction,
-      `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
-      'FRA',
-      '000101',
-      '300101'
-    );
-    passportData = initPassportDataParsing(passportData);
-
     const inputs = generateCircuitInputsDSC(
       passportData.dsc,
       true
