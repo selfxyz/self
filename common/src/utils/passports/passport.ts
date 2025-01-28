@@ -236,13 +236,16 @@ export function extractSignatureFromDSC(
 
 export function formatSignatureDSCCircuit(
     cscaSignatureAlgorithm: string,
-    cscaPem: string,
+    cscaHashFunction: string,
+    cscaCertificateData: CertificateData,
     signature: number[],
 ): string[] {
-    const cscaCertData = parseCertificateSimple(cscaPem);
-
-    const { n, k } = getNAndK(cscaSignatureAlgorithm as SignatureAlgorithm);
-    console.log('cscaSignatureAlgorithm', cscaSignatureAlgorithm);
+    const cscaSignatureAlgorithmFullName = getSignatureAlgorithmFullName(
+        cscaCertificateData,
+        cscaSignatureAlgorithm,
+        cscaHashFunction
+    );
+    const { n, k } = getNAndK(cscaSignatureAlgorithmFullName as SignatureAlgorithm);
     if (cscaSignatureAlgorithm === 'ecdsa') {
         const { r, s } = extractRSFromSignature(signature);
         console.log('pog');

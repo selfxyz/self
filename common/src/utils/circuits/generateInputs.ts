@@ -47,14 +47,7 @@ export function generateCircuitInputsDSC(
   const TbsBytes = getTBSBytes(passportData.dsc);
   const {
     publicKeyDetails,
-    authorityKeyIdentifier,
   } = certificateData;
-
-  const signatureAlgorithmFullName_dsc = getSignatureAlgorithmFullName(
-    certificateData,
-    passportMetadata.signatureAlgorithm,
-    passportMetadata.signedAttrHashFunction
-  );
 
   const pubKey_dsc = formatCertificatePubKeyDSC(
     certificateData,
@@ -80,32 +73,25 @@ export function generateCircuitInputsDSC(
     cscaCertData.signatureAlgorithm,
     cscaCertData.hashAlgorithm
   );
-  const CSCAsignatureAlgorithmFullName = getSignatureAlgorithmFullName(
-    cscaCertData,
-    cscaCertData.signatureAlgorithm,
-    cscaCertData.hashAlgorithm
-  );
+
   const signatureRaw = extractSignatureFromDSC(passportData.dsc);
-  const signature = formatSignatureDSCCircuit(passportMetadata.cscaSignatureAlgorithm, passportMetadata.csca, signatureRaw,);
+  const signature = formatSignatureDSCCircuit(passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction, cscaCertData, signatureRaw,);
   const dsc_pubkey_length_bytes = passportMetadata.signatureAlgorithm === 'ecdsa'
     ? (Number((publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
     : Number((publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
 
   return {
-    signature_algorithm: passportMetadata.signatureAlgorithm,
-    inputs: {
-      raw_dsc_cert: Array.from(raw_dsc_cert_padded).map(x => x.toString()),
-      raw_dsc_cert_padded_bytes: [BigInt(raw_dsc_cert_padded_bytes).toString()],
-      dsc_pubkey_length_bytes: [dsc_pubkey_length_bytes],
-      csca_pubKey: csca_pubKey_formatted,
-      signature,
-      dsc_pubKey_bytes: pubKey_dsc,
-      dsc_pubKey_offset: [startIndex.toString()],
-      merkle_root: [BigInt(root).toString()],
-      path: proof.pathIndices.map(index => index.toString()),
-      siblings: proof.siblings.flat().map(sibling => sibling.toString()),
-      salt: dscSecret,
-    }
+    raw_dsc_cert: Array.from(raw_dsc_cert_padded).map(x => x.toString()),
+    raw_dsc_cert_padded_bytes: [BigInt(raw_dsc_cert_padded_bytes).toString()],
+    dsc_pubkey_length_bytes: [dsc_pubkey_length_bytes],
+    csca_pubKey: csca_pubKey_formatted,
+    signature,
+    dsc_pubKey_bytes: pubKey_dsc,
+    dsc_pubKey_offset: [startIndex.toString()],
+    merkle_root: [BigInt(root).toString()],
+    path: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    salt: dscSecret,
   };
 }
 

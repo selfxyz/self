@@ -29,7 +29,6 @@ testSuite.forEach(({
   );
   passportData = initPassportDataParsing(passportData);
   const passportMetadata = passportData.passportMetadata;
-  console.log(passportMetadata);
 
   describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${passportData.csca_parsed.publicKeyDetails.bits}`, function () {
     this.timeout(0); // Disable timeout
@@ -63,7 +62,7 @@ testSuite.forEach(({
     });
 
     it('should compute the correct output', async () => {
-      const witness = await circuit.calculateWitness(inputs.inputs, true);
+      const witness = await circuit.calculateWitness(inputs, true);
       console.log('\x1b[34m%s\x1b[0m', 'witness generated ', sigAlg);
       // const blinded_dsc_commitment = (await circuit.getOutput(witness, ['blinded_dsc_commitment']))
       //   .blinded_dsc_commitment;
