@@ -43,7 +43,7 @@ export function generateCircuitInputsDSC(
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
-  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes); // TODO: change this to the actual hash algorithm
+  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes); // TODO: is this padding better than the other?
   console.log('js: cscaTbsBytesPadded', cscaTbsBytesPadded);
   console.log('js: cscaTbsBytesPadded length', cscaTbsBytesPadded.length);
 
@@ -71,17 +71,20 @@ export function generateCircuitInputsDSC(
     cscaParsed.signatureAlgorithm,
     cscaParsed.hashAlgorithm
   );
-  const modulus = (cscaParsed.publicKeyDetails as PublicKeyDetailsRSA).modulus;
-  const modulus_bytes = Array.from(Buffer.from(modulus, 'hex'));
-  console.log('js: modulus_bytes', modulus_bytes);
-  console.log('js: modulus_bytes[modulus_bytes.length - 1]', modulus_bytes[modulus_bytes.length - 1]);
-  console.log('js: modulus_bytes length', modulus_bytes.length);
+  // const modulus = (cscaParsed.publicKeyDetails as PublicKeyDetailsRSA).modulus;
+  // const modulus_bytes = Array.from(Buffer.from(modulus, 'hex'));
+  // console.log('js: modulus_bytes', modulus_bytes);
+  // console.log('js: modulus_bytes[modulus_bytes.length - 1]', modulus_bytes[modulus_bytes.length - 1]);
+  // console.log('js: modulus_bytes length', modulus_bytes.length);
 
   console.log('js: csca_pubKey_formatted', csca_pubKey_formatted);
   console.log('js: csca_pubKey_formatted length', csca_pubKey_formatted.length);
 
-  const csca_pubkey_length_bytes = Number(cscaParsed.publicKeyDetails.bits) / 8;
-  console.log('js: csca_pubkey_length_bytes', csca_pubkey_length_bytes);
+  const csca_pubkey_actual_size = cscaParsed.signatureAlgorithm === 'ecdsa' ?
+    (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
+    (Number(cscaParsed.publicKeyDetails.bits) / 8);
+
+  console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
 
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
   // console.log('js: signatureRaw', signatureRaw);
@@ -96,6 +99,7 @@ export function generateCircuitInputsDSC(
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: [BigInt(cscaParsed.tbsBytes.length).toString()],
     csca_pubKey_offset: [startIndex.toString()],
+    csca_pubKey_actual_size: [BigInt(csca_pubkey_actual_size).toString()],
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
     raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
     csca_pubKey: csca_pubKey_formatted,
