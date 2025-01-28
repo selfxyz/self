@@ -43,7 +43,7 @@ export function generateCircuitInputsDSC(
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
-  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes); // TODO: change this to the actual hash algorithm
+  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes); // TODO: is this padding better than the other?
   console.log('js: cscaTbsBytesPadded', cscaTbsBytesPadded);
   console.log('js: cscaTbsBytesPadded length', cscaTbsBytesPadded.length);
 
@@ -64,6 +64,8 @@ export function generateCircuitInputsDSC(
   // TODO: get the CSCA inclusion proof
   const leaf = getLeafCscaTree(cscaParsed);
   const [root, proof] = getCSCAModulusProof(leaf);
+  console.log('js: root', root);
+  console.log('js: proof', proof);
 
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
@@ -104,9 +106,9 @@ export function generateCircuitInputsDSC(
     raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
     csca_pubKey: csca_pubKey_formatted,
     signature,
-    // merkle_root: [BigInt(root).toString()],
-    // path: proof.pathIndices.map(index => index.toString()),
-    // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    merkle_root: [BigInt(root).toString()],
+    path: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
   };
 }
 
