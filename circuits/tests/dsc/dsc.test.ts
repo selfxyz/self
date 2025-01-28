@@ -3,8 +3,6 @@ import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsDSC } from '../../../common/src/utils/circuits/generateInputs';
 
-import { max_cert_bytes } from '../../../common/src/constants/constants';
-import { getCircuitName } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { fullSigAlgs, sigAlgs } from './test_cases';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
@@ -24,7 +22,6 @@ testSuite.forEach(({
     let circuit;
 
     // Mock certificates based on signature algorithm and hash function
-    const salt = '0';
     let passportData = genMockPassportData(
       hashFunction,
       hashFunction,
@@ -36,9 +33,7 @@ testSuite.forEach(({
     passportData = initPassportDataParsing(passportData);
 
     const inputs = generateCircuitInputsDSC(
-      BigInt(salt).toString(),
       passportData.dsc,
-      max_cert_bytes,
       true
     );
 
@@ -58,15 +53,13 @@ testSuite.forEach(({
       );
     });
 
-    it('should compute the correct output', async () => {
+    it('should compute a valid witness', async () => {
       const witness = await circuit.calculateWitness(inputs.inputs, true);
+      await circuit.checkConstraints(witness);
       console.log('\x1b[34m%s\x1b[0m', 'witness generated ', sigAlg);
-      // const blinded_dsc_commitment = (await circuit.getOutput(witness, ['blinded_dsc_commitment']))
-      //   .blinded_dsc_commitment;
-      // console.log('\x1b[34m%s\x1b[0m', 'blinded_dsc_commitment: ', blinded_dsc_commitment);
-      // const merkle_root = (await circuit.getOutput(witness, ['merkle_root'])).merkle_root;
-      // console.log('\x1b[34m%s\x1b[0m', 'merkle_root: ', merkle_root);
-      // expect(blinded_dsc_commitment).to.be.not.null;
+      const dsc_tree_leaf = (await circuit.getOutput(witness, ['dsc_tree_leaf']))
+        .dsc_tree_leaf;
+      console.log('\x1b[34m%s\x1b[0m', 'dsc_tree_leaf: ', dsc_tree_leaf);
     });
   });
 });
