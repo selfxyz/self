@@ -157,6 +157,21 @@ template VerifyRsaPss3Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LEN
             db[i] <== xor.out[i];
         }
     }
+
+    //Step -10 of https://datatracker.ietf.org/doc/html/rfc8017#section-9.1.2
+    component db2Num[DB_MASK_LEN];
+    for (var i = 0; i < DB_MASK_LEN; i++) {
+        db2Num[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            db2Num[i].in[7 - j] <== db[i*8 + j];
+        }
+    }
+    // Check leading zeros
+    for (var i = 0; i < DB_MASK_LEN - SALT_LEN - 1; i++) {
+        db2Num[i].out === 0;
+    }
+    // Check 0x01 byte
+    db2Num[DB_MASK_LEN - SALT_LEN - 1].out === 1;
     
     //inserting salt
     for (var i = 0; i < SALT_LEN_BITS; i++) {
