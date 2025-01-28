@@ -31,10 +31,10 @@ import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCSCAModulusProof } from '../csca';
+import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
-import { getLeafCscaTree } from '../pubkeyTree';
+import { getLeafCscaTree, getLeafDscTree } from '../pubkeyTree';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -63,7 +63,7 @@ export function generateCircuitInputsDSC(
 
   // TODO: get the CSCA inclusion proof
   const leaf = getLeafCscaTree(cscaParsed);
-  const [root, proof] = getCSCAModulusProof(leaf);
+  const [root, proof] = getCscaTreeInclusionProof(leaf);
 
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
@@ -138,6 +138,9 @@ export function generateCircuitInputsRegister(
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
+  const dsc_leaf = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
+  const [root, proof] = getDscTreeInclusionProof(dsc_leaf);
+  const csca_leaf = getLeafCscaTree(passportData.csca_parsed);
 
   // const dsc_pubkey_length_bytes = signatureAlgorithm === 'ecdsa'
   // ? (Number((publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
@@ -185,6 +188,10 @@ export function generateCircuitInputsRegister(
     pubKey_csca_hash: pubKey_csca_hash,
     secret: secret,
     salt: dsc_secret,
+    // merkle_root: [BigInt(root).toString()],
+    // path: proof.pathIndices.map(index => index.toString()),
+    // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    // csca_tree_leaf: csca_leaf,
   };
 
   return Object.entries(inputs)
