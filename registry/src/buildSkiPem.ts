@@ -46,7 +46,7 @@ async function main() {
 
     const devCertificates = await getAllDevPem();
     const prodCertificates = fs.readdirSync(pemDirectory);
-    const skipProd = true;
+    const skipProd = false;
 
     if (!skipProd) {
         for (const prodCertificate of prodCertificates) {
