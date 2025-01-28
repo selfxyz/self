@@ -210,9 +210,9 @@ export function formatCertificatePubKeyDSC(
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-        const normalizedX = x.length % 2 === 0 ? x : '0' + x;
-        const normalizedY = y.length % 2 === 0 ? y : '0' + y;
-        const fullPubKey = normalizedX + normalizedY;
+        // const normalizedX = x.length % 2 === 0 ? x : '0' + x;
+        // const normalizedY = y.length % 2 === 0 ? y : '0' + y;
+        const fullPubKey = x + y;
 
         // Splits to 525 words of 8 bits each
         return splitToWords(BigInt(hexToDecimal(fullPubKey)), 8, 525);
@@ -265,9 +265,9 @@ export function findStartPubKeyIndex(
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-        const normalizedX = x.length % 2 === 0 ? x : '0' + x;
-        const normalizedY = y.length % 2 === 0 ? y : '0' + y;
-        const fullPubKey = normalizedX + normalizedY;
+        // const normalizedX = x.length % 2 === 0 ? x : '0' + x;
+        // const normalizedY = y.length % 2 === 0 ? y : '0' + y;
+        const fullPubKey = x + y;
         const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
 
         return findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
