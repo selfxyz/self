@@ -59,13 +59,16 @@ const styles = StyleSheet.create({
   topSection: {
     alignSelf: 'stretch',
     flexGrow: 1,
+    flexShrink: 1,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: black,
+    overflow: 'hidden',
+    padding: 20, // TODO necessary?
   },
   bottomSection: {
     backgroundColor: white,
-    paddingTop: 50,
+    paddingTop: 30,
     paddingLeft: 20,
     paddingRight: 20,
   },

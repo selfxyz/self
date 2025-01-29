@@ -5,11 +5,11 @@ import { Image, Text, YStack } from 'tamagui';
 
 import CustomButton from '../components/CustomButton';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';
-import useNavigationStore from '../stores/navigationStore';
 import { textBlack } from '../utils/colors';
+import { useNavigation } from '@react-navigation/native';
 
 const StartScreen: React.FC = () => {
-  const { setSelectedTab } = useNavigationStore();
+  const navigation = useNavigation();
 
   return (
     <YStack f={1}>
@@ -28,16 +28,22 @@ const StartScreen: React.FC = () => {
           Icon={<ArrowRight />}
           text="Use my passport"
           onPress={() => {
-            setSelectedTab('scan');
+            navigation.navigate('PassportOnboarding');
           }}
         />
+        {/* TODO Only display this button during dev mode */}
         <CustomButton
           bgColor="white"
           Icon={<ArrowRight />}
           text="Use a mock passport"
           onPress={() => {
-            setSelectedTab('mock');
+            navigation.navigate('CreateMock');
           }}
+        />
+        <CustomButton
+          text="Cancel"
+          bgColor="$gray4"
+          onPress={navigation.goBack}
         />
       </YStack>
     </YStack>

@@ -1,9 +1,12 @@
 import React, { useCallback, useState } from 'react';
 
-import { ChevronDown, Cpu, Minus, Plus } from '@tamagui/lucide-icons';
+import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import {
   Button,
   Fieldset,
+  ScrollView,
+  Separator,
+  Sheet,
   Spinner,
   Switch,
   Text,
@@ -17,23 +20,20 @@ import getCountryISO2 from 'country-iso-3-to-2';
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 import CustomButton from '../components/CustomButton';
-import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
-import { borderColor, textBlack } from '../utils/colors';
+import {
+  bgWhite,
+  borderColor,
+  separatorColor,
+  textBlack,
+} from '../utils/colors';
+import { TouchableOpacity } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
-interface MockDataScreenProps {
-  onCountryPress: () => void;
-  onAlgorithmPress: () => void;
-  selectedCountry: string;
-  selectedAlgorithm: string;
-}
+interface MockDataScreenProps {}
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({
-  onCountryPress,
-  onAlgorithmPress,
-  selectedCountry,
-  selectedAlgorithm,
-}) => {
+const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+  const navigation = useNavigation();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,7 +48,21 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
     ).toString();
   };
 
-  const { toast } = useNavigationStore();
+  const [selectedCountry, setSelectedCountry] = useState('USA');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa sha256');
+  const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
+  const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
+
+  const handleCountrySelect = (countryCode: string) => {
+    setSelectedCountry(countryCode);
+    setCountrySheetOpen(false);
+  };
+
+  const handleAlgorithmSelect = (algorithm: string) => {
+    setSelectedAlgorithm(algorithm);
+    setAlgorithmSheetOpen(false);
+  };
+
   const signatureAlgorithmToStrictSignatureAlgorithm = {
     'rsa sha256': 'rsa_sha256_65537_2048',
     'rsa sha1': 'rsa_sha1_65537_2048',
@@ -83,147 +97,58 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
       }, 0),
     );
 
-    toast.show('🤖', {
-      message: 'Passport generated',
-      customData: {
-        type: 'success',
-      },
-    });
-
     await new Promise(resolve => setTimeout(resolve, 1000));
-    useNavigationStore.getState().setSelectedTab('next');
+    navigation.navigate('NextScreen');
   }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
 
   return (
-    <YStack f={1} gap="$4">
-      <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>
-        Generate passport data
-      </Text>
-      <XStack ai="center">
-        <Text f={1} fontSize="$5">
-          Encryption
+    <>
+      <YStack f={1} gap="$4" px="$4">
+        <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>
+          Generate passport data
         </Text>
-        <Button
-          onPress={onAlgorithmPress}
-          p="$2"
-          px="$3"
-          bg="white"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$4"
-        >
-          <XStack ai="center" gap="$2">
-            <Text fontSize="$4">{selectedAlgorithm}</Text>
-            <ChevronDown size={20} />
-          </XStack>
-        </Button>
-      </XStack>
-      <XStack ai="center">
-        <Text f={1} fontSize="$5">
-          Nationality
-        </Text>
-        <Button
-          onPress={onCountryPress}
-          p="$2"
-          px="$3"
-          bg="white"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$4"
-        >
-          <XStack ai="center" gap="$2">
-            <Text fontSize="$4">
-              {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
-              {flag(getCountryISO2(selectedCountry))}
-            </Text>
-            <ChevronDown size={20} />
-          </XStack>
-        </Button>
-      </XStack>
+        <XStack ai="center">
+          <Text f={1} fontSize="$5">
+            Encryption
+          </Text>
+          <Button
+            onPress={() => setAlgorithmSheetOpen(true)}
+            p="$2"
+            px="$3"
+            bg="white"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$4"
+          >
+            <XStack ai="center" gap="$2">
+              <Text fontSize="$4">{selectedAlgorithm}</Text>
+              <ChevronDown size={20} />
+            </XStack>
+          </Button>
+        </XStack>
+        <XStack ai="center">
+          <Text f={1} fontSize="$5">
+            Nationality
+          </Text>
+          <Button
+            onPress={() => setCountrySheetOpen(true)}
+            p="$2"
+            px="$3"
+            bg="white"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$4"
+          >
+            <XStack ai="center" gap="$2">
+              <Text fontSize="$4">
+                {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
+                {flag(getCountryISO2(selectedCountry))}
+              </Text>
+              <ChevronDown size={20} />
+            </XStack>
+          </Button>
+        </XStack>
 
-      <Fieldset mt="$2" gap="$2" horizontal>
-        <Text
-          color={textBlack}
-          width={160}
-          justifyContent="flex-end"
-          fontSize="$5"
-        >
-          Age (🎂)
-        </Text>
-        <XStack f={1} />
-
-        <Button
-          h="$3.5"
-          w="$3.5"
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$10"
-          onPress={() => setAge(age - 1)}
-          disabled={age <= 0}
-        >
-          <Minus />
-        </Button>
-        <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-          {age} yo
-        </Text>
-        <Button
-          h="$3.5"
-          w="$3.5"
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$10"
-          onPress={() => setAge(age + 1)}
-        >
-          <Plus />
-        </Button>
-      </Fieldset>
-
-      <Fieldset gap="$2" horizontal>
-        <Text
-          color={textBlack}
-          width={160}
-          justifyContent="flex-end"
-          fontSize="$5"
-        >
-          Passport expires in
-        </Text>
-        <XStack f={1} />
-
-        <Button
-          h="$3.5"
-          w="$3.5"
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$10"
-          onPress={() => setExpiryYears(expiryYears - 1)}
-          disabled={expiryYears <= 0}
-        >
-          <Minus />
-        </Button>
-        <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-          {expiryYears} years
-        </Text>
-        <Button
-          h="$3.5"
-          w="$3.5"
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1}
-          borderRadius="$10"
-          onPress={() => setExpiryYears(expiryYears + 1)}
-        >
-          <Plus />
-        </Button>
-      </Fieldset>
-
-      <YStack>
         <Fieldset mt="$2" gap="$2" horizontal>
           <Text
             color={textBlack}
@@ -231,44 +156,212 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({
             justifyContent="flex-end"
             fontSize="$5"
           >
-            Is in OFAC list
+            Age (🎂)
           </Text>
           <XStack f={1} />
-          <Switch
-            size="$3.5"
-            checked={isInOfacList}
-            onCheckedChange={() => setIsInOfacList(!isInOfacList)}
-            bg={isInOfacList ? '$green7Light' : '$gray4'}
+
+          <Button
+            h="$3.5"
+            w="$3.5"
+            bg="white"
+            jc="center"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$10"
+            onPress={() => setAge(age - 1)}
+            disabled={age <= 0}
           >
-            <Switch.Thumb animation="quick" bc="white" />
-          </Switch>
+            <Minus />
+          </Button>
+          <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+            {age} yo
+          </Text>
+          <Button
+            h="$3.5"
+            w="$3.5"
+            bg="white"
+            jc="center"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$10"
+            onPress={() => setAge(age + 1)}
+          >
+            <Plus />
+          </Button>
         </Fieldset>
-        <Text
-          mt="$2"
-          color="$red10"
-          justifyContent="flex-end"
-          fontSize="$3"
-          style={{ opacity: isInOfacList ? 1 : 0 }}
+
+        <Fieldset gap="$2" horizontal>
+          <Text
+            color={textBlack}
+            width={160}
+            justifyContent="flex-end"
+            fontSize="$5"
+          >
+            Passport expires in
+          </Text>
+          <XStack f={1} />
+
+          <Button
+            h="$3.5"
+            w="$3.5"
+            bg="white"
+            jc="center"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$10"
+            onPress={() => setExpiryYears(expiryYears - 1)}
+            disabled={expiryYears <= 0}
+          >
+            <Minus />
+          </Button>
+          <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+            {expiryYears} years
+          </Text>
+          <Button
+            h="$3.5"
+            w="$3.5"
+            bg="white"
+            jc="center"
+            borderColor={borderColor}
+            borderWidth={1}
+            borderRadius="$10"
+            onPress={() => setExpiryYears(expiryYears + 1)}
+          >
+            <Plus />
+          </Button>
+        </Fieldset>
+
+        <YStack>
+          <Fieldset mt="$2" gap="$2" horizontal>
+            <Text
+              color={textBlack}
+              width={160}
+              justifyContent="flex-end"
+              fontSize="$5"
+            >
+              Is in OFAC list
+            </Text>
+            <XStack f={1} />
+            <Switch
+              size="$3.5"
+              checked={isInOfacList}
+              onCheckedChange={() => setIsInOfacList(!isInOfacList)}
+              bg={isInOfacList ? '$green7Light' : '$gray4'}
+            >
+              <Switch.Thumb animation="quick" bc="white" />
+            </Switch>
+          </Fieldset>
+          <Text
+            mt="$2"
+            color="$red10"
+            justifyContent="flex-end"
+            fontSize="$3"
+            style={{ opacity: isInOfacList ? 1 : 0 }}
+          >
+            OFAC list is a list of people who are suspected of being involved in
+            terrorism or other illegal activities.
+          </Text>
+        </YStack>
+
+        <YStack f={1} />
+
+        <YStack>
+          <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
+            These passport data are only for testing purposes.
+          </Text>
+          <CustomButton
+            onPress={handleGenerate}
+            text="Generate passport data"
+            Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />}
+            isDisabled={isGenerating}
+          />
+        </YStack>
+      </YStack>
+      <Sheet
+        modal
+        open={isCountrySheetOpen}
+        onOpenChange={setCountrySheetOpen}
+        snapPoints={[60]}
+        animation="medium"
+        disableDrag
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          bg={bgWhite}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
         >
-          OFAC list is a list of people who are suspected of being involved in
-          terrorism or other illegal activities.
-        </Text>
-      </YStack>
+          <YStack p="$4">
+            <XStack ai="center" jc="space-between" mb="$4">
+              <Text fontSize="$8">Select a country</Text>
+              <XStack onPress={() => setCountrySheetOpen(false)} p="$2">
+                <X color={borderColor} size="$1.5" mr="$2" />
+              </XStack>
+            </XStack>
+            <Separator borderColor={separatorColor} mb="$4" />
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {Object.keys(countryCodes).map(countryCode => (
+                <TouchableOpacity
+                  key={countryCode}
+                  onPress={() => {
+                    handleCountrySelect(countryCode);
+                    setCountrySheetOpen(false);
+                  }}
+                >
+                  <XStack py="$3" px="$2">
+                    <Text fontSize="$4">
+                      {countryCodes[countryCode as keyof typeof countryCodes]}{' '}
+                      {flag(getCountryISO2(countryCode))}
+                    </Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
 
-      <YStack f={1} />
-
-      <YStack>
-        <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
-          These passport data are only for testing purposes.
-        </Text>
-        <CustomButton
-          onPress={handleGenerate}
-          text="Generate passport data"
-          Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />}
-          isDisabled={isGenerating}
-        />
-      </YStack>
-    </YStack>
+      <Sheet
+        modal
+        open={isAlgorithmSheetOpen}
+        onOpenChange={setAlgorithmSheetOpen}
+        snapPoints={[40]}
+        animation="medium"
+        disableDrag
+      >
+        <Sheet.Overlay />
+        <Sheet.Frame
+          bg={bgWhite}
+          borderTopLeftRadius="$9"
+          borderTopRightRadius="$9"
+        >
+          <YStack p="$4">
+            <XStack ai="center" jc="space-between" mb="$4">
+              <Text fontSize="$8">Select an algorithm</Text>
+              <XStack onPress={() => setAlgorithmSheetOpen(false)} p="$2">
+                <X color={borderColor} size="$1.5" mr="$2" />
+              </XStack>
+            </XStack>
+            <Separator borderColor={separatorColor} mb="$4" />
+            <ScrollView showsVerticalScrollIndicator={false}>
+              {['rsa sha256', 'rsa sha1', 'rsapss sha256'].map(algorithm => (
+                <TouchableOpacity
+                  key={algorithm}
+                  onPress={() => {
+                    handleAlgorithmSelect(algorithm);
+                    setAlgorithmSheetOpen(false);
+                  }}
+                >
+                  <XStack py="$3" px="$2">
+                    <Text fontSize="$4">{algorithm}</Text>
+                  </XStack>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </YStack>
+        </Sheet.Frame>
+      </Sheet>
+    </>
   );
 };
 

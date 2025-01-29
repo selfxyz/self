@@ -39,4 +39,8 @@ class MainActivity : ReactActivity() {
     Log.d("MAIN_ACTIVITY", "onNewIntent: " + intent.action)
     RNPassportReaderModule.getInstance().receiveIntent(intent)
   }
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+  }
 }

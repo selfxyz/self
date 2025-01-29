@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     padding: 16, // plus 4 of border = 20
   },
   text: {
-    fontFamily: 'Cochin',
+    fontFamily: 'DINOT-Medium',
     textAlign: 'center',
     fontSize: 18,
   },

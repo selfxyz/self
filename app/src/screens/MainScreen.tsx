@@ -237,29 +237,29 @@ const MainScreen: React.FC = () => {
   // }, [modalProofStep]);
 
   const decrementStep = () => {
-    if (selectedTab === 'scan') {
-      setSelectedTab('start');
-    } else if (selectedTab === 'nfc') {
-      setSelectedTab('scan');
-    } else if (selectedTab === 'mock') {
-      setSelectedTab('start');
-    } else if (selectedTab === 'next') {
-      if (passportData?.mockUser) {
-        setSelectedTab('mock');
-      } else {
-        setSelectedTab('nfc');
-      }
-    } else if (selectedTab === 'app') {
-      setSelectedTab('next');
-    } else if (selectedTab === 'prove') {
-      setSelectedTab('app');
-    } else if (selectedTab === 'wrong') {
-      setSelectedTab('app');
-    } else if (selectedTab === 'valid') {
-      setSelectedTab('app');
-    } else if (selectedTab === 'userInfo') {
-      setSelectedTab('app');
-    }
+    // if (selectedTab === 'scan') {
+    //   setSelectedTab('start');
+    // } else if (selectedTab === 'nfc') {
+    //   setSelectedTab('scan');
+    // } else if (selectedTab === 'mock') {
+    //   setSelectedTab('start');
+    // } else if (selectedTab === 'next') {
+    //   if (passportData?.mockUser) {
+    //     setSelectedTab('mock');
+    //   } else {
+    //     setSelectedTab('nfc');
+    //   }
+    // } else if (selectedTab === 'app') {
+    //   setSelectedTab('next');
+    // } else if (selectedTab === 'prove') {
+    //   setSelectedTab('app');
+    // } else if (selectedTab === 'wrong') {
+    //   setSelectedTab('app');
+    // } else if (selectedTab === 'valid') {
+    //   setSelectedTab('app');
+    // } else if (selectedTab === 'userInfo') {
+    //   setSelectedTab('app');
+    // }
   };
 
   useEffect(() => {
