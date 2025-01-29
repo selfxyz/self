@@ -4,7 +4,7 @@ import {
   CertificateData,
 } from './certificate_parsing/dataStructure';
 import { packBytesAndPoseidon } from './hash';
-import { parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
+import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { max_csca_bytes } from '../constants/constants';
 import { max_dsc_bytes } from '../constants/constants';
@@ -27,10 +27,13 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   return packBytesAndPoseidon(paddedTbsBytesArray);
 }
 
-export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string {
-  const dscMetaData = parseDscCertificateData(dscParsed);
+export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string {
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);
   return getLeafDscTree(dscParsed, cscaParsed);
+}
+
+export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string {
+  return getLeafDscTreeFromDscCertificateMetadata(dscParsed, parseDscCertificateData(dscParsed));
 }
 
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
