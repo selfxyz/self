@@ -112,7 +112,6 @@ export function generateCircuitInputsDSC(
 
 export function generateCircuitInputsRegister(
   secret: number | string,
-  dsc_secret: number | string,
   passportData: PassportData
 ) {
   if (!passportData.parsed) {
@@ -120,6 +119,9 @@ export function generateCircuitInputsRegister(
   }
   const { mrz, eContent, signedAttr } = passportData;
   const passportMetadata = passportData.passportMetadata;
+  const dscParsed = passportData.dsc_parsed;
+
+  const dscTbsBytesPadded = padWithZeroes(Array.from(dscParsed.tbsBytes), max_dsc_bytes); // TODO: is this padding better than the other?
 
   const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
   const mrz_formatted = formatMrz(mrz);
@@ -142,44 +144,23 @@ export function generateCircuitInputsRegister(
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
-  const dsc_leaf = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
+  const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed);
   const [root, proof] = getDscTreeInclusionProof(dsc_leaf);
-  const csca_leaf = getLeafCscaTree(passportData.csca_parsed);
+  const csca_hash = getLeafCscaTree(passportData.csca_parsed);
 
-  // const dsc_pubkey_length_bytes = signatureAlgorithm === 'ecdsa'
-  // ? (Number((publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
-  // : Number((publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
+  const dsc_pubkey_actual_size = passportMetadata.signatureAlgorithm === 'ecdsa'
+  ? (Number((dscParsed.publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
+  : Number((dscParsed.publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
 
-  // const certificateData = parseCertificateSimple(dscCertificate);
-
-  // const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
-  //   certificateData,
-  //   signatureAlgorithm,
-  //   hashAlgorithm
-  // );
-
-  // const pubKey_dsc = formatCertificatePubKeyDSC(
-  //   certificateData,
-  //   signatureAlgorithm,
-  // );
-
-  // console.log('js: pubKey_dsc', pubKey_dsc);
-
-  // const { 
-  //   signatureAlgorithm,
-  //   hashAlgorithm,
-  //   publicKeyDetails,
-  //   authorityKeyIdentifier, 
-  // } = certificateData;
-
-  const pubKey_csca = getCertificatePubKey(
-    passportData.csca_parsed,
-    passportMetadata.cscaSignatureAlgorithm,
-    passportMetadata.cscaHashFunction
-  );
-  const pubKey_csca_hash = customHasher(pubKey_csca);
+  // Get start index of DSC pubkey based on algorithm
+  const startIndex = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
+  console.log('js: startIndex', startIndex);
 
   const inputs = {
+    raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
+    raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
+    dsc_pubKey_offset: [startIndex.toString()],
+    dsc_pubKey_actual_size: [BigInt(dsc_pubkey_actual_size).toString()],
     dg1: mrz_formatted,
     dg1_hash_offset: passportMetadata.dg1HashOffset,
     eContent: eContentPadded,
@@ -189,13 +170,11 @@ export function generateCircuitInputsRegister(
     signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
     pubKey_dsc: pubKey,
     signature_passport: signature,
-    pubKey_csca_hash: pubKey_csca_hash,
+    merkle_root: [BigInt(root).toString()],
+    path: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    csca_hash: csca_hash,
     secret: secret,
-    salt: dsc_secret,
-    // merkle_root: [BigInt(root).toString()],
-    // path: proof.pathIndices.map(index => index.toString()),
-    // siblings: proof.siblings.flat().map(sibling => sibling.toString()),
-    // csca_tree_leaf: csca_leaf,
   };
 
   return Object.entries(inputs)

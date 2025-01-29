@@ -3,11 +3,6 @@ pragma circom 2.1.9;
 /// @title Constants
 /// @notice Contains constants for the passport circuit
 
-/// @notice Maximum length of the DSC public key — currently 512 bytes padded to 525
-function getMaxDSCPubKeyLength(){
-    return 525;
-}
-
 /// @notice Maximum length of DSC certificate — currently 1792 bytes
 /// @dev Empirically, we saw DSCs up to 1591 bytes.
 function getMaxDSCLength(){
@@ -27,5 +22,5 @@ function getMaxCSCALevels(){
 
 /// @notice Maximum number of levels in the DSC Merkle tree — currently 12
 function getMaxDSCLevels(){
-    return 12;
+    return 21;
 }
