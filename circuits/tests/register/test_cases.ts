@@ -1,13 +1,13 @@
 export const sigAlgs = [
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha256',
-  //   sigAlg: 'rsapss',
-  //   hashFunction: 'sha256',
-  //   domainParameter: '3',
-  //   keyLength: '3072',
-  //   checkNullifier: true,
-  // },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    domainParameter: '3',
+    keyLength: '3072',
+    checkNullifier: true,
+  },
   {
     dgHashAlgo: 'sha1',
     eContentHashAlgo: 'sha256',
@@ -17,15 +17,15 @@ export const sigAlgs = [
     keyLength: '2048',
     checkNullifier: true,
   },
-  // {
-  //   dgHashAlgo: 'sha256',
-  //   eContentHashAlgo: 'sha224',
-  //   sigAlg: 'ecdsa',
-  //   hashFunction: 'sha224',
-  //   domainParameter: 'brainpoolP224r1',
-  //   keyLength: '224',
-  //   checkNullifier: true,
-  // },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha224',
+    sigAlg: 'ecdsa',
+    hashFunction: 'sha224',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+    checkNullifier: true,
+  },
 ];
 
 export const fullSigAlgs = [

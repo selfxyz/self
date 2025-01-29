@@ -2,15 +2,21 @@ import {
   PUBKEY_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
+  SignatureAlgorithmIndex,
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
+  extractSignatureFromDSC,
+  findStartPubKeyIndex,
+  formatCertificatePubKeyDSC,
+  formatSignatureDSCCircuit,
   generateCommitment,
   getCertificatePubKey,
   getPassportSignatureInfos,
+  getSignatureAlgorithmFullName,
   pad,
 } from '../passports/passport';
 import { toUnsignedByte } from '../bytes';
@@ -21,6 +27,74 @@ import { getCurrentDateYYMMDD } from '../date';
 import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
+import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCSCAModulusProof } from '../csca';
+import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
+import { getLeafCSCA } from '../pubkeyTree';
+import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
+
+export function generateCircuitInputsDSC(
+  dscSecret: string,
+  passportData: PassportData,
+  max_cert_bytes: number,
+  devMode: boolean = false
+) {
+  const passportMetadata = passportData.passportMetadata;
+  const certificateData = parseCertificateSimple(passportData.dsc);
+  const dscMetaData = parseDscCertificateData(certificateData);
+
+
+  const TbsBytes = getTBSBytes(passportData.dsc);
+  const {
+    publicKeyDetails,
+  } = certificateData;
+
+  const pubKey_dsc = formatCertificatePubKeyDSC(
+    certificateData,
+    passportMetadata.signatureAlgorithm,
+  );
+
+  const [raw_dsc_cert_padded, raw_dsc_cert_padded_bytes] = pad(passportMetadata.cscaHashFunction)(
+    TbsBytes,
+    max_cert_bytes
+  );
+
+  // Get start index based on algorithm
+  const startIndex = findStartPubKeyIndex(certificateData, raw_dsc_cert_padded, passportMetadata.signatureAlgorithm);
+
+  // Get CSCA certificate and proof
+  const leaf = getLeafCSCA(passportMetadata.csca);
+  const [root, proof] = getCSCAModulusProof(leaf);
+
+  // Parse CSCA certificate and get its public key
+  const cscaCertData = parseCertificateSimple(passportMetadata.csca);
+  const csca_pubKey_formatted = getCertificatePubKey(
+    cscaCertData,
+    cscaCertData.signatureAlgorithm,
+    cscaCertData.hashAlgorithm
+  );
+
+  const signatureRaw = extractSignatureFromDSC(passportData.dsc);
+  const signature = formatSignatureDSCCircuit(passportMetadata.cscaSignatureAlgorithm, passportMetadata.cscaHashFunction, cscaCertData, signatureRaw,);
+  const dsc_pubkey_length_bytes = passportMetadata.signatureAlgorithm === 'ecdsa'
+    ? (Number((publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
+    : Number((publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
+
+  return {
+    raw_dsc_cert: Array.from(raw_dsc_cert_padded).map(x => x.toString()),
+    raw_dsc_cert_padded_bytes: [BigInt(raw_dsc_cert_padded_bytes).toString()],
+    dsc_pubkey_length_bytes: [dsc_pubkey_length_bytes],
+    csca_pubKey: csca_pubKey_formatted,
+    signature,
+    dsc_pubKey_bytes: pubKey_dsc,
+    dsc_pubKey_offset: [startIndex.toString()],
+    merkle_root: [BigInt(root).toString()],
+    path: proof.pathIndices.map(index => index.toString()),
+    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    salt: dscSecret,
+  };
+}
+
 export function generateCircuitInputsRegister(
   secret: number | string,
   dsc_secret: number | string,
