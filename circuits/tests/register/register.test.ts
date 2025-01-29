@@ -37,7 +37,6 @@ testSuite.forEach(
       passportData = initPassportDataParsing(passportData);
 
       const secret = poseidon6("SECRET".split('').map(x => BigInt(x.charCodeAt(0)))).toString();
-      const attestation_id = '1';
 
       const inputs = generateCircuitInputsRegister(secret, passportData);
 

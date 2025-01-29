@@ -20,7 +20,7 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   return tree;
 }
 
-function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
+export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   const maxPaddedLength = type === 'dsc' ? max_dsc_bytes : max_csca_bytes;
   const tbsBytesArray = Array.from(parsed.tbsBytes);
   const paddedTbsBytesArray = tbsBytesArray.concat(new Array(maxPaddedLength - tbsBytesArray.length).fill(0));

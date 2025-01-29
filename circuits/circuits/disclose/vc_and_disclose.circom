@@ -39,8 +39,8 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input attestation_id;
     signal input dg1[93];
     signal input eContent_shaBytes_packed_hash;
-    signal input pubKey_dsc_hash;
-    signal input pubKey_csca_hash;
+    signal input dsc_hash;
+    signal input csca_hash;
     signal input scope;
 
     signal input merkle_root;
@@ -64,7 +64,18 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input user_identifier;
 
     // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, dg1, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash, merkle_root, merkletree_size, path, siblings);
+    VERIFY_COMMITMENT(nLevels)(
+        secret,
+        attestation_id,
+        dg1,
+        eContent_shaBytes_packed_hash,
+        dsc_hash,
+        csca_hash,
+        merkle_root,
+        merkletree_size,
+        path,
+        siblings
+    );
     
     // verify passport validity and disclose optional data
     component disclose = DISCLOSE(10);
@@ -87,4 +98,13 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal output nullifier <== Poseidon(2)([secret, scope]);
 }
 
-component main { public [ merkle_root, smt_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16, 10);
+component main {
+    public [
+        merkle_root,
+        smt_root,
+        scope,
+        user_identifier,
+        current_date,
+        attestation_id
+    ]
+} = VC_AND_DISCLOSE(16, 10);

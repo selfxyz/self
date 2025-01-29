@@ -30,6 +30,7 @@ import { splitToWords } from '../bytes';
 import { formatMrz } from './format';
 import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
+import { getLeaf } from '../pubkeyTree';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -59,31 +60,21 @@ export function generateCommitment(
         Array.from(passportData.eContent),
         'bytes'
     );
+
     const eContent_packed_hash = packBytesAndPoseidon(
         (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
     );
 
-    const pubKey_dsc = getCertificatePubKey(
-        passportData.dsc_parsed,
-        passportMetadata.signatureAlgorithm,
-        passportMetadata.signedAttrHashFunction
-    );
-    const pubKey_dsc_hash = customHasher(pubKey_dsc);
-
-    const pubKey_csca = getCertificatePubKey(
-        passportData.csca_parsed,
-        passportMetadata.cscaSignatureAlgorithm,
-        passportMetadata.cscaHashFunction
-    );
-    const pubKey_csca_hash = customHasher(pubKey_csca);
+    const dsc_hash = getLeaf(passportData.dsc_parsed, 'dsc');
+    const csca_hash = getLeaf(passportData.csca_parsed, 'csca');
 
     return poseidon6([
         secret,
         attestation_id,
         dg1_packed_hash,
         eContent_packed_hash,
-        pubKey_dsc_hash,
-        pubKey_csca_hash,
+        dsc_hash,
+        csca_hash,
     ]).toString();
 }
 

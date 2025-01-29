@@ -2,7 +2,6 @@ import {
   PUBKEY_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
-  SignatureAlgorithmIndex,
   max_dsc_bytes,
   max_csca_bytes,
 } from '../../constants/constants';
@@ -13,28 +12,25 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import {
   extractSignatureFromDSC,
   findStartPubKeyIndex,
-  formatCertificatePubKeyDSC,
   formatSignatureDSCCircuit,
   generateCommitment,
   getCertificatePubKey,
   getPassportSignatureInfos,
-  getSignatureAlgorithmFullName,
   pad,
   padWithZeroes,
 } from '../passports/passport';
-import { toUnsignedByte } from '../bytes';
-import { customHasher, hash, packBytesAndPoseidon } from '../hash';
+import { hash, packBytesAndPoseidon } from '../hash';
 import { formatMrz } from '../passports/format';
 import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
 import { getCurrentDateYYMMDD } from '../date';
 import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
-import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { findStartIndex, findStartIndexEC, getCSCAFromSKI, getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../csca';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
-import { getLeafCscaTree, getLeafDscTree } from '../pubkeyTree';
+import { getLeaf, getLeafCscaTree, getLeafDscTree } from '../pubkeyTree';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -43,25 +39,24 @@ export function generateCircuitInputsDSC(
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
-  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes); // TODO: is this padding better than the other?
+  
+  // TODO: is this padding better than the other one?
+  const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes);
   console.log('js: cscaTbsBytesPadded', cscaTbsBytesPadded);
   console.log('js: cscaTbsBytesPadded length', cscaTbsBytesPadded.length);
 
   const dscTbsBytes = dscParsed.tbsBytes;
   console.log('js: dscTbsBytes', dscTbsBytes);
   console.log('js: dscTbsBytes length', dscTbsBytes.length);
-  // const dscTbsBytesPadded = padWithZeroes(Array.from(dscTbsBytes), max_dsc_bytes);
-  // console.log('js: dscTbsBytesPadded', dscTbsBytesPadded);
-  // console.log('js: dscTbsBytesPadded length', dscTbsBytesPadded.length);
 
-  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(cscaParsed.hashAlgorithm)( // do we want to keep this padding for the commitment? Not sure
+  // Do we want to keep this padding for the commitment? Not sure
+  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(cscaParsed.hashAlgorithm)(
     dscTbsBytes,
     max_dsc_bytes
   );
   console.log('js: dscTbsBytesPadded', dscTbsBytesPadded);
   console.log('js: dscTbsBytesPadded length', dscTbsBytesPadded.length);
 
-  // TODO: get the CSCA inclusion proof
   const leaf = getLeafCscaTree(cscaParsed);
   const [root, proof] = getCscaTreeInclusionProof(leaf);
 
@@ -71,11 +66,6 @@ export function generateCircuitInputsDSC(
     cscaParsed.signatureAlgorithm,
     cscaParsed.hashAlgorithm
   );
-  // const modulus = (cscaParsed.publicKeyDetails as PublicKeyDetailsRSA).modulus;
-  // const modulus_bytes = Array.from(Buffer.from(modulus, 'hex'));
-  // console.log('js: modulus_bytes', modulus_bytes);
-  // console.log('js: modulus_bytes[modulus_bytes.length - 1]', modulus_bytes[modulus_bytes.length - 1]);
-  // console.log('js: modulus_bytes length', modulus_bytes.length);
 
   console.log('js: csca_pubKey_formatted', csca_pubKey_formatted);
   console.log('js: csca_pubKey_formatted length', csca_pubKey_formatted.length);
@@ -87,9 +77,12 @@ export function generateCircuitInputsDSC(
   console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
 
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
-  // console.log('js: signatureRaw', signatureRaw);
-  const signature = formatSignatureDSCCircuit(dscMetadata.cscaSignatureAlgorithm, dscMetadata.cscaHashAlgorithm, cscaParsed, signatureRaw,);
-  // console.log('js: signature', signature);
+  const signature = formatSignatureDSCCircuit(
+    dscMetadata.cscaSignatureAlgorithm,
+    dscMetadata.cscaHashAlgorithm,
+    cscaParsed,
+    signatureRaw
+  );
 
   // Get start index of CSCA pubkey based on algorithm
   const startIndex = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
@@ -209,21 +202,15 @@ export function generateCircuitInputsVCandDisclose(
     (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
   );
 
-  const pubKey_dsc = getCertificatePubKey(
-    passportData.dsc_parsed,
-    passportMetadata.signatureAlgorithm,
-    passportMetadata.signedAttrHashFunction
-  );
-  const pubKey_dsc_hash = customHasher(pubKey_dsc);
+  const dsc_hash = getLeaf(passportData.dsc_parsed, 'dsc');
+  const csca_hash = getLeaf(passportData.csca_parsed, 'csca');
 
-  const pubKey_csca = getCertificatePubKey(
-    passportData.csca_parsed,
-    passportMetadata.cscaSignatureAlgorithm,
-    passportMetadata.cscaHashFunction
+  const commitment = generateCommitment(
+    secret,
+    attestation_id,
+    passportData
   );
-  const pubKey_csca_hash = customHasher(pubKey_csca);
 
-  const commitment = generateCommitment(secret, attestation_id, passportData);
   const index = findIndexInTree(merkletree, BigInt(commitment));
   const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(
     merkletree,
@@ -246,8 +233,8 @@ export function generateCircuitInputsVCandDisclose(
     attestation_id: formatInput(attestation_id),
     dg1: formatInput(formattedMrz),
     eContent_shaBytes_packed_hash: formatInput(eContent_packed_hash),
-    pubKey_dsc_hash: formatInput(pubKey_dsc_hash),
-    pubKey_csca_hash: formatInput(pubKey_csca_hash),
+    dsc_hash: formatInput(dsc_hash),
+    csca_hash: formatInput(csca_hash),
     merkle_root: formatInput(merkletree.root),
     merkletree_size: formatInput(depthForThisOne),
     path: formatInput(merkleProofIndices),
