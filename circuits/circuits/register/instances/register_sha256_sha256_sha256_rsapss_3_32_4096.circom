@@ -2,4 +2,4 @@ pragma circom 2.1.9;
 
 include "../register.circom";
 
-component main = REGISTER(256, 256, 17, 120, 35, 448, 128);
+component main { public [ merkle_root ] } = REGISTER(256, 256, 17, 120, 35, 448, 128);
