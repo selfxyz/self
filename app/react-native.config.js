@@ -4,7 +4,7 @@ module.exports = {
     android: {},
   },
   assets: [
-    './assets/fonts',
+    './src/assets/fonts',
     './node_modules/@tamagui/font-inter/otf',
     './node_modules/@tamagui/font-silkscreen/files',
   ],

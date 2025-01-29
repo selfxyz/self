@@ -9,7 +9,7 @@
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleGetInfoString</key>
-	<string></string>
+	<string/>
 	<key>CFBundleIconName</key>
 	<string>AppIcon</string>
 	<key>CFBundleIdentifier</key>
@@ -27,27 +27,26 @@
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSApplicationCategoryType</key>
-	<string></string>
+	<string/>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
 	<key>NSAppTransportSecurity</key>
-	<string></string>
-	 <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<string/>
+  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
 	<key>NSAllowsArbitraryLoads</key>
 	<false/>
 	<key>NSAllowsLocalNetworking</key>
 	<true/>
-	
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Needed to secure the secret</string>
 	<key>NSHumanReadableCopyright</key>
-	<string></string>
+	<string/>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+	<string/>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
 	<key>UILaunchStoryboardName</key>
@@ -78,6 +77,31 @@
 				<string>proofofpassport</string>
 			</array>
 		</dict>
+	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>Advercase-Regular.otf</string>
+		<string>DINOT-Medium.otf</string>
+		<string>Inter-Black.otf</string>
+		<string>Inter-BlackItalic.otf</string>
+		<string>Inter-Bold.otf</string>
+		<string>Inter-BoldItalic.otf</string>
+		<string>Inter-ExtraBold.otf</string>
+		<string>Inter-ExtraBoldItalic.otf</string>
+		<string>Inter-ExtraLight.otf</string>
+		<string>Inter-ExtraLightItalic.otf</string>
+		<string>Inter-Italic.otf</string>
+		<string>Inter-Light.otf</string>
+		<string>Inter-LightItalic.otf</string>
+		<string>Inter-Medium.otf</string>
+		<string>Inter-MediumItalic.otf</string>
+		<string>Inter-Regular.otf</string>
+		<string>Inter-SemiBold.otf</string>
+		<string>Inter-SemiBoldItalic.otf</string>
+		<string>Inter-Thin.otf</string>
+		<string>Inter-ThinItalic.otf</string>
+		<string>slkscr.ttf</string>
+		<string>slkscrb.ttf</string>
 	</array>
 </dict>
 </plist>
