@@ -23,14 +23,14 @@ template DSC(
     var nLevels = getMaxCSCALevels();
 
     // variables verification
-    assert(MAX_CSCA_LENGTH % 64 == 0); // it's 1664 currently
-    assert(MAX_DSC_LENGTH % 64 == 0); // it's 1664 currently
+    assert(MAX_CSCA_LENGTH % 64 == 0);
+    assert(MAX_DSC_LENGTH % 64 == 0);
     // assert(n_csca * k_csca > max_dsc_bytes); // not sure what this is for
     assert(n_csca <= (255 \ 2));
 
-    var hashLength = getHashLength(signatureAlgorithm);
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k_csca * kLengthFactor;
+    var hashLength = getHashLength(signatureAlgorithm);
 
     var MAX_CSCA_PUBKEY_LENGTH = n_csca * kScaled / 8;
 
@@ -56,7 +56,7 @@ template DSC(
     log("raw_dsc_actual_length", raw_dsc_actual_length);
 
     // check offsets refer to valid ranges
-    signal csca_pubKey_offset_in_range <== LessEqThan(14)([ // TODO update this value to log2(MAX_CSCA_LENGTH)
+    signal csca_pubKey_offset_in_range <== LessEqThan(12)([
         csca_pubKey_offset + csca_pubKey_actual_size,
         raw_csca_actual_length
     ]); 
@@ -68,11 +68,19 @@ template DSC(
     merkle_root === computed_merkle_root;
 
     // get CSCA public key from the certificate
-    signal extracted_csca_pubKey[MAX_CSCA_PUBKEY_LENGTH] <== SelectSubArray(MAX_CSCA_LENGTH, MAX_CSCA_PUBKEY_LENGTH)(raw_csca, csca_pubKey_offset, csca_pubKey_actual_size);
+    signal extracted_csca_pubKey[MAX_CSCA_PUBKEY_LENGTH] <== SelectSubArray(MAX_CSCA_LENGTH, MAX_CSCA_PUBKEY_LENGTH)(
+        raw_csca,
+        csca_pubKey_offset,
+        csca_pubKey_actual_size
+    );
 
     // check if the CSCA public key is the same as the one in the certificate
     // If we end up adding the pubkey in the CSCA leaf, we'll be able to remove this check
-    CheckPubkeysEqual(n_csca, kScaled, kLengthFactor, MAX_CSCA_PUBKEY_LENGTH)(csca_pubKey, extracted_csca_pubKey, csca_pubKey_actual_size);
+    CheckPubkeysEqual(n_csca, kScaled, kLengthFactor, MAX_CSCA_PUBKEY_LENGTH)(
+        csca_pubKey,
+        extracted_csca_pubKey,
+        csca_pubKey_actual_size
+    );
 
     // verify DSC signature
     signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, MAX_DSC_LENGTH)(raw_dsc, raw_dsc_actual_length);
