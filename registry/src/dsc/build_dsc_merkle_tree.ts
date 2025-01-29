@@ -1,19 +1,26 @@
 import * as fs from 'fs';
-import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/pubkeyTree';
+import { getLeafDscTreeFromDscCertificateMetadata, getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/pubkeyTree';
 import { DEVELOPMENT_MODE, DSC_TREE_DEPTH } from '../../../common/src/constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
 import { writeFile } from 'fs/promises';
 import * as path from 'path';
 import { parseCertificate } from '../../../common/src/utils/certificate_parsing/parseCertificate';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
+import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
 
 let tbs_max_bytes = 0;
 let key_length_max_bytes = 0;
 const countryKeyBitLengths: { [countryCode: string]: number } = {};
-
+let cscaDescriptions: { [cscaDesciption: string]: number } = {};
+let dscDescriptions: { [dscDescription: string]: number } = {};
+let undefinedFilePathsCsca: string[] = [];
+let undefinedFilePathsDsc: string[] = [];
+let dscDescriptionsExtrapolated: { [dscDescription: string]: number } = {};
 function processCertificate(pemContent: string, filePath: string) {
     try {
-        const certificate = parseCertificate(pemContent, path.basename(filePath));
+        const certificate: CertificateData = parseCertificateSimple(pemContent);
         if (parseInt(certificate.tbsBytesLength) > tbs_max_bytes) {
             tbs_max_bytes = parseInt(certificate.tbsBytesLength);
         }
@@ -42,8 +49,55 @@ function processCertificate(pemContent: string, filePath: string) {
         console.log(`Key Length: ${keyLength} bits`);
         console.log(`Signature Algorithm: ${certificate.signatureAlgorithm}`);
         console.log(`Hash Algorithm: ${certificate.hashAlgorithm}`);
+        // CSCA parsing
+        const dscMetaData = parseDscCertificateData(certificate);
+        // console.log('js: dscMetaData', dscMetaData);
+        let cscaDesc = '';
+        if (dscMetaData.cscaFound) {
+            if (dscMetaData.cscaSignatureAlgorithm == 'ecdsa') {
+                cscaDesc = `${dscMetaData.cscaHashAlgorithm}_${dscMetaData.cscaSignatureAlgorithm}_${dscMetaData.cscaCurveOrExponent}`;
+            }
+            else if (dscMetaData.cscaSignatureAlgorithm == 'rsapss') {
+                cscaDesc = `${dscMetaData.cscaHashAlgorithm}_${dscMetaData.cscaSignatureAlgorithm}_${dscMetaData.cscaCurveOrExponent}_${dscMetaData.cscaSaltLength}_${dscMetaData.cscaBits}`;
+            }
+            else {
+                cscaDesc = `${dscMetaData.cscaHashAlgorithm}_${dscMetaData.cscaSignatureAlgorithm}_${dscMetaData.cscaCurveOrExponent}_${dscMetaData.cscaBits}`;
+            }
+            if (cscaDesc.includes('undefined') || cscaDesc.includes('unknown')) {
+                undefinedFilePathsCsca.push(filePath);
+            }
+        }
+        cscaDescriptions[cscaDesc] = (cscaDescriptions[cscaDesc] || 0) + 1;
 
-        const finalPoseidonHash = getLeafDscTreeFromParsedDsc(certificate);
+        // DSC parsing
+        let dscDesc
+        if (certificate.signatureAlgorithm == 'ecdsa') {
+            dscDesc = `${certificate.hashAlgorithm}_${certificate.signatureAlgorithm}_${(certificate.publicKeyDetails as PublicKeyDetailsECDSA).curve}`;
+        }
+        else {
+            dscDesc = `${certificate.hashAlgorithm}_${certificate.signatureAlgorithm}_${(certificate.publicKeyDetails as PublicKeyDetailsRSA).exponent}_${certificate.publicKeyDetails.bits}`;
+        }
+        if (dscDesc.includes('undefined') || dscDesc.includes('unknown')) {
+            undefinedFilePathsDsc.push(filePath);
+        }
+        dscDescriptions[dscDesc] = (dscDescriptions[dscDesc] || 0) + 1;
+        let dscDescExt
+        // DSC Extrapolation
+        if (certificate.signatureAlgorithm == 'ecdsa') {
+            dscDescExt = `${certificate.hashAlgorithm}_${certificate.signatureAlgorithm}_${(certificate.publicKeyDetails as PublicKeyDetailsECDSA).curve}`;
+        }
+        else {
+            if (dscMetaData.cscaSignatureAlgorithm == 'rsapss') {
+                dscDescExt = `${certificate.hashAlgorithm}_${'rsapss'}_${(certificate.publicKeyDetails as PublicKeyDetailsRSA).exponent}_${dscMetaData.cscaSaltLength}_${certificate.publicKeyDetails.bits}`;
+            }
+            else {
+                dscDescExt = `${certificate.hashAlgorithm}_${certificate.signatureAlgorithm}_${(certificate.publicKeyDetails as PublicKeyDetailsRSA).exponent}_${certificate.publicKeyDetails.bits}`;
+            }
+        }
+        dscDescriptionsExtrapolated[dscDescExt] = (dscDescriptionsExtrapolated[dscDescExt] || 0) + 1;
+
+        // Final Poseidon Hash
+        const finalPoseidonHash = getLeafDscTreeFromDscCertificateMetadata(certificate, dscMetaData);
         console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
 
         return finalPoseidonHash.toString();
@@ -70,7 +124,7 @@ async function buildCscaMerkleTree() {
         }
     }
 
-    if (DEVELOPMENT_MODE) {
+    if (false) {
         const dev_pem_path = path.join(__dirname, '..', '..', '..', 'common', 'src', 'mock_certificates');
         const subdirectories = fs.readdirSync(dev_pem_path, { withFileTypes: true })
             .filter(item => item.isDirectory())
@@ -96,6 +150,11 @@ async function buildCscaMerkleTree() {
     console.log(`Max TBS bytes: ${tbs_max_bytes}`);
     console.log(`Max Key Length: ${key_length_max_bytes}`);
     console.log('js: countryKeyBitLengths', countryKeyBitLengths);
+    console.log('js: cscaDescriptions', cscaDescriptions);
+    console.log('js: dscDescriptions', dscDescriptions);
+    console.log('js: dscDescriptionsExtrapolated', dscDescriptionsExtrapolated);
+    console.log('js: undefinedFilePathsCsca', undefinedFilePathsCsca);
+    console.log('js: undefinedFilePathsDsc', undefinedFilePathsDsc);
     return tree;
 }
 

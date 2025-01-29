@@ -296,7 +296,10 @@ generate_certificate dsc sha512 ecdsa brainpoolP512r1 --signer sha512_ecdsa_brai
 echo -e "\033[32mMock certificates generated\033[0m"
 python src/scripts/addCertificatesInTs.py
 echo -e "\033[32mCertificates added in certificates.ts\033[0m"
-
+cd ../registry
+    ts-node src/dsc/build_dsc_merkle_tree.ts
+    echo -e "\033[32mDSC Merkle tree updated\033[0m"
+cd ../common
 
 # Parse command line arguments
 CSCA_FLAG=false
