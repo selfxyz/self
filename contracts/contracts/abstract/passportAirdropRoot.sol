@@ -2,7 +2,6 @@
 pragma solidity ^0.8.28;
 
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
-import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
@@ -36,7 +35,7 @@ abstract contract PassportAirdropRoot is Ownable {
 
     function _registerAddress(
         address addressToRegister,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
     )
         internal
         returns (address registeredAddress)
@@ -45,15 +44,15 @@ abstract contract PassportAirdropRoot is Ownable {
             revert RegistrationNotOpen();
         }
 
-        if (scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
+        if (scope != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
 
-        if (nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != address(0)) {
+        if (nullifiers[proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != address(0)) {
             revert AlreadyRegistered();
         }
 
-        if(attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
+        if(attestationId != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
             revert InvalidAttestationId();
         }
 

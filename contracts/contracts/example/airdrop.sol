@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {PassportAirdropRoot} from "../abstract/airdropRoot.sol";
+import {PassportAirdropRoot} from "../abstract/passportAirdropRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 
@@ -47,7 +47,7 @@ contract Airdrop is PassportAirdropRoot {
     }
 
     function registeredAddress(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
     ) 
         external 
     {

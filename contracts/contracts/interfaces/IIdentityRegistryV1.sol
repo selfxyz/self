@@ -8,6 +8,8 @@ interface IIdentityRegistryV1 {
     function getIdentityCommitmentMerkleTreeSize() external view returns (uint256);
     function getIdentityCommitmentMerkleRoot() external view returns (uint256);
     function getIdentityCommitmentIndex(uint256 commitment) external view returns (uint256);
+    function getDscKeyCommitmentTreeRoot() external view returns (uint256);
+    function checkDscKeyCommitmentTreeRoot(uint256 root) external view returns (bool);
     function getOfacRoot() external view returns (uint256);
     function getCscaRoot() external view returns (uint256);
     function checkOfacRoot(uint256 root) external view returns (bool);

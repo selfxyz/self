@@ -53,6 +53,10 @@ contract IdentityVerificationHubImplV1 is
     IdentityVerificationHubStorageV1, 
     IIdentityVerificationHubV1 
 {
+    using Formatter for uint256;
+
+    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+
     // Events
     event HubInitialized(
         address registry, 
@@ -82,7 +86,7 @@ contract IdentityVerificationHubImplV1 is
     error INVALID_DSC_PROOF();
     error INVALID_VC_AND_DISCLOSE_PROOF();
 
-    error INVALID_IDENTITY_COMMITMENT_ROOT();
+    error INVALID_COMMITMENT_ROOT();
     error INVALID_OFAC_ROOT();
     error INVALID_CSCA_ROOT();
 
@@ -213,10 +217,20 @@ contract IdentityVerificationHubImplV1 is
         return attrs;
     }
 
+    function getReadableForbiddenCountries(
+        uint256 forbiddenCountriesListPacked
+    )
+        external
+        view
+        returns (bytes3[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
+    {
+        return Formatter.extractForbiddenCountriesFromPacked(forbiddenCountriesListPacked);
+    }
+
     // verify and view
 
     function verifyVcAndDisclose(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        VcAndDiscloseHubProof memory proof
     )
         external
         view
@@ -227,13 +241,13 @@ contract IdentityVerificationHubImplV1 is
 
         VcAndDiscloseVerificationResult memory result;
          for (uint256 i = 0; i < 3; i++) {
-            result.revealedDataPacked[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
+            result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
         }
-        result.forbiddenCountriesListPacked = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-        result.nullifier = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
-        result.attestationId = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
-        result.userIdentifier = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
-        result.scope = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
+        result.forbiddenCountriesListPacked = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+        result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
+        result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
+        result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        result.scope = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX];
         return result;
     }
 
@@ -353,27 +367,25 @@ contract IdentityVerificationHubImplV1 is
 
     // Functions for vc and disclose circuit
     function verifyVcAndDiscloseProof(
-        bool checkOlderThan,
-        uint256 expectedOlderThan,
-        bool checkOfac,
-        bool checkForbiddenCountries,
-        uint256 expectedForbiddenCountriesListPacked,
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        VcAndDiscloseHubProof memory proof
     ) 
         internal
         view
     {
-        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
-            revert INVALID_IDENTITY_COMMITMENT_ROOT();
+        // verify identity commitment root
+        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
+            revert INVALID_COMMITMENT_ROOT();
         }
 
-        if (!IIdentityRegistryV1(_registry).checkOfacRoot(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
+        // verify ofac root
+        if (!IIdentityRegistryV1(_registry).checkOfacRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
             revert INVALID_OFAC_ROOT();
         }
 
+        // verify current date
         uint[6] memory dateNum;
         for (uint256 i = 0; i < 6; i++) {
-            dateNum[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
+            dateNum[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
         }
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
@@ -383,33 +395,29 @@ contract IdentityVerificationHubImplV1 is
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
+        // verify attributes
         uint256[3] memory revealedDataPacked;
         for (uint256 i = 0; i < 3; i++) {
-            revealedDataPacked[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
+            revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
         }
-
-        if (checkOlderThan) {
-            uint256 olderThanInProof = CircuitAttributeHandler.getOlderThan(Formatter.fieldElementsToBytes(revealedDataPacked));
-            if (olderThanInProof != expectedOlderThan) {
+        if (proof.olderThanEnabled) {
+            if (!CircuitAttributeHandler.compareOlderThan(Formatter.fieldElementsToBytes(revealedDataPacked), proof.olderThan)) {
                 revert INVALID_OLDER_THAN();
             }
         }
-
-        if (checkOfac) {
-            uint256 ofacInProof = CircuitAttributeHandler.getOfac(Formatter.fieldElementsToBytes(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX]));
-            if (ofacInProof != 1) {
+        if (proof.ofacEnabled) {
+            if (!CircuitAttributeHandler.compareOfac(Formatter.fieldElementsToBytes(revealedDataPacked))) {
                 revert INVALID_OFAC();
             }
         }
-
-        if (checkForbiddenCountries) {
-            uint256 forbiddenCountriesListPackedInProof = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-            if (forbiddenCountriesListPackedInProof != expectedForbiddenCountriesListPacked) {
+        if (proof.forbiddenCountriesEnabled) {
+            if (proof.forbiddenCountriesListPacked != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX]) {
                 revert INVALID_FORBIDDEN_COUNTRIES();
             }
         }
 
-        if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.a, proof.b, proof.c, proof.pubSignals)) {
+        // verify the proof
+        if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.vcAndDiscloseProof.a, proof.vcAndDiscloseProof.b, proof.vcAndDiscloseProof.c, proof.vcAndDiscloseProof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
     }
@@ -426,6 +434,10 @@ contract IdentityVerificationHubImplV1 is
         address verifier = _sigTypeToRegisterCircuitVerifiers[registerCircuitVerifierId];
         if (verifier == address(0)) {
             revert NO_VERIFIER_SET();
+        }
+
+        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(registerCircuitProof.pubSignals[CircuitConstants.REGISTER_MERKLE_ROOT_INDEX])) {
+            revert INVALID_COMMITMENT_ROOT();
         }
 
         result = IRegisterCircuitVerifier(verifier).verifyProof(

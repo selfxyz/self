@@ -66,24 +66,25 @@ library CircuitAttributeHandler {
     }
 
     function getOlderThan(bytes memory charcodes) internal pure returns (uint256) {
-        return extractOlderThan(charcodes);
+        return Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START]))*10
+            + Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START + 1]));
     }
 
     function getOfac(bytes memory charcodes) internal pure returns (uint256) {
-        return extractOfac(charcodes);
+        return uint8(charcodes[OFAC_START]);
     }
 
     function compareOlderThan(
         bytes memory charcodes,
         uint256 olderThan
     ) internal pure returns (bool) {
-        return extractOlderThan(charcodes) >= olderThan;
+        return getOlderThan(charcodes) >= olderThan;
     }
 
     function compareOfac(
         bytes memory charcodes
     ) internal pure returns (bool) {
-        return extractOfac(charcodes) == 1;
+        return getOfac(charcodes) == 1;
     }
 
     function extractStringAttribute(bytes memory charcodes, uint256 start, uint256 end) internal pure returns (string memory) {
@@ -97,16 +98,4 @@ library CircuitAttributeHandler {
         return string(attributeBytes);
     }
 
-    function extractOlderThan(    
-        bytes memory charcodes
-    ) internal pure returns (uint256) {
-        return Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START]))*10
-            + Formatter.numAsciiToUint(uint8(charcodes[OLDER_THAN_START + 1]));
-    }
-
-    function extractOfac(
-        bytes memory charcodes
-    ) internal pure returns (uint256) {
-        return uint8(charcodes[OFAC_START]);
-    }
 }

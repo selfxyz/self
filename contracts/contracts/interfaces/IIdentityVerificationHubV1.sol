@@ -39,8 +39,18 @@ interface IIdentityVerificationHubV1 {
         uint256 ofac;
     }
 
+
+    struct VcAndDiscloseHubProof {
+        bool olderThanEnabled;
+        uint256 olderThan;
+        bool forbiddenCountriesEnabled;
+        uint256 forbiddenCountriesListPacked;
+        bool ofacEnabled;
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof vcAndDiscloseProof;
+    }
+
     function verifyVcAndDisclose(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        VcAndDiscloseHubProof memory proof
     )
         external
         view
