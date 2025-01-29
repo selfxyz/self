@@ -13,6 +13,23 @@ include "../utils/passport/checkPubkeysEqual.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/bytes.circom";
 
+/// @title DSC
+/// @notice Circuit for verifying DSC certificate signature using CSCA certificate
+/// @param signatureAlgorithm Algorithm used for DSC signature verification - contains the information about the final hash algorithm
+/// @param n_csca Number of bits per chunk the CSCA key is split into
+/// @param k_csca Number of chunks the CSCA key is split into
+/// @input raw_csca Raw CSCA certificate data
+/// @input raw_csca_actual_length Actual length of CSCA certificate
+/// @input csca_pubKey_offset Offset of CSCA public key in certificate
+/// @input csca_pubKey_actual_size Actual size of CSCA public key
+/// @input raw_dsc Raw DSC certificate data
+/// @input raw_dsc_actual_length Actual length of DSC certificate
+/// @input csca_pubKey CSCA public key for signature verification
+/// @input signature DSC signature
+/// @input merkle_root Root of CSCA Merkle tree
+/// @input path Path indices for CSCA Merkle proof
+/// @input siblings Sibling hashes for CSCA Merkle proof
+/// @output dsc_tree_leaf Leaf to be added to the DSC Merkle tree
 template DSC(
     signatureAlgorithm,
     n_csca,
@@ -48,12 +65,6 @@ template DSC(
     signal input merkle_root;
     signal input path[nLevels];
     signal input siblings[nLevels];
-
-    log("raw_csca_actual_length", raw_csca_actual_length);
-    log("csca_pubKey_offset", csca_pubKey_offset);
-    log("MAX_CSCA_PUBKEY_LENGTH (not actual key size)", MAX_CSCA_PUBKEY_LENGTH);
-    log("csca_pubKey_actual_size", csca_pubKey_actual_size);
-    log("raw_dsc_actual_length", raw_dsc_actual_length);
 
     // check offsets refer to valid ranges
     signal csca_pubKey_offset_in_range <== LessEqThan(12)([

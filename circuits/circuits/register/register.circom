@@ -20,6 +20,10 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @param k Number of chunks the key is split into.
 /// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
 /// @param MAX_SIGNED_ATTR_PADDED_LEN Maximum length of padded signed attributes
+/// @input raw_dsc Raw DSC certificate data
+/// @input raw_dsc_actual_length Actual length of DSC certificate
+/// @input dsc_pubKey_offset Offset of DSC public key in certificate
+/// @input dsc_pubKey_actual_size Actual size of DSC public key
 /// @input dg1 Document Group 1 data (93 bytes)
 /// @input dg1_hash_offset Offset for DG1 hash
 /// @input eContent eContent data - contains all DG hashes
@@ -27,11 +31,14 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @input signed_attr Signed attributes
 /// @input signed_attr_padded_length Padded length of signed attributes
 /// @input signed_attr_econtent_hash_offset Offset for eContent hash in signed attributes
-/// @input pubKey Public key for signature verification
-/// @input signature Passport signature
-/// @input pubKey_csca_hash CSCA public key hash
-/// @input secret Secret for commitment generation. Saved by the user to access this commitment
-/// @output nullifier Generated nullifier -  deterministic on the passport data
+/// @input pubKey_dsc DSC public key for signature verification
+/// @input signature_passport Passport signature
+/// @input merkle_root Root of DSC Merkle tree
+/// @input path Path indices for DSC Merkle proof
+/// @input siblings Sibling hashes for DSC Merkle proof
+/// @input csca_hash Hash of CSCA certificate
+/// @input secret Secret for commitment generation. Saved by the user to access their commitment
+/// @output nullifier Generated nullifier - deterministic on the passport data
 /// @output commitment Commitment that will be added to the onchain registration tree
 template REGISTER(
     DG_HASH_ALGO,

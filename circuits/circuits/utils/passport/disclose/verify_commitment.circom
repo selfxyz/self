@@ -10,8 +10,8 @@ include "../customHashers.circom";
 /// @input attestation_id Attestation ID
 /// @input dg1 Data group 1 of the passport
 /// @input eContent_shaBytes_packed_hash hash of the eContent
-/// @input pubKey_dsc_hash Hash of the public key of the DSC
-/// @input pubKey_csca_hash Hash of the public key of the CSCA
+/// @input dsc_hash Hash of the whole DSC certificate
+/// @input csca_hash Hash of the whole CSCA certificate
 /// @input merkle_root Root of the commitment merkle tree
 /// @input merkletree_size Actual size of the merkle tree
 /// @input path Path to the user's commitment in the merkle tree
