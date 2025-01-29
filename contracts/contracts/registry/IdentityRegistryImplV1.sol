@@ -249,6 +249,26 @@ contract IdentityRegistryImplV1 is
         return _dscKeyCommitmentIMT._root() == root;
     }
 
+    function getDscKeyCommitmentTreeSize() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _dscKeyCommitmentIMT.size;
+    }
+
+    function getDscKeyCommitmentTreeIndex(
+        uint256 dscCommitment
+    ) 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _dscKeyCommitmentIMT._indexOf(dscCommitment);
+    }
+
     // register
     function registerCommitment(
         bytes32 attestationId,
@@ -371,6 +391,17 @@ contract IdentityRegistryImplV1 is
     {
         _nullifiers[attestationId][nullifier] = state;
         emit DevNullifierStateChanged(attestationId, nullifier, state, block.timestamp);
+    }
+
+    function devChangeDscKeyCommitmentState(
+        uint256 dscCommitment,
+        bool state
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _isRegisteredDscKeyCommitment[dscCommitment] = state;
     }
 
     ///////////////////////////////////////////////////////////////////
