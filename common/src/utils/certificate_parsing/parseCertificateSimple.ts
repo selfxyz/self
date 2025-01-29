@@ -26,12 +26,16 @@ export function parseCertificateSimple(pem: string): CertificateData {
     signatureAlgorithm: '',
     hashAlgorithm: '',
     publicKeyDetails: undefined,
+    tbsBytes: undefined,
+    tbsBytesLength: '',
     rawPem: '',
     rawTxt: '',
     publicKeyAlgoOID: '',
   };
   try {
     const cert = getCertificateFromPem(pem);
+    certificateData.tbsBytes = getTBSBytesForge(cert);
+    certificateData.tbsBytesLength = certificateData.tbsBytes.length.toString();
 
     const publicKeyAlgoOID = cert.subjectPublicKeyInfo.algorithm.algorithmId;
     const publicKeyAlgoFN = getFriendlyName(publicKeyAlgoOID);
@@ -342,6 +346,11 @@ export function getCertificateFromPem(pemContent: string): Certificate {
 
 export function getTBSBytes(pemContent: string): Uint8Array {
   const certificate = getCertificateFromPem(pemContent);
+  return Uint8Array.from(
+    certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
+  );
+}
+export function getTBSBytesForge(certificate: Certificate): Uint8Array {
   return Uint8Array.from(
     certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
   );

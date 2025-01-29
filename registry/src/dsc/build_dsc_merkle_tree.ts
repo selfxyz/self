@@ -1,6 +1,6 @@
 import * as fs from 'fs';
-import { getLeafCscaTree } from '../../../common/src/utils/pubkeyTree';
-import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
+import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/pubkeyTree';
+import { DEVELOPMENT_MODE, DSC_TREE_DEPTH } from '../../../common/src/constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
 import { writeFile } from 'fs/promises';
@@ -10,7 +10,6 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 let tbs_max_bytes = 0;
 let key_length_max_bytes = 0;
 const countryKeyBitLengths: { [countryCode: string]: number } = {};
-
 
 function processCertificate(pemContent: string, filePath: string) {
     try {
@@ -44,7 +43,7 @@ function processCertificate(pemContent: string, filePath: string) {
         console.log(`Signature Algorithm: ${certificate.signatureAlgorithm}`);
         console.log(`Hash Algorithm: ${certificate.hashAlgorithm}`);
 
-        const finalPoseidonHash = getLeafCscaTree(certificate);
+        const finalPoseidonHash = getLeafDscTreeFromParsedDsc(certificate);
         console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
 
         return finalPoseidonHash.toString();
@@ -55,9 +54,9 @@ function processCertificate(pemContent: string, filePath: string) {
 }
 
 async function buildCscaMerkleTree() {
-    const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+    const tree = new IMT(poseidon2, DSC_TREE_DEPTH, 0, 2);
 
-    const path_to_pem_files = "outputs/csca/pem_masterlist";
+    const path_to_pem_files = "outputs/dsc/pem_masterlist";
     for (const file of fs.readdirSync(path_to_pem_files)) {
         const file_path = path.join(path_to_pem_files, file);
         try {
@@ -78,8 +77,7 @@ async function buildCscaMerkleTree() {
             .map(item => item.name);
 
         for (const subdirectory of subdirectories) {
-            const pemFilePath = path.join(dev_pem_path, subdirectory, 'mock_csca.pem');
-            const cerFilePath = path.join(dev_pem_path, subdirectory, 'mock_csca.cer');
+            const pemFilePath = path.join(dev_pem_path, subdirectory, 'mock_dsc.pem');
 
             if (fs.existsSync(pemFilePath)) {
                 try {
@@ -92,32 +90,20 @@ async function buildCscaMerkleTree() {
                     console.error(`Error processing mock file ${pemFilePath}:`, error);
                 }
             }
-
-            if (fs.existsSync(cerFilePath)) {
-                try {
-                    const cerContent = fs.readFileSync(cerFilePath, 'utf8');
-                    const leafValue = processCertificate(cerContent, cerFilePath);
-                    if (leafValue) {
-                        tree.insert(leafValue);
-                    }
-                } catch (error) {
-                    console.error(`Error processing mock file ${cerFilePath}:`, error);
-                }
-            }
         }
     }
 
-    console.log('\x1b[34m%s\x1b[0m', `Max TBS bytes: ${tbs_max_bytes}`);
-    console.log('\x1b[34m%s\x1b[0m', `Max Key Length: ${key_length_max_bytes}`);
-    console.log('\x1b[34m%s\x1b[0m', 'js: countryKeyBitLengths', countryKeyBitLengths);
+    console.log(`Max TBS bytes: ${tbs_max_bytes}`);
+    console.log(`Max Key Length: ${key_length_max_bytes}`);
+    console.log('js: countryKeyBitLengths', countryKeyBitLengths);
     return tree;
 }
 
 async function serializeCscaTree(tree: IMT) {
     const serializedTree = tree.nodes.map(layer => layer.map(node => node.toString()));
-    await writeFile("outputs/serialized_csca_tree.json", JSON.stringify(serializedTree));
-    fs.copyFileSync("outputs/serialized_csca_tree.json", "../common/pubkeys/serialized_csca_tree.json");
-    console.log("serialized_csca_tree.json written and copied in common/pubkeys!");
+    await writeFile("outputs/serialized_dsc_tree.json", JSON.stringify(serializedTree));
+    fs.copyFileSync("outputs/serialized_dsc_tree.json", "../common/pubkeys/serialized_dsc_tree.json");
+    console.log("serialized_dsc_tree.json written and copied in common/pubkeys!");
 }
 
 async function main() {

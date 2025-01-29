@@ -12,9 +12,8 @@ include "../utils/passport/disclose/verify_commitment.circom";
 /// @param secret Secret of the user — used to reconstruct commitment and generate nullifier
 /// @param attestation_id Attestation ID of the credential used to generate the commitment
 /// @param dg1 Data group 1 of the passport
-/// @input pubKey_dsc_hash DSCA public key hash
-/// @input pubKey_csca_hash CSCA public key hash
-/// @input scope Scope of the application users generates the proof for
+/// @input dsc_hash Hash of the whole DSC certificate
+/// @input csca_hash Hash of the whole CSCA certificate
 /// @input merkle_root Root of the commitment merkle tree
 /// @input merkletree_size Actual size of the merkle tree
 /// @input path Path of the commitment in the merkle tree
@@ -28,20 +27,18 @@ include "../utils/passport/disclose/verify_commitment.circom";
 /// @input smt_root root of the smt
 /// @input smt_siblings siblings of the smt
 /// @input selector_ofac bitmap used to reveal the OFAC verification result
+/// @input scope Scope of the application users generates the proof for
 /// @input user_identifier User identifier — address or UUID
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
 /// @output nullifier Scope nullifier - not deterministic on the passport data
-
 template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
-
     signal input secret;
     signal input attestation_id;
     signal input dg1[93];
     signal input eContent_shaBytes_packed_hash;
-    signal input pubKey_dsc_hash;
-    signal input pubKey_csca_hash;
-    signal input scope;
+    signal input dsc_hash;
+    signal input csca_hash;
 
     signal input merkle_root;
     signal input merkletree_size;
@@ -61,10 +58,22 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input smt_siblings[256];
     signal input selector_ofac;
 
+    signal input scope;
     signal input user_identifier;
 
     // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(secret, attestation_id, dg1, eContent_shaBytes_packed_hash, pubKey_dsc_hash, pubKey_csca_hash, merkle_root, merkletree_size, path, siblings);
+    VERIFY_COMMITMENT(nLevels)(
+        secret,
+        attestation_id,
+        dg1,
+        eContent_shaBytes_packed_hash,
+        dsc_hash,
+        csca_hash,
+        merkle_root,
+        merkletree_size,
+        path,
+        siblings
+    );
     
     // verify passport validity and disclose optional data
     component disclose = DISCLOSE(10);
@@ -87,4 +96,13 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal output nullifier <== Poseidon(2)([secret, scope]);
 }
 
-component main { public [ merkle_root, smt_root, scope, user_identifier, current_date, attestation_id] } = VC_AND_DISCLOSE(16, 10);
+component main {
+    public [
+        merkle_root,
+        smt_root,
+        scope,
+        user_identifier,
+        current_date,
+        attestation_id
+    ]
+} = VC_AND_DISCLOSE(16, 10);

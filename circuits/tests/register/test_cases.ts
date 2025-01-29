@@ -7,7 +7,7 @@ export const sigAlgs = [
     domainParameter: '3',
     keyLength: '3072',
     checkNullifier: true,
-  },
+  }, // -------------- circuit does not exist ---------------
   {
     dgHashAlgo: 'sha1',
     eContentHashAlgo: 'sha256',
@@ -55,7 +55,7 @@ export const fullSigAlgs = [
     domainParameter: '65537',
     keyLength: '2048',
     checkNullifier: false,
-  },
+  }, // -------------- circuit does not exist ---------------
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
@@ -73,7 +73,7 @@ export const fullSigAlgs = [
     domainParameter: '65537',
     keyLength: '2048',
     checkNullifier: false,
-  },
+  }, // -------------- circuit does not exist ---------------
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
@@ -82,7 +82,7 @@ export const fullSigAlgs = [
     domainParameter: '65537',
     keyLength: '3072',
     checkNullifier: false,
-  },
+  }, // -------------- circuit does not exist ---------------
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
@@ -91,7 +91,7 @@ export const fullSigAlgs = [
     domainParameter: '65537',
     keyLength: '4096',
     checkNullifier: false,
-  },
+  }, // -------------- circuit does not exist ---------------
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',
@@ -100,7 +100,7 @@ export const fullSigAlgs = [
     domainParameter: '3',
     keyLength: '4096',
     checkNullifier: false,
-  },
+  }, // -------------- more below ---------------
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha256',

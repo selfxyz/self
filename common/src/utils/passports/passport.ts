@@ -1,12 +1,12 @@
 import { poseidon4, poseidon6 } from 'poseidon-lite';
-import { hashAlgos, MAX_PADDED_ECONTENT_LEN, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
+import { hashAlgos, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
 import {
     CertificateData,
     PublicKeyDetailsECDSA,
     PublicKeyDetailsRSA,
 } from '../certificate_parsing/dataStructure';
-import { getCertificateFromPem, getTBSBytes, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { parsePassportData, PassportMetadata } from './passport_parsing/parsePassportData';
+import { getCertificateFromPem, parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { parsePassportData } from './passport_parsing/parsePassportData';
 import { shaPad } from '../shaPad';
 import { sha384_512Pad } from '../shaPad';
 import { PassportData, SignatureAlgorithm } from '../types';
@@ -30,6 +30,7 @@ import { splitToWords } from '../bytes';
 import { formatMrz } from './format';
 import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
+import { getLeaf } from '../pubkeyTree';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -59,31 +60,21 @@ export function generateCommitment(
         Array.from(passportData.eContent),
         'bytes'
     );
+
     const eContent_packed_hash = packBytesAndPoseidon(
         (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
     );
 
-    const pubKey_dsc = getCertificatePubKey(
-        passportData.dsc_parsed,
-        passportMetadata.signatureAlgorithm,
-        passportMetadata.signedAttrHashFunction
-    );
-    const pubKey_dsc_hash = customHasher(pubKey_dsc);
-
-    const pubKey_csca = getCertificatePubKey(
-        passportData.csca_parsed,
-        passportMetadata.cscaSignatureAlgorithm,
-        passportMetadata.cscaHashFunction
-    );
-    const pubKey_csca_hash = customHasher(pubKey_csca);
+    const dsc_hash = getLeaf(passportData.dsc_parsed, 'dsc');
+    const csca_hash = getLeaf(passportData.csca_parsed, 'csca');
 
     return poseidon6([
         secret,
         attestation_id,
         dg1_packed_hash,
         eContent_packed_hash,
-        pubKey_dsc_hash,
-        pubKey_csca_hash,
+        dsc_hash,
+        csca_hash,
     ]).toString();
 }
 
@@ -99,39 +90,16 @@ export function generateNullifier(passportData: PassportData) {
     return signedAttr_packed_hash;
 }
 
-export function generateGlue(salt: string, passportData: PassportData) {
-    const passportMetadata = passportData.passportMetadata;
-    const kLengthFactor = passportMetadata.signatureAlgorithm == 'ecda' ? 2 : 1;
-
-    const pubKey_dsc = getCertificatePubKey(
-        passportData.dsc_parsed,
-        passportMetadata.signatureAlgorithm,
-        passportMetadata.signedAttrHashFunction
-    );
-    const pubKey_dsc_hash = customHasher(pubKey_dsc);
-
-    const pubKey_csca = getCertificatePubKey(
-        passportData.csca_parsed,
-        passportMetadata.cscaSignatureAlgorithm,
-        passportMetadata.cscaHashFunction
-    );
-    const pubKey_csca_hash = customHasher(pubKey_csca);
-
-    console.log('js: salt', salt);
-    console.log('js: kLengthFactor', kLengthFactor);
-    console.log('js: pubKey_dsc_hash', pubKey_dsc_hash);
-    console.log('js: pubKey_csca_hash', pubKey_csca_hash);
-
-    return poseidon4([salt, kLengthFactor, pubKey_dsc_hash, pubKey_csca_hash]).toString();
-
-}
-
 export function pad(hashFunction: (typeof hashAlgos)[number]) {
     return hashFunction === 'sha1' ||
         hashFunction === 'sha224' ||
         hashFunction === 'sha256'
         ? shaPad
         : sha384_512Pad;
+}
+
+export function padWithZeroes(bytes: number[], length: number) {
+    return bytes.concat(new Array(length - bytes.length).fill(0));
 }
 
 function validatePassportMetadata(passportData: PassportData): void {
@@ -265,11 +233,8 @@ export function findStartPubKeyIndex(
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-        // const normalizedX = x.length % 2 === 0 ? x : '0' + x;
-        // const normalizedY = y.length % 2 === 0 ? y : '0' + y;
         const fullPubKey = x + y;
         const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
-
         return findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
     } else {
         // Splits to 525 words of 8 bits each
