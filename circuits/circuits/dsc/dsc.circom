@@ -63,8 +63,8 @@ template DSC(
     csca_pubKey_offset_in_range === 1;
 
     // compute leaf in the CSCA Merkle tree and verify inclusion
-    signal csca_tree_leaf <== PackBytesAndPoseidon(MAX_CSCA_LENGTH)(raw_csca);
-    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_tree_leaf, nLevels, path, siblings);
+    signal csca_hash <== PackBytesAndPoseidon(MAX_CSCA_LENGTH)(raw_csca);
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_hash, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
 
     // get CSCA public key from the certificate
@@ -88,5 +88,5 @@ template DSC(
     
     // generate DSC leaf as poseidon(csca_hash, dsc_hash)
     signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
-    signal output dsc_tree_leaf <== Poseidon(2)([csca_tree_leaf, dsc_hash]);
+    signal output dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_hash]);
 }
