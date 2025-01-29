@@ -21,9 +21,9 @@ import { buildSMT } from "../../../common/src/utils/trees";
 import {BigNumberish} from "ethers";
 import { 
     generateCircuitInputsRegister,
+    generateCircuitInputsDSC,
     generateCircuitInputsVCandDisclose
 } from "../../../common/src/utils/circuits/generateInputs";
-import { generateCircuitInputsDSC } from "../../../common/src/utils/csca";
 
 const registerCircuits: CircuitArtifacts = {
     "register_sha256_sha256_sha256_rsa_65537_4096": {
@@ -33,10 +33,10 @@ const registerCircuits: CircuitArtifacts = {
     }
 };
 const dscCircuits: CircuitArtifacts = {
-    "dsc_sha256_sha256_sha256_rsa_65537_4096": {
-        wasm: "../circuits/build/dsc/dsc_rsa_sha256_65537_4096/dsc_rsa_sha256_65537_4096_js/dsc_rsa_sha256_65537_4096.wasm",
-        zkey: "../circuits/build/dsc/dsc_rsa_sha256_65537_4096/dsc_rsa_sha256_65537_4096_final.zkey",
-        vkey: "../circuits/build/dsc/dsc_rsa_sha256_65537_4096/dsc_rsa_sha256_65537_4096_vkey.json"
+    "dsc_sha256_rsa_65537_4096": {
+        wasm: "../circuits/build/dsc/dsc_sha256_rsa_65537_4096/dsc_sha256_rsa_65537_4096_js/dsc_sha256_rsa_65537_4096.wasm",
+        zkey: "../circuits/build/dsc/dsc_sha256_rsa_65537_4096/dsc_sha256_rsa_65537_4096_final.zkey",
+        vkey: "../circuits/build/dsc/dsc_sha256_rsa_65537_4096/dsc_sha256_rsa_65537_4096_vkey.json"
     }
 };
 const vcAndDiscloseCircuits: CircuitArtifacts = {
@@ -53,11 +53,10 @@ export async function generateRegisterProof(
     passportData: PassportData
 ): Promise<RegisterCircuitProof> {
     console.log(CYAN, "=== Start generateRegisterProof ===", RESET);
-    
+
     // Get the circuit inputs
     const registerCircuitInputs: CircuitSignals = generateCircuitInputsRegister(
         secret,
-        dscSecret,
         passportData
     );
 
@@ -92,30 +91,26 @@ export async function generateRegisterProof(
 }
 
 export async function generateDscProof(
-    dscSecret: string,
     dscCertificate: any,
-    maxCertBytes: number,
 ): Promise<DscCircuitProof> {
     console.log(CYAN, "=== Start generateDscProof ===", RESET);
 
     const dscCircuitInputs: CircuitSignals = generateCircuitInputsDSC(
-        dscSecret,
         dscCertificate,
-        maxCertBytes,
         true
-    ).inputs;
+    );
 
     const startTime = performance.now();
     const dscProof = await groth16.fullProve(
         dscCircuitInputs,
-        dscCircuits["dsc_sha256_sha256_sha256_rsa_65537_4096"].wasm,
-        dscCircuits["dsc_sha256_sha256_sha256_rsa_65537_4096"].zkey
+        dscCircuits["dsc_sha256_rsa_65537_4096"].wasm,
+        dscCircuits["dsc_sha256_rsa_65537_4096"].zkey
     );
     const endTime = performance.now();
     console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
 
     // Verify the proof
-    const vKey = JSON.parse(fs.readFileSync(dscCircuits["dsc_sha256_sha256_sha256_rsa_65537_4096"].vkey, 'utf8'));
+    const vKey = JSON.parse(fs.readFileSync(dscCircuits["dsc_sha256_rsa_65537_4096"].vkey, 'utf8'));
     const isValid = await groth16.verify(vKey, dscProof.publicSignals, dscProof.proof);
     if (!isValid) {
         throw new Error("Generated DSC proof verification failed");

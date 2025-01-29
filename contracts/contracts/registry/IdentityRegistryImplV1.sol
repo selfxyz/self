@@ -7,7 +7,7 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
 import "../interfaces/IIdentityRegistryV1.sol";
 import "../interfaces/IIdentityVerificationHubV1.sol";
-import "../proxy/ImplRoot.sol";
+import "../upgradeable/ImplRoot.sol";
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
  * =============================================
@@ -40,11 +40,9 @@ abstract contract IdentityRegistryStorageV1 is
 {
     address internal _hub;
 
-    // CSCA root
-    uint256 internal _cscaRoot;
-
     // commitment registry
     LeanIMTData internal _identityCommitmentIMT;
+
     // timestamp of when the root was created
     mapping(uint256 => uint256) internal _rootTimestamps;
     // attestation id => nullifier => bool
@@ -53,8 +51,15 @@ abstract contract IdentityRegistryStorageV1 is
     // poseidon("E-PASSPORT")
     mapping(bytes32 => mapping(uint256 => bool)) internal _nullifiers;
 
-    // ofac registry
+    // dsc key registry
+    LeanIMTData internal _dscKeyCommitmentIMT;
+
+    mapping(uint256 => bool) internal _isRegisteredDscKeyCommitment;
+
+    // ofac smt root
     uint256 internal _ofacRoot;
+    // csca root
+    uint256 internal _cscaRoot;
 }
 
 contract IdentityRegistryImplV1 is 
@@ -71,15 +76,16 @@ contract IdentityRegistryImplV1 is
     event CscaRootUpdated(uint256 cscaRoot);
     event OfacRootUpdated(uint256 ofacRoot);
     event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event DscKeyCommitmentRegistered(uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
-    event DevNullifierRemoved(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 timestamp);
+    event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state, uint256 timestamp);
 
     // Errors
     error HUB_NOT_SET();
-    error ONLY_HUB_CAN_REGISTER_COMMITMENT();
-    error REGISTERED_IDENTITY();
+    error ONLY_HUB_CAN_ACCESS();
+    error REGISTERED_COMMITMENT();
 
     // Constructor
     constructor() {
@@ -95,6 +101,12 @@ contract IdentityRegistryImplV1 is
         __ImplRoot_init();
         _hub = _hub;
         emit RegistryInitialized(_hub);
+    }
+
+    modifier onlyHub() {
+        if (address(_hub) == address(0)) revert HUB_NOT_SET();
+        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_ACCESS();
+        _;
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -217,6 +229,26 @@ contract IdentityRegistryImplV1 is
         return _cscaRoot == root;
     }
 
+    function getDscKeyCommitmentTreeRoot() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _dscKeyCommitmentIMT._root();
+    }
+
+    function checkDscKeyCommitmentTreeRoot(
+        uint256 root
+    ) 
+        external
+        onlyProxy
+        view 
+        returns (bool) 
+    {
+        return _dscKeyCommitmentIMT._root() == root;
+    }
+
     // register
     function registerCommitment(
         bytes32 attestationId,
@@ -225,49 +257,64 @@ contract IdentityRegistryImplV1 is
     ) 
         external
         onlyProxy
+        onlyHub
     {
-        if (address(_hub) == address(0)) revert HUB_NOT_SET();
-        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
-        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
+        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_COMMITMENT();
 
         _nullifiers[attestationId][nullifier] = true;
         uint256 index = _identityCommitmentIMT.size;
-        uint256 imt_root = _addCommitment(commitment);
+        uint256 imt_root = _addCommitment(_identityCommitmentIMT, commitment);
+        _rootTimestamps[imt_root] = block.timestamp;
         emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+    }
+
+    function registerDscKeyCommitment(
+        uint256 dscCommitment
+    )
+        external
+        onlyProxy
+        onlyHub
+    {
+        if (_isRegisteredDscKeyCommitment[dscCommitment]) revert REGISTERED_COMMITMENT();
+
+        _isRegisteredDscKeyCommitment[dscCommitment] = true;
+        uint256 index = _dscKeyCommitmentIMT.size;
+        uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
+        emit DscKeyCommitmentRegistered(dscCommitment, block.timestamp, imt_root, index);
     }
     
     // onlyOwner
     function updateHub(
-        address hub
+        address newHubAddress
     )
         external
         onlyProxy
         onlyOwner 
     { 
-        _hub = hub;
-        emit HubUpdated(hub);
+        _hub = newHubAddress;
+        emit HubUpdated(newHubAddress);
     }
 
     function updateOfacRoot(
-        uint256 ofacRoot
+        uint256 newOfacRoot
     ) 
         external
         onlyProxy
         onlyOwner 
     {
-        _ofacRoot = ofacRoot;
-        emit OfacRootUpdated(ofacRoot);
+        _ofacRoot = newOfacRoot;
+        emit OfacRootUpdated(newOfacRoot);
     }
 
     function updateCscaRoot(
-        uint256 cscaRoot
+        uint256 newCscaRoot
     ) 
         external
         onlyProxy
         onlyOwner 
     {
-        _cscaRoot = cscaRoot;
-        emit CscaRootUpdated(cscaRoot);
+        _cscaRoot = newCscaRoot;
+        emit CscaRootUpdated(newCscaRoot);
     }
 
     function devAddIdentityCommitment(
@@ -280,7 +327,8 @@ contract IdentityRegistryImplV1 is
         onlyOwner 
     {
         _nullifiers[attestationId][nullifier] = true;
-        uint256 imt_root = _addCommitment(commitment);
+        uint256 imt_root = _addCommitment(_identityCommitmentIMT, commitment);
+        _rootTimestamps[imt_root] = block.timestamp;
         uint256 index = _identityCommitmentIMT._indexOf(commitment);
         emit DevCommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
@@ -294,7 +342,8 @@ contract IdentityRegistryImplV1 is
         onlyProxy
         onlyOwner
     {
-        uint256 imt_root = _updateCommitment(oldLeaf, newLeaf, siblingNodes);
+        uint256 imt_root = _updateCommitment(_identityCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
     }
 
@@ -306,20 +355,22 @@ contract IdentityRegistryImplV1 is
         onlyProxy
         onlyOwner
     {
-        uint256 imt_root = _removeCommitment(oldLeaf, siblingNodes);
+        uint256 imt_root = _removeCommitment(_identityCommitmentIMT, oldLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
     }
 
-    function devRemoveNullifier(
+    function devChangeNullifierState(
         bytes32 attestationId,
-        uint256 nullifier
-    )
+        uint256 nullifier,
+        bool state
+    ) 
         external
         onlyProxy
         onlyOwner
     {
-        _nullifiers[attestationId][nullifier] = false;
-        emit DevNullifierRemoved(attestationId, nullifier, block.timestamp);
+        _nullifiers[attestationId][nullifier] = state;
+        emit DevNullifierStateChanged(attestationId, nullifier, state, block.timestamp);
     }
 
     ///////////////////////////////////////////////////////////////////
@@ -327,16 +378,17 @@ contract IdentityRegistryImplV1 is
     ///////////////////////////////////////////////////////////////////
     
     function _addCommitment(
+        LeanIMTData storage imt,
         uint256 commitment
     ) 
         internal
         returns(uint256 imt_root)
     {
-        imt_root = _identityCommitmentIMT._insert(commitment);
-        _rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._insert(commitment);
     }
 
     function _updateCommitment(
+        LeanIMTData storage imt,
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
@@ -344,18 +396,17 @@ contract IdentityRegistryImplV1 is
         internal
         returns(uint256 imt_root)
     {
-        imt_root = _identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
-        _rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._update(oldLeaf, newLeaf, siblingNodes);
     }
 
     function _removeCommitment(
+        LeanIMTData storage imt,
         uint256 oldLeaf,
         uint256[] calldata siblingNodes
     )
         internal
         returns(uint256 imt_root)
     {
-        imt_root = _identityCommitmentIMT._remove(oldLeaf, siblingNodes);
-        _rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._remove(oldLeaf, siblingNodes);
     }
 }

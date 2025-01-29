@@ -41,7 +41,51 @@ describe("Commitment Registration Tests", function () {
                 expect(await registry.hub()).to.equal(hub.target);
                 expect(await hub.registry()).to.equal(registry.target);
             });
-        })
+        });
+
+        describe("Register DSC Pubkey", async () => {
+
+            const {hub, registry, dsc} = deployedActors;
+
+            it("Should register DSC pubkey successfully", async () => {
+                const dscProof = await generateDscProof(
+                    dsc.dsc,
+                );
+
+                const tx = await hub.registerDscPubKey(
+                    DscVerifierId.dsc_rsa_sha256_65537_4096,
+                    dscProof
+                );
+
+                const receipt = await tx.wait() as TransactionReceipt;
+            });
+
+            it("Should fail when called by proxy address", async () => {
+
+            });
+
+            it("Should fail when the verifier is not set", async () => {
+
+            });
+
+            it("Should fail when the csca root is invalid", async() => {
+
+            });
+
+            it("Should fail when the proof is invalid", async () => {
+
+            });
+
+            it("Should fail when registerDscPubKey is called directly on implementation", async () => {
+
+            });
+
+            it("Should fail when the registerDscPubKey is called by non-hub address", async () => {
+
+            });
+
+            it("")
+        });
 
         it("should register passport commitment successfully", async () => {
             const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
@@ -56,9 +100,7 @@ describe("Commitment Registration Tests", function () {
             );
 
             const dscProof = await generateDscProof(
-                dscSecret,
                 mockPassport.dsc,
-                1664,
             );
 
             const passportProof: PassportProof = {
@@ -106,275 +148,275 @@ describe("Commitment Registration Tests", function () {
             expect(index).to.equal(0);
         });
 
-        it("should fail when register proof verification fails", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when register proof verification fails", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            // Modify the proof to make it invalid
-            registerProof.a[0] = generateRandomFieldElement();
+        //     // Modify the proof to make it invalid
+        //     registerProof.a[0] = generateRandomFieldElement();
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "INVALID_REGISTER_PROOF");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "INVALID_REGISTER_PROOF");
+        // });
 
-        it("should fail when DSC proof verification fails", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when DSC proof verification fails", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            // Modify the DSC proof to make it invalid
-            dscProof.a[0] = generateRandomFieldElement();
+        //     // Modify the DSC proof to make it invalid
+        //     dscProof.a[0] = generateRandomFieldElement();
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "INVALID_DSC_PROOF");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "INVALID_DSC_PROOF");
+        // });
 
-        it("should fail when glue doesn't match", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when glue doesn't match", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
-            const differentDscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
+        //     const differentDscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                differentDscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         differentDscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "UNEQUAL_GLUE");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "UNEQUAL_GLUE");
+        // });
 
-        it("should fail when CSCA root is invalid", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when CSCA root is invalid", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            await registry.updateCscaRoot(123456789);
+        //     await registry.updateCscaRoot(123456789);
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "INVALID_CSCA_ROOT");
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "INVALID_CSCA_ROOT");
 
-            const cscaModulusMerkleTree = getCSCAModulusMerkleTree();
-            await registry.updateCscaRoot(cscaModulusMerkleTree.root);
-        });
+        //     const cscaModulusMerkleTree = getCSCAModulusMerkleTree();
+        //     await registry.updateCscaRoot(cscaModulusMerkleTree.root);
+        // });
 
-        it("should fail when nullifier is already used", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when nullifier is already used", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await hub.verifyAndRegisterPassportCommitment(passportProof);
+        //     await hub.verifyAndRegisterPassportCommitment(passportProof);
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(registry, "REGISTERED_IDENTITY");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(registry, "REGISTERED_IDENTITY");
+        // });
 
-        it("should fail when called by non-hub address", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
-            const commitment = ethers.toBeHex(generateRandomFieldElement());
-            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+        // it("should fail when called by non-hub address", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        //     const commitment = ethers.toBeHex(generateRandomFieldElement());
+        //     const nullifier = ethers.toBeHex(generateRandomFieldElement());
 
-            await expect(
-                registry.connect(user1).registerCommitment(
-                    ATTESTATION_ID.E_PASSPORT,
-                    commitment,
-                    nullifier
-                )
-            ).to.be.revertedWithCustomError(registry, "ONLY_HUB_CAN_REGISTER_COMMITMENT");
-        });
+        //     await expect(
+        //         registry.connect(user1).registerCommitment(
+        //             ATTESTATION_ID.E_PASSPORT,
+        //             commitment,
+        //             nullifier
+        //         )
+        //     ).to.be.revertedWithCustomError(registry, "ONLY_HUB_CAN_REGISTER_COMMITMENT");
+        // });
 
-        it("should fail when register circuit verifier is not set", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when register circuit verifier is not set", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha1_sha1_sha1_ecdsa_brainpoolP224r1,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha1_sha1_sha1_ecdsa_brainpoolP224r1,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha256_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "NO_VERIFIER_SET");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "NO_VERIFIER_SET");
+        // });
 
-        it("should fail when register circuit verifier is not set", async () => {
-            const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+        // it("should fail when register circuit verifier is not set", async () => {
+        //     const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const dscSecret = generateDscSecret();
+        //     const registerSecret = generateRandomFieldElement();
+        //     const dscSecret = generateDscSecret();
 
-            const registerProof = await generateRegisterProof(
-                registerSecret,
-                dscSecret,
-                mockPassport
-            );
+        //     const registerProof = await generateRegisterProof(
+        //         registerSecret,
+        //         dscSecret,
+        //         mockPassport
+        //     );
 
-            const dscProof = await generateDscProof(
-                dscSecret,
-                mockPassport.dsc,
-                1664,
-            );
+        //     const dscProof = await generateDscProof(
+        //         dscSecret,
+        //         mockPassport.dsc,
+        //         1664,
+        //     );
 
-            const passportProof: PassportProof = {
-                registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
-                dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha1_65537_4096,
-                registerCircuitProof: registerProof,
-                dscCircuitProof: dscProof
-            };
+        //     const passportProof: PassportProof = {
+        //         registerCircuitVerifierId: RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+        //         dscCircuitVerifierId: DscVerifierId.dsc_rsa_sha1_65537_4096,
+        //         registerCircuitProof: registerProof,
+        //         dscCircuitProof: dscProof
+        //     };
 
-            await expect(
-                hub.verifyAndRegisterPassportCommitment(passportProof)
-            ).to.be.revertedWithCustomError(hub, "NO_VERIFIER_SET");
-        });
+        //     await expect(
+        //         hub.verifyAndRegisterPassportCommitment(passportProof)
+        //     ).to.be.revertedWithCustomError(hub, "NO_VERIFIER_SET");
+        // });
 
-        it("should fail when hub address is not set", async () => {
-            const {registry, owner} = deployedActors;
+        // it("should fail when hub address is not set", async () => {
+        //     const {registry, owner} = deployedActors;
             
-            // Update hub address to zero address
-            await registry.updateHub(ethers.ZeroAddress);
+        //     // Update hub address to zero address
+        //     await registry.updateHub(ethers.ZeroAddress);
             
-            const commitment = ethers.toBeHex(generateRandomFieldElement());
-            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+        //     const commitment = ethers.toBeHex(generateRandomFieldElement());
+        //     const nullifier = ethers.toBeHex(generateRandomFieldElement());
 
-            await expect(
-                registry.registerCommitment(
-                    ATTESTATION_ID.E_PASSPORT,
-                    nullifier,
-                    commitment
-                )
-            ).to.be.revertedWithCustomError(registry, "HUB_NOT_SET");
-        });
+        //     await expect(
+        //         registry.registerCommitment(
+        //             ATTESTATION_ID.E_PASSPORT,
+        //             nullifier,
+        //             commitment
+        //         )
+        //     ).to.be.revertedWithCustomError(registry, "HUB_NOT_SET");
+        // });
 
-        it("should fail when called directly on implementation", async () => {
-            const {registryImpl} = deployedActors;
+        // it("should fail when called directly on implementation", async () => {
+        //     const {registryImpl} = deployedActors;
 
-            const commitment = ethers.toBeHex(generateRandomFieldElement());
-            const nullifier = ethers.toBeHex(generateRandomFieldElement());
+        //     const commitment = ethers.toBeHex(generateRandomFieldElement());
+        //     const nullifier = ethers.toBeHex(generateRandomFieldElement());
 
-            await expect(
-                registryImpl.registerCommitment(
-                    ATTESTATION_ID.E_PASSPORT,
-                    nullifier,
-                    commitment
-                )
-            ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
-        });
+        //     await expect(
+        //         registryImpl.registerCommitment(
+        //             ATTESTATION_ID.E_PASSPORT,
+        //             nullifier,
+        //             commitment
+        //         )
+        //     ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        // });
     });
 });

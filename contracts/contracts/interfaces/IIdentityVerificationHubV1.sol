@@ -6,6 +6,18 @@ import "./IDscCircuitVerifier.sol";
 import "./IVcAndDiscloseCircuitVerifier.sol";
 interface IIdentityVerificationHubV1 {
 
+    enum RevealedDataType {
+        ISSUING_STATE,
+        NAME,
+        PASSPORT_NUMBER,
+        NATIONALITY,
+        DATE_OF_BIRTH,
+        GENDER,
+        EXPIRY_DATE,
+        OLDER_THAN,
+        OFAC
+    }
+
     struct VcAndDiscloseVerificationResult {
         uint256 attestationId;
         uint256 scope;
@@ -15,18 +27,31 @@ interface IIdentityVerificationHubV1 {
         uint256 forbiddenCountriesListPacked;
     }
 
-    struct PassportProof {
-        uint256 registerCircuitVerifierId;
-        uint256 dscCircuitVerifierId;
-        IRegisterCircuitVerifier.RegisterCircuitProof registerCircuitProof;
-        IDscCircuitVerifier.DscCircuitProof dscCircuitProof;
+    struct ReadableRevealedData {
+        string issuingState;
+        string name;
+        string passportNumber;
+        string nationality;
+        string dateOfBirth;
+        string gender;
+        string expiryDate;
+        uint256 olderThan;
+        uint256 ofac;
     }
 
-    function verifyVcAndDiscloseAndGetResult(
+    function verifyVcAndDisclose(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     )
         external
         view
         returns (VcAndDiscloseVerificationResult memory);
+
+    function getReadableRevealedData(
+        uint256[3] memory revealedDataPacked,
+        RevealedDataType[] memory types
+    )
+        external
+        view
+        returns (ReadableRevealedData memory);
 
 } 

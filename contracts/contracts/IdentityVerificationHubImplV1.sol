@@ -6,12 +6,13 @@ import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "./constants/CircuitConstants.sol";
 import "./constants/AttestationId.sol";
 import "./libraries/Formatter.sol";
+import "./libraries/CircuitAttributeHandler.sol";
 import "./interfaces/IIdentityVerificationHubV1.sol";
 import "./interfaces/IIdentityRegistryV1.sol";
 import "./interfaces/IRegisterCircuitVerifier.sol";
 import "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import "./interfaces/IDscCircuitVerifier.sol";
-import "./proxy/ImplRoot.sol";
+import "./upgradeable/ImplRoot.sol";
 
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
@@ -172,9 +173,49 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToDscCircuitVerifiers[typeId];
     }
 
+    function getReadableRevealedData(
+        uint256[3] memory revealedDataPacked,
+        RevealedDataType[] memory types
+    )
+        external
+        view
+        returns (ReadableRevealedData memory)
+    {
+        bytes memory charcodes = Formatter.fieldElementsToBytes(
+            revealedDataPacked
+        );
+
+        ReadableRevealedData memory attrs;
+
+        for (uint256 i = 0; i < types.length; i++) {
+            RevealedDataType dataType = types[i];
+            if (dataType == RevealedDataType.ISSUING_STATE) {
+                attrs.issuingState = CircuitAttributeHandler.getIssuingState(charcodes);
+            } else if (dataType == RevealedDataType.NAME) {
+                attrs.name = CircuitAttributeHandler.getName(charcodes);
+            } else if (dataType == RevealedDataType.PASSPORT_NUMBER) {
+                attrs.passportNumber = CircuitAttributeHandler.getPassportNumber(charcodes);
+            } else if (dataType == RevealedDataType.NATIONALITY) {
+                attrs.nationality = CircuitAttributeHandler.getNationality(charcodes);
+            } else if (dataType == RevealedDataType.DATE_OF_BIRTH) {
+                attrs.dateOfBirth = CircuitAttributeHandler.getDateOfBirth(charcodes);
+            } else if (dataType == RevealedDataType.GENDER) {
+                attrs.gender = CircuitAttributeHandler.getGender(charcodes);
+            } else if (dataType == RevealedDataType.EXPIRY_DATE) {
+                attrs.expiryDate = CircuitAttributeHandler.getExpiryDate(charcodes);
+            } else if (dataType == RevealedDataType.OLDER_THAN) {
+                attrs.olderThan = CircuitAttributeHandler.getOlderThan(charcodes);
+            } else if (dataType == RevealedDataType.OFAC) {
+                attrs.ofac = CircuitAttributeHandler.getOfac(charcodes);
+            }
+        }
+
+        return attrs;
+    }
+
     // verify and view
 
-    function verifyVcAndDiscloseAndGetResult(
+    function verifyVcAndDisclose(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     )
         external
@@ -182,7 +223,7 @@ contract IdentityVerificationHubImplV1 is
         onlyProxy
         returns (VcAndDiscloseVerificationResult memory)
     {
-        verifyVcAndDiscloseCircuit(proof);
+        verifyVcAndDiscloseProof(proof);
 
         VcAndDiscloseVerificationResult memory result;
          for (uint256 i = 0; i < 3; i++) {
@@ -277,18 +318,32 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
-    // verify and register
-    function verifyAndRegisterPassportCommitment(
-        PassportProof memory proof
+    // register
+    function registerPassportCommitment(
+        uint256 registerCircuitVerifierId,
+        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
         external
         onlyProxy
     {
-        verifyPassport(proof);
+        verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
         IIdentityRegistryV1(_registry).registerCommitment(
             AttestationId.E_PASSPORT,
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
-            proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
+        );
+    }
+
+    function registerDscPubKey(
+        uint256 dscCircuitVerifierId,
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+    )
+        external
+        onlyProxy
+    {
+        verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
+        IIdentityRegistryV1(_registry).registerDscKeyCommitment(
+            dscCircuitProof.pubSignals[CircuitConstants.DSC_TREE_LEAF_INDEX]
         );
     }
 
@@ -297,7 +352,12 @@ contract IdentityVerificationHubImplV1 is
     ///////////////////////////////////////////////////////////////////
 
     // Functions for vc and disclose circuit
-    function verifyVcAndDiscloseCircuit(
+    function verifyVcAndDiscloseProof(
+        bool checkOlderThan,
+        uint256 expectedOlderThan,
+        bool checkOfac,
+        bool checkForbiddenCountries,
+        uint256 expectedForbiddenCountriesListPacked,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         internal
@@ -323,13 +383,39 @@ contract IdentityVerificationHubImplV1 is
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
 
+        uint256[3] memory revealedDataPacked;
+        for (uint256 i = 0; i < 3; i++) {
+            revealedDataPacked[i] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
+        }
+
+        if (checkOlderThan) {
+            uint256 olderThanInProof = CircuitAttributeHandler.getOlderThan(Formatter.fieldElementsToBytes(revealedDataPacked));
+            if (olderThanInProof != expectedOlderThan) {
+                revert INVALID_OLDER_THAN();
+            }
+        }
+
+        if (checkOfac) {
+            uint256 ofacInProof = CircuitAttributeHandler.getOfac(Formatter.fieldElementsToBytes(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX]));
+            if (ofacInProof != 1) {
+                revert INVALID_OFAC();
+            }
+        }
+
+        if (checkForbiddenCountries) {
+            uint256 forbiddenCountriesListPackedInProof = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+            if (forbiddenCountriesListPackedInProof != expectedForbiddenCountriesListPacked) {
+                revert INVALID_FORBIDDEN_COUNTRIES();
+            }
+        }
+
         if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.a, proof.b, proof.c, proof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
     }
 
     // Functions for register commitment
-    function verifyPassportRegisterCircuit(
+    function verifyPassportRegisterProof(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
@@ -351,7 +437,7 @@ contract IdentityVerificationHubImplV1 is
         return result;
     }
 
-    function verifyPassportDscCircuit(
+    function verifyPassportDscProof(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     ) 
@@ -376,28 +462,6 @@ contract IdentityVerificationHubImplV1 is
             dscCircuitProof.pubSignals
         );
         return result;
-    }
-
-    function verifyPassport(
-        PassportProof memory proof
-    )
-        internal
-        view
-    {
-        if (
-            keccak256(abi.encodePacked(proof.registerCircuitProof.pubSignals[CircuitConstants.REGISTER_GLUE_INDEX])) !=
-            keccak256(abi.encodePacked(proof.dscCircuitProof.pubSignals[CircuitConstants.DSC_GLUE_INDEX]))
-        ) {
-            revert UNEQUAL_GLUE();
-        }
-
-        if (!verifyPassportRegisterCircuit(proof.registerCircuitVerifierId, proof.registerCircuitProof)) {
-            revert INVALID_REGISTER_PROOF();
-        }
-
-        if (!verifyPassportDscCircuit(proof.dscCircuitVerifierId, proof.dscCircuitProof)) {
-            revert INVALID_DSC_PROOF();
-        }
     }
 
 }
