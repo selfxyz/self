@@ -125,6 +125,14 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1_key;
       dsc = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1;
       break;
+    case 'ecdsa_sha256_secp521r1_521':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_secp521r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_secp521r1;
+      break;
+    case 'ecdsa_sha512_secp521r1_521':
+      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1_key;
+      dsc = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1;
+      break;
     case 'ecdsa_sha384_secp384r1_384':
       privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1_key;
       dsc = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1;
@@ -132,6 +140,10 @@ export function genMockPassportData(
     case 'ecdsa_sha256_secp384r1_384':
       privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_secp384r1_key;
       dsc = mockCertificates.mock_dsc_sha256_ecdsa_secp384r1;
+      break;
+    case 'ecdsa_sha1_brainpoolP256r1_256':
+      privateKeyPem = mockCertificates.mock_dsc_sha1_ecdsa_brainpoolP256r1_key;
+      dsc = mockCertificates.mock_dsc_sha1_ecdsa_brainpoolP256r1;
       break;
     case 'ecdsa_sha256_brainpoolP256r1_256':
       privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP256r1_key;
@@ -161,6 +173,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048_key;
       dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048;
       break;
+    case 'ecdsa_sha256_brainpoolP384r1_384':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP384r1_key;
+      dsc = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP384r1;
+      break;
     case 'ecdsa_sha384_brainpoolP384r1_384':
       privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP384r1_key;
       dsc = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP384r1;
@@ -180,6 +196,10 @@ export function genMockPassportData(
     case 'ecdsa_sha256_brainpoolP224r1_224':
       privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP224r1_key;
       dsc = mockCertificates.mock_dsc_sha256_ecdsa_brainpoolP224r1;
+      break;
+    case 'ecdsa_sha384_brainpoolP512r1_512':
+      privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP512r1_key;
+      dsc = mockCertificates.mock_dsc_sha384_ecdsa_brainpoolP512r1;
       break;
     case 'ecdsa_sha512_brainpoolP512r1_512':
       privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_brainpoolP512r1_key;
@@ -205,6 +225,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha384_rsa_65537_4096_key;
       dsc = mockCertificates.mock_dsc_sha384_rsa_65537_4096;
       break;
+    case 'rsapss_sha512_65537_4096':
+      privateKeyPem = mockCertificates.mock_dsc_sha512_rsapss_64_65537_4096_key;
+      dsc = mockCertificates.mock_dsc_sha512_rsapss_64_65537_4096;
+      break;
   }
 
   // Generate MRZ hash first
@@ -217,6 +241,7 @@ export function genMockPassportData(
 
   const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent) as number[]);
   const hashAlgo = signatureType.split('_')[1];
+  console.log('dsc', dsc);
   const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
 

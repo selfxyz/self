@@ -10,7 +10,7 @@ import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 import { bytesToBigDecimal, hexToDecimal, splitToWords } from './bytes';
 import path from 'path';
 
-export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): number {
+export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): [number, number] {
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     modulusNumArray.push(parseInt(modulus.slice(i, i + 2), 16));
@@ -38,10 +38,11 @@ export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): nu
   if (startIndex === -1) {
     throw new Error('DSC Pubkey not found in CSCA certificate');
   }
-  return startIndex;
+  return [startIndex, modulusNumArray.length];
 }
 
-export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
+// @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
+export function findStartIndex(modulus: string, messagePadded: Uint8Array): [number, number] {
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     const hexPair = modulus.slice(i, i + 2);
@@ -65,7 +66,7 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): numb
       }
     }
     if (matched) {
-      return i;
+      return [i, modulusNumArray.length];
     }
   }
 

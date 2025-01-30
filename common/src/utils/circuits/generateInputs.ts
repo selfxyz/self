@@ -70,11 +70,11 @@ export function generateCircuitInputsDSC(
   console.log('js: csca_pubKey_formatted', csca_pubKey_formatted);
   console.log('js: csca_pubKey_formatted length', csca_pubKey_formatted.length);
 
-  const csca_pubkey_actual_size = cscaParsed.signatureAlgorithm === 'ecdsa' ?
-    (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
-    (Number(cscaParsed.publicKeyDetails.bits) / 8);
+  // const csca_pubkey_actual_size = cscaParsed.signatureAlgorithm === 'ecdsa' ?
+    // (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
+    // (Number(cscaParsed.publicKeyDetails.bits) / 8);
 
-  console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
+  // console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
 
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
   const signature = formatSignatureDSCCircuit(
@@ -85,9 +85,12 @@ export function generateCircuitInputsDSC(
   );
 
   // Get start index of CSCA pubkey based on algorithm
-  const startIndex = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
   console.log('js: startIndex', startIndex);
 
+  const csca_pubkey_actual_size = keyLength;
+  console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
+  
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: [BigInt(cscaParsed.tbsBytes.length).toString()],

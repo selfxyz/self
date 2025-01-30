@@ -57,17 +57,19 @@ function processCertificate(pemContent: string, filePath: string) {
 async function buildCscaMerkleTree() {
     const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
 
-    const path_to_pem_files = "outputs/csca/pem_masterlist";
-    for (const file of fs.readdirSync(path_to_pem_files)) {
-        const file_path = path.join(path_to_pem_files, file);
-        try {
-            const pemContent = fs.readFileSync(file_path, 'utf8');
-            const leafValue = processCertificate(pemContent, file_path);
-            if (leafValue) {
-                tree.insert(leafValue);
+    if (!DEVELOPMENT_MODE) {
+        const path_to_pem_files = "outputs/csca/pem_masterlist";
+        for (const file of fs.readdirSync(path_to_pem_files)) {
+            const file_path = path.join(path_to_pem_files, file);
+            try {
+                const pemContent = fs.readFileSync(file_path, 'utf8');
+                const leafValue = processCertificate(pemContent, file_path);
+                if (leafValue) {
+                    tree.insert(leafValue);
+                }
+            } catch (error) {
+                console.error(`Error reading file ${file}:`, error);
             }
-        } catch (error) {
-            console.error(`Error reading file ${file}:`, error);
         }
     }
 

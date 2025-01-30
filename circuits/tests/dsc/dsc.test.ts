@@ -9,15 +9,15 @@ import { SignatureAlgorithm } from '../../../common/src/utils/types';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 
-const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
-
+// const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
+const testSuite = fullSigAlgs;
 testSuite.forEach(({
   sigAlg,
   hashFunction,
   domainParameter,
   keyLength,
 }) => {
-
+  console.log(sigAlg, hashFunction, domainParameter, keyLength);
   let passportData = genMockPassportData(
     hashFunction,
     hashFunction,

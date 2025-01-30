@@ -314,7 +314,7 @@ export const getCircuitNameOld = (
 
 export function getHashAlgorithm(rawSignatureAlgorithm: string) {
   const input = rawSignatureAlgorithm.toLowerCase();
-  const patterns = [/sha-?1/i, /sha-?256/i, /sha-?384/i, /sha-?512/i];
+  const patterns = [/sha-?1/i, /sha-?224/i, /sha-?256/i, /sha-?384/i, /sha-?512/i];
 
   for (const pattern of patterns) {
     const match = input.match(pattern);
