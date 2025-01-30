@@ -23,6 +23,7 @@ interface IIdentityVerificationHubV1 {
         uint256 scope;
         uint256 userIdentifier;
         uint256 nullifier;
+        uint256 identityCommitmentRoot;
         uint256[3] revealedDataPacked;
         uint256 forbiddenCountriesListPacked;
     }

@@ -80,7 +80,8 @@ contract IdentityRegistryImplV1 is
     event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
-    event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state, uint256 timestamp);
+    event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state);
+    event DevDscKeyCommitmentStateChanged(uint256 indexed commitment, bool state);
 
     // Errors
     error HUB_NOT_SET();
@@ -114,6 +115,8 @@ contract IdentityRegistryImplV1 is
     ///////////////////////////////////////////////////////////////////
 
     // view
+    // test in unit
+    // tested
     function hub() 
         external
         virtual
@@ -124,6 +127,8 @@ contract IdentityRegistryImplV1 is
         return _hub;
     }
 
+    // test in integration
+    // tested
     function nullifiers(
         bytes32 attestationId,
         uint256 nullifier
@@ -137,6 +142,22 @@ contract IdentityRegistryImplV1 is
         return _nullifiers[attestationId][nullifier];
     }
 
+    // test in integration
+    // tested
+    function isRegisteredDscKeyCommitment(
+        uint256 commitment
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (bool) 
+    {
+        return _isRegisteredDscKeyCommitment[commitment];
+    }
+
+    // test in integration
+    // tested
     function rootTimestamps(
         uint256 root
     ) 
@@ -149,6 +170,8 @@ contract IdentityRegistryImplV1 is
         return _rootTimestamps[root];
     }
 
+    // test in integration
+    // tested
     function checkIdentityCommitmentRoot(
         uint256 root
     ) 
@@ -160,6 +183,8 @@ contract IdentityRegistryImplV1 is
         return _rootTimestamps[root] != 0;
     }
 
+    // test in integration
+    // tested
     function getIdentityCommitmentMerkleTreeSize() 
         external
         onlyProxy
@@ -169,6 +194,8 @@ contract IdentityRegistryImplV1 is
         return _identityCommitmentIMT.size;
     }
 
+    // test in integration
+    // tested
     function getIdentityCommitmentMerkleRoot() 
         external
         onlyProxy
@@ -178,6 +205,8 @@ contract IdentityRegistryImplV1 is
         return _identityCommitmentIMT._root();
     }
 
+    // test in integration
+    // tested
     function getIdentityCommitmentIndex(
         uint256 commitment
     ) 
@@ -189,6 +218,8 @@ contract IdentityRegistryImplV1 is
         return _identityCommitmentIMT._indexOf(commitment);
     }
 
+    // test in unit
+    // tested
     function getOfacRoot() 
         external
         onlyProxy
@@ -198,6 +229,8 @@ contract IdentityRegistryImplV1 is
         return _ofacRoot;
     }
 
+    // test in unit
+    // tested
     function checkOfacRoot(
         uint256 root
     ) 
@@ -209,6 +242,8 @@ contract IdentityRegistryImplV1 is
         return _ofacRoot == root;
     }
 
+    // test in unit
+    // tested
     function getCscaRoot() 
         external
         onlyProxy
@@ -218,6 +253,8 @@ contract IdentityRegistryImplV1 is
         return _cscaRoot;
     }
 
+    // test in unit
+    // tested
     function checkCscaRoot(
         uint256 root
     ) 
@@ -229,6 +266,7 @@ contract IdentityRegistryImplV1 is
         return _cscaRoot == root;
     }
 
+    // test in integration
     function getDscKeyCommitmentTreeRoot() 
         external
         onlyProxy
@@ -238,6 +276,7 @@ contract IdentityRegistryImplV1 is
         return _dscKeyCommitmentIMT._root();
     }
 
+    // test in integration
     function checkDscKeyCommitmentTreeRoot(
         uint256 root
     ) 
@@ -249,6 +288,7 @@ contract IdentityRegistryImplV1 is
         return _dscKeyCommitmentIMT._root() == root;
     }
 
+    // test in integration
     function getDscKeyCommitmentTreeSize() 
         external
         onlyProxy
@@ -258,6 +298,7 @@ contract IdentityRegistryImplV1 is
         return _dscKeyCommitmentIMT.size;
     }
 
+    // test in integration
     function getDscKeyCommitmentTreeIndex(
         uint256 dscCommitment
     ) 
@@ -304,6 +345,7 @@ contract IdentityRegistryImplV1 is
     }
     
     // onlyOwner
+    // tested
     function updateHub(
         address newHubAddress
     )
@@ -315,6 +357,7 @@ contract IdentityRegistryImplV1 is
         emit HubUpdated(newHubAddress);
     }
 
+    // tested
     function updateOfacRoot(
         uint256 newOfacRoot
     ) 
@@ -326,6 +369,7 @@ contract IdentityRegistryImplV1 is
         emit OfacRootUpdated(newOfacRoot);
     }
 
+    // tested
     function updateCscaRoot(
         uint256 newCscaRoot
     ) 
@@ -337,6 +381,7 @@ contract IdentityRegistryImplV1 is
         emit CscaRootUpdated(newCscaRoot);
     }
 
+    // tested
     function devAddIdentityCommitment(
         bytes32 attestationId,
         uint256 nullifier,
@@ -353,6 +398,7 @@ contract IdentityRegistryImplV1 is
         emit DevCommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
 
+    // tested
     function devUpdateCommitment(
         uint256 oldLeaf,
         uint256 newLeaf,
@@ -367,6 +413,7 @@ contract IdentityRegistryImplV1 is
         emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
     }
 
+    // tested
     function devRemoveCommitment(
         uint256 oldLeaf,
         uint256[] calldata siblingNodes
@@ -380,6 +427,7 @@ contract IdentityRegistryImplV1 is
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
     }
 
+    // tested
     function devChangeNullifierState(
         bytes32 attestationId,
         uint256 nullifier,
@@ -390,9 +438,10 @@ contract IdentityRegistryImplV1 is
         onlyOwner
     {
         _nullifiers[attestationId][nullifier] = state;
-        emit DevNullifierStateChanged(attestationId, nullifier, state, block.timestamp);
+        emit DevNullifierStateChanged(attestationId, nullifier, state);
     }
 
+    // tested
     function devChangeDscKeyCommitmentState(
         uint256 dscCommitment,
         bool state
@@ -402,6 +451,7 @@ contract IdentityRegistryImplV1 is
         onlyOwner
     {
         _isRegisteredDscKeyCommitment[dscCommitment] = state;
+        emit DevDscKeyCommitmentStateChanged(dscCommitment, state);
     }
 
     ///////////////////////////////////////////////////////////////////

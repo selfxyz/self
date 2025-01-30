@@ -24,8 +24,8 @@ import VcAndDiscloseVerifierArtifactLocal from "../../artifacts/contracts/verifi
 // import VcAndDiscloseVerifierArtifactProd from "../../artifacts/contracts/verifiers/disclose/Verifier_vc_and_disclose.sol/Verifier_vc_and_disclose.json";
 import RegisterVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/register/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.sol/Verifier_register_sha256_sha256_sha256_rsa_65537_4096.json";
 // import RegisterVerifierArtifactProd from "../../artifacts/contracts/verifiers/register/Verifier_register_rsa_65537_sha256.sol/Verifier_register_rsa_65537_sha256.json";
-import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/dsc/Verifier_dsc_rsa_sha256_65537_4096.sol/Verifier_dsc_rsa_sha256_65537_4096.json";
-// import DscVerifierArtifactProd from "../../artifacts/contracts/verifiers/dsc/Verifier_dsc_rsa_65537_sha256_4096.sol/Verifier_dsc_rsa_65537_sha256_4096.json";
+import DscVerifierArtifactLocal from "../../artifacts/contracts/verifiers/local/dsc/Verifier_dsc_sha256_rsa_65537_4096.sol/Verifier_dsc_sha256_rsa_65537_4096.json";
+// import DscVerifierArtifactProd from "../../artifacts/contracts/verifiers/dsc/Verifier_dsc_sha256_rsa_65537_4096.sol/Verifier_dsc_sha256_rsa_65537_4096.json";
 
 export async function deploySystemFixtures(): Promise<DeployedActors> {
     let identityVerificationHubProxy: IdentityVerificationHub;

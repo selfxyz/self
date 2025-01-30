@@ -133,6 +133,7 @@ contract IdentityVerificationHubImplV1 is
     ///////////////////////////////////////////////////////////////////
 
     // view
+    // tested
     function registry() 
         external
         virtual
@@ -237,10 +238,11 @@ contract IdentityVerificationHubImplV1 is
         onlyProxy
         returns (VcAndDiscloseVerificationResult memory)
     {
-        verifyVcAndDiscloseProof(proof);
-
         VcAndDiscloseVerificationResult memory result;
-         for (uint256 i = 0; i < 3; i++) {
+        
+        result.identityCommitmentRoot = verifyVcAndDiscloseProof(proof);
+
+        for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
         }
         result.forbiddenCountriesListPacked = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -371,6 +373,7 @@ contract IdentityVerificationHubImplV1 is
     ) 
         internal
         view
+        returns (uint256 identityCommitmentRoot)
     {
         // verify identity commitment root
         if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
@@ -420,6 +423,8 @@ contract IdentityVerificationHubImplV1 is
         if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.vcAndDiscloseProof.a, proof.vcAndDiscloseProof.b, proof.vcAndDiscloseProof.c, proof.vcAndDiscloseProof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
+
+        return proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX];
     }
 
     // Functions for register commitment
