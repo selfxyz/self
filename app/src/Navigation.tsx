@@ -21,6 +21,8 @@ import { Clock9, Settings } from '@tamagui/lucide-icons';
 import HomeScreen from './screens/HomeScreen';
 import { black, white } from './utils/colors';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
+import ValidProofScreen from './screens/ValidProofScreen';
+import WrongProofScreen from './screens/WrongProofScreen';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
@@ -117,6 +119,18 @@ const RootStack = createStackNavigator({
       options: {
         title: 'Self ID',
         header: HomeNavBar,
+      },
+    },
+    ValidProofScreen: {
+      screen: ValidProofScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    WrongProofScreen: {
+      screen: WrongProofScreen,
+      options: {
+        headerShown: false,
       },
     },
     Settings: {

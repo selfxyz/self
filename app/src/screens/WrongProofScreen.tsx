@@ -1,13 +1,16 @@
-import { QrCode } from '@tamagui/lucide-icons';
 import React from 'react';
-import { Text, XStack, YStack } from 'tamagui';
-
-import CustomButton from '../components/CustomButton';
 import useUserStore from '../stores/userStore';
-import { bgGreen, textBlack } from '../utils/colors';
-import { scanQRCode } from '../utils/qrCode';
+import { Text, View } from 'react-native';
+import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import Description from '../components/typography/Description';
+import { typography } from '../components/typography/styles';
+import LargeTitle from '../components/typography/LargeTitle';
+import { styles } from '../screens/ValidProofScreen';
+import { useNavigation } from '@react-navigation/native';
 
 const WrongProofScreen: React.FC = () => {
+  const navigation = useNavigation();
   const { proofVerificationResult } = useUserStore();
 
   const formatFieldName = (field: string) => {
@@ -56,74 +59,29 @@ const WrongProofScreen: React.FC = () => {
   console.log('Failed conditions:', JSON.stringify(failedConditions));
 
   return (
-    <YStack f={1}>
-      <YStack f={1} mt="$4">
-        <Text ml="$1" fontSize={34} color={textBlack}>
-          <Text
-            style={{
-              textDecorationLine: 'underline',
-              textDecorationColor: bgGreen,
-            }}
-          >
-            Oops
-          </Text>
-          , the proof is not valid.
-        </Text>
-        {(proofVerificationResult as any).error ? (
-          <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
-            Error: {(proofVerificationResult as any).error}
-          </Text>
-        ) : (
-          <>
-            <Text ml="$2" mt="$3" fontSize="$8" color={textBlack}>
-              Some of the <Text>conditions</Text> have not been satisfied:
-            </Text>
-            <YStack ml="$4" mt="$5">
-              {failedConditions.map((condition, index) => (
-                <Text key={index} fontSize="$7" color={textBlack}>
-                  ·{' '}
-                  <Text
-                    key={index}
-                    style={{
-                      textDecorationLine: 'underline',
-                      textDecorationColor: bgGreen,
-                    }}
-                  >
-                    {condition}
-                  </Text>
-                </Text>
-              ))}
-            </YStack>
-          </>
-        )}
-        <Text
-          ml="$2"
-          mt="$8"
-          fontSize="$7"
-          color={textBlack}
-          style={{ opacity: 0.7 }}
-        >
-          <Text
-            style={{
-              textDecorationLine: 'underline',
-              textDecorationColor: bgGreen,
-            }}
-          >
-            Check again
-          </Text>{' '}
-          your eligibility, if you are sure to be eligible to this verification
-          please contact OpenPassport support.
-        </Text>
-        <XStack f={1} />
-        <CustomButton
-          Icon={<QrCode size={18} color={textBlack} />}
-          text="Scan another QR code"
+    <ExpandableBottomLayout.Layout>
+      <ExpandableBottomLayout.TopSection>
+        <></>
+        {/* TODO Animation */}
+      </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection>
+        <View style={styles.content}>
+          <LargeTitle>Proof Failed</LargeTitle>
+          <Description>
+            Unable to prove your identity to{' '}
+            <Text style={typography.strong}>.SWOOSH</Text>
+          </Description>
+        </View>
+        <PrimaryButton
           onPress={() => {
-            scanQRCode();
+            navigation.navigate('ValidProofScreen');
           }}
-        />
-      </YStack>
-    </YStack>
+        >
+          {' '}
+          OK{' '}
+        </PrimaryButton>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 

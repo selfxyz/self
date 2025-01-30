@@ -6,7 +6,11 @@ interface DescriptionProps extends TextProps {}
 
 const Description = ({ children, style, ...props }: DescriptionProps) => {
   return (
-    <Text {...props} style={[styles.description, style]}>
+    <Text
+      {...props}
+      textBreakStrategy="balanced"
+      style={[styles.description, style]}
+    >
       {children}
     </Text>
   );
