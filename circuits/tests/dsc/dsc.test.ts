@@ -39,28 +39,28 @@ testSuite.forEach(({
     );
 
     before(async () => {
-      //   circuit = await wasm_tester(
-      //     path.join(
-      //       __dirname,
-      //       `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
-      //     ),
-      //     {
-      //       include: [
-      //         'node_modules',
-      //         './node_modules/@zk-kit/binary-merkle-root.circom/src',
-      //         './node_modules/circomlib/circuits',
-      //       ],
-      //     }
-      //   );
+      circuit = await wasm_tester(
+        path.join(
+          __dirname,
+          `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
+        ),
+        {
+          include: [
+            'node_modules',
+            './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            './node_modules/circomlib/circuits',
+          ],
+        }
+      );
     });
 
-    // it('should compute a valid witness', async () => {
-    //   const witness = await circuit.calculateWitness(inputs, true);
-    //   await circuit.checkConstraints(witness);
-    //   console.log('\x1b[34m%s\x1b[0m', 'witness generated ', sigAlg);
-    //   const dsc_tree_leaf = (await circuit.getOutput(witness, ['dsc_tree_leaf']))
-    //     .dsc_tree_leaf;
-    //   console.log('\x1b[34m%s\x1b[0m', 'dsc_tree_leaf: ', dsc_tree_leaf);
-    // });
+    it('should compute a valid witness', async () => {
+      const witness = await circuit.calculateWitness(inputs, true);
+      await circuit.checkConstraints(witness);
+      console.log('\x1b[34m%s\x1b[0m', 'witness generated ', sigAlg);
+      const dsc_tree_leaf = (await circuit.getOutput(witness, ['dsc_tree_leaf']))
+        .dsc_tree_leaf;
+      console.log('\x1b[34m%s\x1b[0m', 'dsc_tree_leaf: ', dsc_tree_leaf);
+    });
   });
 });
