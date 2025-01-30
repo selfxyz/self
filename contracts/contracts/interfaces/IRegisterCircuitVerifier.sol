@@ -7,13 +7,13 @@ interface IRegisterCircuitVerifier {
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
-        uint[2] pubSignals;
+        uint[3] pubSignals;
     }
 
     function verifyProof (
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,
-        uint[2] calldata pubSignals
+        uint[3] calldata pubSignals
     ) external view returns (bool);
 }

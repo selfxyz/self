@@ -144,6 +144,7 @@ contract IdentityVerificationHubImplV1 is
         return _registry;
     }
 
+    // tested
     function vcAndDiscloseCircuitVerifier() 
         external
         virtual
@@ -154,6 +155,7 @@ contract IdentityVerificationHubImplV1 is
         return _vcAndDiscloseCircuitVerifier;
     }
 
+    // tested
     function sigTypeToRegisterCircuitVerifiers(
         uint256 typeId
     ) 
@@ -166,6 +168,7 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToRegisterCircuitVerifiers[typeId];
     }
 
+    // tested
     function sigTypeToDscCircuitVerifiers(
         uint256 typeId
     ) 
@@ -178,6 +181,7 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToDscCircuitVerifiers[typeId];
     }
 
+    // test in vc and disclose.ts
     function getReadableRevealedData(
         uint256[3] memory revealedDataPacked,
         RevealedDataType[] memory types
@@ -218,6 +222,7 @@ contract IdentityVerificationHubImplV1 is
         return attrs;
     }
 
+    // will test in vc and disclose.ts
     function getReadableForbiddenCountries(
         uint256 forbiddenCountriesListPacked
     )
@@ -230,6 +235,7 @@ contract IdentityVerificationHubImplV1 is
 
     // verify and view
 
+    // will test in vc and disclose.ts
     function verifyVcAndDisclose(
         VcAndDiscloseHubProof memory proof
     )
@@ -254,6 +260,7 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // updates
+    // tested
     function updateRegistry(
         address registryAddress
     ) 
@@ -265,6 +272,7 @@ contract IdentityVerificationHubImplV1 is
         emit RegistryUpdated(registryAddress);
     }
 
+    // tested
     function updateVcAndDiscloseCircuit(
         address vcAndDiscloseCircuitVerifierAddress
     ) 
@@ -276,6 +284,7 @@ contract IdentityVerificationHubImplV1 is
         emit VcAndDiscloseCircuitUpdated(vcAndDiscloseCircuitVerifierAddress);
     }
 
+    // tested
     function updateRegisterCircuitVerifier(
         uint256 typeId, 
         address verifierAddress
@@ -288,6 +297,7 @@ contract IdentityVerificationHubImplV1 is
         emit RegisterCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
+    // tested
     function updateDscVerifier(
         uint256 typeId, 
         address verifierAddress
@@ -300,6 +310,7 @@ contract IdentityVerificationHubImplV1 is
         emit DscCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
+    // tested
     function batchUpdateRegisterCircuitVerifiers(
         uint256[] calldata typeIds,
         address[] calldata verifierAddresses
@@ -317,6 +328,7 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
+    // tested
     function batchUpdateDscCircuitVerifiers(
         uint256[] calldata typeIds,
         address[] calldata verifierAddresses
@@ -335,6 +347,7 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // register
+    // will test in commitmentRegistration.ts
     function registerPassportCommitment(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
@@ -350,7 +363,8 @@ contract IdentityVerificationHubImplV1 is
         );
     }
 
-    function registerDscPubKey(
+    // will test in commitmentRegistration.ts
+    function registerDscKeyCommitment(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     )
@@ -434,24 +448,24 @@ contract IdentityVerificationHubImplV1 is
     ) 
         internal
         view
-        returns (bool result) 
     {
         address verifier = _sigTypeToRegisterCircuitVerifiers[registerCircuitVerifierId];
         if (verifier == address(0)) {
             revert NO_VERIFIER_SET();
         }
 
-        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(registerCircuitProof.pubSignals[CircuitConstants.REGISTER_MERKLE_ROOT_INDEX])) {
+        if (!IIdentityRegistryV1(_registry).checkDscKeyCommitmentMerkleRoot(registerCircuitProof.pubSignals[CircuitConstants.REGISTER_MERKLE_ROOT_INDEX])) {
             revert INVALID_COMMITMENT_ROOT();
         }
 
-        result = IRegisterCircuitVerifier(verifier).verifyProof(
+        if(!IRegisterCircuitVerifier(verifier).verifyProof(
             registerCircuitProof.a,
             registerCircuitProof.b,
             registerCircuitProof.c,
             registerCircuitProof.pubSignals
-        );
-        return result;
+        )) {
+            revert INVALID_REGISTER_PROOF();
+        }
     }
 
     function verifyPassportDscProof(
@@ -460,7 +474,6 @@ contract IdentityVerificationHubImplV1 is
     ) 
         internal
         view
-        returns (bool result) 
     {
 
         address verifier = _sigTypeToDscCircuitVerifiers[dscCircuitVerifierId];
@@ -472,13 +485,14 @@ contract IdentityVerificationHubImplV1 is
             revert INVALID_CSCA_ROOT();
         }
 
-        result = IDscCircuitVerifier(verifier).verifyProof(
+        if(!IDscCircuitVerifier(verifier).verifyProof(
             dscCircuitProof.a,
             dscCircuitProof.b,
             dscCircuitProof.c,
             dscCircuitProof.pubSignals
-        );
-        return result;
+        )) {
+            revert INVALID_DSC_PROOF();
+        }
     }
 
 }

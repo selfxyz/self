@@ -223,7 +223,11 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             const verifierIds = [1, 2];
             const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
 
-            await hub.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses);
+            await expect(hub.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses))
+                .to.emit(hub, "RegisterCircuitVerifierUpdated")
+                .withArgs(verifierIds[0], newVerifierAddresses[0])
+                .to.emit(hub, "RegisterCircuitVerifierUpdated")
+                .withArgs(verifierIds[1], newVerifierAddresses[1]);
             
             for (let i = 0; i < verifierIds.length; i++) {
                 expect(await hub.sigTypeToRegisterCircuitVerifiers(verifierIds[i]))
@@ -252,7 +256,11 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             const verifierIds = [1, 2];
             const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
 
-            await hub.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses);
+            await expect(hub.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses))
+                .to.emit(hub, "DscCircuitVerifierUpdated")
+                .withArgs(verifierIds[0], newVerifierAddresses[0])
+                .to.emit(hub, "DscCircuitVerifierUpdated")
+                .withArgs(verifierIds[1], newVerifierAddresses[1]);
             
             for (let i = 0; i < verifierIds.length; i++) {
                 expect(await hub.sigTypeToDscCircuitVerifiers(verifierIds[i]))
@@ -333,6 +341,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             const { hubImpl } = deployedActors;
             await expect(hubImpl.sigTypeToDscCircuitVerifiers(1)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
+
     });
 
     describe("Upgradeabilitiy", () => {
@@ -414,12 +423,12 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             // Try to initialize the implementation contract directly
             await expect(
                 hubV2Implementation.initialize(
-                    ethers.ZeroAddress,  // registry
-                    ethers.ZeroAddress,  // vcAndDiscloseCircuitVerifier
-                    [],  // registerCircuitVerifierIds
-                    [],  // registerCircuitVerifiers
-                    [],  // dscCircuitVerifierIds
-                    []   // dscCircuitVerifiers
+                    ethers.ZeroAddress,
+                    ethers.ZeroAddress,
+                    [],
+                    [],
+                    [],
+                    []
                 )
             ).to.be.revertedWithCustomError(hub, "InvalidInitialization");
         });

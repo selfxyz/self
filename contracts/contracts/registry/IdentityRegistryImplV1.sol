@@ -80,6 +80,9 @@ contract IdentityRegistryImplV1 is
     event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
     event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
     event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevDscKeyCommitmentRegistered(uint256 indexed commitment, uint256 imtRoot, uint256 imtIndex);
+    event DevDscKeyCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot);
+    event DevDscKeyCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot);
     event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state);
     event DevDscKeyCommitmentStateChanged(uint256 indexed commitment, bool state);
 
@@ -267,7 +270,7 @@ contract IdentityRegistryImplV1 is
     }
 
     // test in integration
-    function getDscKeyCommitmentTreeRoot() 
+    function getDscKeyCommitmentMerkleRoot() 
         external
         onlyProxy
         view 
@@ -277,7 +280,7 @@ contract IdentityRegistryImplV1 is
     }
 
     // test in integration
-    function checkDscKeyCommitmentTreeRoot(
+    function checkDscKeyCommitmentMerkleRoot(
         uint256 root
     ) 
         external
@@ -299,7 +302,7 @@ contract IdentityRegistryImplV1 is
     }
 
     // test in integration
-    function getDscKeyCommitmentTreeIndex(
+    function getDscKeyCommitmentIndex(
         uint256 dscCommitment
     ) 
         external
@@ -425,6 +428,45 @@ contract IdentityRegistryImplV1 is
         uint256 imt_root = _removeCommitment(_identityCommitmentIMT, oldLeaf, siblingNodes);
         _rootTimestamps[imt_root] = block.timestamp;
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+    }
+    
+    // Will add dsc key commitment manager functions for dev
+    function devAddDscKeyCommitment(
+        uint256 dscCommitment
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _isRegisteredDscKeyCommitment[dscCommitment] = true;
+        uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
+        uint256 index = _dscKeyCommitmentIMT._indexOf(dscCommitment);
+        emit DevDscKeyCommitmentRegistered(dscCommitment, imt_root, index);
+    }
+
+    function devUpdateDscKeyCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _updateCommitment(_dscKeyCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
+        emit DevDscKeyCommitmentUpdated(oldLeaf, newLeaf, imt_root);
+    }
+
+    function devRemoveDscKeyCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _removeCommitment(_dscKeyCommitmentIMT, oldLeaf, siblingNodes);
+        emit DevDscKeyCommitmentRemoved(oldLeaf, imt_root);
     }
 
     // tested

@@ -91,7 +91,7 @@ export async function generateRegisterProof(
 }
 
 export async function generateDscProof(
-    dscCertificate: any,
+    dscCertificate: string,
 ): Promise<DscCircuitProof> {
     console.log(CYAN, "=== Start generateDscProof ===", RESET);
 
