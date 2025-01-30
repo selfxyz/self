@@ -216,7 +216,6 @@ export function formatSignatureDSCCircuit(
     const { n, k } = getNAndK(cscaSignatureAlgorithmFullName as SignatureAlgorithm);
     if (cscaSignatureAlgorithm === 'ecdsa') {
         const { r, s } = extractRSFromSignature(signature);
-        console.log('pog');
         const signature_r = splitToWords(BigInt(hexToDecimal(r)), n, k);
         const signature_s = splitToWords(BigInt(hexToDecimal(s)), n, k);
         return [...signature_r, ...signature_s];
