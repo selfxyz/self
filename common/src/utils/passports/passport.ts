@@ -228,13 +228,23 @@ export function findStartPubKeyIndex(
     certificateData: CertificateData,
     rawCert: any,
     signatureAlgorithm: string
-): number {
+): [number, number] {
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-        const fullPubKey = x + y;
-        const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
-        return findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
+        console.log('x', x.length);
+        console.log('y', y.length);
+        const [x_index, x_totalLength] = findStartIndexEC(x, rawCert);
+        const [y_index, y_totalLength] = findStartIndexEC(y, rawCert);
+
+        //zero between x and y
+        const pad_between_x_y = y_index - x_index - x_totalLength;
+        return [x_index, x_totalLength + pad_between_x_y + y_totalLength];
+        // const fullPubKey = x + y;
+        // const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
+        // const [index, totalLength] = findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
+        // console.log('index', index, totalLength);
+        // return index;
     } else {
         // Splits to 525 words of 8 bits each
         const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;
