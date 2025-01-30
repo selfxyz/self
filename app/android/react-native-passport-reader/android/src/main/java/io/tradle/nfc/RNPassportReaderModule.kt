@@ -362,11 +362,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                     }
                 }
 
-                
+                eventMessageEmitter("Reading DG1.....")
                 val dg1In = service.getInputStream(PassportService.EF_DG1)
-                dg1File = DG1File(dg1In)   
-                val dg2In = service.getInputStream(PassportService.EF_DG2)
-                dg2File = DG2File(dg2In)                
+                dg1File = DG1File(dg1In)
+                // eventMessageEmitter("Reading DG2.....")
+                // val dg2In = service.getInputStream(PassportService.EF_DG2)
+                // dg2File = DG2File(dg2In)
+                eventMessageEmitter("Reading SOD.....")
                 val sodIn = service.getInputStream(PassportService.EF_SOD)
                 sodFile = SODFile(sodIn)
                 
@@ -406,20 +408,20 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 // sendDataToJS(PassportData(dg1File, dg2File, sodFile))
                 // Log.d(TAG, "============DATA SENT TO JS=============")
 
-                val allFaceImageInfo: MutableList<FaceImageInfo> = ArrayList()
-                dg2File.faceInfos.forEach {
-                    allFaceImageInfo.addAll(it.faceImageInfos)
-                }
-                if (allFaceImageInfo.isNotEmpty()) {
-                    val faceImageInfo = allFaceImageInfo.first()
-                    val imageLength = faceImageInfo.imageLength
-                    val dataInputStream = DataInputStream(faceImageInfo.imageInputStream)
-                    val buffer = ByteArray(imageLength)
-                    dataInputStream.readFully(buffer, 0, imageLength)
-                    val inputStream: InputStream = ByteArrayInputStream(buffer, 0, imageLength)
-                    bitmap = decodeImage(reactContext, faceImageInfo.mimeType, inputStream)
-                    imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
-                }
+                // val allFaceImageInfo: MutableList<FaceImageInfo> = ArrayList()
+                // dg2File.faceInfos.forEach {
+                //     allFaceImageInfo.addAll(it.faceImageInfos)
+                // }
+                // if (allFaceImageInfo.isNotEmpty()) {
+                //     val faceImageInfo = allFaceImageInfo.first()
+                //     val imageLength = faceImageInfo.imageLength
+                //     val dataInputStream = DataInputStream(faceImageInfo.imageInputStream)
+                //     val buffer = ByteArray(imageLength)
+                //     dataInputStream.readFully(buffer, 0, imageLength)
+                //     val inputStream: InputStream = ByteArrayInputStream(buffer, 0, imageLength)
+                //     bitmap = decodeImage(reactContext, faceImageInfo.mimeType, inputStream)
+                //     imageBase64 = Base64.encodeToString(buffer, Base64.DEFAULT)
+                // }
             } catch (e: Exception) {
                 eventMessageEmitter(Messages.RESET)
                 return e
@@ -429,6 +431,7 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
         private fun doChipAuth(service: PassportService) {
             try {
+                eventMessageEmitter("Reading DG14.....")
                 val dg14In = service.getInputStream(PassportService.EF_DG14)
                 dg14Encoded = IOUtils.toByteArray(dg14In)
                 val dg14InByte = ByteArrayInputStream(dg14Encoded)
@@ -459,11 +462,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
                 
                 val dataHashes = sodFile.dataGroupHashes
                 
-                eventMessageEmitter("Reading DG14.....")
                 val dg14Hash = if (chipAuthSucceeded) digest.digest(dg14Encoded) else ByteArray(0)
-                eventMessageEmitter("Reading DG1.....")
                 val dg1Hash = digest.digest(dg1File.encoded)
-                eventMessageEmitter("Reading DG2.....")
                 val dg2Hash = digest.digest(dg2File.encoded)
                 
                 // val gson = Gson()
@@ -486,7 +486,8 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
 
                 Log.d(TAG, "Comparing data group hashes...")
                 eventMessageEmitter(Messages.COMPARING)
-                if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
+                // if (Arrays.equals(dg1Hash, dataHashes[1]) && Arrays.equals(dg2Hash, dataHashes[2])
+                if (Arrays.equals(dg1Hash, dataHashes[1])
                     && (!chipAuthSucceeded || Arrays.equals(dg14Hash, dataHashes[14]))) {
 
                     Log.d(TAG, "Data group hashes match.")
@@ -660,13 +661,13 @@ class RNPassportReaderModule(private val reactContext: ReactApplicationContext) 
             //   Log.d(TAG, "signedData.signerInfos: ${gson.toJson(signedData.signerInfos)}")
             //   Log.d(TAG, "signedData.certificates: ${gson.toJson(signedData.certificates)}")
             
-            var quality = 100
-            val base64 = bitmap?.let { toBase64(it, quality) }
-            val photo = Arguments.createMap()
-            photo.putString("base64", base64 ?: "")
-            photo.putInt("width", bitmap?.width ?: 0)
-            photo.putInt("height", bitmap?.height ?: 0)
-            passport.putMap("photo", photo)
+            // var quality = 100
+            // val base64 = bitmap?.let { toBase64(it, quality) }
+            // val photo = Arguments.createMap()
+            // photo.putString("base64", base64 ?: "")
+            // photo.putInt("width", bitmap?.width ?: 0)
+            // photo.putInt("height", bitmap?.height ?: 0)
+            // passport.putMap("photo", photo)
             // passport.putString("dg2File", gson.toJson(dg2File))
             
             eventMessageEmitter(Messages.COMPLETED)

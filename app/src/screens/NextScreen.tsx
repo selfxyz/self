@@ -50,9 +50,10 @@ const NextScreen: React.FC = () => {
             h={height > 750 ? 190 : 130}
             borderRadius={height > 750 ? '$7' : '$6'}
             source={{
-              uri: passportData.mockUser
-                ? USER_PROFILE
-                : passportData.photoBase64 ?? USER_PROFILE,
+              uri:
+                passportData?.mockUser || !!!passportData?.photoBase64
+                  ? USER_PROFILE
+                  : passportData?.photoBase64 ?? USER_PROFILE,
             }}
           />
         )}
@@ -68,8 +69,8 @@ const NextScreen: React.FC = () => {
           }}
         >
           {dataHidden
-            ? maskString(getFirstName(passportData.mrz))
-            : getFirstName(passportData.mrz)}
+            ? maskString(getFirstName(passportData?.mrz ?? ''))
+            : getFirstName(passportData?.mrz ?? '')}
         </Text>
       </Text>
 
@@ -78,16 +79,34 @@ const NextScreen: React.FC = () => {
           const key_ = key;
           const indexes =
             attributeToPosition[key_ as keyof typeof attributeToPosition];
+          if (!passportData?.mrz || !indexes) {
+            return null;
+          }
+
           const keyFormatted = key_
             .replace(/_/g, ' ')
             .split(' ')
             .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1))
             .join(' ');
+
+          if (
+            indexes[0] >= passportData.mrz.length ||
+            indexes[1] >= passportData.mrz.length
+          ) {
+            console.warn(
+              `Invalid indexes for key ${key_}: [${indexes[0]}, ${indexes[1]}]`,
+            );
+            return null;
+          }
+
           const mrzAttribute = passportData.mrz.slice(
             indexes[0],
             indexes[1] + 1,
           );
-          const mrzAttributeFormatted = formatAttribute(key_, mrzAttribute);
+          const mrzAttributeFormatted = formatAttribute(
+            key_,
+            mrzAttribute ?? '',
+          );
 
           return (
             <Fieldset horizontal key={key} gap="$3" alignItems="center">

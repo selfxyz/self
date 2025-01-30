@@ -46,15 +46,15 @@ export const saltLengths = [64, 48, 32];
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 320,
   sha224: 384,
-  sha256: 448,
+  sha256: 384, //  will update this before eth Denver, 448 is the correct value - we need to keep 384 for the circuits in prod though
   sha384: 640,
   sha512: 768,
 };
 
 export const MAX_PADDED_SIGNED_ATTR_LEN: Record<(typeof hashAlgos)[number], number> = {
-  sha1: 128,
+  sha1: 192, // will update this before eth Denver, 128 is the correct value - we need to keep 192 for the circuits in prod though
   sha224: 128,
-  sha256: 128,
+  sha256: 192, //  will update this before eth Denver, 128 is the correct value - we need to keep 192 for the circuits in prod though
   sha384: 256,
   sha512: 256,
 };
@@ -129,10 +129,10 @@ export const circuitToSelectorMode = {
 };
 
 export const MAX_DATAHASHES_LEN = 320; // max formatted and concatenated datagroup hashes length in bytes
-export const n_dsc = 120;
+export const n_dsc = 64;
 export const n_dsc_3072 = 120;
 export const n_dsc_4096 = 120;
-export const k_dsc = 35;
+export const k_dsc = 32;
 export const k_dsc_3072 = 35; //48;
 export const k_dsc_4096 = 35;
 export const n_csca = 120;

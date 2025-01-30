@@ -29,6 +29,7 @@ import {
 } from '../utils/colors';
 import { TouchableOpacity } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 interface MockDataScreenProps {}
 
@@ -78,20 +79,37 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       .toUpperCase();
     await new Promise(resolve =>
       setTimeout(() => {
-        const hashAlgo = selectedAlgorithm === 'rsa sha1' ? 'sha1' : 'sha256';
-        const mockPassportData = genMockPassportData(
-          hashAlgo,
-          hashAlgo,
-          signatureAlgorithmToStrictSignatureAlgorithm[
-            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-          ],
-          selectedCountry as keyof typeof countryCodes,
-          castDate(-age),
-          castDate(expiryYears),
-          randomPassportNumber,
-          ...(isInOfacList ? ['HENAO MONTOYA', 'ARCANGEL DE JESUS'] : []),
-        );
+        let mockPassportData;
+        if (isInOfacList) {
+          mockPassportData = genMockPassportData(
+            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
+            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
+            signatureAlgorithmToStrictSignatureAlgorithm[
+              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            ],
+            selectedCountry as keyof typeof countryCodes,
+            castDate(-age),
+            castDate(expiryYears),
+            randomPassportNumber,
+            'HENAO MONTOYA', // this name is the OFAC list
+            'ARCANGEL DE JESUS',
+          );
+        } else {
+          mockPassportData = genMockPassportData(
+            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
+            selectedAlgorithm == 'rsa sha1' ? 'sha1' : 'sha256',
+            signatureAlgorithmToStrictSignatureAlgorithm[
+              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            ],
+            selectedCountry as keyof typeof countryCodes,
+            castDate(-age),
+            castDate(expiryYears),
+            randomPassportNumber,
+          );
+        }
         useUserStore.getState().registerPassportData(mockPassportData);
+        const parsedPassportData = parsePassportData(mockPassportData);
+        useUserStore.getState().setPassportMetadata(parsedPassportData);
         useUserStore.getState().setRegistered(true);
         resolve(null);
       }, 0),

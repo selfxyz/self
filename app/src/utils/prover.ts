@@ -1,26 +1,29 @@
-import * as amplitude from '@amplitude/analytics-react-native';
 import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
-
 import { parseProofAndroid } from './utils';
+import useNavigationStore from '../stores/navigationStore';
 
 export const generateProof = async (circuit: string, inputs: any) => {
-  console.log('launching generateProof function');
-  console.log('inputs in prover.ts', inputs);
-  console.log('circuit', circuit);
+  const startTime = Date.now();
+  const { trackEvent } = useNavigationStore.getState();
 
-  // Example: "/data/user/0/com.proofofpassportapp/files/register_sha256WithRSAEncryption_65537.zkey" on android
+  trackEvent('Proof Started', {
+    success: true,
+    circuit: circuit,
+  });
+
   const zkey_path = `${RNFS.DocumentDirectoryPath}/${circuit}.zkey`;
   const dat_path = `${RNFS.DocumentDirectoryPath}/${circuit}.dat`;
-
   const witness_calculator = circuit;
 
   if (!zkey_path || !witness_calculator || !dat_path) {
+    trackEvent('Proof Failed', {
+      success: false,
+      error: 'Required parameters are missing',
+      circuit: circuit,
+    });
     throw new Error('Required parameters are missing');
   }
-  console.log('zkey_path', zkey_path);
-  console.log('witness_calculator', witness_calculator);
-  console.log('dat_path', dat_path);
 
   try {
     const response = await NativeModules.Prover.runProveAction(
@@ -30,15 +33,24 @@ export const generateProof = async (circuit: string, inputs: any) => {
       inputs,
     );
 
-    // console.log('local proof:', response);
-
     if (Platform.OS === 'android') {
       const parsedResponse = parseProofAndroid(response);
-      console.log('parsedResponse', parsedResponse);
+
+      trackEvent('Proof Generated', {
+        success: true,
+        duration_ms: Date.now() - startTime,
+        circuit: circuit,
+      });
+
       return formatProof(parsedResponse);
     } else {
       const parsedResponse = JSON.parse(response);
-      console.log('parsedResponse', parsedResponse);
+
+      trackEvent('Proof Generated', {
+        success: true,
+        duration_ms: Date.now() - startTime,
+        circuit: circuit,
+      });
 
       return formatProof({
         proof: parsedResponse.proof,
@@ -46,31 +58,47 @@ export const generateProof = async (circuit: string, inputs: any) => {
       });
     }
   } catch (err: any) {
-    console.log('err', err);
-    amplitude.track('error_generating_proof', {
+    trackEvent('Proof Failed', {
+      success: false,
       error: err.message,
+      duration_ms: Date.now() - startTime,
       circuit: circuit,
       zkey_path: zkey_path,
       witness_calculator: witness_calculator,
       dat_path: dat_path,
     });
+
     throw new Error(err);
   }
 };
 
 export const formatProof = (rawProof: any): any => {
-  return {
-    proof: {
-      pi_a: [rawProof.proof.a[0], rawProof.proof.a[1], '1'],
-      pi_b: [
-        [rawProof.proof.b[0][0], rawProof.proof.b[0][1]],
-        [rawProof.proof.b[1][0], rawProof.proof.b[1][1]],
-        ['1', '0'],
-      ],
-      pi_c: [rawProof.proof.c[0], rawProof.proof.c[1], '1'],
-      protocol: 'groth16',
-      curve: 'bn128',
-    },
-    publicSignals: (rawProof as any).pub_signals,
-  };
+  const { trackEvent } = useNavigationStore.getState();
+  try {
+    const formattedProof = {
+      proof: {
+        pi_a: [rawProof.proof.a[0], rawProof.proof.a[1], '1'],
+        pi_b: [
+          [rawProof.proof.b[0][0], rawProof.proof.b[0][1]],
+          [rawProof.proof.b[1][0], rawProof.proof.b[1][1]],
+          ['1', '0'],
+        ],
+        pi_c: [rawProof.proof.c[0], rawProof.proof.c[1], '1'],
+        protocol: 'groth16',
+        curve: 'bn128',
+      },
+      publicSignals: (rawProof as any).pub_signals,
+    };
+    trackEvent('Proof Formatted', {
+      success: true,
+    });
+
+    return formattedProof;
+  } catch (err: any) {
+    trackEvent('Proof FormatFailed', {
+      success: false,
+      error: err.message,
+    });
+    throw err;
+  }
 };

@@ -32,21 +32,12 @@
 	<true/>
 	<key>NFCReaderUsageDescription</key>
 	<string>Need NFC to read Passport</string>
-	<key>NSAppTransportSecurity</key>
-	<string/>
-  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
-	<key>NSAllowsArbitraryLoads</key>
-	<false/>
-	<key>NSAllowsLocalNetworking</key>
-	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>Needed to secure the secret</string>
 	<key>NSHumanReadableCopyright</key>
-	<string/>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string/>
+	<string></string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
 	<key>UILaunchStoryboardName</key>

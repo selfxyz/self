@@ -7,11 +7,11 @@ import useUserStore from '../stores/userStore';
 import { textBlack } from '../utils/colors';
 
 const SplashScreen = () => {
-  const { userLoaded, passportData } = useUserStore();
+  const { userLoaded, passportData, passportMetadata } = useUserStore();
   const { setSelectedTab } = useNavigationStore();
   useEffect(() => {
     if (userLoaded) {
-      if (passportData && passportData.dg2Hash && !passportData.mockUser) {
+      if (passportData && passportMetadata && passportData.dg2Hash && !passportData.mockUser) {
         setSelectedTab('app');
       } else {
         setSelectedTab('start');

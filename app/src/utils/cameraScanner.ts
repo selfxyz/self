@@ -1,7 +1,8 @@
-import * as amplitude from '@amplitude/analytics-react-native';
 import { NativeModules, Platform } from 'react-native';
 
 import { extractMRZInfo, formatDateToYYMMDD } from './utils';
+import { segmentClient } from '../../App';
+import { trackEvent } from './analytics';
 
 type Callback = (
   error: Error | null,
@@ -14,6 +15,9 @@ type Callback = (
 type CancelScan = () => void;
 
 export const startCameraScan = (callback: Callback): CancelScan => {
+  const startTime = Date.now();
+  trackEvent('Camera Launched');
+
   if (Platform.OS === 'ios') {
     NativeModules.MRZScannerModule.startScanning()
       .then(
@@ -22,6 +26,9 @@ export const startCameraScan = (callback: Callback): CancelScan => {
           birthDate: string;
           expiryDate: string;
         }) => {
+          trackEvent('Camera Success', {
+            duration_ms: Date.now() - startTime,
+          });
           console.log('Scan result:', result);
           console.log(
             `Document Number: ${result.documentNumber}, Expiry Date: ${result.expiryDate}, Birth Date: ${result.birthDate}`,
@@ -32,11 +39,15 @@ export const startCameraScan = (callback: Callback): CancelScan => {
             dateOfBirth: formatDateToYYMMDD(result.birthDate),
             dateOfExpiry: formatDateToYYMMDD(result.expiryDate),
           });
+          trackEvent('MRZ Success');
         },
       )
       .catch((e: Error) => {
         console.error(e);
-        amplitude.track('camera_scan_error', { error: e });
+        trackEvent('Camera Failed', {
+          duration_ms: Date.now() - startTime,
+          error: e?.toString(),
+        });
         callback(e as Error);
       });
 
@@ -48,6 +59,9 @@ export const startCameraScan = (callback: Callback): CancelScan => {
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
         try {
+          trackEvent('Camera Success', {
+            duration_ms: Date.now() - startTime,
+          });
           const { documentNumber, birthDate, expiryDate } =
             extractMRZInfo(mrzInfo);
 
@@ -56,9 +70,10 @@ export const startCameraScan = (callback: Callback): CancelScan => {
             dateOfBirth: birthDate,
             dateOfExpiry: expiryDate,
           });
+          trackEvent('MRZ Success');
         } catch (e) {
           console.error('Invalid MRZ format:', (e as Error).message);
-          amplitude.track('invalid_mrz_format', {
+          trackEvent('MRZ Error', {
             error: (e as Error).message,
           });
 
@@ -67,7 +82,10 @@ export const startCameraScan = (callback: Callback): CancelScan => {
       })
       .catch((e: Error) => {
         console.error('Camera Activity Error:', e);
-        amplitude.track('camera_scan_error', { error: e.message });
+        trackEvent('Camera Failed', {
+          duration_ms: Date.now() - startTime,
+          error: (e as Error).message,
+        });
 
         callback(e);
       });

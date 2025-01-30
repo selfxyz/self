@@ -97,7 +97,7 @@ class PassportReader: NSObject{
         // let masterListURL = Bundle.main.url(forResource: "masterList", withExtension: ".pem")
         // passportReader.setMasterListURL( masterListURL! )
 
-        let passport = try await passportReader.readPassport( mrzKey: mrzKey, customDisplayMessage: customMessageHandler)
+        let passport = try await passportReader.readPassport( mrzKey: mrzKey, tags: [.COM, .DG1, .SOD], customDisplayMessage: customMessageHandler)
 
         var ret = [String:String]()
         print("documentType", passport.documentType)
@@ -118,13 +118,13 @@ class PassportReader: NSObject{
         ret["phoneNumber"] = passport.phoneNumber
         ret["personalNumber"] = passport.personalNumber
 
-        let passportPhotoData = passport.passportPhoto // [UInt8]
-        if let passportPhotoData = passport.passportPhoto {
-          let data = Data(passportPhotoData)
-          let base64String = data.base64EncodedString()
+        // let passportPhotoData = passport.passportPhoto // [UInt8]
+        // if let passportPhotoData = passport.passportPhoto {
+        //   let data = Data(passportPhotoData)
+        //   let base64String = data.base64EncodedString()
           
-          ret["passportPhoto"] = base64String 
-        }
+        //   ret["passportPhoto"] = base64String 
+        // }
 
         // documentSigningCertificate
         // countrySigningCertificate
