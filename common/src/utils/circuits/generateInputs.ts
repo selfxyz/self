@@ -103,6 +103,86 @@ export function generateCircuitInputsDSC(
   };
 }
 
+export function generateSimpleCircuitInputsRegister(
+  secret: number | string,
+  passportData: PassportData,
+  dscKeyCommitmentLeaf: string,
+  dscKeyCommitmentMerkleTree: LeanIMT
+) {
+  if (!passportData.parsed) {
+    throw new Error('Passport data is not parsed');
+  }
+  const { mrz, eContent, signedAttr } = passportData;
+  const passportMetadata = passportData.passportMetadata;
+  const dscParsed = passportData.dsc_parsed;
+
+  const dscTbsBytesPadded = padWithZeroes(Array.from(dscParsed.tbsBytes), max_dsc_bytes); // TODO: is this padding better than the other?
+
+  const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
+  const mrz_formatted = formatMrz(mrz);
+
+  if (eContent.length > MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]) {
+    console.error(
+      `eContent too long (${eContent.length} bytes). Max length is ${MAX_PADDED_ECONTENT_LEN[signatureAlgorithmFullName]} bytes.`
+    );
+    throw new Error(
+      `This length of datagroups (${eContent.length} bytes) is currently unsupported. Please contact us so we add support!`
+    );
+  }
+
+  const [eContentPadded, eContentLen] = pad(passportMetadata.eContentHashFunction)(
+    new Uint8Array(eContent),
+    MAX_PADDED_ECONTENT_LEN[passportMetadata.dg1HashFunction]
+  );
+  const [signedAttrPadded, signedAttrPaddedLen] = pad(passportMetadata.signedAttrHashFunction)(
+    new Uint8Array(signedAttr),
+    MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
+  );
+
+  const index = findIndexInTree(dscKeyCommitmentMerkleTree, BigInt(dscKeyCommitmentLeaf));
+  const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(
+    dscKeyCommitmentMerkleTree,
+    index,
+    PUBKEY_TREE_DEPTH
+  );
+  const csca_hash = getLeafCscaTree(passportData.csca_parsed);
+
+  const dsc_pubkey_actual_size = passportMetadata.signatureAlgorithm === 'ecdsa'
+  ? (Number((dscParsed.publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
+  : Number((dscParsed.publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
+
+  // Get start index of DSC pubkey based on algorithm
+  const startIndex = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
+  console.log('js: startIndex', startIndex);
+
+  const inputs = {
+    raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
+    raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
+    dsc_pubKey_offset: [startIndex.toString()],
+    dsc_pubKey_actual_size: [BigInt(dsc_pubkey_actual_size).toString()],
+    dg1: mrz_formatted,
+    dg1_hash_offset: passportMetadata.dg1HashOffset,
+    eContent: eContentPadded,
+    eContent_padded_length: eContentLen,
+    signed_attr: signedAttrPadded,
+    signed_attr_padded_length: signedAttrPaddedLen,
+    signed_attr_econtent_hash_offset: passportMetadata.eContentHashOffset,
+    pubKey_dsc: pubKey,
+    signature_passport: signature,
+    merkle_root: formatInput(dscKeyCommitmentMerkleTree.root),
+    path: formatInput(merkleProofIndices),
+    siblings: formatInput(merkleProofSiblings),
+    csca_hash: csca_hash,
+    secret: secret,
+  };
+
+  return Object.entries(inputs)
+    .map(([key, value]) => ({
+      [key]: formatInput(value),
+    }))
+    .reduce((acc, curr) => ({ ...acc, ...curr }), {});
+}
+
 export function generateCircuitInputsRegister(
   secret: number | string,
   passportData: PassportData

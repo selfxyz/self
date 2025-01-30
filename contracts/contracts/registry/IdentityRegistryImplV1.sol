@@ -4,7 +4,8 @@ pragma solidity ^0.8.28;
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import { InternalLeanIMT, LeanIMTData } from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import { InternalBinaryIMT, BinaryIMTData } from "@zk-kit/imt.sol/internal/InternalBinaryIMT.sol";
 import "../interfaces/IIdentityRegistryV1.sol";
 import "../interfaces/IIdentityVerificationHubV1.sol";
 import "../upgradeable/ImplRoot.sol";
@@ -38,6 +39,7 @@ import "../upgradeable/ImplRoot.sol";
 abstract contract IdentityRegistryStorageV1 is
     ImplRoot
 {
+
     address internal _hub;
 
     // commitment registry
@@ -66,8 +68,6 @@ contract IdentityRegistryImplV1 is
     IdentityRegistryStorageV1,  
     IIdentityRegistryV1 
 {
-
-    // using Strings for uint256;
     using InternalLeanIMT for LeanIMTData;
 
     // Events
@@ -301,16 +301,15 @@ contract IdentityRegistryImplV1 is
         return _dscKeyCommitmentIMT.size;
     }
 
-    // test in integration
     function getDscKeyCommitmentIndex(
-        uint256 dscCommitment
-    ) 
+        uint256 commitment
+    )
         external
         onlyProxy
-        view 
-        returns (uint256) 
+        view
+        returns (uint256)
     {
-        return _dscKeyCommitmentIMT._indexOf(dscCommitment);
+        return _dscKeyCommitmentIMT._indexOf(commitment);
     }
 
     // register

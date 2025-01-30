@@ -91,7 +91,7 @@ library Formatter {
         internal
         pure
         returns (
-            bytes3[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH]
+            string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH]
                 memory forbiddenCountries
         )
     {
@@ -101,7 +101,7 @@ library Formatter {
             uint256 shift = byteIndex * 8;
             uint256 mask = 0xFFFFFF;
             uint256 packedData = (publicSignal >> shift) & mask;
-            forbiddenCountries[j] = bytes3(uint24(packedData));
+            forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
         }
 
         return forbiddenCountries;

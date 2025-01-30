@@ -228,7 +228,7 @@ contract IdentityVerificationHubImplV1 is
     )
         external
         view
-        returns (bytes3[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
+        returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
     {
         return Formatter.extractForbiddenCountriesFromPacked(forbiddenCountriesListPacked);
     }
