@@ -23,6 +23,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     error NotRegistered(address nonRegisteredAddress);
     error InvalidLength();
     error RegistrationNotOpen();
+    error RegistrationNotClosed();
     error ClaimNotOpen();
 
     event Claimed(uint256 index, address account, uint256 amount);
@@ -38,7 +39,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         address _token
     ) 
         PassportAirdropRoot(_identityVerificationHub, _scope, _attestationId)
-        Ownable(msg.sender)
+        Ownable(_msgSender())
     {
         token = IERC20(_token);
     }  
@@ -79,11 +80,31 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         _registerAddress(msg.sender, proof);
     }
 
+    function getScope() external view returns (uint256) {
+        return scope;
+    }
+
+    function getAttestationId() external view returns (uint256) {
+        return attestationId;
+    }
+
+    function getNullifier(uint256 nullifier) external view returns (address) {
+        return nullifiers[nullifier];
+    }
+
+    function getRegisteredAddresses(address registeredAddress) external view returns (bool) {
+        return registeredAddresses[registeredAddress];
+    }
+
     function claim(
         uint256 index,
         uint256 amount,
         bytes32[] memory merkleProof
     ) external {
+        if (isRegistrationOpen) {
+            revert RegistrationNotClosed();
+        }
+
         if (!isClaimOpen) {
             revert ClaimNotOpen();
         }
@@ -99,7 +120,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         // Mark it claimed and send the token.
         _setClaimed(index);
         IERC20(token).safeTransfer(msg.sender, amount);
-    
+
         emit Claimed(index, msg.sender, amount);
     }
 
