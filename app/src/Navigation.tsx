@@ -1,28 +1,30 @@
-import 'react-native-gesture-handler';
 import React from 'react';
+import 'react-native-gesture-handler';
+
 import {
-  createStaticNavigation,
   StaticParamList,
+  createStaticNavigation,
 } from '@react-navigation/native';
 import {
-  createStackNavigator,
   StackHeaderProps,
+  createStackNavigator,
 } from '@react-navigation/stack';
-import LaunchScreen from './screens/LaunchScreen';
-import StartScreen from './screens/StartScreen';
-import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
-import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import { Clock9, Settings } from '@tamagui/lucide-icons';
+import { Button, View } from 'tamagui';
+
 import { NavBar } from './components/NavBar';
+import HomeScreen from './screens/HomeScreen';
+import LaunchScreen from './screens/LaunchScreen';
 import MockDataScreen from './screens/MockDataScreen';
 import NextScreen from './screens/NextScreen';
-import { Button, View } from 'tamagui';
-import { Clock9, Settings } from '@tamagui/lucide-icons';
-import HomeScreen from './screens/HomeScreen';
-import { black, white } from './utils/colors';
+import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
+import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import StartScreen from './screens/StartScreen';
 import ValidProofScreen from './screens/ValidProofScreen';
 import WrongProofScreen from './screens/WrongProofScreen';
+import { black, white } from './utils/colors';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;

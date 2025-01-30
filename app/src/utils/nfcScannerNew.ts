@@ -1,15 +1,16 @@
 import { NativeModules, Platform } from 'react-native';
-// @ts-ignore
-import * as amplitude from '@amplitude/analytics-react-native';
-import { Buffer } from 'buffer';
 import PassportReader from 'react-native-passport-reader';
 
+// @ts-ignore
+import * as amplitude from '@amplitude/analytics-react-native';
+import '@react-navigation/native';
+import { Buffer } from 'buffer';
+
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { checkInputs } from '../utils/utils';
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
-import {} from '@react-navigation/native';
 
 interface Inputs {
   passportNumber: string;

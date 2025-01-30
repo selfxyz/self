@@ -1,13 +1,15 @@
 import React from 'react';
-import useUserStore from '../stores/userStore';
 import { Text, View } from 'react-native';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+
+import { useNavigation } from '@react-navigation/native';
+
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Description from '../components/typography/Description';
-import { typography } from '../components/typography/styles';
 import LargeTitle from '../components/typography/LargeTitle';
+import { typography } from '../components/typography/styles';
+import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { styles } from '../screens/ValidProofScreen';
-import { useNavigation } from '@react-navigation/native';
+import useUserStore from '../stores/userStore';
 
 const WrongProofScreen: React.FC = () => {
   const navigation = useNavigation();

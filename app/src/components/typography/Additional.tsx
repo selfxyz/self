@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
+
 import { slate400 } from '../../utils/colors';
 
 interface AdditionalProps extends TextProps {}

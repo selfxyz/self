@@ -1,16 +1,17 @@
 import React from 'react';
+
+import { useNavigation } from '@react-navigation/native';
 import { Image } from 'tamagui';
 
-import Passport from '../../images/passport.png';
+import ButtonsContainer from '../../components/ButtonsContainer';
+import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useNavigation } from '@react-navigation/native';
-import Title from '../../components/typography/Title';
-import Description from '../../components/typography/Description';
 import Additional from '../../components/typography/Additional';
-import TextsContainer from '../../components/TextsContainer';
-import ButtonsContainer from '../../components/ButtonsContainer';
+import Description from '../../components/typography/Description';
+import Title from '../../components/typography/Title';
+import Passport from '../../images/passport.png';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 
 interface PassportOnboardingScreenProps {}
 

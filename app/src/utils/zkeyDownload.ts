@@ -1,8 +1,10 @@
 import RNFS from 'react-native-fs';
+import { unzip } from 'react-native-zip-archive';
+
 import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
-import { unzip } from 'react-native-zip-archive';
+
 import useNavigationStore from '../stores/navigationStore';
 
 const zkeyZipUrls = {

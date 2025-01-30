@@ -1,11 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+
+import { useNavigation } from '@react-navigation/native';
+
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Description from '../components/typography/Description';
-import { typography } from '../components/typography/styles';
 import LargeTitle from '../components/typography/LargeTitle';
-import { useNavigation } from '@react-navigation/native';
+import { typography } from '../components/typography/styles';
+import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 
 const SuccessScreen: React.FC = () => {
   const navigation = useNavigation();

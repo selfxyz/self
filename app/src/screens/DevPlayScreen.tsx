@@ -1,8 +1,10 @@
 import React from 'react';
+import { View } from 'react-native';
+
+import { Text, XStack, YStack } from 'tamagui';
+
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../components/buttons/SecondaryButton';
-import { Text, XStack, YStack } from 'tamagui';
-import { View } from 'react-native';
 import { white } from '../utils/colors';
 
 const DevPlayScreen = () => {
