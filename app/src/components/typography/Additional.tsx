@@ -1,13 +1,15 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, TextProps } from 'react-native';
 import { slate400 } from '../../utils/colors';
 
-interface AdditionalProps {
-  text: string;
-}
+interface AdditionalProps extends TextProps {}
 
-const Additional = ({ text }: AdditionalProps) => {
-  return <Text style={styles.additional}>{text}</Text>;
+const Additional = ({ children, style, ...props }: AdditionalProps) => {
+  return (
+    <Text {...props} style={[styles.additional, style]}>
+      {children}
+    </Text>
+  );
 };
 
 export default Additional;

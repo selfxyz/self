@@ -34,9 +34,9 @@ const PassportOnboardingScreen: React.FC<
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <TextsContainer>
-          <Title text="Scan your passport" />
-          <Description text="Open your passport to the first page to scan it." />
-          <Additional text="Self ID will not capture an image of your passport. Our system is only reading the fields." />
+          <Title children="Scan your passport" />
+          <Description children="Open your passport to the first page to scan it." />
+          <Additional children="Self ID will not capture an image of your passport. Our system is only reading the fields." />
         </TextsContainer>
         <ButtonsContainer>
           <PrimaryButton onPress={() => navigation.navigate('PassportCamera')}>
