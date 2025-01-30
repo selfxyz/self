@@ -7,7 +7,7 @@ export type PassportData = {
   eContent: number[];
   signedAttr: number[];
   encryptedDigest: number[];
-  photoBase64: string;
+  // photoBase64: string;
   mockUser?: boolean;
 };
 

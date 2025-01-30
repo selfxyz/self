@@ -176,7 +176,7 @@ const handleResponseIOS = async (response: any) => {
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
-    photoBase64: 'data:image/jpeg;base64,' + parsed.passportPhoto,
+    // photoBase64: 'data:image/jpeg;base64,' + parsed.passportPhoto,
     mockUser: false,
   };
   const parsedPassportData = parsePassportData(passportData);
@@ -201,7 +201,6 @@ const handleResponseAndroid = async (response: any) => {
     mrz,
     eContent,
     encryptedDigest,
-    photo,
     digestAlgorithm,
     signerInfoDigestAlgorithm,
     digestEncryptionAlgorithm,
@@ -235,7 +234,7 @@ const handleResponseAndroid = async (response: any) => {
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    photoBase64: photo.base64,
+    // photoBase64: photo.base64,
     mockUser: false,
   };
 
@@ -244,7 +243,7 @@ const handleResponseAndroid = async (response: any) => {
     JSON.stringify(
       {
         ...passportData,
-        photoBase64: passportData.photoBase64.substring(0, 100) + '...',
+        // photoBase64: passportData.photoBase64.substring(0, 100) + '...',
       },
       null,
       2,
@@ -255,10 +254,10 @@ const handleResponseAndroid = async (response: any) => {
   console.log('dataGroupHashes', passportData?.eContent);
   console.log('eContent', passportData?.eContent);
   console.log('encryptedDigest', passportData?.encryptedDigest);
-  console.log(
-    'photoBase64',
-    passportData?.photoBase64.substring(0, 100) + '...',
-  );
+  // console.log(
+  //   'photoBase64',
+  //   passportData?.photoBase64.substring(0, 100) + '...',
+  // );
   console.log('digestAlgorithm', digestAlgorithm);
   console.log('signerInfoDigestAlgorithm', signerInfoDigestAlgorithm);
   console.log('digestEncryptionAlgorithm', digestEncryptionAlgorithm);

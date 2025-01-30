@@ -62,13 +62,13 @@ export const startCameraScan = (callback: Callback): CancelScan => {
           trackEvent('Camera Success', {
             duration_ms: Date.now() - startTime,
           });
-          const { documentNumber, birthDate, expiryDate } =
+          const { passportNumber, dateOfBirth, dateOfExpiry } =
             extractMRZInfo(mrzInfo);
 
           callback(null, {
-            passportNumber: documentNumber,
-            dateOfBirth: birthDate,
-            dateOfExpiry: expiryDate,
+            passportNumber,
+            dateOfBirth,
+            dateOfExpiry,
           });
           trackEvent('MRZ Success');
         } catch (e) {

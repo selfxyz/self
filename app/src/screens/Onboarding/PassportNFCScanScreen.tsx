@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import {
   Linking,
   NativeEventEmitter,
@@ -12,7 +12,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { black } from '../../utils/colors';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import useUserStore from '../../stores/userStore';
 import NfcManager from 'react-native-nfc-manager';
 import { scan } from '../../utils/nfcScannerNew';
@@ -85,25 +85,22 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     // setIsNfcSheetOpen(false);
   }, [isNfcSheetOpen]);
 
-  useEffect(() => {
-    checkNfcSupport();
+  useFocusEffect(
+    useCallback(() => {
+      checkNfcSupport();
 
-    if (Platform.OS === 'android' && emitter) {
-      const subscription = emitter.addListener(
-        'NativeEvent',
-        (event: string) => {
-          console.log(event);
-          setScanningMessage(event);
-        },
-      );
+      if (Platform.OS === 'android' && emitter) {
+        const subscription = emitter.addListener(
+          'NativeEvent',
+          (event: string) => setScanningMessage(event),
+        );
 
-      return () => {
-        subscription.remove();
-      };
-    }
-  }, [checkNfcSupport]);
-
-  console.log('text?', scanningMessage);
+        return () => {
+          subscription.remove();
+        };
+      }
+    }, [checkNfcSupport]),
+  );
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -151,7 +148,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
                   ? 'Start Scan'
                   : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton onPress={() => navigation.navigate('Home')}>
+              <SecondaryButton
+                onPress={() => navigation.navigate('PassportCamera')}
+              >
                 Cancel
               </SecondaryButton>
             </ButtonsContainer>

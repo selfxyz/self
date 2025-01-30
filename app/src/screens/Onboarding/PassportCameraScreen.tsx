@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, Text } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
@@ -7,35 +7,35 @@ import Scan from '../../images/icons/passport_camera_scan.svg';
 import { slate400, slate500, black } from '../../utils/colors';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useNavigation } from '@react-navigation/native';
-import { startCameraScan } from '../../utils/cameraScanner';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+
 import useUserStore from '../../stores/userStore';
+import { CameraView, CameraViewProps } from '../../components/CameraView';
 
 interface PassportNFCScanScreen {}
 
 const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const navigation = useNavigation();
+  const isFocused = useIsFocused();
   const store = useUserStore();
-
-  useEffect(() => {
-    const cancelCamera = startCameraScan((error, result) => {
+  const onPassportRead = useCallback<CameraViewProps['onPassportRead']>(
+    (error, result) => {
       if (error) {
-        // handle error
+        // TODO: handle error better
         console.error(error);
       } else {
         const { passportNumber, dateOfBirth, dateOfExpiry } = result!;
         store.update({ passportNumber, dateOfBirth, dateOfExpiry });
         navigation.navigate('PassportNFCScan');
       }
-    });
-
-    return cancelCamera;
-  }, []);
+    },
+    [store, navigation],
+  );
 
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
-        <View height={400} bg={black} />
+        <CameraView onPassportRead={onPassportRead} isMounted={isFocused} />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <YStack alignItems="center" gap="$2.5">
@@ -79,7 +79,9 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
             </XStack>
           </YStack>
 
-          <SecondaryButton onPress={() => navigation.navigate('Home')}>
+          <SecondaryButton
+            onPress={() => navigation.navigate('PassportOnboarding')}
+          >
             Cancel
           </SecondaryButton>
         </YStack>
