@@ -2,10 +2,9 @@
 pragma solidity ^0.8.28;
 
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
-import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
-abstract contract PassportAirdropRoot is Ownable {
+abstract contract PassportAirdropRoot {
 
     uint256 internal immutable scope;
     uint256 internal immutable attestationId;
@@ -15,19 +14,13 @@ abstract contract PassportAirdropRoot is Ownable {
     mapping(uint256 => address) internal nullifiers;
     mapping(address => bool) internal registeredAddresses;
 
-    bool internal registrationOpen;
-
-    error RegistrationNotOpen();
-    error AlreadyRegistered();
     error RegisteredNullifier();
     error InvalidAttestationId();
     error InvalidScope();
 
-    event RegistrationOpen();
-    event RegistrationClose();
     event AddressRegistered(address indexed registeredAddress, uint256 indexed nullifier);
 
-    constructor(address _identityVerificationHub, uint256 _scope, uint256 _attestationId) Ownable(msg.sender) {
+    constructor(address _identityVerificationHub, uint256 _scope, uint256 _attestationId) {
         identityVerificationHub = IIdentityVerificationHubV1(_identityVerificationHub);
         scope = _scope;
         attestationId = _attestationId;
@@ -40,16 +33,13 @@ abstract contract PassportAirdropRoot is Ownable {
         internal
         returns (address registeredAddress)
     {
-        if (!registrationOpen) {
-            revert RegistrationNotOpen();
-        }
 
         if (scope != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
 
         if (nullifiers[proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != address(0)) {
-            revert AlreadyRegistered();
+            revert RegisteredNullifier();
         }
 
         if(attestationId != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
@@ -64,15 +54,5 @@ abstract contract PassportAirdropRoot is Ownable {
         emit AddressRegistered(addressToRegister, result.nullifier);
 
         return addressToRegister;
-    }
-
-    function _openRegistration() internal onlyOwner {
-        registrationOpen = true;
-        emit RegistrationOpen();
-    }
-
-    function _closeRegistration() internal onlyOwner {
-        registrationOpen = false;
-        emit RegistrationClose();
     }
 }

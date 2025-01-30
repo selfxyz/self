@@ -7,6 +7,7 @@ library Formatter {
 
     uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 
+    // used
     function formatName(
         string memory input
     ) internal pure returns (string[] memory) {
@@ -46,6 +47,7 @@ library Formatter {
         return names;
     }
 
+    // used
     function formatDate(
         string memory date
     ) internal pure returns (string memory) {
@@ -61,6 +63,7 @@ library Formatter {
         return string(abi.encodePacked(day, "-", month, "-", year));
     }
 
+    // used
     function numAsciiToUint(uint256 numAscii) internal pure returns (uint256) {
         if (numAscii < 48 || numAscii > 57) {
             revert InvalidAsciiCode();
@@ -68,6 +71,7 @@ library Formatter {
         return (numAscii - 48);
     }
 
+    // used
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
@@ -85,6 +89,7 @@ library Formatter {
         return bytesArray;
     }
 
+    // used
     function extractForbiddenCountriesFromPacked(
         uint256 publicSignal
     )
@@ -107,6 +112,7 @@ library Formatter {
         return forbiddenCountries;
     }
 
+    // used
     function proofDateToUnixTimestamp(
         uint256[6] memory dateNum
     ) internal pure returns (uint256) {
@@ -120,6 +126,7 @@ library Formatter {
         return currentTimestamp;
     }
 
+    // used
     function dateToUnixTimestamp(
         string memory date
     ) internal pure returns (uint256) {
@@ -134,6 +141,7 @@ library Formatter {
         return toTimestamp(year, month, day);
     }
 
+    // used
     function substring(
         string memory str,
         uint startIndex,
@@ -150,6 +158,7 @@ library Formatter {
     }
 
     // Helper function to convert a string to an integer
+    // used
     function parseDatePart(string memory value) internal pure returns (uint) {
         bytes memory tempEmptyStringTest = bytes(value);
         if (tempEmptyStringTest.length == 0) {
@@ -166,6 +175,7 @@ library Formatter {
     }
 
     // Convert date to Unix timestamp
+    // used
     function toTimestamp(
         uint256 year,
         uint256 month,
@@ -212,6 +222,7 @@ library Formatter {
     }
 
     // Check if year is a leap year
+    // used
     function isLeapYear(uint256 year) internal pure returns (bool) {
         if (year % 4 != 0) {
             return false;
@@ -224,15 +235,15 @@ library Formatter {
         }
     }
 
-    function formatAge(
-        string memory age
-    ) internal pure returns (string memory) {
-        // if it's an empty two bytes string, just show N/A
-        return
-            bytes(age).length == 2 &&
-                bytes(age)[0] == 0x00 &&
-                bytes(age)[1] == 0x00
-                ? "N/A"
-                : age;
-    }
+    // function formatAge(
+    //     string memory age
+    // ) internal pure returns (string memory) {
+    //     // if it's an empty two bytes string, just show N/A
+    //     return
+    //         bytes(age).length == 2 &&
+    //             bytes(age)[0] == 0x00 &&
+    //             bytes(age)[1] == 0x00
+    //             ? "N/A"
+    //             : age;
+    // }
 }

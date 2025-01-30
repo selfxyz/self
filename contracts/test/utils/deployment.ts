@@ -166,7 +166,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     };
 }
 
-export async function deployRegistry(
+export async function deployRegistryImpl(
     owner: Signer,
     hubAddress: string
 ): Promise<IdentityRegistryImplV1> {
@@ -176,12 +176,8 @@ export async function deployRegistry(
     return registry;
 }
 
-export async function deployHub(
+export async function deployHubImpl(
     owner: Signer,
-    registryAddress: string,
-    vcAndDiscloseVerifier: VcAndDiscloseVerifier,
-    registerVerifier: RegisterVerifier,
-    dscVerifier: DscVerifier
 ): Promise<IdentityVerificationHubImplV1> {
     const IdentityVerificationHubImplFactory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
     const hub = await IdentityVerificationHubImplFactory.deploy();

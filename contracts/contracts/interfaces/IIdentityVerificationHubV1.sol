@@ -30,7 +30,7 @@ interface IIdentityVerificationHubV1 {
 
     struct ReadableRevealedData {
         string issuingState;
-        string name;
+        string[] name;
         string passportNumber;
         string nationality;
         string dateOfBirth;

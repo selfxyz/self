@@ -480,6 +480,113 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).devRemoveCommitment(commitment, [])).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
+        it("should able to add dsc key commitment by owner", async () => {
+            const { registry } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            const tx = await registry.devAddDscKeyCommitment(dscCommitment);
+            const receipt = await tx.wait();
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevDscKeyCommitmentRegistered").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevDscKeyCommitmentRegistered",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getDscKeyCommitmentMerkleRoot();
+            const index = await registry.getDscKeyCommitmentIndex(dscCommitment);
+            expect(eventArgs?.commitment).to.equal(dscCommitment);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+            expect(eventArgs?.imtIndex).to.equal(index);
+        });
+
+        it("should not add dsc key commitment if caller is not owner", async () => {
+            const { registry, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            await expect(registry.connect(user1).devAddDscKeyCommitment(dscCommitment)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+        });
+
+        it("should not add dsc key commitment if caller is not proxy", async () => {
+            const { registry, registryImpl, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            await expect(registryImpl.connect(user1).devAddDscKeyCommitment(dscCommitment)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("should able to update dsc key commitment by owner", async () => {
+            const { registry } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            const newDscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            const tx = await registry.devUpdateDscKeyCommitment(dscCommitment, newDscCommitment, []);
+            const receipt = await tx.wait();
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevDscKeyCommitmentUpdated").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevDscKeyCommitmentUpdated",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getDscKeyCommitmentMerkleRoot();
+
+            expect(eventArgs?.oldLeaf).to.equal(dscCommitment);
+            expect(eventArgs?.newLeaf).to.equal(newDscCommitment);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+        });
+
+        it("should not update dsc key commitment if caller is not owner", async () => {
+            const { registry, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            const newDscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            await expect(registry.connect(user1).devUpdateDscKeyCommitment(dscCommitment, newDscCommitment, [])).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+        });
+
+        it("should not update dsc key commitment if caller is not proxy", async () => {
+            const { registry, registryImpl, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            const newDscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            await expect(registryImpl.connect(user1).devUpdateDscKeyCommitment(dscCommitment, newDscCommitment, [])).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("should able to remove dsc key commitment by owner", async () => {
+            const { registry } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            const tx = await registry.devRemoveDscKeyCommitment(dscCommitment, []);
+            const receipt = await tx.wait();
+            const event = receipt?.logs.find(
+                log => log.topics[0] === registry.interface.getEvent("DevDscKeyCommitmentRemoved").topicHash
+            );
+            const eventArgs = event ? registry.interface.decodeEventLog(
+                "DevDscKeyCommitmentRemoved",
+                event.data,
+                event.topics
+            ) : null;
+
+            const currentRoot = await registry.getDscKeyCommitmentMerkleRoot();
+
+            expect(eventArgs?.oldLeaf).to.equal(dscCommitment);
+            expect(eventArgs?.imtRoot).to.equal(currentRoot);
+        });
+
+        it("should not remove dsc key commitment if caller is not owner", async () => {
+            const { registry, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            await expect(registry.connect(user1).devRemoveDscKeyCommitment(dscCommitment, [])).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+        });
+
+        it("should not remove dsc key commitment if caller is not proxy", async () => {
+            const { registry, registryImpl, user1 } = deployedActors;
+            const dscCommitment = generateRandomFieldElement();
+            await registry.devAddDscKeyCommitment(dscCommitment);
+            await expect(registryImpl.connect(user1).devRemoveDscKeyCommitment(dscCommitment, [])).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
         it("able to change nullifier state by owner", async () => {
             const { registry, owner, user1 } = deployedActors;
             const attestationId = generateRandomFieldElement();

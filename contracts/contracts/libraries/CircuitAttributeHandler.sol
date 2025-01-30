@@ -41,8 +41,8 @@ library CircuitAttributeHandler {
         return extractStringAttribute(charcodes, ISSUING_STATE_START, ISSUING_STATE_END);
     }
 
-    function getName(bytes memory charcodes) internal pure returns (string memory) {
-        return extractStringAttribute(charcodes, NAME_START, NAME_END);
+    function getName(bytes memory charcodes) internal pure returns (string[] memory) {
+        return Formatter.formatName(extractStringAttribute(charcodes, NAME_START, NAME_END));
     }
 
     function getPassportNumber(bytes memory charcodes) internal pure returns (string memory) {
@@ -54,7 +54,7 @@ library CircuitAttributeHandler {
     }
 
     function getDateOfBirth(bytes memory charcodes) internal pure returns (string memory) {
-        return extractStringAttribute(charcodes, DATE_OF_BIRTH_START, DATE_OF_BIRTH_END);
+        return Formatter.formatDate(extractStringAttribute(charcodes, DATE_OF_BIRTH_START, DATE_OF_BIRTH_END));
     }
 
     function getGender(bytes memory charcodes) internal pure returns (string memory) {
@@ -62,7 +62,7 @@ library CircuitAttributeHandler {
     }
 
     function getExpiryDate(bytes memory charcodes) internal pure returns (string memory) {
-        return extractStringAttribute(charcodes, EXPIRY_DATE_START, EXPIRY_DATE_END);
+        return Formatter.formatDate(extractStringAttribute(charcodes, EXPIRY_DATE_START, EXPIRY_DATE_END));
     }
 
     function getOlderThan(bytes memory charcodes) internal pure returns (uint256) {

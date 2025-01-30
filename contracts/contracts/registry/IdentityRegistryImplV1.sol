@@ -430,6 +430,7 @@ contract IdentityRegistryImplV1 is
     }
     
     // Will add dsc key commitment manager functions for dev
+    // tested
     function devAddDscKeyCommitment(
         uint256 dscCommitment
     )
@@ -456,6 +457,7 @@ contract IdentityRegistryImplV1 is
         emit DevDscKeyCommitmentUpdated(oldLeaf, newLeaf, imt_root);
     }
 
+    // tested
     function devRemoveDscKeyCommitment(
         uint256 oldLeaf,
         uint256[] calldata siblingNodes

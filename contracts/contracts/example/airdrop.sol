@@ -6,21 +6,30 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {PassportAirdropRoot} from "../abstract/passportAirdropRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
 
-contract Airdrop is PassportAirdropRoot {
+contract Airdrop is PassportAirdropRoot, Ownable {
     using SafeERC20 for IERC20;
 
     IERC20 public immutable token;
     bytes32 public merkleRoot;
 
     mapping(address => bool) public claimed;
+    bool public isRegistrationOpen;
+    bool public isClaimOpen;
 
     error InvalidProof();
     error AlreadyClaimed();
     error NotRegistered(address nonRegisteredAddress);
     error InvalidLength();
+    error RegistrationNotOpen();
+    error ClaimNotOpen();
 
     event Claimed(uint256 index, address account, uint256 amount);
+    event RegistrationOpen();
+    event RegistrationClose();
+    event ClaimOpen();
+    event ClaimClose();
 
     constructor(
         address _identityVerificationHub, 
@@ -28,7 +37,8 @@ contract Airdrop is PassportAirdropRoot {
         uint256 _attestationId,
         address _token
     ) 
-        PassportAirdropRoot(_identityVerificationHub, _scope, _attestationId) 
+        PassportAirdropRoot(_identityVerificationHub, _scope, _attestationId)
+        Ownable(msg.sender)
     {
         token = IERC20(_token);
     }  
@@ -38,19 +48,34 @@ contract Airdrop is PassportAirdropRoot {
     }
 
     function openRegistration() external onlyOwner {
-        _openRegistration();
+        isRegistrationOpen = true;
         emit RegistrationOpen();    
     }
 
     function closeRegistration() external onlyOwner {
-        _closeRegistration();
+        isRegistrationOpen = false;
+        emit RegistrationClose();
     }
 
-    function registeredAddress(
+    function openClaim() external onlyOwner {
+        isClaimOpen = true;
+        emit ClaimOpen();
+    }
+
+    function closeClaim() external onlyOwner {
+        isClaimOpen = false;
+        emit ClaimClose();
+    }
+
+    function registerAddress(
         IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
     ) 
         external 
     {
+        if (!isRegistrationOpen) {
+            revert RegistrationNotOpen();
+        }
+
         _registerAddress(msg.sender, proof);
     }
 
@@ -59,6 +84,10 @@ contract Airdrop is PassportAirdropRoot {
         uint256 amount,
         bytes32[] memory merkleProof
     ) external {
+        if (!isClaimOpen) {
+            revert ClaimNotOpen();
+        }
+
         if (claimed[msg.sender]) {
             revert AlreadyClaimed();
         }
@@ -70,7 +99,7 @@ contract Airdrop is PassportAirdropRoot {
         // Mark it claimed and send the token.
         _setClaimed(index);
         IERC20(token).safeTransfer(msg.sender, amount);
-
+    
         emit Claimed(index, msg.sender, amount);
     }
 
