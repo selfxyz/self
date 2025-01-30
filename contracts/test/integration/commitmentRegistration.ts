@@ -217,6 +217,13 @@ describe("Commitment Registration Tests", function () {
                 // );
                 const dscKeys = Object.values(serialized_dsc_tree);
                 console.log("dscKeys", dscKeys);
+                console.log("dscKeys[0]", dscKeys[0]);
+                for (let i = 0; i < dscKeys.length; i++) {
+                    await registry.devAddDscKeyCommitment(BigInt(dscKeys[0][i]));
+                }
+                const dscKeyRoot = await registry.getDscKeyCommitmentMerkleRoot();
+                console.log("dscKeyRoot", dscKeyRoot);
+                console.log("dscKeys: ", dscKeys[dscKeys.length - 1]);
                 snapshotId = await ethers.provider.send("evm_snapshot", []);
             });
 
