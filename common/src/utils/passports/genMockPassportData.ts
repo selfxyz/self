@@ -7,11 +7,13 @@ import * as mockCertificates from '../../constants/mockCertificates';
 import { countryCodes } from '../../constants/constants';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { SignatureAlgorithm } from '../types';
-import { PublicKeyDetailsECDSA, PublicKeyDetailsRSAPSS } from '../certificate_parsing/dataStructure';
+import {
+  PublicKeyDetailsECDSA,
+  PublicKeyDetailsRSAPSS,
+} from '../certificate_parsing/dataStructure';
 import { getCurveForElliptic } from '../certificate_parsing/curves';
 import { formatAndConcatenateDataHashes, formatMrz } from './format';
 import { generateSignedAttr } from './format';
-import { mock_dsc_sha256_rsa_3_2048 } from '../../constants/mockCertificates';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -232,6 +234,10 @@ export function genMockPassportData(
     case 'rsapss_sha512_65537_2048':
       privateKeyPem = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048_key;
       dsc = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048;
+      break;
+    case 'ecdsa_sha512_secp521r1_521':
+      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1_key;
+      dsc = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1;
       break;
   }
 
