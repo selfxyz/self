@@ -33,7 +33,7 @@ import { splitToWords } from '../bytes';
 import { formatMrz } from './format';
 import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
-import { getLeaf } from '../pubkeyTree';
+import { getLeaf } from '../trees';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {

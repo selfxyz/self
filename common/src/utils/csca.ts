@@ -1,13 +1,9 @@
 import * as forge from 'node-forge';
 import * as fs from 'fs';
-import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, MODAL_SERVER_ADDRESS, SignatureAlgorithmIndex } from '../constants/constants';
-import { poseidon2 } from 'poseidon-lite';
-import { IMT } from '@openpassport/zk-kit-imt';
-import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
-import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
+import { MODAL_SERVER_ADDRESS } from '../constants/constants';
 import axios from 'axios';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
-import { bytesToBigDecimal, hexToDecimal, splitToWords } from './bytes';
+import { splitToWords } from './bytes';
 import path from 'path';
 
 export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): [number, number] {
@@ -165,37 +161,6 @@ export function getCSCAFromSKI(ski: string, devMode: boolean): string {
   return cscaPem;
 }
 
-export function derToBytes(derValue: string) {
-  const bytes = [];
-  for (let i = 0; i < derValue.length; i++) {
-    bytes.push(derValue.charCodeAt(i));
-  }
-  return bytes;
-}
-
-export function getCSCAModulusMerkleTree() {
-  const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  tree.setNodes(serialized_csca_tree);
-  return tree;
-}
-
-export function getCscaTreeInclusionProof(leaf: string) {
-  return getTreeInclusionProof(leaf, CSCA_TREE_DEPTH, serialized_csca_tree);
-}
-export function getDscTreeInclusionProof(leaf: string) {
-  return getTreeInclusionProof(leaf, DSC_TREE_DEPTH, serialized_dsc_tree);
-}
-
-function getTreeInclusionProof(leaf: string, TREE_DEPTH: number, serialized_tree: any[][]) {
-  let tree = new IMT(poseidon2, TREE_DEPTH, 0, 2);
-  tree.setNodes(serialized_tree);
-  const index = tree.indexOf(leaf);
-  if (index === -1) {
-    throw new Error('Your public key was not found in the registry');
-  }
-  const proof = tree.createProof(index);
-  return [tree.root, proof];
-}
 
 export function getTBSHash(
   cert: forge.pki.Certificate,

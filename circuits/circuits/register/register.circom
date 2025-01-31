@@ -34,6 +34,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @input pubKey_dsc DSC public key for signature verification
 /// @input signature_passport Passport signature
 /// @input merkle_root Root of DSC Merkle tree
+/// @input leaf_depth Actual size of the merkle tree
 /// @input path Path indices for DSC Merkle proof
 /// @input siblings Sibling hashes for DSC Merkle proof
 /// @input csca_hash Hash of CSCA certificate
@@ -83,6 +84,7 @@ template REGISTER(
     signal input signature_passport[kScaled];
 
     signal input merkle_root;
+    signal input leaf_depth;
     signal input path[nLevels];
     signal input siblings[nLevels];
 
@@ -120,7 +122,7 @@ template REGISTER(
     // generate DSC leaf as poseidon(dsc_hash, csca_hash)
     signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
     signal dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_hash]);
-    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(dsc_tree_leaf, nLevels, path, siblings);
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(dsc_tree_leaf, leaf_depth, path, siblings);
     merkle_root === computed_merkle_root;
 
     // get DSC public key from the certificate

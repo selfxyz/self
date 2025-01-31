@@ -15,7 +15,7 @@ include "../utils/passport/disclose/verify_commitment.circom";
 /// @input dsc_hash Hash of the whole DSC certificate
 /// @input csca_hash Hash of the whole CSCA certificate
 /// @input merkle_root Root of the commitment merkle tree
-/// @input merkletree_size Actual size of the merkle tree
+/// @input leaf_depth Actual size of the merkle tree
 /// @input path Path of the commitment in the merkle tree
 /// @input siblings Siblings of the commitment in the merkle tree
 /// @input selector_dg1 bitmap used which bytes from the dg1 are revealed
@@ -41,7 +41,7 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input csca_hash;
 
     signal input merkle_root;
-    signal input merkletree_size;
+    signal input leaf_depth;
     signal input path[nLevels];
     signal input siblings[nLevels];
 
@@ -70,7 +70,7 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
         dsc_hash,
         csca_hash,
         merkle_root,
-        merkletree_size,
+        leaf_depth,
         path,
         siblings
     );

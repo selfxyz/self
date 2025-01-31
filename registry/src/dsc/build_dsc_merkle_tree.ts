@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { getLeafDscTreeFromDscCertificateMetadata, getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/pubkeyTree';
+import { getLeafDscTreeFromDscCertificateMetadata, getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/trees';
 import { DEVELOPMENT_MODE, DSC_TREE_DEPTH } from '../../../common/src/constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
@@ -9,6 +9,7 @@ import { parseCertificate } from '../../../common/src/utils/certificate_parsing/
 import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
 import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 
 let tbs_max_bytes = 0;
 let key_length_max_bytes = 0;
@@ -107,8 +108,8 @@ function processCertificate(pemContent: string, filePath: string) {
     }
 }
 
-async function buildCscaMerkleTree() {
-    const tree = new IMT(poseidon2, DSC_TREE_DEPTH, 0, 2);
+async function buildDscMerkleTree() {
+    const tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
 
     if (!DEVELOPMENT_MODE) {
         const path_to_pem_files = "outputs/dsc/pem_masterlist";
@@ -118,7 +119,7 @@ async function buildCscaMerkleTree() {
                 const pemContent = fs.readFileSync(file_path, 'utf8');
                 const leafValue = processCertificate(pemContent, file_path);
                 if (leafValue) {
-                    tree.insert(leafValue);
+                    tree.insert(BigInt(leafValue));
                 }
             } catch (error) {
                 console.error(`Error reading file ${file}:`, error);
@@ -140,7 +141,7 @@ async function buildCscaMerkleTree() {
                     const pemContent = fs.readFileSync(pemFilePath, 'utf8');
                     const leafValue = processCertificate(pemContent, pemFilePath);
                     if (leafValue) {
-                        tree.insert(leafValue);
+                        tree.insert(BigInt(leafValue));
                     }
                 } catch (error) {
                     console.error(`Error processing mock file ${pemFilePath}:`, error);
@@ -160,16 +161,16 @@ async function buildCscaMerkleTree() {
     return tree;
 }
 
-async function serializeCscaTree(tree: IMT) {
-    const serializedTree = tree.nodes.map(layer => layer.map(node => node.toString()));
+async function serializeDscTree(tree: LeanIMT) {
+    const serializedTree = tree.export();
     await writeFile("outputs/serialized_dsc_tree.json", JSON.stringify(serializedTree));
     fs.copyFileSync("outputs/serialized_dsc_tree.json", "../common/pubkeys/serialized_dsc_tree.json");
     console.log("serialized_dsc_tree.json written and copied in common/pubkeys!");
 }
 
 async function main() {
-    const tree = await buildCscaMerkleTree();
-    await serializeCscaTree(tree);
+    const tree = await buildDscMerkleTree();
+    await serializeDscTree(tree);
 }
 
 main();

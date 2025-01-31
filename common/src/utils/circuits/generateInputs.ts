@@ -7,7 +7,7 @@ import {
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf } from '../trees';
+import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf, getLeafCscaTree, getLeaf, getLeafDscTree } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
   extractSignatureFromDSC,
@@ -27,10 +27,9 @@ import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../csca';
 import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
-import { getLeaf, getLeafCscaTree, getLeafDscTree } from '../pubkeyTree';
+import { getTreeInclusionProof } from '../trees';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -58,7 +57,7 @@ export function generateCircuitInputsDSC(
   console.log('js: dscTbsBytesPadded length', dscTbsBytesPadded.length);
 
   const leaf = getLeafCscaTree(cscaParsed);
-  const [root, proof] = getCscaTreeInclusionProof(leaf);
+  const [root, path, siblings] = getTreeInclusionProof(leaf, 'csca');
 
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
@@ -100,9 +99,9 @@ export function generateCircuitInputsDSC(
     raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
     csca_pubKey: csca_pubKey_formatted,
     signature,
-    merkle_root: [BigInt(root).toString()],
-    path: proof.pathIndices.map(index => index.toString()),
-    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    merkle_root: root,
+    path: path,
+    siblings: siblings,
   };
 }
 
@@ -141,7 +140,7 @@ export function generateCircuitInputsRegister(
   );
 
   const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed);
-  const [root, proof] = getDscTreeInclusionProof(dsc_leaf);
+  const [root, path, siblings, leaf_depth] = getTreeInclusionProof(dsc_leaf, 'dsc')
   const csca_hash = getLeafCscaTree(passportData.csca_parsed);
 
   const dsc_pubkey_actual_size = passportMetadata.signatureAlgorithm === 'ecdsa'
@@ -166,8 +165,9 @@ export function generateCircuitInputsRegister(
     pubKey_dsc: pubKey,
     signature_passport: signature,
     merkle_root: [BigInt(root).toString()],
-    path: proof.pathIndices.map(index => index.toString()),
-    siblings: proof.siblings.flat().map(sibling => sibling.toString()),
+    leaf_depth: leaf_depth,
+    path: path,
+    siblings: siblings,
     csca_hash: csca_hash,
     secret: secret,
   };
@@ -214,7 +214,7 @@ export function generateCircuitInputsVCandDisclose(
   );
 
   const index = findIndexInTree(merkletree, BigInt(commitment));
-  const { merkleProofSiblings, merkleProofIndices, depthForThisOne } = generateMerkleProof(
+  const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
     index,
     PUBKEY_TREE_DEPTH
@@ -238,9 +238,9 @@ export function generateCircuitInputsVCandDisclose(
     dsc_hash: formatInput(dsc_hash),
     csca_hash: formatInput(csca_hash),
     merkle_root: formatInput(merkletree.root),
-    merkletree_size: formatInput(depthForThisOne),
-    path: formatInput(merkleProofIndices),
-    siblings: formatInput(merkleProofSiblings),
+    leaf_depth: formatInput(leaf_depth),
+    path: formatInput(path),
+    siblings: formatInput(siblings),
     selector_dg1: formatInput(selector_dg1),
     selector_older_than: formatInput(selector_older_than),
     scope: formatInput(castFromScope(scope)),
