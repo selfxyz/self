@@ -40,6 +40,9 @@ ID to Signature Algorithm
  39: rsapss_sha512_65537_4096
  40: ecdsa_sha256_secp521r1_256
  41: ecdsa_sha512_secp521r1_521
+ 42: rsapss_sha512_65537_2048
+ 43: rsapss_sha256_3_2048
+ 44: ecdsa_sha224_secp224r1_224
 */
 
 
@@ -162,6 +165,15 @@ function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 41) {
         return 512;
     }
+    if (signatureAlgorithm == 42) {
+        return 512;
+    }
+    if (signatureAlgorithm == 43) {
+        return 256;
+    }
+    if (signatureAlgorithm == 44) {
+        return 224;
+    }
     return 0;
 }
 
@@ -280,6 +292,15 @@ function getKeyLength(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 41) {
         return 521;
+    }
+    if (signatureAlgorithm == 42) {
+        return 2048;
+    }
+    if (signatureAlgorithm == 43) {
+        return 2048;
+    }
+    if (signatureAlgorithm == 44) {
+        return 224;
     }
     return 4096; // default to highest key length
 }
@@ -401,6 +422,15 @@ function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 41) {
         return 2;
     }
+    if (signatureAlgorithm == 42) {
+        return 1;
+    }
+    if (signatureAlgorithm == 43) {
+        return 1;
+    }
+    if (signatureAlgorithm == 44) {
+        return 2;
+    }
     return 0;
 
 }
@@ -467,6 +497,12 @@ function getExponentBits(signatureAlgorithm) {
     }
     if (signatureAlgorithm == 39) {
         return 17;
+    }
+    if (signatureAlgorithm == 42) {
+        return 17;
+    }
+    if (signatureAlgorithm == 43) {
+        return 2;
     }
     return 0;
 }
