@@ -6,7 +6,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useNavigation } from '@react-navigation/native';
-import Title from '../../components/typography/Title';
+import { Title } from '../../components/typography/Title';
 import Description from '../../components/typography/Description';
 import Additional from '../../components/typography/Additional';
 import TextsContainer from '../../components/TextsContainer';
@@ -34,9 +34,15 @@ const PassportOnboardingScreen: React.FC<
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <TextsContainer>
-          <Title children="Scan your passport" />
-          <Description children="Open your passport to the first page to scan it." />
-          <Additional children="Self ID will not capture an image of your passport. Our system is only reading the fields." />
+          <Title>Scan your passport</Title>
+          {/* TODO: consider moving textBreakStrategy to the component itself if we use it more often */}
+          <Description textBreakStrategy="balanced">
+            Open your passport to the first page to scan it.
+          </Description>
+          <Additional textBreakStrategy="balanced">
+            Self ID will not capture an image of your passport. Our system is
+            only reading the fields.
+          </Additional>
         </TextsContainer>
         <ButtonsContainer>
           <PrimaryButton onPress={() => navigation.navigate('PassportCamera')}>

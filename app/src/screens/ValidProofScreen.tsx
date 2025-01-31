@@ -4,8 +4,8 @@ import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Description from '../components/typography/Description';
 import { typography } from '../components/typography/styles';
-import LargeTitle from '../components/typography/LargeTitle';
 import { useNavigation } from '@react-navigation/native';
+import { Title } from '../components/typography/Title';
 
 const SuccessScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -18,7 +18,7 @@ const SuccessScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <View style={styles.content}>
-          <LargeTitle>Identity Verified</LargeTitle>
+          <Title size="large">Identity Verified</Title>
           <Description>
             You've successfully proved your identity to{' '}
             <Text style={typography.strong}>.SWOOSH</Text>

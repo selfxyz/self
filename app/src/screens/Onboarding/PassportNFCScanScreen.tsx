@@ -17,7 +17,7 @@ import useUserStore from '../../stores/userStore';
 import NfcManager from 'react-native-nfc-manager';
 import { scan } from '../../utils/nfcScannerNew';
 import NFC_IMAGE from '../../images/nfc.png';
-import Title from '../../components/typography/Title';
+import { Title } from '../../components/typography/Title';
 import Description from '../../components/typography/Description';
 import TextsContainer from '../../components/TextsContainer';
 import ButtonsContainer from '../../components/ButtonsContainer';
@@ -136,7 +136,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <Title children="Verify your passport" />
+              <Title>Verify your passport</Title>
               <Description
                 children={
                   isNfcEnabled

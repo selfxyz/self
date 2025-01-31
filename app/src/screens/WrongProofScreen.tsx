@@ -5,9 +5,9 @@ import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Description from '../components/typography/Description';
 import { typography } from '../components/typography/styles';
-import LargeTitle from '../components/typography/LargeTitle';
 import { styles } from '../screens/ValidProofScreen';
 import { useNavigation } from '@react-navigation/native';
+import { Title } from '../components/typography/Title';
 
 const WrongProofScreen: React.FC = () => {
   const navigation = useNavigation();
@@ -66,7 +66,7 @@ const WrongProofScreen: React.FC = () => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <View style={styles.content}>
-          <LargeTitle>Proof Failed</LargeTitle>
+          <Title size="large">Proof Failed</Title>
           <Description>
             Unable to prove your identity to{' '}
             <Text style={typography.strong}>.SWOOSH</Text>
