@@ -5,13 +5,13 @@
   "scripts": {
     "android": "react-native run-android",
     "clean": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build android/app/build android/build .yarn/cache",
-    "fmt": "prettier --check .",
-    "fmt:fix": "prettier --write .",
+    "fmt": "prettier --check",
+    "fmt:fix": "prettier --write",
     "ia": "yarn install-app",
     "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd ..",
     "ios": "react-native run-ios",
-    "lint": "eslint .",
-    "lint:fix": "eslint --fix .",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "nice": "yarn fmt:fix && yarn lint:fix",
     "start": "watchman watch-del-all && react-native start",
     "test": "jest --passWithNoTests"

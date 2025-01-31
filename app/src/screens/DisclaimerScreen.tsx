@@ -6,6 +6,7 @@ import { Image, Text, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Warning from '../images/icons/warning.svg';
+import BACKGROUND_IMAGE_SRC from '../images/texture.png';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { amber50, amber500, slate700, yellow500 } from '../utils/colors';
 
@@ -16,7 +17,7 @@ const DisclaimerScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
         <Image
-          source={require('../images/texture.png')}
+          src={BACKGROUND_IMAGE_SRC}
           style={{
             opacity: 0.1,
             position: 'absolute',

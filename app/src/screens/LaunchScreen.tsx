@@ -6,6 +6,7 @@ import { Anchor, Image, Text, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Logo from '../images/logo.svg';
+import BACKGROUND_IMAGE_SRC from '../images/texture.png';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { slate50, slate100, slate500, slate700 } from '../utils/colors';
 
@@ -18,7 +19,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
         <Image
-          source={require('../images/texture.png')}
+          src={BACKGROUND_IMAGE_SRC}
           style={{
             opacity: 0.1,
             position: 'absolute',
