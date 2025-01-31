@@ -26,6 +26,7 @@ import WrongProofScreen from './screens/WrongProofScreen';
 import ActivityIcon from './images/icons/activity.svg';
 import SettingsIcon from './images/icons/settings.svg';
 import { Title } from './components/typography/Title';
+import ProofRequest from './screens/ProofRequest';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
@@ -147,6 +148,9 @@ const RootStack = createStackNavigator({
         title: 'Disclaimer',
         headerShown: false,
       },
+    },
+    ProofRequest: {
+      screen: ProofRequest,
     },
     ValidProofScreen: {
       screen: ValidProofScreen,
