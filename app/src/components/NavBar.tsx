@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import {
   Button,
-  H1,
   TextProps,
   View,
   ViewProps,
@@ -77,7 +76,7 @@ const Title: React.FC<TitleProps> = ({ children, ...props }) => {
   }
 
   return typeof children === 'string' ? (
-    <H1 {...props}>{children}</H1>
+    <Title {...props}>{children}</Title>
   ) : (
     children
   );
@@ -85,7 +84,12 @@ const Title: React.FC<TitleProps> = ({ children, ...props }) => {
 
 const Container: React.FC<NavBarProps> = ({ children, ...props }) => {
   return (
-    <XStack flexGrow={1} justifyContent="space-between" {...props}>
+    <XStack
+      flexGrow={1}
+      justifyContent="space-between"
+      alignItems="center"
+      {...props}
+    >
       {children}
     </XStack>
   );

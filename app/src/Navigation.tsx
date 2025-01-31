@@ -30,13 +30,20 @@ import ProofRequest from './screens/ProofRequest';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
+  const headerStyles = props.options.headerStyle || {};
   return (
-    <NavBar.Container>
+    <NavBar.Container
+      gap={14}
+      paddingHorizontal={20}
+      paddingVertical={12}
+    >
       <NavBar.LeftAction
-        component={canGoBack() ? 'back' : undefined}
+        component={canGoBack() ? 'back' : 'close'}
         onPress={goBack}
       />
-      <NavBar.Title>{props.options.title}</NavBar.Title>
+      <NavBar.Title color={headerStyles.color || 'red'}>
+        {props.options.title}
+      </NavBar.Title>
       <View />
     </NavBar.Container>
   );
@@ -79,7 +86,7 @@ const HomeNavBar = (props: StackHeaderProps) => {
 };
 
 const RootStack = createStackNavigator({
-  initialRouteName: 'Launch',
+  initialRouteName: 'ProofRequest',
   screenOptions: {
     header: DefaultNavBar,
   },
@@ -151,6 +158,13 @@ const RootStack = createStackNavigator({
     },
     ProofRequest: {
       screen: ProofRequest,
+      options: {
+        title: 'Proof Request',
+        headerStyle: {
+          color: white,
+          backgroundColor: black,
+        },
+      },
     },
     ValidProofScreen: {
       screen: ValidProofScreen,
