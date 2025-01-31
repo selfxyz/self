@@ -1,6 +1,5 @@
 export const sigAlgs = [
-  // { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' }, // sha1_rsa_65537_4096
-  { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'secp521r1', keyLength: '521' },
+  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' }, // sha1_rsa_65537_4096
 ];
 
 export const fullSigAlgs = [
