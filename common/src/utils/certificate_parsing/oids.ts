@@ -113,6 +113,20 @@ export const mapSecpCurves: { [key: string]: string } = {
   ECDSA_P521: 'secp521r1',
 };
 
+export function getSecpFromNist(nist: string): string {
+  switch (nist) {
+    case 'nistP224':
+      return 'secp224r1';
+    case 'nistP256':
+      return 'secp256r1';
+    case 'nistP384':
+      return 'secp384r1';
+    case 'nistP521':
+      return 'secp521r1';
+  }
+  return nist;
+}
+
 function getFriendlyNameSecpCurves(friendlyName: string): string {
   return mapSecpCurves[friendlyName] || friendlyName;
 }

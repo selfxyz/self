@@ -1,6 +1,6 @@
 import * as asn1js from 'asn1js';
 import { Certificate, RSAPublicKey, RSASSAPSSParams } from 'pkijs';
-import { getFriendlyName } from './oids';
+import { getFriendlyName, getSecpFromNist } from './oids';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
@@ -157,7 +157,7 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
     // Try to get the curve name from the OID
     if (algorithmParams instanceof asn1js.ObjectIdentifier) {
       const curveOid = algorithmParams.valueBlock.toString();
-      curveName = getFriendlyName(curveOid) || 'Unknown';
+      curveName = getSecpFromNist(getFriendlyName(curveOid)) || 'Unknown';
       bits = getECDSACurveBits(curveName);
     }
 

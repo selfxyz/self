@@ -229,6 +229,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha512_rsapss_64_65537_4096_key;
       dsc = mockCertificates.mock_dsc_sha512_rsapss_64_65537_4096;
       break;
+    case 'rsapss_sha512_65537_2048':
+      privateKeyPem = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048;
+      break;
   }
 
   // Generate MRZ hash first
@@ -238,10 +242,8 @@ export function genMockPassportData(
   const dataGroupHashes = generateDataGroupHashes(mrzHash as number[], getHashLen(dgHashAlgo));
 
   const eContent = formatAndConcatenateDataHashes(dataGroupHashes, 63);
-
   const signedAttr = generateSignedAttr(hash(eContentHashAlgo, eContent) as number[]);
   const hashAlgo = signatureType.split('_')[1];
-  console.log('dsc', dsc);
   const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
 
@@ -268,11 +270,11 @@ function sign(
 
   if (signatureAlgorithm === 'rsapss') {
     const privateKey = forge.pki.privateKeyFromPem(privateKeyPem);
-    const md = forge.md.sha256.create();
+    const md = forge.md[hashAlgorithm].create();
     md.update(forge.util.binary.raw.encode(new Uint8Array(eContent)));
     const pss = forge.pss.create({
-      md: forge.md.sha256.create(),
-      mgf: forge.mgf.mgf1.create(forge.md.sha256.create()),
+      md: forge.md[hashAlgorithm].create(),
+      mgf: forge.mgf.mgf1.create(forge.md[hashAlgorithm].create()),
       saltLength: parseInt((publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength),
     });
     const signatureBytes = privateKey.sign(md, pss);

@@ -232,8 +232,6 @@ export function findStartPubKeyIndex(
     const { publicKeyDetails } = certificateData;
     if (signatureAlgorithm === 'ecdsa') {
         const { x, y } = publicKeyDetails as PublicKeyDetailsECDSA;
-        console.log('x', x.length);
-        console.log('y', y.length);
         const [x_index, x_totalLength] = findStartIndexEC(x, rawCert);
         const [y_index, y_totalLength] = findStartIndexEC(y, rawCert);
 

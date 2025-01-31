@@ -48,6 +48,7 @@ export type SignatureAlgorithm =
   | 'rsapss_sha384_3_4096'
   | 'rsapss_sha384_3_3072'
   | 'rsapss_sha512_65537_4096'
+  | 'rsapss_sha512_65537_2048'
   | 'ecdsa_sha256_secp384r1_384'
   | 'ecdsa_sha256_secp521r1_521'
   | 'ecdsa_sha512_secp521r1_521'

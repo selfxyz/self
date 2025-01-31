@@ -39,7 +39,7 @@ export function generateCircuitInputsDSC(
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
-  
+
   // TODO: is this padding better than the other one?
   const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes);
   console.log('js: cscaTbsBytesPadded', cscaTbsBytesPadded);
@@ -71,8 +71,8 @@ export function generateCircuitInputsDSC(
   console.log('js: csca_pubKey_formatted length', csca_pubKey_formatted.length);
 
   // const csca_pubkey_actual_size = cscaParsed.signatureAlgorithm === 'ecdsa' ?
-    // (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
-    // (Number(cscaParsed.publicKeyDetails.bits) / 8);
+  // (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
+  // (Number(cscaParsed.publicKeyDetails.bits) / 8);
 
   // console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
 
@@ -90,7 +90,7 @@ export function generateCircuitInputsDSC(
 
   const csca_pubkey_actual_size = keyLength;
   console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
-  
+
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: [BigInt(cscaParsed.tbsBytes.length).toString()],
@@ -145,17 +145,16 @@ export function generateCircuitInputsRegister(
   const csca_hash = getLeafCscaTree(passportData.csca_parsed);
 
   const dsc_pubkey_actual_size = passportMetadata.signatureAlgorithm === 'ecdsa'
-  ? (Number((dscParsed.publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
-  : Number((dscParsed.publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
+    ? (Number((dscParsed.publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
+    : Number((dscParsed.publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
 
   // Get start index of DSC pubkey based on algorithm
-  const startIndex = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
-  console.log('js: startIndex', startIndex);
+  const [startIndex, keyLength] = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
 
   const inputs = {
     raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
     raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
-    dsc_pubKey_offset: [startIndex.toString()],
+    dsc_pubKey_offset: startIndex,
     dsc_pubKey_actual_size: [BigInt(dsc_pubkey_actual_size).toString()],
     dg1: mrz_formatted,
     dg1_hash_offset: passportMetadata.dg1HashOffset,
