@@ -5,8 +5,9 @@ library Formatter {
     error InvalidDateLength();
     error InvalidAsciiCode();
 
-    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 20;
+    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 
+    // used
     function formatName(
         string memory input
     ) internal pure returns (string[] memory) {
@@ -46,6 +47,7 @@ library Formatter {
         return names;
     }
 
+    // used
     function formatDate(
         string memory date
     ) internal pure returns (string memory) {
@@ -61,6 +63,7 @@ library Formatter {
         return string(abi.encodePacked(day, "-", month, "-", year));
     }
 
+    // used
     function numAsciiToUint(uint256 numAscii) internal pure returns (uint256) {
         if (numAscii < 48 || numAscii > 57) {
             revert InvalidAsciiCode();
@@ -68,11 +71,12 @@ library Formatter {
         return (numAscii - 48);
     }
 
+    // used
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
-        uint8[3] memory bytesCount = [31, 31, 28];
-        bytes memory bytesArray = new bytes(90);
+        uint8[3] memory bytesCount = [31, 31, 29];
+        bytes memory bytesArray = new bytes(91);
 
         uint256 index = 0;
         for (uint256 i = 0; i < 3; i++) {
@@ -85,50 +89,30 @@ library Formatter {
         return bytesArray;
     }
 
+    // used
     function extractForbiddenCountriesFromPacked(
-        uint256[2] memory publicSignals
+        uint256 publicSignal
     )
         internal
         pure
         returns (
-            bytes3[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH]
+            string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH]
                 memory forbiddenCountries
         )
     {
         for (uint256 j = 0; j < MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
             uint256 byteIndex = j * 3;
 
-            if (byteIndex + 2 < 32) {
-                uint256 shift = byteIndex * 8;
-                uint256 mask = 0xFFFFFF;
-                uint256 packedData = (publicSignals[0] >> shift) & mask;
-                forbiddenCountries[j] = bytes3(uint24(packedData));
-            } else if (byteIndex < 32) {
-                uint256 bytesFrom0 = 32 - byteIndex;
-                uint256 bytesTo1 = 3 - bytesFrom0;
-
-                uint256 shift0 = byteIndex * 8;
-                uint256 mask0 = (1 << (bytesFrom0 * 8)) - 1;
-                uint256 part0 = (publicSignals[0] >> shift0) & mask0;
-
-                uint256 shift1 = 0;
-                uint256 mask1 = (1 << (bytesTo1 * 8)) - 1;
-                uint256 part1 = (publicSignals[1] >> shift1) & mask1;
-
-                uint256 combined = (part1 << (bytesFrom0 * 8)) | part0;
-                forbiddenCountries[j] = bytes3(uint24(combined));
-            } else {
-                uint256 byteIndexIn1 = byteIndex - 32;
-                uint256 shift = byteIndexIn1 * 8;
-                uint256 mask = 0xFFFFFF;
-                uint256 packedData = (publicSignals[1] >> shift) & mask;
-                forbiddenCountries[j] = bytes3(uint24(packedData));
-            }
+            uint256 shift = byteIndex * 8;
+            uint256 mask = 0xFFFFFF;
+            uint256 packedData = (publicSignal >> shift) & mask;
+            forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
         }
 
         return forbiddenCountries;
     }
 
+    // used
     function proofDateToUnixTimestamp(
         uint256[6] memory dateNum
     ) internal pure returns (uint256) {
@@ -142,6 +126,7 @@ library Formatter {
         return currentTimestamp;
     }
 
+    // used
     function dateToUnixTimestamp(
         string memory date
     ) internal pure returns (uint256) {
@@ -156,6 +141,7 @@ library Formatter {
         return toTimestamp(year, month, day);
     }
 
+    // used
     function substring(
         string memory str,
         uint startIndex,
@@ -172,6 +158,7 @@ library Formatter {
     }
 
     // Helper function to convert a string to an integer
+    // used
     function parseDatePart(string memory value) internal pure returns (uint) {
         bytes memory tempEmptyStringTest = bytes(value);
         if (tempEmptyStringTest.length == 0) {
@@ -188,6 +175,7 @@ library Formatter {
     }
 
     // Convert date to Unix timestamp
+    // used
     function toTimestamp(
         uint256 year,
         uint256 month,
@@ -234,6 +222,7 @@ library Formatter {
     }
 
     // Check if year is a leap year
+    // used
     function isLeapYear(uint256 year) internal pure returns (bool) {
         if (year % 4 != 0) {
             return false;
@@ -246,15 +235,15 @@ library Formatter {
         }
     }
 
-    function formatAge(
-        string memory age
-    ) internal pure returns (string memory) {
-        // if it's an empty two bytes string, just show N/A
-        return
-            bytes(age).length == 2 &&
-                bytes(age)[0] == 0x00 &&
-                bytes(age)[1] == 0x00
-                ? "N/A"
-                : age;
-    }
+    // function formatAge(
+    //     string memory age
+    // ) internal pure returns (string memory) {
+    //     // if it's an empty two bytes string, just show N/A
+    //     return
+    //         bytes(age).length == 2 &&
+    //             bytes(age)[0] == 0x00 &&
+    //             bytes(age)[1] == 0x00
+    //             ? "N/A"
+    //             : age;
+    // }
 }

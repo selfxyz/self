@@ -2,13 +2,13 @@
 pragma solidity ^0.8.28;
 
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
-import {Base64} from "../libraries/Base64.sol";
+import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
-import "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import { InternalLeanIMT, LeanIMTData } from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
+import { InternalBinaryIMT, BinaryIMTData } from "@zk-kit/imt.sol/internal/InternalBinaryIMT.sol";
 import "../interfaces/IIdentityRegistryV1.sol";
 import "../interfaces/IIdentityVerificationHubV1.sol";
-
+import "../upgradeable/ImplRoot.sol";
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️
  * =============================================
@@ -36,39 +36,65 @@ import "../interfaces/IIdentityVerificationHubV1.sol";
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
  */
-contract IdentityRegistryStorageV1{
-    address internal hub;
+abstract contract IdentityRegistryStorageV1 is
+    ImplRoot
+{
 
-    // CSCA root
-    uint256 internal cscaRoot;
+    address internal _hub;
 
     // commitment registry
-    LeanIMTData internal identityCommitmentIMT;
+    LeanIMTData internal _identityCommitmentIMT;
+
     // timestamp of when the root was created
-    mapping(uint256 => uint256) internal rootTimestamps;
+    mapping(uint256 => uint256) internal _rootTimestamps;
     // attestation id => nullifier => bool
     // attestation id for each identity type
     // passport: 0x12d57183e0a41615471a14e5a93c87b9db757118c1d7a6a9f73106819d656f24
     // poseidon("E-PASSPORT")
-    mapping(bytes32 => mapping(uint256 => bool)) internal nullifiers;
+    mapping(bytes32 => mapping(uint256 => bool)) internal _nullifiers;
 
-    // ofac registry
-    uint256 internal ofacRoot;
+    // dsc key registry
+    LeanIMTData internal _dscKeyCommitmentIMT;
+
+    mapping(uint256 => bool) internal _isRegisteredDscKeyCommitment;
+
+    // ofac smt root
+    uint256 internal _ofacRoot;
+    // csca root
+    uint256 internal _cscaRoot;
 }
-// TODO: Add modifier named onlyPortal
-contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, IdentityRegistryStorageV1, IIdentityRegistryV1 {
 
-    using Base64 for *;
-    using Strings for uint256;
+contract IdentityRegistryImplV1 is 
+    IdentityRegistryStorageV1,  
+    IIdentityRegistryV1 
+{
     using InternalLeanIMT for LeanIMTData;
 
-    error HUB_NOT_SET();
-    error ONLY_HUB_CAN_REGISTER_COMMITMENT();
-    error REGISTERED_IDENTITY();
-
+    // Events
+    event RegistryInitialized(address hub);
+    event HubUpdated(address hub);
+    event CscaRootUpdated(uint256 cscaRoot);
+    event OfacRootUpdated(uint256 ofacRoot);
     event CommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
-    event CommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
-    event CommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    event DscKeyCommitmentRegistered(uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event DevCommitmentRegistered(bytes32 indexed attestationId, uint256 indexed nullifier, uint256 indexed commitment, uint256 timestamp, uint256 imtRoot, uint256 imtIndex);
+    event DevCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot, uint256 timestamp);
+    event DevDscKeyCommitmentRegistered(uint256 indexed commitment, uint256 imtRoot, uint256 imtIndex);
+    event DevDscKeyCommitmentUpdated(uint256 indexed oldLeaf, uint256 indexed newLeaf, uint256 imtRoot);
+    event DevDscKeyCommitmentRemoved(uint256 indexed oldLeaf, uint256 imtRoot);
+    event DevNullifierStateChanged(bytes32 indexed attestationId, uint256 indexed nullifier, bool state);
+    event DevDscKeyCommitmentStateChanged(uint256 indexed commitment, bool state);
+
+    // Errors
+    error HUB_NOT_SET();
+    error ONLY_HUB_CAN_ACCESS();
+    error REGISTERED_COMMITMENT();
+
+    // Constructor
+    constructor() {
+        _disableInitializers();
+    }
     
     function initialize(
         address _hub
@@ -76,79 +102,79 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         external
         initializer 
     {
-        __Ownable_init(msg.sender);
-        hub = _hub;
+        __ImplRoot_init();
+        _hub = _hub;
+        emit RegistryInitialized(_hub);
     }
 
-    function _authorizeUpgrade(
-        address newImplementation
-    ) 
-        internal 
-        override
-        onlyProxy
-        onlyOwner 
-    {}
-
-    ///////////////////////////////////////////////////////////////////
-    ///                     UPDATE FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
-
-    function updateHub(
-        address _hub
-    ) 
-        external 
-        onlyProxy
-        onlyOwner 
-    { 
-        hub = _hub;
+    modifier onlyHub() {
+        if (address(_hub) == address(0)) revert HUB_NOT_SET();
+        if (msg.sender != address(_hub)) revert ONLY_HUB_CAN_ACCESS();
+        _;
     }
 
-    function updateOfacRoot(
-        uint256 _ofacRoot
-    ) 
+    ///////////////////////////////////////////////////////////////////
+    ///                     EXTERNAL FUNCTIONS                      ///
+    ///////////////////////////////////////////////////////////////////
+
+    // view
+    // test in unit
+    // tested
+    function hub() 
         external
+        virtual
         onlyProxy
-        onlyOwner 
+        view 
+        returns (address) 
     {
-        ofacRoot = _ofacRoot;
+        return _hub;
     }
 
-
-    function updateCscaRoot(
-        uint256 _cscaRoot
-    ) 
-        external
-        onlyProxy
-        onlyOwner 
-    {
-        cscaRoot = _cscaRoot;
-    }
-
-    ///////////////////////////////////////////////////////////////////
-    ///                     REGISTER COMMITMENT                     ///
-    ///////////////////////////////////////////////////////////////////
-
-    function registerCommitment(
+    // test in integration
+    // tested
+    function nullifiers(
         bytes32 attestationId,
-        uint256 nullifier,
+        uint256 nullifier
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (bool) 
+    {
+        return _nullifiers[attestationId][nullifier];
+    }
+
+    // test in integration
+    // tested
+    function isRegisteredDscKeyCommitment(
         uint256 commitment
     ) 
         external
+        virtual
         onlyProxy
+        view 
+        returns (bool) 
     {
-        if (address(hub) == address(0)) revert HUB_NOT_SET();
-            if (msg.sender != address(hub)) revert ONLY_HUB_CAN_REGISTER_COMMITMENT();
-        if (nullifiers[attestationId][nullifier]) revert REGISTERED_IDENTITY();
-
-        nullifiers[attestationId][nullifier] = true;
-        uint256 index = identityCommitmentIMT.size;
-        uint256 imt_root = _addCommitment(commitment);
-        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+        return _isRegisteredDscKeyCommitment[commitment];
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ///                     VIEW FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
+    // test in integration
+    // tested
+    function rootTimestamps(
+        uint256 root
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _rootTimestamps[root];
+    }
+
+    // test in integration
+    // tested
     function checkIdentityCommitmentRoot(
         uint256 root
     ) 
@@ -157,38 +183,33 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return rootTimestamps[root] != 0;
+        return _rootTimestamps[root] != 0;
     }
 
-    function getIdentityCommitmentRootTimestamp(
-        uint256 root
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return rootTimestamps[root];
-    }
-
+    // test in integration
+    // tested
     function getIdentityCommitmentMerkleTreeSize() 
         external
         onlyProxy
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT.size;
+        return _identityCommitmentIMT.size;
     }
 
+    // test in integration
+    // tested
     function getIdentityCommitmentMerkleRoot() 
         external
         onlyProxy
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT._root();
+        return _identityCommitmentIMT._root();
     }
 
+    // test in integration
+    // tested
     function getIdentityCommitmentIndex(
         uint256 commitment
     ) 
@@ -197,51 +218,22 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (uint256) 
     {
-        return identityCommitmentIMT._indexOf(commitment);
+        return _identityCommitmentIMT._indexOf(commitment);
     }
 
-    function getIdentityCommitment(
-        uint256 index
-    ) 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return identityCommitmentIMT.leaves[index];
-    }
-
-    function getAllIdentityCommitments() 
-        external
-        onlyProxy
-        view 
-        returns (uint256[] memory) 
-    {
-        uint256[] memory commitments = new uint256[](identityCommitmentIMT.size);
-        for (uint256 i = 0; i < identityCommitmentIMT.size; i++) {
-            commitments[i] = identityCommitmentIMT.leaves[i];
-        }
-        return commitments;
-    }
-
+    // test in unit
+    // tested
     function getOfacRoot() 
         external
         onlyProxy
         view 
         returns (uint256) 
     {
-        return ofacRoot;
+        return _ofacRoot;
     }
 
-    function getCscaRoot() 
-        external
-        onlyProxy
-        view 
-        returns (uint256) 
-    {
-        return cscaRoot;
-    }
-
+    // test in unit
+    // tested
     function checkOfacRoot(
         uint256 root
     ) 
@@ -250,9 +242,22 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return ofacRoot == root;
+        return _ofacRoot == root;
     }
 
+    // test in unit
+    // tested
+    function getCscaRoot() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _cscaRoot;
+    }
+
+    // test in unit
+    // tested
     function checkCscaRoot(
         uint256 root
     ) 
@@ -261,13 +266,124 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         view 
         returns (bool) 
     {
-        return cscaRoot == root;
+        return _cscaRoot == root;
+    }
+
+    // test in integration
+    function getDscKeyCommitmentMerkleRoot() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _dscKeyCommitmentIMT._root();
+    }
+
+    // test in integration
+    function checkDscKeyCommitmentMerkleRoot(
+        uint256 root
+    ) 
+        external
+        onlyProxy
+        view 
+        returns (bool) 
+    {
+        return _dscKeyCommitmentIMT._root() == root;
+    }
+
+    // test in integration
+    function getDscKeyCommitmentTreeSize() 
+        external
+        onlyProxy
+        view 
+        returns (uint256) 
+    {
+        return _dscKeyCommitmentIMT.size;
+    }
+
+    function getDscKeyCommitmentIndex(
+        uint256 commitment
+    )
+        external
+        onlyProxy
+        view
+        returns (uint256)
+    {
+        return _dscKeyCommitmentIMT._indexOf(commitment);
+    }
+
+    // register
+    function registerCommitment(
+        bytes32 attestationId,
+        uint256 nullifier,
+        uint256 commitment
+    ) 
+        external
+        onlyProxy
+        onlyHub
+    {
+        if (_nullifiers[attestationId][nullifier]) revert REGISTERED_COMMITMENT();
+
+        _nullifiers[attestationId][nullifier] = true;
+        uint256 index = _identityCommitmentIMT.size;
+        uint256 imt_root = _addCommitment(_identityCommitmentIMT, commitment);
+        _rootTimestamps[imt_root] = block.timestamp;
+        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+    }
+
+    function registerDscKeyCommitment(
+        uint256 dscCommitment
+    )
+        external
+        onlyProxy
+        onlyHub
+    {
+        if (_isRegisteredDscKeyCommitment[dscCommitment]) revert REGISTERED_COMMITMENT();
+
+        _isRegisteredDscKeyCommitment[dscCommitment] = true;
+        uint256 index = _dscKeyCommitmentIMT.size;
+        uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
+        emit DscKeyCommitmentRegistered(dscCommitment, block.timestamp, imt_root, index);
     }
     
-    ///////////////////////////////////////////////////////////////////
-    ///                     DEV FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
+    // onlyOwner
+    // tested
+    function updateHub(
+        address newHubAddress
+    )
+        external
+        onlyProxy
+        onlyOwner 
+    { 
+        _hub = newHubAddress;
+        emit HubUpdated(newHubAddress);
+    }
 
+    // tested
+    function updateOfacRoot(
+        uint256 newOfacRoot
+    ) 
+        external
+        onlyProxy
+        onlyOwner 
+    {
+        _ofacRoot = newOfacRoot;
+        emit OfacRootUpdated(newOfacRoot);
+    }
+
+    // tested
+    function updateCscaRoot(
+        uint256 newCscaRoot
+    ) 
+        external
+        onlyProxy
+        onlyOwner 
+    {
+        _cscaRoot = newCscaRoot;
+        emit CscaRootUpdated(newCscaRoot);
+    }
+
+    // tested
     function devAddIdentityCommitment(
         bytes32 attestationId,
         uint256 nullifier,
@@ -277,11 +393,14 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         onlyProxy
         onlyOwner 
     {
-        uint256 imt_root = _addCommitment(commitment);
-        uint256 index = identityCommitmentIMT._indexOf(commitment);
-        emit CommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
+        _nullifiers[attestationId][nullifier] = true;
+        uint256 imt_root = _addCommitment(_identityCommitmentIMT, commitment);
+        _rootTimestamps[imt_root] = block.timestamp;
+        uint256 index = _identityCommitmentIMT._indexOf(commitment);
+        emit DevCommitmentRegistered(attestationId, nullifier, commitment, block.timestamp, imt_root, index);
     }
 
+    // tested
     function devUpdateCommitment(
         uint256 oldLeaf,
         uint256 newLeaf,
@@ -291,10 +410,12 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         onlyProxy
         onlyOwner
     {
-        uint256 imt_root = _updateCommitment(oldLeaf, newLeaf, siblingNodes);
-        emit CommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
+        uint256 imt_root = _updateCommitment(_identityCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
+        emit DevCommitmentUpdated(oldLeaf, newLeaf, imt_root, block.timestamp);
     }
 
+    // tested
     function devRemoveCommitment(
         uint256 oldLeaf,
         uint256[] calldata siblingNodes
@@ -303,25 +424,95 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         onlyProxy
         onlyOwner
     {
-        uint256 imt_root = _removeCommitment(oldLeaf, siblingNodes);
-        emit CommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+        uint256 imt_root = _removeCommitment(_identityCommitmentIMT, oldLeaf, siblingNodes);
+        _rootTimestamps[imt_root] = block.timestamp;
+        emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
+    }
+    
+    // Will add dsc key commitment manager functions for dev
+    // tested
+    function devAddDscKeyCommitment(
+        uint256 dscCommitment
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _isRegisteredDscKeyCommitment[dscCommitment] = true;
+        uint256 imt_root = _addCommitment(_dscKeyCommitmentIMT, dscCommitment);
+        uint256 index = _dscKeyCommitmentIMT._indexOf(dscCommitment);
+        emit DevDscKeyCommitmentRegistered(dscCommitment, imt_root, index);
+    }
+
+    function devUpdateDscKeyCommitment(
+        uint256 oldLeaf,
+        uint256 newLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _updateCommitment(_dscKeyCommitmentIMT, oldLeaf, newLeaf, siblingNodes);
+        emit DevDscKeyCommitmentUpdated(oldLeaf, newLeaf, imt_root);
+    }
+
+    // tested
+    function devRemoveDscKeyCommitment(
+        uint256 oldLeaf,
+        uint256[] calldata siblingNodes
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        uint256 imt_root = _removeCommitment(_dscKeyCommitmentIMT, oldLeaf, siblingNodes);
+        emit DevDscKeyCommitmentRemoved(oldLeaf, imt_root);
+    }
+
+    // tested
+    function devChangeNullifierState(
+        bytes32 attestationId,
+        uint256 nullifier,
+        bool state
+    ) 
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _nullifiers[attestationId][nullifier] = state;
+        emit DevNullifierStateChanged(attestationId, nullifier, state);
+    }
+
+    // tested
+    function devChangeDscKeyCommitmentState(
+        uint256 dscCommitment,
+        bool state
+    )
+        external
+        onlyProxy
+        onlyOwner
+    {
+        _isRegisteredDscKeyCommitment[dscCommitment] = state;
+        emit DevDscKeyCommitmentStateChanged(dscCommitment, state);
     }
 
     ///////////////////////////////////////////////////////////////////
-    ///                     INTERNAL FUNCTIONS                        ///
+    ///                     INTERNAL FUNCTIONS                      ///
     ///////////////////////////////////////////////////////////////////
     
     function _addCommitment(
+        LeanIMTData storage imt,
         uint256 commitment
     ) 
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._insert(commitment);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._insert(commitment);
     }
 
     function _updateCommitment(
+        LeanIMTData storage imt,
         uint256 oldLeaf,
         uint256 newLeaf,
         uint256[] calldata siblingNodes
@@ -329,18 +520,17 @@ contract IdentityRegistryImplV1 is UUPSUpgradeable, OwnableUpgradeable, Identity
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._update(oldLeaf, newLeaf, siblingNodes);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._update(oldLeaf, newLeaf, siblingNodes);
     }
 
     function _removeCommitment(
+        LeanIMTData storage imt,
         uint256 oldLeaf,
         uint256[] calldata siblingNodes
     )
         internal
         returns(uint256 imt_root)
     {
-        imt_root = identityCommitmentIMT._remove(oldLeaf, siblingNodes);
-        rootTimestamps[imt_root] = block.timestamp;
+        imt_root = imt._remove(oldLeaf, siblingNodes);
     }
 }
