@@ -234,11 +234,6 @@ export function findStartPubKeyIndex(
     //zero between x and y
     const pad_between_x_y = y_index - x_index - x_totalLength;
     return [x_index, x_totalLength + pad_between_x_y + y_totalLength];
-    // const fullPubKey = x + y;
-    // const pubKeyBytes = Buffer.from(fullPubKey, 'hex')
-    // const [index, totalLength] = findStartIndexEC(pubKeyBytes.toString('hex'), rawCert);
-    // console.log('index', index, totalLength);
-    // return index;
   } else {
     // Splits to 525 words of 8 bits each
     const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;

@@ -16,7 +16,6 @@ testSuite.forEach(({
   domainParameter,
   keyLength,
 }) => {
-  console.log(sigAlg, hashFunction, domainParameter, keyLength);
   let passportData = genMockPassportData(
     hashFunction,
     hashFunction,

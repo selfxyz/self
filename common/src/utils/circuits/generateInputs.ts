@@ -41,20 +41,13 @@ export function generateCircuitInputsDSC(
 
   // TODO: is this padding better than the other one?
   const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes);
-  console.log('js: cscaTbsBytesPadded', cscaTbsBytesPadded);
-  console.log('js: cscaTbsBytesPadded length', cscaTbsBytesPadded.length);
-
   const dscTbsBytes = dscParsed.tbsBytes;
-  console.log('js: dscTbsBytes', dscTbsBytes);
-  console.log('js: dscTbsBytes length', dscTbsBytes.length);
 
   // Do we want to keep this padding for the commitment? Not sure
   const [dscTbsBytesPadded, dscTbsBytesLen] = pad(cscaParsed.hashAlgorithm)(
     dscTbsBytes,
     max_dsc_bytes
   );
-  console.log('js: dscTbsBytesPadded', dscTbsBytesPadded);
-  console.log('js: dscTbsBytesPadded length', dscTbsBytesPadded.length);
 
   const leaf = getLeafCscaTree(cscaParsed);
   const [root, path, siblings] = getTreeInclusionProof(leaf, 'csca');
@@ -66,15 +59,6 @@ export function generateCircuitInputsDSC(
     cscaParsed.hashAlgorithm
   );
 
-  console.log('js: csca_pubKey_formatted', csca_pubKey_formatted);
-  console.log('js: csca_pubKey_formatted length', csca_pubKey_formatted.length);
-
-  // const csca_pubkey_actual_size = cscaParsed.signatureAlgorithm === 'ecdsa' ?
-  // (Number(cscaParsed.publicKeyDetails.bits) / 8) * 2 :
-  // (Number(cscaParsed.publicKeyDetails.bits) / 8);
-
-  // console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
-
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
   const signature = formatSignatureDSCCircuit(
     dscMetadata.cscaSignatureAlgorithm,
@@ -85,10 +69,7 @@ export function generateCircuitInputsDSC(
 
   // Get start index of CSCA pubkey based on algorithm
   const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
-  console.log('js: startIndex', startIndex);
-
   const csca_pubkey_actual_size = keyLength;
-  console.log('js: csca_pubkey_actual_size', csca_pubkey_actual_size);
 
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
