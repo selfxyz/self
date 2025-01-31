@@ -262,8 +262,10 @@ generate_certificate dsc sha384 rsapss 48 65537 2048 --signer sha384_rsapss_48_6
 generate_certificate dsc sha384 rsapss 48 65537 3072 --signer sha384_rsapss_48_65537_3072
 generate_certificate csca sha512 rsapss 64 65537 4096
 generate_certificate dsc sha512 rsapss 64 65537 4096 --signer sha512_rsapss_64_65537_4096
-
+generate_certificate dsc sha512 rsapss 64 65537 2048 --signer sha512_rsapss_64_65537_4096
 # ECDSA certificates
+generate_certificate csca sha224 ecdsa secp224r1
+generate_certificate dsc sha224 ecdsa secp224r1 --signer sha224_ecdsa_secp224r1
 generate_certificate csca sha1 ecdsa secp256r1
 generate_certificate dsc sha1 ecdsa secp256r1 --signer sha1_ecdsa_secp256r1
 generate_certificate csca sha256 ecdsa secp256r1
