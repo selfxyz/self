@@ -176,7 +176,7 @@ export function getTBSHash(
   const tbsCertificateHashString = tbsCertificateHash.data;
   const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
   const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
-  console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
+  // console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
   return splitToWords(tbsCertificateHashBigint, n, k);
 }
 

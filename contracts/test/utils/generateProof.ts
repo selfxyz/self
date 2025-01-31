@@ -49,7 +49,6 @@ const vcAndDiscloseCircuits: CircuitArtifacts = {
 
 export async function generateRegisterProof(
     secret: number | string,
-    dscSecret: number | string,
     passportData: PassportData
 ): Promise<RegisterCircuitProof> {
     console.log(CYAN, "=== Start generateRegisterProof ===", RESET);
@@ -162,6 +161,7 @@ export async function generateVcAndDiscloseProof(
         vcAndDiscloseCircuits["vc_and_disclose"].wasm,
         vcAndDiscloseCircuits["vc_and_disclose"].zkey
     );
+
     const endTime = performance.now();
     console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
 
@@ -231,7 +231,6 @@ function importSMTFromJsonFile(filePath?: string): SMT | null {
         const smt = new SMT(hash2, true);
         smt.import(data.smt);
           
-        console.log('Successfully imported SMT from JSON file');
         return smt;
     } catch (error) {
         console.error('Failed to import SMT from JSON file:', error);

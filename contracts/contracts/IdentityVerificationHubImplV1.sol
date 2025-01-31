@@ -347,7 +347,7 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // register
-    // will test in commitmentRegistration.ts
+    // tested
     function registerPassportCommitment(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
@@ -364,6 +364,7 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // will test in commitmentRegistration.ts
+    // tested
     function registerDscKeyCommitment(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
