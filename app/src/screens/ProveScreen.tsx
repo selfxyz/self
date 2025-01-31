@@ -1,5 +1,6 @@
-import { CheckCircle } from '@tamagui/lucide-icons';
 import React, { useEffect, useState } from 'react';
+
+import { CheckCircle } from '@tamagui/lucide-icons';
 import io, { Socket } from 'socket.io-client';
 import { Progress, Spinner, Text, XStack, YStack } from 'tamagui';
 

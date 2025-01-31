@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 
 import { AnimatePresence } from '@tamagui/animate-presence';
 import { ArrowLeft, Nfc } from '@tamagui/lucide-icons';
-import { Button, Image, styled, Text, XStack, YStack } from 'tamagui';
+import { Button, Image, Text, XStack, YStack, styled } from 'tamagui';
 
 import { bgGreen, textBlack } from '../utils/colors';
 import CustomButton from './CustomButton';

@@ -1,8 +1,10 @@
 import React from 'react';
+import Dialog from 'react-native-dialog';
+
 import { Eraser, IterationCw } from '@tamagui/lucide-icons';
 import { Button, Fieldset, Label, YStack } from 'tamagui';
+
 import { borderColor, textBlack, textColor2 } from '../utils/colors';
-import Dialog from 'react-native-dialog';
 
 interface SettingsScreenProps {}
 

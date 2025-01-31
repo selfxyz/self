@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-
 import { Linking, Platform } from 'react-native';
 import Dialog from 'react-native-dialog';
 import NfcManager from 'react-native-nfc-manager';
@@ -7,7 +6,6 @@ import NfcManager from 'react-native-nfc-manager';
 import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { Carousel } from '../components/Carousel';
-
 import US_PASSPORT_LASTPAGE_ANDROID from '../images/passport_lastpage_android.jpeg';
 import US_PASSPORT_LASTPAGE from '../images/passport_lastpage_graybg.jpeg';
 import US_PASSPORT_LASTPAGE_IOS from '../images/passport_lastpage_iphone.jpeg';

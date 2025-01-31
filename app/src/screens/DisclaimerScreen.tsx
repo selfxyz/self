@@ -1,12 +1,13 @@
 import React from 'react';
-import { Image, Text, YStack } from 'tamagui';
 import { StyleSheet } from 'react-native';
 
-import Warning from '../images/icons/warning.svg';
-import { amber50, amber500, slate700, yellow500 } from '../utils/colors';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { useNavigation } from '@react-navigation/native';
+import { Image, Text, YStack } from 'tamagui';
+
+import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import Warning from '../images/icons/warning.svg';
+import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+import { amber50, amber500, slate700, yellow500 } from '../utils/colors';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();

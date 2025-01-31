@@ -1,12 +1,11 @@
 import React from 'react';
 
-import { Button, Image, styled, View, YStack } from 'tamagui';
+import { Button, Image, View, YStack, styled } from 'tamagui';
 
-import MAP from '../images/map.png';
-import ScanIcon from '../images/icons/qr_scan.svg';
-
-import { black, amber500, neutral700 } from '../utils/colors';
 import { Caption } from '../components/typography/Caption';
+import ScanIcon from '../images/icons/qr_scan.svg';
+import MAP from '../images/map.png';
+import { amber500, black, neutral700 } from '../utils/colors';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,

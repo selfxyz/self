@@ -1,4 +1,4 @@
-import { styled, Text } from 'tamagui';
+import { Text, styled } from 'tamagui';
 
 export const Caption = styled(Text, {
   fontSize: 15,

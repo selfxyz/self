@@ -1,4 +1,6 @@
 import React, { useMemo } from 'react';
+
+import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import {
   Button,
   H1,
@@ -8,7 +10,6 @@ import {
   XStack,
   XStackProps,
 } from 'tamagui';
-import { ChevronLeft, X } from '@tamagui/lucide-icons';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

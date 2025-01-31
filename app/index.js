@@ -1,12 +1,11 @@
 /**
  * @format
  */
-
 import React from 'react';
+import { AppRegistry, LogBox } from 'react-native';
 
 import { config } from '@tamagui/config/v2-native';
 import { ToastProvider } from '@tamagui/toast';
-import { AppRegistry, LogBox } from 'react-native';
 import { TamaguiProvider, createTamagui } from 'tamagui';
 
 import App from './App';

@@ -1,4 +1,4 @@
-import { styled, Text } from 'tamagui';
+import { Text, styled } from 'tamagui';
 
 export const Title = styled(Text, {
   fontSize: 28,

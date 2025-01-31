@@ -1,6 +1,7 @@
-import * as amplitude from '@amplitude/analytics-react-native';
 import { NativeModules, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
+
+import * as amplitude from '@amplitude/analytics-react-native';
 
 import { parseProofAndroid } from './utils';
 

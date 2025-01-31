@@ -1,5 +1,6 @@
-import { ethers } from 'ethers';
 import * as Keychain from 'react-native-keychain';
+
+import { ethers } from 'ethers';
 
 import { PassportData } from '../../../common/src/utils/types';
 

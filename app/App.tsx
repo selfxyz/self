@@ -1,16 +1,17 @@
 import React, { useEffect } from 'react';
+import 'react-native-get-random-values';
 
 import * as amplitude from '@amplitude/analytics-react-native';
 import { AMPLITUDE_KEY } from '@env';
 import '@ethersproject/shims';
 import { Buffer } from 'buffer';
-import 'react-native-get-random-values';
-
 import { YStack } from 'tamagui';
-import { bgWhite } from './src/utils/colors';
-import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
+
+// Adjust the import path as needed
 import AppNavigation from './src/Navigation';
 import useUserStore from './src/stores/userStore';
+import { bgWhite } from './src/utils/colors';
+import { setupUniversalLinkListener } from './src/utils/qrCode';
 
 global.Buffer = Buffer;
 

@@ -1,5 +1,4 @@
 // Function to extract information from a two-line MRZ.
-
 import { countryCodes } from '../../../common/src/constants/constants';
 import { Proof } from '../../../common/src/utils/types';
 

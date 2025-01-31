@@ -1,12 +1,13 @@
 import React from 'react';
 import { StyleSheet, Text } from 'react-native';
+
+import { useNavigation } from '@react-navigation/native';
 import { Image, YStack } from 'tamagui';
 
+import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Logo from '../images/logo.png';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { slate50, slate100, slate700, slate500 } from '../utils/colors';
-import { useNavigation } from '@react-navigation/native';
+import { slate50, slate100, slate500, slate700 } from '../utils/colors';
 
 interface AccountRecoveryScreenProps {}
 
