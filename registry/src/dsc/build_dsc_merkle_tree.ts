@@ -46,7 +46,7 @@ function processCertificate(pemContent: string, filePath: string) {
             return null;
         }
 
-        console.log(`File: ${filePath}`);
+        console.log('\x1b[90mFile:', 'common/' + filePath.split('/common/')[1], '\x1b[0m');
         // console.log(`Key Length: ${keyLength} bits`);
         // console.log(`Signature Algorithm: ${certificate.signatureAlgorithm}`);
         // console.log(`Hash Algorithm: ${certificate.hashAlgorithm}`);
@@ -99,7 +99,7 @@ function processCertificate(pemContent: string, filePath: string) {
 
         // Final Poseidon Hash
         const finalPoseidonHash = getLeafDscTreeFromDscCertificateMetadata(certificate, dscMetaData);
-        console.log(`Final Poseidon Hash: ${finalPoseidonHash}`);
+        console.log('Leaf Value: \x1b[34m' + finalPoseidonHash + '\x1b[0m');
 
         return finalPoseidonHash.toString();
     } catch (error) {
@@ -153,11 +153,11 @@ async function buildDscMerkleTree() {
     // console.log(`Max TBS bytes: ${tbs_max_bytes}`);
     // console.log(`Max Key Length: ${key_length_max_bytes}`);
     // console.log('js: countryKeyBitLengths', countryKeyBitLengths);
-    console.log('js: cscaDescriptions', cscaDescriptions);
-    console.log('js: dscDescriptions', dscDescriptions);
+    // console.log('js: cscaDescriptions', cscaDescriptions);
+    // console.log('js: dscDescriptions', dscDescriptions);
     // console.log('js: dscDescriptionsExtrapolated', dscDescriptionsExtrapolated);
-    console.log('js: undefinedFilePathsCsca', undefinedFilePathsCsca);
-    console.log('js: undefinedFilePathsDsc', undefinedFilePathsDsc);
+    console.log('\x1b[90mCSCA: Error parsing these files:', undefinedFilePathsCsca, '\x1b[0m');
+    console.log('\x1b[90mDSC: Error parsing these files:', undefinedFilePathsDsc, '\x1b[0m');
     return tree;
 }
 
@@ -165,7 +165,7 @@ async function serializeDscTree(tree: LeanIMT) {
     const serializedTree = tree.export();
     await writeFile("outputs/serialized_dsc_tree.json", JSON.stringify(serializedTree));
     fs.copyFileSync("outputs/serialized_dsc_tree.json", "../common/pubkeys/serialized_dsc_tree.json");
-    console.log("serialized_dsc_tree.json written and copied in common/pubkeys!");
+    console.log("\x1b[32mSerialized_dsc_tree.json written and copied in common/pubkeys!\x1b[0m");
 }
 
 async function main() {
