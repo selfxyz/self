@@ -1,8 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
-import { Anchor, YStack } from 'tamagui';
+import { Anchor, Image, Text, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Logo from '../images/logo.svg';
@@ -17,6 +17,13 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
+        <Image
+          source={require('../images/texture.png')}
+          style={{
+            opacity: 0.1,
+            position: 'absolute',
+          }}
+        />
         <Logo />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>

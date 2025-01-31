@@ -1,0 +1,28 @@
+{
+  "name": "openpassport-monorepo",
+  "packageManager": "yarn@4.6.0",
+  "workspaces": [
+    "app",
+    "common",
+    "contracts",
+    "registry",
+    "sdk",
+    "circuits"
+  ],
+  "devDependencies": {
+    "husky": "^8.0.0",
+    "lint-staged": "^15.4.3"
+  },
+  "scripts": {
+    "prepare": "husky install"
+  },
+  "lint-staged": {
+    "*.(tsx?|jsx?)": [
+      "yarn lint:fix",
+      "yarn fmt:fix"
+    ],
+    "*.json": [
+      "yarn fmt:fix"
+    ]
+  }
+}

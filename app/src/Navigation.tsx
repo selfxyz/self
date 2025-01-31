@@ -13,6 +13,7 @@ import { Clock9, Settings } from '@tamagui/lucide-icons';
 import { Button, View } from 'tamagui';
 
 import { NavBar } from './components/NavBar';
+import DisclaimerScreen from './screens/DisclaimerScreen';
 import HomeScreen from './screens/HomeScreen';
 import LaunchScreen from './screens/LaunchScreen';
 import MockDataScreen from './screens/MockDataScreen';
@@ -121,6 +122,13 @@ const RootStack = createStackNavigator({
       options: {
         title: 'Self ID',
         header: HomeNavBar,
+      },
+    },
+    Disclaimer: {
+      screen: DisclaimerScreen,
+      options: {
+        title: 'Disclaimer',
+        headerShown: false,
       },
     },
     ValidProofScreen: {
