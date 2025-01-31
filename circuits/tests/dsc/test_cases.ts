@@ -1,5 +1,6 @@
 export const sigAlgs = [
-  { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' }, // sha1_rsa_65537_4096
+  // { sigAlg: 'rsa', hashFunction: 'sha1', domainParameter: '65537', keyLength: '2048' }, // sha1_rsa_65537_4096
+  { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'secp521r1', keyLength: '521' },
 ];
 
 export const fullSigAlgs = [
@@ -8,10 +9,34 @@ export const fullSigAlgs = [
   { sigAlg: 'rsa', hashFunction: 'sha256', domainParameter: '65537', keyLength: '2048' }, // sha256_rsa_65537_4096
   { sigAlg: 'rsa', hashFunction: 'sha512', domainParameter: '65537', keyLength: '2048' }, // sha384_rsa_65537_4096
   // RSA-PSS
-  { sigAlg: 'rsapss', hashFunction: 'sha256', saltLen: '32', domainParameter: '65537', keyLength: '3072' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', saltLen: '32', domainParameter: '65537', keyLength: '4096' },
-  { sigAlg: 'rsapss', hashFunction: 'sha512', saltLen: '64', domainParameter: '65537', keyLength: '4096' },
-  { sigAlg: 'rsapss', hashFunction: 'sha256', saltLen: '32', domainParameter: '3', keyLength: '3072' },
+  {
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    saltLen: '32',
+    domainParameter: '65537',
+    keyLength: '3072',
+  },
+  {
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    saltLen: '32',
+    domainParameter: '65537',
+    keyLength: '4096',
+  },
+  {
+    sigAlg: 'rsapss',
+    hashFunction: 'sha512',
+    saltLen: '64',
+    domainParameter: '65537',
+    keyLength: '4096',
+  },
+  {
+    sigAlg: 'rsapss',
+    hashFunction: 'sha256',
+    saltLen: '32',
+    domainParameter: '3',
+    keyLength: '3072',
+  },
   //ECDSA
   //brainpool
   { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'brainpoolP256r1', keyLength: '256' },
