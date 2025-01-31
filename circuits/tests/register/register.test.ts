@@ -1,3 +1,4 @@
+import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import { expect } from 'chai';
 import path from 'path';
@@ -10,6 +11,7 @@ import { sigAlgs, fullSigAlgs } from './test_cases';
 import { generateCommitment, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
 
+dotenv.config();
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
 testSuite.forEach(

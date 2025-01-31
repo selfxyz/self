@@ -44,6 +44,7 @@
     "circomlib": "^2.0.5",
     "circomlibjs": "^0.1.7",
     "crypto": "^1.0.1",
+    "dotenv": "^16.4.7",
     "elliptic": "^6.5.5",
     "hash.js": "^1.1.7",
     "js-sha256": "^0.10.1",
