@@ -17,10 +17,37 @@ import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
     let snapshotId: string;
+    let baseVcAndDiscloseProof: any;
+    let vcAndDiscloseProof: any;
+    let registerSecret: any;
+    let imt: any;
+    let commitment: any;
+    let nullifier: any;
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
+        registerSecret = generateRandomFieldElement();
+        nullifier = generateRandomFieldElement();
+        commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        imt = new LeanIMT<bigint>(hashFunction);
+        await imt.insert(BigInt(commitment));
+
+        baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
+            registerSecret,
+            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+            deployedActors.mockPassport,
+            "test-scope",
+            new Array(88).fill("1"),
+            "1",
+            imt,
+            "20",
+        );
         snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
+
+    beforeEach(async () => {
+        vcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
     });
 
     afterEach(async () => {
@@ -29,37 +56,17 @@ describe("VC and Disclose", () => {
     });
 
     describe("Verify VC and Disclose", () => {
+
         it("should verify and get result successfully", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
-
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
-                );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
             );
+
+    
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -85,37 +92,13 @@ describe("VC and Disclose", () => {
         it("should fail with invalid identity commitment root", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
-                );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
             );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = generateRandomFieldElement();
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "20",
@@ -125,7 +108,6 @@ describe("VC and Disclose", () => {
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
-            // Verify and get result
             await expect(
                 hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
             ).to.be.revertedWithCustomError(hub, "INVALID_COMMITMENT_ROOT");
@@ -134,31 +116,12 @@ describe("VC and Disclose", () => {
         it("should fail with invalid OFAC root", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
-                );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
             );
+            const rootInContract = await registry.getIdentityCommitmentMerkleRoot();
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
@@ -179,34 +142,11 @@ describe("VC and Disclose", () => {
         it("should fail with invalid current date (+ 1 day)", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
                 );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -245,34 +185,12 @@ describe("VC and Disclose", () => {
             
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
                 );
 
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -310,34 +228,11 @@ describe("VC and Disclose", () => {
         it("should succeed with bigger value than older than", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
                 );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -357,39 +252,17 @@ describe("VC and Disclose", () => {
         it("should fail with invalid older than", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
             );
 
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "18",
-            );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
-                olderThan: "20",
+                olderThan: "21",
                 forbiddenCountriesEnabled: true,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
                 ofacEnabled: true,
@@ -403,13 +276,6 @@ describe("VC and Disclose", () => {
 
         it("should fail with if listed in OFAC", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
-
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -455,34 +321,11 @@ describe("VC and Disclose", () => {
         it("should fail with invalid forbidden countries", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
                 );
-
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
             const forbiddenCountriesListPacked = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
@@ -502,34 +345,12 @@ describe("VC and Disclose", () => {
         it("should fail with invalid VC and Disclose proof", async () => {
             const {hub, registry, owner, user1, mockPassport} = deployedActors;
 
-            // First register a passport commitment
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
             );
 
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
@@ -548,30 +369,10 @@ describe("VC and Disclose", () => {
         });
     });
 
-    describe("readable parsers", () => {
+    describe("readable parsers", () =>{
         async function setupVcAndDiscloseTest(types: string[]) {
             const {hub, mockPassport} = deployedActors;
             
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
 
             let revealedDataPacked = [BigInt(0), BigInt(0), BigInt(0)];
             for (let i = 0; i < 3; i++) {
@@ -703,28 +504,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should parse forbidden countries", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
-
-            const registerSecret = generateRandomFieldElement();
-            const nullifier = generateRandomFieldElement();
-
-            // Set up IMT for the VC and Disclose proof
-            const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-            const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-            const imt = new LeanIMT<bigint>(hashFunction);
-            await imt.insert(BigInt(commitment));
-    
-            // Generate VC and Disclose proof
-            const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-                registerSecret,
-                BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-                mockPassport,
-                "test-scope",
-                new Array(88).fill("1"),
-                "1",
-                imt,
-                "20",
-            );
+            const {hub} = deployedActors;
 
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);

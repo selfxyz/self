@@ -5,7 +5,6 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import { InternalLeanIMT, LeanIMTData } from "@zk-kit/imt.sol/internal/InternalLeanIMT.sol";
-import { InternalBinaryIMT, BinaryIMTData } from "@zk-kit/imt.sol/internal/InternalBinaryIMT.sol";
 import "../interfaces/IIdentityRegistryV1.sol";
 import "../interfaces/IIdentityVerificationHubV1.sol";
 import "../upgradeable/ImplRoot.sol";
@@ -429,7 +428,6 @@ contract IdentityRegistryImplV1 is
         emit DevCommitmentRemoved(oldLeaf, imt_root, block.timestamp);
     }
     
-    // Will add dsc key commitment manager functions for dev
     // tested
     function devAddDscKeyCommitment(
         uint256 dscCommitment
@@ -444,6 +442,7 @@ contract IdentityRegistryImplV1 is
         emit DevDscKeyCommitmentRegistered(dscCommitment, imt_root, index);
     }
 
+    // tested
     function devUpdateDscKeyCommitment(
         uint256 oldLeaf,
         uint256 newLeaf,
