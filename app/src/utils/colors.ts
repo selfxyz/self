@@ -16,6 +16,7 @@ export const sky500 = '#0EA5E9';
 export const green500 = '#22C55E';
 export const red500 = '#EF4444';
 export const teal500 = '#5EEAD4';
+export const yellow500 = '#FDE047';
 
 // OLD
 export const borderColor = '#343434';

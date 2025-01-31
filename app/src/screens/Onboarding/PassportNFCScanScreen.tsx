@@ -112,8 +112,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         {isNfcSheetOpen ? (
           <>
             <TextsContainer>
-              <Title text="Ready to scan" />
-              <Description text={scanningMessage} />
+              <Title children="Ready to scan" />
+              <Description children={scanningMessage} />
             </TextsContainer>
 
             <Image
@@ -133,9 +133,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <Title text="Verify your passport" />
+              <Title children="Verify your passport" />
               <Description
-                text={
+                children={
                   isNfcEnabled
                     ? 'Open your passport to the last page to access the NFC chip. Place your phone against the page'
                     : dialogMessage

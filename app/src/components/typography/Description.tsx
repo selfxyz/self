@@ -1,13 +1,19 @@
 import React from 'react';
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet, Text, TextProps } from 'react-native';
 import { slate500 } from '../../utils/colors';
 
-interface DescriptionProps {
-  text: string;
-}
+interface DescriptionProps extends TextProps {}
 
-const Description = ({ text }: DescriptionProps) => {
-  return <Text style={styles.description}>{text}</Text>;
+const Description = ({ children, style, ...props }: DescriptionProps) => {
+  return (
+    <Text
+      {...props}
+      textBreakStrategy="balanced"
+      style={[styles.description, style]}
+    >
+      {children}
+    </Text>
+  );
 };
 
 export default Description;
