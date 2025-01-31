@@ -66,8 +66,10 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@babel/plugin-transform-private-methods": "^7.23.3",
     "@babel/preset-env": "^7.20.0",
     "@babel/runtime": "^7.22.6",
+    "@react-native-community/cli": "^14.1.1",
     "@react-native/babel-preset": "0.75.4",
     "@react-native/eslint-config": "0.75.4",
     "@react-native/metro-config": "0.75.4",
