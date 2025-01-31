@@ -4,9 +4,8 @@ import { getSMT } from "./generateProof";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";
-import { getCSCAModulusMerkleTree } from "../../../common/src/utils/csca";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
-
+import { getCscaTreeRoot } from "../../../common/src/utils/trees";
 // Import types
 import {
     DeployedActors,
@@ -50,10 +49,10 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "401031"
     );
     mockPassport = initPassportDataParsing(mockPassport);
-    
+
     // Deploy verifiers
-    const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local" 
-        ? VcAndDiscloseVerifierArtifactLocal 
+    const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local"
+        ? VcAndDiscloseVerifierArtifactLocal
         : VcAndDiscloseVerifierArtifactProd;
     const vcAndDiscloseVerifierFactory = await ethers.getContractFactory(
         vcAndDiscloseVerifierArtifact.abi,
@@ -64,8 +63,8 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     await vcAndDiscloseVerifier.waitForDeployment();
 
     // Deploy register verifier
-    const registerVerifierArtifact = process.env.TEST_ENV === "local" 
-        ? RegisterVerifierArtifactLocal 
+    const registerVerifierArtifact = process.env.TEST_ENV === "local"
+        ? RegisterVerifierArtifactLocal
         : RegisterVerifierArtifactProd;
     const registerVerifierFactory = await ethers.getContractFactory(
         registerVerifierArtifact.abi,
@@ -76,8 +75,8 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     await registerVerifier.waitForDeployment();
 
     // Deploy dsc verifier
-    const dscVerifierArtifact = process.env.TEST_ENV === "local" 
-        ? DscVerifierArtifactLocal 
+    const dscVerifierArtifact = process.env.TEST_ENV === "local"
+        ? DscVerifierArtifactLocal
         : DscVerifierArtifactProd;
     const dscVerifierFactory = await ethers.getContractFactory(
         dscVerifierArtifact.abi,
@@ -94,7 +93,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
 
     // Deploy IdentityRegistryImplV1
     const IdentityRegistryImplFactory = await ethers.getContractFactory(
-        "IdentityRegistryImplV1", 
+        "IdentityRegistryImplV1",
         {
             libraries: {
                 PoseidonT3: poseidonT3.target
@@ -134,7 +133,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
 
     // Get contracts with implementation ABI and update hub address
     const registryContract = await ethers.getContractAt(
-        "IdentityRegistryImplV1", 
+        "IdentityRegistryImplV1",
         identityRegistryProxy.target
     ) as IdentityRegistryImplV1;
     const updateHubTx = await registryContract.updateHub(identityVerificationHubProxy.target);
@@ -146,11 +145,11 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     ) as IdentityVerificationHubImplV1;
 
     // Initialize roots
-    const cscaModulusMerkleTree = getCSCAModulusMerkleTree();
-    await registryContract.updateCscaRoot(cscaModulusMerkleTree.root, {from: owner});
+    const csca_root = getCscaTreeRoot();
+    await registryContract.updateCscaRoot(csca_root, { from: owner });
 
     const nameSMT = getSMT();
-    await registryContract.updateOfacRoot(nameSMT.root, {from: owner});
+    await registryContract.updateOfacRoot(nameSMT.root, { from: owner });
 
     return {
         hub: hubContract,

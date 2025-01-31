@@ -84,6 +84,12 @@ function getCscaTreeInclusionProof(leaf: string) {
   const proof = tree.createProof(index);
   return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
 }
+export function getCscaTreeRoot() {
+  let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+  tree.setNodes(serialized_csca_tree);
+  return tree.root;
+}
+
 
 
 export function formatRoot(root: string): string {
