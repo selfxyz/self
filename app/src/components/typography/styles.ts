@@ -10,8 +10,6 @@ export const typography = StyleSheet.create({
   },
 });
 
-
-
 export const Caption = styled(BodyText, {
   fontSize: 15,
   color: slate400,
@@ -22,7 +20,7 @@ export const Caption = styled(BodyText, {
       },
       2: {
         fontSize: 15,
-      }
-    }
-  }
+      },
+    },
+  },
 });
