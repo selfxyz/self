@@ -193,7 +193,6 @@ export function generateCircuitInputsVCandDisclose(
     attestation_id,
     passportData
   );
-
   const index = findIndexInTree(merkletree, BigInt(commitment));
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,

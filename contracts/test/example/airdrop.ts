@@ -22,12 +22,22 @@ describe("Airdrop", () => {
     let snapshotId: string;
     let airdrop: any;
     let token: any;
+    let baseVcAndDiscloseProof: any;
+    let vcAndDiscloseProof: any;
+    let registerSecret: any;
+    let imt: any;
+    let commitment: any;
+    let nullifier: any;
+
     before(async () => {
         deployedActors = await deploySystemFixtures();
+        
+        // Token deployment
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         token = await tokenFactory.connect(deployedActors.owner).deploy();
         await token.waitForDeployment();
 
+        // Airdrop contract deployment
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
@@ -36,10 +46,36 @@ describe("Airdrop", () => {
             token.target
         );
         await airdrop.waitForDeployment();
+        
+        // Mint tokens
         const mintAmount = ethers.parseEther("424242424242");
         await token.mint(airdrop.target, mintAmount);
 
+        // Generate base proofs
+        registerSecret = generateRandomFieldElement();
+        nullifier = generateRandomFieldElement();
+        commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+        
+        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        imt = new LeanIMT<bigint>(hashFunction);
+        await imt.insert(BigInt(commitment));
+
+        baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
+            registerSecret,
+            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+            deployedActors.mockPassport,
+            "test-airdrop",
+            new Array(88).fill("1"),
+            "1",
+            imt,
+            "20",
+        );
+
         snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
+
+    beforeEach(async () => {
+        vcAndDiscloseProof = structuredClone(baseVcAndDiscloseProof);
     });
 
     afterEach(async () => {
@@ -133,30 +169,10 @@ describe("Airdrop", () => {
     it("should able to register address by user", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -198,30 +214,10 @@ describe("Airdrop", () => {
     it("should not able to register address by user if registration is closed", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -243,25 +239,16 @@ describe("Airdrop", () => {
     it("should not able to register address by user if scope is invalid", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
         );
 
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+        vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
+            deployedActors.mockPassport,
             "test-airdrop-invalid",
             new Array(88).fill("1"),
             "1",
@@ -288,30 +275,10 @@ describe("Airdrop", () => {
     it("should not able to register address by user if nullifier is already registered", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -334,33 +301,30 @@ describe("Airdrop", () => {
     it("should not able to register address by user if attestation id is invalid", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.INVALID_ATTESTATION_ID, mockPassport);
-
+        const invalidCommitment = generateCommitment(registerSecret, ATTESTATION_ID.INVALID_ATTESTATION_ID, deployedActors.mockPassport);
+        
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.INVALID_ATTESTATION_ID,
             nullifier,
-            commitment
+            invalidCommitment
         );
 
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
+        const invalidImt = new LeanIMT<bigint>(hashFunction);
+        await invalidImt.insert(BigInt(invalidCommitment));
 
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
+        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+        vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
             BigInt(ATTESTATION_ID.INVALID_ATTESTATION_ID).toString(),
-            mockPassport,
+            deployedActors.mockPassport,
             "test-airdrop",
             new Array(88).fill("1"),
             "1",
-            imt,
+            invalidImt,
             "20",
         );
-
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
             olderThanEnabled: true,
@@ -403,30 +367,10 @@ describe("Airdrop", () => {
     it("should able to claim token by user", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -477,30 +421,10 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if registration is not closed", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -534,30 +458,10 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if claim is not open", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -591,30 +495,10 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if user has already claimed", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -653,30 +537,10 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if merkle proof is invalid", async () => {
         const { hub, registry, owner, user1, mockPassport } = deployedActors;
 
-        const registerSecret = generateRandomFieldElement();
-        const nullifier = generateRandomFieldElement();
-
-        const commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
             commitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const imt = new LeanIMT<bigint>(hashFunction);
-        await imt.insert(BigInt(commitment));
-
-        const vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            imt,
-            "20",
         );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
