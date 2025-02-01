@@ -87,7 +87,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should not call verifyVcAndDisclose with non-proxy address", async() => {
-            const {hub, hubImpl, registry, owner} = deployedActors;
+            const {hubImpl, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -142,7 +142,6 @@ describe("VC and Disclose", () => {
                 nullifier,
                 commitment
             );
-            const rootInContract = await registry.getIdentityCommitmentMerkleRoot();
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
@@ -225,7 +224,6 @@ describe("VC and Disclose", () => {
             const currentBlock = await ethers.provider.getBlock('latest');
             const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60);
             
-            // Convert timestamp to 6 digits YYMMDD format
             const date = new Date(oneDayBefore * 1000);
             const dateComponents = [
                 Math.floor((date.getUTCFullYear() % 100) / 10),
@@ -391,7 +389,7 @@ describe("VC and Disclose", () => {
 
     describe("readable parsers", () =>{
         async function setupVcAndDiscloseTest(types: string[]) {
-            const {hub, mockPassport} = deployedActors;
+            const {hub} = deployedActors;
             
 
             let revealedDataPacked = [BigInt(0), BigInt(0), BigInt(0)];

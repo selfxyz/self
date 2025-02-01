@@ -11,7 +11,6 @@ import { TransactionReceipt, ZeroAddress } from "ethers";
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
-import { registry } from "../../typechain-types/factories/contracts";
 
 describe("Commitment Registration Tests", function () {
     this.timeout(0);
@@ -181,7 +180,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail registerDscKeyCommitment when hub address is not set", async () => {
-                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {hub, registry} = deployedActors;
 
                 await registry.updateHub(ZeroAddress);
                 await expect(
@@ -320,7 +319,6 @@ describe("Commitment Registration Tests", function () {
             it("should fail when verifier is not set", async () => {
                 const {hub} = deployedActors;
     
-                // Modify the proof to make it invalid
                 registerProof.a[0] = generateRandomFieldElement();
     
                 await expect(
@@ -346,9 +344,8 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail when register proof verification fails", async () => {
-                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {hub} = deployedActors;
     
-                // Modify the proof to make it invalid
                 registerProof.a[0] = generateRandomFieldElement();
     
                 await expect(
@@ -360,7 +357,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail when nullifier is already used", async () => {
-                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {hub, registry, mockPassport} = deployedActors;
     
                 const registerProof = await generateRegisterProof(
                     registerSecret,
@@ -391,7 +388,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail when registerCommitment is called by non-hub address", async () => {
-                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {registry, vcAndDisclose, register, dsc, owner} = deployedActors;
                 const IdentityVerificationHubImplFactory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
                 const hubImpl2 = await IdentityVerificationHubImplFactory.deploy();
                 await hubImpl2.waitForDeployment();
@@ -419,7 +416,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail registerCommitment when hub address is not set", async () => {
-                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {hub, registry} = deployedActors;
 
                 await registry.updateHub(ZeroAddress);
                 await expect(
@@ -431,7 +428,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail when registerCommitment is called by non-proxy address", async() => {
-                const {hub, registryImpl, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+                const {registryImpl} = deployedActors;
 
                 const nullifier = generateRandomFieldElement();
                 const commitment = generateRandomFieldElement();

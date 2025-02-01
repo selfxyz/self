@@ -11,7 +11,6 @@ describe("CircuitAttributeHandler", function () {
         await testHandler.waitForDeployment();
     });
 
-    // Sample passport data in MRZ format
     const mrz = ethers.toUtf8Bytes(
         "P<UTOERIKSSON<<ANNA<MARIA<<<<<<<<<<<<<<<<<<<" +
         "L898902C36UTO7408122F1204159ZE184226B<<<<<1018"
@@ -108,10 +107,10 @@ describe("CircuitAttributeHandler", function () {
     describe("extractStringAttribute", function () {
         it("should correctly extract string attributes from different positions", async function () {
             const testCases = [
-                { start: 2, end: 4, expected: "UTO" },  // Issuing State
-                { start: 44, end: 52, expected: "L898902C3" },  // Passport Number
-                { start: 54, end: 56, expected: "UTO" },  // Nationality
-                { start: 64, end: 64, expected: "F" },  // Gender
+                { start: 2, end: 4, expected: "UTO" },
+                { start: 44, end: 52, expected: "L898902C3" },
+                { start: 54, end: 56, expected: "UTO" },
+                { start: 64, end: 64, expected: "F" }, 
             ];
 
             for (const testCase of testCases) {

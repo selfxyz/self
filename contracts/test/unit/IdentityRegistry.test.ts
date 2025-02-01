@@ -23,10 +23,8 @@ describe("Unit Tests for IdentityRegistry", () => {
     describe("Initialization", () => {
         it("should initialize registry with correct hub address", async () => {
             const {registry, hub} = deployedActors;
-            // Check initial state
             expect(await registry.hub()).to.equal(hub.target);
             
-            // Check event emission
             const initializedFiler = registry.filters.RegistryInitialized;
             const events = await registry.queryFilter(initializedFiler);
             expect(events.length).to.equal(1);
@@ -273,10 +271,9 @@ describe("Unit Tests for IdentityRegistry", () => {
 
     describe("Update functions", () => {
         it("should update hub address", async () => {
-            const { registry, owner, user1 } = deployedActors;
+            const { registry, user1 } = deployedActors;
             const newHubAddress = await user1.getAddress();
 
-            // Update hub address and check event emission
             await expect(registry.updateHub(newHubAddress))
                 .to.emit(registry, "HubUpdated")
                 .withArgs(newHubAddress);
@@ -302,7 +299,6 @@ describe("Unit Tests for IdentityRegistry", () => {
             const { registry } = deployedActors;
             const newOfacRoot = generateRandomFieldElement();
 
-            // Update OFAC root and check event emission
             await expect(registry.updateOfacRoot(newOfacRoot))
                 .to.emit(registry, "OfacRootUpdated")
                 .withArgs(newOfacRoot);
@@ -328,7 +324,6 @@ describe("Unit Tests for IdentityRegistry", () => {
             const { registry } = deployedActors;
             const newCscaRoot = generateRandomFieldElement();
 
-            // Update CSCA root and check event emission
             await expect(registry.updateCscaRoot(newCscaRoot))
                 .to.emit(registry, "CscaRootUpdated")
                 .withArgs(newCscaRoot);
@@ -515,7 +510,7 @@ describe("Unit Tests for IdentityRegistry", () => {
         });
 
         it("should not add dsc key commitment if caller is not proxy", async () => {
-            const { registry, registryImpl, user1 } = deployedActors;
+            const { registryImpl, user1 } = deployedActors;
             const dscCommitment = generateRandomFieldElement();
             await expect(registryImpl.connect(user1).devAddDscKeyCommitment(dscCommitment)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
@@ -632,7 +627,7 @@ describe("Unit Tests for IdentityRegistry", () => {
         });
 
         it("able to change dsc key commitment state by owner", async () => {
-            const { registry, owner, user1 } = deployedActors;
+            const { registry } = deployedActors;
             const dscCommitment = generateRandomFieldElement();
             const state = true;
             const tx = await registry.devChangeDscKeyCommitmentState(dscCommitment, state);
@@ -670,7 +665,7 @@ describe("Unit Tests for IdentityRegistry", () => {
 
     describe("Upgradeability", () => {
         it("should preserve registry state after upgrade", async () => {
-            const {registry, owner, user1} = deployedActors;
+            const {registry, owner} = deployedActors;
 
             const initialHub = await registry.hub();
             const initialCscaRoot = await registry.getCscaRoot();
@@ -690,7 +685,6 @@ describe("Unit Tests for IdentityRegistry", () => {
             const poseidonT3 = await PoseidonT3Factory.deploy();
             await poseidonT3.waitForDeployment();
 
-            // Deploy IdentityRegistryImplV1
             const IdentityRegistryImplFactory = await ethers.getContractFactory(
                 "IdentityRegistryImplV1", 
                 {
@@ -811,7 +805,7 @@ describe("Unit Tests for IdentityRegistry", () => {
         });
 
         it("should not allow direct calls to implementation contract", async () => {
-            const {registry, owner} = deployedActors;
+            const {owner} = deployedActors;
             
             const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3", owner);
             const poseidonT3 = await PoseidonT3Factory.deploy();
@@ -831,7 +825,6 @@ describe("Unit Tests for IdentityRegistry", () => {
             const registryV2Implementation = await IdentityRegistryImplFactory.deploy();
             await registryV2Implementation.waitForDeployment();
 
-            // Try to call _authorizeUpgrade directly on the implementation contract
             await expect(
                 registryV2Implementation.updateCscaRoot(generateRandomFieldElement())
             ).to.be.revertedWithCustomError(registryV2Implementation, "UUPSUnauthorizedCallContext");

@@ -2,7 +2,6 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { ZeroAddress } from "ethers";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 
 describe("Unit Tests for IdentityVerificationHub", () => {
@@ -27,21 +26,18 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             // Check initial state
             expect(await hub.registry()).to.equal(registry.target);
             expect(await hub.vcAndDiscloseCircuitVerifier()).to.equal(vcAndDisclose.target);
-            
-            // Check verifier mappings
-            const registerId = RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096; // Example ID, adjust as needed
-            const dscId = DscVerifierId.dsc_rsa_sha256_65537_4096; // Example ID, adjust as needed
+
+            const registerId = RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096;
+            const dscId = DscVerifierId.dsc_rsa_sha256_65537_4096;
             expect(await hub.sigTypeToRegisterCircuitVerifiers(registerId)).to.equal(register.target);
             expect(await hub.sigTypeToDscCircuitVerifiers(dscId)).to.equal(dsc.target);
 
-            // Check event emission
             const filter = hub.filters.HubInitialized;
             const events = await hub.queryFilter(filter);
             expect(events.length).to.equal(1);
             const event = events[0];
             expect(event.args.registry).to.equal(registry.target);
             expect(event.args.vcAndDiscloseCircuitVerifier).to.equal(vcAndDisclose.target);
-            // Verify arrays in event match expected values
             expect(event.args.registerCircuitVerifierIds).to.deep.equal([registerId]);
             expect(event.args.registerCircuitVerifiers).to.deep.equal([register.target]);
             expect(event.args.dscCircuitVerifierIds).to.deep.equal([dscId]);
@@ -415,18 +411,15 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow non-proxy to upgrade implementation", async() => {
             const {hub, hubImpl, owner, user1} = deployedActors;
             
-            // Deploy new implementation
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
-            // Get proxy interface with implementation ABI
             const hubAsImpl = await ethers.getContractAt(
                 "IdentityVerificationHubImplV1",
                 hub.target
             );
 
-            // Try to upgrade from non-owner account
             await expect(
                 hubImpl.connect(owner).upgradeToAndCall(
                     hubV2Implementation.target,
@@ -438,18 +431,15 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow non-owner to upgrade implementation", async () => {
             const {hub, owner, user1} = deployedActors;
             
-            // Deploy new implementation
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
-            // Get proxy interface with implementation ABI
             const hubAsImpl = await ethers.getContractAt(
                 "IdentityVerificationHubImplV1",
                 hub.target
             );
 
-            // Try to upgrade from non-owner account
             await expect(
                 hubAsImpl.connect(user1).upgradeToAndCall(
                     hubV2Implementation.target,
@@ -461,12 +451,10 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow implementation contract to be initialized directly", async () => {
             const {hub, owner} = deployedActors;
             
-            // Deploy new implementation
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
-            // Try to initialize the implementation contract directly
             await expect(
                 hubV2Implementation.initialize(
                     ethers.ZeroAddress,
@@ -482,12 +470,10 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow direct calls to implementation contract", async () => {
             const {hub, owner} = deployedActors;
             
-            // Deploy new implementation
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
-            // Try to call _authorizeUpgrade directly on the implementation contract
             await expect(
                 hubV2Implementation.updateRegistry(ethers.ZeroAddress)
             ).to.be.revertedWithCustomError(hubV2Implementation, "UUPSUnauthorizedCallContext");

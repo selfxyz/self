@@ -69,13 +69,12 @@ describe("Formatter", function () {
 
     describe("extractForbiddenCountriesFromPacked", function () {
         it("should extract single forbidden country", async function () {
-            const packedValue = "0x414141"; // ASCII for "AAA"
+            const packedValue = "0x414141";
             const result = await testFormatter.testExtractForbiddenCountriesFromPacked(packedValue);
             expect(result[0]).to.equal("AAA");
         });
 
         it("should handle multiple forbidden countries", async function () {
-            // ASCII for "AAA" and "BBB"
             const packedValue = "0x414141424242";
             const result = await testFormatter.testExtractForbiddenCountriesFromPacked(packedValue);
             expect(result[0]).to.equal("BBB");
@@ -86,9 +85,9 @@ describe("Formatter", function () {
     describe("dateToUnixTimestamp", function () {
         it("should convert various dates to unix timestamp", async function () {
             const testCases = [
-                { input: "940131", expected: 3915734400n },  // 31 Jan 1994
-                { input: "000101", expected: 946684800n },  // 1 Jan 2000
-                { input: "200229", expected: 1582934400n }, // 29 Feb 2020 (leap year)
+                { input: "940131", expected: 3915734400n },
+                { input: "000101", expected: 946684800n },
+                { input: "200229", expected: 1582934400n }, 
             ];
 
             for (const testCase of testCases) {
@@ -164,16 +163,16 @@ describe("Formatter", function () {
         it("should convert proof date array to unix timestamp", async function () {
             const testCases = [
                 {
-                    input: [9, 4, 0, 1, 3, 1], // 94-01-31
-                    expected: 3915734400n      // 1994-01-31 00:00:00 UTC
+                    input: [9, 4, 0, 1, 3, 1],
+                    expected: 3915734400n
                 },
                 {
-                    input: [0, 0, 0, 1, 0, 1], // 00-01-01
-                    expected: 946684800n       // 2000-01-01 00:00:00 UTC
+                    input: [0, 0, 0, 1, 0, 1],
+                    expected: 946684800n 
                 },
                 {
-                    input: [2, 0, 0, 2, 2, 9], // 20-02-29
-                    expected: 1582934400n      // 2020-02-29 00:00:00 UTC
+                    input: [2, 0, 0, 2, 2, 9],
+                    expected: 1582934400n      
                 }
             ];
 
@@ -196,13 +195,13 @@ describe("Formatter", function () {
                     year: 2000,
                     month: 1,
                     day: 1,
-                    expected: 946684800n       // 2000-01-01 00:00:00 UTC
+                    expected: 946684800n
                 },
                 {
                     year: 2020,
                     month: 2,
                     day: 29,
-                    expected: 1582934400n      // 2020-02-29 00:00:00 UTC
+                    expected: 1582934400n
                 }
             ];
 
@@ -217,7 +216,6 @@ describe("Formatter", function () {
         });
 
         it("should handle edge cases", async function () {
-            // Test year 2099
             const result = await testFormatter.testToTimestamp(2099, 12, 31);
             expect(result).to.equal(4102358400n);
         });

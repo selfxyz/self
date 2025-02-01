@@ -27,12 +27,10 @@ describe("Airdrop", () => {
     before(async () => {
         deployedActors = await deploySystemFixtures();
         
-        // Token deployment
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         token = await tokenFactory.connect(deployedActors.owner).deploy();
         await token.waitForDeployment();
 
-        // Airdrop contract deployment
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
@@ -42,11 +40,9 @@ describe("Airdrop", () => {
         );
         await airdrop.waitForDeployment();
         
-        // Mint tokens
         const mintAmount = ethers.parseEther("424242424242");
         await token.mint(airdrop.target, mintAmount);
 
-        // Generate base proofs
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
@@ -170,7 +166,7 @@ describe("Airdrop", () => {
     });
 
     it("should able to register address by user", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -215,7 +211,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to register address by user if registration is closed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -395,7 +391,7 @@ describe("Airdrop", () => {
     });
 
     it("should able to claim token by user", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -449,7 +445,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if registration is not closed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -486,7 +482,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if claim is not open", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -523,7 +519,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if user has already claimed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -565,7 +561,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if merkle proof is invalid", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
