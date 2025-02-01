@@ -32,6 +32,7 @@ export type SignatureAlgorithm =
   | 'rsa_sha1_65537_4096'
   | 'ecdsa_sha256_secp256r1_256'
   | 'ecdsa_sha1_secp256r1_256'
+  | 'ecdsa_sha224_secp224r1_224'
   | 'ecdsa_sha384_secp384r1_384'
   | 'ecdsa_sha1_brainpoolP256r1_256'
   | 'ecdsa_sha256_brainpoolP256r1_256'

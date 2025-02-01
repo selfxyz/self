@@ -241,6 +241,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1_key;
       dsc = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1;
       break;
+    case 'ecdsa_sha224_secp224r1_224':
+      privateKeyPem = mockCertificates.mock_dsc_sha224_ecdsa_secp224r1_key;
+      dsc = mockCertificates.mock_dsc_sha224_ecdsa_secp224r1;
+      break;
   }
 
   // Generate MRZ hash first
