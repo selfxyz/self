@@ -7,7 +7,7 @@ import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateRegisterProof, generateDscProof } from "../utils/generateProof";
 import { generateRandomFieldElement } from "../utils/utils";
-import { TransactionReceipt } from "ethers";
+import { TransactionReceipt, ZeroAddress } from "ethers";
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
@@ -177,6 +177,18 @@ describe("Commitment Registration Tests", function () {
                         dscProof
                     )
                 ).to.be.revertedWithCustomError(registry, "ONLY_HUB_CAN_ACCESS");
+            });
+
+            it("should fail registerDscKeyCommitment when hub address is not set", async () => {
+                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+
+                await registry.updateHub(ZeroAddress);
+                await expect(
+                    hub.registerDscKeyCommitment(
+                        DscVerifierId.dsc_rsa_sha256_65537_4096,
+                        dscProof
+                    )
+                ).to.be.revertedWithCustomError(registry, "HUB_NOT_SET");
             });
 
             it("should fail when the dsc key commitment is already registered", async () => {
@@ -362,6 +374,33 @@ describe("Commitment Registration Tests", function () {
                         registerProof
                     )
                 ).to.be.revertedWithCustomError(registry, "ONLY_HUB_CAN_ACCESS");
+            });
+
+            it("should fail registerCommitment when hub address is not set", async () => {
+                const {hub, registry, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+
+                await registry.updateHub(ZeroAddress);
+                await expect(
+                    hub.registerPassportCommitment(
+                        RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
+                        registerProof
+                    )
+                ).to.be.revertedWithCustomError(registry, "HUB_NOT_SET");
+            });
+
+            it("should fail when registerCommitment is called by non-proxy address", async() => {
+                const {hub, registryImpl, vcAndDisclose, register, dsc, owner, user1, mockPassport} = deployedActors;
+
+                const nullifier = generateRandomFieldElement();
+                const commitment = generateRandomFieldElement();
+
+                await expect(
+                    registryImpl.registerCommitment(
+                        ATTESTATION_ID.E_PASSPORT,
+                        nullifier,
+                        commitment
+                    )
+                ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
             });
 
         });
