@@ -18,6 +18,12 @@ When you compile the circuits, make sure you set the build flag to true for thes
 - dsc_sha256_rsa_65537_4096
 - vc_and_disclose
 
+There is the difference in build scripts in circuits directory.
+```shell
+cd ../circuits/scripts/build/common.sh
+```
+Change the comment out place depends on your OS.
+
 ```shell
 cd ../circuits
 yarn run build-all

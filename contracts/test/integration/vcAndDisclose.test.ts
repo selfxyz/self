@@ -2,18 +2,16 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { generateDscSecret } from "../../../common/src/utils/csca";
 import { CIRCUIT_CONSTANTS } from "../utils/constants";
-import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
-import { PassportProof, VcAndDiscloseHubProof } from "../utils/types";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import { generateVcAndDiscloseProof } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
+
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
     let snapshotId: string;
@@ -58,7 +56,7 @@ describe("VC and Disclose", () => {
     describe("Verify VC and Disclose", () => {
 
         it("should verify and get result successfully", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -66,7 +64,6 @@ describe("VC and Disclose", () => {
                 commitment
             );
 
-    
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -78,19 +75,43 @@ describe("VC and Disclose", () => {
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
-            // Verify and get result
             const result = await hub.verifyVcAndDisclose(vcAndDiscloseHubProof);
 
-            // // Verify the returned results
+            expect(result.identityCommitmentRoot).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
             expect(result.revealedDataPacked).to.have.lengthOf(3);
             expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
             expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
             expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
             expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
+            expect(result.forbiddenCountriesListPacked).to.equal(4276545n);
+        });
+
+        it("should not call verifyVcAndDisclose with non-proxy address", async() => {
+            const {hubImpl, registry, owner} = deployedActors;
+
+            await registry.connect(owner).devAddIdentityCommitment(
+                ATTESTATION_ID.E_PASSPORT,
+                nullifier,
+                commitment
+            );
+
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: false,
+                olderThan: "20",
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: false,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            }
+
+            await expect(hubImpl.verifyVcAndDisclose(vcAndDiscloseHubProof))
+                .to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
         it("should fail with invalid identity commitment root", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -114,14 +135,13 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid OFAC root", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
             );
-            const rootInContract = await registry.getIdentityCommitmentMerkleRoot();
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
@@ -140,28 +160,17 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid current date (+ 1 day)", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
-                );
-            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-            const vcAndDiscloseHubProof = {
-                olderThanEnabled: true,
-                olderThan: "20",
-                forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
-                vcAndDiscloseProof: vcAndDiscloseProof
-            }
-
+            );
             const currentBlock = await ethers.provider.getBlock('latest');
-            const oneDayAfter = (currentBlock!.timestamp - 24 * 60 * 60 + 1);
+
+            const oneDayAfter = currentBlock!.timestamp + 24 * 60 * 601;
             
-            // Convert timestamp to 6 digits YYMMDD format
             const date = new Date(oneDayAfter * 1000);
             const dateComponents = [
                 Math.floor((date.getUTCFullYear() % 100) / 10),
@@ -176,6 +185,16 @@ describe("VC and Disclose", () => {
                 vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
             }
 
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: true,
+                olderThan: "20",
+                forbiddenCountriesEnabled: true,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: true,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            };
+
             await expect(
                 hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
             ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
@@ -183,7 +202,7 @@ describe("VC and Disclose", () => {
 
         it("should fail with invalid current date (- 1 day)", async () => {
             
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -203,9 +222,8 @@ describe("VC and Disclose", () => {
             }
 
             const currentBlock = await ethers.provider.getBlock('latest');
-            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60 - 1);
+            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60);
             
-            // Convert timestamp to 6 digits YYMMDD format
             const date = new Date(oneDayBefore * 1000);
             const dateComponents = [
                 Math.floor((date.getUTCFullYear() % 100) / 10),
@@ -226,7 +244,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should succeed with bigger value than older than", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -250,7 +268,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid older than", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -263,9 +281,9 @@ describe("VC and Disclose", () => {
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "21",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: false,
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
@@ -275,7 +293,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with if listed in OFAC", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner, mockPassport} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -287,9 +305,9 @@ describe("VC and Disclose", () => {
             const imt = new LeanIMT<bigint>(hashFunction);
             await imt.insert(BigInt(commitment));
     
-            const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+            const hash2 = (childNodes: ChildNodes) => poseidon2(childNodes);
             const smt = new SMT(hash2, true);
-            // Generate VC and Disclose proof
+
             const vcAndDiscloseProof = await generateVcAndDiscloseProof(
                 registerSecret,
                 BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
@@ -307,7 +325,7 @@ describe("VC and Disclose", () => {
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "20",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
                 ofacEnabled: true,
                 vcAndDiscloseProof: vcAndDiscloseProof
@@ -319,7 +337,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid forbidden countries", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -343,7 +361,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid VC and Disclose proof", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -355,11 +373,11 @@ describe("VC and Disclose", () => {
             vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
-                olderThanEnabled: true,
+                olderThanEnabled: false,
                 olderThan: "20",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: false,
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
@@ -371,7 +389,7 @@ describe("VC and Disclose", () => {
 
     describe("readable parsers", () =>{
         async function setupVcAndDiscloseTest(types: string[]) {
-            const {hub, mockPassport} = deployedActors;
+            const {hub} = deployedActors;
             
 
             let revealedDataPacked = [BigInt(0), BigInt(0), BigInt(0)];
@@ -386,6 +404,20 @@ describe("VC and Disclose", () => {
             return { readableData };
         }
 
+        it("should fail when getReadableRevealedData is called by non-proxy", async() => {
+            const {hubImpl} = deployedActors;
+            let revealedDataPacked = [BigInt(0), BigInt(0), BigInt(0)];
+            for (let i = 0; i < 3; i++) {
+                revealedDataPacked[i] = BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i]);
+            };
+            await expect(
+                hubImpl.getReadableRevealedData(
+                    revealedDataPacked as [BigNumberish, BigNumberish, BigNumberish],
+                    ['0']
+                )
+            ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
+
         it("should return all data", async () => {
             const { readableData } = await setupVcAndDiscloseTest(['0', '1', '2', '3', '4', '5', '6', '7', '8']);
             expect(readableData[0]).to.equal('FRA');
@@ -397,6 +429,19 @@ describe("VC and Disclose", () => {
             expect(readableData[6]).to.equal('31-10-40');
             expect(readableData[7]).to.equal(20n);
             expect(readableData[8]).to.equal(1n);
+        });
+
+        it("should only return issuing state", async() => {
+            const { readableData } = await setupVcAndDiscloseTest(['0']);
+            expect(readableData[0]).to.equal('FRA');
+            expect(readableData[1]).to.deep.equal([]);
+            expect(readableData[2]).to.equal('');
+            expect(readableData[3]).to.equal('');
+            expect(readableData[4]).to.equal('');
+            expect(readableData[5]).to.equal('');
+            expect(readableData[6]).to.equal('');
+            expect(readableData[7]).to.equal(0n);
+            expect(readableData[8]).to.equal(0n)
         });
 
         it("should only return name", async () => {
@@ -489,7 +534,7 @@ describe("VC and Disclose", () => {
             expect(readableData[7]).to.equal(20n);
             expect(readableData[8]).to.equal(0n);   
         });
-
+   
         it("should only return ofac", async () => {
             const { readableData } = await setupVcAndDiscloseTest(['8']);
             expect(readableData[0]).to.equal('');
@@ -500,7 +545,20 @@ describe("VC and Disclose", () => {
             expect(readableData[5]).to.equal('');
             expect(readableData[6]).to.equal('');
             expect(readableData[7]).to.equal(0n);
-            expect(readableData[8]).to.equal(1n);   
+            expect(readableData[8]).to.equal(1n);
+        });
+
+        it("should return nothing", async () => {
+            const { readableData } = await setupVcAndDiscloseTest([]);
+            expect(readableData[0]).to.equal('');
+            expect(readableData[1]).to.deep.equal([]);
+            expect(readableData[2]).to.equal('');
+            expect(readableData[3]).to.equal('');
+            expect(readableData[4]).to.equal('');
+            expect(readableData[5]).to.equal('');
+            expect(readableData[6]).to.equal('');
+            expect(readableData[7]).to.equal(0n);
+            expect(readableData[8]).to.equal(0n);
         });
 
         it("should parse forbidden countries", async () => {

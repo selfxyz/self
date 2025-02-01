@@ -187,6 +187,8 @@ contract IdentityVerificationHubImplV1 is
         RevealedDataType[] memory types
     )
         external
+        virtual
+        onlyProxy
         view
         returns (ReadableRevealedData memory)
     {
@@ -227,6 +229,8 @@ contract IdentityVerificationHubImplV1 is
         uint256 forbiddenCountriesListPacked
     )
         external
+        virtual
+        onlyProxy
         view
         returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
     {
@@ -236,10 +240,12 @@ contract IdentityVerificationHubImplV1 is
     // verify and view
 
     // will test in vc and disclose.ts
+    // tested
     function verifyVcAndDisclose(
         VcAndDiscloseHubProof memory proof
     )
         external
+        virtual
         view
         onlyProxy
         returns (VcAndDiscloseVerificationResult memory)
@@ -265,6 +271,7 @@ contract IdentityVerificationHubImplV1 is
         address registryAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -277,6 +284,7 @@ contract IdentityVerificationHubImplV1 is
         address vcAndDiscloseCircuitVerifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -290,6 +298,7 @@ contract IdentityVerificationHubImplV1 is
         address verifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -303,6 +312,7 @@ contract IdentityVerificationHubImplV1 is
         address verifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -316,6 +326,7 @@ contract IdentityVerificationHubImplV1 is
         address[] calldata verifierAddresses
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -334,6 +345,7 @@ contract IdentityVerificationHubImplV1 is
         address[] calldata verifierAddresses
     ) 
         external
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -353,6 +365,7 @@ contract IdentityVerificationHubImplV1 is
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
         external
+        virtual
         onlyProxy
     {
         verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
@@ -370,6 +383,7 @@ contract IdentityVerificationHubImplV1 is
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     )
         external
+        virtual
         onlyProxy
     {
         verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
@@ -405,10 +419,11 @@ contract IdentityVerificationHubImplV1 is
         for (uint256 i = 0; i < 6; i++) {
             dateNum[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
         }
+
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
             currentTimestamp < block.timestamp - 1 days ||
-            currentTimestamp > block.timestamp + 1 days
+            currentTimestamp + 1 days - 1 > block.timestamp + 1 days
         ) {
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }

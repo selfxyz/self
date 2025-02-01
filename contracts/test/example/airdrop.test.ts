@@ -2,20 +2,15 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { generateDscSecret } from "../../../common/src/utils/csca";
 import { CIRCUIT_CONSTANTS } from "../utils/constants";
-import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
-import { PassportProof, VcAndDiscloseHubProof } from "../utils/types";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import {generateVcAndDiscloseProof } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
-import { BigNumberish } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import BalanceTree from "../utils/example/balance-tree";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
-import { formatInput } from "../../../common/src/utils/circuits/generateInputs";
 
 describe("Airdrop", () => {
     let deployedActors: DeployedActors;
@@ -32,12 +27,10 @@ describe("Airdrop", () => {
     before(async () => {
         deployedActors = await deploySystemFixtures();
         
-        // Token deployment
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         token = await tokenFactory.connect(deployedActors.owner).deploy();
         await token.waitForDeployment();
 
-        // Airdrop contract deployment
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
@@ -47,11 +40,9 @@ describe("Airdrop", () => {
         );
         await airdrop.waitForDeployment();
         
-        // Mint tokens
         const mintAmount = ethers.parseEther("424242424242");
         await token.mint(airdrop.target, mintAmount);
 
-        // Generate base proofs
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
@@ -151,6 +142,14 @@ describe("Airdrop", () => {
         expect(await airdrop.isClaimOpen()).to.be.false;
     });
 
+    it("should not able to close claim by owner", async () => {
+        const { owner, user1 } = deployedActors;
+        await airdrop.connect(owner).openClaim();
+        await expect(
+            airdrop.connect(user1).closeClaim()
+        ).to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount");
+    });
+
     it("should able to set merkle root by owner", async () => {
         const { owner } = deployedActors;
         const merkleRoot = generateRandomFieldElement();
@@ -167,7 +166,7 @@ describe("Airdrop", () => {
     });
 
     it("should able to register address by user", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -212,7 +211,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to register address by user if registration is closed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -237,7 +236,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to register address by user if scope is invalid", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -273,7 +272,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to register address by user if nullifier is already registered", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -299,7 +298,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to register address by user if attestation id is invalid", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         const invalidCommitment = generateCommitment(registerSecret, ATTESTATION_ID.INVALID_ATTESTATION_ID, deployedActors.mockPassport);
         
@@ -340,6 +339,33 @@ describe("Airdrop", () => {
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
 
+    it("should not able to registerAddress when the proof is wrong", async () => {
+        const { hub, registry, owner, user1 } = deployedActors;
+
+        await registry.connect(owner).devAddIdentityCommitment(
+            ATTESTATION_ID.E_PASSPORT,
+            nullifier,
+            commitment
+        );
+
+        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+        vcAndDiscloseProof.a[0] = generateRandomFieldElement();
+
+        const vcAndDiscloseHubProof = {
+            olderThanEnabled: true,
+            olderThan: "20",
+            forbiddenCountriesEnabled: true,
+            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+            ofacEnabled: true,
+            vcAndDiscloseProof: vcAndDiscloseProof
+        };
+
+        await airdrop.connect(owner).openRegistration();
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+            .to.be.revertedWithCustomError(hub, "INVALID_VC_AND_DISCLOSE_PROOF");
+    });
+
     it("should return correct scope", async () => {
         const scope = await airdrop.getScope();
         expect(scope).to.equal(castFromScope("test-airdrop"));
@@ -365,7 +391,7 @@ describe("Airdrop", () => {
     });
 
     it("should able to claim token by user", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -419,7 +445,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if registration is not closed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -456,7 +482,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if claim is not open", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -493,7 +519,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if user has already claimed", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
@@ -535,7 +561,7 @@ describe("Airdrop", () => {
     });
 
     it("should not able to claim token by user if merkle proof is invalid", async () => {
-        const { hub, registry, owner, user1, mockPassport } = deployedActors;
+        const { registry, owner, user1 } = deployedActors;
 
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,

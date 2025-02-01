@@ -84,8 +84,8 @@ build_circuit() {
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
 
     # mac OS
-    # sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" \
-    #     ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
+    sed -i '' "s/Groth16Verifier/Verifier_${CIRCUIT_NAME}/g" \
+        ${OUTPUT_DIR}/${CIRCUIT_NAME}/Verifier_${CIRCUIT_NAME}.sol
 
     # Copy verifier to contracts directory
     mkdir -p ../contracts/contracts/verifiers/local/${CIRCUIT_TYPE}/
