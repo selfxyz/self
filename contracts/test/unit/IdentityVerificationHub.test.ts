@@ -109,6 +109,21 @@ describe("Unit Tests for IdentityVerificationHub", () => {
                 hubProxyFactory.deploy(hubImpl.target, initializeData)
             ).to.be.revertedWithCustomError(hubImpl, "LENGTH_MISMATCH");
         });
+
+        it("should not allow initialization after initialized", async () => {
+            const { hub, registry, vcAndDisclose } = deployedActors;
+            
+            await expect(
+                hub.initialize(
+                    registry.target,
+                    vcAndDisclose.target,
+                    [],
+                    [],
+                    [],
+                    []
+                )
+            ).to.be.revertedWithCustomError(hub, "InvalidInitialization");
+        });
     });
 
     describe("Update functions", () => {
@@ -389,8 +404,31 @@ describe("Unit Tests for IdentityVerificationHub", () => {
                 .to.equal(ethers.zeroPadValue(hubV2Implementation.target.toString(), 32));
         });
 
+        it("should not allow non-proxy to upgrade implementation", async() => {
+            const {hub, hubImpl, owner, user1} = deployedActors;
+            
+            // Deploy new implementation
+            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const hubV2Implementation = await HubV2Factory.deploy();
+            await hubV2Implementation.waitForDeployment();
+
+            // Get proxy interface with implementation ABI
+            const hubAsImpl = await ethers.getContractAt(
+                "IdentityVerificationHubImplV1",
+                hub.target
+            );
+
+            // Try to upgrade from non-owner account
+            await expect(
+                hubImpl.connect(owner).upgradeToAndCall(
+                    hubV2Implementation.target,
+                    "0x"
+                )
+            ).to.be.revertedWithCustomError(hubAsImpl, "UUPSUnauthorizedCallContext");
+        });
+
         it("should not allow non-owner to upgrade implementation", async () => {
-            const {hub, registry, owner, user1} = deployedActors;
+            const {hub, owner, user1} = deployedActors;
             
             // Deploy new implementation
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);

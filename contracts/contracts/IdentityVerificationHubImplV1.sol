@@ -187,6 +187,7 @@ contract IdentityVerificationHubImplV1 is
         RevealedDataType[] memory types
     )
         external
+        virtual
         view
         returns (ReadableRevealedData memory)
     {
@@ -227,6 +228,7 @@ contract IdentityVerificationHubImplV1 is
         uint256 forbiddenCountriesListPacked
     )
         external
+        virtual
         view
         returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
     {
@@ -241,6 +243,7 @@ contract IdentityVerificationHubImplV1 is
         VcAndDiscloseHubProof memory proof
     )
         external
+        virtual
         view
         onlyProxy
         returns (VcAndDiscloseVerificationResult memory)
@@ -266,6 +269,7 @@ contract IdentityVerificationHubImplV1 is
         address registryAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -278,6 +282,7 @@ contract IdentityVerificationHubImplV1 is
         address vcAndDiscloseCircuitVerifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -291,6 +296,7 @@ contract IdentityVerificationHubImplV1 is
         address verifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -304,6 +310,7 @@ contract IdentityVerificationHubImplV1 is
         address verifierAddress
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -317,6 +324,7 @@ contract IdentityVerificationHubImplV1 is
         address[] calldata verifierAddresses
     ) 
         external 
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -335,6 +343,7 @@ contract IdentityVerificationHubImplV1 is
         address[] calldata verifierAddresses
     ) 
         external
+        virtual
         onlyProxy
         onlyOwner 
     {
@@ -354,6 +363,7 @@ contract IdentityVerificationHubImplV1 is
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
         external
+        virtual
         onlyProxy
     {
         verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
@@ -371,6 +381,7 @@ contract IdentityVerificationHubImplV1 is
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     )
         external
+        virtual
         onlyProxy
     {
         verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);

@@ -60,6 +60,14 @@ describe("Unit Tests for IdentityRegistry", () => {
                 registryImpl.initialize(hub.target)
             ).to.be.revertedWithCustomError(registryImpl, "InvalidInitialization");
         });
+
+        it("should not allow initialization after initialized", async () => {
+            const { registry, hub } = deployedActors;
+            
+            await expect(
+                registry.initialize(hub.target)
+            ).to.be.revertedWithCustomError(registry, "InvalidInitialization");
+        });
     });
 
     describe("View functions", () => {
@@ -723,6 +731,33 @@ describe("Unit Tests for IdentityRegistry", () => {
             const implementationAddress = await ethers.provider.getStorage(registry.target, implementationSlot);
             expect(ethers.zeroPadValue(implementationAddress, 32))
                 .to.equal(ethers.zeroPadValue(registryV2Implementation.target.toString(), 32));
+        });
+
+        it("should not allow non proxy to upgrade implementation", async() => {
+            const {registryImpl, owner} = deployedActors;
+            
+            const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3", owner);
+            const poseidonT3 = await PoseidonT3Factory.deploy();
+            await poseidonT3.waitForDeployment();
+
+            // Deploy IdentityRegistryImplV1
+            const IdentityRegistryImplFactory = await ethers.getContractFactory(
+                "IdentityRegistryImplV1", 
+                {
+                    libraries: {
+                        PoseidonT3: poseidonT3.target
+                    }
+                },
+                owner
+            );
+
+            const registryV2Implementation = await IdentityRegistryImplFactory.deploy();
+            await registryV2Implementation.waitForDeployment();
+
+            await expect(registryImpl.connect(owner).upgradeToAndCall(
+                registryV2Implementation.target,
+                "0x"
+            )).to.be.revertedWithCustomError(registryImpl,  "UUPSUnauthorizedCallContext");
         });
 
         it("should not allow non owner to upgrade implementation", async () => {

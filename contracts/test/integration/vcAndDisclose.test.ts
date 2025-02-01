@@ -86,6 +86,30 @@ describe("VC and Disclose", () => {
             expect(result.forbiddenCountriesListPacked).to.equal(4276545n);
         });
 
+        it("should not call verifyVcAndDisclose with non-proxy address", async() => {
+            const {hub, hubImpl, registry, owner} = deployedActors;
+
+            await registry.connect(owner).devAddIdentityCommitment(
+                ATTESTATION_ID.E_PASSPORT,
+                nullifier,
+                commitment
+            );
+
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: false,
+                olderThan: "20",
+                forbiddenCountriesEnabled: false,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: false,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            }
+
+            await expect(hubImpl.verifyVcAndDisclose(vcAndDiscloseHubProof))
+                .to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
+
         it("should fail with invalid identity commitment root", async () => {
             const {hub, registry, owner} = deployedActors;
 
@@ -259,9 +283,9 @@ describe("VC and Disclose", () => {
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "21",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: false,
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
@@ -303,7 +327,7 @@ describe("VC and Disclose", () => {
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "20",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
                 ofacEnabled: true,
                 vcAndDiscloseProof: vcAndDiscloseProof
@@ -351,11 +375,11 @@ describe("VC and Disclose", () => {
             vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
-                olderThanEnabled: true,
+                olderThanEnabled: false,
                 olderThan: "20",
-                forbiddenCountriesEnabled: true,
+                forbiddenCountriesEnabled: false,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: false,
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
@@ -393,6 +417,19 @@ describe("VC and Disclose", () => {
             expect(readableData[6]).to.equal('31-10-40');
             expect(readableData[7]).to.equal(20n);
             expect(readableData[8]).to.equal(1n);
+        });
+
+        it("should only return issuing state", async() => {
+            const { readableData } = await setupVcAndDiscloseTest(['0']);
+            expect(readableData[0]).to.equal('FRA');
+            expect(readableData[1]).to.deep.equal([]);
+            expect(readableData[2]).to.equal('');
+            expect(readableData[3]).to.equal('');
+            expect(readableData[4]).to.equal('');
+            expect(readableData[5]).to.equal('');
+            expect(readableData[6]).to.equal('');
+            expect(readableData[7]).to.equal(0n);
+            expect(readableData[8]).to.equal(0n)
         });
 
         it("should only return name", async () => {
