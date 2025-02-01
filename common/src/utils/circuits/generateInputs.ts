@@ -87,7 +87,7 @@ export function generateCircuitInputsDSC(
 }
 
 export function generateCircuitInputsRegister(
-  secret: number | string,
+  secret: string,
   passportData: PassportData
 ) {
   if (!passportData.parsed) {
@@ -97,7 +97,12 @@ export function generateCircuitInputsRegister(
   const passportMetadata = passportData.passportMetadata;
   const dscParsed = passportData.dsc_parsed;
 
-  const dscTbsBytesPadded = padWithZeroes(Array.from(dscParsed.tbsBytes), max_dsc_bytes); // TODO: is this padding better than the other?
+  // const dscTbsBytesPadded = padWithZeroes(Array.from(dscParsed.tbsBytes), max_dsc_bytes); // TODO: is this padding better than the other?
+
+  const [dscTbsBytesPadded, ] = pad(dscParsed.hashAlgorithm)(
+    dscParsed.tbsBytes,
+    max_dsc_bytes
+  );
 
   const { pubKey, signature, signatureAlgorithmFullName } = getPassportSignatureInfos(passportData);
   const mrz_formatted = formatMrz(mrz);
@@ -132,7 +137,7 @@ export function generateCircuitInputsRegister(
   const [startIndex, keyLength] = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
 
   const inputs = {
-    raw_dsc: dscTbsBytesPadded.map(x => x.toString()),
+    raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
     raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
     dsc_pubKey_offset: startIndex,
     dsc_pubKey_actual_size: [BigInt(dsc_pubkey_actual_size).toString()],
