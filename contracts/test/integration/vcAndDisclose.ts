@@ -2,18 +2,16 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { generateDscSecret } from "../../../common/src/utils/csca";
 import { CIRCUIT_CONSTANTS } from "../utils/constants";
-import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
-import { PassportProof, VcAndDiscloseHubProof } from "../utils/types";
 import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
+import { generateVcAndDiscloseProof } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
+
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
     let snapshotId: string;
