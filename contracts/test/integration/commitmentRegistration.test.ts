@@ -11,6 +11,7 @@ import { TransactionReceipt, ZeroAddress } from "ethers";
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
+import { registry } from "../../typechain-types/factories/contracts";
 
 describe("Commitment Registration Tests", function () {
     this.timeout(0);
@@ -192,7 +193,7 @@ describe("Commitment Registration Tests", function () {
             });
 
             it("should fail when the dsc key commitment is already registered", async () => {
-                const {hub, registry, mockPassport} = deployedActors;
+                const {hub, registry} = deployedActors;
                 await hub.registerDscKeyCommitment(
                     DscVerifierId.dsc_rsa_sha256_65537_4096,
                     dscProof
@@ -204,6 +205,37 @@ describe("Commitment Registration Tests", function () {
                     )
                 ).to.be.revertedWithCustomError(registry, "REGISTERED_COMMITMENT");
             });
+
+            it("should fail when getDscKeyCommitmentMerkleRoot is called by non-proxy", async () => {
+                const {registryImpl} = deployedActors;
+                await expect(
+                    registryImpl.getDscKeyCommitmentMerkleRoot()
+                ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            });
+
+            it("should fail when checkDscKeyCommitmentMerkleRoot is called by non-proxy", async () => {
+                const {registryImpl} = deployedActors;
+                const root = generateRandomFieldElement();
+                await expect(
+                    registryImpl.checkDscKeyCommitmentMerkleRoot(root)
+                ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            });
+
+            it("should fail when getDscKeyCommitmentTreeSize is called by non-proxy", async () => {
+                const {registryImpl} = deployedActors;
+                await expect(
+                    registryImpl.getDscKeyCommitmentTreeSize()
+                ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            });
+
+            it("should fail when getDscKeyCommitmentIndex is called by non-proxy", async () => {
+                const {registryImpl} = deployedActors;
+                const commitment =generateRandomFieldElement();
+                await expect(
+                    registryImpl.getDscKeyCommitmentIndex(commitment)
+                ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            });
+
         });
 
         describe("Register Passport Commitment", () => {

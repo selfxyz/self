@@ -214,7 +214,6 @@ describe("Unit Tests for IdentityRegistry", () => {
 
         it("should fail if ofac root is called by non-proxy", async () => {
             const {registryImpl, user1} = deployedActors;
-            const root = generateRandomFieldElement();
             await expect(registryImpl.connect(user1).getOfacRoot()).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
