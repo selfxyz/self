@@ -13,6 +13,7 @@ import { max_dsc_bytes } from '../constants/constants';
 import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
 import { IMT } from '@openpassport/zk-kit-imt';
+import { pad } from './passports/passport';
 
 export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   const response = await fetch(url);
@@ -27,11 +28,20 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
 
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
-  const maxPaddedLength = type === 'dsc' ? max_dsc_bytes : max_csca_bytes;
-  const tbsBytesArray = Array.from(parsed.tbsBytes);
-  const paddedTbsBytesArray = tbsBytesArray.concat(new Array(maxPaddedLength - tbsBytesArray.length).fill(0));
-  return packBytesAndPoseidon(paddedTbsBytesArray);
+  if (type === 'dsc') {
+    // for now, we pad it for sha
+    const [paddedTbsBytes, tbsBytesLen] = pad(parsed.hashAlgorithm)(
+      parsed.tbsBytes,
+      max_dsc_bytes
+    );
+    return packBytesAndPoseidon(Array.from(paddedTbsBytes));
+  } else {
+    const tbsBytesArray = Array.from(parsed.tbsBytes);
+    const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
+    return packBytesAndPoseidon(paddedTbsBytesArray);
+  }
 }
+
 
 export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string {
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);

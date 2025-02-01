@@ -73,11 +73,11 @@ export function generateCircuitInputsDSC(
 
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
-    raw_csca_actual_length: [BigInt(cscaParsed.tbsBytes.length).toString()],
-    csca_pubKey_offset: [startIndex.toString()],
-    csca_pubKey_actual_size: [BigInt(csca_pubkey_actual_size).toString()],
+    raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),
+    csca_pubKey_offset: startIndex.toString(),
+    csca_pubKey_actual_size: BigInt(csca_pubkey_actual_size).toString(),
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
-    raw_dsc_actual_length: [BigInt(dscTbsBytesLen).toString()],
+    raw_dsc_actual_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
     csca_pubKey: csca_pubKey_formatted,
     signature,
     merkle_root: root,

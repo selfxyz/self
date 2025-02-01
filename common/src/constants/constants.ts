@@ -164,7 +164,7 @@ export const k_csca = 35;
 export const n_dsc_ecdsa = 64;
 export const k_dsc_ecdsa = 4;
 export const max_dsc_bytes = 1792;
-export const max_csca_bytes = 1792; // TODO: change this value
+export const max_csca_bytes = 1792;
 export const countryCodes = {
   AFG: 'Afghanistan',
   ALA: 'Aland Islands',

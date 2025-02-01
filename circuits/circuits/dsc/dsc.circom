@@ -66,6 +66,29 @@ template DSC(
     signal input path[nLevels];
     signal input siblings[nLevels];
 
+    // check raw_csca_actual_length is valid by checking that it is a 255 in the CSCA, and all bytes after it are 0s
+    // NOTE: not sure it's necessary to check for more than raw_csca[raw_csca_actual_length - 1] !== 0, as selecting any position
+    // before the actual length would only constrain the pubkey range more
+    // NOTE: could be handled differently by including raw_csca_actual_length in the csca merkle tree,
+    // instead of passing it as a private input
+    component byte_checks[MAX_CSCA_LENGTH];
+    component isEqualChecks[MAX_CSCA_LENGTH];
+    for (var i = 0; i < MAX_CSCA_LENGTH; i++) {
+        byte_checks[i] = GreaterThan(32);
+        byte_checks[i].in[0] <== i;
+        byte_checks[i].in[1] <== raw_csca_actual_length;
+        
+        // If i >= raw_csca_actual_length, the byte must be 0
+        raw_csca[i] * byte_checks[i].out === 0;
+
+        isEqualChecks[i] = IsEqual();
+        isEqualChecks[i].in[0] <== raw_csca_actual_length - 1;
+        isEqualChecks[i].in[1] <== i;
+
+        // If i == raw_csca_actual_length - 1, the byte must be 255
+        (raw_csca[i] - 255) * isEqualChecks[i].out === 0;
+    }
+
     // check offsets refer to valid ranges
     signal csca_pubKey_offset_in_range <== LessEqThan(12)([
         csca_pubKey_offset + csca_pubKey_actual_size,
@@ -94,6 +117,8 @@ template DSC(
     );
 
     // verify DSC signature
+    // we don't check that raw_dsc_actual_length is the correct one currently
+    // because we assume it would give hashes for which no signatures can be produced
     signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, MAX_DSC_LENGTH)(raw_dsc, raw_dsc_actual_length);
     SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature);
     
