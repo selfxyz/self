@@ -188,6 +188,7 @@ contract IdentityVerificationHubImplV1 is
     )
         external
         virtual
+        onlyProxy
         view
         returns (ReadableRevealedData memory)
     {
@@ -229,6 +230,7 @@ contract IdentityVerificationHubImplV1 is
     )
         external
         virtual
+        onlyProxy
         view
         returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory)
     {
@@ -417,10 +419,12 @@ contract IdentityVerificationHubImplV1 is
         for (uint256 i = 0; i < 6; i++) {
             dateNum[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i];
         }
+        // This timestamp will be set as the 0am of that day.
+        // I need to add 1 days - 1 timestamp count to verify + 1 day verification
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
             currentTimestamp < block.timestamp - 1 days ||
-            currentTimestamp > block.timestamp + 1 days
+            currentTimestamp + 1 days - 1 > block.timestamp + 1 days
         ) {
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }

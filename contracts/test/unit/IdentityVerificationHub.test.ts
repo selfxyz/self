@@ -266,6 +266,16 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             await expect(hubImpl.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
+        it("should not batch update register verifiers if length is not the same", async () => {
+            const { hub, user1 } = deployedActors;
+            const verifierIds = [1];
+            const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
+
+            await expect(
+                hub.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses)
+            ).to.be.revertedWithCustomError(hub, "LENGTH_MISMATCH");
+        });
+
         it("should batch update DSC circuit verifiers", async () => {
             const { hub, user1 } = deployedActors;
             const verifierIds = [1, 2];
@@ -299,14 +309,10 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             await expect(hubImpl.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it("should fail batch updates with mismatched array lengths", async () => {
+        it("should not batch update dsc verifiers if length is not the same", async () => {
             const { hub, user1 } = deployedActors;
             const verifierIds = [1];
             const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
-
-            await expect(
-                hub.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses)
-            ).to.be.revertedWithCustomError(hub, "LENGTH_MISMATCH");
 
             await expect(
                 hub.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses)

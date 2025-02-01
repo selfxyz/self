@@ -167,20 +167,10 @@ describe("VC and Disclose", () => {
                 ATTESTATION_ID.E_PASSPORT,
                 nullifier,
                 commitment
-                );
-            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-            const vcAndDiscloseHubProof = {
-                olderThanEnabled: true,
-                olderThan: "20",
-                forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
-                vcAndDiscloseProof: vcAndDiscloseProof
-            }
-
+            );
             const currentBlock = await ethers.provider.getBlock('latest');
-            const oneDayAfter = (currentBlock!.timestamp - 24 * 60 * 60 + 1);
+
+            const oneDayAfter = currentBlock!.timestamp + 24 * 60 * 601;
             
             const date = new Date(oneDayAfter * 1000);
             const dateComponents = [
@@ -195,6 +185,16 @@ describe("VC and Disclose", () => {
             for (let i = 0; i < 6; i++) {
                 vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
             }
+
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: true,
+                olderThan: "20",
+                forbiddenCountriesEnabled: true,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: true,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            };
 
             await expect(
                 hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
@@ -223,7 +223,7 @@ describe("VC and Disclose", () => {
             }
 
             const currentBlock = await ethers.provider.getBlock('latest');
-            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60 - 1);
+            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60);
             
             // Convert timestamp to 6 digits YYMMDD format
             const date = new Date(oneDayBefore * 1000);
@@ -405,6 +405,20 @@ describe("VC and Disclose", () => {
 
             return { readableData };
         }
+
+        it("should fail when getReadableRevealedData is called by non-proxy", async() => {
+            const {hubImpl} = deployedActors;
+            let revealedDataPacked = [BigInt(0), BigInt(0), BigInt(0)];
+            for (let i = 0; i < 3; i++) {
+                revealedDataPacked[i] = BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i]);
+            };
+            await expect(
+                hubImpl.getReadableRevealedData(
+                    revealedDataPacked as [BigNumberish, BigNumberish, BigNumberish],
+                    ['0']
+                )
+            ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
 
         it("should return all data", async () => {
             const { readableData } = await setupVcAndDiscloseTest(['0', '1', '2', '3', '4', '5', '6', '7', '8']);
