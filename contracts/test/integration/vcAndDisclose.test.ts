@@ -307,7 +307,7 @@ describe("VC and Disclose", () => {
             const imt = new LeanIMT<bigint>(hashFunction);
             await imt.insert(BigInt(commitment));
     
-            const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+            const hash2 = (childNodes: ChildNodes) => poseidon2(childNodes);
             const smt = new SMT(hash2, true);
 
             const vcAndDiscloseProof = await generateVcAndDiscloseProof(
@@ -536,7 +536,7 @@ describe("VC and Disclose", () => {
             expect(readableData[7]).to.equal(20n);
             expect(readableData[8]).to.equal(0n);   
         });
-
+   
         it("should only return ofac", async () => {
             const { readableData } = await setupVcAndDiscloseTest(['8']);
             expect(readableData[0]).to.equal('');
@@ -547,7 +547,20 @@ describe("VC and Disclose", () => {
             expect(readableData[5]).to.equal('');
             expect(readableData[6]).to.equal('');
             expect(readableData[7]).to.equal(0n);
-            expect(readableData[8]).to.equal(1n);   
+            expect(readableData[8]).to.equal(1n);
+        });
+
+        it("should return nothing", async () => {
+            const { readableData } = await setupVcAndDiscloseTest([]);
+            expect(readableData[0]).to.equal('');
+            expect(readableData[1]).to.deep.equal([]);
+            expect(readableData[2]).to.equal('');
+            expect(readableData[3]).to.equal('');
+            expect(readableData[4]).to.equal('');
+            expect(readableData[5]).to.equal('');
+            expect(readableData[6]).to.equal('');
+            expect(readableData[7]).to.equal(0n);
+            expect(readableData[8]).to.equal(0n);
         });
 
         it("should parse forbidden countries", async () => {

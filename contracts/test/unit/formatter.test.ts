@@ -159,4 +159,67 @@ describe("Formatter", function () {
             }
         });
     });
+
+    describe("proofDateToUnixTimestamp", function () {
+        it("should convert proof date array to unix timestamp", async function () {
+            const testCases = [
+                {
+                    input: [9, 4, 0, 1, 3, 1], // 94-01-31
+                    expected: 3915734400n      // 1994-01-31 00:00:00 UTC
+                },
+                {
+                    input: [0, 0, 0, 1, 0, 1], // 00-01-01
+                    expected: 946684800n       // 2000-01-01 00:00:00 UTC
+                },
+                {
+                    input: [2, 0, 0, 2, 2, 9], // 20-02-29
+                    expected: 1582934400n      // 2020-02-29 00:00:00 UTC
+                }
+            ];
+
+            for (const testCase of testCases) {
+                const result = await testFormatter.testProofDateToUnixTimestamp(testCase.input);
+                expect(result).to.equal(testCase.expected);
+            }
+        });
+
+        it("should handle edge cases", async function () {
+            const result = await testFormatter.testProofDateToUnixTimestamp([2, 5, 1, 2, 3, 1]);
+            expect(result).to.equal(1767139200n);
+        });
+    });
+
+    describe("toTimestamp", function () {
+        it("should convert date components to unix timestamp", async function () {
+            const testCases = [
+                {
+                    year: 2000,
+                    month: 1,
+                    day: 1,
+                    expected: 946684800n       // 2000-01-01 00:00:00 UTC
+                },
+                {
+                    year: 2020,
+                    month: 2,
+                    day: 29,
+                    expected: 1582934400n      // 2020-02-29 00:00:00 UTC
+                }
+            ];
+
+            for (const testCase of testCases) {
+                const result = await testFormatter.testToTimestamp(
+                    testCase.year,
+                    testCase.month,
+                    testCase.day
+                );
+                expect(result).to.equal(testCase.expected);
+            }
+        });
+
+        it("should handle edge cases", async function () {
+            // Test year 2099
+            const result = await testFormatter.testToTimestamp(2099, 12, 31);
+            expect(result).to.equal(4102358400n);
+        });
+    });
 });

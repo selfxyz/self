@@ -236,6 +236,16 @@ describe("Commitment Registration Tests", function () {
                 ).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
             });
 
+            it("should fail when registerDscKeyCommitment is called by non-proxy address", async () => {
+                const { hubImpl } = deployedActors;
+                await expect(
+                    hubImpl.registerDscKeyCommitment(
+                        DscVerifierId.dsc_rsa_sha256_65537_4096,
+                        dscProof
+                    )
+                ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+            });
+
         });
 
         describe("Register Passport Commitment", () => {

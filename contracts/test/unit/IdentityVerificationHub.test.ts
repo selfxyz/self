@@ -263,7 +263,8 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             const verifierIds = [1, 2];
             const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
 
-            await expect(hubImpl.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+            await expect(hubImpl.batchUpdateRegisterCircuitVerifiers(verifierIds, newVerifierAddresses))
+                .to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
         it("should not batch update register verifiers if length is not the same", async () => {
@@ -306,7 +307,8 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             const verifierIds = [1, 2];
             const newVerifierAddresses = [await user1.getAddress(), await user1.getAddress()];
 
-            await expect(hubImpl.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+            await expect(hubImpl.batchUpdateDscCircuitVerifiers(verifierIds, newVerifierAddresses))
+                .to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
         it("should not batch update dsc verifiers if length is not the same", async () => {
