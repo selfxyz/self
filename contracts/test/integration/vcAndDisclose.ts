@@ -56,7 +56,7 @@ describe("VC and Disclose", () => {
     describe("Verify VC and Disclose", () => {
 
         it("should verify and get result successfully", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -64,7 +64,6 @@ describe("VC and Disclose", () => {
                 commitment
             );
 
-    
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
             const vcAndDiscloseHubProof = {
@@ -76,19 +75,19 @@ describe("VC and Disclose", () => {
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
-            // Verify and get result
             const result = await hub.verifyVcAndDisclose(vcAndDiscloseHubProof);
 
-            // // Verify the returned results
+            expect(result.identityCommitmentRoot).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
             expect(result.revealedDataPacked).to.have.lengthOf(3);
             expect(result.nullifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX]);
             expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
             expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
             expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
+            expect(result.forbiddenCountriesListPacked).to.equal(4276545n);
         });
 
         it("should fail with invalid identity commitment root", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -112,7 +111,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid OFAC root", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -138,7 +137,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid current date (+ 1 day)", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -159,7 +158,6 @@ describe("VC and Disclose", () => {
             const currentBlock = await ethers.provider.getBlock('latest');
             const oneDayAfter = (currentBlock!.timestamp - 24 * 60 * 60 + 1);
             
-            // Convert timestamp to 6 digits YYMMDD format
             const date = new Date(oneDayAfter * 1000);
             const dateComponents = [
                 Math.floor((date.getUTCFullYear() % 100) / 10),
@@ -181,7 +179,7 @@ describe("VC and Disclose", () => {
 
         it("should fail with invalid current date (- 1 day)", async () => {
             
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -224,7 +222,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should succeed with bigger value than older than", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -248,7 +246,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid older than", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -273,7 +271,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with if listed in OFAC", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner, mockPassport} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -287,7 +285,7 @@ describe("VC and Disclose", () => {
     
             const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
             const smt = new SMT(hash2, true);
-            // Generate VC and Disclose proof
+
             const vcAndDiscloseProof = await generateVcAndDiscloseProof(
                 registerSecret,
                 BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
@@ -317,7 +315,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid forbidden countries", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,
@@ -341,7 +339,7 @@ describe("VC and Disclose", () => {
         });
 
         it("should fail with invalid VC and Disclose proof", async () => {
-            const {hub, registry, owner, user1, mockPassport} = deployedActors;
+            const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
                 ATTESTATION_ID.E_PASSPORT,

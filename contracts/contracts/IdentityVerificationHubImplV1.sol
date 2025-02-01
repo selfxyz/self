@@ -236,6 +236,7 @@ contract IdentityVerificationHubImplV1 is
     // verify and view
 
     // will test in vc and disclose.ts
+    // tested
     function verifyVcAndDisclose(
         VcAndDiscloseHubProof memory proof
     )
