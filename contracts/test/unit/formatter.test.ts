@@ -1,7 +1,6 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestFormatter } from "../../typechain-types";
-import { generateRandomFieldElement } from "../utils/utils";
 
 describe("Formatter", function () {
     let testFormatter: TestFormatter;
@@ -18,6 +17,12 @@ describe("Formatter", function () {
             expect(result[0]).to.equal("ALPHONSE HUGHUES ALBERT");
             expect(result[1]).to.equal("DUPONT");
         });
+
+        it("should handle single name", async function () {
+            const result = await testFormatter.testFormatName("SMITH<<JOHN<<<");
+            expect(result[0]).to.equal("JOHN");
+            expect(result[1]).to.equal("SMITH");
+        });
     });
 
     describe("formatDate", function () {
@@ -27,60 +32,131 @@ describe("Formatter", function () {
         });
 
         it("should revert with invalid date length", async function () {
-            await expect(testFormatter.testFormatDate("12345")).to.be.revertedWithCustomError(
-                testFormatter,
-                "InvalidDateLength"
-            );
+            await expect(testFormatter.testFormatDate("12345"))
+                .to.be.revertedWithCustomError(testFormatter, "InvalidDateLength");
         });
     });
 
     describe("numAsciiToUint", function () {
         it("should convert valid ASCII numbers", async function () {
-            const result = await testFormatter.testNumAsciiToUint(49); // ASCII for "1"
-            expect(result).to.equal(1);
+            for(let i = 0; i <= 9; i++) {
+                const result = await testFormatter.testNumAsciiToUint(48 + i);
+                expect(result).to.equal(i);
+            }
         });
 
         it("should revert with invalid ASCII code", async function () {
-            await expect(testFormatter.testNumAsciiToUint(47)).to.be.revertedWithCustomError(
-                testFormatter,
-                "InvalidAsciiCode"
-            );
-        });
-    });
-
-    describe("dateToUnixTimestamp", function () {
-        it("should convert date to unix timestamp", async function () {
-            const result = await testFormatter.testDateToUnixTimestamp("940131");
-            // 31st Jan 1994 timestamp
-            expect(result).to.equal(3915734400);
-        });
-    });
-
-    describe("substring", function () {
-        it("should return correct substring", async function () {
-            const result = await testFormatter.testSubstring("940131", 0, 2);
-            expect(result).to.equal("94");
+            await expect(testFormatter.testNumAsciiToUint(47))
+                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
+            await expect(testFormatter.testNumAsciiToUint(58))
+                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
         });
     });
 
     describe("fieldElementsToBytes", function () {
         it("should convert field elements to bytes", async function () {
-            const input = [
-                generateRandomFieldElement(),
-                generateRandomFieldElement(),
-                generateRandomFieldElement()
-            ];
+            const input = [123n, 456n, 789n];
             const result = await testFormatter.testFieldElementsToBytes(input);
-            expect(result.length).to.equal(91);
+            expect(result.length).to.equal(184);
+        });
+
+        it("should handle zero values", async function () {
+            const input = [0n, 0n, 0n];
+            const result = await testFormatter.testFieldElementsToBytes(input);
+            expect(result.length).to.equal(184);
         });
     });
 
     describe("extractForbiddenCountriesFromPacked", function () {
-        it("should extract forbidden countries from packed data", async function () {
-            // Create a packed value that represents "AAA" in the first position
-            const packedValue = ethers.BigNumber.from("0x414141"); // ASCII for "AAA"
+        it("should extract single forbidden country", async function () {
+            const packedValue = "0x414141"; // ASCII for "AAA"
             const result = await testFormatter.testExtractForbiddenCountriesFromPacked(packedValue);
             expect(result[0]).to.equal("AAA");
+        });
+
+        it("should handle multiple forbidden countries", async function () {
+            // ASCII for "AAA" and "BBB"
+            const packedValue = "0x414141424242";
+            const result = await testFormatter.testExtractForbiddenCountriesFromPacked(packedValue);
+            expect(result[0]).to.equal("BBB");
+            expect(result[1]).to.equal("AAA");
+        });
+    });
+
+    describe("dateToUnixTimestamp", function () {
+        it("should convert various dates to unix timestamp", async function () {
+            const testCases = [
+                { input: "940131", expected: 3915734400n },  // 31 Jan 1994
+                { input: "000101", expected: 946684800n },  // 1 Jan 2000
+                { input: "200229", expected: 1582934400n }, // 29 Feb 2020 (leap year)
+            ];
+
+            for (const testCase of testCases) {
+                const result = await testFormatter.testDateToUnixTimestamp(testCase.input);
+                expect(result).to.equal(testCase.expected);
+            }
+        });
+
+        it("should revert with invalid date length", async function () {
+            await expect(testFormatter.testDateToUnixTimestamp("12345"))
+                .to.be.revertedWithCustomError(testFormatter, "InvalidDateLength");
+        });
+    });
+
+    describe("parseDatePart", function () {
+        it("should parse valid date parts", async function () {
+            const testCases = [
+                { input: "01", expected: 1n },
+                { input: "12", expected: 12n },
+                { input: "31", expected: 31n },
+            ];
+
+            for (const testCase of testCases) {
+                const result = await testFormatter.testParseDatePart(testCase.input);
+                expect(result).to.equal(testCase.expected);
+            }
+        });
+
+        it("should handle empty string", async function () {
+            const result = await testFormatter.testParseDatePart("");
+            expect(result).to.equal(0n);
+        });
+    });
+
+    describe("isLeapYear", function () {
+        it("should correctly identify leap years", async function () {
+            const leapYears = [2000, 2004, 2008, 2012, 2016, 2020];
+            const nonLeapYears = [1900, 2001, 2002, 2003, 2100];
+
+            for (const year of leapYears) {
+                const result = await testFormatter.testIsLeapYear(year);
+                expect(result).to.be.true;
+            }
+
+            for (const year of nonLeapYears) {
+                const result = await testFormatter.testIsLeapYear(year);
+                expect(result).to.be.false;
+            }
+        });
+    });
+
+    describe("substring", function () {
+        it("should return correct substrings", async function () {
+            const testCases = [
+                { str: "940131", start: 0, end: 2, expected: "94" },
+                { str: "940131", start: 2, end: 4, expected: "01" },
+                { str: "940131", start: 4, end: 6, expected: "31" },
+                { str: "ABCDEF", start: 1, end: 4, expected: "BCD" },
+            ];
+
+            for (const testCase of testCases) {
+                const result = await testFormatter.testSubstring(
+                    testCase.str,
+                    testCase.start,
+                    testCase.end
+                );
+                expect(result).to.equal(testCase.expected);
+            }
         });
     });
 });
