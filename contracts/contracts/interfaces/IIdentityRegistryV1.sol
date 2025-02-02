@@ -4,6 +4,7 @@ pragma solidity ^0.8.28;
 interface IIdentityRegistryV1 {
     function registerCommitment(bytes32 attestationId, uint256 nullifier, uint256 commitment) external;
     function registerDscKeyCommitment(uint256 key) external;
+    function rootTimestamps(uint256 root) external virtual view returns (uint256);
     function checkIdentityCommitmentRoot(uint256 root) external view returns (bool);
     function getIdentityCommitmentMerkleTreeSize() external view returns (uint256);
     function getIdentityCommitmentMerkleRoot() external view returns (uint256);

@@ -34,11 +34,13 @@ contract Airdrop is PassportAirdropRoot, Ownable {
 
     constructor(
         address _identityVerificationHub, 
+        address _identityRegistry,
         uint256 _scope, 
         uint256 _attestationId,
-        address _token
+        address _token,
+        uint256 _targetRootTimestamp
     ) 
-        PassportAirdropRoot(_identityVerificationHub, _scope, _attestationId)
+        PassportAirdropRoot(_identityVerificationHub, _identityRegistry, _scope, _attestationId, _targetRootTimestamp)
         Ownable(_msgSender())
     {
         token = IERC20(_token);

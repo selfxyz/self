@@ -155,6 +155,7 @@ export async function generateVcAndDiscloseProof(
         userIdentifier
     );
 
+    console.log(CYAN, "=== Start generateDscProof ===", RESET);
     const startTime = performance.now();
     const vcAndDiscloseProof = await groth16.fullProve(
         vcAndDiscloseCircuitInputs,
