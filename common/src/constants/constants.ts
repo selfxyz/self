@@ -3,10 +3,9 @@ export const RELAYER_URL = 'https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.
 export const COMMITMENT_TREE_TRACKER_URL =
   'https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download';
 export const WEBSOCKET_URL = 'https://proofofpassport-merkle-tree.xyz';
-export const PUBKEY_TREE_DEPTH = 16;
 export const CSCA_TREE_DEPTH = 12;
 export const DSC_TREE_DEPTH = 21;
-export const COMMITMENT_TREE_DEPTH = 16;
+export const COMMITMENT_TREE_DEPTH = 33;
 export const DEFAULT_USER_ID_TYPE = 'uuid';
 
 export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';

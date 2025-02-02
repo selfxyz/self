@@ -10,8 +10,7 @@ include "../customHashers.circom";
 /// @input attestation_id Attestation ID
 /// @input dg1 Data group 1 of the passport
 /// @input eContent_shaBytes_packed_hash hash of the eContent
-/// @input dsc_hash Hash of the whole DSC certificate
-/// @input csca_hash Hash of the whole CSCA certificate
+/// @input dsc_tree_leaf Leaf of the DSC tree, to keep a record of the full CSCA and DSC that were used
 /// @input merkle_root Root of the commitment merkle tree
 /// @input merkletree_size Actual size of the merkle tree
 /// @input path Path to the user's commitment in the merkle tree
@@ -21,8 +20,7 @@ template VERIFY_COMMITMENT(nLevels) {
     signal input attestation_id;
     signal input dg1[93];
     signal input eContent_shaBytes_packed_hash;
-    signal input dsc_hash;
-    signal input csca_hash;
+    signal input dsc_tree_leaf;
 
     signal input merkle_root;
     signal input merkletree_size;
@@ -31,13 +29,12 @@ template VERIFY_COMMITMENT(nLevels) {
 
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
 
-    signal commitment <== Poseidon(6)([
+    signal commitment <== Poseidon(5)([
         secret,
         attestation_id,
         dg1_packed_hash,
         eContent_shaBytes_packed_hash,
-        dsc_hash,
-        csca_hash
+        dsc_tree_leaf
     ]);
     
     // Verify commitment inclusion

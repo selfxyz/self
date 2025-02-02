@@ -1,4 +1,4 @@
-import { poseidon4, poseidon6 } from 'poseidon-lite';
+import { poseidon5 } from 'poseidon-lite';
 import { hashAlgos, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
 import {
   CertificateData,
@@ -33,7 +33,7 @@ import { splitToWords } from '../bytes';
 import { formatMrz } from './format';
 import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
-import { getLeaf } from '../trees';
+import { getLeafDscTree } from '../trees';
 
 /// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
 export function initPassportDataParsing(passportData: PassportData) {
@@ -68,16 +68,14 @@ export function generateCommitment(
     (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
   );
 
-  const dsc_hash = getLeaf(passportData.dsc_parsed, 'dsc');
-  const csca_hash = getLeaf(passportData.csca_parsed, 'csca');
+  const dsc_hash = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
 
-  return poseidon6([
+  return poseidon5([
     secret,
     attestation_id,
     dg1_packed_hash,
     eContent_packed_hash,
     dsc_hash,
-    csca_hash,
   ]).toString();
 }
 
