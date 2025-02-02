@@ -167,7 +167,4 @@ export const fullSigAlgs = [
     domainParameter: 'secp384r1',
     keyLength: '384',
   },
-
 ];
-
-
