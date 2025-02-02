@@ -26,22 +26,6 @@ describe("Airdrop", () => {
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
-        
-        const tokenFactory = await ethers.getContractFactory("AirdropToken");
-        token = await tokenFactory.connect(deployedActors.owner).deploy();
-        await token.waitForDeployment();
-
-        const airdropFactory = await ethers.getContractFactory("Airdrop");
-        airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
-            deployedActors.hub.target,
-            castFromScope("test-airdrop"),
-            ATTESTATION_ID.E_PASSPORT,
-            token.target
-        );
-        await airdrop.waitForDeployment();
-        
-        const mintAmount = ethers.parseEther("424242424242");
-        await token.mint(airdrop.target, mintAmount);
 
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
@@ -61,6 +45,33 @@ describe("Airdrop", () => {
             imt,
             "20",
         );
+
+        const tokenFactory = await ethers.getContractFactory("AirdropToken");
+        token = await tokenFactory.connect(deployedActors.owner).deploy();
+        await token.waitForDeployment();
+
+        await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+            ATTESTATION_ID.E_PASSPORT,
+            nullifier,
+            commitment
+        );
+
+        const root = await deployedActors.registry.getIdentityCommitmentMerkleRoot();
+        const timestamp = await deployedActors.registry.rootTimestamps(root);
+
+        const airdropFactory = await ethers.getContractFactory("Airdrop");
+        airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
+            deployedActors.hub.target,
+            deployedActors.registry.target,
+            castFromScope("test-airdrop"),
+            ATTESTATION_ID.E_PASSPORT,
+            token.target,
+            timestamp
+        );
+        await airdrop.waitForDeployment();
+        
+        const mintAmount = ethers.parseEther("424242424242");
+        await token.mint(airdrop.target, mintAmount);
 
         snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
@@ -168,12 +179,6 @@ describe("Airdrop", () => {
     it("should able to register address by user", async () => {
         const { registry, owner, user1 } = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
-
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
@@ -213,12 +218,6 @@ describe("Airdrop", () => {
     it("should not able to register address by user if registration is closed", async () => {
         const { registry, owner, user1 } = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
-
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
@@ -237,12 +236,6 @@ describe("Airdrop", () => {
 
     it("should not able to register address by user if scope is invalid", async () => {
         const { registry, owner, user1 } = deployedActors;
-
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
 
         vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
@@ -274,12 +267,6 @@ describe("Airdrop", () => {
     it("should not able to register address by user if nullifier is already registered", async () => {
         const { registry, owner, user1 } = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
-
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
@@ -310,6 +297,7 @@ describe("Airdrop", () => {
 
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
         const invalidImt = new LeanIMT<bigint>(hashFunction);
+        await invalidImt.insert(BigInt(commitment));
         await invalidImt.insert(BigInt(invalidCommitment));
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
@@ -339,14 +327,101 @@ describe("Airdrop", () => {
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
 
-    it("should not able to registerAddress when the proof is wrong", async () => {
-        const { hub, registry, owner, user1 } = deployedActors;
+    it("should not able to register address when rootTimestamp is different", async () => {
+        const {registry, owner, user1, mockPassport} = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
+        const secondCommitment = generateCommitment(registerSecret, ATTESTATION_ID.INVALID_ATTESTATION_ID, mockPassport);
+        await registry.devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
-            commitment
+            secondCommitment
         );
+
+        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        const invalidImt = new LeanIMT<bigint>(hashFunction);
+        await invalidImt.insert(BigInt(commitment));
+        await invalidImt.insert(BigInt(secondCommitment));
+
+        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+        vcAndDiscloseProof = await generateVcAndDiscloseProof(
+            registerSecret,
+            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+            deployedActors.mockPassport,
+            "test-airdrop",
+            new Array(88).fill("1"),
+            "1",
+            invalidImt,
+            "20",
+        );
+
+        const vcAndDiscloseHubProof = {
+            olderThanEnabled: true,
+            olderThan: "20",
+            forbiddenCountriesEnabled: true,
+            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+            ofacEnabled: true,
+            vcAndDiscloseProof: vcAndDiscloseProof
+        };
+
+        await airdrop.connect(owner).openRegistration();
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+            .to.be.revertedWithCustomError(airdrop, "InvalidTimestamp");
+    });
+
+    it("should able to register address when targetRootTimestamp is zero", async () => {
+        const { owner, user1 } = deployedActors;
+
+        // Deploy new airdrop contract with targetRootTimestamp = 0
+        const airdropFactory = await ethers.getContractFactory("Airdrop");
+        const newAirdrop = await airdropFactory.connect(owner).deploy(
+            deployedActors.hub.target,
+            deployedActors.registry.target,
+            castFromScope("test-airdrop"),
+            ATTESTATION_ID.E_PASSPORT,
+            token.target,
+            0
+        );
+        await newAirdrop.waitForDeployment();
+
+        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+
+        const vcAndDiscloseHubProof = {
+            olderThanEnabled: true,
+            olderThan: "20",
+            forbiddenCountriesEnabled: true,
+            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+            ofacEnabled: true,
+            vcAndDiscloseProof: vcAndDiscloseProof
+        };
+
+        await newAirdrop.connect(owner).openRegistration();
+        const tx = await newAirdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        const receipt = await tx.wait();
+        
+        const event = receipt?.logs.find(
+            (log: any) => log.topics[0] === newAirdrop.interface.getEvent("AddressRegistered").topicHash
+        );
+        const eventArgs = event ? newAirdrop.interface.decodeEventLog(
+            "AddressRegistered",
+            event.data,
+            event.topics
+        ) : null;
+
+        expect(eventArgs?.registeredAddress).to.be.equal(await user1.getAddress());
+
+        const appNullifier = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX];
+        expect(eventArgs?.nullifier).to.be.equal(appNullifier);
+
+        const nullifierToAddress = await newAirdrop.getNullifier(appNullifier);
+        expect(nullifierToAddress).to.be.equal(await user1.getAddress());
+
+        const registeredAddresses = await newAirdrop.getRegisteredAddresses(await user1.getAddress());
+        expect(registeredAddresses).to.be.equal(true);
+    });
+
+    it("should not able to registerAddress when the proof is wrong", async () => {
+        const { hub, owner, user1 } = deployedActors;
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
@@ -392,12 +467,6 @@ describe("Airdrop", () => {
 
     it("should able to claim token by user", async () => {
         const { registry, owner, user1 } = deployedActors;
-
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
@@ -447,12 +516,6 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if registration is not closed", async () => {
         const { registry, owner, user1 } = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
-
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
@@ -484,12 +547,6 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if claim is not open", async () => {
         const { registry, owner, user1 } = deployedActors;
 
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
-
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
@@ -520,12 +577,6 @@ describe("Airdrop", () => {
 
     it("should not able to claim token by user if user has already claimed", async () => {
         const { registry, owner, user1 } = deployedActors;
-
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
@@ -562,12 +613,6 @@ describe("Airdrop", () => {
 
     it("should not able to claim token by user if merkle proof is invalid", async () => {
         const { registry, owner, user1 } = deployedActors;
-
-        await registry.connect(owner).devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            commitment
-        );
 
         const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 

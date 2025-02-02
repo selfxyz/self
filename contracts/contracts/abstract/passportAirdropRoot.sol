@@ -2,14 +2,17 @@
 pragma solidity ^0.8.28;
 
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
+import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 abstract contract PassportAirdropRoot {
 
     uint256 internal immutable scope;
     uint256 internal immutable attestationId;
+    uint256 internal immutable targetRootTimestamp;
 
     IIdentityVerificationHubV1 internal immutable identityVerificationHub;
+    IIdentityRegistryV1 internal immutable identityRegistry;
 
     mapping(uint256 => address) internal nullifiers;
     mapping(address => bool) internal registeredAddresses;
@@ -17,13 +20,22 @@ abstract contract PassportAirdropRoot {
     error RegisteredNullifier();
     error InvalidAttestationId();
     error InvalidScope();
+    error InvalidTimestamp();
 
     event AddressRegistered(address indexed registeredAddress, uint256 indexed nullifier);
 
-    constructor(address _identityVerificationHub, uint256 _scope, uint256 _attestationId) {
+    constructor(
+        address _identityVerificationHub, 
+        address _IdentityRegistry,
+        uint256 _scope, 
+        uint256 _attestationId,
+        uint256 _targetRootTimestamp
+    ) {
         identityVerificationHub = IIdentityVerificationHubV1(_identityVerificationHub);
+        identityRegistry = IIdentityRegistryV1(_IdentityRegistry);
         scope = _scope;
         attestationId = _attestationId;
+        targetRootTimestamp = _targetRootTimestamp;
     }
 
     function _registerAddress(
@@ -47,6 +59,12 @@ abstract contract PassportAirdropRoot {
         }
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = identityVerificationHub.verifyVcAndDisclose(proof);
+
+        if (targetRootTimestamp != 0) {
+            if (identityRegistry.rootTimestamps(result.identityCommitmentRoot) != targetRootTimestamp) {
+                revert InvalidTimestamp();
+            }
+        }
 
         nullifiers[result.nullifier] = addressToRegister;
         registeredAddresses[addressToRegister] = true;
