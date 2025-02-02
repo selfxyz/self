@@ -1,11 +1,11 @@
 export const sigAlgs = [
   {
-    dgHashAlgo: 'sha1',
-    eContentHashAlgo: 'sha1',
-    hashFunction: 'sha1',
-    sigAlg: 'rsa',
-    domainParameter: '65537',
-    keyLength: '2048',
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha224',
+    hashFunction: 'sha224',
+    sigAlg: 'ecdsa',
+    domainParameter: 'secp224r1',
+    keyLength: '224',
   },
 ];
 
