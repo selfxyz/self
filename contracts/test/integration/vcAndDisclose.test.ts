@@ -12,6 +12,7 @@ import { BigNumberish } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
 import { getStartOfDayTimestamp } from "../utils/utils";
+import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
@@ -477,12 +478,14 @@ describe("VC and Disclose", () => {
             for (let i = 0; i < 3; i++) {
                 revealedDataPacked[i] = BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i]);
             };
+            const bytes = Formatter.fieldElementsToBytes(revealedDataPacked as [bigint, bigint, bigint]);
             const readableData = await hub.getReadableRevealedData(
                 revealedDataPacked as [BigNumberish, BigNumberish, BigNumberish],
                 types
             );
 
-            return { readableData };
+
+            return { readableData, bytes };
         }
 
         it("should fail when getReadableRevealedData is called by non-proxy", async() => {
@@ -497,6 +500,20 @@ describe("VC and Disclose", () => {
                     ['0']
                 )
             ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("formatter and CircuitAttributeHandler are working fine", async () => {
+            const { readableData, bytes } = await setupVcAndDiscloseTest(['0', '1', '2', '3', '4', '5', '6', '7', '8']);
+            
+            expect(CircuitAttributeHandler.getIssuingState(bytes)).to.equal(readableData[0]);
+            expect(CircuitAttributeHandler.getName(bytes)).to.deep.equal(readableData[1]);
+            expect(CircuitAttributeHandler.getPassportNumber(bytes)).to.equal(readableData[2]);
+            expect(CircuitAttributeHandler.getNationality(bytes)).to.equal(readableData[3]);
+            expect(CircuitAttributeHandler.getDateOfBirth(bytes)).to.equal(readableData[4]);
+            expect(CircuitAttributeHandler.getGender(bytes)).to.equal(readableData[5]);
+            expect(CircuitAttributeHandler.getExpiryDate(bytes)).to.equal(readableData[6]);
+            expect(CircuitAttributeHandler.getOlderThan(bytes)).to.equal(readableData[7]);
+            expect(CircuitAttributeHandler.getOfac(bytes)).to.equal(readableData[8]);
         });
 
         it("should return all data", async () => {
@@ -642,12 +659,16 @@ describe("VC and Disclose", () => {
             expect(readableData[8]).to.equal(0n);
         });
 
-        it("should parse forbidden countries", async () => {
-            const {hub} = deployedActors;
+        it("should parse forbidden countries with CircuitAttributeHandler", async () => {
+            const { hub } = deployedActors;
 
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
+            
+            expect(readableForbiddenCountries[0]).to.equal(Formatter.extractForbiddenCountriesFromPacked(BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX]))[0]);
             expect(readableForbiddenCountries[0]).to.equal('AAA');
         });
+
+        
     });
 }); 

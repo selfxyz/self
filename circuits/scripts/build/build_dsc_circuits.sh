@@ -24,8 +24,8 @@ CIRCUITS=(
     "dsc_sha512_ecdsa_secp521r1:21:false"
 
     # RSA circuits
-    "dsc_sha1_rsa_65537_4096:21:false"
-    "dsc_sha256_rsa_65537_4096:21:true"
+    "dsc_sha1_rsa_65537_4096:21:true"
+    "dsc_sha256_rsa_65537_4096:21:false"
     "dsc_sha512_rsa_65537_4096:21:false"
 
     # RSA-PSS circuits

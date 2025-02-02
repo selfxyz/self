@@ -264,9 +264,6 @@ describe("Commitment Registration Tests", function () {
 
             it("should register passport commitment successfully", async () => {
                 const {hub, registry, mockPassport} = deployedActors;
-                const contractRoot = await registry.getDscKeyCommitmentMerkleRoot();
-
-                console.log("check", contractRoot == imt.root);
     
                 const registerProof = await generateRegisterProof(
                     registerSecret,

@@ -669,4 +669,5 @@ describe("Airdrop", () => {
         const isClaimed = await airdrop.claimed(await user2.getAddress());
         expect(isClaimed).to.be.false;
     });
+
 });
