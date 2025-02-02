@@ -64,10 +64,10 @@ build_circuit() {
         ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey
 
     # Generate and contribute random string
-    # local RAND_STR=$(get_random_string)
-    # echo $RAND_STR | yarn snarkjs zkey contribute \
-    #     ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey \
-    #     ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
+    local RAND_STR=$(get_random_string)
+    echo $RAND_STR | yarn snarkjs zkey contribute \
+        ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}.zkey \
+        ${OUTPUT_DIR}/${CIRCUIT_NAME}/${CIRCUIT_NAME}_final.zkey
 
     echo -e "${BLUE}Building vkey${NC}"
     yarn snarkjs zkey export verificationkey \
