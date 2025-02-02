@@ -37,9 +37,25 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         uint256 _scope, 
         uint256 _attestationId,
         address _token,
-        uint256 _targetRootTimestamp
+        uint256 _targetRootTimestamp,
+        bool _olderThanEnabled,
+        uint256 _olderThan,
+        bool _forbiddenCountriesEnabled,
+        uint256 _forbiddenCountriesListPacked,
+        bool _ofacEnabled
     ) 
-        PassportAirdropRoot(_identityVerificationHub, _identityRegistry, _scope, _attestationId, _targetRootTimestamp)
+        PassportAirdropRoot(
+            _identityVerificationHub, 
+            _identityRegistry, 
+            _scope, 
+            _attestationId, 
+            _targetRootTimestamp,
+            _olderThanEnabled,
+            _olderThan,
+            _forbiddenCountriesEnabled,
+            _forbiddenCountriesListPacked,
+            _ofacEnabled
+        )
         Ownable(_msgSender())
     {
         token = IERC20(_token);
@@ -70,7 +86,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     }
 
     function registerAddress(
-        IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         external 
     {
