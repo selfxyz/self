@@ -15,7 +15,6 @@ include "@openpassport/zk-email-circuits/utils/bytes.circom";
 /// @input hash Hash of the data to verify
 /// @input pubKey Public key for signature verification
 /// @input signature Signature to verify
-
 template SignatureVerifier(signatureAlgorithm, n, k) {
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
@@ -73,7 +72,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 19
         || signatureAlgorithm == 35
     ) {
-        var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+        var pubKeyBitsLength = getMinKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
         component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
@@ -86,7 +85,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         signatureAlgorithm == 16
         || signatureAlgorithm == 17
     ) {
-        var pubKeyBitsLength = getKeyLength(signatureAlgorithm);
+        var pubKeyBitsLength = getMinKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
 

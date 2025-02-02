@@ -10,6 +10,8 @@ import { SignatureAlgorithm } from '../../../common/src/utils/types';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
 import { getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/trees';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
+import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -124,6 +126,26 @@ testSuite.forEach(({
         try {
           const tamperedInputs = JSON.parse(JSON.stringify(inputs));
           tamperedInputs.raw_csca[Number(tamperedInputs.raw_csca_actual_length)] = '1';
+
+          await circuit.calculateWitness(tamperedInputs);
+          expect.fail('Expected an error but none was thrown.');
+        } catch (error) {
+          expect(error.message).to.include('Assert Failed');
+        }
+      });
+
+      it("should fail if csca_pubKey_actual_size is lower than the minimum key length", async () => {
+        try {
+          const dscParsed = parseCertificateSimple(passportData.dsc);
+          const dscMetadata = parseDscCertificateData(dscParsed);
+          const cscaParsed = parseCertificateSimple(dscMetadata.csca);
+
+          const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+          if (cscaParsed.signatureAlgorithm === 'rsa') {
+            tamperedInputs.csca_pubKey_actual_size = (256 - 1).toString(); // 256 is the minimum key length for RSA
+          } else { // for ecdsa and rsapss, the minimum key length is fixed for each circuit
+            tamperedInputs.csca_pubKey_actual_size = (Number(tamperedInputs.csca_pubKey_actual_size) - 1).toString();
+          }
 
           await circuit.calculateWitness(tamperedInputs);
           expect.fail('Expected an error but none was thrown.');

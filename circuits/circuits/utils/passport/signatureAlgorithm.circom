@@ -177,11 +177,13 @@ function getHashLength(signatureAlgorithm) {
     return 0;
 }
 
-/// @title GetKeyLength
-/// @notice Returns the length of the key in bits for a given signature algorithm
+/// @title GetMinKeyLength
+/// @notice Returns the minimum length of the key in bits for a given signature algorithm
 /// @param signatureAlgorithm ID of the signature algorithm
-/// @output keyLength Length of the key in bits
-function getKeyLength(signatureAlgorithm) {
+/// @output keyLength Minimum length of the key in bits
+/// @dev for RSAPSS and ECDSA, it's always the same as in the circuit name
+/// @dev for RSA, it can be lower, because we use the same circuit for multiple key lengths
+function getMinKeyLength(signatureAlgorithm) {
     if (signatureAlgorithm == 1 ) {
         return 2048;
     }
@@ -201,10 +203,10 @@ function getKeyLength(signatureAlgorithm) {
         return 384;
     }
     if (signatureAlgorithm == 10) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 11) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 12) {
         return 4096;
@@ -213,10 +215,10 @@ function getKeyLength(signatureAlgorithm) {
         return 2048;
     }
     if (signatureAlgorithm == 14) {
-        return 3072;
+        return 2048; // down to 2048 for 3072 (not used now)
     }
     if (signatureAlgorithm == 15) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 16) {
         return 3072;
@@ -264,13 +266,13 @@ function getKeyLength(signatureAlgorithm) {
         return 2048;
     }
     if (signatureAlgorithm == 32) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 33) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 34) {
-        return 4096;
+        return 2048; // down to 2048 for 4096
     }
     if (signatureAlgorithm == 35) {
         return 4096;
