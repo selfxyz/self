@@ -21,7 +21,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
 /// @param MAX_SIGNED_ATTR_PADDED_LEN Maximum length of padded signed attributes
 /// @input raw_dsc Raw DSC certificate data
-/// @input raw_dsc_padded_length Actual length of DSC certificate
+/// @input raw_dsc_actual_length Actual length of DSC certificate
 /// @input dsc_pubKey_offset Offset of DSC public key in certificate
 /// @input dsc_pubKey_actual_size Actual size of DSC public key
 /// @input dg1 Document Group 1 data (93 bytes)

@@ -69,11 +69,11 @@ template DSC(
     signal input siblings[nLevels];
 
     // first, compute raw_dsc_actual_length
-    // get the values of the last 4 bytes of the padded length
+    // by getting the values of the last 4 bytes of the padded length
+    // cf sha padding
     signal last_four_bytes_of_padded_length[4] <== SelectSubArray(MAX_DSC_LENGTH, 4)(raw_dsc, raw_dsc_padded_length - 4, 4);
     signal computed_length_bits <== BytesToNum()(last_four_bytes_of_padded_length);
     signal raw_dsc_actual_length <== computed_length_bits / 8;
-    log("raw_dsc_actual_length", raw_dsc_actual_length);
 
     // sanity check: raw_dsc[raw_dsc_actual_length] should be 128
     signal raw_dsc_at_actual_length <== ItemAtIndex(MAX_DSC_LENGTH)(raw_dsc, raw_dsc_actual_length);

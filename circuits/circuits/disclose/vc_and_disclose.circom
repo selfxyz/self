@@ -9,11 +9,11 @@ include "../utils/passport/disclose/verify_commitment.circom";
 /// @notice Verify user's commitment is part of the merkle tree and optionally disclose data from DG1
 /// @param nLevels Maximum number of levels in the merkle tree
 /// @param MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH Maximum number of countries present in the forbidden countries list
-/// @param secret Secret of the user — used to reconstruct commitment and generate nullifier
-/// @param attestation_id Attestation ID of the credential used to generate the commitment
-/// @param dg1 Data group 1 of the passport
-/// @input dsc_hash Hash of the whole DSC certificate
-/// @input csca_hash Hash of the whole CSCA certificate
+/// @input secret Secret of the user — used to reconstruct commitment and generate nullifier
+/// @input attestation_id Attestation ID of the credential used to generate the commitment
+/// @input dg1 Data group 1 of the passport
+/// @input eContent_shaBytes_packed_hash Hash of the eContent packed
+/// @input dsc_tree_leaf Leaf of the DSC tree, to keep a record of the full CSCA and DSC that were used
 /// @input merkle_root Root of the commitment merkle tree
 /// @input leaf_depth Actual size of the merkle tree
 /// @input path Path of the commitment in the merkle tree
@@ -32,7 +32,7 @@ include "../utils/passport/disclose/verify_commitment.circom";
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
 /// @output nullifier Scope nullifier - not deterministic on the passport data
-template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input secret;
     signal input attestation_id;
     signal input dg1[93];
