@@ -1,9 +1,9 @@
 import {
-  PUBKEY_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
   max_dsc_bytes,
   max_csca_bytes,
+  COMMITMENT_TREE_DEPTH,
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -96,7 +96,7 @@ export function generateCircuitInputsRegister(
   const passportMetadata = passportData.passportMetadata;
   const dscParsed = passportData.dsc_parsed;
 
-  const [dscTbsBytesPadded, ] = pad(dscParsed.hashAlgorithm)(
+  const [dscTbsBytesPadded,] = pad(dscParsed.hashAlgorithm)(
     dscParsed.tbsBytes,
     max_dsc_bytes
   );
@@ -194,7 +194,7 @@ export function generateCircuitInputsVCandDisclose(
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
     index,
-    PUBKEY_TREE_DEPTH
+    COMMITMENT_TREE_DEPTH
   );
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
