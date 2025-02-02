@@ -36,9 +36,10 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     let dscVerifier: DscVerifier;
     let owner: Signer;
     let user1: Signer;
+    let user2: Signer;
     let mockPassport: PassportData;
 
-    [owner, user1] = await ethers.getSigners();
+    [owner, user1, user2] = await ethers.getSigners();
 
     mockPassport = genMockPassportData(
         "sha256",
@@ -161,35 +162,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         dsc: dscVerifier,
         owner: owner,
         user1: user1,
+        user2: user2,
         mockPassport: mockPassport
     };
-}
-
-export async function deployRegistryImpl(
-    owner: Signer,
-    hubAddress: string
-): Promise<IdentityRegistryImplV1> {
-    const IdentityRegistryImplFactory = await ethers.getContractFactory("IdentityRegistryImplV1", owner);
-    const registry = await IdentityRegistryImplFactory.deploy();
-    await registry.waitForDeployment();
-    return registry;
-}
-
-export async function deployHubImpl(
-    owner: Signer,
-): Promise<IdentityVerificationHubImplV1> {
-    const IdentityVerificationHubImplFactory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
-    const hub = await IdentityVerificationHubImplFactory.deploy();
-    await hub.waitForDeployment();
-    return hub;
-}
-
-export async function deployVerifier(
-    owner: Signer,
-    verifierCircuit: string,
-) {
-    const VerifierFactory = await ethers.getContractFactory("Verifier", owner);
-    const verifier = await VerifierFactory.deploy();
-    await verifier.waitForDeployment();
-    return verifier;
 }

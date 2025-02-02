@@ -14,15 +14,15 @@ abstract contract PassportAirdropRoot {
     IIdentityVerificationHubV1 internal immutable identityVerificationHub;
     IIdentityRegistryV1 internal immutable identityRegistry;
 
-    mapping(uint256 => address) internal nullifiers;
-    mapping(address => bool) internal registeredAddresses;
+    mapping(uint256 => uint256) internal nullifiers;
+    mapping(uint256 => bool) internal registeredUserIdentifiers;
 
     error RegisteredNullifier();
     error InvalidAttestationId();
     error InvalidScope();
     error InvalidTimestamp();
 
-    event AddressRegistered(address indexed registeredAddress, uint256 indexed nullifier);
+    event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
 
     constructor(
         address _identityVerificationHub, 
@@ -39,18 +39,17 @@ abstract contract PassportAirdropRoot {
     }
 
     function _registerAddress(
-        address addressToRegister,
         IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
     )
         internal
-        returns (address registeredAddress)
+        returns (uint256 userIdentifier)
     {
 
         if (scope != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
 
-        if (nullifiers[proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != address(0)) {
+        if (nullifiers[proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != 0) {
             revert RegisteredNullifier();
         }
 
@@ -66,11 +65,11 @@ abstract contract PassportAirdropRoot {
             }
         }
 
-        nullifiers[result.nullifier] = addressToRegister;
-        registeredAddresses[addressToRegister] = true;
+        nullifiers[result.nullifier] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        registeredUserIdentifiers[proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]] = true;
 
-        emit AddressRegistered(addressToRegister, result.nullifier);
+        emit UserIdentifierRegistered(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX], result.nullifier);
 
-        return addressToRegister;
+        return proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
     }
 }
