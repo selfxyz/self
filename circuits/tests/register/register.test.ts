@@ -11,6 +11,7 @@ import { sigAlgs, fullSigAlgs } from './test_cases';
 import { generateCommitment, generateNullifier, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { poseidon6 } from 'poseidon-lite';
 import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -138,6 +139,24 @@ testSuite.forEach(
         //     expect(error.message).to.include('Assert Failed');
         //   }
         // });
+
+        it("should fail if dsc_pubKey_actual_size is lower than the minimum key length", async () => {
+          try {
+            const dscParsed = parseCertificateSimple(passportData.dsc);
+  
+            const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+            if (dscParsed.signatureAlgorithm === 'rsa') {
+              tamperedInputs.dsc_pubKey_actual_size = (256 - 1).toString(); // 256 is the minimum key length for RSA
+            } else { // for ecdsa and rsapss, the minimum key length is fixed for each circuit
+              tamperedInputs.dsc_pubKey_actual_size = (Number(tamperedInputs.dsc_pubKey_actual_size) - 1).toString();
+            }
+  
+            await circuit.calculateWitness(tamperedInputs);
+            expect.fail('Expected an error but none was thrown.');
+          } catch (error) {
+            expect(error.message).to.include('Assert Failed');
+          }
+        });
 
         // ----- Tests for dsc_pubKey offset and size checks -----
         it('should fail if dsc_pubKey_offset + dsc_pubKey_actual_size > raw_dsc_actual_length', async function () {

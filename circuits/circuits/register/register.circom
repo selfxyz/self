@@ -58,6 +58,7 @@ template REGISTER(
     // This means the attestation is a passport
     var attestation_id = 1;
 
+    var minKeyLength = getMinKeyLength(signatureAlgorithm);
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -66,7 +67,6 @@ template REGISTER(
     var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
 
     var MAX_DSC_PUBKEY_LENGTH = n * kScaled / 8;
-    // var dsc_pubkey_length_bytes = (getKeyLength(signatureAlgorithm) / 8) * kLengthFactor;
 
     signal input raw_dsc[MAX_DSC_LENGTH];
     signal input raw_dsc_actual_length;
@@ -113,6 +113,15 @@ template REGISTER(
     passportVerifier.pubKey_dsc <== pubKey_dsc;
     passportVerifier.signature_passport <== signature_passport;
 
+
+    // check dsc_pubKey_actual_size is at least the minimum key length
+    signal dsc_pubKey_actual_size_in_range <== GreaterEqThan(12)([
+        dsc_pubKey_actual_size,
+        minKeyLength * kLengthFactor / 8
+    ]);
+    dsc_pubKey_actual_size_in_range === 1;
+
+    // check offsets refer to valid ranges
     signal dsc_pubKey_offset_in_range <== LessEqThan(12)([
         dsc_pubKey_offset + dsc_pubKey_actual_size,
         raw_dsc_actual_length

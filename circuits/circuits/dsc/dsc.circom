@@ -21,7 +21,7 @@ include "../utils/crypto/bitify/bytes.circom";
 /// @input raw_csca Raw CSCA certificate data
 /// @input raw_csca_actual_length Actual length of CSCA certificate
 /// @input csca_pubKey_offset Offset of CSCA public key in certificate
-/// @input csca_pubKey_actual_size Actual size of CSCA public key
+/// @input csca_pubKey_actual_size Actual size of CSCA public key in bytes
 /// @input raw_dsc Raw DSC certificate data
 /// @input raw_dsc_actual_length Actual length of DSC certificate
 /// @input csca_pubKey CSCA public key for signature verification
@@ -45,6 +45,7 @@ template DSC(
     // assert(n_csca * k_csca > max_dsc_bytes); // not sure what this is for
     assert(n_csca <= (255 \ 2));
 
+    var minKeyLength = getMinKeyLength(signatureAlgorithm);
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k_csca * kLengthFactor;
     var hashLength = getHashLength(signatureAlgorithm);
@@ -88,6 +89,13 @@ template DSC(
         // If i == raw_csca_actual_length - 1, the byte must be 255
         (raw_csca[i] - 255) * isEqualChecks[i].out === 0;
     }
+
+    // check csca_pubKey_actual_size is at least the minimum key length
+    signal csca_pubKey_actual_size_in_range <== GreaterEqThan(12)([
+        csca_pubKey_actual_size,
+        minKeyLength * kLengthFactor / 8
+    ]);
+    csca_pubKey_actual_size_in_range === 1;
 
     // check offsets refer to valid ranges
     signal csca_pubKey_offset_in_range <== LessEqThan(12)([

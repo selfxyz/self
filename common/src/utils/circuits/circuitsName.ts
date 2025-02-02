@@ -37,11 +37,7 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     const exponent = (parsedCSCA.publicKeyDetails as PublicKeyDetailsRSA).exponent;
     const saltLength = (parsedCSCA.publicKeyDetails as PublicKeyDetailsRSAPSS).saltLength;
     const bits = (parsedCSCA.publicKeyDetails as PublicKeyDetailsRSAPSS).bits;
-    if (parseInt(bits) <= 4096) {
-      return `dsc_${hashFunction}_${signatureAlgorithm}_${exponent}_${saltLength}_${4096}`;
-    } else {
-      throw new Error(`Unsupported key length: ${bits}`);
-    }
+    return `dsc_${hashFunction}_${signatureAlgorithm}_${exponent}_${saltLength}_${bits}`;
   } else {
     throw new Error('Unsupported signature algorithm');
   }
