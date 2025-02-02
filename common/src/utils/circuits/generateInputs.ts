@@ -1,9 +1,9 @@
 import {
-  PUBKEY_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
   max_dsc_bytes,
   max_csca_bytes,
+  COMMITMENT_TREE_DEPTH,
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
@@ -27,7 +27,6 @@ import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../certificate_parsing/dataStructure';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
 import { getTreeInclusionProof } from '../trees';
 
@@ -39,11 +38,11 @@ export function generateCircuitInputsDSC(
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
 
-  // TODO: is this padding better than the other one?
+  // CSCA is padded with 0s to max_csca_bytes
   const cscaTbsBytesPadded = padWithZeroes(Array.from(cscaParsed.tbsBytes), max_csca_bytes);
   const dscTbsBytes = dscParsed.tbsBytes;
 
-  // Do we want to keep this padding for the commitment? Not sure
+  // DSC is padded using sha padding because it will be hashed in the circuit
   const [dscTbsBytesPadded, dscTbsBytesLen] = pad(cscaParsed.hashAlgorithm)(
     dscTbsBytes,
     max_dsc_bytes
@@ -69,15 +68,15 @@ export function generateCircuitInputsDSC(
 
   // Get start index of CSCA pubkey based on algorithm
   const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
-  const csca_pubkey_actual_size = keyLength;
+
 
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),
     csca_pubKey_offset: startIndex.toString(),
-    csca_pubKey_actual_size: BigInt(csca_pubkey_actual_size).toString(),
+    csca_pubKey_actual_size: BigInt(keyLength).toString(),
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
-    raw_dsc_actual_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
+    raw_dsc_padded_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
     csca_pubKey: csca_pubKey_formatted,
     signature,
     merkle_root: root,
@@ -97,9 +96,7 @@ export function generateCircuitInputsRegister(
   const passportMetadata = passportData.passportMetadata;
   const dscParsed = passportData.dsc_parsed;
 
-  // const dscTbsBytesPadded = padWithZeroes(Array.from(dscParsed.tbsBytes), max_dsc_bytes); // TODO: is this padding better than the other?
-
-  const [dscTbsBytesPadded, ] = pad(dscParsed.hashAlgorithm)(
+  const [dscTbsBytesPadded,] = pad(dscParsed.hashAlgorithm)(
     dscParsed.tbsBytes,
     max_dsc_bytes
   );
@@ -127,11 +124,7 @@ export function generateCircuitInputsRegister(
 
   const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed);
   const [root, path, siblings, leaf_depth] = getTreeInclusionProof(dsc_leaf, 'dsc')
-  const csca_hash = getLeafCscaTree(passportData.csca_parsed);
-
-  const dsc_pubkey_actual_size = passportMetadata.signatureAlgorithm === 'ecdsa'
-    ? (Number((dscParsed.publicKeyDetails as PublicKeyDetailsECDSA).bits) / 8) * 2
-    : Number((dscParsed.publicKeyDetails as PublicKeyDetailsRSA).bits) / 8;
+  const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 
   // Get start index of DSC pubkey based on algorithm
   const [startIndex, keyLength] = findStartPubKeyIndex(dscParsed, dscTbsBytesPadded, dscParsed.signatureAlgorithm);
@@ -140,7 +133,7 @@ export function generateCircuitInputsRegister(
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
     raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
     dsc_pubKey_offset: startIndex,
-    dsc_pubKey_actual_size: [BigInt(dsc_pubkey_actual_size).toString()],
+    dsc_pubKey_actual_size: [BigInt(keyLength).toString()],
     dg1: mrz_formatted,
     dg1_hash_offset: passportMetadata.dg1HashOffset,
     eContent: eContentPadded,
@@ -154,7 +147,7 @@ export function generateCircuitInputsRegister(
     leaf_depth: leaf_depth,
     path: path,
     siblings: siblings,
-    csca_hash: csca_hash,
+    csca_tree_leaf: csca_tree_leaf,
     secret: secret,
   };
 
@@ -190,8 +183,7 @@ export function generateCircuitInputsVCandDisclose(
     (eContent_shaBytes as number[]).map((byte) => byte & 0xff)
   );
 
-  const dsc_hash = getLeaf(passportData.dsc_parsed, 'dsc');
-  const csca_hash = getLeaf(passportData.csca_parsed, 'csca');
+  const dsc_tree_leaf = getLeafDscTree(passportData.dsc_parsed, passportData.csca_parsed);
 
   const commitment = generateCommitment(
     secret,
@@ -202,7 +194,7 @@ export function generateCircuitInputsVCandDisclose(
   const { siblings, path, leaf_depth } = generateMerkleProof(
     merkletree,
     index,
-    PUBKEY_TREE_DEPTH
+    COMMITMENT_TREE_DEPTH
   );
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
@@ -220,8 +212,7 @@ export function generateCircuitInputsVCandDisclose(
     attestation_id: formatInput(attestation_id),
     dg1: formatInput(formattedMrz),
     eContent_shaBytes_packed_hash: formatInput(eContent_packed_hash),
-    dsc_hash: formatInput(dsc_hash),
-    csca_hash: formatInput(csca_hash),
+    dsc_tree_leaf: formatInput(dsc_tree_leaf),
     merkle_root: formatInput(merkletree.root),
     leaf_depth: formatInput(leaf_depth),
     path: formatInput(path),

@@ -93,53 +93,6 @@ testSuite.forEach(
           expect(commitment).to.be.equal(commitment_js);
         });
 
-        // ----- Tests for raw_dsc_actual_length checks -----
-        // it('should fail if raw_dsc_actual_length is higher than the actual length', async function () {
-        //   try {
-        //     const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-        //     tamperedInputs.raw_dsc_actual_length = (Number(tamperedInputs.raw_dsc_actual_length) + 1).toString();
-        //     await circuit.calculateWitness(tamperedInputs);
-        //     expect.fail('Expected an error but none was thrown.');
-        //   } catch (error: any) {
-        //     expect(error.message).to.include('Assert Failed');
-        //   }
-        // });
-
-        // it('should fail if raw_dsc_actual_length is lower than the actual length', async function () {
-        //   try {
-        //     const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-        //     tamperedInputs.raw_dsc_actual_length = (Number(tamperedInputs.raw_dsc_actual_length) - 1).toString();
-        //     await circuit.calculateWitness(tamperedInputs);
-        //     expect.fail('Expected an error but none was thrown.');
-        //   } catch (error: any) {
-        //     expect(error.message).to.include('Assert Failed');
-        //   }
-        // });
-
-        // it('should fail if raw_dsc[raw_dsc_actual_length - 1] is not 255', async function () {
-        //   try {
-        //     const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-        //     const idx = Number(tamperedInputs.raw_dsc_actual_length) - 1;
-        //     tamperedInputs.raw_dsc[idx] = '254';
-        //     await circuit.calculateWitness(tamperedInputs);
-        //     expect.fail('Expected an error but none was thrown.');
-        //   } catch (error: any) {
-        //     expect(error.message).to.include('Assert Failed');
-        //   }
-        // });
-
-        // it('should fail if any byte after raw_dsc_actual_length is non-zero', async function () {
-        //   try {
-        //     const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-        //     const idx = Number(tamperedInputs.raw_dsc_actual_length);
-        //     tamperedInputs.raw_dsc[idx] = '1';
-        //     await circuit.calculateWitness(tamperedInputs);
-        //     expect.fail('Expected an error but none was thrown.');
-        //   } catch (error: any) {
-        //     expect(error.message).to.include('Assert Failed');
-        //   }
-        // });
-
         it("should fail if dsc_pubKey_actual_size is lower than the minimum key length", async () => {
           try {
             const dscParsed = parseCertificateSimple(passportData.dsc);
@@ -288,7 +241,7 @@ testSuite.forEach(
         it('should fail if csca_hash is tampered', async function () {
           try {
             const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-            tamperedInputs.csca_hash = (BigInt(tamperedInputs.csca_hash) + 1n).toString();
+            tamperedInputs.csca_tree_leaf = (BigInt(tamperedInputs.csca_tree_leaf) + 1n).toString();
             await circuit.calculateWitness(tamperedInputs);
             expect.fail('Expected an error but none was thrown.');
           } catch (error: any) {
