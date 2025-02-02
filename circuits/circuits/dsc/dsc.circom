@@ -80,6 +80,18 @@ template DSC(
     signal isByte128 <== IsEqual()([raw_dsc_at_actual_length, 128]);
     isByte128 === 1;
 
+    // check that raw_dsc is padded with 0s after the sha padding
+    // this should guarantee the dsc commitment is unique for each commitment
+    component byte_checks[MAX_DSC_LENGTH];
+    for (var i = 0; i < MAX_DSC_LENGTH; i++) {
+        byte_checks[i] = GreaterThan(12);
+        byte_checks[i].in[0] <== i;
+        byte_checks[i].in[1] <== raw_dsc_padded_length;
+        
+        // If i >= raw_dsc_padded_length, the byte must be 0
+        raw_dsc[i] * byte_checks[i].out === 0;
+    }
+    
     // check csca_pubKey_actual_size is at least the minimum key length
     signal csca_pubKey_actual_size_in_range <== GreaterEqThan(12)([
         csca_pubKey_actual_size,
