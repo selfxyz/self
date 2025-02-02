@@ -67,29 +67,6 @@ template DSC(
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    // check raw_csca_actual_length is valid by checking that it is a 255 in the CSCA, and all bytes after it are 0s
-    // NOTE: not sure it's necessary to check for more than raw_csca[raw_csca_actual_length - 1] !== 0, as selecting any position
-    // before the actual length would only constrain the pubkey range more
-    // NOTE: could be handled differently by including raw_csca_actual_length in the csca merkle tree,
-    // instead of passing it as a private input
-    component byte_checks[MAX_CSCA_LENGTH];
-    component isEqualChecks[MAX_CSCA_LENGTH];
-    for (var i = 0; i < MAX_CSCA_LENGTH; i++) {
-        byte_checks[i] = GreaterThan(32);
-        byte_checks[i].in[0] <== i;
-        byte_checks[i].in[1] <== raw_csca_actual_length;
-        
-        // If i >= raw_csca_actual_length, the byte must be 0
-        raw_csca[i] * byte_checks[i].out === 0;
-
-        isEqualChecks[i] = IsEqual();
-        isEqualChecks[i].in[0] <== raw_csca_actual_length - 1;
-        isEqualChecks[i].in[1] <== i;
-
-        // If i == raw_csca_actual_length - 1, the byte must be 255
-        (raw_csca[i] - 255) * isEqualChecks[i].out === 0;
-    }
-
     // check csca_pubKey_actual_size is at least the minimum key length
     signal csca_pubKey_actual_size_in_range <== GreaterEqThan(12)([
         csca_pubKey_actual_size,
@@ -106,7 +83,8 @@ template DSC(
 
     // compute leaf in the CSCA Merkle tree and verify inclusion
     signal csca_hash <== PackBytesAndPoseidon(MAX_CSCA_LENGTH)(raw_csca);
-    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_hash, nLevels, path, siblings);
+    signal csca_tree_leaf <== Poseidon(2)([csca_hash, raw_csca_actual_length]);
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_tree_leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
 
     // get CSCA public key from the certificate
@@ -132,5 +110,5 @@ template DSC(
     
     // generate DSC leaf as poseidon(csca_hash, dsc_hash)
     signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
-    signal output dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_hash]);
+    signal output dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_tree_leaf]);
 }

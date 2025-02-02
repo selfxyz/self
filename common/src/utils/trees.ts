@@ -38,7 +38,8 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
     const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
-    return packBytesAndPoseidon(paddedTbsBytesArray);
+    const csca_hash = packBytesAndPoseidon(paddedTbsBytesArray);
+    return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
 

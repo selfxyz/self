@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { getLeafCscaTree } from '../../../common/src/utils/pubkeyTree';
+import { getLeafCscaTree } from '../../../common/src/utils/trees';
 import { CSCA_TREE_DEPTH, DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { poseidon2 } from 'poseidon-lite';
