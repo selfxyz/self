@@ -37,8 +37,7 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     signal input attestation_id;
     signal input dg1[93];
     signal input eContent_shaBytes_packed_hash;
-    signal input dsc_hash;
-    signal input csca_hash;
+    signal input dsc_tree_leaf;
 
     signal input merkle_root;
     signal input leaf_depth;
@@ -67,8 +66,7 @@ template VC_AND_DISCLOSE(nLevels,MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
         attestation_id,
         dg1,
         eContent_shaBytes_packed_hash,
-        dsc_hash,
-        csca_hash,
+        dsc_tree_leaf,
         merkle_root,
         leaf_depth,
         path,

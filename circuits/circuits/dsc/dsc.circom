@@ -12,6 +12,7 @@ include "../utils/passport/signatureVerifier.circom";
 include "../utils/passport/checkPubkeysEqual.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/bytes.circom";
+include "../utils/passport/BytesToNum.circom";
 
 /// @title DSC
 /// @notice Circuit for verifying DSC certificate signature using CSCA certificate
@@ -23,7 +24,7 @@ include "../utils/crypto/bitify/bytes.circom";
 /// @input csca_pubKey_offset Offset of CSCA public key in certificate
 /// @input csca_pubKey_actual_size Actual size of CSCA public key in bytes
 /// @input raw_dsc Raw DSC certificate data
-/// @input raw_dsc_actual_length Actual length of DSC certificate
+/// @input raw_dsc_padded_length Actual length of DSC certificate
 /// @input csca_pubKey CSCA public key for signature verification
 /// @input signature DSC signature
 /// @input merkle_root Root of CSCA Merkle tree
@@ -58,7 +59,7 @@ template DSC(
     signal input csca_pubKey_actual_size;
 
     signal input raw_dsc[MAX_DSC_LENGTH];
-    signal input raw_dsc_actual_length;
+    signal input raw_dsc_padded_length;
 
     signal input csca_pubKey[kScaled];
     signal input signature[kScaled];
@@ -66,6 +67,18 @@ template DSC(
     signal input merkle_root;
     signal input path[nLevels];
     signal input siblings[nLevels];
+
+    // first, compute raw_dsc_actual_length
+    // get the values of the last 4 bytes of the padded length
+    signal last_four_bytes_of_padded_length[4] <== SelectSubArray(MAX_DSC_LENGTH, 4)(raw_dsc, raw_dsc_padded_length - 4, 4);
+    signal computed_length_bits <== BytesToNum()(last_four_bytes_of_padded_length);
+    signal raw_dsc_actual_length <== computed_length_bits / 8;
+    log("raw_dsc_actual_length", raw_dsc_actual_length);
+
+    // sanity check: raw_dsc[raw_dsc_actual_length] should be 128
+    signal raw_dsc_at_actual_length <== ItemAtIndex(MAX_DSC_LENGTH)(raw_dsc, raw_dsc_actual_length);
+    signal isByte128 <== IsEqual()([raw_dsc_at_actual_length, 128]);
+    isByte128 === 1;
 
     // check csca_pubKey_actual_size is at least the minimum key length
     signal csca_pubKey_actual_size_in_range <== GreaterEqThan(12)([
@@ -103,12 +116,13 @@ template DSC(
     );
 
     // verify DSC signature
-    // we don't check that raw_dsc_actual_length is the correct one currently
-    // because we assume it would give hashes for which no signatures can be produced
-    signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, MAX_DSC_LENGTH)(raw_dsc, raw_dsc_actual_length);
+    // raw_dsc_padded_length is constrained because an incorrect one
+    // would yield hashes that have not been signed
+    signal hashedCertificate[hashLength] <== ShaBytesDynamic(hashLength, MAX_DSC_LENGTH)(raw_dsc, raw_dsc_padded_length);
     SignatureVerifier(signatureAlgorithm, n_csca, k_csca)(hashedCertificate, csca_pubKey, signature);
     
-    // generate DSC leaf as poseidon(csca_hash, dsc_hash)
+    // generate DSC leaf as poseidon(dsc_hash_with_actual_length, csca_tree_leaf)
     signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
-    signal output dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_tree_leaf]);
+    signal dsc_hash_with_actual_length <== Poseidon(2)([dsc_hash, raw_dsc_actual_length]);
+    signal output dsc_tree_leaf <== Poseidon(2)([dsc_hash_with_actual_length, csca_tree_leaf]);
 }

@@ -21,8 +21,7 @@ template VERIFY_COMMITMENT(nLevels) {
     signal input attestation_id;
     signal input dg1[93];
     signal input eContent_shaBytes_packed_hash;
-    signal input dsc_hash;
-    signal input csca_hash;
+    signal input dsc_tree_leaf;
 
     signal input merkle_root;
     signal input merkletree_size;
@@ -31,13 +30,12 @@ template VERIFY_COMMITMENT(nLevels) {
 
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
 
-    signal commitment <== Poseidon(6)([
+    signal commitment <== Poseidon(5)([
         secret,
         attestation_id,
         dg1_packed_hash,
         eContent_shaBytes_packed_hash,
-        dsc_hash,
-        csca_hash
+        dsc_tree_leaf
     ]);
     
     // Verify commitment inclusion

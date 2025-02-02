@@ -232,22 +232,12 @@ testSuite.forEach(({
         }
       });
 
-      it("should fail to compute a witness with an invalid dsc", async () => {
+      it("should fail to compute a witness with a dsc that is not padded with 0s after the sha padding", async () => {
         try {
           const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-          tamperedInputs.raw_dsc[0] = (Number(tamperedInputs.raw_dsc[0]) + 1).toString();
+          tamperedInputs.raw_dsc[tamperedInputs.raw_dsc.length - 1] = (Number(tamperedInputs.raw_dsc[tamperedInputs.raw_dsc.length - 1]) + 1).toString();
           
-          await circuit.calculateWitness(tamperedInputs);
-          expect.fail('Expected an error but none was thrown.');
-        } catch (error) {
-          expect(error.message).to.include('Assert Failed');
-        }
-      });
-
-      it("should fail to compute a witness with a raw_dsc_actual_length higher than the correct length", async () => {
-        try {
-          const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-          tamperedInputs.raw_dsc_actual_length = (Number(tamperedInputs.raw_dsc_actual_length) + 1).toString();
+          console.log(JSON.stringify(Array.from(tamperedInputs.raw_dsc)));
 
           await circuit.calculateWitness(tamperedInputs);
           expect.fail('Expected an error but none was thrown.');
@@ -256,16 +246,20 @@ testSuite.forEach(({
         }
       });
 
-      it("should fail to compute a witness with a raw_dsc_actual_length lower than the correct length", async () => {
-        try {
-          const tamperedInputs = JSON.parse(JSON.stringify(inputs));
-          tamperedInputs.raw_dsc_actual_length = (Number(tamperedInputs.raw_dsc_actual_length) - 1).toString();
-
-          await circuit.calculateWitness(tamperedInputs);
-          expect.fail('Expected an error but none was thrown.');
-        } catch (error) {
-          expect(error.message).to.include('Assert Failed');
-        }
+      [64, -64, 1, -1].forEach((delta) => {
+        it(`should fail to compute a witness when raw_dsc_padded_length is adjusted by ${delta}`, async () => {
+          try {
+            const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+            tamperedInputs.raw_dsc_padded_length = (
+              Number(tamperedInputs.raw_dsc_padded_length) + delta
+            ).toString();
+      
+            await circuit.calculateWitness(tamperedInputs);
+            expect.fail('Expected an error but none was thrown.');
+          } catch (error) {
+            expect(error.message).to.include('Assert Failed');
+          }
+        });
       });
 
       it("should fail to compute a witness with an invalid signature", async () => {

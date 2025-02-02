@@ -30,11 +30,12 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   if (type === 'dsc') {
     // for now, we pad it for sha
-    const [paddedTbsBytes, tbsBytesLen] = pad(parsed.hashAlgorithm)(
+    const [paddedTbsBytes, tbsBytesPaddedLength] = pad(parsed.hashAlgorithm)(
       parsed.tbsBytes,
       max_dsc_bytes
     );
-    return packBytesAndPoseidon(Array.from(paddedTbsBytes));
+    const dsc_hash = packBytesAndPoseidon(Array.from(paddedTbsBytes));
+    return poseidon2([dsc_hash, parsed.tbsBytes.length]).toString();
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
     const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));

@@ -21,7 +21,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @param MAX_ECONTENT_PADDED_LEN Maximum length of padded eContent
 /// @param MAX_SIGNED_ATTR_PADDED_LEN Maximum length of padded signed attributes
 /// @input raw_dsc Raw DSC certificate data
-/// @input raw_dsc_actual_length Actual length of DSC certificate
+/// @input raw_dsc_padded_length Actual length of DSC certificate
 /// @input dsc_pubKey_offset Offset of DSC public key in certificate
 /// @input dsc_pubKey_actual_size Actual size of DSC public key
 /// @input dg1 Document Group 1 data (93 bytes)
@@ -37,7 +37,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 /// @input leaf_depth Actual size of the merkle tree
 /// @input path Path indices for DSC Merkle proof
 /// @input siblings Sibling hashes for DSC Merkle proof
-/// @input csca_hash Hash of CSCA certificate
+/// @input csca_tree_leaf Leaf of CSCA Merkle tree
 /// @input secret Secret for commitment generation. Saved by the user to access their commitment
 /// @output nullifier Generated nullifier - deterministic on the passport data
 /// @output commitment Commitment that will be added to the onchain registration tree
@@ -88,9 +88,44 @@ template REGISTER(
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-    signal input csca_hash;
+    signal input csca_tree_leaf;
     
     signal input secret;
+
+    // check dsc_pubKey_actual_size is at least the minimum key length
+    signal dsc_pubKey_actual_size_in_range <== GreaterEqThan(12)([
+        dsc_pubKey_actual_size,
+        minKeyLength * kLengthFactor / 8
+    ]);
+    dsc_pubKey_actual_size_in_range === 1;
+
+    // check offsets refer to valid ranges
+    signal dsc_pubKey_offset_in_range <== LessEqThan(12)([
+        dsc_pubKey_offset + dsc_pubKey_actual_size,
+        raw_dsc_actual_length
+    ]); 
+    dsc_pubKey_offset_in_range === 1;
+
+    // generate DSC leaf as poseidon(dsc_hash, csca_tree_leaf)
+    signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
+    signal dsc_hash_with_actual_length <== Poseidon(2)([dsc_hash, raw_dsc_actual_length]);
+    signal dsc_tree_leaf <== Poseidon(2)([dsc_hash_with_actual_length, csca_tree_leaf]);
+    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(dsc_tree_leaf, leaf_depth, path, siblings);
+    merkle_root === computed_merkle_root;
+
+    // get DSC public key from the certificate
+    signal extracted_dsc_pubKey[MAX_DSC_PUBKEY_LENGTH] <== SelectSubArray(MAX_DSC_LENGTH, MAX_DSC_PUBKEY_LENGTH)(
+        raw_dsc,
+        dsc_pubKey_offset,
+        dsc_pubKey_actual_size
+    );
+
+    // check if the DSC public key is the same as the one in the certificate
+    CheckPubkeysEqual(n, kScaled, kLengthFactor, MAX_DSC_PUBKEY_LENGTH)(
+        pubKey_dsc,
+        extracted_dsc_pubKey,
+        dsc_pubKey_actual_size
+    );
 
     // verify passport signature
     component passportVerifier = PassportVerifier(
@@ -113,53 +148,17 @@ template REGISTER(
     passportVerifier.pubKey_dsc <== pubKey_dsc;
     passportVerifier.signature_passport <== signature_passport;
 
-
-    // check dsc_pubKey_actual_size is at least the minimum key length
-    signal dsc_pubKey_actual_size_in_range <== GreaterEqThan(12)([
-        dsc_pubKey_actual_size,
-        minKeyLength * kLengthFactor / 8
-    ]);
-    dsc_pubKey_actual_size_in_range === 1;
-
-    // check offsets refer to valid ranges
-    signal dsc_pubKey_offset_in_range <== LessEqThan(12)([
-        dsc_pubKey_offset + dsc_pubKey_actual_size,
-        raw_dsc_actual_length
-    ]); 
-    dsc_pubKey_offset_in_range === 1;
-
-    // generate DSC leaf as poseidon(dsc_hash, csca_hash)
-    signal dsc_hash <== PackBytesAndPoseidon(MAX_DSC_LENGTH)(raw_dsc);
-    signal dsc_tree_leaf <== Poseidon(2)([dsc_hash, csca_hash]);
-    signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(dsc_tree_leaf, leaf_depth, path, siblings);
-    merkle_root === computed_merkle_root;
-
-    // get DSC public key from the certificate
-    signal extracted_dsc_pubKey[MAX_DSC_PUBKEY_LENGTH] <== SelectSubArray(MAX_DSC_LENGTH, MAX_DSC_PUBKEY_LENGTH)(
-        raw_dsc,
-        dsc_pubKey_offset,
-        dsc_pubKey_actual_size
-    );
-
-    // check if the DSC public key is the same as the one in the certificate
-    CheckPubkeysEqual(n, kScaled, kLengthFactor, MAX_DSC_PUBKEY_LENGTH)(
-        pubKey_dsc,
-        extracted_dsc_pubKey,
-        dsc_pubKey_actual_size
-    );
-
     signal output nullifier <== PackBytesAndPoseidon(HASH_LEN_BYTES)(passportVerifier.signedAttrShaBytes);
 
     // generate commitment
     signal dg1_packed_hash <== PackBytesAndPoseidon(93)(dg1);
     signal eContent_shaBytes_packed_hash <== PackBytesAndPoseidon(ECONTENT_HASH_ALGO_BYTES)(passportVerifier.eContentShaBytes);
     
-    signal output commitment <== Poseidon(6)([
+    signal output commitment <== Poseidon(5)([
         secret,
         attestation_id,
         dg1_packed_hash,
         eContent_shaBytes_packed_hash,
-        dsc_hash,
-        csca_hash
+        dsc_tree_leaf
     ]);
 }
