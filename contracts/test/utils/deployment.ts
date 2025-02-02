@@ -6,7 +6,7 @@ import { genMockPassportData } from "../../../common/src/utils/passports/genMock
 import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
-// Import types
+
 import {
     DeployedActors,
     VcAndDiscloseVerifier,
