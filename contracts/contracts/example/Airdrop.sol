@@ -3,7 +3,7 @@ pragma solidity ^0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {PassportAirdropRoot} from "../abstract/passportAirdropRoot.sol";
+import {PassportAirdropRoot} from "../abstract/PassportAirdropRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -82,19 +82,19 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     }
 
     function getScope() external view returns (uint256) {
-        return scope;
+        return _scope;
     }
 
     function getAttestationId() external view returns (uint256) {
-        return attestationId;
+        return _attestationId;
     }
 
     function getNullifier(uint256 nullifier) external view returns (uint256) {
-        return nullifiers[nullifier];
+        return _nullifiers[nullifier];
     }
 
     function isRegistered(address registeredAddress) external view returns (bool) {
-        return registeredUserIdentifiers[uint256(uint160(registeredAddress))];
+        return _registeredUserIdentifiers[uint256(uint160(registeredAddress))];
     }
 
     function claim(
@@ -114,7 +114,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
             revert AlreadyClaimed();
         }
 
-        if (!registeredUserIdentifiers[uint256(uint160(msg.sender))]) {
+        if (!_registeredUserIdentifiers[uint256(uint160(msg.sender))]) {
             revert NotRegistered(msg.sender);
         }
 

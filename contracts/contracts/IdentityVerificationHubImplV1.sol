@@ -39,16 +39,37 @@ import "./upgradeable/ImplRoot.sol";
  * ⚠️ VIOLATION OF THESE RULES WILL CAUSE CATASTROPHIC STORAGE COLLISIONS IN FUTURE UPGRADES ⚠️
  * =============================================
  */
+
+/**
+ * @title IdentityVerificationHubStorageV1
+ * @notice Storage contract for IdentityVerificationHubImplV1.
+ * @dev Inherits from ImplRoot to include upgradeability functionality.
+ */
 abstract contract IdentityVerificationHubStorageV1 is 
     ImplRoot 
 {
+    // ====================================================
+    // Storage Variables
+    // ====================================================
+    
+    /// @notice Address of the Identity Registry.
     address internal _registry;
+
+    /// @notice Address of the VC and Disclose circuit verifier.
     address internal _vcAndDiscloseCircuitVerifier;
 
+    /// @notice Mapping from signature type to register circuit verifier addresses.
     mapping(uint256 => address) internal _sigTypeToRegisterCircuitVerifiers;
+
+    /// @notice Mapping from signature type to DSC circuit verifier addresses..
     mapping(uint256 => address) internal _sigTypeToDscCircuitVerifiers;
 }
 
+/**
+ * @title IdentityVerificationHubImplV1
+ * @notice Implementation contract for the Identity Verification Hub.
+ * @dev Provides functions for registering commitments and verifying groth16 proofs and inclusion proofs.
+ */
 contract IdentityVerificationHubImplV1 is 
     IdentityVerificationHubStorageV1, 
     IIdentityVerificationHubV1 
@@ -57,7 +78,19 @@ contract IdentityVerificationHubImplV1 is
 
     uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 
+    // ====================================================
     // Events
+    // ====================================================
+
+    /**
+     * @notice Emitted when the hub is initialized.
+     * @param registry The address of the registry.
+     * @param vcAndDiscloseCircuitVerifier The address of the VC and Disclose circuit verifier.
+     * @param registerCircuitVerifierIds Array of register circuit verifier ids.
+     * @param registerCircuitVerifiers Array of register circuit verifier addresses.
+     * @param dscCircuitVerifierIds Array of DSC circuit verifier ids.
+     * @param dscCircuitVerifiers Array of DSC circuit verifier addresses.
+     */
     event HubInitialized(
         address registry, 
         address vcAndDiscloseCircuitVerifier,
@@ -66,16 +99,38 @@ contract IdentityVerificationHubImplV1 is
         uint256[] dscCircuitVerifierIds,
         address[] dscCircuitVerifiers
     );
+    /**
+     * @notice Emitted when the registry address is updated.
+     * @param registry The new registry address.
+     */
     event RegistryUpdated(address registry);
+    /**
+     * @notice Emitted when the VC and Disclose circuit verifier is updated.
+     * @param vcAndDiscloseCircuitVerifier The new VC and Disclose circuit verifier address.
+     */
     event VcAndDiscloseCircuitUpdated(address vcAndDiscloseCircuitVerifier);
+    /**
+     * @notice Emitted when a register circuit verifier is updated.
+     * @param typeId The signature type id.
+     * @param verifier The new verifier address for the register circuit.
+     */
     event RegisterCircuitVerifierUpdated(uint256 typeId, address verifier);
+    /**
+     * @notice Emitted when a DSC circuit verifier is updated.
+     * @param typeId The signature type id.
+     * @param verifier The new verifier address for the DSC circuit.
+     */
     event DscCircuitVerifierUpdated(uint256 typeId, address verifier);
 
+    // ====================================================
     // Errors
+    // ====================================================
+
+    /// @notice Thrown when the lengths of provided arrays do not match.
     error LENGTH_MISMATCH();
+    /// @notice Thrown when no verifier is set for a signature type.
     error NO_VERIFIER_SET();
-    error VERIFIER_CALL_FAILED();
-    error UNEQUAL_GLUE();
+    /// @notice Thrown when the current date in the proof is not within a valid range.
     error CURRENT_DATE_NOT_IN_VALID_RANGE();
 
     error INVALID_OLDER_THAN();
@@ -90,11 +145,32 @@ contract IdentityVerificationHubImplV1 is
     error INVALID_OFAC_ROOT();
     error INVALID_CSCA_ROOT();
 
+    // ====================================================
     // Constructor
+    // ====================================================
+
+    /**
+     * @notice Constructor that disables initializers.
+     * @dev Prevents direct initialization of the implementation contract.
+     */
     constructor() {
         _disableInitializers();
     }
 
+    // ====================================================
+    // Initializer
+    // ====================================================
+
+    /**
+     * @notice Initializes the hub implementation.
+     * @dev Sets the registry, VC and Disclose circuit verifier address, register circuit verifiers, and DSC circuit verifiers.
+     * @param registryAddress The address of the Identity Registry.
+     * @param vcAndDiscloseCircuitVerifierAddress The address of the VC and Disclose circuit verifier.
+     * @param registerCircuitVerifierIds Array of ids for register circuit verifiers.
+     * @param registerCircuitVerifierAddresses Array of addresses for register circuit verifiers.
+     * @param dscCircuitVerifierIds Array of ids for DSC circuit verifiers.
+     * @param dscCircuitVerifierAddresses Array of addresses for DSC circuit verifiers.
+     */
     function initialize(
         address registryAddress, 
         address vcAndDiscloseCircuitVerifierAddress,
@@ -128,12 +204,14 @@ contract IdentityVerificationHubImplV1 is
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ///                     EXTERNAL FUNCTIONS                      ///
-    ///////////////////////////////////////////////////////////////////
+    // ====================================================
+    // External View Functions
+    // ====================================================
 
-    // view
-    // tested
+    /**
+     * @notice Retrieves the registry address.
+     * @return The address of the Identity Registry.
+     */
     function registry() 
         external
         virtual
@@ -144,7 +222,10 @@ contract IdentityVerificationHubImplV1 is
         return _registry;
     }
 
-    // tested
+    /**
+     * @notice Retrieves the VC and Disclose circuit verifier address.
+     * @return The address of the VC and Disclose circuit verifier.
+     */
     function vcAndDiscloseCircuitVerifier() 
         external
         virtual
@@ -155,7 +236,11 @@ contract IdentityVerificationHubImplV1 is
         return _vcAndDiscloseCircuitVerifier;
     }
 
-    // tested
+    /**
+     * @notice Retrieves the register circuit verifier address for a given signature type.
+     * @param typeId The signature type identifier.
+     * @return The register circuit verifier address.
+     */
     function sigTypeToRegisterCircuitVerifiers(
         uint256 typeId
     ) 
@@ -168,7 +253,11 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToRegisterCircuitVerifiers[typeId];
     }
 
-    // tested
+    /**
+     * @notice Retrieves the DSC circuit verifier address for a given signature type.
+     * @param typeId The signature type identifier.
+     * @return The DSC circuit verifier address.
+     */
     function sigTypeToDscCircuitVerifiers(
         uint256 typeId
     ) 
@@ -181,7 +270,13 @@ contract IdentityVerificationHubImplV1 is
         return _sigTypeToDscCircuitVerifiers[typeId];
     }
 
-    // test in vc and disclose.ts
+    /**
+     * @notice Converts packed revealed data into a human-readable format.
+     * @dev Uses Formatter and CircuitAttributeHandler to decode the data.
+     * @param revealedDataPacked An array of three packed uint256 values.
+     * @param types An array of RevealedDataType indicating the types of data expected.
+     * @return A ReadableRevealedData struct containing the decoded data.
+     */
     function getReadableRevealedData(
         uint256[3] memory revealedDataPacked,
         RevealedDataType[] memory types
@@ -224,7 +319,11 @@ contract IdentityVerificationHubImplV1 is
         return attrs;
     }
 
-    // will test in vc and disclose.ts
+    /**
+     * @notice Extracts the forbidden countries list from packed data.
+     * @param forbiddenCountriesListPacked Packed data representing forbidden countries.
+     * @return An array of strings with a maximum length of MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH.
+     */
     function getReadableForbiddenCountries(
         uint256 forbiddenCountriesListPacked
     )
@@ -237,10 +336,12 @@ contract IdentityVerificationHubImplV1 is
         return Formatter.extractForbiddenCountriesFromPacked(forbiddenCountriesListPacked);
     }
 
-    // verify and view
-
-    // will test in vc and disclose.ts
-    // tested
+    /**
+     * @notice Verifies the VC and Disclose proof.
+     * @dev Checks commitment roots, OFAC root, current date range, and other attributes depending on verification configuration.
+     * @param proof The VcAndDiscloseHubProof containing the proof data.
+     * @return result A VcAndDiscloseVerificationResult struct with the verification results.
+     */
     function verifyVcAndDisclose(
         VcAndDiscloseHubProof memory proof
     )
@@ -265,8 +366,14 @@ contract IdentityVerificationHubImplV1 is
         return result;
     }
 
-    // updates
-    // tested
+    // ====================================================
+    // External Update Functions
+    // ====================================================
+
+    /**
+     * @notice Updates the registry address.
+     * @param registryAddress The new registry address.
+     */
     function updateRegistry(
         address registryAddress
     ) 
@@ -279,7 +386,10 @@ contract IdentityVerificationHubImplV1 is
         emit RegistryUpdated(registryAddress);
     }
 
-    // tested
+    /**
+     * @notice Updates the VC and Disclose circuit verifier address.
+     * @param vcAndDiscloseCircuitVerifierAddress The new VC and Disclose circuit verifier address.
+     */
     function updateVcAndDiscloseCircuit(
         address vcAndDiscloseCircuitVerifierAddress
     ) 
@@ -292,7 +402,11 @@ contract IdentityVerificationHubImplV1 is
         emit VcAndDiscloseCircuitUpdated(vcAndDiscloseCircuitVerifierAddress);
     }
 
-    // tested
+    /**
+     * @notice Updates the register circuit verifier for a specific signature type.
+     * @param typeId The signature type identifier.
+     * @param verifierAddress The new register circuit verifier address.
+     */
     function updateRegisterCircuitVerifier(
         uint256 typeId, 
         address verifierAddress
@@ -306,7 +420,11 @@ contract IdentityVerificationHubImplV1 is
         emit RegisterCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
-    // tested
+    /**
+     * @notice Updates the DSC circuit verifier for a specific signature type.
+     * @param typeId The signature type identifier.
+     * @param verifierAddress The new DSC circuit verifier address.
+     */
     function updateDscVerifier(
         uint256 typeId, 
         address verifierAddress
@@ -320,7 +438,11 @@ contract IdentityVerificationHubImplV1 is
         emit DscCircuitVerifierUpdated(typeId, verifierAddress);
     }
 
-    // tested
+    /**
+     * @notice Batch updates register circuit verifiers.
+     * @param typeIds An array of signature type identifiers.
+     * @param verifierAddresses An array of new register circuit verifier addresses.
+     */
     function batchUpdateRegisterCircuitVerifiers(
         uint256[] calldata typeIds,
         address[] calldata verifierAddresses
@@ -339,7 +461,11 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
-    // tested
+    /**
+     * @notice Batch updates DSC circuit verifiers.
+     * @param typeIds An array of signature type identifiers.
+     * @param verifierAddresses An array of new DSC circuit verifier addresses.
+     */
     function batchUpdateDscCircuitVerifiers(
         uint256[] calldata typeIds,
         address[] calldata verifierAddresses
@@ -358,8 +484,16 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
-    // register
-    // tested
+    // ====================================================
+    // External Register Functions
+    // ====================================================
+
+    /**
+     * @notice Registers a passport commitment using a register circuit proof.
+     * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
+     * @param registerCircuitProof The register circuit proof data.
+     */
     function registerPassportCommitment(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
@@ -376,8 +510,12 @@ contract IdentityVerificationHubImplV1 is
         );
     }
 
-    // will test in commitmentRegistration.ts
-    // tested
+    /**
+     * @notice Registers a DSC key commitment using a DSC circuit proof.
+     * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
+     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
+     * @param dscCircuitProof The DSC circuit proof data.
+     */
     function registerDscKeyCommitment(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
@@ -392,11 +530,16 @@ contract IdentityVerificationHubImplV1 is
         );
     }
 
-    ///////////////////////////////////////////////////////////////////
-    ///                     INTERNAL FUNCTIONS                        ///
-    ///////////////////////////////////////////////////////////////////
+    // ====================================================
+    // Internal Functions
+    // ====================================================
 
-    // Functions for vc and disclose circuit
+    /**
+     * @notice Verifies the VC and Disclose proof.
+     * @dev Checks commitment roots, OFAC root, current date range, and other attributes depending on verification configuration.
+     * @param proof The VcAndDiscloseHubProof containing the proof data.
+     * @return identityCommitmentRoot The verified identity commitment root from the proof.
+     */
     function verifyVcAndDiscloseProof(
         VcAndDiscloseHubProof memory proof
     ) 
@@ -449,7 +592,7 @@ contract IdentityVerificationHubImplV1 is
             }
         }
 
-        // verify the proof
+        // verify the proof using the VC and Disclose circuit verifier
         if (!IVcAndDiscloseCircuitVerifier(_vcAndDiscloseCircuitVerifier).verifyProof(proof.vcAndDiscloseProof.a, proof.vcAndDiscloseProof.b, proof.vcAndDiscloseProof.c, proof.vcAndDiscloseProof.pubSignals)) {
             revert INVALID_VC_AND_DISCLOSE_PROOF();
         }
@@ -457,7 +600,12 @@ contract IdentityVerificationHubImplV1 is
         return proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX];
     }
 
-    // Functions for register commitment
+    /**
+     * @notice Verifies the passport register circuit proof.
+     * @dev Uses the register circuit verifier specified by registerCircuitVerifierId.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier.
+     * @param registerCircuitProof The register circuit proof data.
+     */
     function verifyPassportRegisterProof(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
@@ -484,6 +632,12 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
+    /**
+     * @notice Verifies the passport DSC circuit proof.
+     * @dev Uses the DSC circuit verifier specified by dscCircuitVerifierId.
+     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier.
+     * @param dscCircuitProof The DSC circuit proof data.
+     */
     function verifyPassportDscProof(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
@@ -491,7 +645,6 @@ contract IdentityVerificationHubImplV1 is
         internal
         view
     {
-
         address verifier = _sigTypeToDscCircuitVerifiers[dscCircuitVerifierId];
         if (verifier == address(0)) {
             revert NO_VERIFIER_SET();
@@ -511,8 +664,12 @@ contract IdentityVerificationHubImplV1 is
         }
     }
 
+    /**
+     * @notice Retrieves the timestamp for the start of the current day.
+     * @dev Calculated by subtracting the remainder of block.timestamp modulo 1 day.
+     * @return The Unix timestamp representing the start of the day.
+     */
     function getStartOfDayTimestamp() internal view returns (uint256) {
         return block.timestamp - (block.timestamp % 1 days);
     }
-
 }
