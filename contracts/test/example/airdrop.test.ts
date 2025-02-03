@@ -11,6 +11,8 @@ import { generateCommitment } from "../../../common/src/utils/passports/passport
 import { generateRandomFieldElement } from "../utils/utils";
 import BalanceTree from "../utils/example/balance-tree";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
+import { formatCountriesList, reverseBytes } from '../../../common/src/utils/circuits/formatInputs';
+import { Formatter } from "../utils/formatter";
 
 describe("Airdrop", () => {
     let deployedActors: DeployedActors;
@@ -23,6 +25,8 @@ describe("Airdrop", () => {
     let imt: any;
     let commitment: any;
     let nullifier: any;
+    let forbiddenCountriesList: any;
+    let countriesListPacked: any;
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
@@ -30,6 +34,8 @@ describe("Airdrop", () => {
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+
+        forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
         
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
         imt = new LeanIMT<bigint>(hashFunction);
@@ -46,7 +52,7 @@ describe("Airdrop", () => {
             "20",
             undefined,
             undefined,
-            undefined,
+            forbiddenCountriesList,
             (await deployedActors.user1.getAddress()).slice(2)
         );
 
@@ -63,6 +69,7 @@ describe("Airdrop", () => {
 
         const root = await deployedActors.registry.getIdentityCommitmentMerkleRoot();
         const timestamp = await deployedActors.registry.rootTimestamps(root);
+        countriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
 
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
@@ -71,7 +78,12 @@ describe("Airdrop", () => {
             castFromScope("test-airdrop"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            timestamp
+            timestamp,
+            true,
+            20,
+            true,
+            countriesListPacked,
+            true,
         );
         await airdrop.waitForDeployment();
         
@@ -184,19 +196,8 @@ describe("Airdrop", () => {
     it("should able to register address by user", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        const tx = await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        const tx = await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         const receipt = await tx.wait();
         
         const event = receipt?.logs.find(
@@ -224,19 +225,8 @@ describe("Airdrop", () => {
     it("should not able to register address by user if registration is closed", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).closeRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegistrationNotOpen");
     });
 
@@ -254,39 +244,17 @@ describe("Airdrop", () => {
             "20",
         );
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidScope");
     });
 
     it("should not able to register address by user if nullifier is already registered", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegisteredNullifier");
     });
 
@@ -306,8 +274,6 @@ describe("Airdrop", () => {
         await invalidImt.insert(BigInt(commitment));
         await invalidImt.insert(BigInt(invalidCommitment));
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
         vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
             BigInt(ATTESTATION_ID.INVALID_ATTESTATION_ID).toString(),
@@ -319,17 +285,8 @@ describe("Airdrop", () => {
             "20",
         );
 
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
 
@@ -348,8 +305,6 @@ describe("Airdrop", () => {
         await invalidImt.insert(BigInt(commitment));
         await invalidImt.insert(BigInt(secondCommitment));
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
         vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
@@ -359,77 +314,63 @@ describe("Airdrop", () => {
             "1",
             invalidImt,
             "20",
+            undefined,
+            undefined,
+            forbiddenCountriesList,
+            (await deployedActors.user1.getAddress()).slice(2)
         );
 
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidTimestamp");
     });
 
     it("should allow registration when targetRootTimestamp is 0", async () => {
-        const { owner, user1 } = deployedActors;
+        const { hub, registry, owner, user1 } = deployedActors;
 
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         const newAirdrop = await airdropFactory.connect(owner).deploy(
-            deployedActors.hub.target,
-            deployedActors.registry.target,
+            hub.target,
+            registry.target,
             castFromScope("test-airdrop"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            0
+            0,
+            true,
+            20,
+            true,
+            countriesListPacked,
+            true,
         );
+        console.log()
         await newAirdrop.waitForDeployment();
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await newAirdrop.connect(owner).openRegistration();
-        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.not.be.reverted;
     });
 
     it("should revert with InvalidTimestamp when root timestamp does not match", async () => {
-        const { owner, user1 } = deployedActors;
+        const { hub, registry, owner, user1 } = deployedActors;
         
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         const newAirdrop = await airdropFactory.connect(owner).deploy(
-            deployedActors.hub.target,
-            deployedActors.registry.target,
+            hub.target,
+            registry.target,
             castFromScope("test-airdrop"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            123456789
+            123456789,
+            true,
+            20,
+            true,
+            countriesListPacked,
+            true,
         );
         await newAirdrop.waitForDeployment();
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await newAirdrop.connect(owner).openRegistration();
-        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseHubProof))
+        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(newAirdrop, "InvalidTimestamp");
     });
 
@@ -460,19 +401,8 @@ describe("Airdrop", () => {
     it("should able to claim token by user", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -508,19 +438,8 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if registration is not closed", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -539,19 +458,8 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if claim is not open", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -570,19 +478,8 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if user has already claimed", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -606,19 +503,8 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if merkle proof is invalid", async () => {
         const { owner, user1 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -638,18 +524,8 @@ describe("Airdrop", () => {
     it("should not able to claim token by user if user is not registered", async () => {
         const { owner, user1, user2 } = deployedActors;
 
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
-        const vcAndDiscloseHubProof = {
-            olderThanEnabled: true,
-            olderThan: "20",
-            forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-            ofacEnabled: true,
-            vcAndDiscloseProof: vcAndDiscloseProof
-        };
-
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([
@@ -668,6 +544,50 @@ describe("Airdrop", () => {
 
         const isClaimed = await airdrop.claimed(await user2.getAddress());
         expect(isClaimed).to.be.false;
+    });
+
+    it("should able to set verification config by owner", async () => {
+        const { owner } = deployedActors;
+        const newVerificationConfig = {
+            olderThanEnabled: false,
+            olderThan: 25,
+            forbiddenCountriesEnabled: false,
+            forbiddenCountriesListPacked: countriesListPacked,
+            ofacEnabled: false
+        };
+
+        await airdrop.connect(owner).setVerificationConfig(newVerificationConfig);
+        const storedConfig = await airdrop.getVerificationConfig();
+        
+        expect(storedConfig.olderThanEnabled).to.equal(newVerificationConfig.olderThanEnabled);
+        expect(storedConfig.olderThan).to.equal(newVerificationConfig.olderThan);
+        expect(storedConfig.forbiddenCountriesEnabled).to.equal(newVerificationConfig.forbiddenCountriesEnabled);
+        expect(storedConfig.forbiddenCountriesListPacked).to.equal(newVerificationConfig.forbiddenCountriesListPacked);
+        expect(storedConfig.ofacEnabled).to.equal(newVerificationConfig.ofacEnabled);
+    });
+
+    it("should not able to set verification config by non-owner", async () => {
+        const { user1 } = deployedActors;
+        const newVerificationConfig = {
+            olderThanEnabled: false,
+            olderThan: 25,
+            forbiddenCountriesEnabled: false,
+            forbiddenCountriesListPacked: countriesListPacked,
+            ofacEnabled: false
+        };
+
+        await expect(airdrop.connect(user1).setVerificationConfig(newVerificationConfig))
+            .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
+            .withArgs(await user1.getAddress());
+    });
+
+    it("should return correct verification config", async () => {
+        const config = await airdrop.getVerificationConfig();
+        expect(config.olderThanEnabled).to.equal(true);
+        expect(config.olderThan).to.equal(20);
+        expect(config.forbiddenCountriesEnabled).to.equal(true);
+        expect(config.forbiddenCountriesListPacked).to.equal(countriesListPacked);
+        expect(config.ofacEnabled).to.equal(true);
     });
 
 });
