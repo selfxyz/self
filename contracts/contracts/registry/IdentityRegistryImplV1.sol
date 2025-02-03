@@ -420,7 +420,7 @@ contract IdentityRegistryImplV1 is
     }
 
     // ====================================================
-    // External Functions - Registration & Updates
+    // External Functions - Registration
     // ====================================================
 
     /**
