@@ -78,7 +78,6 @@ describe("Formatter", function () {
         it("should match contract and ts implementation", async function () {
             const input = [123n, 456n, 789n];
             const contractResult = await testFormatter.testFieldElementsToBytes(input);
-            console.log(contractResult);
             const tsResult = toHexString(Formatter.fieldElementsToBytes(input as [bigint, bigint, bigint]));
             expect(contractResult).to.deep.equal(tsResult);
         });
@@ -95,7 +94,6 @@ describe("Formatter", function () {
         it("should match contract and ts implementation", async function () {
             const input = "0x414141424242434343";
             const contractResult = await testFormatter.testExtractForbiddenCountriesFromPacked(input);
-            console.log(contractResult);
             const tsResult = Formatter.extractForbiddenCountriesFromPacked(BigInt(input));
             expect(contractResult).to.deep.equal(tsResult);
             expect(contractResult[0]).to.equal("CCC");
