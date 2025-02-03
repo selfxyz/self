@@ -90,4 +90,5 @@ library CircuitConstants {
      * @notice Index to access the user identifier in the VC and Disclose circuit public signals.
      */
     uint256 constant VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX = 15;
+
 }
