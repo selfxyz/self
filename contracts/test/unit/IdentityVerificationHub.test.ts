@@ -33,15 +33,21 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             expect(await hub.sigTypeToDscCircuitVerifiers(dscId)).to.equal(dsc.target);
 
             const filter = hub.filters.HubInitialized;
-            const events = await hub.queryFilter(filter);
-            expect(events.length).to.equal(1);
-            const event = events[0];
-            expect(event.args.registry).to.equal(registry.target);
-            expect(event.args.vcAndDiscloseCircuitVerifier).to.equal(vcAndDisclose.target);
-            expect(event.args.registerCircuitVerifierIds).to.deep.equal([registerId]);
-            expect(event.args.registerCircuitVerifiers).to.deep.equal([register.target]);
-            expect(event.args.dscCircuitVerifierIds).to.deep.equal([dscId]);
-            expect(event.args.dscCircuitVerifiers).to.deep.equal([dsc.target]);
+            const hubInitializedEvents = await hub.queryFilter(filter);
+            expect(hubInitializedEvents.length).to.equal(1);
+            const hubInitializedEvent = hubInitializedEvents[0];
+            expect(hubInitializedEvent.args.registry).to.equal(registry.target);
+            expect(hubInitializedEvent.args.vcAndDiscloseCircuitVerifier).to.equal(vcAndDisclose.target);
+            expect(hubInitializedEvent.args.registerCircuitVerifierIds).to.deep.equal([registerId]);
+            expect(hubInitializedEvent.args.registerCircuitVerifiers).to.deep.equal([register.target]);
+            expect(hubInitializedEvent.args.dscCircuitVerifierIds).to.deep.equal([dscId]);
+            expect(hubInitializedEvent.args.dscCircuitVerifiers).to.deep.equal([dsc.target]);
+
+            const initFilter = hub.filters.Initialized;
+            const initEvents = await hub.queryFilter(initFilter);
+            expect(initEvents.length).to.equal(1);
+            const initEvent = initEvents[0];
+            expect(initEvent.args.version).to.equal(1);
         });
 
         it("should not allow direct initialization of hub implementation", async () => {

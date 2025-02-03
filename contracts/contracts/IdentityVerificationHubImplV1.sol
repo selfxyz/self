@@ -127,23 +127,56 @@ contract IdentityVerificationHubImplV1 is
     // ====================================================
 
     /// @notice Thrown when the lengths of provided arrays do not match.
+    /// @dev Used when initializing or updating arrays that must have equal length.
     error LENGTH_MISMATCH();
-    /// @notice Thrown when no verifier is set for a signature type.
+    
+    /// @notice Thrown when no verifier is set for a given signature type.
+    /// @dev Indicates that the mapping lookup for the verifier returned the zero address.
     error NO_VERIFIER_SET();
-    /// @notice Thrown when the current date in the proof is not within a valid range.
+    
+    /// @notice Thrown when the current date in the proof is not within the valid range.
+    /// @dev Ensures that the provided proof's date is within one day of the expected start time.
     error CURRENT_DATE_NOT_IN_VALID_RANGE();
-
+    
+    /// @notice Thrown when the 'older than' attribute in the proof is invalid.
+    /// @dev The 'older than' value derived from the proof does not match the expected criteria.
     error INVALID_OLDER_THAN();
+    
+    /// @notice Thrown when the provided forbidden countries list is invalid.
+    /// @dev The forbidden countries list in the proof does not match the expected packed data.
     error INVALID_FORBIDDEN_COUNTRIES();
+    
+    /// @notice Thrown when the OFAC check fails.
+    /// @dev Indicates that the proof did not satisfy the required OFAC conditions.
     error INVALID_OFAC();
-
+    
+    /// @notice Thrown when the register circuit proof is invalid.
+    /// @dev The register circuit verifier did not validate the provided proof.
     error INVALID_REGISTER_PROOF();
+    
+    /// @notice Thrown when the DSC circuit proof is invalid.
+    /// @dev The DSC circuit verifier did not validate the provided proof.
     error INVALID_DSC_PROOF();
+    
+    /// @notice Thrown when the VC and Disclose proof is invalid.
+    /// @dev The VC and Disclose circuit verifier did not validate the provided proof.
     error INVALID_VC_AND_DISCLOSE_PROOF();
-
+    
+    /// @notice Thrown when the provided commitment root is invalid.
+    /// @dev Used in proofs to ensure that the commitment root matches the expected value in the registry.
     error INVALID_COMMITMENT_ROOT();
+    
+    /// @notice Thrown when the provided OFAC root is invalid.
+    /// @dev Indicates that the OFAC root from the proof does not match the expected OFAC root.
     error INVALID_OFAC_ROOT();
+    
+    /// @notice Thrown when the provided CSCA root is invalid.
+    /// @dev Indicates that the CSCA root from the DSC proof does not match the expected CSCA root.
     error INVALID_CSCA_ROOT();
+    
+    /// @notice Thrown when the revealed data type is invalid or not supported.
+    /// @dev Raised during the processing of revealed data if it does not match any supported type.
+    error INVALID_REVEALED_DATA_TYPE();
 
     // ====================================================
     // Constructor
@@ -353,7 +386,7 @@ contract IdentityVerificationHubImplV1 is
     {
         VcAndDiscloseVerificationResult memory result;
         
-        result.identityCommitmentRoot = verifyVcAndDiscloseProof(proof);
+        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(proof);
 
         for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
@@ -367,7 +400,54 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // ====================================================
-    // External Update Functions
+    // External Functions - Registration
+    // ====================================================
+
+    /**
+     * @notice Registers a passport commitment using a register circuit proof.
+     * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
+     * @param registerCircuitProof The register circuit proof data.
+     */
+    function registerPassportCommitment(
+        uint256 registerCircuitVerifierId,
+        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+    ) 
+        external
+        virtual
+        onlyProxy
+    {
+        _verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
+        IIdentityRegistryV1(_registry).registerCommitment(
+            AttestationId.E_PASSPORT,
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
+        );
+    }
+
+    /**
+     * @notice Registers a DSC key commitment using a DSC circuit proof.
+     * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
+     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
+     * @param dscCircuitProof The DSC circuit proof data.
+     */
+    function registerDscKeyCommitment(
+        uint256 dscCircuitVerifierId,
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+    )
+        external
+        virtual
+        onlyProxy
+    {
+        _verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
+        IIdentityRegistryV1(_registry).registerDscKeyCommitment(
+            dscCircuitProof.pubSignals[CircuitConstants.DSC_TREE_LEAF_INDEX]
+        );
+    }
+
+    
+    // ====================================================
+    // External Functions - Only Owner
     // ====================================================
 
     /**
@@ -485,52 +565,6 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // ====================================================
-    // External Register Functions
-    // ====================================================
-
-    /**
-     * @notice Registers a passport commitment using a register circuit proof.
-     * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
-     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
-     * @param registerCircuitProof The register circuit proof data.
-     */
-    function registerPassportCommitment(
-        uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
-    ) 
-        external
-        virtual
-        onlyProxy
-    {
-        verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
-        IIdentityRegistryV1(_registry).registerCommitment(
-            AttestationId.E_PASSPORT,
-            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
-            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
-        );
-    }
-
-    /**
-     * @notice Registers a DSC key commitment using a DSC circuit proof.
-     * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
-     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
-     * @param dscCircuitProof The DSC circuit proof data.
-     */
-    function registerDscKeyCommitment(
-        uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
-    )
-        external
-        virtual
-        onlyProxy
-    {
-        verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
-        IIdentityRegistryV1(_registry).registerDscKeyCommitment(
-            dscCircuitProof.pubSignals[CircuitConstants.DSC_TREE_LEAF_INDEX]
-        );
-    }
-
-    // ====================================================
     // Internal Functions
     // ====================================================
 
@@ -540,7 +574,7 @@ contract IdentityVerificationHubImplV1 is
      * @param proof The VcAndDiscloseHubProof containing the proof data.
      * @return identityCommitmentRoot The verified identity commitment root from the proof.
      */
-    function verifyVcAndDiscloseProof(
+    function _verifyVcAndDiscloseProof(
         VcAndDiscloseHubProof memory proof
     ) 
         internal
@@ -560,8 +594,8 @@ contract IdentityVerificationHubImplV1 is
 
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
-            currentTimestamp < getStartOfDayTimestamp() - 1 days + 1 ||
-            currentTimestamp > getStartOfDayTimestamp() + 1 days - 1
+            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
+            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
         ) {
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
@@ -604,7 +638,7 @@ contract IdentityVerificationHubImplV1 is
      * @param registerCircuitVerifierId The identifier for the register circuit verifier.
      * @param registerCircuitProof The register circuit proof data.
      */
-    function verifyPassportRegisterProof(
+    function _verifyPassportRegisterProof(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
@@ -636,7 +670,7 @@ contract IdentityVerificationHubImplV1 is
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier.
      * @param dscCircuitProof The DSC circuit proof data.
      */
-    function verifyPassportDscProof(
+    function _verifyPassportDscProof(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     ) 
@@ -667,7 +701,7 @@ contract IdentityVerificationHubImplV1 is
      * @dev Calculated by subtracting the remainder of block.timestamp modulo 1 day.
      * @return The Unix timestamp representing the start of the day.
      */
-    function getStartOfDayTimestamp() internal view returns (uint256) {
+    function _getStartOfDayTimestamp() internal view returns (uint256) {
         return block.timestamp - (block.timestamp % 1 days);
     }
 }
