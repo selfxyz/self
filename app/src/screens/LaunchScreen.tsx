@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
+import { useNavigation } from '@react-navigation/native';
 import { Anchor, Image, Text, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';

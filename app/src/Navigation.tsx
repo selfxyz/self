@@ -9,10 +9,9 @@ import {
   StackHeaderProps,
   createStackNavigator,
 } from '@react-navigation/stack';
-import { Button, View } from 'tamagui';
+import { Button, ViewStyle } from 'tamagui';
 
 import { NavBar } from './components/NavBar';
-import { Title } from './components/typography/Title';
 import ActivityIcon from './images/icons/activity.svg';
 import SettingsIcon from './images/icons/settings.svg';
 import DisclaimerScreen from './screens/DisclaimerScreen';
@@ -31,21 +30,39 @@ import { black, neutral400, white } from './utils/colors';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
+  const { options } = props;
+  const headerStyle = (options.headerStyle || {}) as ViewStyle;
   return (
-    <NavBar.Container>
+    <NavBar.Container
+      gap={14}
+      paddingHorizontal={20}
+      paddingTop={12}
+      paddingBottom={20}
+      backgroundColor={headerStyle.backgroundColor as string}
+      barStyle={
+        options.headerTintColor === white ? 'light-content' : 'dark-content'
+      }
+    >
       <NavBar.LeftAction
         component={canGoBack() ? 'back' : undefined}
         onPress={goBack}
+        color={options.headerTintColor}
       />
-      <NavBar.Title>{props.options.title}</NavBar.Title>
-      <View />
+      <NavBar.Title color={options.headerTintColor}>
+        {props.options.title}
+      </NavBar.Title>
     </NavBar.Container>
   );
 };
 
 const HomeNavBar = (props: StackHeaderProps) => {
   return (
-    <NavBar.Container bg={black} style={{ padding: 16 }} alignItems="center">
+    <NavBar.Container
+      backgroundColor={black}
+      barStyle={'light-content'}
+      padding={16}
+      justifyContent="space-between"
+    >
       <NavBar.LeftAction
         component={
           <Button
@@ -58,10 +75,8 @@ const HomeNavBar = (props: StackHeaderProps) => {
         }
         onPress={() => props.navigation.navigate('Activity')}
       />
-      <NavBar.Title>
-        <Title size="large" color={white}>
-          {props.options.title}
-        </Title>
+      <NavBar.Title size="large" color={white}>
+        {props.options.title}
       </NavBar.Title>
       <NavBar.RightAction
         component={
@@ -152,9 +167,6 @@ const RootStack = createStackNavigator({
     },
     ValidProofScreen: {
       screen: ValidProofScreen,
-      options: {
-        headerShown: false,
-      },
     },
     WrongProofScreen: {
       screen: WrongProofScreen,
