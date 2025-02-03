@@ -24,3 +24,17 @@ export function reverseBytes(input: string): string {
     
     return '0x' + reversedBytes.join('');
 }
+
+export function reverseCountryBytes(input: string): string {
+    const hex = input.slice(2);
+    const groups = hex.match(/.{6}/g) || [];
+    const reversedGroups = groups.reverse();
+  
+    const remainderLength = hex.length % 6;
+    let remainder = "";
+    if (remainderLength > 0) {
+      remainder = hex.slice(hex.length - remainderLength);
+    }
+  
+    return '0x' + reversedGroups.join('') + remainder;
+}

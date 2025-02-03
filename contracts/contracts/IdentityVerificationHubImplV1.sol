@@ -145,6 +145,8 @@ contract IdentityVerificationHubImplV1 is
     error INVALID_OFAC_ROOT();
     error INVALID_CSCA_ROOT();
 
+    error INVALID_REVEALED_DATA_TYPE();
+
     // ====================================================
     // Constructor
     // ====================================================
