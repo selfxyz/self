@@ -127,24 +127,55 @@ contract IdentityVerificationHubImplV1 is
     // ====================================================
 
     /// @notice Thrown when the lengths of provided arrays do not match.
+    /// @dev Used when initializing or updating arrays that must have equal length.
     error LENGTH_MISMATCH();
-    /// @notice Thrown when no verifier is set for a signature type.
+    
+    /// @notice Thrown when no verifier is set for a given signature type.
+    /// @dev Indicates that the mapping lookup for the verifier returned the zero address.
     error NO_VERIFIER_SET();
-    /// @notice Thrown when the current date in the proof is not within a valid range.
+    
+    /// @notice Thrown when the current date in the proof is not within the valid range.
+    /// @dev Ensures that the provided proof's date is within one day of the expected start time.
     error CURRENT_DATE_NOT_IN_VALID_RANGE();
-
+    
+    /// @notice Thrown when the 'older than' attribute in the proof is invalid.
+    /// @dev The 'older than' value derived from the proof does not match the expected criteria.
     error INVALID_OLDER_THAN();
+    
+    /// @notice Thrown when the provided forbidden countries list is invalid.
+    /// @dev The forbidden countries list in the proof does not match the expected packed data.
     error INVALID_FORBIDDEN_COUNTRIES();
+    
+    /// @notice Thrown when the OFAC check fails.
+    /// @dev Indicates that the proof did not satisfy the required OFAC conditions.
     error INVALID_OFAC();
-
+    
+    /// @notice Thrown when the register circuit proof is invalid.
+    /// @dev The register circuit verifier did not validate the provided proof.
     error INVALID_REGISTER_PROOF();
+    
+    /// @notice Thrown when the DSC circuit proof is invalid.
+    /// @dev The DSC circuit verifier did not validate the provided proof.
     error INVALID_DSC_PROOF();
+    
+    /// @notice Thrown when the VC and Disclose proof is invalid.
+    /// @dev The VC and Disclose circuit verifier did not validate the provided proof.
     error INVALID_VC_AND_DISCLOSE_PROOF();
-
+    
+    /// @notice Thrown when the provided commitment root is invalid.
+    /// @dev Used in proofs to ensure that the commitment root matches the expected value in the registry.
     error INVALID_COMMITMENT_ROOT();
+    
+    /// @notice Thrown when the provided OFAC root is invalid.
+    /// @dev Indicates that the OFAC root from the proof does not match the expected OFAC root.
     error INVALID_OFAC_ROOT();
+    
+    /// @notice Thrown when the provided CSCA root is invalid.
+    /// @dev Indicates that the CSCA root from the DSC proof does not match the expected CSCA root.
     error INVALID_CSCA_ROOT();
-
+    
+    /// @notice Thrown when the revealed data type is invalid or not supported.
+    /// @dev Raised during the processing of revealed data if it does not match any supported type.
     error INVALID_REVEALED_DATA_TYPE();
 
     // ====================================================
