@@ -49,8 +49,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsa65537.modulus <== pubKey;
         rsa65537.signature <== signature;
 
-    }
-    if (
+    } else if (
         signatureAlgorithm == 13
         || signatureAlgorithm == 32
         || signatureAlgorithm == 33
@@ -64,13 +63,14 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         }
         rsa3.modulus <== pubKey;
         rsa3.signature <== signature;
-    }
-    if (
+    } else if (
         signatureAlgorithm == 4 
         || signatureAlgorithm == 12
         || signatureAlgorithm == 18
         || signatureAlgorithm == 19
         || signatureAlgorithm == 35
+        || signatureAlgorithm == 39
+        || signatureAlgorithm == 42
     ) {
         var pubKeyBitsLength = getMinKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
@@ -80,10 +80,10 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsaPss65537ShaVerification.signature <== signature;
         rsaPss65537ShaVerification.hashed <== hash; // send the raw hash
 
-    }
-    if (
+    } else if (
         signatureAlgorithm == 16
         || signatureAlgorithm == 17
+        || signatureAlgorithm == 43
     ) {
         var pubKeyBitsLength = getMinKeyLength(signatureAlgorithm);
         var SALT_LEN = HASH_LEN_BITS / 8;
@@ -94,8 +94,8 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         rsaPss3ShaVerification.signature <== signature;
         rsaPss3ShaVerification.hashed <== hash; // send the raw hash
 
-    }
-    if (signatureAlgorithm == 9 
+    } else if (
+        signatureAlgorithm == 9 
         || signatureAlgorithm == 7 
         || signatureAlgorithm == 8 
         || signatureAlgorithm == 9 
@@ -116,6 +116,8 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 44
     ) {
         EcdsaVerifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
+    } else {
+        assert(1==0);
     }
 }
 
