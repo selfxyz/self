@@ -130,6 +130,7 @@ describe("VC and Disclose", () => {
                 ofacEnabled: true,
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
+            console.log("forbiddenCountriesListPacked", forbiddenCountriesListPacked);
 
             await expect(
                 hub.verifyVcAndDisclose(vcAndDiscloseHubProof)

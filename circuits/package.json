@@ -11,6 +11,7 @@
     "test-rsa-pss": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsapss.test.ts' --exit",
     "test-ecdsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/ecdsa.test.ts' --exit",
     "test-ofac": "yarn ts-mocha --max-old-space-size=8192 'tests/ofac/ofac.test.ts' --exit",
+    "test-country": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/prove_country_is_not_in_list.test.ts' --exit",
     "test-disclose": "yarn ts-mocha --max-old-space-size=8192 'tests/disclose/disclose.test.ts' --exit",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",

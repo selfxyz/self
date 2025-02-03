@@ -5,18 +5,15 @@ import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHub
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {IIdentityRegistryV1} from "../interfaces/IIdentityRegistryV1.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
+import {IPassportAirdropRoot} from "../interfaces/IPassportAirdropRoot.sol";
 
-abstract contract PassportAirdropRoot {
+abstract contract PassportAirdropRoot is IPassportAirdropRoot {
 
     uint256 internal immutable scope;
     uint256 internal immutable attestationId;
     uint256 internal immutable targetRootTimestamp;
 
-    bool internal immutable olderThanEnabled;
-    uint256 internal immutable olderThan;
-    bool internal immutable forbiddenCountriesEnabled;
-    uint256 internal immutable forbiddenCountriesListPacked;
-    bool internal immutable ofacEnabled;
+    IPassportAirdropRoot.VerificationConfig internal verificationConfig;
 
     IIdentityVerificationHubV1 internal immutable identityVerificationHub;
     IIdentityRegistryV1 internal immutable identityRegistry;
@@ -48,11 +45,11 @@ abstract contract PassportAirdropRoot {
         scope = _scope;
         attestationId = _attestationId;
         targetRootTimestamp = _targetRootTimestamp;
-        olderThanEnabled = _olderThanEnabled;
-        olderThan = _olderThan;
-        forbiddenCountriesEnabled =  _forbiddenCountriesEnabled;
-        forbiddenCountriesListPacked =  _forbiddenCountriesListPacked;
-        ofacEnabled = _ofacEnabled;
+        verificationConfig.olderThanEnabled = _olderThanEnabled;
+        verificationConfig.olderThan = _olderThan;
+        verificationConfig.forbiddenCountriesEnabled =  _forbiddenCountriesEnabled;
+        verificationConfig.forbiddenCountriesListPacked =  _forbiddenCountriesListPacked;
+        verificationConfig.ofacEnabled = _ofacEnabled;
     }
 
     function _registerAddress(
@@ -76,11 +73,11 @@ abstract contract PassportAirdropRoot {
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = identityVerificationHub.verifyVcAndDisclose(
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: olderThanEnabled,
-                olderThan: olderThan,
-                forbiddenCountriesEnabled: forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: ofacEnabled,
+                olderThanEnabled: verificationConfig.olderThanEnabled,
+                olderThan: verificationConfig.olderThan,
+                forbiddenCountriesEnabled: verificationConfig.forbiddenCountriesEnabled,
+                forbiddenCountriesListPacked: verificationConfig.forbiddenCountriesListPacked,
+                ofacEnabled: verificationConfig.ofacEnabled,
                 vcAndDiscloseProof: proof
             })
         );

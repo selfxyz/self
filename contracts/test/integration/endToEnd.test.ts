@@ -13,7 +13,8 @@ import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
 import BalanceTree from "../utils/example/balance-tree";
-import { BigNumberish } from "ethers";
+import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
+import { Formatter } from "../utils/formatter";
 
 describe("End to End Tests", function () {
     this.timeout(0);
@@ -131,6 +132,9 @@ describe("End to End Tests", function () {
         expect(index).to.equal(0);
         expect(identityNullifier).to.equal(true);
 
+        const forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
+        const countriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+
         const vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
@@ -142,17 +146,15 @@ describe("End to End Tests", function () {
             "20",
             undefined,
             undefined,
-            undefined,
+            forbiddenCountriesList,
             (await user1.getAddress()).slice(2)
         );
-
-        const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
 
         const vcAndDiscloseHubProof = {
             olderThanEnabled: true,
             olderThan: "20",
             forbiddenCountriesEnabled: true,
-            forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+            forbiddenCountriesListPacked: countriesListPacked,
             ofacEnabled: true,
             vcAndDiscloseProof: vcAndDiscloseProof
         }
@@ -165,7 +167,7 @@ describe("End to End Tests", function () {
         expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
         expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
         expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
-        expect(result.forbiddenCountriesListPacked).to.equal(4276545n);
+        expect(result.forbiddenCountriesListPacked).to.equal(BigInt(countriesListPacked));
 
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         const token = await tokenFactory.connect(owner).deploy();
@@ -178,14 +180,19 @@ describe("End to End Tests", function () {
             castFromScope("test-scope"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            rootTimestamp
+            rootTimestamp,
+            true,
+            20,
+            true,
+            countriesListPacked,
+            true,
         );
         await airdrop.waitForDeployment();
 
         await token.connect(owner).mint(airdrop.target, BigInt(1000000000000000000));
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseHubProof);
+        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([

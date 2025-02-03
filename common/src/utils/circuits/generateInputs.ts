@@ -76,7 +76,7 @@ export function generateCircuitInputsDSC(
     csca_pubKey_offset: startIndex.toString(),
     csca_pubKey_actual_size: BigInt(keyLength).toString(),
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
-    raw_dsc_padded_length: BigInt(dscTbsBytesLen).toString(), // with the sha padding actually
+    raw_dsc_padded_length: [BigInt(dscTbsBytesLen).toString()], // with the sha padding actually
     csca_pubKey: csca_pubKey_formatted,
     signature,
     merkle_root: root,
@@ -131,7 +131,7 @@ export function generateCircuitInputsRegister(
 
   const inputs = {
     raw_dsc: Array.from(dscTbsBytesPadded).map(x => x.toString()),
-    raw_dsc_actual_length: [BigInt(dscParsed.tbsBytes.length).toString()],
+    raw_dsc_actual_length: BigInt(dscParsed.tbsBytes.length).toString(),
     dsc_pubKey_offset: startIndex,
     dsc_pubKey_actual_size: [BigInt(keyLength).toString()],
     dg1: mrz_formatted,

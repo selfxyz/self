@@ -3,7 +3,8 @@ pragma solidity ^0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {PassportAirdropRoot} from "../abstract/passportAirdropRoot.sol";
+import {PassportAirdropRoot} from "../abstract/PassportAirdropRoot.sol";
+import {IPassportAirdropRoot} from "../interfaces/IPassportAirdropRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -65,6 +66,15 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         merkleRoot = _merkleRoot;
     }
 
+    function setVerificationConfig(
+        IPassportAirdropRoot.VerificationConfig memory _newVerificationConfig
+    )
+        external
+        onlyOwner
+    {
+        verificationConfig = _newVerificationConfig;
+    }
+
     function openRegistration() external onlyOwner {
         isRegistrationOpen = true;
         emit RegistrationOpen();    
@@ -107,6 +117,10 @@ contract Airdrop is PassportAirdropRoot, Ownable {
 
     function getNullifier(uint256 nullifier) external view returns (uint256) {
         return nullifiers[nullifier];
+    }
+
+    function getVerificationConfig() external view returns (IPassportAirdropRoot.VerificationConfig memory) {
+        return verificationConfig;
     }
 
     function isRegistered(address registeredAddress) external view returns (bool) {
