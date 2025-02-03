@@ -7,7 +7,8 @@ import { expect } from 'chai';
 describe('VerifyRsaPkcs1v1_5 Circuit Test', function () {
   this.timeout(0);
   /** Some tests are disabled to avoid overloading the CI/CD pipeline - the commented rsa verifications will however be tested in prove.test.ts and dsc.test.ts **/
-  const rsaAlgorithms: SignatureAlgorithm[] = [
+  const rsaAlgorithms: SignatureAlgorithm[] = ['rsa_sha1_65537_2048'];
+  const fullRsaAlgorithms: SignatureAlgorithm[] = [
     'rsa_sha1_65537_2048',
     'rsa_sha256_65537_2048',
     'rsa_sha256_3_2048',

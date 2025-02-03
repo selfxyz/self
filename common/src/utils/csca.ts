@@ -1,151 +1,143 @@
-import { shaPad } from './shaPad';
 import * as forge from 'node-forge';
-import { bytesToBigDecimal, getNAndK, getNAndKCSCA, hexToDecimal, splitToWords } from './utils';
-import { CSCA_TREE_DEPTH, MODAL_SERVER_ADDRESS } from '../constants/constants';
-import { poseidon2 } from 'poseidon-lite';
-import { IMT } from '@openpassport/zk-kit-imt';
-import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
+import * as fs from 'fs';
+import { MODAL_SERVER_ADDRESS } from '../constants/constants';
 import axios from 'axios';
-import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { getLeafCSCA } from './pubkeyTree';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
-import { CertificateData, PublicKeyDetailsRSA } from './certificate_parsing/dataStructure';
-import { formatInput } from './generateInputs';
-import { SignatureAlgorithm } from './types';
+import { splitToWords } from './bytes';
+import path from 'path';
 
-export function findStartIndex(modulus: string, messagePadded: Uint8Array): number {
+export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): [number, number] {
+  const modulusNumArray = [];
+  for (let i = 0; i < modulus.length; i += 2) {
+    modulusNumArray.push(parseInt(modulus.slice(i, i + 2), 16));
+  }
+
+  let startIndex = -1;
+  // For ECDSA, look for the ASN.1 tag for EC Point (0x04)
+  const isECPoint = modulusNumArray[0] === 0x04;
+
+  for (let i = 0; i < messagePadded.length - modulusNumArray.length + 1; i++) {
+    let found = true;
+    for (let j = 0; j < modulusNumArray.length; j++) {
+      if (messagePadded[i + j] !== modulusNumArray[j]) {
+        found = false;
+        break;
+      }
+      if (found && (j === modulusNumArray.length - 1 || (isECPoint && j > 0))) {
+        startIndex = i;
+        break;
+      }
+    }
+    if (startIndex !== -1) break;
+  }
+
+  if (startIndex === -1) {
+    throw new Error('DSC Pubkey not found in CSCA certificate');
+  }
+  return [startIndex, modulusNumArray.length];
+}
+
+// @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
+export function findStartIndex(modulus: string, messagePadded: Uint8Array): [number, number] {
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     const hexPair = modulus.slice(i, i + 2);
     const number = parseInt(hexPair, 16);
     modulusNumArray.push(number);
   }
-  const messagePaddedNumber = [];
-  for (let i = 0; i < messagePadded.length; i += 1) {
-    const number = Number(messagePadded[i]);
-    messagePaddedNumber.push(number);
-  }
-  let startIndex = -1;
-  for (let i = 0; i <= messagePaddedNumber.length; i++) {
-    if (modulusNumArray[0] === messagePaddedNumber[i]) {
-      for (let j = 0; j < modulusNumArray.length; j++) {
-        if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
-          break;
-        } else if (j === modulusNumArray.length - 1) {
-          startIndex = i;
-        }
+
+  const messagePaddedNumber = Array.from(messagePadded);
+
+  // console.log('Modulus length:', modulusNumArray.length);
+  // console.log('Message length:', messagePaddedNumber.length);
+  // console.log('Modulus (hex):', modulusNumArray.map(n => n.toString(16).padStart(2, '0')).join(''));
+  // console.log('Message (hex):', messagePaddedNumber.map(n => n.toString(16).padStart(2, '0')).join(''));
+
+  for (let i = 0; i < messagePaddedNumber.length - modulusNumArray.length + 1; i++) {
+    let matched = true;
+    for (let j = 0; j < modulusNumArray.length; j++) {
+      if (modulusNumArray[j] !== messagePaddedNumber[i + j]) {
+        matched = false;
+        break;
       }
-      break;
+    }
+    if (matched) {
+      return [i, modulusNumArray.length];
     }
   }
-  if (startIndex === -1) {
-    throw new Error('DSC Pubkey not found in CSCA certificate');
-  }
-  return startIndex;
+
+  throw new Error('DSC Pubkey not found in certificate');
 }
 
-export function generateCircuitInputsDSC(
-  dscSecret: string,
-  dscCertificate: any,
-  max_cert_bytes: number,
-  devMode: boolean = false
-) {
-  const dscCert = forge.pki.certificateFromPem(dscCertificate);
-  const dscTbs = dscCert.tbsCertificate;
-  const dscTbsCertDer = forge.asn1.toDer(dscTbs).getBytes();
-  const dscTbsCertBytes = derToBytes(dscTbsCertDer);
-  const dscTbsCertUint8Array = Uint8Array.from(
-    dscTbsCertBytes.map((byte) => parseInt(byte.toString(16), 16))
-  );
+export function findOIDPosition(
+  oid: string,
+  message: Uint8Array
+): { oid_index: number; oid_length: number } {
+  // Convert OID string like "1.2.840.113549" to byte array
+  const oidParts = oid.split('.').map(Number);
 
-  const { signatureAlgorithm, hashAlgorithm, authorityKeyIdentifier, publicKeyDetails } =
-    parseCertificateSimple(dscCertificate);
-  console.log('authorityKeyIdentifier', authorityKeyIdentifier);
+  // First byte is 40 * first number + second number
+  const oidBytes = [40 * oidParts[0] + oidParts[1]];
 
-  let dsc_message_padded;
-  let dsc_messagePaddedLen;
-  [dsc_message_padded, dsc_messagePaddedLen] = shaPad(dscTbsCertUint8Array, max_cert_bytes);
+  // Convert remaining parts to ASN.1 DER encoding
+  for (let i = 2; i < oidParts.length; i++) {
+    let value = oidParts[i];
+    let bytes = [];
 
-  console.log('signatureAlgorithm: ', signatureAlgorithm);
-  const { n, k } = getNAndK(signatureAlgorithm as SignatureAlgorithm);
-  const dscSignature = dscCert.signature;
-  const encryptedDigest = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
-    char.charCodeAt(0)
-  );
-
-  let pubKey_dsc,
-    signature,
-    startIndex,
-    dsc_message_padded_formatted,
-    dsc_messagePaddedLen_formatted: any;
-  let curve, exponent;
-
-  if (signatureAlgorithm === 'rsa' || signatureAlgorithm === 'rsapss') {
-    const modulus = (publicKeyDetails as PublicKeyDetailsRSA).modulus;
-    exponent = (publicKeyDetails as PublicKeyDetailsRSA).exponent;
-    startIndex = findStartIndex(
-      (publicKeyDetails as PublicKeyDetailsRSA).modulus,
-      dsc_message_padded
-    ).toString();
-    dsc_message_padded_formatted = Array.from(dsc_message_padded).map((x) => x.toString());
-    dsc_messagePaddedLen_formatted = BigInt(dsc_messagePaddedLen).toString();
-    console.log('\x1b[34m', 'startIndex: ', startIndex, '\x1b[0m');
-
-    pubKey_dsc = formatInput(splitToWords(BigInt(hexToDecimal(modulus)), n, k));
-  } else {
-    console.log('\x1b[34m', 'signatureAlgorithm: ', signatureAlgorithm, '\x1b[0m');
-    // TODO: implement ecdsa
-    //   const { r, s } = extractRSFromSignature(encryptedDigest);
-    //   const signature_r = splitToWords(BigInt(hexToDecimal(r)), n_csca, k_csca);
-    //   const signature_s = splitToWords(BigInt(hexToDecimal(s)), n_csca, k_csca);
-    //   signature = [...signature_r, ...signature_s];
-    //   const dsc_x_formatted = splitToWords(BigInt(hexToDecimal(x)), n, k);
-    //   const dsc_y_formatted = splitToWords(BigInt(hexToDecimal(y)), n, k);
-    //   pubKey = [...dsc_x_formatted, ...dsc_y_formatted];
-    // } else {
-    //   signature = splitToWords(BigInt(bytesToBigDecimal(encryptedDigest)), n_csca, k_csca);
-
-    //   pubKey = splitToWords(BigInt(hexToDecimal(modulus)), n, k);
+    // Handle multi-byte values
+    if (value >= 128) {
+      const tempBytes = [];
+      while (value > 0) {
+        tempBytes.unshift(value & 0x7f);
+        value = value >>> 7;
+      }
+      // Set MSB for all bytes except last
+      for (let j = 0; j < tempBytes.length - 1; j++) {
+        bytes.push(tempBytes[j] | 0x80);
+      }
+      bytes.push(tempBytes[tempBytes.length - 1]);
+    } else {
+      bytes.push(value);
+    }
+    oidBytes.push(...bytes);
   }
 
-  const cscaPem = getCSCAFromSKI(authorityKeyIdentifier, devMode);
-  const leaf = getLeafCSCA(cscaPem);
-  const [root, proof] = getCSCAModulusProof(leaf);
+  console.log(
+    '\x1b[33m%s\x1b[0m',
+    'OID bytes (hex):',
+    oidBytes.map((b) => b.toString(16).padStart(2, '0')).join(' ')
+  );
 
-  const parsedCSCAPem: CertificateData = parseCertificateSimple(cscaPem);
-
-  let csca_pubKey_formatted;
-  if (parsedCSCAPem.signatureAlgorithm === 'rsa' || parsedCSCAPem.signatureAlgorithm === 'rsapss') {
-    const csca_modulus = (parsedCSCAPem.publicKeyDetails as PublicKeyDetailsRSA).modulus;
-    const { n: n_csca, k: k_csca } = getNAndKCSCA(parsedCSCAPem.signatureAlgorithm);
-    csca_pubKey_formatted = splitToWords(BigInt(hexToDecimal(csca_modulus)), n_csca, k_csca);
-    const signature_raw = Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) =>
-      char.charCodeAt(0)
-    );
-    signature = formatInput(splitToWords(BigInt(bytesToBigDecimal(signature_raw)), n_csca, k_csca));
-  } else {
-    //   const csca_x_formatted = splitToWords(BigInt(hexToDecimal(csca_x)), n_csca, k_csca);
-    //   const csca_y_formatted = splitToWords(BigInt(hexToDecimal(csca_y)), n_csca, k_csca);
-    //   csca_pubKey_formatted = [...csca_x_formatted, ...csca_y_formatted];
+  // Search for OID in message
+  // OID will be preceded by 0x06 (ASN.1 OID tag) and length byte
+  for (let i = 0; i < message.length - oidBytes.length; i++) {
+    if (message[i] === 0x06) {
+      // OID tag
+      const len = message[i + 1];
+      if (len === oidBytes.length) {
+        let found = true;
+        for (let j = 0; j < len; j++) {
+          if (message[i + 2 + j] !== oidBytes[j]) {
+            found = false;
+            break;
+          }
+        }
+        if (found) {
+          const result = {
+            oid_index: i,
+            oid_length: len + 2, // Add 2 for tag and length bytes
+          };
+          console.log('\x1b[32m%s\x1b[0m', 'Found OID at:', result); // Green color
+          return result;
+        }
+      }
+    }
   }
 
-  console.log('dsc_pubKey_length', pubKey_dsc.length);
-  return {
-    signature_algorithm: `${signatureAlgorithm}_${curve || exponent}_${hashAlgorithm}_${4096}`,
-    inputs: {
-      raw_dsc_cert: dsc_message_padded_formatted,
-      raw_dsc_cert_padded_bytes: [dsc_messagePaddedLen_formatted],
-      csca_pubKey: csca_pubKey_formatted,
-      signature: signature,
-      dsc_pubKey: pubKey_dsc,
-      dsc_pubKey_offset: [startIndex],
-      secret: [dscSecret],
-      merkle_root: [BigInt(root).toString()],
-      path: proof.pathIndices.map((index) => index.toString()),
-      siblings: proof.siblings.flat().map((sibling) => sibling.toString()),
-    },
-  };
+  throw new Error('OID not found in message');
 }
+
+
 
 export function getCSCAFromSKI(ski: string, devMode: boolean): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
@@ -169,31 +161,6 @@ export function getCSCAFromSKI(ski: string, devMode: boolean): string {
   return cscaPem;
 }
 
-export function derToBytes(derValue: string) {
-  const bytes = [];
-  for (let i = 0; i < derValue.length; i++) {
-    bytes.push(derValue.charCodeAt(i));
-  }
-  return bytes;
-}
-
-export function getCSCAModulusMerkleTree() {
-  const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  tree.setNodes(serialized_csca_tree);
-  return tree;
-}
-
-export function getCSCAModulusProof(leaf) {
-  console.log('leaf', leaf);
-  let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  tree.setNodes(serialized_csca_tree);
-  const index = tree.indexOf(leaf);
-  if (index === -1) {
-    throw new Error('Your public key was not found in the registry');
-  }
-  const proof = tree.createProof(index);
-  return [tree.root, proof];
-}
 
 export function getTBSHash(
   cert: forge.pki.Certificate,
@@ -209,7 +176,7 @@ export function getTBSHash(
   const tbsCertificateHashString = tbsCertificateHash.data;
   const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
   const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
-  console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
+  // console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
   return splitToWords(tbsCertificateHashBigint, n, k);
 }
 
@@ -239,3 +206,7 @@ export const generateDscSecret = () => {
   const secretBytes = forge.random.getBytesSync(31);
   return BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
 };
+
+export function getCsca(signatureAlgorith: string) {
+  return fs.readFileSync(path.join(__dirname, `../mock_certificates/${signatureAlgorith}/mock_csca.pem`), 'base64');
+}
