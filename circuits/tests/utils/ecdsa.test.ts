@@ -1,8 +1,8 @@
 import { wasm as wasmTester } from 'circom_tester';
 import * as crypto from 'crypto';
 import { initElliptic } from '../../../common/src/utils/certificate_parsing/elliptic';
-import { splitToWords } from '../../../common/src/utils/utils';
 import * as path from 'path';
+import { splitToWords } from '../../../common/src/utils/bytes';
 
 const elliptic = initElliptic();
 
@@ -48,6 +48,13 @@ const testSuite = [
     n: 64,
     k: 6,
     reason: 'when hash bits are the same as curve bits',
+  },
+  {
+    hash: 'sha512',
+    curve: 'p521',
+    n: 66,
+    k: 8,
+    reason: 'when hash bits are less than the curve bits',
   },
 ];
 
