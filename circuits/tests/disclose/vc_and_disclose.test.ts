@@ -16,6 +16,7 @@ import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
 import {
   formatAndUnpackReveal,
   formatAndUnpackForbiddenCountriesList,
+  getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
 import {
   generateCommitment,
@@ -199,18 +200,3 @@ describe('Disclose', function () {
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
 });
-
-const formatOlderThan = (older_than: any) => {
-  return Object.values(older_than).map((value: any) => parseInt(value) - 48);
-};
-
-const getAttributeFromUnpackedReveal = (
-  unpackedReveal: string[],
-  attributeName: keyof typeof attributeToPosition
-): string => {
-  const [start, end] = attributeToPosition[attributeName];
-  return unpackedReveal
-    .slice(start, end + 1)
-    .join('')
-    .replace(/\x00/g, '');
-};
