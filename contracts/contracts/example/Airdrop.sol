@@ -3,7 +3,8 @@ pragma solidity ^0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {PassportAirdropRoot} from "../abstract/passportAirdropRoot.sol";
+import {PassportAirdropRoot} from "../abstract/PassportAirdropRoot.sol";
+import {IPassportAirdropRoot} from "../interfaces/IPassportAirdropRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
@@ -37,9 +38,25 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         uint256 _scope, 
         uint256 _attestationId,
         address _token,
-        uint256 _targetRootTimestamp
+        uint256 _targetRootTimestamp,
+        bool _olderThanEnabled,
+        uint256 _olderThan,
+        bool _forbiddenCountriesEnabled,
+        uint256 _forbiddenCountriesListPacked,
+        bool _ofacEnabled
     ) 
-        PassportAirdropRoot(_identityVerificationHub, _identityRegistry, _scope, _attestationId, _targetRootTimestamp)
+        PassportAirdropRoot(
+            _identityVerificationHub, 
+            _identityRegistry, 
+            _scope, 
+            _attestationId, 
+            _targetRootTimestamp,
+            _olderThanEnabled,
+            _olderThan,
+            _forbiddenCountriesEnabled,
+            _forbiddenCountriesListPacked,
+            _ofacEnabled
+        )
         Ownable(_msgSender())
     {
         token = IERC20(_token);
@@ -47,6 +64,15 @@ contract Airdrop is PassportAirdropRoot, Ownable {
 
     function setMerkleRoot(bytes32 _merkleRoot) external onlyOwner {
         merkleRoot = _merkleRoot;
+    }
+
+    function setVerificationConfig(
+        IPassportAirdropRoot.VerificationConfig memory _newVerificationConfig
+    )
+        external
+        onlyOwner
+    {
+        verificationConfig = _newVerificationConfig;
     }
 
     function openRegistration() external onlyOwner {
@@ -70,7 +96,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     }
 
     function registerAddress(
-        IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         external 
     {
@@ -91,6 +117,10 @@ contract Airdrop is PassportAirdropRoot, Ownable {
 
     function getNullifier(uint256 nullifier) external view returns (uint256) {
         return nullifiers[nullifier];
+    }
+
+    function getVerificationConfig() external view returns (IPassportAirdropRoot.VerificationConfig memory) {
+        return verificationConfig;
     }
 
     function isRegistered(address registeredAddress) external view returns (bool) {
