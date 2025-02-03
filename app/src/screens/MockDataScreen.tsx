@@ -1,6 +1,10 @@
 import React, { useCallback, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
 
+import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
+import { flag } from 'country-emoji';
+import getCountryISO2 from 'country-iso-3-to-2';
 import {
   Button,
   Fieldset,
@@ -14,11 +18,9 @@ import {
   YStack,
 } from 'tamagui';
 
-import { flag } from 'country-emoji';
-import getCountryISO2 from 'country-iso-3-to-2';
-
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 import CustomButton from '../components/CustomButton';
 import useUserStore from '../stores/userStore';
 import {
@@ -27,9 +29,6 @@ import {
   separatorColor,
   textBlack,
 } from '../utils/colors';
-import { TouchableOpacity } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 interface MockDataScreenProps {}
 

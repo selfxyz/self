@@ -1,5 +1,7 @@
 import { NativeModules, Platform } from 'react-native';
 
+import * as amplitude from '@amplitude/analytics-react-native';
+
 import { extractMRZInfo, formatDateToYYMMDD } from './utils';
 import { segmentClient } from '../../App';
 import { trackEvent } from './analytics';

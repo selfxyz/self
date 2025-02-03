@@ -1,7 +1,8 @@
 import React from 'react';
 
+import { useNavigation } from '@react-navigation/native';
 import { ArrowRight } from '@tamagui/lucide-icons';
-import { Fieldset, Image, Text, useWindowDimensions, YStack } from 'tamagui';
+import { Fieldset, Image, Text, YStack, useWindowDimensions } from 'tamagui';
 
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import CustomButton from '../components/CustomButton';
@@ -9,7 +10,6 @@ import USER_PROFILE from '../images/user_profile.png';
 import useUserStore from '../stores/userStore';
 import { bgGreen, textBlack } from '../utils/colors';
 import { formatAttribute, getFirstName, maskString } from '../utils/utils';
-import { useNavigation } from '@react-navigation/native';
 
 const NextScreen: React.FC = () => {
   const { height } = useWindowDimensions();

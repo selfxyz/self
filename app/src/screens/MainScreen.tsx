@@ -1,4 +1,15 @@
 import React, { useEffect, useState } from 'react';
+import {
+  Linking,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+  Pressable,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
+import DatePicker from 'react-native-date-picker';
+import Dialog from 'react-native-dialog';
 
 import {
   ArrowRight,
@@ -13,17 +24,11 @@ import {
   ShieldCheck,
   X,
 } from '@tamagui/lucide-icons';
-
-import {
-  Linking,
-  NativeEventEmitter,
-  NativeModules,
-  Platform,
-  Pressable,
-  ScrollView,
-  TouchableOpacity,
-} from 'react-native';
-import Dialog from 'react-native-dialog';
+// import images
+import { ToastViewport } from '@tamagui/toast';
+// import constants
+import { flag } from 'country-emoji';
+import getCountryISO2 from 'country-iso-3-to-2';
 import {
   Button,
   Fieldset,
@@ -42,8 +47,10 @@ import {
   YStack,
 } from 'tamagui';
 
-// import images
-import { ToastViewport } from '@tamagui/toast';
+import { countryCodes } from '../../../common/src/constants/constants';
+// import components
+import CustomButton from '../components/CustomButton';
+import StepOneStepTwo from '../components/StepOneStepTwo';
 import { ToastMessage } from '../components/ToastMessage';
 import Github from '../images/github.png';
 import Internet from '../images/internet.png';
@@ -51,10 +58,8 @@ import NFC_IMAGE from '../images/nfc.png';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';
 import Telegram from '../images/telegram.png';
 import Xlogo from '../images/x.png';
-
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
-
 // import utils
 import {
   bgColor,
@@ -68,7 +73,6 @@ import {
 import { contribute } from '../utils/contribute';
 import { scan } from '../utils/nfcScanner';
 import { CircuitName, fetchZkeyAndDat } from '../utils/zkeyDownload';
-
 // import screens
 import AppScreen from './AppScreen';
 import CameraScreen from './CameraScreen';
@@ -82,16 +86,6 @@ import StartScreen from './StartScreen';
 import UserInfo from './UserInfo';
 import ValidProofScreen from './ValidProofScreen';
 import WrongProofScreen from './WrongProofScreen';
-
-// import components
-import CustomButton from '../components/CustomButton';
-import StepOneStepTwo from '../components/StepOneStepTwo';
-
-// import constants
-import { flag } from 'country-emoji';
-import getCountryISO2 from 'country-iso-3-to-2';
-import DatePicker from 'react-native-date-picker';
-import { countryCodes } from '../../../common/src/constants/constants';
 
 const emitter =
   Platform.OS === 'android'

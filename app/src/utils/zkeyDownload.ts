@@ -1,7 +1,8 @@
 import RNFS from 'react-native-fs';
+
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
-import { unzip } from 'react-native-zip-archive';
+
 import useNavigationStore from '../stores/navigationStore';
 
 const zkeyZipUrls = {
@@ -51,7 +52,8 @@ export type IsZkeyDownloading = {
 // => this should be fine is the function is never called after the commitment is registered.
 
 export async function downloadZkey(circuit: CircuitName) {
-  const { isZkeyDownloading, update, trackEvent } = useNavigationStore.getState();
+  const { isZkeyDownloading, update, trackEvent } =
+    useNavigationStore.getState();
   const startTime = Date.now();
 
   trackEvent('Download Started', {
@@ -64,7 +66,7 @@ export async function downloadZkey(circuit: CircuitName) {
     trackEvent('Download Skipped', {
       success: true,
       circuit: circuit,
-      reason: 'already_downloaded'
+      reason: 'already_downloaded',
     });
     return;
   }
@@ -92,7 +94,7 @@ export async function downloadZkey(circuit: CircuitName) {
         success: true,
         circuit: circuit,
         reason: 'no_wifi',
-        expected_size: expectedSize
+        expected_size: expectedSize,
       });
     }
   } catch (error: any) {
@@ -100,7 +102,7 @@ export async function downloadZkey(circuit: CircuitName) {
       success: false,
       error: error.message,
       circuit: circuit,
-      duration_ms: Date.now() - startTime
+      duration_ms: Date.now() - startTime,
     });
     throw error;
   }
@@ -159,11 +161,17 @@ export async function isDownloadRequired(
 
 export async function fetchZkeyAndDat(circuit: CircuitName) {
   const startTime = Date.now();
-  const { isZkeyDownloading, toast, update, setZkeyDownloadedPercentage, trackEvent } = useNavigationStore.getState();
+  const {
+    isZkeyDownloading,
+    toast,
+    update,
+    setZkeyDownloadedPercentage,
+    trackEvent,
+  } = useNavigationStore.getState();
 
   trackEvent('Files Download Started', {
     success: true,
-    circuit: circuit
+    circuit: circuit,
   });
 
   update({
@@ -184,7 +192,7 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
         trackEvent('File Download Started', {
           success: true,
           circuit: circuit,
-          file_type: fileName.includes('zkey') ? 'zkey' : 'dat'
+          file_type: fileName.includes('zkey') ? 'zkey' : 'dat',
         });
       },
       progress: (res: any) => {
@@ -192,7 +200,10 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
           const percentComplete = Math.floor(
             (res.bytesWritten / res.contentLength) * 100,
           );
-          if (percentComplete % 5 === 0 && percentComplete !== previousPercentComplete) {
+          if (
+            percentComplete % 5 === 0 &&
+            percentComplete !== previousPercentComplete
+          ) {
             previousPercentComplete = percentComplete;
             setZkeyDownloadedPercentage(percentComplete);
           }
@@ -205,7 +216,7 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
     trackEvent('File Download Completed', {
       success: true,
       circuit: circuit,
-      file_type: fileName.includes('zkey') ? 'zkey' : 'dat'
+      file_type: fileName.includes('zkey') ? 'zkey' : 'dat',
     });
   };
 
@@ -232,9 +243,8 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
     trackEvent('Files Download Completed', {
       success: true,
       circuit: circuit,
-      duration_ms: Date.now() - startTime
+      duration_ms: Date.now() - startTime,
     });
-
   } catch (error: any) {
     update({
       isZkeyDownloading: {
@@ -247,7 +257,7 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
       success: false,
       error: error.message,
       circuit: circuit,
-      duration_ms: Date.now() - startTime
+      duration_ms: Date.now() - startTime,
     });
 
     toast.show('Error', {
@@ -264,7 +274,7 @@ async function unzipFile(circuit: CircuitName, fileType: 'zkey' | 'dat') {
   trackEvent('File Unzip Started', {
     success: true,
     circuit: circuit,
-    file_type: fileType
+    file_type: fileType,
   });
 
   try {
@@ -294,7 +304,7 @@ async function unzipFile(circuit: CircuitName, fileType: 'zkey' | 'dat') {
       success: true,
       circuit: circuit,
       file_type: fileType,
-      duration_ms: Date.now() - startTime
+      duration_ms: Date.now() - startTime,
     });
   } catch (error: any) {
     trackEvent('File Unzip Failed', {
@@ -302,7 +312,7 @@ async function unzipFile(circuit: CircuitName, fileType: 'zkey' | 'dat') {
       error: error.message,
       circuit: circuit,
       file_type: fileType,
-      duration_ms: Date.now() - startTime
+      duration_ms: Date.now() - startTime,
     });
     throw error;
   }

@@ -1,13 +1,14 @@
 import { NativeModules, Platform } from 'react-native';
-// @ts-ignore
-import { Buffer } from 'buffer';
 import PassportReader from 'react-native-passport-reader';
 
+// @ts-ignore
+import { Buffer } from 'buffer';
+
+import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { checkInputs } from '../utils/utils';
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 
 export const scan = async (
   setModalProofStep: (modalProofStep: number) => void,

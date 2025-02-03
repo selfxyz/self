@@ -1,5 +1,6 @@
-import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { resetGenericPassword } from 'react-native-keychain';
+
+import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
 
 import { generateDscSecret } from '../../../common/src/utils/csca';

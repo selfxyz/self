@@ -1,29 +1,33 @@
-import 'react-native-gesture-handler';
 import React from 'react';
+import 'react-native-gesture-handler';
+
 import {
-  createStaticNavigation,
   StaticParamList,
+  createStaticNavigation,
 } from '@react-navigation/native';
 import {
-  createStackNavigator,
   StackHeaderProps,
+  createStackNavigator,
 } from '@react-navigation/stack';
-import LaunchScreen from './screens/LaunchScreen';
-import StartScreen from './screens/StartScreen';
-import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
-import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
-import SettingsScreen from './screens/SettingsScreen';
+import { Button, View } from 'tamagui';
+
 import { NavBar } from './components/NavBar';
+import { Title } from './components/typography/Title';
+import ActivityIcon from './images/icons/activity.svg';
+import SettingsIcon from './images/icons/settings.svg';
+import DisclaimerScreen from './screens/DisclaimerScreen';
+import HomeScreen from './screens/HomeScreen';
+import LaunchScreen from './screens/LaunchScreen';
 import MockDataScreen from './screens/MockDataScreen';
 import NextScreen from './screens/NextScreen';
-import { Button, View } from 'tamagui';
-import { Clock9, Settings } from '@tamagui/lucide-icons';
-import HomeScreen from './screens/HomeScreen';
-import DisclaimerScreen from './screens/DisclaimerScreen';
-import { black, white } from './utils/colors';
+import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
+import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
+import SettingsScreen from './screens/SettingsScreen';
+import StartScreen from './screens/StartScreen';
 import ValidProofScreen from './screens/ValidProofScreen';
 import WrongProofScreen from './screens/WrongProofScreen';
+import { black, neutral400, white } from './utils/colors';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
@@ -41,16 +45,33 @@ const DefaultNavBar = (props: StackHeaderProps) => {
 
 const HomeNavBar = (props: StackHeaderProps) => {
   return (
-    <NavBar.Container bg={black}>
+    <NavBar.Container bg={black} style={{ padding: 16 }} alignItems="center">
       <NavBar.LeftAction
         component={
-          <Button unstyled icon={<Clock9 size="$4" color={white} />} />
+          <Button
+            size="$3"
+            unstyled
+            icon={
+              <ActivityIcon width={'35'} height={'100%'} color={neutral400} />
+            }
+          />
         }
+        onPress={() => props.navigation.navigate('Activity')}
       />
-      <NavBar.Title color={white}>{props.options.title}</NavBar.Title>
+      <NavBar.Title>
+        <Title size="large" color={white}>
+          {props.options.title}
+        </Title>
+      </NavBar.Title>
       <NavBar.RightAction
         component={
-          <Button unstyled icon={<Settings size="$4" color={white} />} />
+          <Button
+            size={'$3'}
+            unstyled
+            icon={
+              <SettingsIcon width={'35'} height={'100%'} color={neutral400} />
+            }
+          />
         }
         onPress={() => props.navigation.navigate('Settings')}
       />

@@ -6,21 +6,22 @@ import {
   Platform,
   Text,
 } from 'react-native';
+import NfcManager from 'react-native-nfc-manager';
+
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { Image, View } from 'tamagui';
 
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { black } from '../../utils/colors';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
-import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import useUserStore from '../../stores/userStore';
-import NfcManager from 'react-native-nfc-manager';
-import { scan } from '../../utils/nfcScannerNew';
-import NFC_IMAGE from '../../images/nfc.png';
-import Title from '../../components/typography/Title';
-import Description from '../../components/typography/Description';
-import TextsContainer from '../../components/TextsContainer';
 import ButtonsContainer from '../../components/ButtonsContainer';
+import TextsContainer from '../../components/TextsContainer';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import Description from '../../components/typography/Description';
+import { Title } from '../../components/typography/Title';
+import NFC_IMAGE from '../../images/nfc.png';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import useUserStore from '../../stores/userStore';
+import { black } from '../../utils/colors';
+import { scan } from '../../utils/nfcScannerNew';
 
 interface PassportNFCScanScreenProps {}
 
@@ -133,7 +134,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         ) : (
           <>
             <TextsContainer>
-              <Title children="Verify your passport" />
+              <Title>Verify your passport</Title>
               <Description
                 children={
                   isNfcEnabled

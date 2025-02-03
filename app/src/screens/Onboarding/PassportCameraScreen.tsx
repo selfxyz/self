@@ -1,16 +1,16 @@
 import React, { useCallback } from 'react';
 import { StyleSheet, Text } from 'react-native';
+
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { View, XStack, YStack } from 'tamagui';
 
+import { CameraView, CameraViewProps } from '../../components/CameraView';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
-import { slate400, slate500, black } from '../../utils/colors';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-
 import useUserStore from '../../stores/userStore';
-import { CameraView, CameraViewProps } from '../../components/CameraView';
+import { black, slate400, slate500 } from '../../utils/colors';
 
 interface PassportNFCScanScreen {}
 

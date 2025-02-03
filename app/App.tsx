@@ -1,21 +1,23 @@
 import React, { useEffect } from 'react';
+import 'react-native-get-random-values';
+
 import { SEGMENT_KEY } from '@env';
+import '@ethersproject/shims';
 import {
-  createClient,
   EventPlugin,
   PluginType,
   SegmentEvent,
+  createClient,
 } from '@segment/analytics-react-native';
-import '@ethersproject/shims';
 import { Buffer } from 'buffer';
-import 'react-native-get-random-values';
-
 import { YStack } from 'tamagui';
 
-import { bgWhite } from './src/utils/colors';
-import { setupUniversalLinkListener } from './src/utils/qrCode'; // Adjust the import path as needed
+// Adjust the import path as needed
+// Adjust the import path as needed
 import AppNavigation from './src/Navigation';
 import useUserStore from './src/stores/userStore';
+import { bgWhite } from './src/utils/colors';
+import { setupUniversalLinkListener } from './src/utils/qrCode';
 
 global.Buffer = Buffer;
 export class DisableTrackingPlugin extends EventPlugin {
@@ -43,7 +45,7 @@ export class DisableTrackingPlugin extends EventPlugin {
 }
 
 export const createSegmentClient = () => {
-  if (!SEGMENT_KEY) return null;
+  if (!SEGMENT_KEY) {return null;}
 
   const client = createClient({
     writeKey: SEGMENT_KEY,

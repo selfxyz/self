@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
+
 import { black } from '../../utils/colors';
 
 interface TitleProps extends TextProps {}

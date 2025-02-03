@@ -1,9 +1,9 @@
 import React from 'react';
 import {
-  Text,
-  StyleSheet,
   Pressable,
   PressableProps,
+  StyleSheet,
+  Text,
   ViewStyle,
 } from 'react-native';
 
