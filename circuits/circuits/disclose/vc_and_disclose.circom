@@ -79,8 +79,8 @@ template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     for (var i = 0; i < 6; i++) {
         validity_ASCII[i] <== dg1[70 +i];
     }
-    IsValid()(current_date,validity_ASCII);
     
+    IsValid()(current_date,validity_ASCII);
     
     // disclose optional data
     component disclose = DISCLOSE(10);
