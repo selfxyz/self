@@ -48,7 +48,7 @@ const vcAndDiscloseCircuits: CircuitArtifacts = {
 }
 
 export async function generateRegisterProof(
-    secret: number | string,
+    secret: string,
     passportData: PassportData
 ): Promise<RegisterCircuitProof> {
     console.log(CYAN, "=== Start generateRegisterProof ===", RESET);
@@ -135,7 +135,7 @@ export async function generateVcAndDiscloseProof(
     smt?: SMT,
     selectorOfac: string | number = "1",
     forbiddenCountriesList: string[] = ["AAA"],
-    userIdentifier: string = "70997970C51812dc3A010C7d01b50e0d17dc79C8"
+    userIdentifier: string = "0000000000000000000000000000000000000000"
 ): Promise<VcAndDiscloseProof> {
 
     smt = getSMT();

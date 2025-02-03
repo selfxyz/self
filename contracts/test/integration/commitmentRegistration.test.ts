@@ -46,7 +46,7 @@ describe("Commitment Registration Tests", function () {
         snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
 
-    describe("Register Passport Commitment", () => {
+    describe("Register Commitment", () => {
 
         describe("Initialization", () => {
             it("should have consistent addresses between registry and hub", async () => {

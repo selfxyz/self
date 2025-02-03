@@ -11,6 +11,8 @@ import { generateCommitment } from "../../../common/src/utils/passports/passport
 import { BigNumberish } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
+import { getStartOfDayTimestamp } from "../utils/utils";
+import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
@@ -159,7 +161,7 @@ describe("VC and Disclose", () => {
             ).to.be.revertedWithCustomError(hub, "INVALID_OFAC_ROOT");
         });
 
-        it("should fail with invalid current date (+ 1 day)", async () => {
+        it("should fail with invalid current date (more than + 1 day)", async () => {
             const {hub, registry, owner} = deployedActors;
 
             await registry.connect(owner).devAddIdentityCommitment(
@@ -168,8 +170,7 @@ describe("VC and Disclose", () => {
                 commitment
             );
             const currentBlock = await ethers.provider.getBlock('latest');
-
-            const oneDayAfter = currentBlock!.timestamp + 24 * 60 * 601;
+            const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60;
             
             const date = new Date(oneDayAfter * 1000);
             const dateComponents = [
@@ -200,6 +201,47 @@ describe("VC and Disclose", () => {
             ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
         });
 
+        it("should not revert when current date is within + 1 day", async () => {
+            const {hub, registry, owner} = deployedActors;
+
+            await registry.connect(owner).devAddIdentityCommitment(
+                ATTESTATION_ID.E_PASSPORT,
+                nullifier,
+                commitment
+            );
+            const currentBlock = await ethers.provider.getBlock('latest');
+
+            const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60 - 1;
+            
+            const date = new Date(oneDayAfter * 1000);
+            const dateComponents = [
+                Math.floor((date.getUTCFullYear() % 100) / 10),
+                date.getUTCFullYear() % 10,                    
+                Math.floor((date.getUTCMonth() + 1) / 10),     
+                (date.getUTCMonth() + 1) % 10,                 
+                Math.floor(date.getUTCDate() / 10),            
+                date.getUTCDate() % 10                         
+            ];
+
+            for (let i = 0; i < 6; i++) {
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+            }
+
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: true,
+                olderThan: "20",
+                forbiddenCountriesEnabled: true,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: true,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            };
+
+            await expect (
+                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+            ).to.not.be.reverted;
+        });
+
         it("should fail with invalid current date (- 1 day)", async () => {
             
             const {hub, registry, owner} = deployedActors;
@@ -222,7 +264,7 @@ describe("VC and Disclose", () => {
             }
 
             const currentBlock = await ethers.provider.getBlock('latest');
-            const oneDayBefore = (currentBlock!.timestamp - 24 * 60 * 60);
+            const oneDayBefore = getStartOfDayTimestamp(currentBlock!.timestamp) - 1;
             
             const date = new Date(oneDayBefore * 1000);
             const dateComponents = [
@@ -241,6 +283,46 @@ describe("VC and Disclose", () => {
             await expect(
                 hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
             ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
+        });
+
+        it("should not revert when current date is slightly less than - 1 day", async () => {
+            const {hub, registry, owner} = deployedActors;
+
+            await registry.connect(owner).devAddIdentityCommitment(
+                ATTESTATION_ID.E_PASSPORT,
+                nullifier,
+                commitment
+            );
+            const currentBlock = await ethers.provider.getBlock('latest');
+
+            const oneDayBefore = getStartOfDayTimestamp(currentBlock!.timestamp);
+            const date = new Date(oneDayBefore * 1000);
+            const dateComponents = [
+                Math.floor((date.getUTCFullYear() % 100) / 10),
+                date.getUTCFullYear() % 10,                    
+                Math.floor((date.getUTCMonth() + 1) / 10),     
+                (date.getUTCMonth() + 1) % 10,                 
+                Math.floor(date.getUTCDate() / 10),            
+                date.getUTCDate() % 10                         
+            ];
+
+            for (let i = 0; i < 6; i++) {
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX + i] = dateComponents[i].toString();
+            }
+
+            const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+            const vcAndDiscloseHubProof = {
+                olderThanEnabled: true,
+                olderThan: "20",
+                forbiddenCountriesEnabled: true,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                ofacEnabled: true,
+                vcAndDiscloseProof: vcAndDiscloseProof
+            };
+
+            await expect(
+                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+            ).to.not.be.reverted;
         });
 
         it("should succeed with bigger value than older than", async () => {
@@ -396,12 +478,14 @@ describe("VC and Disclose", () => {
             for (let i = 0; i < 3; i++) {
                 revealedDataPacked[i] = BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i]);
             };
+            const bytes = Formatter.fieldElementsToBytes(revealedDataPacked as [bigint, bigint, bigint]);
             const readableData = await hub.getReadableRevealedData(
                 revealedDataPacked as [BigNumberish, BigNumberish, BigNumberish],
                 types
             );
 
-            return { readableData };
+
+            return { readableData, bytes };
         }
 
         it("should fail when getReadableRevealedData is called by non-proxy", async() => {
@@ -416,6 +500,20 @@ describe("VC and Disclose", () => {
                     ['0']
                 )
             ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("formatter and CircuitAttributeHandler are working fine", async () => {
+            const { readableData, bytes } = await setupVcAndDiscloseTest(['0', '1', '2', '3', '4', '5', '6', '7', '8']);
+            
+            expect(CircuitAttributeHandler.getIssuingState(bytes)).to.equal(readableData[0]);
+            expect(CircuitAttributeHandler.getName(bytes)).to.deep.equal(readableData[1]);
+            expect(CircuitAttributeHandler.getPassportNumber(bytes)).to.equal(readableData[2]);
+            expect(CircuitAttributeHandler.getNationality(bytes)).to.equal(readableData[3]);
+            expect(CircuitAttributeHandler.getDateOfBirth(bytes)).to.equal(readableData[4]);
+            expect(CircuitAttributeHandler.getGender(bytes)).to.equal(readableData[5]);
+            expect(CircuitAttributeHandler.getExpiryDate(bytes)).to.equal(readableData[6]);
+            expect(CircuitAttributeHandler.getOlderThan(bytes)).to.equal(readableData[7]);
+            expect(CircuitAttributeHandler.getOfac(bytes)).to.equal(readableData[8]);
         });
 
         it("should return all data", async () => {
@@ -561,12 +659,16 @@ describe("VC and Disclose", () => {
             expect(readableData[8]).to.equal(0n);
         });
 
-        it("should parse forbidden countries", async () => {
-            const {hub} = deployedActors;
+        it("should parse forbidden countries with CircuitAttributeHandler", async () => {
+            const { hub } = deployedActors;
 
             const forbiddenCountriesListPacked = vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
             const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
+            
+            expect(readableForbiddenCountries[0]).to.equal(Formatter.extractForbiddenCountriesFromPacked(BigInt(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX]))[0]);
             expect(readableForbiddenCountries[0]).to.equal('AAA');
         });
+
+        
     });
 }); 

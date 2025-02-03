@@ -9,3 +9,8 @@ export function generateRandomFieldElement(): string {
   
   return fieldElement;
 }
+
+export function getStartOfDayTimestamp(timestamp: number): number {
+  const dayInSeconds = 86400;
+  return timestamp - (timestamp % dayInSeconds);
+}

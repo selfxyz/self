@@ -21,7 +21,6 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     error InvalidProof();
     error AlreadyClaimed();
     error NotRegistered(address nonRegisteredAddress);
-    error InvalidLength();
     error RegistrationNotOpen();
     error RegistrationNotClosed();
     error ClaimNotOpen();
@@ -79,7 +78,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
             revert RegistrationNotOpen();
         }
 
-        _registerAddress(msg.sender, proof);
+        _registerAddress(proof);
     }
 
     function getScope() external view returns (uint256) {
@@ -90,12 +89,12 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         return attestationId;
     }
 
-    function getNullifier(uint256 nullifier) external view returns (address) {
+    function getNullifier(uint256 nullifier) external view returns (uint256) {
         return nullifiers[nullifier];
     }
 
-    function getRegisteredAddresses(address registeredAddress) external view returns (bool) {
-        return registeredAddresses[registeredAddress];
+    function isRegistered(address registeredAddress) external view returns (bool) {
+        return registeredUserIdentifiers[uint256(uint160(registeredAddress))];
     }
 
     function claim(
@@ -113,6 +112,10 @@ contract Airdrop is PassportAirdropRoot, Ownable {
 
         if (claimed[msg.sender]) {
             revert AlreadyClaimed();
+        }
+
+        if (!registeredUserIdentifiers[uint256(uint160(msg.sender))]) {
+            revert NotRegistered(msg.sender);
         }
 
         // Verify the merkle proof.

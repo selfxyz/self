@@ -20,6 +20,7 @@
     "test:attribute:local": "TEST_ENV=local npx hardhat test test/unit/CircuitAttributeHandler.test.ts",
     "test:register:local": "TEST_ENV=local npx hardhat test test/integration/commitmentRegistration.test.ts",
     "test:disclose:local": "TEST_ENV=local npx hardhat test test/integration/vcAndDisclose.test.ts",
+    "test:endtoend:local": "TEST_ENV=local npx hardhat test test/Integration/endToEnd.test.ts",
     "test:airdrop:local": "TEST_ENV=local npx hardhat test test/example/airdrop.test.ts",
     "test:coverage": "npx hardhat coverage",
     "test:coverage:local": "TEST_ENV=local npx hardhat coverage",

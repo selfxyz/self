@@ -50,6 +50,7 @@ export interface DeployedActors {
     dsc: DscVerifier;
     owner: Signer;
     user1: Signer;
+    user2: Signer;
     mockPassport: PassportData;
 }
 

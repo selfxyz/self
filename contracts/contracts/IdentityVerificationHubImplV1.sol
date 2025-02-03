@@ -422,8 +422,8 @@ contract IdentityVerificationHubImplV1 is
 
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
-            currentTimestamp < block.timestamp - 1 days ||
-            currentTimestamp + 1 days - 1 > block.timestamp + 1 days
+            currentTimestamp < getStartOfDayTimestamp() - 1 days + 1 ||
+            currentTimestamp > getStartOfDayTimestamp() + 1 days - 1
         ) {
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
@@ -509,6 +509,10 @@ contract IdentityVerificationHubImplV1 is
         )) {
             revert INVALID_DSC_PROOF();
         }
+    }
+
+    function getStartOfDayTimestamp() internal view returns (uint256) {
+        return block.timestamp - (block.timestamp % 1 days);
     }
 
 }
