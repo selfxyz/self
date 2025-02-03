@@ -726,6 +726,14 @@ describe("VC and Disclose", () => {
             expect(readableForbiddenCountries[9]).to.equal(forbiddenCountriesList[9]);
         });
 
+        it("should fail when getReadableForbiddenCountries is called by non-proxy", async () => {
+            const {hubImpl} = deployedActors;
+            const forbiddenCountriesList = ['AAA', 'FRA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA'];
+            const forbiddenCountriesListPacked = reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+            await expect(
+                hubImpl.getReadableForbiddenCountries(forbiddenCountriesListPacked)
+            ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
+        });
         
     });
 }); 
