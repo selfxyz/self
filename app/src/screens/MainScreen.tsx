@@ -1117,7 +1117,7 @@ const MainScreen: React.FC = () => {
             />
           </Tabs.Content>
           <Tabs.Content value="prove" f={1}>
-            <ProveScreen setSheetRegisterIsOpen={setSheetRegisterIsOpen} />
+            <ProveScreen />
           </Tabs.Content>
           <Tabs.Content value="valid" f={1}>
             <ValidProofScreen />
