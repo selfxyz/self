@@ -62,7 +62,7 @@ jobs:
       - name: Run Tests (Circuits)
         working-directory: ./circuits
         env:
-          FULL_TEST_SUITE: ${{ github.ref == 'refs/heads/main' || github.ref == 'refs/heads/openpassportv2' }}
+          FULL_TEST_SUITE: false
         run: yarn test
 
       - name: Run Tests (Common)

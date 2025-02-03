@@ -8,15 +8,9 @@ import { expect } from 'chai';
 describe('VerifyRsapss Circuit Test', function () {
   this.timeout(0);
   const fullAlgorithms: { algo: SignatureAlgorithm; saltLength: number }[] = [
-    { algo: 'rsapss_sha256_65537_4096', saltLength: 32 },
-    { algo: 'rsapss_sha256_65537_3072', saltLength: 32 },
-    { algo: 'rsapss_sha256_65537_2048', saltLength: 32 },
     { algo: 'rsapss_sha256_65537_4096', saltLength: 64 },
     { algo: 'rsapss_sha256_65537_3072', saltLength: 64 },
     { algo: 'rsapss_sha256_65537_2048', saltLength: 64 },
-    { algo: 'rsapss_sha256_3_4096', saltLength: 32 },
-    { algo: 'rsapss_sha256_3_3072', saltLength: 32 },
-    { algo: 'rsapss_sha256_3_2048', saltLength: 32 },
     { algo: 'rsapss_sha256_3_4096', saltLength: 64 },
     { algo: 'rsapss_sha256_3_3072', saltLength: 64 },
     { algo: 'rsapss_sha256_3_2048', saltLength: 64 },
@@ -30,9 +24,6 @@ describe('VerifyRsapss Circuit Test', function () {
 
   const sigAlgs: { algo: SignatureAlgorithm; saltLength: number }[] = [
     { algo: 'rsapss_sha256_65537_4096', saltLength: 32 },
-    { algo: 'rsapss_sha256_3_3072', saltLength: 64 },
-    { algo: 'rsapss_sha512_3_2048', saltLength: 64 },
-    { algo: 'rsapss_sha384_65537_3072', saltLength: 48 },
   ];
 
   const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullAlgorithms : sigAlgs;

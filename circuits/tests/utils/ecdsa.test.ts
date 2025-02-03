@@ -5,8 +5,17 @@ import * as path from 'path';
 import { splitToWords } from '../../../common/src/utils/bytes';
 
 const elliptic = initElliptic();
-
 const testSuite = [
+  {
+    hash: 'sha512',
+    curve: 'brainpoolP256r1',
+    n: 64,
+    k: 4,
+    reason: 'when hash is greater than curve bits',
+  },
+];
+
+const fullTestSuite = [
   {
     hash: 'sha1',
     curve: 'brainpoolP224r1',
