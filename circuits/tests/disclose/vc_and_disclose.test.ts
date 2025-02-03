@@ -13,8 +13,15 @@ import crypto from 'crypto';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SMT } from '@openpassport/zk-kit-smt';
 import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
-import { formatAndUnpackReveal, formatAndUnpackForbiddenCountriesList } from '../../../common/src/utils/circuits/formatOutputs';
-import { generateCommitment, initPassportDataParsing } from '../../../common/src/utils/passports/passport';
+import {
+  formatAndUnpackReveal,
+  formatAndUnpackForbiddenCountriesList,
+  getAttributeFromUnpackedReveal,
+} from '../../../common/src/utils/circuits/formatOutputs';
+import {
+  generateCommitment,
+  initPassportDataParsing,
+} from '../../../common/src/utils/passports/passport';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -152,8 +159,12 @@ describe('Disclose', function () {
           }
         }
 
-        const forbidden_countries_list_packed = await circuit.getOutput(w, ['forbidden_countries_list_packed[1]'])
-        const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(forbidden_countries_list_packed);
+        const forbidden_countries_list_packed = await circuit.getOutput(w, [
+          'forbidden_countries_list_packed[1]',
+        ]);
+        const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(
+          forbidden_countries_list_packed
+        );
         expect(forbidden_countries_list_unpacked).to.deep.equal(forbidden_countries_list);
       });
     });
@@ -189,13 +200,3 @@ describe('Disclose', function () {
     expect(reveal_unpacked[89]).to.equal('\x00');
   });
 });
-
-const formatOlderThan = (older_than: any) => {
-  return Object.values(older_than).map((value: any) => parseInt(value) - 48);
-};
-
-
-const getAttributeFromUnpackedReveal = (unpackedReveal: string[], attributeName: keyof typeof attributeToPosition): string => {
-  const [start, end] = attributeToPosition[attributeName];
-  return unpackedReveal.slice(start, end + 1).join('').replace(/\x00/g, '');
-};

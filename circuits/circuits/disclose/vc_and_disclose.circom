@@ -4,6 +4,7 @@ include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
 include "../utils/passport/ofac/ofac_name.circom";
 include "../utils/passport/disclose/verify_commitment.circom";
+include "../utils/passport/date/isValid.circom";
 
 /// @title VC_AND_DISCLOSE
 /// @notice Verify user's commitment is part of the merkle tree and optionally disclose data from DG1
@@ -72,8 +73,16 @@ template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
         path,
         siblings
     );
+
+    // verify passport validity
+    signal validity_ASCII[6];
+    for (var i = 0; i < 6; i++) {
+        validity_ASCII[i] <== dg1[70 +i];
+    }
     
-    // verify passport validity and disclose optional data
+    IsValid()(current_date,validity_ASCII);
+    
+    // disclose optional data
     component disclose = DISCLOSE(10);
     disclose.dg1 <== dg1;
     disclose.selector_dg1 <== selector_dg1;

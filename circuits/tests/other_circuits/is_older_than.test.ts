@@ -21,8 +21,12 @@ describe('DateIsLessChecker Circuit Test', function () {
 
   const n = 10;
   const majority = 19;
-  const majority_input_raw = majority.toString().split('').map(char => char.charCodeAt(0))
-  const majority_input = majority_input_raw.length == 1 ? [48, majority_input_raw[0]] : majority_input_raw;
+  const majority_input_raw = majority
+    .toString()
+    .split('')
+    .map((char) => char.charCodeAt(0));
+  const majority_input =
+    majority_input_raw.length == 1 ? [48, majority_input_raw[0]] : majority_input_raw;
 
   const yearStart = 2023;
   const yearEnd = 2200;
