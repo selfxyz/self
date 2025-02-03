@@ -386,7 +386,7 @@ contract IdentityVerificationHubImplV1 is
     {
         VcAndDiscloseVerificationResult memory result;
         
-        result.identityCommitmentRoot = verifyVcAndDiscloseProof(proof);
+        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(proof);
 
         for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
@@ -400,7 +400,54 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // ====================================================
-    // External Update Functions
+    // External Functions - Registration
+    // ====================================================
+
+    /**
+     * @notice Registers a passport commitment using a register circuit proof.
+     * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
+     * @param registerCircuitProof The register circuit proof data.
+     */
+    function registerPassportCommitment(
+        uint256 registerCircuitVerifierId,
+        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+    ) 
+        external
+        virtual
+        onlyProxy
+    {
+        _verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
+        IIdentityRegistryV1(_registry).registerCommitment(
+            AttestationId.E_PASSPORT,
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
+            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
+        );
+    }
+
+    /**
+     * @notice Registers a DSC key commitment using a DSC circuit proof.
+     * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
+     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
+     * @param dscCircuitProof The DSC circuit proof data.
+     */
+    function registerDscKeyCommitment(
+        uint256 dscCircuitVerifierId,
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+    )
+        external
+        virtual
+        onlyProxy
+    {
+        _verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
+        IIdentityRegistryV1(_registry).registerDscKeyCommitment(
+            dscCircuitProof.pubSignals[CircuitConstants.DSC_TREE_LEAF_INDEX]
+        );
+    }
+
+    
+    // ====================================================
+    // External Functions - Only Owner
     // ====================================================
 
     /**
@@ -518,52 +565,6 @@ contract IdentityVerificationHubImplV1 is
     }
 
     // ====================================================
-    // External Register Functions
-    // ====================================================
-
-    /**
-     * @notice Registers a passport commitment using a register circuit proof.
-     * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
-     * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
-     * @param registerCircuitProof The register circuit proof data.
-     */
-    function registerPassportCommitment(
-        uint256 registerCircuitVerifierId,
-        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
-    ) 
-        external
-        virtual
-        onlyProxy
-    {
-        verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
-        IIdentityRegistryV1(_registry).registerCommitment(
-            AttestationId.E_PASSPORT,
-            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
-            registerCircuitProof.pubSignals[CircuitConstants.REGISTER_COMMITMENT_INDEX]
-        );
-    }
-
-    /**
-     * @notice Registers a DSC key commitment using a DSC circuit proof.
-     * @dev Verifies the DSC proof and then calls the Identity Registry to register the dsc key commitment.
-     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
-     * @param dscCircuitProof The DSC circuit proof data.
-     */
-    function registerDscKeyCommitment(
-        uint256 dscCircuitVerifierId,
-        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
-    )
-        external
-        virtual
-        onlyProxy
-    {
-        verifyPassportDscProof(dscCircuitVerifierId, dscCircuitProof);
-        IIdentityRegistryV1(_registry).registerDscKeyCommitment(
-            dscCircuitProof.pubSignals[CircuitConstants.DSC_TREE_LEAF_INDEX]
-        );
-    }
-
-    // ====================================================
     // Internal Functions
     // ====================================================
 
@@ -573,7 +574,7 @@ contract IdentityVerificationHubImplV1 is
      * @param proof The VcAndDiscloseHubProof containing the proof data.
      * @return identityCommitmentRoot The verified identity commitment root from the proof.
      */
-    function verifyVcAndDiscloseProof(
+    function _verifyVcAndDiscloseProof(
         VcAndDiscloseHubProof memory proof
     ) 
         internal
@@ -593,8 +594,8 @@ contract IdentityVerificationHubImplV1 is
 
         uint currentTimestamp = Formatter.proofDateToUnixTimestamp(dateNum);
         if(
-            currentTimestamp < getStartOfDayTimestamp() - 1 days + 1 ||
-            currentTimestamp > getStartOfDayTimestamp() + 1 days - 1
+            currentTimestamp < _getStartOfDayTimestamp() - 1 days + 1 ||
+            currentTimestamp > _getStartOfDayTimestamp() + 1 days - 1
         ) {
             revert CURRENT_DATE_NOT_IN_VALID_RANGE();
         }
@@ -637,7 +638,7 @@ contract IdentityVerificationHubImplV1 is
      * @param registerCircuitVerifierId The identifier for the register circuit verifier.
      * @param registerCircuitProof The register circuit proof data.
      */
-    function verifyPassportRegisterProof(
+    function _verifyPassportRegisterProof(
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
@@ -669,7 +670,7 @@ contract IdentityVerificationHubImplV1 is
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier.
      * @param dscCircuitProof The DSC circuit proof data.
      */
-    function verifyPassportDscProof(
+    function _verifyPassportDscProof(
         uint256 dscCircuitVerifierId,
         IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
     ) 
@@ -700,7 +701,7 @@ contract IdentityVerificationHubImplV1 is
      * @dev Calculated by subtracting the remainder of block.timestamp modulo 1 day.
      * @return The Unix timestamp representing the start of the day.
      */
-    function getStartOfDayTimestamp() internal view returns (uint256) {
+    function _getStartOfDayTimestamp() internal view returns (uint256) {
         return block.timestamp - (block.timestamp % 1 days);
     }
 }
