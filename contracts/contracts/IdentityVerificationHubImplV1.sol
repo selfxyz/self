@@ -552,11 +552,6 @@ contract IdentityVerificationHubImplV1 is
             revert INVALID_COMMITMENT_ROOT();
         }
 
-        // verify ofac root
-        if (!IIdentityRegistryV1(_registry).checkOfacRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
-            revert INVALID_OFAC_ROOT();
-        }
-
         // verify current date
         uint[6] memory dateNum;
         for (uint256 i = 0; i < 6; i++) {
@@ -584,6 +579,9 @@ contract IdentityVerificationHubImplV1 is
         if (proof.ofacEnabled) {
             if (!CircuitAttributeHandler.compareOfac(Formatter.fieldElementsToBytes(revealedDataPacked))) {
                 revert INVALID_OFAC();
+            }
+            if (!IIdentityRegistryV1(_registry).checkOfacRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SMT_ROOT_INDEX])) {
+                revert INVALID_OFAC_ROOT();
             }
         }
         if (proof.forbiddenCountriesEnabled) {
