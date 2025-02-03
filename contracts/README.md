@@ -2,11 +2,7 @@
 
 Contracts for OpenPassport.
 
-## OpenPassport Contract Architecture
-
-![OpenPassport Contract Architecture](./assets/contract_architecture_v1.png)
-
-## Cautions
+## ⚠️Cautions⚠️
 
 When you do the upgrade, be careful with this storage patterns
 - You can not change the order in which the contract state variables are declared, nor their type.
@@ -17,12 +13,8 @@ When you compile the circuits, make sure you set the build flag to true for thes
 - register_sha256_sha256_sha256_rsa_65537_4096
 - dsc_sha256_rsa_65537_4096
 - vc_and_disclose
-
-There is the difference in build scripts in circuits directory.
-```shell
-cd ../circuits/scripts/build/common.sh
-```
-Change the comment out place depends on your OS.
+Go to ../circuits/scripts/build/ and change false to true for these circuits.
+Then you can run the following command to see the coverage.
 
 ```shell
 cd ../circuits

@@ -468,6 +468,10 @@ contract IdentityRegistryImplV1 is
         emit DscKeyCommitmentRegistered(dscCommitment, block.timestamp, imt_root, index);
     }
     
+    // ====================================================
+    // External Functions - Only Owner
+    // ====================================================
+
     /**
      * @notice Updates the hub address.
      * @dev Callable only via a proxy and restricted to the contract owner.
@@ -516,9 +520,6 @@ contract IdentityRegistryImplV1 is
         emit CscaRootUpdated(newCscaRoot);
     }
 
-    // ====================================================
-    // External Functions - Development Only
-    // ====================================================
 
     /**
      * @notice (DEV) Force-adds an identity commitment.
