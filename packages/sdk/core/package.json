@@ -47,7 +47,6 @@
     "chai-as-promised": "^7.1.1",
     "dotenv": "^16.4.5",
     "mocha": "^10.3.0",
-    "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "ts-mocha": "^10.0.0",
     "ts-node": "^10.9.2",
@@ -58,9 +57,7 @@
     "prepublishOnly": "npm run build",
     "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
-    "download-circuits": "cd ../circuits && ./scripts/download_circuits_from_aws.sh && cd ../sdk",
-    "format": "prettier --write .",
-    "lint": "prettier --check ."
+    "download-circuits": "cd ../circuits && ./scripts/download_circuits_from_aws.sh && cd ../sdk"
   },
   "files": [
     "dist",

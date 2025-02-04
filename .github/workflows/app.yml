@@ -3,9 +3,9 @@ name: App CI
 on:
   push:
     paths:
-      - "app/**"
-      - ".github/workflows/app.yml"
-      - ".github/actions/**"
+      - 'app/**'
+      - '.github/workflows/app.yml'
+      - '.github/actions/**'
 
 jobs:
   lint:
@@ -21,7 +21,6 @@ jobs:
         working-directory: ./app
       - name: Run prettier
         run: yarn fmt
-        working-directory: ./app
 
   test:
     runs-on: macos-14
