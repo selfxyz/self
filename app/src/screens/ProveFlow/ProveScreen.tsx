@@ -10,6 +10,7 @@ import { Text, YStack } from 'tamagui';
 // } from '../../../../common/src/constants/constants';
 import {
   ArgumentsProveOffChain,
+  DisclosureOptions,
   OpenPassportApp,
 } from '../../../../common/src/utils/appType';
 import {
@@ -41,10 +42,10 @@ const ProveScreen: React.FC = () => {
   const selectedApp = useNavigationStore(
     state => state.selectedApp || { args: {} },
   ) as OpenPassportApp;
-  const disclosureOptions =
+  const disclosureOptions: DisclosureOptions =
     selectedApp.mode === 'register'
-      ? {}
-      : (selectedApp.args as ArgumentsProveOffChain).disclosureOptions || {};
+      ? []
+      : (selectedApp.args as ArgumentsProveOffChain)?.disclosureOptions || [];
   const { isZkeyDownloading } = useNavigationStore();
 
   const { setProofVerificationResult, passportData } = useUserStore();
@@ -158,6 +159,7 @@ const ProveScreen: React.FC = () => {
     };
   }, [selectedApp.userId]);
 
+  // TODO should not be passing this async function to the button. bad.
   const handleProve = async () => {
     try {
       setIsConnecting(true);

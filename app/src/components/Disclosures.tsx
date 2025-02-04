@@ -9,15 +9,8 @@ import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate400, slate500 } from '../utils/colors';
 
 interface DisclosureProps {
-  disclosures: Partial<DisclosureOptions>;
+  disclosures: DisclosureOptions;
 }
-
-const DISCLOSURES: Array<keyof DisclosureOptions> = [
-  'excludedCountries',
-  'minimumAge',
-  'ofac',
-  'nationality',
-];
 
 function listToString(list: string[]): string {
   if (list.length === 1) {
@@ -30,31 +23,29 @@ function listToString(list: string[]): string {
 
 export default function Disclosures({ disclosures }: DisclosureProps) {
   const enabledDisclosures = React.useMemo(
-    () => DISCLOSURES.filter(onlyEnabled(disclosures)),
+    () => disclosures.filter(disclosure => disclosure.enabled),
     [disclosures],
   );
 
   return (
     <YStack>
-      {enabledDisclosures.map(type => {
+      {enabledDisclosures.map(disclosure => {
         let text = '';
-        switch (type) {
+        switch (disclosure.key) {
           case 'ofac':
             text = 'I am not on the OFAC list';
-            return <DisclosureItem key={type} text={text} />;
+            return <DisclosureItem key={disclosure.key} text={text} />;
           case 'excludedCountries':
             text = `I am not a resident of any of the following countries: ${listToString(
-              disclosures.excludedCountries!.value,
+              disclosure.value,
             )}`;
-            return <DisclosureItem key={type} text={text} />;
+            return <DisclosureItem key={disclosure.key} text={text} />;
           case 'nationality':
-            text = `I have a valid passport from ${
-              disclosures.nationality!.value
-            }`;
-            return <DisclosureItem key={type} text={text} />;
+            text = `I have a valid passport from ${disclosure.value}`;
+            return <DisclosureItem key={disclosure.key} text={text} />;
           case 'minimumAge':
-            text = `Age [over ${disclosures.minimumAge!.value}]`;
-            return <DisclosureItem key={type} text={text} />;
+            text = `Age [over ${disclosure.value}]`;
+            return <DisclosureItem key={disclosure.key} text={text} />;
           default: {
             // TODO disclosureOptions does not have a type for this case yet. will wait for team to add it
             return (
@@ -122,16 +113,3 @@ const DiscloseAddress: React.FC<DiscloseAddressProps> = ({
     </YStack>
   );
 };
-
-function onlyEnabled(
-  disclosures: Partial<DisclosureOptions>,
-): (
-  value: keyof DisclosureOptions,
-  index: number,
-  array: (keyof DisclosureOptions)[],
-) => unknown {
-  return type => {
-    const disclosure = disclosures[type];
-    return typeof disclosure === 'boolean' ? disclosure : !!disclosure?.enabled;
-  };
-}
