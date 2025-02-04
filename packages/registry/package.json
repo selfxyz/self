@@ -1,4 +1,5 @@
 {
+  "name": "@openpassport/registry",
   "devDependencies": {
     "@types/node": "^20.11.20",
     "prisma": "^5.18.0"

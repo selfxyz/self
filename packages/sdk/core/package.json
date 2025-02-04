@@ -1,8 +1,8 @@
 {
-  "name": "@openpassport/qrcode",
-  "version": "0.0.15",
-  "main": "dist/sdk/qrcode/index.js",
-  "types": "dist/sdk/qrcode/index.d.ts",
+  "name": "@openpassport/core",
+  "version": "0.0.12",
+  "main": "dist/sdk/core/index.js",
+  "types": "dist/sdk/core/index.d.ts",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -10,7 +10,9 @@
   },
   "author": "turnoffthiscomputer",
   "dependencies": {
-    "@openpassport/core": "0.0.12",
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@openpassport/zk-kit-smt": "^0.0.1",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
@@ -19,26 +21,17 @@
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",
-    "lottie-react": "^2.4.0",
     "msgpack-lite": "^0.1.26",
     "next": "^14.2.8",
     "node-forge": "https://github.com/remicolin/forge",
     "pako": "^2.1.0",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
-    "qrcode.react": "^4.1.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "react-spinners": "^0.14.1",
     "snarkjs": "^0.7.4",
-    "socket.io-client": "^4.8.1",
     "uuid": "^10.0.0",
     "zlib": "^1.0.5"
   },
   "devDependencies": {
-    "@openpassport/zk-kit-imt": "^0.0.5",
-    "@openpassport/zk-kit-lean-imt": "^0.0.6",
-    "@openpassport/zk-kit-smt": "^0.0.1",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
@@ -53,7 +46,6 @@
     "chai": "^4.3.8",
     "chai-as-promised": "^7.1.1",
     "dotenv": "^16.4.5",
-    "ethers": "^6.13.0",
     "mocha": "^10.3.0",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
@@ -73,14 +65,12 @@
   "files": [
     "dist",
     "common",
-    "circuits/**/*.json",
-    "src/QRcode"
+    "circuits/**/*.json"
   ],
   "publishConfig": {
     "access": "public"
   },
   "peerDependencies": {
-    "lottie-react": "^2.4.0",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   }
