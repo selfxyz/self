@@ -10,14 +10,14 @@ export function extractMRZInfo(mrzString: string) {
     throw new Error('Invalid MRZ format: Expected two lines of MRZ data');
   }
 
-  let documentNumber = mrzLines[1].slice(0, 9).replace(/</g, '').trim();
-  const birthDate = mrzLines[1].slice(13, 19).trim();
-  const expiryDate = mrzLines[1].slice(21, 27).trim();
+  let passportNumber = mrzLines[1].slice(0, 9).replace(/</g, '').trim();
+  const dateOfBirth = mrzLines[1].slice(13, 19).trim();
+  const dateOfExpiry = mrzLines[1].slice(21, 27).trim();
 
   return {
-    documentNumber,
-    birthDate,
-    expiryDate,
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
   };
 }
 

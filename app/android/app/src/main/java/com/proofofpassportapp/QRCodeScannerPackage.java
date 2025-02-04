@@ -12,13 +12,13 @@ import java.util.List;
 public class QRCodeScannerPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
-        return Collections.emptyList();
+        return List.of(
+                new com.proofofpassportapp.ui.QRCodeScannerViewManager(reactContext)
+        );
     }
 
     @Override
     public List<NativeModule> createNativeModules(ReactApplicationContext reactContext) {
-        List<NativeModule> modules = new ArrayList<>();
-        modules.add(new QRCodeScannerModule(reactContext));
-        return modules;
+        return Collections.emptyList();
     }
 }

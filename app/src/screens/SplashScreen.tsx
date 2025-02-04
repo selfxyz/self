@@ -1,29 +1,43 @@
 import React, { useEffect } from 'react';
 
-import { Spinner, Text, XStack, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { Image, Spinner } from 'tamagui';
 
-import useNavigationStore from '../stores/navigationStore';
+import Logo from '../images/logo.svg';
+import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import useUserStore from '../stores/userStore';
-import { textBlack } from '../utils/colors';
+import { amber500 } from '../utils/colors';
 
-const SplashScreen = () => {
+interface SplashScreenProps {}
+
+const SplashScreen: React.FC<SplashScreenProps> = ({}) => {
+  const navigation = useNavigation();
   const { userLoaded, passportData } = useUserStore();
-  const { setSelectedTab } = useNavigationStore();
+
   useEffect(() => {
     if (userLoaded) {
-      if (passportData && passportData.dg2Hash && !passportData.mockUser) {
-        setSelectedTab('app');
+      if (passportData && passportData.dg2Hash) {
+        navigation.navigate('Home');
       } else {
-        setSelectedTab('start');
+        navigation.navigate('Launch');
       }
     }
   }, [userLoaded]);
+
   return (
-    <YStack ai="center" f={1} gap="$8" mt="$18" mb="$8">
-      <Text fontSize="$9">OpenPassport</Text>
-      <XStack f={1} />
-      <Spinner color={textBlack} />
-    </YStack>
+    <ExpandableBottomLayout.Layout>
+      <ExpandableBottomLayout.TopSection>
+        <Image
+          source={require('../images/texture.png')}
+          style={{
+            opacity: 0.1,
+            position: 'absolute',
+          }}
+        />
+        <Logo />
+        <Spinner width={80} height={80} color={amber500} />
+      </ExpandableBottomLayout.TopSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 

@@ -49,7 +49,7 @@ const PassportOnboardingScreen: React.FC<
           <PrimaryButton onPress={() => navigation.navigate('PassportCamera')}>
             Open Camera
           </PrimaryButton>
-          <SecondaryButton onPress={() => navigation.navigate('Home')}>
+          <SecondaryButton onPress={() => navigation.navigate('Launch')}>
             Cancel
           </SecondaryButton>
         </ButtonsContainer>

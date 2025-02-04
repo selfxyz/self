@@ -49,13 +49,13 @@ export const startCameraScan = (callback: Callback): CancelScan => {
     NativeModules.CameraActivityModule.startCameraActivity()
       .then((mrzInfo: string) => {
         try {
-          const { documentNumber, birthDate, expiryDate } =
+          const { passportNumber, dateOfBirth, dateOfExpiry } =
             extractMRZInfo(mrzInfo);
 
           callback(null, {
-            passportNumber: documentNumber,
-            dateOfBirth: birthDate,
-            dateOfExpiry: expiryDate,
+            passportNumber,
+            dateOfBirth,
+            dateOfExpiry,
           });
         } catch (e) {
           console.error('Invalid MRZ format:', (e as Error).message);

@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { useNavigation } from '@react-navigation/native';
 import { Button, Image, View, YStack, styled } from 'tamagui';
 
 import { Caption } from '../components/typography/Caption';
@@ -19,6 +20,7 @@ const ScanButton = styled(Button, {
 });
 
 const HomeScreen: React.FC = () => {
+  const navigation = useNavigation();
   return (
     <YStack f={1} px="$4" bg={black}>
       <YStack f={1} mt="$6" mb="$10" gap="$0" ai="center" jc="space-between">
@@ -29,7 +31,7 @@ const HomeScreen: React.FC = () => {
           </Caption>
         </View>
         <View ai="center" gap="$3.5">
-          <ScanButton>
+          <ScanButton onPress={() => navigation.navigate('QRCodeViewFinder')}>
             <ScanIcon color={amber500} />
           </ScanButton>
           <Caption color={amber500} textTransform="uppercase">

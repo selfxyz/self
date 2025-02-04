@@ -3,6 +3,7 @@ apply plugin: 'kotlin-android'
 
 android {
     namespace "io.tradle.nfc"
+    ndkVersion = "26.1.10909125"
     compileSdkVersion 33
     defaultConfig {
         targetSdkVersion 33
