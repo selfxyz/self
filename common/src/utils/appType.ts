@@ -41,9 +41,36 @@ export interface ArgumentsDisclose {
   commitmentMerkleTreeUrl: string;
 }
 
-export interface DisclosureOptions {
-  minimumAge: { enabled: boolean; value: string };
-  nationality: { enabled: boolean; value: string };
-  excludedCountries: { enabled: boolean; value: string[] };
-  ofac: boolean;
+// export interface DisclosureOptions {
+//   minimumAge: { enabled: boolean; value: string };
+//   nationality: { enabled: boolean; value: string };
+//   excludedCountries: { enabled: boolean; value: string[] };
+//   ofac: boolean;
+// }
+
+type DisclosureBoolKeys = 'ofac' 
+type DisclosureBoolOption = {
+  enabled: boolean;
+  key: DisclosureBoolKeys
 }
+
+type DisclosureMatchKeys = 'nationality' | 'minimumAge'
+interface DisclosureMatchOption<T = DisclosureMatchKeys> {
+  enabled: boolean;
+  key: T;
+  value: string;
+}
+
+type DisclosureListKeys = 'excludedCountries'
+interface DisclosureListOption {
+  enabled: boolean;
+  key: DisclosureListKeys;
+  value: string[];
+}
+
+export type DisclosureOption = DisclosureBoolOption | DisclosureMatchOption | DisclosureListOption
+export type DisclosureAttributes =  DisclosureBoolKeys  | DisclosureMatchKeys | DisclosureListKeys
+export type DisclosureOptions = Array<DisclosureOption>
+
+export type GetDisclosure<T extends DisclosureAttributes> = T extends DisclosureMatchKeys ? DisclosureMatchOption : T extends DisclosureListKeys ? DisclosureListOption : DisclosureBoolOption
+

@@ -22,7 +22,10 @@ const cowboyApp: AppType = {
   sessionId: sessionID,
   circuit: 'prove',
   arguments: {
-    disclosureOptions: { older_than: '18', nationality: 'France' },
+     disclosureOptions: [
+      {key: "minimumAge", value: 18, enabled: true},
+      {key: "nationality", value: "France", enabled: true}
+    ],
   },
 };
 ```

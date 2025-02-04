@@ -5,7 +5,8 @@ import {
   ArgumentsRegister,
   Mode,
   OpenPassportAppPartial,
-  OpenPassportApp
+  OpenPassportApp,
+  DisclosureOptions
 } from '../../../common/src/utils/appType';
 import {
   DEFAULT_RPC_URL,
@@ -84,6 +85,15 @@ export class OpenPassportVerifier extends AttestationVerifier {
     return this;
   }
 
+  toDisclosureOptions(): DisclosureOptions{
+    return [
+      { key: 'minimumAge', ...this.minimumAge },
+      { key: 'nationality', ...this.nationality },
+      { key: 'excludedCountries', ...this.excludedCountries },
+      { key: 'ofac', enabled: this.ofac },
+    ]
+  }
+
   getIntent(
     appName: string,
     userId: string,
@@ -106,12 +116,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
     switch (this.mode) {
       case 'prove_onchain':
         const argsProveOnChain: ArgumentsProveOnChain = {
-          disclosureOptions: {
-            minimumAge: this.minimumAge,
-            nationality: this.nationality,
-            excludedCountries: this.excludedCountries,
-            ofac: this.ofac,
-          },
+          disclosureOptions: this.toDisclosureOptions(),
           modalServerUrl: this.modalServerUrl,
           merkleTreeUrl: this.cscaMerkleTreeUrl,
         };
@@ -119,12 +124,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
         break;
       case 'prove_offchain':
         const argsProveOffChain: ArgumentsProveOffChain = {
-          disclosureOptions: {
-            minimumAge: this.minimumAge,
-            nationality: this.nationality,
-            excludedCountries: this.excludedCountries,
-            ofac: this.ofac,
-          },
+          disclosureOptions: this.toDisclosureOptions(),
         };
         openPassportArguments = argsProveOffChain;
         break;
@@ -141,12 +141,7 @@ export class OpenPassportVerifier extends AttestationVerifier {
         break;
       case 'vc_and_disclose':
         const argsVcAndDisclose: ArgumentsDisclose = {
-          disclosureOptions: {
-            minimumAge: this.minimumAge,
-            nationality: this.nationality,
-            excludedCountries: this.excludedCountries,
-            ofac: this.ofac,
-          },
+          disclosureOptions: this.toDisclosureOptions(),
           commitmentMerkleTreeUrl: this.commitmentMerkleTreeUrl,
         };
         openPassportArguments = argsVcAndDisclose;

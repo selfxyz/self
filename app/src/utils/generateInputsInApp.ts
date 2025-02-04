@@ -11,7 +11,9 @@ import {
 import {
   ArgumentsDisclose,
   ArgumentsProveOffChain,
+  DisclosureAttributes,
   DisclosureOptions,
+  type GetDisclosure,
   OpenPassportApp,
 } from '../../../common/src/utils/appType';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/circuits/formatOutputs';
@@ -36,12 +38,13 @@ export const generateCircuitInputsInApp = async (
         app.args as ArgumentsProveOffChain
       ).disclosureOptions;
       const selector_dg1 = revealBitmapFromAttributes(disclosureOptions);
-      const selector_older_than = disclosureOptions.minimumAge.enabled ? 1 : 0;
-      const selector_ofac = disclosureOptions.ofac ? 1 : 0;
-      const forbidden_countries_list =
-        disclosureOptions.excludedCountries.value.map(country =>
-          getCountryCode(country),
-        );
+      const minimumAge = get('minimumAge', disclosureOptions);
+      const selector_older_than = minimumAge?.enabled ? 1 : 0;
+      const selector_ofac = isEnabled('ofac', disclosureOptions);
+      const forbidden_countries_list = get(
+        'excludedCountries',
+        disclosureOptions,
+      )?.value.map(country => getCountryCode(country));
       const inputs = generateCircuitInputsProve(
         selector_mode,
         secret,
@@ -50,7 +53,7 @@ export const generateCircuitInputsInApp = async (
         app.scope,
         selector_dg1,
         selector_older_than,
-        disclosureOptions.minimumAge.value ?? DEFAULT_MAJORITY,
+        minimumAge?.value ?? DEFAULT_MAJORITY,
         smt,
         selector_ofac,
         forbidden_countries_list,
@@ -84,18 +87,20 @@ export const generateCircuitInputsInApp = async (
       const disclosureOptionsDisclose: DisclosureOptions = (
         app.args as ArgumentsDisclose
       ).disclosureOptions;
+
       const selector_dg1_disclose = revealBitmapFromAttributes(
         disclosureOptionsDisclose,
       );
-      const selector_older_than_disclose = disclosureOptionsDisclose.minimumAge
-        .enabled
-        ? 1
-        : 0;
-      const selector_ofac_disclose = disclosureOptionsDisclose.ofac ? 1 : 0;
-      const forbidden_countries_list_disclose =
-        disclosureOptionsDisclose.excludedCountries.value.map(country =>
-          getCountryCode(country),
-        );
+      const minAgeInDisclose = get('minimumAge', disclosureOptionsDisclose);
+      const selector_older_than_disclose = minAgeInDisclose?.enabled ? 1 : 0;
+      const selector_ofac_disclose = isEnabled(
+        'ofac',
+        disclosureOptionsDisclose,
+      );
+      const forbidden_countries_list_disclose = get(
+        'excludedCountries',
+        disclosureOptionsDisclose,
+      )?.value.map(country => getCountryCode(country));
       return generateCircuitInputsVCandDisclose(
         secret,
         PASSPORT_ATTESTATION_ID,
@@ -104,11 +109,23 @@ export const generateCircuitInputsInApp = async (
         selector_dg1_disclose,
         selector_older_than_disclose,
         tree,
-        disclosureOptionsDisclose.minimumAge.value ?? DEFAULT_MAJORITY,
+        minAgeInDisclose?.value ?? DEFAULT_MAJORITY,
         smt,
         selector_ofac_disclose,
-        forbidden_countries_list_disclose,
+        forbidden_countries_list_disclose!,
         app.userId,
       );
   }
 };
+
+function get<T extends DisclosureAttributes = DisclosureAttributes>(
+  key: T,
+  from: DisclosureOptions,
+): GetDisclosure<T> | undefined {
+  const result = from.find(({ key: k }) => k === key);
+  return result as GetDisclosure<T>;
+}
+
+function isEnabled(key: DisclosureAttributes, from: DisclosureOptions): 1 | 0 {
+  return get(key, from)?.enabled ? 1 : 0;
+}
