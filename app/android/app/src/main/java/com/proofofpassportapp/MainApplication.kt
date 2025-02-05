@@ -10,7 +10,6 @@ import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
 import com.proofofpassportapp.CameraActivityPackage
 import io.tradle.nfc.RNPassportReaderPackage
-import com.proofofpassportapp.prover.ProverPackage
 import com.rnfs.RNFSPackage
 import com.proofofpassportapp.QRCodeScannerPackage
 
@@ -23,7 +22,6 @@ class MainApplication : Application(), ReactApplication {
               // Packages that cannot be autolinked yet can be added manually here, for example:
               // add(MyReactNativePackage())
               add(CameraActivityPackage())
-              add(ProverPackage())
               add(QRCodeScannerPackage())
             }
 

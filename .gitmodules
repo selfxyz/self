@@ -1,3 +1,0 @@
-[submodule "app/witnesscalc/depends/json"]
-	path = app/witnesscalc/depends/json
-	url = https://github.com/nlohmann/json.git

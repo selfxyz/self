@@ -177,10 +177,10 @@ const ProveScreen: React.FC = () => {
         sessionId: selectedApp.sessionId,
       });
 
-      const inputs = await generateCircuitInputsInApp(
-        passportData,
-        selectedApp,
-      );
+      // const inputs = await generateCircuitInputsInApp(
+      //   passportData,
+      //   selectedApp,
+      // );
       let attestation;
       let proof;
       let dscProof;
@@ -216,19 +216,19 @@ const ProveScreen: React.FC = () => {
           //   signatureAlgorithmDsc: signatureAlgorithmDsc,
           //   hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
           // });
-          break;
-        default:
-          proof = await generateProof(circuitName, inputs);
-          attestation = buildAttestation({
-            userIdType: selectedApp.userIdType,
-            mode: selectedApp.mode,
-            proof: proof.proof,
-            publicSignals: proof.publicSignals,
-            signatureAlgorithm: signatureAlgorithm,
-            hashFunction: parsedPassportData.signedAttrHashFunction,
-            dsc: passportData.dsc,
-          });
-          break;
+        //   break;
+        // default:
+        //   proof = await generateProof(circuitName, inputs);
+        //   attestation = buildAttestation({
+        //     userIdType: selectedApp.userIdType,
+        //     mode: selectedApp.mode,
+        //     proof: proof.proof,
+        //     publicSignals: proof.publicSignals,
+        //     signatureAlgorithm: signatureAlgorithm,
+        //     hashFunction: parsedPassportData.signedAttrHashFunction,
+        //     dsc: passportData.dsc,
+        //   });
+        //   break;
       }
       console.log('\x1b[90mattestation\x1b[0m', attestation);
       socket.emit('proof_generated', {

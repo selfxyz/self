@@ -5,7 +5,6 @@ module.exports = {
     'ios/',
     'android/',
     'deployments/',
-    'witnesscalc/',
     'node_modules/',
   ],
   rules: {
