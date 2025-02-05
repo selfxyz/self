@@ -6,7 +6,7 @@ import * as amplitude from '@amplitude/analytics-react-native';
 import '@react-navigation/native';
 import { Buffer } from 'buffer';
 
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
@@ -179,6 +179,7 @@ const handleResponseIOS = async (response: any) => {
     encryptedDigest: encryptedDigestArray,
     photoBase64: 'data:image/jpeg;base64,' + parsed.passportPhoto,
     mockUser: false,
+    parsed: false,
   };
   const parsedPassportData = parsePassportData(passportData);
   amplitude.track('nfc_response_parsed', parsedPassportData);
@@ -238,6 +239,7 @@ const handleResponseAndroid = async (response: any) => {
     encryptedDigest: JSON.parse(encryptedDigest),
     photoBase64: photo.base64,
     mockUser: false,
+    parsed: false,
   };
 
   console.log(

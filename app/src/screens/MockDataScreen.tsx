@@ -19,7 +19,8 @@ import {
 } from 'tamagui';
 
 import { countryCodes } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
+import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import CustomButton from '../components/CustomButton';
 import useUserStore from '../stores/userStore';
 import {
@@ -77,20 +78,38 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       .toUpperCase();
     await new Promise(resolve =>
       setTimeout(() => {
+        let mockPassportData;
         const hashAlgo = selectedAlgorithm === 'rsa sha1' ? 'sha1' : 'sha256';
-        const mockPassportData = genMockPassportData(
-          hashAlgo,
-          hashAlgo,
-          signatureAlgorithmToStrictSignatureAlgorithm[
-            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-          ],
-          selectedCountry as keyof typeof countryCodes,
-          castDate(-age),
-          castDate(expiryYears),
-          randomPassportNumber,
-          ...(isInOfacList ? ['HENAO MONTOYA', 'ARCANGEL DE JESUS'] : []),
-        );
+        if (isInOfacList) {
+          mockPassportData = genMockPassportData(
+            hashAlgo,
+            hashAlgo,
+            signatureAlgorithmToStrictSignatureAlgorithm[
+              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            ],
+            selectedCountry as keyof typeof countryCodes,
+            castDate(-age),
+            castDate(expiryYears),
+            randomPassportNumber,
+            'HENAO MONTOYA', // this name is the OFAC list
+            'ARCANGEL DE JESUS',
+          );
+        } else {
+          mockPassportData = genMockPassportData(
+            hashAlgo,
+            hashAlgo,
+            signatureAlgorithmToStrictSignatureAlgorithm[
+              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            ],
+            selectedCountry as keyof typeof countryCodes,
+            castDate(-age),
+            castDate(expiryYears),
+            randomPassportNumber,
+          );
+        }
         useUserStore.getState().registerPassportData(mockPassportData);
+        const parsedPassportData = parsePassportData(mockPassportData);
+        useUserStore.getState().setPassportMetadata(parsedPassportData);
         useUserStore.getState().setRegistered(true);
         resolve(null);
       }, 0),

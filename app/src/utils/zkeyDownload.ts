@@ -1,7 +1,6 @@
 import RNFS from 'react-native-fs';
 import { unzip } from 'react-native-zip-archive';
 
-import * as amplitude from '@amplitude/analytics-react-native';
 import NetInfo from '@react-native-community/netinfo';
 import axios from 'axios';
 
@@ -54,33 +53,59 @@ export type IsZkeyDownloading = {
 // => this should be fine is the function is never called after the commitment is registered.
 
 export async function downloadZkey(circuit: CircuitName) {
-  const { isZkeyDownloading, update } = useNavigationStore.getState();
+  const { isZkeyDownloading, update, trackEvent } =
+    useNavigationStore.getState();
+  const startTime = Date.now();
+
+  trackEvent('Download Started', {
+    success: true,
+    circuit: circuit,
+  });
 
   const downloadRequired = await isDownloadRequired(circuit, isZkeyDownloading);
   if (!downloadRequired) {
-    console.log(`zkey and dat for ${circuit} already downloaded`);
-    amplitude.track('zkey_already_downloaded', { circuit: circuit });
+    trackEvent('Download Skipped', {
+      success: true,
+      circuit: circuit,
+      reason: 'already_downloaded',
+    });
     return;
   }
 
-  const networkInfo = await NetInfo.fetch();
-  console.log('Network type:', networkInfo.type);
-  if (networkInfo.type === 'wifi') {
-    fetchZkeyAndDat(circuit);
-  } else {
-    const zkeyResponse = await axios.head(zkeyZipUrls[circuit]);
-    const datResponse = await axios.head(datZipUrls[circuit]);
-    const expectedSize =
-      parseInt(zkeyResponse.headers['content-length'], 10) +
-      parseInt(datResponse.headers['content-length'], 10);
+  try {
+    const networkInfo = await NetInfo.fetch();
+    if (networkInfo.type === 'wifi') {
+      fetchZkeyAndDat(circuit);
+    } else {
+      const zkeyResponse = await axios.head(zkeyZipUrls[circuit]);
+      const datResponse = await axios.head(datZipUrls[circuit]);
+      const expectedSize =
+        parseInt(zkeyResponse.headers['content-length'], 10) +
+        parseInt(datResponse.headers['content-length'], 10);
 
-    update({
-      showWarningModal: {
-        show: true,
+      update({
+        showWarningModal: {
+          show: true,
+          circuit: circuit,
+          size: expectedSize,
+        },
+      });
+
+      trackEvent('Download Paused', {
+        success: true,
         circuit: circuit,
-        size: expectedSize,
-      },
+        reason: 'no_wifi',
+        expected_size: expectedSize,
+      });
+    }
+  } catch (error: any) {
+    trackEvent('Download Failed', {
+      success: false,
+      error: error.message,
+      circuit: circuit,
+      duration_ms: Date.now() - startTime,
     });
+    throw error;
   }
 }
 
@@ -136,11 +161,19 @@ export async function isDownloadRequired(
 }
 
 export async function fetchZkeyAndDat(circuit: CircuitName) {
-  console.log(`fetching zkey and dat for ${circuit} ...`);
-  amplitude.track('fetching_zkey_and_dat', { circuit: circuit });
+  const startTime = Date.now();
+  const {
+    isZkeyDownloading,
+    toast,
+    update,
+    setZkeyDownloadedPercentage,
+    trackEvent,
+  } = useNavigationStore.getState();
 
-  const { isZkeyDownloading, toast, update, setZkeyDownloadedPercentage } =
-    useNavigationStore.getState();
+  trackEvent('Files Download Started', {
+    success: true,
+    circuit: circuit,
+  });
 
   update({
     isZkeyDownloading: {
@@ -149,7 +182,6 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
     },
   });
 
-  const startTime = Date.now();
   let previousPercentComplete = -1;
 
   const downloadFile = async (url: string, fileName: string) => {
@@ -158,7 +190,11 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
       toFile: `${RNFS.DocumentDirectoryPath}/${fileName}`,
       background: false,
       begin: () => {
-        console.log(`Download of ${fileName} has begun`);
+        trackEvent('File Download Started', {
+          success: true,
+          circuit: circuit,
+          file_type: fileName.includes('zkey') ? 'zkey' : 'dat',
+        });
       },
       progress: (res: any) => {
         if (fileName.endsWith('.zkey.zip')) {
@@ -169,7 +205,6 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
             percentComplete % 5 === 0 &&
             percentComplete !== previousPercentComplete
           ) {
-            console.log(`${percentComplete}%`);
             previousPercentComplete = percentComplete;
             setZkeyDownloadedPercentage(percentComplete);
           }
@@ -178,9 +213,11 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
     };
 
     await RNFS.downloadFile(options).promise;
-    console.log(`Download of ${fileName} complete`);
-    RNFS.readDir(RNFS.DocumentDirectoryPath).then(result => {
-      console.log('Directory contents before unzipping:', result);
+
+    trackEvent('File Download Completed', {
+      success: true,
+      circuit: circuit,
+      file_type: fileName.includes('zkey') ? 'zkey' : 'dat',
     });
   };
 
@@ -198,60 +235,88 @@ export async function fetchZkeyAndDat(circuit: CircuitName) {
       },
     });
 
-    console.log(
-      'zkey and dat download succeeded, took ' +
-        (Date.now() - startTime) / 1000 +
-        ' seconds',
-    );
-
     await saveFileSize(circuit, 'zkey');
     await saveFileSize(circuit, 'dat');
 
     await RNFS.unlink(`${RNFS.DocumentDirectoryPath}/${circuit}.zkey.zip`);
     await RNFS.unlink(`${RNFS.DocumentDirectoryPath}/${circuit}.dat.zip`);
-    console.log('zip files deleted');
 
-    const result = await RNFS.readDir(RNFS.DocumentDirectoryPath);
-    console.log('Directory contents at the end:', result);
+    trackEvent('Files Download Completed', {
+      success: true,
+      circuit: circuit,
+      duration_ms: Date.now() - startTime,
+    });
   } catch (error: any) {
-    console.error(error);
     update({
       isZkeyDownloading: {
         ...isZkeyDownloading,
         [circuit]: false,
       },
     });
+
+    trackEvent('Files Download Failed', {
+      success: false,
+      error: error.message,
+      circuit: circuit,
+      duration_ms: Date.now() - startTime,
+    });
+
     toast.show('Error', {
       message: `Error: ${error.message}`,
-      customData: {
-        type: 'error',
-      },
+      customData: { type: 'error' },
     });
   }
 }
 
 async function unzipFile(circuit: CircuitName, fileType: 'zkey' | 'dat') {
-  const unzipPath = `${RNFS.DocumentDirectoryPath}/${circuit}_temp`;
-  await unzip(
-    `${RNFS.DocumentDirectoryPath}/${circuit}.${fileType}.zip`,
-    unzipPath,
-  );
-  const files = await RNFS.readDir(unzipPath);
-  const targetFile = files.find(file => file.name.endsWith(`.${fileType}`));
-  if (targetFile) {
-    const destinationPath = `${RNFS.DocumentDirectoryPath}/${circuit}.${fileType}`;
-    if (await RNFS.exists(destinationPath)) {
-      await RNFS.unlink(destinationPath);
-      console.log(`Old ${fileType} file deleted`);
-    }
-    await RNFS.moveFile(targetFile.path, destinationPath);
-    console.log(`File moved to ${circuit}.${fileType}`);
-  } else {
-    throw new Error(
-      `${fileType.toUpperCase()} file not found in the unzipped directory`,
+  const { trackEvent } = useNavigationStore.getState();
+  const startTime = Date.now();
+
+  trackEvent('File Unzip Started', {
+    success: true,
+    circuit: circuit,
+    file_type: fileType,
+  });
+
+  try {
+    const unzipPath = `${RNFS.DocumentDirectoryPath}/${circuit}_temp`;
+    await unzip(
+      `${RNFS.DocumentDirectoryPath}/${circuit}.${fileType}.zip`,
+      unzipPath,
     );
+    const files = await RNFS.readDir(unzipPath);
+    const targetFile = files.find(file => file.name.endsWith(`.${fileType}`));
+    if (targetFile) {
+      const destinationPath = `${RNFS.DocumentDirectoryPath}/${circuit}.${fileType}`;
+      if (await RNFS.exists(destinationPath)) {
+        await RNFS.unlink(destinationPath);
+        console.log(`Old ${fileType} file deleted`);
+      }
+      await RNFS.moveFile(targetFile.path, destinationPath);
+      console.log(`File moved to ${circuit}.${fileType}`);
+    } else {
+      throw new Error(
+        `${fileType.toUpperCase()} file not found in the unzipped directory`,
+      );
+    }
+    await RNFS.unlink(unzipPath);
+
+    trackEvent('File Unzip Completed', {
+      success: true,
+      circuit: circuit,
+      file_type: fileType,
+      duration_ms: Date.now() - startTime,
+    });
+  } catch (error: any) {
+    trackEvent('File Unzip Failed', {
+      success: false,
+      error: error.message,
+      circuit: circuit,
+      file_type: fileType,
+      duration_ms: Date.now() - startTime,
+    });
+    throw error;
   }
-  await RNFS.unlink(unzipPath);
 }
 
 async function saveFileSize(circuit: CircuitName, fileType: 'zkey' | 'dat') {

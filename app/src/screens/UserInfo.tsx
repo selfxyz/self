@@ -2,7 +2,7 @@ import React from 'react';
 
 import { ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
 
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import useUserStore from '../stores/userStore';
 import { separatorColor, textBlack } from '../utils/colors';
 
@@ -126,7 +126,7 @@ const UserInfo: React.FC = () => {
 
         <InfoRow
           label="CSCA Signature Algorithm"
-          value={passportMetaData?.cscaSignature || 'None'}
+          value={passportMetaData?.cscaSignatureAlgorithm || 'None'}
         />
         <Separator borderColor={separatorColor} />
 

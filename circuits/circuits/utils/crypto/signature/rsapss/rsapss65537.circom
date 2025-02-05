@@ -57,7 +57,7 @@ include "../FpPowMod.circom";
 /// @input signature The RSA signature split into chunks
 /// @input hashed The hash of the original message
 template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY_LENGTH) {
-    assert((HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32));
+    assert((HASH_TYPE == 384 && SALT_LEN == 48) || (HASH_TYPE == 256 && SALT_LEN == 64) || (HASH_TYPE == 256 && SALT_LEN == 32) || (HASH_TYPE == 512 && SALT_LEN == 64));
 
     signal input pubkey[CHUNK_NUMBER]; 
     signal input signature[CHUNK_NUMBER];
@@ -114,7 +114,7 @@ template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY
     assert(EM_LEN >= HASH_LEN + SALT_LEN + 2);
     
     //should end with 0xBC (188 in decimal)
-    assert(eM[0] == 188); 
+    eM[0] === 188;
     
     var DB_MASK_LEN = EM_LEN - HASH_LEN - 1;
 
@@ -159,6 +159,21 @@ template VerifyRsaPss65537Sig(CHUNK_SIZE, CHUNK_NUMBER, SALT_LEN, HASH_TYPE, KEY
             db[i] <== xor.out[i];
         }
     }
+
+    //Step -10 of https://datatracker.ietf.org/doc/html/rfc8017#section-9.1.2
+    component db2Num[DB_MASK_LEN];
+    for (var i = 0; i < DB_MASK_LEN; i++) {
+        db2Num[i] = Bits2Num(8);
+        for (var j = 0; j < 8; j++) {
+            db2Num[i].in[7 - j] <== db[i*8 + j];
+        }
+    }
+    // Check leading zeros
+    for (var i = 0; i < DB_MASK_LEN - SALT_LEN - 1; i++) {
+        db2Num[i].out === 0;
+    }
+    // Check 0x01 byte
+    db2Num[DB_MASK_LEN - SALT_LEN - 1].out === 1;
     
     //inserting salt
     for (var i = 0; i < SALT_LEN_BITS; i++) {

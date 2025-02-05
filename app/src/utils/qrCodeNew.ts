@@ -5,7 +5,7 @@ import pako from 'pako';
 
 import { Mode, OpenPassportApp } from '../../../common/src/utils/appType';
 import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
+import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { downloadZkey } from './zkeyDownload';

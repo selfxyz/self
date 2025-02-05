@@ -2,6 +2,7 @@ import { useToastController } from '@tamagui/toast';
 import { create } from 'zustand';
 
 import { OpenPassportApp } from '../../../common/src/utils/appType';
+import { segmentClient } from '../../App';
 import {
   IsZkeyDownloading,
   ShowWarningModalProps,
@@ -24,10 +25,12 @@ interface NavigationState {
   setNfcSheetIsOpen: (isOpen: boolean) => void;
   zkeyDownloadedPercentage: number;
   setZkeyDownloadedPercentage: (percentage: number) => void;
+  trackEvent: (eventName: string, properties?: Record<string, any>) => void;
+  trackNavigation: (tab: string) => void;
 }
 
 const useNavigationStore = create<NavigationState>((set, get) => ({
-  zkeyDownloadedPercentage: 100,
+  zkeyDownloadedPercentage: 0,
   setZkeyDownloadedPercentage: (percentage: number) =>
     set({ zkeyDownloadedPercentage: percentage }),
   isZkeyDownloading: {
@@ -54,7 +57,10 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   setToast: toast => set({ toast }),
   setSelectedApp: app => set({ selectedApp: app }),
 
-  setSelectedTab: tab => set({ selectedTab: tab }),
+  setSelectedTab: (tab: string) => {
+    const { trackNavigation } = get();
+    trackNavigation(tab);
+  },
 
   update: patch => {
     set({
@@ -64,6 +70,21 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   },
   nfcSheetIsOpen: false,
   setNfcSheetIsOpen: isOpen => set({ nfcSheetIsOpen: isOpen }),
+
+  trackEvent: (eventName: string, properties?: Record<string, any>) => {
+    if (segmentClient) {
+      segmentClient.track(eventName, properties);
+    }
+  },
+
+  trackNavigation: (tab: string) => {
+    if (segmentClient) {
+      segmentClient.track('Navigation Change', {
+        tab,
+      });
+    }
+    set({ selectedTab: tab });
+  },
 }));
 
 export default useNavigationStore;
