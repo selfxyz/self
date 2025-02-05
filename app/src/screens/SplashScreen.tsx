@@ -16,7 +16,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({}) => {
 
   useEffect(() => {
     if (userLoaded) {
-      if (passportData && passportData.dg2Hash) {
+      if (passportData) {
         navigation.navigate('Home');
       } else {
         navigation.navigate('Launch');

@@ -15,6 +15,7 @@ export const slate800 = '#1E293B';
 export const sky500 = '#0EA5E9';
 export const green500 = '#22C55E';
 export const red500 = '#EF4444';
+export const teal300 = '#5EEAD4';
 export const teal500 = '#5EEAD4';
 export const neutral400 = '#A3A3A3';
 export const neutral700 = '#404040';

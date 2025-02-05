@@ -25,6 +25,8 @@ import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScr
 import ProveScreen from './screens/ProveFlow/ProveScreen';
 import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
+import AccountRecoveryScreen from './screens/Settings/AccountRecoveryScreen';
+import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
@@ -207,6 +209,18 @@ const RootStack = createStackNavigator({
       },
       config: {
         screens: {},
+      },
+    },
+    AccountRecovery: {
+      screen: AccountRecoveryScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    ShowRecoveryPhrase: {
+      screen: ShowRecoveryPhraseScreen,
+      options: {
+        headerShown: false,
       },
     },
   },
