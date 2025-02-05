@@ -3,17 +3,20 @@ import { Text, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import Description from '../components/typography/Description';
-import { Title } from '../components/typography/Title';
-import { typography } from '../components/typography/styles';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
-import { styles } from '../screens/ValidProofScreen';
-import useUserStore from '../stores/userStore';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import Description from '../../components/typography/Description';
+import { Title } from '../../components/typography/Title';
+import { typography } from '../../components/typography/styles';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import useNavigationStore from '../../stores/navigationStore';
+import useUserStore from '../../stores/userStore';
+import { styles } from './ValidProofScreen';
 
 const WrongProofScreen: React.FC = () => {
   const navigation = useNavigation();
   const { proofVerificationResult } = useUserStore();
+  const { selectedApp } = useNavigationStore();
+  const appName = selectedApp?.appName;
 
   const formatFieldName = (field: string) => {
     return field
@@ -71,16 +74,15 @@ const WrongProofScreen: React.FC = () => {
           <Title size="large">Proof Failed</Title>
           <Description>
             Unable to prove your identity to{' '}
-            <Text style={typography.strong}>.SWOOSH</Text>
+            <Text style={typography.strong}>{appName}</Text>
           </Description>
         </View>
         <PrimaryButton
           onPress={() => {
-            navigation.navigate('ValidProofScreen');
+            navigation.navigate('QRCodeViewFinder');
           }}
         >
-          {' '}
-          OK{' '}
+          OK
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

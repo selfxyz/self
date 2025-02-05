@@ -81,11 +81,11 @@ import MockDataScreen from './MockDataScreen';
 import NextScreen from './NextScreen';
 import NfcScreen from './NfcScreen';
 import ProveScreen from './ProveFlow/ProveScreen';
+import ValidProofScreen from './ProveFlow/ValidProofScreen';
+import WrongProofScreen from './ProveFlow/WrongProofScreen';
 import SplashScreen from './SplashScreen';
 import StartScreen from './StartScreen';
 import UserInfo from './UserInfo';
-import ValidProofScreen from './ValidProofScreen';
-import WrongProofScreen from './WrongProofScreen';
 
 const emitter =
   Platform.OS === 'android'

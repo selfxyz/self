@@ -3,15 +3,17 @@ import { StyleSheet, Text, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import Description from '../components/typography/Description';
-import { Title } from '../components/typography/Title';
-import { typography } from '../components/typography/styles';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import Description from '../../components/typography/Description';
+import { Title } from '../../components/typography/Title';
+import { typography } from '../../components/typography/styles';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import useNavigationStore from '../../stores/navigationStore';
 
 const SuccessScreen: React.FC = () => {
   const navigation = useNavigation();
-
+  const { selectedApp } = useNavigationStore();
+  const appName = selectedApp?.appName;
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
@@ -23,16 +25,15 @@ const SuccessScreen: React.FC = () => {
           <Title size="large">Identity Verified</Title>
           <Description>
             You've successfully proved your identity to{' '}
-            <Text style={typography.strong}>.SWOOSH</Text>
+            <Text style={typography.strong}>{appName}</Text>
           </Description>
         </View>
         <PrimaryButton
           onPress={() => {
-            navigation.navigate('WrongProofScreen');
+            navigation.navigate('Home');
           }}
         >
-          {' '}
-          OK{' '}
+          OK
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

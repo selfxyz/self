@@ -23,12 +23,12 @@ import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
 import ProveScreen from './screens/ProveFlow/ProveScreen';
+import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
+import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import StartScreen from './screens/StartScreen';
-import ValidProofScreen from './screens/ValidProofScreen';
-import WrongProofScreen from './screens/WrongProofScreen';
 import { black, neutral400, white } from './utils/colors';
 
 const DefaultNavBar = (props: StackHeaderProps) => {
