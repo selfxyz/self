@@ -11,6 +11,7 @@ import {
 import DatePicker from 'react-native-date-picker';
 import Dialog from 'react-native-dialog';
 
+import { countryCodes } from '@openpassport/common/constants/constants';
 import {
   ArrowRight,
   CalendarSearch,
@@ -47,7 +48,6 @@ import {
   YStack,
 } from 'tamagui';
 
-import { countryCodes } from '../../../common/src/constants/constants';
 // import components
 import CustomButton from '../components/CustomButton';
 import StepOneStepTwo from '../components/StepOneStepTwo';

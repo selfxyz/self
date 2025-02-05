@@ -1,6 +1,6 @@
 // Function to extract information from a two-line MRZ.
-import { countryCodes } from '../../../common/src/constants/constants';
-import { Proof } from '../../../common/src/utils/types';
+import { countryCodes } from '@openpassport/common/constants/constants';
+import { Proof } from '@openpassport/common/utils/types';
 
 // The actual parsing would depend on the standard being used (TD1, TD2, TD3, MRVA, MRVB).
 export function extractMRZInfo(mrzString: string) {

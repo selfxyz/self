@@ -1,12 +1,12 @@
-pluginManagement { includeBuild("../node_modules/@react-native/gradle-plugin") }
+pluginManagement { includeBuild("../../../node_modules/@react-native/gradle-plugin") }
 plugins { id("com.facebook.react.settings") }
 extensions.configure(com.facebook.react.ReactSettingsExtension){ ex -> ex.autolinkLibrariesFromCommand() }
 rootProject.name = 'OpenPassport'
 include ':app'
-includeBuild('../node_modules/@react-native/gradle-plugin')
+includeBuild('../../../node_modules/@react-native/gradle-plugin')
 include ':react-native-passport-reader'
 project(':react-native-passport-reader').projectDir = new File(rootProject.projectDir, './react-native-passport-reader/android')
 include ':passportreader'
 project(':passportreader').projectDir = new File(rootProject.projectDir, './android-passport-reader/app')
 include ':react-native-fs'
-project(':react-native-fs').projectDir = new File(settingsDir, '../node_modules/react-native-fs/android')
+project(':react-native-fs').projectDir = new File(settingsDir, '../../../node_modules/react-native-fs/android')

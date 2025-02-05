@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { parsePassportData } from '@openpassport/common/utils/parsePassportData';
 import { ScrollView, Separator, Text, XStack, YStack } from 'tamagui';
 
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
 import useUserStore from '../stores/userStore';
 import { separatorColor, textBlack } from '../utils/colors';
 

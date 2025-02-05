@@ -4,25 +4,6 @@ import { useNavigation } from '@react-navigation/native';
 import io, { Socket } from 'socket.io-client';
 import { Text, YStack } from 'tamagui';
 
-import {
-  DEVELOPMENT_MODE,
-  max_cert_bytes,
-} from '../../../../common/src/constants/constants';
-import {
-  ArgumentsProveOffChain,
-  OpenPassportApp,
-} from '../../../../common/src/utils/appType';
-import {
-  getCircuitNameOld,
-  parseCertificateSimple,
-} from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import {
-  generateCircuitInputsDSC,
-  getCSCAFromSKI,
-  sendCSCARequest,
-} from '../../../../common/src/utils/csca';
-import { buildAttestation } from '../../../../common/src/utils/openPassportAttestation';
-import { parsePassportData } from '../../../../common/src/utils/parsePassportData';
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
@@ -34,6 +15,25 @@ import { black, slate300, white } from '../../utils/colors';
 import { generateCircuitInputsInApp } from '../../utils/generateInputsInApp';
 import { generateProof } from '../../utils/prover';
 import { CircuitName } from '../../utils/zkeyDownload';
+import {
+  DEVELOPMENT_MODE,
+  max_cert_bytes,
+} from '../@openpassport/common/constants/constants';
+import {
+  ArgumentsProveOffChain,
+  OpenPassportApp,
+} from '../@openpassport/common/utils/appType';
+import {
+  getCircuitNameOld,
+  parseCertificateSimple,
+} from '../@openpassport/common/utils/certificate_parsing/parseCertificateSimple';
+import {
+  generateCircuitInputsDSC,
+  getCSCAFromSKI,
+  sendCSCARequest,
+} from '../@openpassport/common/utils/csca';
+import { buildAttestation } from '../@openpassport/common/utils/openPassportAttestation';
+import { parsePassportData } from '../@openpassport/common/utils/parsePassportData';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();

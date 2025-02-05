@@ -26,7 +26,7 @@ target 'OpenPassport' do
   use_frameworks!
   pod 'NFCPassportReader', git: 'https://github.com/0xturboblitz/NFCPassportReader.git', commit: '0a8e26d56f5f85f698b67c5df5ea9ecbb53cbc45'
   pod 'QKMRZScanner'
-  pod 'RNFS', :path => '../node_modules/react-native-fs'
+  pod 'RNFS', :path => '../../../node_modules/react-native-fs'
   pod 'lottie-ios'
   pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
 

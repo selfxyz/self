@@ -4,8 +4,11 @@
   "author": "",
   "license": "MIT",
   "scripts": {
-    "test": "yarn ts-mocha tests/**/*.test.ts --exit"
+    "test": "yarn ts-mocha tests/**/*.test.ts --exit",
+    "build": "tsc -b . && tsc -b . --declaration --emitDeclarationOnly"
   },
+  "private": true,
+  "main": "./dist",
   "dependencies": {
     "@babel/runtime": "^7.23.4",
     "@openpassport/zk-kit-imt": "^0.0.5",
@@ -31,6 +34,7 @@
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
     "ts-mocha": "^10.0.0",
+    "typescript": "^5.7.3",
     "typescript-parser": "^2.6.1"
   },
   "devDependencies": {

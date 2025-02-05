@@ -1,18 +1,17 @@
-import { LeanIMT, LeanIMTHashFunction } from '@openpassport/zk-kit-lean-imt';
-import axios from 'axios';
-import { poseidon2 } from 'poseidon-lite';
-
 import {
   COMMITMENT_TREE_TRACKER_URL,
   PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
-import { findIndexInTree } from '../../../common/src/utils/generateInputs';
+} from '@openpassport/common/constants/constants';
+import { findIndexInTree } from '@openpassport/common/utils/generateInputs';
 import {
   generateCommitment,
   getLeaf,
-} from '../../../common/src/utils/pubkeyTree';
-import { PassportData } from '../../../common/src/utils/types';
-import { formatMrz, packBytes } from '../../../common/src/utils/utils';
+} from '@openpassport/common/utils/pubkeyTree';
+import { PassportData } from '@openpassport/common/utils/types';
+import { formatMrz, packBytes } from '@openpassport/common/utils/utils';
+import { LeanIMT, LeanIMTHashFunction } from '@openpassport/zk-kit-lean-imt';
+import axios from 'axios';
+import { poseidon2 } from 'poseidon-lite';
 
 export async function isCommitmentRegistered(
   secret: string,

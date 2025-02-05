@@ -1,7 +1,7 @@
+import { OpenPassportApp } from '@openpassport/common/utils/appType';
 import { useToastController } from '@tamagui/toast';
 import { create } from 'zustand';
 
-import { OpenPassportApp } from '../../../common/src/utils/appType';
 import {
   IsZkeyDownloading,
   ShowWarningModalProps,

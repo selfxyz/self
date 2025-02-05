@@ -1,8 +1,8 @@
 import React from 'react';
 
+import { DisclosureOptions } from '@openpassport/common/utils/types';
 import { XStack, YStack } from 'tamagui';
 
-import { DisclosureOptions } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import { Numerical } from '../components/typography/Numerical';
 import CheckMark from '../images/icons/checkmark.svg';

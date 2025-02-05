@@ -1,18 +1,18 @@
-import axios from 'axios';
-import { ethers } from 'ethers';
-
 import {
   CHAIN_NAME,
   RELAYER_URL,
   RPC_URL,
   SignatureAlgorithmIndex,
-} from '../../../common/src/constants/constants';
+} from '@openpassport/common/constants/constants';
 import {
   formatCallData_disclose,
   formatCallData_dsc,
   formatCallData_register,
-} from '../../../common/src/utils/formatCallData';
-import { Proof } from '../../../common/src/utils/types';
+} from '@openpassport/common/utils/formatCallData';
+import { Proof } from '@openpassport/common/utils/types';
+import axios from 'axios';
+import { ethers } from 'ethers';
+
 import registerArtefacts from '../../deployments/artifacts/Deploy_Registry#OpenPassportRegister.json';
 import sbtArtefacts from '../../deployments/artifacts/Deploy_Registry#SBT.json';
 import contractAddresses from '../../deployments/deployed_addresses.json';

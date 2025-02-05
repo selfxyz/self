@@ -3,11 +3,11 @@ import PassportReader from 'react-native-passport-reader';
 
 // @ts-ignore
 import * as amplitude from '@amplitude/analytics-react-native';
+import { parsePassportData } from '@openpassport/common/utils/parsePassportData';
+import { PassportData } from '@openpassport/common/utils/types';
 import '@react-navigation/native';
 import { Buffer } from 'buffer';
 
-import { parsePassportData } from '../../../common/src/utils/parsePassportData';
-import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
 import { checkInputs } from '../utils/utils';

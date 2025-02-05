@@ -1,7 +1,6 @@
+import { contribute_publicKey } from '@openpassport/common/constants/constants';
 import axios from 'axios';
 import forge from 'node-forge';
-
-import { contribute_publicKey } from '../../../common/src/constants/constants';
 
 export async function contribute(passportData: any): Promise<void> {
   console.log('Contributing...');

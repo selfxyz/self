@@ -1,10 +1,10 @@
 import React from 'react';
 
+import { attributeToPosition } from '@openpassport/common/constants/constants';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowRight } from '@tamagui/lucide-icons';
 import { Fieldset, Image, Text, YStack, useWindowDimensions } from 'tamagui';
 
-import { attributeToPosition } from '../../../common/src/constants/constants';
 import CustomButton from '../components/CustomButton';
 import USER_PROFILE from '../images/user_profile.png';
 import useUserStore from '../stores/userStore';
@@ -52,7 +52,7 @@ const NextScreen: React.FC = () => {
             source={{
               uri: passportData.mockUser
                 ? USER_PROFILE
-                : passportData.photoBase64 ?? USER_PROFILE,
+                : (passportData.photoBase64 ?? USER_PROFILE),
             }}
           />
         )}

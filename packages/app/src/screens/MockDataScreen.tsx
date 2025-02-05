@@ -1,6 +1,8 @@
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 
+import { countryCodes } from '@openpassport/common/constants/constants';
+import { genMockPassportData } from '@openpassport/common/utils/genMockPassportData';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
@@ -18,8 +20,6 @@ import {
   YStack,
 } from 'tamagui';
 
-import { countryCodes } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/genMockPassportData';
 import CustomButton from '../components/CustomButton';
 import useUserStore from '../stores/userStore';
 import {

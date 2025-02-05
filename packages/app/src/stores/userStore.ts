@@ -1,10 +1,10 @@
 import { resetGenericPassword } from 'react-native-keychain';
 
 import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
+import { generateDscSecret } from '@openpassport/common/utils/csca';
+import { PassportData, Proof } from '@openpassport/common/utils/types';
 import { create } from 'zustand';
 
-import { generateDscSecret } from '../../../common/src/utils/csca';
-import { PassportData, Proof } from '../../../common/src/utils/types';
 import {
   loadPassportData,
   loadSecretOrCreateIt,
