@@ -1,12 +1,16 @@
 import React from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
-import { Button, Image, View, YStack, styled } from 'tamagui';
+import { Button, YStack, styled } from 'tamagui';
 
+import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
 import ScanIcon from '../images/icons/qr_scan.svg';
-import MAP from '../images/map.png';
-import { amber500, black, neutral700 } from '../utils/colors';
+import WarnIcon from '../images/icons/warning.svg';
+import SelfIdCard from '../images/self-id-card.svg';
+import { useSettingStore } from '../stores/settingStore';
+import { amber500, black, neutral700, slate800, white } from '../utils/colors';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,
@@ -22,25 +26,61 @@ const ScanButton = styled(Button, {
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
   return (
-    <YStack f={1} px="$4" bg={black}>
-      <YStack f={1} mt="$6" mb="$10" gap="$0" ai="center" jc="space-between">
-        <View ai="center" gap="$4">
-          <Image src={MAP} />
+    <SafeAreaView style={{ backgroundColor: black, flex: 1 }}>
+      <YStack
+        bg={black}
+        gap={20}
+        jc="space-between"
+        height={'100%'}
+        padding={20}
+      >
+        <YStack ai="center" gap={20} justifyContent="flex-start">
+          <SelfIdCard width="100%" />
           <Caption color={amber500} opacity={0.3} textTransform="uppercase">
             Only visible to you
           </Caption>
-        </View>
-        <View ai="center" gap="$3.5">
+          <PrivacyNote />
+        </YStack>
+        <YStack ai="center" gap={20} justifyContent="center" paddingBottom={20}>
           <ScanButton onPress={() => navigation.navigate('QRCodeViewFinder')}>
             <ScanIcon color={amber500} />
           </ScanButton>
           <Caption color={amber500} textTransform="uppercase">
             Prove your SELF ID
           </Caption>
-        </View>
+        </YStack>
       </YStack>
-    </YStack>
+    </SafeAreaView>
   );
 };
 
+function PrivacyNote() {
+  const { hasPrivacyNoteBeenDismissed } = useSettingStore();
+  const navigation = useNavigation();
+
+  if (hasPrivacyNoteBeenDismissed) {
+    return null;
+  }
+
+  return (
+    <Card onPressIn={() => navigation.navigate('Disclaimer')}>
+      <WarnIcon color={white} width={24} height={33} />
+      <BodyText color={white} textAlign="center" fontSize={18}>
+        A note on protecting your privacy
+      </BodyText>
+    </Card>
+  );
+}
+
 export default HomeScreen;
+
+const Card = styled(YStack, {
+  width: '100%',
+
+  flexGrow: 0,
+  backgroundColor: slate800,
+  borderRadius: 4,
+  gap: 12,
+  alignItems: 'center',
+  padding: 20,
+});

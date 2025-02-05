@@ -7,10 +7,12 @@ import { Image, Text, YStack } from 'tamagui';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import Warning from '../images/icons/warning.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+import { useSettingStore } from '../stores/settingStore';
 import { amber50, amber500, slate700, yellow500 } from '../utils/colors';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();
+  const { dismissPrivacyNote } = useSettingStore();
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -45,7 +47,10 @@ const DisclaimerScreen: React.FC = () => {
           </Text>
           <PrimaryButton
             style={{ marginVertical: 30 }}
-            onPress={() => navigation.navigate('Home')}
+            onPress={() => {
+              dismissPrivacyNote();
+              navigation.navigate('Home');
+            }}
           >
             Dismiss
           </PrimaryButton>

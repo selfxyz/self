@@ -1,5 +1,6 @@
 import React from 'react';
 import 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
   StaticParamList,
@@ -104,6 +105,8 @@ const RootStack = createStackNavigator({
   screenOptions: {
     header: DefaultNavBar,
   },
+
+  layout: ({ children }) => <SafeAreaProvider>{children}</SafeAreaProvider>,
   screens: {
     Splash: {
       screen: SplashScreen,

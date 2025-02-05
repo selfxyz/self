@@ -1,5 +1,6 @@
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { black, white } from '../utils/colors';
 
@@ -16,7 +17,7 @@ interface BottomSectionProps {
 }
 
 const Layout: React.FC<ExpandableBottomLayoutProps> = ({ children }) => {
-  return <View style={styles.layout}>{children}</View>;
+  return <SafeAreaView style={styles.layout}>{children}</SafeAreaView>;
 };
 
 const TopSection: React.FC<TopSectionProps> = ({ children }) => {
