@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+
 import { useNavigation } from '@react-navigation/native';
 import io, { Socket } from 'socket.io-client';
 import { Text, YStack } from 'tamagui';
-import {
-  DEVELOPMENT_MODE,
-  MAX_CERT_BYTES,
-} from '../../../../common/src/constants/constants';
+
+// import {
+//   DEVELOPMENT_MODE,
+//   MAX_CERT_BYTES,
+// } from '../../../../common/src/constants/constants';
 import {
   ArgumentsProveOffChain,
   OpenPassportApp,
@@ -18,10 +20,8 @@ import {
 //   getCSCAFromSKI,
 //   sendCSCARequest,
 // } from '../../../../common/src/utils/csca';
-import {
-  generateCircuitInputsDSC,
-} from '../../../../common/src/utils/circuits/generateInputs';
-import { buildAttestation } from '../../../../common/src/utils/openPassportAttestation';
+// import { generateCircuitInputsDSC } from '../../../../common/src/utils/circuits/generateInputs';
+// import { buildAttestation } from '../../../../common/src/utils/openPassportAttestation';
 import { parsePassportData } from '../../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -32,7 +32,7 @@ import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
 import { black, slate300, white } from '../../utils/colors';
 // import { generateCircuitInputsInApp } from '../../utils/generateInputsInApp';
-import { generateProof } from '../../utils/prover';
+// import { generateProof } from '../../utils/prover';
 import { CircuitName } from '../../utils/zkeyDownload';
 
 const ProveScreen: React.FC = () => {
@@ -60,11 +60,8 @@ const ProveScreen: React.FC = () => {
     );
   }
 
-  const { signatureAlgorithm, authorityKeyIdentifier } = parseCertificateSimple(
-    passportData.dsc,
-  );
+  const { signatureAlgorithm } = parseCertificateSimple(passportData.dsc);
   const parsedPassportData = parsePassportData(passportData);
-  const { dscSecret } = useUserStore.getState();
   const circuitName = getCircuitNameOld(
     selectedApp.mode,
     signatureAlgorithm,
@@ -181,41 +178,41 @@ const ProveScreen: React.FC = () => {
       //   passportData,
       //   selectedApp,
       // );
-      let attestation;
-      let proof;
-      let dscProof;
+      // let attestation;
+      // let proof;
+      // let dscProof;
 
       switch (selectedApp.mode) {
         case 'prove_onchain':
         case 'register':
-          // const cscaInputs = generateCircuitInputsDSC(
-          //   dscSecret as string,
-          //   passportData.dsc,
-          //   MAX_CERT_BYTES,
-          //   selectedApp.devMode,
-          // );
-          // [dscProof, proof] = await Promise.all([
-          //   sendCSCARequest(cscaInputs),
-          //   generateProof(circuitName, inputs),
-          // ]);
-          // const cscaPem = getCSCAFromSKI(
-          //   authorityKeyIdentifier,
-          //   DEVELOPMENT_MODE,
-          // );
-          // const { signatureAlgorithm: signatureAlgorithmDsc } =
-          //   parseCertificateSimple(cscaPem);
-          // attestation = buildAttestation({
-          //   mode: selectedApp.mode,
-          //   proof: proof.proof,
-          //   publicSignals: proof.publicSignals,
-          //   signatureAlgorithm: signatureAlgorithm,
-          //   hashFunction: parsedPassportData.signedAttrHashFunction,
-          //   userIdType: selectedApp.userIdType,
-          //   dscProof: (dscProof as any).proof,
-          //   dscPublicSignals: (dscProof as any).pub_signals,
-          //   signatureAlgorithmDsc: signatureAlgorithmDsc,
-          //   hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
-          // });
+        // const cscaInputs = generateCircuitInputsDSC(
+        //   dscSecret as string,
+        //   passportData.dsc,
+        //   MAX_CERT_BYTES,
+        //   selectedApp.devMode,
+        // );
+        // [dscProof, proof] = await Promise.all([
+        //   sendCSCARequest(cscaInputs),
+        //   generateProof(circuitName, inputs),
+        // ]);
+        // const cscaPem = getCSCAFromSKI(
+        //   authorityKeyIdentifier,
+        //   DEVELOPMENT_MODE,
+        // );
+        // const { signatureAlgorithm: signatureAlgorithmDsc } =
+        //   parseCertificateSimple(cscaPem);
+        // attestation = buildAttestation({
+        //   mode: selectedApp.mode,
+        //   proof: proof.proof,
+        //   publicSignals: proof.publicSignals,
+        //   signatureAlgorithm: signatureAlgorithm,
+        //   hashFunction: parsedPassportData.signedAttrHashFunction,
+        //   userIdType: selectedApp.userIdType,
+        //   dscProof: (dscProof as any).proof,
+        //   dscPublicSignals: (dscProof as any).pub_signals,
+        //   signatureAlgorithmDsc: signatureAlgorithmDsc,
+        //   hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
+        // });
         //   break;
         // default:
         //   proof = await generateProof(circuitName, inputs);

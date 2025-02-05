@@ -1,23 +1,17 @@
-import { NativeModules, Platform } from 'react-native';
-import RNFS from 'react-native-fs';
-
+// import { NativeModules, Platform } from 'react-native';
+// import RNFS from 'react-native-fs';
 import useNavigationStore from '../stores/navigationStore';
-import { parseProofAndroid } from './utils';
 
-export const generateProof = async (circuit: string, inputs: any) => {
+// import { parseProofAndroid } from './utils';
+
+export const generateProof = async (_circuit: string, _inputs: any) => {
   // TODO: send to TEE instead
-
-
   // const startTime = Date.now();
   // const { trackEvent } = useNavigationStore.getState();
-
   // trackEvent('Proof Started', {
   //   success: true,
   //   circuit: circuit,
   // });
-
-
-
   // if (!zkey_path || !witness_calculator || !dat_path) {
   //   trackEvent('Proof Failed', {
   //     success: false,
@@ -26,7 +20,6 @@ export const generateProof = async (circuit: string, inputs: any) => {
   //   });
   //   throw new Error('Required parameters are missing');
   // }
-
   // try {
   //   const response = await NativeModules.Prover.runProveAction(
   //     zkey_path,
@@ -34,26 +27,21 @@ export const generateProof = async (circuit: string, inputs: any) => {
   //     dat_path,
   //     inputs,
   //   );
-
   //   if (Platform.OS === 'android') {
   //     const parsedResponse = parseProofAndroid(response);
-
   //     trackEvent('Proof Generated', {
   //       success: true,
   //       duration_ms: Date.now() - startTime,
   //       circuit: circuit,
   //     });
-
   //     return formatProof(parsedResponse);
   //   } else {
   //     const parsedResponse = JSON.parse(response);
-
   //     trackEvent('Proof Generated', {
   //       success: true,
   //       duration_ms: Date.now() - startTime,
   //       circuit: circuit,
   //     });
-
   //     return formatProof({
   //       proof: parsedResponse.proof,
   //       pub_signals: parsedResponse.inputs,
@@ -69,7 +57,6 @@ export const generateProof = async (circuit: string, inputs: any) => {
   //     witness_calculator: witness_calculator,
   //     dat_path: dat_path,
   //   });
-
   //   throw new Error(err);
   // }
 };

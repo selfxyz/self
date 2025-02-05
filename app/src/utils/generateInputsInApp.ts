@@ -14,12 +14,9 @@ import {
   DisclosureOptions,
   OpenPassportApp,
 } from '../../../common/src/utils/appType';
-import {
-  generateCircuitInputsRegister,
-  generateCircuitInputsVCandDisclose,
-} from '../../../common/src/utils/circuits/generateInputs';
-import { fetchTreeFromUrl } from '../../../common/src/utils/trees';
 import { revealBitmapFromAttributes } from '../../../common/src/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
+import { fetchTreeFromUrl } from '../../../common/src/utils/trees';
 import { PassportData } from '../../../common/src/utils/types';
 import useUserStore from '../stores/userStore';
 

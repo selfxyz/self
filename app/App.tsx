@@ -2,13 +2,13 @@ import React, { useEffect } from 'react';
 import 'react-native-get-random-values';
 
 import { SEGMENT_KEY } from '@env';
+import '@ethersproject/shims';
 import {
   EventPlugin,
   PluginType,
   SegmentEvent,
   createClient,
 } from '@segment/analytics-react-native';
-import '@ethersproject/shims';
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
 
@@ -47,7 +47,9 @@ export class DisableTrackingPlugin extends EventPlugin {
 }
 
 export const createSegmentClient = () => {
-  if (!SEGMENT_KEY) return null;
+  if (!SEGMENT_KEY) {
+    return null;
+  }
 
   const client = createClient({
     writeKey: SEGMENT_KEY,
