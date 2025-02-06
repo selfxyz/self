@@ -7,6 +7,28 @@ PODS:
   - fmt (9.1.0)
   - glog (0.3.5)
   - lottie-ios (4.5.0)
+  - lottie-react-native (7.2.2):
+    - DoubleConversion
+    - glog
+    - lottie-ios (= 4.5.0)
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - NFCPassportReader (2.1.1):
     - OpenSSL-Universal (= 1.1.1900)
   - OpenSSL-Universal (1.1.1900)
@@ -1476,6 +1498,8 @@ PODS:
     - React-utils (= 0.75.4)
   - RNCAsyncStorage (1.24.0):
     - React-Core
+  - RNCClipboard (1.13.2):
+    - React-Core
   - RNFS (2.20.0):
     - React-Core
   - RNGestureHandler (2.22.1):
@@ -1500,6 +1524,8 @@ PODS:
     - ReactCommon/turbomodule/core
     - Yoga
   - RNKeychain (8.2.0):
+    - React-Core
+  - RNLocalize (3.4.1):
     - React-Core
   - RNSVG (13.4.0):
     - React-Core
@@ -1529,6 +1555,7 @@ DEPENDENCIES:
   - fmt (from `../node_modules/react-native/third-party-podspecs/fmt.podspec`)
   - glog (from `../node_modules/react-native/third-party-podspecs/glog.podspec`)
   - lottie-ios
+  - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NFCPassportReader (from `https://github.com/zk-passport/NFCPassportReader`, commit `8e72f0a2d3ca3bede00304bd22ed10829535dd53`)
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1594,9 +1621,11 @@ DEPENDENCIES:
   - ReactCodegen (from `build/generated/ios`)
   - ReactCommon/turbomodule/core (from `../node_modules/react-native/ReactCommon`)
   - "RNCAsyncStorage (from `../node_modules/@react-native-async-storage/async-storage`)"
+  - "RNCClipboard (from `../node_modules/@react-native-clipboard/clipboard`)"
   - RNFS (from `../node_modules/react-native-fs`)
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
+  - RNLocalize (from `../node_modules/react-native-localize`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNZipArchive (from `../node_modules/react-native-zip-archive`)
   - "segment-analytics-react-native (from `../node_modules/@segment/analytics-react-native`)"
@@ -1627,6 +1656,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/third-party-podspecs/fmt.podspec"
   glog:
     :podspec: "../node_modules/react-native/third-party-podspecs/glog.podspec"
+  lottie-react-native:
+    :path: "../node_modules/lottie-react-native"
   NFCPassportReader:
     :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
     :git: https://github.com/zk-passport/NFCPassportReader
@@ -1752,12 +1783,16 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   RNCAsyncStorage:
     :path: "../node_modules/@react-native-async-storage/async-storage"
+  RNCClipboard:
+    :path: "../node_modules/@react-native-clipboard/clipboard"
   RNFS:
     :path: "../node_modules/react-native-fs"
   RNGestureHandler:
     :path: "../node_modules/react-native-gesture-handler"
   RNKeychain:
     :path: "../node_modules/react-native-keychain"
+  RNLocalize:
+    :path: "../node_modules/react-native-localize"
   RNSVG:
     :path: "../node_modules/react-native-svg"
   RNZipArchive:
@@ -1787,6 +1822,7 @@ SPEC CHECKSUMS:
   fmt: 4c2741a687cc09f0634a2e2c72a838b99f1ff120
   glog: 69ef571f3de08433d766d614c73a9838a06bf7eb
   lottie-ios: a881093fab623c467d3bce374367755c272bdd59
+  lottie-react-native: db03203d873afcbb6e0cea6a262a88d95e64a98f
   NFCPassportReader: e931c61c189e08a4b4afa0ed4014af19eab2f129
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
@@ -1852,9 +1888,11 @@ SPEC CHECKSUMS:
   ReactCodegen: c53f8a0fa088739ee9929820feec1508043c7e6c
   ReactCommon: 03d2d48fcd1329fe3bc4e428a78a0181b68068c2
   RNCAsyncStorage: ec53e44dc3e75b44aa2a9f37618a49c3bc080a7a
+  RNCClipboard: 60fed4b71560d7bfe40e9d35dea9762b024da86d
   RNFS: 4ac0f0ea233904cb798630b3c077808c06931688
   RNGestureHandler: e705387b01bba53f4643bdff381ee08c7b9679a1
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
+  RNLocalize: 06991b9c31e7a898a9fa6ddb204ce0f53a967248
   RNSVG: 07dbd870b0dcdecc99b3a202fa37c8ca163caec2
   RNZipArchive: 6d736ee4e286dbbd9d81206b7a4da355596ca04a
   segment-analytics-react-native: d57ed4971cbb995706babf29215ebdbf242ecdab
@@ -1865,6 +1903,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
-PODFILE CHECKSUM: a5761927116120f511f409f5249a18a8c626545c
+PODFILE CHECKSUM: e3c83aaffa4ed0a1159a91cee94b541d4c126625
 
 COCOAPODS: 1.15.2
