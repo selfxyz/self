@@ -24,7 +24,7 @@ target 'OpenPassport' do
   config = use_native_modules!
 
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/zk-passport/NFCPassportReader', commit: '195d55cc383fecaa85dc8f61682f2224e00b3cc8'
+  pod 'NFCPassportReader', git: 'https://github.com/zk-passport/NFCPassportReader', commit: '9bc338bda368d64cefbe3bc2524b6380f153e299'
   pod 'QKMRZScanner'
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   pod 'lottie-ios'
