@@ -37,6 +37,9 @@ import example.jllarraz.com.passportreader.mlkit.FrameMetadata
 import example.jllarraz.com.passportreader.ui.fragments.CameraFragment
 import example.jllarraz.com.passportreader.utils.MRZUtil
 import io.fotoapparat.preview.Frame
+import io.fotoapparat.selector.autoFocus
+import io.fotoapparat.selector.continuousFocusPicture
+import io.fotoapparat.selector.firstAvailable
 import io.fotoapparat.view.CameraView
 import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
@@ -45,6 +48,7 @@ import io.reactivex.schedulers.Schedulers
 
 
 class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() {
+
     private var callback: QRCodeScannerCallback? = callback
     private var frameProcessor: QrCodeDetectorProcessor? = null
     private val mHandler = Handler(Looper.getMainLooper())
@@ -57,6 +61,10 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?,
                               savedInstanceState: Bundle?): View? {
         binding = FragmentCameraMrzBinding.inflate(inflater, container, false)
+        this.setFocusMode(firstAvailable(
+            continuousFocusPicture(),
+            autoFocus()
+        ))
         return binding?.root
     }
 
@@ -179,10 +187,12 @@ class QrCodeScannerFragment(callback: QRCodeScannerCallback) : CameraFragment() 
                 try {
                     binding?.statusViewBottom?.setTextColor(resources.getColor(R.color.status_text))
                     callback.onQRData(results)
-                    frameProcessor?.stop()
 
                 } catch (e: IllegalStateException) {
                     //The fragment is destroyed
+                }
+                finally {
+                    frameProcessor?.stop()
                 }
             }
         }

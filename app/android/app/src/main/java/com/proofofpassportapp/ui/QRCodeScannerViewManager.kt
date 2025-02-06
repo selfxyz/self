@@ -8,10 +8,14 @@ import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.modules.core.DeviceEventManagerModule
+import com.facebook.react.modules.core.DeviceEventManagerModule.RCTDeviceEventEmitter
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.annotations.ReactPropGroup
 import com.facebook.react.uimanager.events.RCTEventEmitter
+import com.facebook.react.uimanager.events.RCTModernEventEmitter
+import com.th3rdwave.safeareacontext.getSurfaceId
 
 class QRCodeScannerViewManager(
     open val reactContext: ReactApplicationContext
@@ -19,6 +23,7 @@ class QRCodeScannerViewManager(
     private var propWidth: Int? = null
     private var propHeight: Int? = null
     private var reactNativeViewId: Int? = null
+    private var eventEmitter: RCTEventEmitter? = null
 
     override fun getName() = REACT_CLASS
 
@@ -64,6 +69,7 @@ class QRCodeScannerViewManager(
      */
     private fun createFragment(root: FrameLayout, reactNativeViewId: Int) {
         this.reactNativeViewId = reactNativeViewId
+        eventEmitter = reactContext.getJSModule(RCTEventEmitter::class.java)
         val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
         setupLayout(parentView)
 
@@ -76,6 +82,8 @@ class QRCodeScannerViewManager(
     }
 
     private fun destroyFragment(root: FrameLayout, reactNativeViewId: Int) {
+        this.reactNativeViewId = null
+        eventEmitter = null
         val parentView = root.findViewById<ViewGroup>(reactNativeViewId)
         setupLayout(parentView)
 
@@ -127,9 +135,7 @@ class QRCodeScannerViewManager(
     override fun onQRData(data: String) {
         val event = Arguments.createMap()
         event.putString("data", data)
-        reactContext
-            .getJSModule(RCTEventEmitter::class.java)
-            .receiveEvent(this.reactNativeViewId!!, SUCCESS_EVENT, event)
+        eventEmitter?.receiveEvent(reactNativeViewId!!, SUCCESS_EVENT, event)
     }
 
     override fun onError(e: Exception) {
@@ -137,9 +143,7 @@ class QRCodeScannerViewManager(
         event.putString("errorMessage", "Something went wrong scanning the QR Code")
         event.putString("error", e.toString())
         event.putString("stackTrace", e.stackTraceToString())
-        reactContext
-            .getJSModule(RCTEventEmitter::class.java)
-            .receiveEvent(this.reactNativeViewId!!, FAILURE_EVENT, event)
+        eventEmitter?.receiveEvent(reactNativeViewId!!, FAILURE_EVENT, event)
     }
 
     override fun getExportedCustomBubblingEventTypeConstants(): Map<String, Any> {

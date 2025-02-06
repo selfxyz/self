@@ -15,7 +15,6 @@ package com.proofofpassportapp.utils
 
 
 import android.graphics.Bitmap
-import android.os.AsyncTask
 import android.webkit.URLUtil
 import com.google.mlkit.vision.common.InputImage
 import com.google.zxing.BinaryBitmap
@@ -38,7 +37,7 @@ class QrCodeDetectorProcessor {
     // Whether we should ignore process(). This is usually caused by feeding input data faster than
     // the model can handle.
     private val shouldThrottle = AtomicBoolean(false)
-    var executor: ExecutorService = Executors.newSingleThreadExecutor()
+    var executor: ExecutorService = Executors.newCachedThreadPool()
 
     fun canHandleNewFrame():Boolean{
         return !shouldThrottle.get()
@@ -53,7 +52,7 @@ class QrCodeDetectorProcessor {
         rotation:Int,
         isOriginalImageReturned:Boolean,
         listener: Listener
-    ):Boolean {
+    ): Boolean {
         if (shouldThrottle.get()) {
             return false
         }
@@ -99,19 +98,19 @@ class QrCodeDetectorProcessor {
         executor.execute {
             val result = detectInImage(image)
             val timeRequired = System.currentTimeMillis() - start
-            println(result)
             if (result != null) {
                 if (URLUtil.isValidUrl(result.text)) {
                     println("NICO HERE TOO " + result.text)
                     listener.onSuccess(result.text!!, metadata, timeRequired, originalBitmap)
                 } else {
                     listener.onFailure(Exception("Invalid URL"), timeRequired)
+                    shouldThrottle.set(false)
                 }
             }
             else {
                 listener.onCompletedFrame(timeRequired)
+                shouldThrottle.set(false)
             }
-            shouldThrottle.set(false)
         }
 
         return true
@@ -128,7 +127,11 @@ class QrCodeDetectorProcessor {
         val binaryBitMap = BinaryBitmap(HybridBinarizer(source))
 
         try {
-            return qRCodeDetectorReader.decode(binaryBitMap)
+            return qRCodeDetectorReader.decode(binaryBitMap, mapOf(
+                com.google.zxing.DecodeHintType.TRY_HARDER to true,
+                com.google.zxing.DecodeHintType.POSSIBLE_FORMATS to listOf(com.google.zxing.BarcodeFormat.QR_CODE),
+                com.google.zxing.DecodeHintType.CHARACTER_SET to "UTF-8"
+            ))
         }
         catch (e: Exception) {
             // noop
@@ -138,6 +141,7 @@ class QrCodeDetectorProcessor {
     }
 
     fun stop() {
+        executor.shutdownNow()
     }
 
 
