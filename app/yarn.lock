@@ -2509,20 +2509,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-clipboard/clipboard@npm:^1.16.1":
-  version: 1.16.1
-  resolution: "@react-native-clipboard/clipboard@npm:1.16.1"
+"@react-native-clipboard/clipboard@npm:1.13.2":
+  version: 1.13.2
+  resolution: "@react-native-clipboard/clipboard@npm:1.13.2"
   peerDependencies:
-    react: ">= 16.9.0"
-    react-native: ">= 0.61.5"
-    react-native-macos: ">= 0.61.0"
-    react-native-windows: ">= 0.61.0"
-  peerDependenciesMeta:
-    react-native-macos:
-      optional: true
-    react-native-windows:
-      optional: true
-  checksum: 10c0/765e1c140c34fbfe30a1e7e0657cc2a325a103a4fcaf757994dff3d8877beb8c4f0b915eac5542ada5910560ce2cfe624cd23081302dd6d6bc76354ff0d98d5e
+    react: ">=16.0"
+    react-native: ">=0.57.0"
+  checksum: 10c0/7f4c1b40b3f22633053cd83e3c0cb669fe123212cf84724863c5433b1ee18cac6a1cdba845cc01cfe737b92b7bca4c236754eb1f3efa73a4de66b3f2bc954caa
   languageName: node
   linkType: hard
 
@@ -12211,7 +12204,7 @@ __metadata:
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@react-native-async-storage/async-storage": "npm:^1.23.1"
-    "@react-native-clipboard/clipboard": "npm:^1.16.1"
+    "@react-native-clipboard/clipboard": "npm:1.13.2"
     "@react-native-community/cli": "npm:^14.1.1"
     "@react-native-community/netinfo": "npm:^11.3.1"
     "@react-native/babel-preset": "npm:0.75.4"
