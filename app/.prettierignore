@@ -2,3 +2,5 @@ android/
 deployments/
 ios/
 node_modules/
+src/assets/animations/
+witnesscalc/

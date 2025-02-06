@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -62,7 +63,19 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
         {!doneScanningQR && (
-          <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
+          <>
+            <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
+            <LottieView
+              autoPlay
+              loop
+              source={require('../../assets/animations/qr_scan.json')}
+              style={{
+                position: 'absolute',
+                width: '115%',
+                height: '115%',
+              }}
+            />
+          </>
         )}
         {null}
       </ExpandableBottomLayout.TopSection>

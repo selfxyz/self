@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
-import { Image } from 'tamagui';
+import LottieView from 'lottie-react-native';
 
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
@@ -10,8 +10,8 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
-import Passport from '../../images/passport.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { slate100 } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 
@@ -23,13 +23,14 @@ const PassportOnboardingScreen: React.FC<
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
-        <Image
-          resizeMethod="auto"
-          source={{ uri: Passport }}
+        <LottieView
+          autoPlay
+          loop={false}
+          source={require('../../assets/animations/passport_onboarding.json')}
           style={{
-            width: '90%',
-            height: '90%',
-            aspectRatio: 0.69,
+            backgroundColor: slate100,
+            width: '115%',
+            height: '115%',
           }}
         />
       </ExpandableBottomLayout.TopSection>

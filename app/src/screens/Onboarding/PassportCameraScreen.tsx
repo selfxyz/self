@@ -6,6 +6,7 @@ import {
   useIsFocused,
   useNavigation,
 } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -58,6 +59,16 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+        <LottieView
+          autoPlay
+          loop
+          source={require('../../assets/animations/passport_scan.json')}
+          style={{
+            position: 'absolute',
+            width: '115%',
+            height: '115%',
+          }}
+        />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <YStack alignItems="center" gap="$2.5">

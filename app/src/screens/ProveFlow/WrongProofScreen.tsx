@@ -2,6 +2,7 @@ import React from 'react';
 import { Text, View } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
@@ -66,8 +67,15 @@ const WrongProofScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
-        <></>
-        {/* TODO Animation */}
+        <LottieView
+          autoPlay
+          loop={false}
+          source={require('../../assets/animations/proof_failed.json')}
+          style={{
+            width: '125%',
+            height: '125%',
+          }}
+        />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <View style={styles.content}>
