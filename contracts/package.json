@@ -25,6 +25,13 @@
     "test:coverage": "npx hardhat coverage",
     "test:coverage:local": "TEST_ENV=local npx hardhat coverage",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
+    "deploy:verifiers:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_verifiers.ts --network sepolia --verify",
+    "deploy:registry:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_registry.ts --network sepolia --verify",
+    "deploy:hub:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_hub.ts --network sepolia --verify",
+    "deploy:all:sepolia": "npm run deploy:verifiers:sepolia && npm run deploy:registry:sepolia && npm run deploy:hub:sepolia",
+    "update:cscaroot:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryCscaRoot.ts --network sepolia",
+    "update:ofacroot:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryOfacRoot.ts --network sepolia",
+    "update:hub:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryHub.ts --network sepolia",
     "compile": "npx hardhat clean && npx hardhat compile",
     "publish": "npm publish --access public"
   },
