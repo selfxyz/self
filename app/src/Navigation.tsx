@@ -7,9 +7,9 @@ import {
   createStaticNavigation,
 } from '@react-navigation/native';
 import {
-  StackHeaderProps,
-  createStackNavigator,
-} from '@react-navigation/stack';
+  NativeStackHeaderProps,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
 import { Button, ViewStyle } from 'tamagui';
 
 import { NavBar } from './components/NavBar';
@@ -34,7 +34,7 @@ import SplashScreen from './screens/SplashScreen';
 import StartScreen from './screens/StartScreen';
 import { black, neutral400, white } from './utils/colors';
 
-const DefaultNavBar = (props: StackHeaderProps) => {
+const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
@@ -61,7 +61,7 @@ const DefaultNavBar = (props: StackHeaderProps) => {
   );
 };
 
-const HomeNavBar = (props: StackHeaderProps) => {
+const HomeNavBar = (props: NativeStackHeaderProps) => {
   return (
     <NavBar.Container
       backgroundColor={black}
@@ -100,12 +100,11 @@ const HomeNavBar = (props: StackHeaderProps) => {
   );
 };
 
-const RootStack = createStackNavigator({
+const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
   screenOptions: {
     header: DefaultNavBar,
   },
-
   layout: ({ children }) => <SafeAreaProvider>{children}</SafeAreaProvider>,
   screens: {
     Splash: {
@@ -229,9 +228,7 @@ const RootStack = createStackNavigator({
   },
 });
 
-const AppNavigation = createStaticNavigation(RootStack);
-
-type RootStackParamList = StaticParamList<typeof RootStack>;
+type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
 declare global {
   namespace ReactNavigation {
@@ -239,4 +236,4 @@ declare global {
   }
 }
 
-export default AppNavigation;
+export default createStaticNavigation(AppNavigation);
