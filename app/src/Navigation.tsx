@@ -1,6 +1,9 @@
 import React from 'react';
 import 'react-native-gesture-handler';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import {
+  SafeAreaProvider,
+  useSafeAreaInsets,
+} from 'react-native-safe-area-context';
 
 import {
   StaticParamList,
@@ -62,12 +65,14 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
 };
 
 const HomeNavBar = (props: NativeStackHeaderProps) => {
+  const insets = useSafeAreaInsets();
   return (
     <NavBar.Container
       backgroundColor={black}
       barStyle={'light-content'}
       padding={16}
       justifyContent="space-between"
+      paddingTop={Math.max(insets.top, 20)}
     >
       <NavBar.LeftAction
         component={

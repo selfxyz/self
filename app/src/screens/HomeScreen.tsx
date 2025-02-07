@@ -1,5 +1,4 @@
 import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
@@ -25,32 +24,25 @@ const ScanButton = styled(Button, {
 
 const HomeScreen: React.FC = () => {
   const navigation = useNavigation();
+
   return (
-    <SafeAreaView style={{ backgroundColor: black, flex: 1 }}>
-      <YStack
-        bg={black}
-        gap={20}
-        jc="space-between"
-        height={'100%'}
-        padding={20}
-      >
-        <YStack ai="center" gap={20} justifyContent="flex-start">
-          <SelfIdCard width="100%" />
-          <Caption color={amber500} opacity={0.3} textTransform="uppercase">
-            Only visible to you
-          </Caption>
-          <PrivacyNote />
-        </YStack>
-        <YStack ai="center" gap={20} justifyContent="center" paddingBottom={20}>
-          <ScanButton onPress={() => navigation.navigate('QRCodeViewFinder')}>
-            <ScanIcon color={amber500} />
-          </ScanButton>
-          <Caption color={amber500} textTransform="uppercase">
-            Prove your SELF ID
-          </Caption>
-        </YStack>
+    <YStack bg={black} gap={20} jc="space-between" height={'100%'} padding={20}>
+      <YStack ai="center" gap={20} justifyContent="flex-start">
+        <SelfIdCard width="100%" />
+        <Caption color={amber500} opacity={0.3} textTransform="uppercase">
+          Only visible to you
+        </Caption>
+        <PrivacyNote />
       </YStack>
-    </SafeAreaView>
+      <YStack ai="center" gap={20} justifyContent="center" paddingBottom={20}>
+        <ScanButton onPress={() => navigation.navigate('QRCodeViewFinder')}>
+          <ScanIcon color={amber500} />
+        </ScanButton>
+        <Caption color={amber500} textTransform="uppercase">
+          Prove your SELF ID
+        </Caption>
+      </YStack>
+    </YStack>
   );
 };
 
