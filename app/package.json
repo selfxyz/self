@@ -26,7 +26,6 @@
   },
   "main": "index.js",
   "dependencies": {
-    "@amplitude/analytics-react-native": "^1.4.7",
     "@ethersproject/shims": "^5.7.0",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",

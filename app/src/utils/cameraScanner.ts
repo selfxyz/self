@@ -1,7 +1,6 @@
 import { NativeModules, Platform } from 'react-native';
 
-import * as amplitude from '@amplitude/analytics-react-native';
-
+// import * as amplitude from '@amplitude/analytics-react-native';
 import { extractMRZInfo, formatDateToYYMMDD } from './utils';
 
 type Callback = (
@@ -37,7 +36,7 @@ export const startCameraScan = (callback: Callback): CancelScan => {
       )
       .catch((e: Error) => {
         console.error(e);
-        amplitude.track('camera_scan_error', { error: e });
+        // amplitude.track('camera_scan_error', { error: e });
         callback(e as Error);
       });
 
@@ -59,16 +58,16 @@ export const startCameraScan = (callback: Callback): CancelScan => {
           });
         } catch (e) {
           console.error('Invalid MRZ format:', (e as Error).message);
-          amplitude.track('invalid_mrz_format', {
-            error: (e as Error).message,
-          });
+          // amplitude.track('invalid_mrz_format', {
+          //   error: (e as Error).message,
+          // });
 
           callback(e as Error);
         }
       })
       .catch((e: Error) => {
         console.error('Camera Activity Error:', e);
-        amplitude.track('camera_scan_error', { error: e.message });
+        // amplitude.track('camera_scan_error', { error: e.message });
 
         callback(e);
       });

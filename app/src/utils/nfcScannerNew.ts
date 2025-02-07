@@ -2,7 +2,7 @@ import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 
 // @ts-ignore
-import * as amplitude from '@amplitude/analytics-react-native';
+// import * as amplitude from '@amplitude/analytics-react-native';
 import '@react-navigation/native';
 import { Buffer } from 'buffer';
 
@@ -23,7 +23,7 @@ export const scan = async (inputs: Inputs) => {
   const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
 
   if (!check.success) {
-    amplitude.track('inputs_invalid', { error: check.message });
+    // amplitude.track('inputs_invalid', { error: check.message });
     return;
   }
 
@@ -47,12 +47,12 @@ const scanAndroid = async (inputs: Inputs) => {
     });
     console.log('scanned');
 
-    amplitude.track('nfc_scan_successful');
+    // amplitude.track('nfc_scan_successful');
     await handleResponseAndroid(response);
   } catch (e: any) {
     console.log('error during scan:', e);
 
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
+    // amplitude.track('nfc_scan_unsuccessful', { error: e.message });
     if (e.message.includes('InvalidMRZKey')) {
       //   toast.show('Error', {
       //     message:
@@ -89,10 +89,10 @@ const scanIOS = async (inputs: Inputs) => {
     );
     console.log('scanned');
     await handleResponseIOS(response);
-    amplitude.track('nfc_scan_successful');
+    // amplitude.track('nfc_scan_successful');
   } catch (e: any) {
     console.log('error during scan:', e);
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
+    // amplitude.track('nfc_scan_unsuccessful', { error: e.message });
     if (!e.message.includes('UserCanceled')) {
       // handle cancelation
     }
@@ -181,14 +181,14 @@ const handleResponseIOS = async (response: any) => {
     mockUser: false,
     parsed: false,
   };
-  const parsedPassportData = parsePassportData(passportData);
-  amplitude.track('nfc_response_parsed', parsedPassportData);
+  // const parsedPassportData = parsePassportData(passportData);
+  // amplitude.track('nfc_response_parsed', parsedPassportData);
 
   try {
     await useUserStore.getState().registerPassportData(passportData);
   } catch (e: any) {
     console.log('error during parsing:', e);
-    amplitude.track('error_parsing_nfc_response', { error: e.message });
+    // amplitude.track('error_parsing_nfc_response', { error: e.message });
     toast.show('Error', {
       message: e.message,
       customData: {
@@ -271,7 +271,7 @@ const handleResponseAndroid = async (response: any) => {
   console.log('documentSigningCertificate', documentSigningCertificate);
 
   const parsedPassportData = parsePassportData(passportData);
-  amplitude.track('nfc_response_parsed', parsedPassportData);
+  // amplitude.track('nfc_response_parsed', parsedPassportData);
   // amplitude.track('nfc_response_parsed', {
   //   dataGroupHashesLength: passportData?.eContent?.length,
   //   eContentLength: passportData?.eContent?.length,
@@ -287,6 +287,6 @@ const handleResponseAndroid = async (response: any) => {
     await useUserStore.getState().registerPassportData(passportData);
   } catch (e: any) {
     console.log('error during parsing:', e);
-    amplitude.track('error_parsing_nfc_response', { error: e.message });
+    // amplitude.track('error_parsing_nfc_response', { error: e.message });
   }
 };

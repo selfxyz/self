@@ -12,77 +12,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@amplitude/analytics-client-common@npm:^1.2.3":
-  version: 1.2.3
-  resolution: "@amplitude/analytics-client-common@npm:1.2.3"
-  dependencies:
-    "@amplitude/analytics-connector": "npm:^1.5.0"
-    "@amplitude/analytics-core": "npm:^1.2.5"
-    "@amplitude/analytics-types": "npm:^1.3.4"
-    tslib: "npm:^2.4.1"
-  checksum: 10c0/1d108a2021fa09c11ab828f4a103c3134e4e0f985eaec4bcf6d94cca280c162ac59b4ae2b35873040a4aee6017662c8affa0e980af5b1923582a53dbd22870b5
-  languageName: node
-  linkType: hard
-
-"@amplitude/analytics-connector@npm:^1.5.0":
-  version: 1.6.2
-  resolution: "@amplitude/analytics-connector@npm:1.6.2"
-  dependencies:
-    "@amplitude/experiment-core": "npm:^0.10.1"
-  checksum: 10c0/2be4c3c18e8c0dbba9e2e767efa29b6e345d5706d0b051cd37ef4106fb73aad9d163a7f104a9d6e2da6cc544d996dec328e15f41907729382267bb015f8cb82b
-  languageName: node
-  linkType: hard
-
-"@amplitude/analytics-core@npm:^1.2.5":
-  version: 1.2.5
-  resolution: "@amplitude/analytics-core@npm:1.2.5"
-  dependencies:
-    "@amplitude/analytics-types": "npm:^1.3.4"
-    tslib: "npm:^2.4.1"
-  checksum: 10c0/f796d2ba6ec8b2e81fc6bef711bc8058c9392d862954eb037395a5d18d0645663e07e27afd75db5b3908ff1b34a016a508cc1c8c0604691c812271da055d8767
-  languageName: node
-  linkType: hard
-
-"@amplitude/analytics-react-native@npm:^1.4.7":
-  version: 1.4.11
-  resolution: "@amplitude/analytics-react-native@npm:1.4.11"
-  dependencies:
-    "@amplitude/analytics-client-common": "npm:^1.2.3"
-    "@amplitude/analytics-core": "npm:^1.2.5"
-    "@amplitude/analytics-types": "npm:^1.3.4"
-    "@amplitude/ua-parser-js": "npm:^0.7.31"
-    "@react-native-async-storage/async-storage": "npm:^1.17.11"
-    tslib: "npm:^2.4.1"
-  peerDependencies:
-    react: "*"
-    react-native: "*"
-  checksum: 10c0/5776ec7d9d0ade483f093b45e8631a7d728d43db52f40da3654aab52c16a3e5f3968e8a6f71f5ba934f2d392ee105dcd2d5791ac32203f329bef9c12c2b1bfff
-  languageName: node
-  linkType: hard
-
-"@amplitude/analytics-types@npm:^1.3.4":
-  version: 1.3.4
-  resolution: "@amplitude/analytics-types@npm:1.3.4"
-  checksum: 10c0/c5ee3fcf1ce6966bbecb5b1bc33b80a3b721b5d8d95b587cd0ccff4ad8225f06a25c5df244a37569d061cbc8ffec3dfe527eda426270bc8066041ee89f3e3a12
-  languageName: node
-  linkType: hard
-
-"@amplitude/experiment-core@npm:^0.10.1":
-  version: 0.10.1
-  resolution: "@amplitude/experiment-core@npm:0.10.1"
-  dependencies:
-    js-base64: "npm:^3.7.5"
-  checksum: 10c0/d434fb5907eac799f17b753af016f02df53dca6371f4add2d05fd7c21a41e6f97ecce4bd7cb9d7bb52cca00d5456b07fb78dc7426499b807289d9c5c00af6ccd
-  languageName: node
-  linkType: hard
-
-"@amplitude/ua-parser-js@npm:^0.7.31":
-  version: 0.7.33
-  resolution: "@amplitude/ua-parser-js@npm:0.7.33"
-  checksum: 10c0/9f44b78701655a3b1da9f0721324355ae5d1548c08c46a74b90cfa55de4fca40f97a3c90cb7ae46d405706f1383f7f8dda4b34aee5f9eb3f738c86a934ec1f8b
-  languageName: node
-  linkType: hard
-
 "@ampproject/remapping@npm:^2.2.0":
   version: 2.3.0
   resolution: "@ampproject/remapping@npm:2.3.0"
@@ -2405,17 +2334,6 @@ __metadata:
   version: 0.11.0
   resolution: "@pkgjs/parseargs@npm:0.11.0"
   checksum: 10c0/5bd7576bb1b38a47a7fc7b51ac9f38748e772beebc56200450c4a817d712232b8f1d3ef70532c80840243c657d491cf6a6be1e3a214cff907645819fdc34aadd
-  languageName: node
-  linkType: hard
-
-"@react-native-async-storage/async-storage@npm:^1.17.11":
-  version: 1.24.0
-  resolution: "@react-native-async-storage/async-storage@npm:1.24.0"
-  dependencies:
-    merge-options: "npm:^3.0.4"
-  peerDependencies:
-    react-native: ^0.0.0-0 || >=0.60 <1.0
-  checksum: 10c0/cad2098ef84251f2ab8ebc07b750e585a20ac7ca07f26e5441e957a76f2b66f01d10ef5fbddb63d675431377b31beb5208548093e1eb17d262d2184b51133f4d
   languageName: node
   linkType: hard
 
@@ -11377,7 +11295,6 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "openpassport@workspace:."
   dependencies:
-    "@amplitude/analytics-react-native": "npm:^1.4.7"
     "@babel/core": "npm:^7.20.0"
     "@babel/plugin-transform-private-methods": "npm:^7.23.3"
     "@babel/preset-env": "npm:^7.20.0"
@@ -13522,7 +13439,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0, tslib@npm:^2.4.1":
+"tslib@npm:^2.0.0, tslib@npm:^2.0.1, tslib@npm:^2.0.3, tslib@npm:^2.1.0":
   version: 2.8.1
   resolution: "tslib@npm:2.8.1"
   checksum: 10c0/9c4759110a19c53f992d9aae23aac5ced636e99887b51b9e61def52611732872ff7668757d4e4c61f19691e36f4da981cd9485e869b4a7408d689f6bf1f14e62
