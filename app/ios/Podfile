@@ -9,7 +9,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 project 'OpenPassport.xcodeproj'
 
-platform :ios, '14.0'
+platform :ios, '15.1'
 prepare_react_native_project!
 
 
@@ -22,7 +22,6 @@ end
 target 'OpenPassport' do
 
   config = use_native_modules!
-
   use_frameworks!
   pod 'NFCPassportReader', git: 'https://github.com/zk-passport/NFCPassportReader', commit: '8e72f0a2d3ca3bede00304bd22ed10829535dd53'
   pod 'QKMRZScanner'
@@ -55,7 +54,7 @@ target 'OpenPassport' do
           end
         end
           target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
               config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
           end
       end

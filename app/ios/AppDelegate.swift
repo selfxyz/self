@@ -29,10 +29,10 @@ class AppDelegate: RCTAppDelegate {
 #endif
   }
 
-  override func continueUserActivity(userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
-    return RCTLinkingManager.application(
-      application,
-      continue: userActivity,
-      restorationHandler: restorationHandler)
-  }
+//  override func continueUserActivity(userActivity: NSUserActivity, restorationHandler: @escaping ([any UIUserActivityRestoring]?) -> Void) -> Bool {
+//    return RCTLinkingManager.application(
+//      application,
+//      continue: userActivity,
+//      restorationHandler: restorationHandler)
+//  }
 }

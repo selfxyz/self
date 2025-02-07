@@ -11347,7 +11347,7 @@ __metadata:
     react-native-dialog: "npm:^9.3.0"
     react-native-dotenv: "npm:^3.4.11"
     react-native-fs: "npm:^2.18.0"
-    react-native-gesture-handler: "npm:^2.22.0"
+    react-native-gesture-handler: "npm:2.22.0"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-keychain: "npm:^8.2.0"
     react-native-localize: "npm:^3.4.1"
@@ -11883,9 +11883,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-gesture-handler@npm:^2.22.0":
-  version: 2.23.0
-  resolution: "react-native-gesture-handler@npm:2.23.0"
+"react-native-gesture-handler@npm:2.22.0":
+  version: 2.22.0
+  resolution: "react-native-gesture-handler@npm:2.22.0"
   dependencies:
     "@egjs/hammerjs": "npm:^2.0.17"
     hoist-non-react-statics: "npm:^3.3.0"
@@ -11893,7 +11893,7 @@ __metadata:
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/b4bfa9f71990fb5f75225b63878f668a9c6cee29cea6636482b64708432fb46b8c969c570022728fb130bf4e6ce306719dae200d1cb4050fdd2690e34b7b2a78
+  checksum: 10c0/2a696261c1724f1fc10ebee6d5c187e6a8386754b87277eb7d81b2ef8a0d19245b0a41e80c86d0444a48d858fb08affb1fa7deecde8e3e965a6b356d353961b8
   languageName: node
   linkType: hard
 
