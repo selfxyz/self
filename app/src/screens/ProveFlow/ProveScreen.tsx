@@ -227,11 +227,11 @@ const ProveScreen: React.FC = () => {
         //   });
         //   break;
       }
-      console.log('\x1b[90mattestation\x1b[0m', attestation);
-      socket.emit('proof_generated', {
-        sessionId: selectedApp.sessionId,
-        proof: attestation,
-      });
+      // console.log('\x1b[90mattestation\x1b[0m', attestation);
+      // socket.emit('proof_generated', {
+      //   sessionId: selectedApp.sessionId,
+      //   proof: attestation,
+      // });
     } catch (error) {
       console.log('Error', {
         message: String(error),
