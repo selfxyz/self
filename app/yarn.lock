@@ -2337,6 +2337,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@pushpendersingh/react-native-scanner@npm:^1.5.0":
+  version: 1.5.0
+  resolution: "@pushpendersingh/react-native-scanner@npm:1.5.0"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/31ebf13e815785c555ac2c9c57f7773556d05e448ba59e69574733c730d3a1942e89fa0d10e9aac0aebaeb7e2f9d96e8bd946bb779ba29b899f2f42ad8be9810
+  languageName: node
+  linkType: hard
+
 "@react-native-async-storage/async-storage@npm:^2.0.0":
   version: 2.1.1
   resolution: "@react-native-async-storage/async-storage@npm:2.1.1"
@@ -11292,6 +11302,7 @@ __metadata:
     "@openpassport/zk-kit-imt": "npm:^0.0.5"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
+    "@pushpendersingh/react-native-scanner": "npm:^1.5.0"
     "@react-native-async-storage/async-storage": "npm:^2.0.0"
     "@react-native-clipboard/clipboard": "npm:1.13.2"
     "@react-native-community/cli": "npm:^15.0.1"

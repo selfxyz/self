@@ -31,6 +31,27 @@ PODS:
   - NFCPassportReader (2.1.1):
     - OpenSSL-Universal (= 1.1.1900)
   - OpenSSL-Universal (1.1.1900)
+  - pushpendersingh-react-native-scanner (1.5.0):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.11.18.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - QKMRZParser (2.0.0)
   - QKMRZScanner (3.0.0):
     - QKMRZParser (~> 2.0.0)
@@ -1781,6 +1802,7 @@ DEPENDENCIES:
   - lottie-ios
   - lottie-react-native (from `../node_modules/lottie-react-native`)
   - NFCPassportReader (from `https://github.com/zk-passport/NFCPassportReader`, commit `8e72f0a2d3ca3bede00304bd22ed10829535dd53`)
+  - "pushpendersingh-react-native-scanner (from `../node_modules/@pushpendersingh/react-native-scanner`)"
   - QKMRZScanner
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCT-Folly/Fabric (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
@@ -1890,6 +1912,8 @@ EXTERNAL SOURCES:
   NFCPassportReader:
     :commit: 8e72f0a2d3ca3bede00304bd22ed10829535dd53
     :git: https://github.com/zk-passport/NFCPassportReader
+  pushpendersingh-react-native-scanner:
+    :path: "../node_modules/@pushpendersingh/react-native-scanner"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -2062,6 +2086,7 @@ SPEC CHECKSUMS:
   lottie-react-native: 607e0b4d47ca4fadda5571599cfaf131494611fb
   NFCPassportReader: e931c61c189e08a4b4afa0ed4014af19eab2f129
   OpenSSL-Universal: 84efb8a29841f2764ac5403e0c4119a28b713346
+  pushpendersingh-react-native-scanner: 463aaf5635a186ee22176981f7a19fae06a61c63
   QKMRZParser: 6b419b6f07d6bff6b50429b97de10846dc902c29
   QKMRZScanner: cf2348fd6ce441e758328da4adf231ef2b51d769
   RCT-Folly: e78785aa9ba2ed998ea4151e314036f6c49e6d82
@@ -2144,6 +2169,6 @@ SPEC CHECKSUMS:
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
   Yoga: c34725819ab0a5962e85455b9e56679b306910ee
 
-PODFILE CHECKSUM: 703decbe4ba6d60797dc2a9d290e9c9583270135
+PODFILE CHECKSUM: 3d9f54ee9308022589843e48dfb5eb7479462c3c
 
 COCOAPODS: 1.16.2

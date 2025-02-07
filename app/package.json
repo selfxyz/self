@@ -30,6 +30,7 @@
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
+    "@pushpendersingh/react-native-scanner": "^1.5.0",
     "@react-native-async-storage/async-storage": "^2.0.0",
     "@react-native-clipboard/clipboard": "1.13.2",
     "@react-native-community/netinfo": "^11.3.3",
