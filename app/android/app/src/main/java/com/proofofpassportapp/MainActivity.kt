@@ -8,8 +8,9 @@ import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
 import io.tradle.nfc.RNPassportReaderModule
+import com.facebook.react.modules.core.DefaultHardwareBackBtnHandler
 
-class MainActivity : ReactActivity() {
+class MainActivity : ReactActivity(), DefaultHardwareBackBtnHandler {
   /**
    * Returns the name of the main component registered from JavaScript. This is used to schedule
    * rendering of the component.
@@ -29,7 +30,12 @@ class MainActivity : ReactActivity() {
     RNPassportReaderModule.getInstance().receiveIntent(intent)
   }
 
+  //react-native-screens override
   override fun onCreate(savedInstanceState: Bundle?) {
-    super.onCreate(savedInstanceState)
+    super.onCreate(null)
+  }
+
+  override fun invokeDefaultOnBackPressed() {
+    super.onBackPressed()
   }
 }

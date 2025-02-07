@@ -8,12 +8,12 @@ import androidx.fragment.app.FragmentActivity
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReactApplicationContext
 import com.facebook.react.bridge.ReadableArray
+import com.facebook.react.module.annotations.ReactModule
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.annotations.ReactPropGroup
 import com.facebook.react.uimanager.events.RCTEventEmitter
 import org.jmrtd.lds.icao.MRZInfo
-
 
 class PassportOCRViewManager(
     open val reactContext: ReactApplicationContext
@@ -118,7 +118,7 @@ class PassportOCRViewManager(
     }
 
     companion object {
-        private const val REACT_CLASS = "PassportOCRViewManager"
+        const val REACT_CLASS = "PassportOCRViewManager"
         private const val COMMAND_CREATE = 1
         private const val COMMAND_DESTROY = 2
         private const val SUCCESS_EVENT = "onPassportReadResult"
