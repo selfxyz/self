@@ -78,3 +78,6 @@ yarn-error.log
 !.yarn/releases
 !.yarn/sdks
 !.yarn/versions
+
+# Bundle analyzer source maps
+*-sourcemap.json
