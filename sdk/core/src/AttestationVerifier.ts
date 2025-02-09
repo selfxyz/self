@@ -1,39 +1,39 @@
+import { Mode } from 'fs';
+import forge from 'node-forge';
 import { groth16 } from 'snarkjs';
+
 import {
-  n_dsc,
-  k_dsc,
-  ECDSA_K_LENGTH_FACTOR,
-  k_dsc_ecdsa,
-  countryNames,
   countryCodes,
+  countryNames,
+  ECDSA_K_LENGTH_FACTOR,
+  k_dsc,
+  k_dsc_ecdsa,
+  n_dsc,
 } from '../../../common/src/constants/constants';
+import { splitToWords } from '../../../common/src/utils/bytes';
+import { PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import {
-  areArraysEqual,
-  getCurrentDateFormatted,
-  getVkeyFromArtifacts,
-  verifyDSCValidity,
-} from '../utils/utils';
+  formatForbiddenCountriesListFromCircuitOutput,
+  getAttributeFromUnpackedReveal,
+  getOlderThanFromCircuitOutput,
+  unpackReveal,
+} from '../../../common/src/utils/circuits/formatOutputs';
+import { castToScope } from '../../../common/src/utils/circuits/uuid';
 import {
   OpenPassportAttestation,
   parsePublicSignalsDisclose,
   parsePublicSignalsDsc,
   parsePublicSignalsProve,
 } from '../../../common/src/utils/openPassportAttestation';
-import { Mode } from 'fs';
-import forge from 'node-forge';
+import { fetchTreeFromUrl, getCscaTreeRoot } from '../../../common/src/utils/trees';
 import {
-  castToScope,
-  formatForbiddenCountriesListFromCircuitOutput,
-  getAttributeFromUnpackedReveal,
-  getOlderThanFromCircuitOutput,
-  splitToWords,
-} from '../../../common/src/utils/utils';
-import { unpackReveal } from '../../../common/src/utils/revealBitmap';
-import { getCSCAModulusMerkleTree } from '../../../common/src/utils/csca';
+  areArraysEqual,
+  getCurrentDateFormatted,
+  getVkeyFromArtifacts,
+  verifyDSCValidity,
+} from '../utils/utils';
 import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
 
 export class AttestationVerifier {
   protected devMode: boolean;
@@ -188,8 +188,7 @@ export class AttestationVerifier {
     // verify the root of the csca merkle tree
     const parsedDscPublicSignals = parsePublicSignalsDsc(attestation.dscProof.value.publicSignals);
     const cscaMerkleTreeFromDscProof = parsedDscPublicSignals.merkle_root;
-    const cscaMerkleTree = getCSCAModulusMerkleTree();
-    const cscaRoot = cscaMerkleTree.root;
+    const cscaRoot = getCscaTreeRoot();
     this.verifyAttribute('merkle_root_csca', cscaRoot, cscaMerkleTreeFromDscProof);
   }
 

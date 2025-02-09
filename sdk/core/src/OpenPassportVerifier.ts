@@ -1,22 +1,24 @@
-import {
-  ArgumentsDisclose,
-  ArgumentsProveOffChain,
-  ArgumentsProveOnChain,
-  ArgumentsRegister,
-  Mode,
-  OpenPassportAppPartial,
-  OpenPassportApp
-} from '../../../common/src/utils/appType';
+import msgpack from 'msgpack-lite';
+import * as pako from 'pako';
+
 import {
   DEFAULT_RPC_URL,
   MODAL_SERVER_ADDRESS,
   WEBSOCKET_URL,
   countryNames,
 } from '../../../common/src/constants/constants';
-import { UserIdType } from '../../../common/src/utils/utils';
-import * as pako from 'pako';
-import msgpack from 'msgpack-lite';
+import {
+  ArgumentsDisclose,
+  ArgumentsProveOffChain,
+  ArgumentsProveOnChain,
+  ArgumentsRegister,
+  Mode,
+  OpenPassportApp,
+  OpenPassportAppPartial
+} from '../../../common/src/utils/appType';
+import { UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { AttestationVerifier } from './AttestationVerifier';
+
 export class OpenPassportVerifier extends AttestationVerifier {
   private mode: Mode;
 

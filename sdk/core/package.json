@@ -10,6 +10,9 @@
   },
   "author": "turnoffthiscomputer",
   "dependencies": {
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@openpassport/zk-kit-smt": "^0.0.1",
     "@types/react": "^18.3.4",
     "@types/react-dom": "^18.3.0",
     "@types/uuid": "^10.0.0",
@@ -25,11 +28,7 @@
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
     "snarkjs": "^0.7.4",
-    "uuid": "^10.0.0",
-    "zlib": "^1.0.5",
-    "@openpassport/zk-kit-imt": "^0.0.5",
-    "@openpassport/zk-kit-lean-imt": "^0.0.6",
-    "@openpassport/zk-kit-smt": "^0.0.1"
+    "uuid": "^10.0.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.6",
@@ -73,5 +72,6 @@
   "peerDependencies": {
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
-  }
+  },
+  "packageManager": "yarn@4.5.0+sha512.837566d24eec14ec0f5f1411adb544e892b3454255e61fdef8fd05f3429480102806bac7446bc9daff3896b01ae4b62d00096c7e989f1596f2af10b927532f39"
 }
