@@ -20,7 +20,7 @@ import {
 
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
+import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import CustomButton from '../components/CustomButton';
 import useUserStore from '../stores/userStore';
 import {
@@ -64,7 +64,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'rsa sha256': 'rsa_sha256_65537_2048',
+    'rsa sha256': 'rsa_sha256_65537_4096',
     'rsa sha1': 'rsa_sha1_65537_2048',
     'rsapss sha256': 'rsapss_sha256_65537_2048',
   } as const;
@@ -79,11 +79,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     await new Promise(resolve =>
       setTimeout(() => {
         let mockPassportData;
-        const hashAlgo = selectedAlgorithm === 'rsa sha1' ? 'sha1' : 'sha256';
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
-            hashAlgo,
-            hashAlgo,
+            'sha1',
+            'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
               selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
@@ -96,8 +95,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           );
         } else {
           mockPassportData = genMockPassportData(
-            hashAlgo,
-            hashAlgo,
+            'sha1',
+            'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
               selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
@@ -107,9 +106,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             randomPassportNumber,
           );
         }
-        useUserStore.getState().registerPassportData(mockPassportData);
-        const parsedPassportData = parsePassportData(mockPassportData);
-        useUserStore.getState().setPassportMetadata(parsedPassportData);
+        const passportDataInit = initPassportDataParsing(mockPassportData);
+        useUserStore.getState().registerPassportData(passportDataInit);
         useUserStore.getState().setRegistered(true);
         resolve(null);
       }, 0),

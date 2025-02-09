@@ -1,11 +1,7 @@
 import React, { useCallback } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
-import {
-  useFocusEffect,
-  useIsFocused,
-  useNavigation,
-} from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
@@ -21,7 +17,6 @@ import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
-import { startCameraScan } from '../../utils/cameraScanner';
 import { slate800 } from '../../utils/colors';
 
 interface PassportNFCScanScreen {}
@@ -43,17 +38,6 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
     },
     [store, navigation],
   );
-
-  const onIOSMount = useCallback(() => {
-    if (Platform.OS === 'ios') {
-      const cancelCamera = startCameraScan(onPassportRead);
-      return cancelCamera;
-    }
-  }, [onPassportRead]);
-
-  useFocusEffect(() => {
-    return onIOSMount();
-  });
 
   return (
     <ExpandableBottomLayout.Layout>

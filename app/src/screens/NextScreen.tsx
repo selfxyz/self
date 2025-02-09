@@ -1,7 +1,7 @@
 import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
-import { ArrowRight } from '@tamagui/lucide-icons';
+import { ArrowRight, Cpu } from '@tamagui/lucide-icons';
 import { Fieldset, Image, Text, YStack, useWindowDimensions } from 'tamagui';
 
 import { attributeToPosition } from '../../../common/src/constants/constants';
@@ -9,29 +9,24 @@ import CustomButton from '../components/CustomButton';
 import USER_PROFILE from '../images/user_profile.png';
 import useUserStore from '../stores/userStore';
 import { bgGreen, textBlack } from '../utils/colors';
+import { sendRegisterPayload } from '../utils/proving/payload';
 import { formatAttribute, getFirstName, maskString } from '../utils/utils';
 
 const NextScreen: React.FC = () => {
+  const { passportData, setRegistered } = useUserStore();
   const { height } = useWindowDimensions();
   const navigation = useNavigation();
   const handleNext = () => {
     setRegistered(true);
     navigation.navigate('Home');
   };
-  const { passportData, setRegistered } = useUserStore();
   const dataHidden = false;
-
   const disclosureOptions: any = {
     gender: 'optional',
     nationality: 'optional',
     expiry_date: 'optional',
     date_of_birth: 'optional',
   };
-
-  if (!passportData) {
-    return null;
-  }
-
   return (
     <YStack f={1} px="$4">
       <YStack alignSelf="center" my="$3">
@@ -69,8 +64,8 @@ const NextScreen: React.FC = () => {
           }}
         >
           {dataHidden
-            ? maskString(getFirstName(passportData.mrz))
-            : getFirstName(passportData.mrz)}
+            ? maskString(getFirstName(passportData?.mrz ?? ''))
+            : getFirstName(passportData?.mrz ?? '')}
         </Text>
       </Text>
 
@@ -134,6 +129,13 @@ const NextScreen: React.FC = () => {
       <YStack f={1} />
 
       <YStack f={1} />
+      <CustomButton
+        onPress={async () =>
+          passportData && (await sendRegisterPayload(passportData))
+        }
+        text="TEE PROVING"
+        Icon={<Cpu color={textBlack} />}
+      />
 
       <CustomButton
         onPress={handleNext}

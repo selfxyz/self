@@ -13,6 +13,8 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1648EB772CC9564D003BEA7D /* LottieView.swift */; };
+		164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */; };
+		164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */; };
 		165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */; };
 		165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */; };
 		165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */; };
@@ -44,6 +46,8 @@
 		DC707B77BEF343F0A7B3DFDD /* slkscr.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 7CCB5F83F57540E88D54B34A /* slkscr.ttf */; };
 		E0825E4C214B4892954725F0 /* Inter-BoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 00B1702DFCD448D5897AAF17 /* Inter-BoldItalic.otf */; };
 		E27FC7C055DE4CBDADEFAC29 /* Inter-BlackItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = D58C0CED91AE4265A5A406A0 /* Inter-BlackItalic.otf */; };
+		E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */; };
+		E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */; };
 		EBECCA4983EC6929A7722578 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */; };
 		EEF3331B93C24D6482021BA2 /* Inter-ExtraLightItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 090474A3F07B4FFA82C9A751 /* Inter-ExtraLightItalic.otf */; };
 		F1961109CC004035884F79D9 /* Inter-ExtraBoldItalic.otf in Resources */ = {isa = PBXBuildFile; fileRef = 37A4DECF3A824D5BAA8863FD /* Inter-ExtraBoldItalic.otf */; };
@@ -102,6 +106,8 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = OpenPassport/main.m; sourceTree = "<group>"; };
 		15C30A8C4A6C42558DC9D78B /* Inter-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Medium.otf"; sourceTree = "<group>"; };
 		1648EB772CC9564D003BEA7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
+		164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerViewManager.swift; sourceTree = "<group>"; };
+		164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRCodeScannerViewManager.m; sourceTree = "<group>"; };
 		165E76BC2B8DC4A00000FA90 /* MRZScannerModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = "<group>"; };
 		165E76BE2B8DC53A0000FA90 /* MRZScannerModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = "<group>"; };
 		165E76C22B8DC8370000FA90 /* ScannerHostingController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = "<group>"; };
@@ -134,6 +140,8 @@
 		D58C0CED91AE4265A5A406A0 /* Inter-BlackItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BlackItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BlackItalic.otf"; sourceTree = "<group>"; };
 		DD642F4F3A114B43A22296D7 /* Inter-Thin.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Thin.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Thin.otf"; sourceTree = "<group>"; };
 		E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xml; name = PrivacyInfo.xcprivacy; path = OpenPassport/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = PassportOCRViewManager.m; sourceTree = "<group>"; };
+		E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PassportOCRViewManager.swift; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
 		EEA2A4D24A8F4B10A5ECA607 /* Inter-ThinItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-ThinItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-ThinItalic.otf"; sourceTree = "<group>"; };
 		F4AE10DA498844DF8BF01948 /* Inter-LightItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-LightItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-LightItalic.otf"; sourceTree = "<group>"; };
@@ -184,6 +192,8 @@
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
+				E9F9A99A2D57FE2900E1362E /* PassportOCRViewManager.m */,
+				E9F9A99B2D57FE2900E1362E /* PassportOCRViewManager.swift */,
 				169349842CC694DA00166F21 /* OpenPassportDebug.entitlements */,
 				16E884A42C5BD764003B7125 /* passport.json */,
 				905B70082A729CD400AFA232 /* OpenPassport.entitlements */,
@@ -205,6 +215,8 @@
 				1686F0DD2C500F4F00841CDE /* QRScannerViewController.swift */,
 				E56E082698598B41447667BB /* PrivacyInfo.xcprivacy */,
 				1648EB772CC9564D003BEA7D /* LottieView.swift */,
+				164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */,
+				164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */,
 			);
 			name = OpenPassport;
 			sourceTree = "<group>";
@@ -493,8 +505,12 @@
 				165E76BF2B8DC53A0000FA90 /* MRZScannerModule.m in Sources */,
 				905B70052A72767900AFA232 /* PassportReader.swift in Sources */,
 				165E76C32B8DC8370000FA90 /* ScannerHostingController.swift in Sources */,
+				E9F9A99C2D57FE2900E1362E /* PassportOCRViewManager.m in Sources */,
+				E9F9A99D2D57FE2900E1362E /* PassportOCRViewManager.swift in Sources */,
 				1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */,
+				164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */,
 				165E76BD2B8DC4A00000FA90 /* MRZScannerModule.swift in Sources */,
+				164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -885,10 +901,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) DEBUG";
@@ -978,10 +991,7 @@
 					"-DFOLLY_MOBILE=1",
 					"-DFOLLY_USE_LIBCPP=1",
 				);
-				OTHER_LDFLAGS = (
-					"$(inherited)",
-					" ",
-				);
+				OTHER_LDFLAGS = "$(inherited)  ";
 				REACT_NATIVE_PATH = "${PODS_ROOT}/../../node_modules/react-native";
 				SDKROOT = iphoneos;
 				USE_HERMES = false;

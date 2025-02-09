@@ -29,7 +29,12 @@ const HomeScreen: React.FC = () => {
     <YStack bg={black} gap={20} jc="space-between" height={'100%'} padding={20}>
       <YStack ai="center" gap={20} justifyContent="flex-start">
         <SelfIdCard width="100%" />
-        <Caption color={amber500} opacity={0.3} textTransform="uppercase">
+        <Caption
+          color={amber500}
+          opacity={0.3}
+          textTransform="uppercase"
+          onPress={() => navigation.navigate('Launch')}
+        >
           Only visible to you
         </Caption>
         <PrivacyNote />

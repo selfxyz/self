@@ -6,6 +6,10 @@ const { assetExts, sourceExts } = defaultConfig.resolver;
 const commonPath = path.join(__dirname, '/../common');
 const extraNodeModules = {
   common: path.resolve(commonPath),
+  stream: require.resolve('stream-browserify'),
+  buffer: require.resolve('buffer'),
+  util: require.resolve('util'),
+  assert: require.resolve('assert'),
 };
 const watchFolders = [path.resolve(commonPath)];
 

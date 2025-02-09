@@ -50,6 +50,6 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
     cscaSaltLength: cscaSaltLength,
     csca: csca,
     cscaParsed: cscaParsed,
-    cscaBits: cscaParsed.publicKeyDetails.bits,
+    cscaBits: cscaSignatureAlgorithmBits,
   };
 }
