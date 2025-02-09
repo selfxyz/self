@@ -1141,6 +1141,22 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@babel/plugin-transform-runtime@npm:^7.26.8":
+  version: 7.26.8
+  resolution: "@babel/plugin-transform-runtime@npm:7.26.8"
+  dependencies:
+    "@babel/helper-module-imports": "npm:^7.25.9"
+    "@babel/helper-plugin-utils": "npm:^7.26.5"
+    babel-plugin-polyfill-corejs2: "npm:^0.4.10"
+    babel-plugin-polyfill-corejs3: "npm:^0.10.6"
+    babel-plugin-polyfill-regenerator: "npm:^0.6.1"
+    semver: "npm:^6.3.1"
+  peerDependencies:
+    "@babel/core": ^7.0.0-0
+  checksum: 10c0/e206206fee262d2200763e6c427b27ca8a7a40a967dfe52f984f07a225952be0990fcce0acae6cee63fe92f5cadc94bb336fae2f3d687f0f2fcd2dadaf33029a
+  languageName: node
+  linkType: hard
+
 "@babel/plugin-transform-shorthand-properties@npm:^7.0.0, @babel/plugin-transform-shorthand-properties@npm:^7.24.7":
   version: 7.25.9
   resolution: "@babel/plugin-transform-shorthand-properties@npm:7.25.9"
@@ -5934,6 +5950,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/babel__plugin-transform-runtime@npm:^7":
+  version: 7.9.5
+  resolution: "@types/babel__plugin-transform-runtime@npm:7.9.5"
+  checksum: 10c0/119d8f88188c63eb21bf150d294991d3470e6aa90dc8ec9f634197760af8acc981564e29af9087bfa8ad713b5b5419cae03047cd225fccb9977bb97adf25a871
+  languageName: node
+  linkType: hard
+
 "@types/babel__template@npm:*":
   version: 7.4.4
   resolution: "@types/babel__template@npm:7.4.4"
@@ -6877,6 +6900,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"babel-helper-evaluate-path@npm:^0.5.0":
+  version: 0.5.0
+  resolution: "babel-helper-evaluate-path@npm:0.5.0"
+  checksum: 10c0/e79a455c10ada2c6033c25f63cee6dbd8034a233ec1be4063089d28005aa5219a3dc43d847feeb915168ab7da92b1a5a4edc91ccc907892b9a1e69e91422cda7
+  languageName: node
+  linkType: hard
+
+"babel-helper-mark-eval-scopes@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "babel-helper-mark-eval-scopes@npm:0.4.3"
+  checksum: 10c0/36955d83f1d810ea316dea3057a2d9949cd9c4238390903f525b30267218051c383d71a23989b240300a2829be2f9d77ccc78ba2bae76edb5142592cb765191e
+  languageName: node
+  linkType: hard
+
+"babel-helper-remove-or-void@npm:^0.4.3":
+  version: 0.4.3
+  resolution: "babel-helper-remove-or-void@npm:0.4.3"
+  checksum: 10c0/c0f1572f2817e45883a404cb24b91a0695b05ac75ec366a785d1681aae777a07e404bee63d2700fb54b98deab98dfac8aa91f796f6be6ec71d389cce80b0e1aa
+  languageName: node
+  linkType: hard
+
 "babel-jest@npm:^29.6.3, babel-jest@npm:^29.7.0":
   version: 29.7.0
   resolution: "babel-jest@npm:29.7.0"
@@ -6916,6 +6960,18 @@ __metadata:
     "@types/babel__core": "npm:^7.1.14"
     "@types/babel__traverse": "npm:^7.0.6"
   checksum: 10c0/7e6451caaf7dce33d010b8aafb970e62f1b0c0b57f4978c37b0d457bbcf0874d75a395a102daf0bae0bd14eafb9f6e9a165ee5e899c0a4f1f3bb2e07b304ed2e
+  languageName: node
+  linkType: hard
+
+"babel-plugin-minify-dead-code-elimination@npm:^0.5.2":
+  version: 0.5.2
+  resolution: "babel-plugin-minify-dead-code-elimination@npm:0.5.2"
+  dependencies:
+    babel-helper-evaluate-path: "npm:^0.5.0"
+    babel-helper-mark-eval-scopes: "npm:^0.4.3"
+    babel-helper-remove-or-void: "npm:^0.4.3"
+    lodash: "npm:^4.17.11"
+  checksum: 10c0/0b16867e296c6fa8f489ac9cae39707d10580210392d2613d5e43925c288d0ff760acd3ef850bdff2b3bdb60ad30fef2a8692c181dd5e1c816e81937cce1fc38
   languageName: node
   linkType: hard
 
@@ -6983,6 +7039,20 @@ __metadata:
   dependencies:
     "@babel/plugin-syntax-flow": "npm:^7.12.1"
   checksum: 10c0/aa9d022d8d4be0e7c4f1ff7e5308fe7e0ff4d6f9099449913e3a11c1e81916623a8f36432da180a9aa3f53ea534dca4401fe33d6528f043f40357cfa790ee778
+  languageName: node
+  linkType: hard
+
+"babel-plugin-transform-react-remove-prop-types@npm:^0.4.24":
+  version: 0.4.24
+  resolution: "babel-plugin-transform-react-remove-prop-types@npm:0.4.24"
+  checksum: 10c0/713441fd9fb663cc95709cb52d9c2c6228ea6d5406092a8a50094c810bcb13c3c347f8fca703d45b20cc401782743a91d7272025950147f9247d53360267f107
+  languageName: node
+  linkType: hard
+
+"babel-plugin-transform-remove-debugger@npm:^6.9.4":
+  version: 6.9.4
+  resolution: "babel-plugin-transform-remove-debugger@npm:6.9.4"
+  checksum: 10c0/daaa24a35e953ce97a7a9bd297e57f1b0aa979f7260d266da3b638cde56562a5e91c950bc6b1abdf71627458baba67e38005efeeb1e8cc314c0a330a2a994b7f
   languageName: node
   linkType: hard
 
@@ -11125,7 +11195,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash@npm:^4.17.20, lodash@npm:^4.17.21":
+"lodash@npm:^4.17.11, lodash@npm:^4.17.20, lodash@npm:^4.17.21":
   version: 4.17.21
   resolution: "lodash@npm:4.17.21"
   checksum: 10c0/d8cbea072bb08655bb4c989da418994b073a608dffa608b09ac04b43a791b12aeae7cd7ad919aa4c925f33b48490b5cfe6c1f71d827956071dae2e7bb3a6b74c
@@ -12405,6 +12475,7 @@ __metadata:
     "@amplitude/analytics-react-native": "npm:^1.4.7"
     "@babel/core": "npm:^7.20.0"
     "@babel/plugin-transform-private-methods": "npm:^7.23.3"
+    "@babel/plugin-transform-runtime": "npm:^7.26.8"
     "@ethersproject/shims": "npm:^5.7.0"
     "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
@@ -12432,6 +12503,7 @@ __metadata:
     "@tamagui/types": "npm:1.110.0"
     "@trivago/prettier-plugin-sort-imports": "npm:^4.3.0"
     "@tsconfig/react-native": "npm:^3.0.0"
+    "@types/babel__plugin-transform-runtime": "npm:^7"
     "@types/cose-js": "npm:^0"
     "@types/crypto-js": "npm:^4.1.1"
     "@types/elliptic": "npm:^6"
@@ -12450,7 +12522,10 @@ __metadata:
     asn1.js: "npm:^5.4.1"
     axios: "npm:^1.6.3"
     babel-jest: "npm:^29.6.3"
+    babel-plugin-minify-dead-code-elimination: "npm:^0.5.2"
     babel-plugin-module-resolver: "npm:^5.0.2"
+    babel-plugin-transform-react-remove-prop-types: "npm:^0.4.24"
+    babel-plugin-transform-remove-debugger: "npm:^6.9.4"
     burnt: "npm:^0.12.2"
     country-emoji: "npm:^1.5.6"
     country-iso-3-to-2: "npm:^1.1.1"

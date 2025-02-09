@@ -24,6 +24,11 @@ const config = {
     babelTransformerPath: require.resolve(
       'react-native-svg-transformer/react-native',
     ),
+    minifierConfig: {
+      mangle: true,
+      keep_classnames: false,
+      keep_fnames: false,
+    },
   },
   resolver: {
     extraNodeModules,
