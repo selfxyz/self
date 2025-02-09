@@ -3,7 +3,7 @@ import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 
 // @ts-ignore
-import * as amplitude from '@amplitude/analytics-react-native';
+import { track as amplitudeTrack } from '@amplitude/analytics-react-native';
 import '@react-navigation/native';
 import { Buffer } from 'buffer';
 
@@ -52,12 +52,12 @@ const scanAndroid = async (inputs: Inputs) => {
     });
     console.log('scanned');
 
-    amplitude.track('nfc_scan_successful');
+    amplitudeTrack('nfc_scan_successful');
     await handleResponseAndroid(response);
   } catch (e: any) {
     console.log('error during scan:', e);
 
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
+    amplitudeTrack('nfc_scan_unsuccessful', { error: e.message });
     if (e.message.includes('InvalidMRZKey')) {
       // TODO: Go back to the previous screen and rescan the passport with the camera/manual inputs
       //   toast.show('Error', {
@@ -95,10 +95,10 @@ const scanIOS = async (inputs: Inputs) => {
     );
     console.log('scanned');
     await handleResponseIOS(response);
-    amplitude.track('nfc_scan_successful');
+    amplitudeTrack('nfc_scan_successful');
   } catch (e: any) {
     console.log('error during scan:', e);
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
+    amplitudeTrack('nfc_scan_unsuccessful', { error: e.message });
     if (!e.message.includes('UserCanceled')) {
       // handle cancelation
     }

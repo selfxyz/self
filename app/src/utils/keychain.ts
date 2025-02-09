@@ -1,4 +1,4 @@
-import * as Keychain from 'react-native-keychain';
+import { getGenericPassword, setGenericPassword } from 'react-native-keychain';
 
 import { ethers } from 'ethers';
 
@@ -34,7 +34,7 @@ export async function loadSecretOrCreateIt() {
   console.log('No secret found, creating one');
   const randomWallet = ethers.Wallet.createRandom();
   const newSecret = randomWallet.privateKey;
-  await Keychain.setGenericPassword('secret', newSecret, { service: 'secret' });
+  await setGenericPassword('secret', newSecret, { service: 'secret' });
   return newSecret;
 }
 
