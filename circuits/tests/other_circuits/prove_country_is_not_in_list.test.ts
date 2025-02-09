@@ -56,8 +56,21 @@ describe('ProveCountryIsNotInList', function () {
     });
 
     it('should faild - country FRA is in the list', async () => {
-      const forbiddenCountriesList = ['FRA', 'DZA'];
       try {
+        const forbiddenCountriesList = ['DZA', 'FRA'];
+        const inputs = {
+          dg1: formatInput(dg1),
+          forbidden_countries_list: formatInput(formatCountriesList(forbiddenCountriesList)),
+        };
+        const witness = await circuit.calculateWitness(inputs);
+      } catch (error) {
+        expect(error.message).to.include('Assert Failed');
+      }
+    });
+
+    it('should faild - country FRA is in the list', async () => {
+      try {
+        const forbiddenCountriesList = ['XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'FRA'];
         const inputs = {
           dg1: formatInput(dg1),
           forbidden_countries_list: formatInput(formatCountriesList(forbiddenCountriesList)),
@@ -67,6 +80,15 @@ describe('ProveCountryIsNotInList', function () {
       } catch (error) {
         expect(error.message).to.include('Assert Failed');
       }
+    });
+
+    it('should succeed - XRA and AXX are in the list, not FRA', async () => {
+      const forbiddenCountriesList = ['XFR', 'AXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XFR', 'AXX', 'XXX'];
+      const inputs = {
+        dg1: formatInput(dg1),
+        forbidden_countries_list: formatInput(formatCountriesList(forbiddenCountriesList)),
+      };
+      const witness = await circuit.calculateWitness(inputs);
     });
   });
 });

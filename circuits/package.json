@@ -15,6 +15,7 @@
     "test-custom-hasher": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/custom_hasher.test.ts' --exit",
     "test-is-valid": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/is_valid.test.ts' --exit",
     "test-is-older-than": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/is_older_than.test.ts' --exit",
+    "test-not-in-list": "yarn ts-mocha --max-old-space-size=8192 'tests/other_circuits/prove_country_is_not_in_list.test.ts' --exit",
     "build-all": "bash scripts/build/build_register_circuits.sh && bash scripts/build/build_dsc_circuits.sh && bash scripts/build/build_disclose_circuits.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
