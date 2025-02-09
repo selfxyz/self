@@ -7,7 +7,7 @@ import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
 import { WEBSOCKET_URL } from '../../common/src/constants/constants';
-import { UserIdType } from '../../common/src/utils/utils';
+import { UserIdType } from '../../common/src/utils/circuits/uuid';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
