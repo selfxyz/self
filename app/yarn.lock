@@ -7200,7 +7200,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"buffer@npm:^5.0.8, buffer@npm:^5.5.0":
+"buffer@npm:^5.5.0":
   version: 5.7.1
   resolution: "buffer@npm:5.7.1"
   dependencies:
@@ -12430,7 +12430,6 @@ __metadata:
     react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35"
     react-native-dialog: "npm:^9.3.0"
     react-native-dotenv: "npm:^3.4.11"
-    react-native-fast-crypto: "npm:^2.2.0"
     react-native-fs: "npm:^2.20.0"
     react-native-gesture-handler: "npm:^2.22.1"
     react-native-get-random-values: "npm:^1.11.0"
@@ -13089,7 +13088,7 @@ __metadata:
   peerDependencies:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
-  checksum: 10c0/0e3f83f59dadc337ab46fa0c59bb2b80eb91d4756f0ac67d7b11e0d97044d58bbaca7ee5c7dcd1e0a389af3f16b0eaca12122d59905013a6f5a2f4423ead49d0
+  checksum: 10c0/ebb3dfb9a111bf6082866999d31e10f952fcd12bcf2a81210ff9f44a4cb4d25e1b4caac5fdec512b367685e56a37e61de3e6648c2af45b93fcbaf704355dbaa6
   languageName: node
   linkType: hard
 
@@ -13110,18 +13109,6 @@ __metadata:
   peerDependencies:
     "@babel/runtime": ^7.20.6
   checksum: 10c0/9ed4a37fb59030706d17a1cc49d05af9d8fc57dcb2ef97e122b844f3ab6f6331ebc089afac559fe5bddf37806aa282b4118005f1b27aae5e37fdc3fc8bd7625c
-  languageName: node
-  linkType: hard
-
-"react-native-fast-crypto@npm:^2.2.0":
-  version: 2.2.0
-  resolution: "react-native-fast-crypto@npm:2.2.0"
-  dependencies:
-    buffer: "npm:^5.0.8"
-    rfc4648: "npm:^1.0.0"
-  peerDependencies:
-    react-native: ">=0.47.0 <1.0.0"
-  checksum: 10c0/5d10d849ef568aa23dafc1067382817455e42ad69023ba4896f768ee718110b11f69eb3acead7c85d6685de7e9c7f4fefc28cc11d560916fd60609a639bb3a03
   languageName: node
   linkType: hard
 
@@ -13768,13 +13755,6 @@ __metadata:
   version: 1.0.4
   resolution: "reusify@npm:1.0.4"
   checksum: 10c0/c19ef26e4e188f408922c46f7ff480d38e8dfc55d448310dfb518736b23ed2c4f547fb64a6ed5bdba92cd7e7ddc889d36ff78f794816d5e71498d645ef476107
-  languageName: node
-  linkType: hard
-
-"rfc4648@npm:^1.0.0":
-  version: 1.5.4
-  resolution: "rfc4648@npm:1.5.4"
-  checksum: 10c0/8683e82ed9c3cb23844720d04eaeee12025146bfdfdf250b1cce80d56e16c6431530ba3033cbb0e7ca3a25223107847f14c6cac11a255ea7d219dc7ba11cd43d
   languageName: node
   linkType: hard
 

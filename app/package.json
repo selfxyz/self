@@ -62,7 +62,6 @@
     "react-native-date-picker": "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35",
     "react-native-dialog": "^9.3.0",
     "react-native-dotenv": "^3.4.11",
-    "react-native-fast-crypto": "^2.2.0",
     "react-native-fs": "^2.20.0",
     "react-native-gesture-handler": "^2.22.1",
     "react-native-get-random-values": "^1.11.0",
