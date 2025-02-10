@@ -15,13 +15,13 @@ export const fullSigAlgs = [
     domainParameter: '65537',
     keyLength: '3072',
   },
-  {
-    sigAlg: 'rsapss',
-    hashFunction: 'sha256',
-    saltLen: '32',
-    domainParameter: '65537',
-    keyLength: '4096',
-  },
+  // {
+  //   sigAlg: 'rsapss',
+  //   hashFunction: 'sha256',
+  //   saltLen: '32',
+  //   domainParameter: '65537',
+  //   keyLength: '4096',
+  // }, // signed by CSCA using dsc_sha256_rsapss_65537_32_2048.circom, which was removed because not needed.
   {
     sigAlg: 'rsapss',
     hashFunction: 'sha512',
