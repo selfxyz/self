@@ -46,7 +46,7 @@ export async function extractMasterlistCsca() {
     if (parsed.signatureAlgorithm === 'rsa' || parsed.signatureAlgorithm === 'rsapss') {
       const sequences = [
         [2, 130, 1, 1, 0], // 2048 bits, 8 matches
-        [2, 130, 2, 1, 0], // 2048 bits, 509 matches
+        [2, 130, 2, 1, 0], // 4096 bits, 509 matches
         [2, 130, 1, 129, 0], // 3072 bits, 81 matches
         // [2, 130, 3, 1, 0], // 6144 bits, 10 matches. Moldova. Not supported.
       ];

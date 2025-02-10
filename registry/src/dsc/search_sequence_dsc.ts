@@ -38,7 +38,7 @@ export async function extractMasterlistDsc() {
     if (parsed.signatureAlgorithm === 'rsa' || parsed.signatureAlgorithm === 'rsapss') {
       const sequences = [
         [2, 130, 1, 1, 0], // 2048 bits, 23963 matches
-        [2, 130, 2, 1, 0], // 2048 bits, 200 matches
+        [2, 130, 2, 1, 0], // 4096 bits, 200 matches
         [2, 130, 1, 129, 0], // 3072 bits, 528 matches
         // a few certs between 23502 and 23527 and around have 1024 bits
         // they have [2, 129, 129, 0, 210/186/194...]
