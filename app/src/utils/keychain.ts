@@ -5,6 +5,20 @@ import { ethers } from 'ethers';
 import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
 
+export async function restoreSecret(mnemonic: string) {
+  const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
+  const newSecret = restoredWallet.privateKey;
+
+  const existingSecret = await Keychain.getGenericPassword({
+    service: 'secret',
+  });
+
+  if (newSecret !== (existingSecret as Keychain.UserCredentials).password) {
+    throw new Error('Mnemonic didnt match previously stored secret');
+  }
+  return newSecret;
+}
+
 export async function loadSecretOrCreateIt() {
   const secret = await loadSecret();
   if (secret) {

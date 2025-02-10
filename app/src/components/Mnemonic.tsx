@@ -15,7 +15,7 @@ import {
 
 interface MnemonicProps {
   words?: string[];
-  revealWords?: boolean;
+  onRevealWords?: () => Promise<void>;
 }
 interface WordPill {
   index: number;
@@ -43,11 +43,12 @@ const WordPill = ({ index, word }: WordPill) => {
   );
 };
 const REDACTED = new Array(24).fill(' '.repeat(4));
-const Mnemonic = ({ words = REDACTED }: MnemonicProps) => {
+const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
-  const copyToClipboardOrReveal = useCallback(() => {
+  const copyToClipboardOrReveal = useCallback(async () => {
     if (!revealWords) {
+      await onRevealWords?.();
       return setRevealWords(previous => !previous);
     }
     Clipboard.setString(words.join(' '));
@@ -60,7 +61,6 @@ const Mnemonic = ({ words = REDACTED }: MnemonicProps) => {
       <XStack
         borderColor={slate200}
         backgroundColor={slate50}
-        background="blue"
         borderWidth="$1"
         borderBottomWidth={0}
         borderTopLeftRadius="$5"

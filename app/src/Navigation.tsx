@@ -10,9 +10,9 @@ import {
   createStaticNavigation,
 } from '@react-navigation/native';
 import {
-  StackHeaderProps,
-  createStackNavigator,
-} from '@react-navigation/stack';
+  NativeStackHeaderProps,
+  createNativeStackNavigator,
+} from '@react-navigation/native-stack';
 import { Button, ViewStyle } from 'tamagui';
 
 import { NavBar } from './components/NavBar';
@@ -31,13 +31,15 @@ import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
 import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
 import AccountRecoveryScreen from './screens/Settings/AccountRecoveryScreen';
+import AccountVerifiedSuccessScreen from './screens/Settings/AccountVerifiedSuccessScreen';
+import RecoverWithPhraseScreen from './screens/Settings/RecoverWithPhraseScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import StartScreen from './screens/StartScreen';
-import { black, neutral400, white } from './utils/colors';
+import { black, neutral400, slate300, white } from './utils/colors';
 
-const DefaultNavBar = (props: StackHeaderProps) => {
+const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
@@ -53,18 +55,20 @@ const DefaultNavBar = (props: StackHeaderProps) => {
       }
     >
       <NavBar.LeftAction
-        component={canGoBack() ? 'back' : undefined}
+        component={
+          options.headerBackTitle || (canGoBack() ? 'back' : undefined)
+        }
         onPress={goBack}
-        color={options.headerTintColor}
+        {...options.headerTitleStyle}
       />
-      <NavBar.Title color={options.headerTintColor}>
+      <NavBar.Title {...options.headerTitleStyle}>
         {props.options.title}
       </NavBar.Title>
     </NavBar.Container>
   );
 };
 
-const HomeNavBar = (props: StackHeaderProps) => {
+const HomeNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
     <NavBar.Container
@@ -105,12 +109,11 @@ const HomeNavBar = (props: StackHeaderProps) => {
   );
 };
 
-const RootStack = createStackNavigator({
+const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
   screenOptions: {
     header: DefaultNavBar,
   },
-
   layout: ({ children }) => <SafeAreaProvider>{children}</SafeAreaProvider>,
   screens: {
     Splash: {
@@ -231,12 +234,30 @@ const RootStack = createStackNavigator({
         headerShown: false,
       },
     },
+    RecoverWithPhrase: {
+      screen: RecoverWithPhraseScreen,
+      options: {
+        headerTintColor: black,
+        title: 'Enter Recovery Phrase',
+        headerStyle: {
+          backgroundColor: black,
+        },
+        headerTitleStyle: {
+          color: slate300,
+        },
+        headerBackTitle: 'close',
+      },
+    },
+    AccountVerifiedSuccess: {
+      screen: AccountVerifiedSuccessScreen,
+      options: {
+        headerShown: false,
+      },
+    },
   },
 });
 
-const AppNavigation = createStaticNavigation(RootStack);
-
-export type RootStackParamList = StaticParamList<typeof RootStack>;
+export type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
 declare global {
   namespace ReactNavigation {
@@ -244,4 +265,4 @@ declare global {
   }
 }
 
-export default AppNavigation;
+export default createStaticNavigation(AppNavigation);

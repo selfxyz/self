@@ -8,6 +8,7 @@ import { YStack } from 'tamagui';
 // Adjust the import path as needed
 import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
+import { AuthProvider } from './src/stores/authProvider';
 import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 import { setupUniversalLinkListener } from './src/utils/qrCode';
@@ -47,7 +48,9 @@ function App(): React.JSX.Element {
 
   return (
     <YStack f={1} bc={bgWhite} h="100%" w="100%">
-      <AppNavigation />
+      <AuthProvider>
+        <AppNavigation />
+      </AuthProvider>
     </YStack>
   );
 }

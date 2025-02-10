@@ -1,5 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, TextProps } from 'react-native';
+import { StyleSheet } from 'react-native';
+
+import { Text, TextProps } from 'tamagui';
 
 import { slate500 } from '../../utils/colors';
 

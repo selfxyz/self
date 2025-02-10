@@ -2504,7 +2504,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-community/netinfo@npm:^11.3.1":
+"@react-native-community/netinfo@npm:^11.3.3":
   version: 11.4.1
   resolution: "@react-native-community/netinfo@npm:11.4.1"
   peerDependencies:
@@ -2978,6 +2978,22 @@ __metadata:
     "@react-native-masked-view/masked-view":
       optional: true
   checksum: 10c0/b80f4e29916360489fd5399d9344dfc64a1fdf77796ba189f5b19324766998fd9723d08ac548b935585feb4643465b07bfcd9a3b453e7693d338c552f97c18c4
+  languageName: node
+  linkType: hard
+
+"@react-navigation/native-stack@npm:^7.2.0":
+  version: 7.2.0
+  resolution: "@react-navigation/native-stack@npm:7.2.0"
+  dependencies:
+    "@react-navigation/elements": "npm:^2.2.5"
+    warn-once: "npm:^0.1.1"
+  peerDependencies:
+    "@react-navigation/native": ^7.0.14
+    react: ">= 18.2.0"
+    react-native: "*"
+    react-native-safe-area-context: ">= 4.0.0"
+    react-native-screens: ">= 4.0.0"
+  checksum: 10c0/2f4af18dbb33f7b0c866102f3f475878900d211ad164de3e5d4875361dbb892700bd85ceb8fa79c6c00075d03b0f11d4b313708d9bb84241dc44b063ab2a68c8
   languageName: node
   linkType: hard
 
@@ -12397,12 +12413,14 @@ __metadata:
     "@react-native-async-storage/async-storage": "npm:^2.1.1"
     "@react-native-clipboard/clipboard": "npm:1.13.2"
     "@react-native-community/cli": "npm:^14.1.1"
-    "@react-native-community/netinfo": "npm:^11.3.1"
+    "@react-native-community/netinfo": "npm:^11.3.3"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/eslint-config": "npm:0.75.4"
     "@react-native/metro-config": "npm:0.75.4"
     "@react-native/typescript-config": "npm:0.75.4"
+    "@react-navigation/elements": "npm:^2.2.5"
     "@react-navigation/native": "npm:^7.0.14"
+    "@react-navigation/native-stack": "npm:^7.2.0"
     "@react-navigation/stack": "npm:^7.1.1"
     "@segment/analytics-react-native": "npm:^2.20.3"
     "@segment/sovran-react-native": "npm:^1.1.3"
@@ -12454,6 +12472,7 @@ __metadata:
     process: "npm:^0.11.10"
     react: "npm:^18.3.1"
     react-native: "npm:0.75.4"
+    react-native-biometrics: "npm:^3.0.1"
     react-native-bundle-visualizer: "npm:^3.1.3"
     react-native-crypto: "npm:^2.2.0"
     react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35"
@@ -12468,10 +12487,11 @@ __metadata:
     react-native-nfc-manager: "npm:^3.15.1"
     react-native-passport-reader: "npm:^1.0.3"
     react-native-randombytes: "npm:^3.6.1"
-    react-native-safe-area-context: "npm:^5.1.0"
+    react-native-safe-area-context: "npm:^5.2.0"
     react-native-screens: "npm:^4.6.0"
-    react-native-svg: "npm:13.4.0"
+    react-native-svg: "npm:^15.11.1"
     react-native-svg-transformer: "npm:^1.5.0"
+    react-native-tracking-transparency: "npm:^0.1.2"
     react-native-zip-archive: "npm:^6.1.0"
     socket.io-client: "npm:^4.7.5"
     stream-browserify: "npm:^3.0.0"
@@ -13076,6 +13096,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-biometrics@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "react-native-biometrics@npm:3.0.1"
+  peerDependencies:
+    react-native: ">=0.60.0"
+  checksum: 10c0/00528eda02528ccd28705f6245b5460bb46b93d44f435a2974c5e56d30a79d21b6b8e5c6c8c46a4a21220af08458214086b6372dfe48f75e82f42069871b0e6d
+  languageName: node
+  linkType: hard
+
 "react-native-bundle-visualizer@npm:^3.1.3":
   version: 3.1.3
   resolution: "react-native-bundle-visualizer@npm:3.1.3"
@@ -13242,13 +13271,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-safe-area-context@npm:^5.1.0":
-  version: 5.1.0
-  resolution: "react-native-safe-area-context@npm:5.1.0"
+"react-native-safe-area-context@npm:^5.2.0":
+  version: 5.2.0
+  resolution: "react-native-safe-area-context@npm:5.2.0"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/82e305f5f29607a35471331dc3d86d641e4fc302654d56afb2cbe0e87e6129a845121e8daa29fccdf5298076d0ddbb53666a138492eedf1c2477c5653d9a6556
+  checksum: 10c0/4b8587cf01070a434b56c1453e5666ea2fbf8a15b2316f407ae361e83650a087a0236ab4bcd6aba421028457df59c18f51384d82862c77558da44987ba8dd5f1
   languageName: node
   linkType: hard
 
@@ -13280,16 +13309,27 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-svg@npm:13.4.0":
-  version: 13.4.0
-  resolution: "react-native-svg@npm:13.4.0"
+"react-native-svg@npm:^15.11.1":
+  version: 15.11.1
+  resolution: "react-native-svg@npm:15.11.1"
   dependencies:
     css-select: "npm:^5.1.0"
     css-tree: "npm:^1.1.3"
+    warn-once: "npm:0.1.1"
   peerDependencies:
     react: "*"
     react-native: "*"
-  checksum: 10c0/66b911bbe18c9b362f60e3487e65864d81526e55caec00921516956017bb1c7085432a10e330074bb094089d6989587ef5fc67c0637d9788b1db8734f0af3b05
+  checksum: 10c0/b93d995e459b0e9250639a0f2171ed8c3d580d57b93400c5f2696ab0b24d1babf9c20099e904964f93c6c44597b9cc5e8c87ee248c24c63d4dbc3250b04b57b9
+  languageName: node
+  linkType: hard
+
+"react-native-tracking-transparency@npm:^0.1.2":
+  version: 0.1.2
+  resolution: "react-native-tracking-transparency@npm:0.1.2"
+  peerDependencies:
+    react: "*"
+    react-native: "*"
+  checksum: 10c0/53fda60d617a7a46f6a84b6b44ce5694354574672c88dc346698e4b03a8d962cfd64dc5a8fb340bd9456cb65db0bdca6c53c6ab7653216e6e5b5ae1e997ac0cf
   languageName: node
   linkType: hard
 
@@ -15276,7 +15316,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"warn-once@npm:^0.1.0":
+"warn-once@npm:0.1.1, warn-once@npm:^0.1.0, warn-once@npm:^0.1.1":
   version: 0.1.1
   resolution: "warn-once@npm:0.1.1"
   checksum: 10c0/f531e7b2382124f51e6d8f97b8c865246db8ab6ff4e53257a2d274e0f02b97d7201eb35db481843dc155815e154ad7afb53b01c4d4db15fb5aa073562496aff7

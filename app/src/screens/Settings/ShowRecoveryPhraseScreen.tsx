@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useContext, useState } from 'react';
 import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
@@ -12,6 +12,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { AuthContext } from '../../stores/authProvider';
 import { slate400 } from '../../utils/colors';
 import { loadSecretOrCreateIt } from '../../utils/keychain';
 
@@ -20,9 +21,17 @@ interface ShowRecoveryPhraseScreenProps {}
 const ShowRecoveryPhraseScreen: React.FC<
   ShowRecoveryPhraseScreenProps
 > = ({}) => {
+  const { loginWithBiometrics } = useContext(AuthContext);
   const [mnemonic, setMnemonic] = useState<string[]>();
+  const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
 
-  const loadPassword = useCallback(async () => {
+  const onRevealWords = useCallback(async () => {
+    await loadMnemonic();
+    await loginWithBiometrics();
+    setUserHasSeenMnemonic(true);
+  }, []);
+
+  const loadMnemonic = useCallback(async () => {
     const privKey = await loadSecretOrCreateIt();
 
     const { languageTag } = findBestLanguageTag(
@@ -37,12 +46,8 @@ const ShowRecoveryPhraseScreen: React.FC<
     setMnemonic(words.trim().split(' '));
   }, []);
 
-  useEffect(() => {
-    loadPassword();
-  }, []);
-
   const onCloudBackupPress = useHapticNavigation('TODO: cloud backup');
-  const onSkipPress = useHapticNavigation('TODO: skip backup', 'confirm');
+  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess');
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -59,7 +64,7 @@ const ShowRecoveryPhraseScreen: React.FC<
             This phrase is the only way to recover your account. Keep it secret,
             keep it safe.
           </Description>
-          <Mnemonic words={mnemonic} revealWords={false} />
+          <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
           <YStack gap="$2.5" width="100%" pt="$6" alignItems="center">
             <Caption color={slate400}>
               You can reveal your recovery phrase in settings.
@@ -68,7 +73,7 @@ const ShowRecoveryPhraseScreen: React.FC<
               Enable iCloud Back up
             </PrimaryButton>
             <SecondaryButton onPress={onSkipPress}>
-              Skip making a back up
+              {userHasSeenMnemonic ? 'Continue' : 'Skip making a back up'}
             </SecondaryButton>
           </YStack>
         </YStack>
