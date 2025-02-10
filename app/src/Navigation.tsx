@@ -18,6 +18,10 @@ import { Button, ViewStyle } from 'tamagui';
 import { NavBar } from './components/NavBar';
 import ActivityIcon from './images/icons/activity.svg';
 import SettingsIcon from './images/icons/settings.svg';
+import AccountRecoveryScreen from './screens/AccountFlow/AccountRecoveryScreen';
+import AccountVerifiedSuccessScreen from './screens/AccountFlow/AccountVerifiedSuccessScreen';
+import RecoverWithPhraseScreen from './screens/AccountFlow/RecoverWithPhraseScreen';
+import SaveRecoveryPhraseScreen from './screens/AccountFlow/SaveRecoveryPhraseScreen';
 import DisclaimerScreen from './screens/DisclaimerScreen';
 import HomeScreen from './screens/HomeScreen';
 import LaunchScreen from './screens/LaunchScreen';
@@ -31,9 +35,6 @@ import ProveScreen from './screens/ProveFlow/ProveScreen';
 import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
 import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
-import AccountRecoveryScreen from './screens/Settings/AccountRecoveryScreen';
-import AccountVerifiedSuccessScreen from './screens/Settings/AccountVerifiedSuccessScreen';
-import RecoverWithPhraseScreen from './screens/Settings/RecoverWithPhraseScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
@@ -235,8 +236,8 @@ const AppNavigation = createNativeStackNavigator({
         headerShown: false,
       },
     },
-    ShowRecoveryPhrase: {
-      screen: ShowRecoveryPhraseScreen,
+    SaveRecoveryPhrase: {
+      screen: SaveRecoveryPhraseScreen,
       options: {
         headerShown: false,
       },
@@ -259,6 +260,15 @@ const AppNavigation = createNativeStackNavigator({
       screen: AccountVerifiedSuccessScreen,
       options: {
         headerShown: false,
+      },
+    },
+    ShowRecoveryPhrase: {
+      screen: ShowRecoveryPhraseScreen,
+      options: {
+        title: 'Recovery Phrase',
+        headerStyle: {
+          backgroundColor: white,
+        },
       },
     },
   },

@@ -5,22 +5,30 @@ import { ethers } from 'ethers';
 import { YStack } from 'tamagui';
 
 import Mnemonic from '../../components/Mnemonic';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
+import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { AuthContext } from '../../stores/authProvider';
+import { slate400 } from '../../utils/colors';
 import { loadSecretOrCreateIt } from '../../utils/keychain';
 
-interface ShowRecoveryPhraseScreenProps {}
+interface SaveRecoveryPhraseScreenProps {}
 
-const ShowRecoveryPhraseScreen: React.FC<
-  ShowRecoveryPhraseScreenProps
+const SaveRecoveryPhraseScreen: React.FC<
+  SaveRecoveryPhraseScreenProps
 > = ({}) => {
   const { loginWithBiometrics } = useContext(AuthContext);
   const [mnemonic, setMnemonic] = useState<string[]>();
+  const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
     await loginWithBiometrics();
+    setUserHasSeenMnemonic(true);
   }, []);
 
   const loadMnemonic = useCallback(async () => {
@@ -38,25 +46,40 @@ const ShowRecoveryPhraseScreen: React.FC<
     setMnemonic(words.trim().split(' '));
   }, []);
 
+  const onCloudBackupPress = useHapticNavigation('TODO: cloud backup');
+  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess');
+
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.BottomSection>
         <YStack
           alignItems="center"
+          gap="$2.5"
+          pb="$2.5"
           height="100%"
-          justifyContent="flex-start"
-          pt="40%"
-          gap="$10"
+          justifyContent="flex-end"
         >
-          <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+          <Title>Save your recovery phrase</Title>
           <Description>
             This phrase is the only way to recover your account. Keep it secret,
             keep it safe.
           </Description>
+          <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+          <YStack gap="$2.5" width="100%" pt="$6" alignItems="center">
+            <Caption color={slate400}>
+              You can reveal your recovery phrase in settings.
+            </Caption>
+            <PrimaryButton onPress={onCloudBackupPress}>
+              Enable iCloud Back up
+            </PrimaryButton>
+            <SecondaryButton onPress={onSkipPress}>
+              {userHasSeenMnemonic ? 'Continue' : 'Skip making a back up'}
+            </SecondaryButton>
+          </YStack>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
 };
 
-export default ShowRecoveryPhraseScreen;
+export default SaveRecoveryPhraseScreen;

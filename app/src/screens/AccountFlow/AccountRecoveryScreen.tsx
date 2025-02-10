@@ -14,8 +14,8 @@ import { slate600, white } from '../../utils/colors';
 interface AccountRecoveryScreenProps {}
 
 const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
-  const onRestorePress = useHapticNavigation('RecoverWithPhrase');
-  const onShowRecoveryPhrasePress = useHapticNavigation('ShowRecoveryPhrase');
+  const onRestoreAccountPress = useHapticNavigation('RecoverWithPhrase');
+  const onCreateAccountPress = useHapticNavigation('SaveRecoveryPhrase');
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -33,10 +33,10 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
           </Description>
 
           <YStack gap="$2.5" width="100%" pt="$6">
-            <PrimaryButton onPress={onRestorePress}>
+            <PrimaryButton onPress={onRestoreAccountPress}>
               Restore my account
             </PrimaryButton>
-            <SecondaryButton onPress={onShowRecoveryPhrasePress}>
+            <SecondaryButton onPress={onCreateAccountPress}>
               Create new account
             </SecondaryButton>
           </YStack>
