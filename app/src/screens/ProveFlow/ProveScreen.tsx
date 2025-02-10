@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 import io, { Socket } from 'socket.io-client';
-import { Text, YStack } from 'tamagui';
+import { Text, View, YStack } from 'tamagui';
 
 import {
   ArgumentsProveOffChain,
@@ -137,18 +137,23 @@ const ProveScreen: React.FC = () => {
           </BodyText>
         </YStack>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection
+        flexGrow={1}
+        justifyContent="space-between"
+      >
         <Disclosures disclosures={disclosureOptions} />
-        <Caption
-          textAlign="center"
-          marginBottom={20}
-          marginTop={10}
-          borderRadius={4}
-        >
-          Self will confirm that these details are accurate and none of your
-          confidential info will be revealed to {selectedApp.appName}
-        </Caption>
-        <PrimaryButton onLongPress={onVerify}>Hold To Verify</PrimaryButton>
+        <View>
+          <Caption
+            textAlign="center"
+            marginBottom={20}
+            marginTop={10}
+            borderRadius={4}
+          >
+            Self will confirm that these details are accurate and none of your
+            confidential info will be revealed to {selectedApp.appName}
+          </Caption>
+          <PrimaryButton onLongPress={onVerify}>Hold To Verify</PrimaryButton>
+        </View>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
