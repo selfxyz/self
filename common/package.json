@@ -32,6 +32,7 @@
     "path": "^0.12.7",
     "pkijs": "^3.2.4",
     "poseidon-lite": "^0.2.0",
+    "snarkjs": "^0.7.5",
     "ts-mocha": "^10.0.0",
     "typescript-parser": "^2.6.1"
   },

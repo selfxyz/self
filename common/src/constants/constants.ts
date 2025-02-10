@@ -152,6 +152,37 @@ export const circuitToSelectorMode = {
   prove_offchain: [1, 1],
 };
 
+export const revealedDataTypes = {
+  'issuing_state': 0,
+  'name': 1,
+  'passport_number': 2,
+  'nationality': 3,
+  'date_of_birth': 4,
+  'gender': 5,
+  'expiry_date': 6,
+  'older_than': 7,
+  'ofac': 8,
+}
+
+export const CIRCUIT_CONSTANTS = {
+  REGISTER_NULLIFIER_INDEX: 0,
+  REGISTER_COMMITMENT_INDEX: 1,
+  REGISTER_MERKLE_ROOT_INDEX: 2,
+
+  DSC_TREE_LEAF_INDEX: 0,
+  DSC_CSCA_ROOT_INDEX: 1,
+
+  VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX: 0,
+  VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX: 3,
+  VC_AND_DISCLOSE_NULLIFIER_INDEX: 4,
+  VC_AND_DISCLOSE_ATTESTATION_ID_INDEX: 5,
+  VC_AND_DISCLOSE_MERKLE_ROOT_INDEX: 6,
+  VC_AND_DISCLOSE_CURRENT_DATE_INDEX: 7,
+  VC_AND_DISCLOSE_SMT_ROOT_INDEX: 13,
+  VC_AND_DISCLOSE_SCOPE_INDEX: 14,
+  VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX: 15,
+}
+
 export const MAX_BYTES_IN_FIELD = 31;
 export const MAX_PUBKEY_DSC_BYTES = 525;
 

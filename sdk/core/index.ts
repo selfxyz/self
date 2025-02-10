@@ -1,14 +1,12 @@
-import { OpenPassportVerifierReport } from './src/OpenPassportVerifierReport';
-import { OpenPassportVerifier } from './src/OpenPassportVerifier';
+import { SelfVerifierReport } from './src/SelfVerifierReport';
+import { SelfVerifier } from './src/SelfVerifier';
 import { countryCodes } from '../../common/src/constants/constants';
 import {
   OpenPassportAttestation,
   OpenPassportDynamicAttestation,
-} from '../../common/src/utils/openPassportAttestation';
+} from '../../common/src/utils/selfAttestation';
 export {
-  OpenPassportVerifier,
-  OpenPassportAttestation,
-  OpenPassportDynamicAttestation,
-  OpenPassportVerifierReport,
+  SelfVerifier,
+  SelfVerifierReport,
   countryCodes,
 };

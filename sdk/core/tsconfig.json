@@ -21,7 +21,7 @@
     "circuits/**/*",
     "circuits/**/*.json",
     "utils/utils.ts",
-    "../../common/src/utils/openPassportAttestation.ts"
+    "../../common/src/utils/selfAttestation.ts"
   ],
   "exclude": [
     "node_modules",

@@ -9,11 +9,12 @@ import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { BigNumberish } from "ethers";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
 import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
-import { getStartOfDayTimestamp } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
-import { formatCountriesList, reverseBytes,reverseCountryBytes } from '../../../common/src/utils/circuits/formatInputs';
+import { formatCountriesList, reverseBytes, reverseCountryBytes } from '../../../common/src/utils/circuits/formatInputs';
+import fs from 'fs';
+import path from 'path';
 
 describe("VC and Disclose", () => {
     let deployedActors: DeployedActors;
@@ -25,10 +26,10 @@ describe("VC and Disclose", () => {
     let commitment: any;
     let nullifier: any;
 
-    let forbiddenCountriesList: any;
-    let invalidForbiddenCountriesList: any;
-    let forbiddenCountriesListPacked: any;
-    let invalidForbiddenCountriesListPacked: any;
+    let forbiddenCountriesList: string[];
+    let invalidForbiddenCountriesList: string[];
+    let forbiddenCountriesListPacked: string;
+    let invalidForbiddenCountriesListPacked: string;
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
@@ -655,7 +656,7 @@ describe("VC and Disclose", () => {
             expect(readableData[7]).to.equal(20n);
             expect(readableData[8]).to.equal(0n);   
         });
-   
+
         it("should only return ofac", async () => {
             const { readableData } = await setupVcAndDiscloseTest(['8']);
             expect(readableData[0]).to.equal('');
@@ -736,4 +737,5 @@ describe("VC and Disclose", () => {
         });
         
     });
+
 }); 

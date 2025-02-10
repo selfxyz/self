@@ -1,7 +1,6 @@
-export class OpenPassportVerifierReport {
+export class SelfVerifierReport {
   scope: boolean = true;
   merkle_root_commitment: boolean = true;
-  merkle_root_csca: boolean = true;
   attestation_id: boolean = true;
   current_date: boolean = true;
   issuing_state: boolean = true;
@@ -12,14 +11,10 @@ export class OpenPassportVerifierReport {
   gender: boolean = true;
   expiry_date: boolean = true;
   older_than: boolean = true;
-  owner_of: boolean = true;
-  blinded_dsc_commitment: boolean = true;
   proof: boolean = true;
-  dscProof: boolean = true;
-  dsc: boolean = true;
-  pubKey: boolean = true;
   valid: boolean = true;
   ofac: boolean = true;
+  merkle_root_ofac: boolean = true;
   forbidden_countries_list: boolean = true;
 
   public user_identifier: string;
@@ -28,7 +23,7 @@ export class OpenPassportVerifierReport {
   constructor() {}
 
   exposeAttribute(
-    attribute: keyof OpenPassportVerifierReport,
+    attribute: keyof SelfVerifierReport,
     value: any = '',
     expectedValue: any = ''
   ) {

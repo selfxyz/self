@@ -3,9 +3,9 @@ import { DisclosureOptions } from '../appType';
 
 /*** OpenPassport Attestation ***/
 export function formatForbiddenCountriesListFromCircuitOutput(
-    forbiddenCountriesList: string[]
+    forbiddenCountriesList: string
 ): string[] {
-    const countryList1 = unpackReveal(forbiddenCountriesList[0]);
+    const countryList1 = unpackReveal(forbiddenCountriesList);
     // dump every '\x00' value from the list
     const cleanedCountryList = countryList1.filter((value) => value !== '\x00');
     // Concatenate every 3 elements to form country codes

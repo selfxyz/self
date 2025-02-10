@@ -1,12 +1,10 @@
 import { UserIdType } from "./circuits/uuid";
 
-export type CircuitName = 'prove' | 'disclose';
-export type CircuitMode = 'prove_onchain' | 'register' | 'prove_offchain';
+export type CircuitName = 'disclose';
 export type Mode = 'prove_offchain' | 'prove_onchain' | 'register' | 'vc_and_disclose' | 'dsc';
 
 // OpenPassportAppType
-export interface OpenPassportAppPartial {
-  mode: Mode;
+export interface SelfAppPartial {
   appName: string;
   scope: string;
   websocketUrl: string;
@@ -16,7 +14,7 @@ export interface OpenPassportAppPartial {
   devMode: boolean;
 }
 
-export interface OpenPassportApp extends OpenPassportAppPartial {
+export interface SelfApp extends SelfAppPartial {
   args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose;
 }
 
@@ -38,7 +36,6 @@ export interface ArgumentsRegister {
 
 export interface ArgumentsDisclose {
   disclosureOptions: DisclosureOptions;
-  commitmentMerkleTreeUrl: string;
 }
 
 export interface DisclosureOptions {

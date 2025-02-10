@@ -1,294 +1,135 @@
-import { groth16 } from 'snarkjs';
 import {
-  n_dsc,
-  k_dsc,
-  ECDSA_K_LENGTH_FACTOR,
-  k_dsc_ecdsa,
   countryNames,
-  countryCodes,
 } from '../../../common/src/constants/constants';
+import type { SelfAttestation } from '../../../common/src/utils/selfAttestation';
 import {
-  areArraysEqual,
-  getCurrentDateFormatted,
-  getVkeyFromArtifacts,
-  verifyDSCValidity,
-} from '../utils/utils';
-import {
-  OpenPassportAttestation,
   parsePublicSignalsDisclose,
-  parsePublicSignalsDsc,
-  parsePublicSignalsProve,
-} from '../../../common/src/utils/openPassportAttestation';
-import { Mode } from 'fs';
-import forge from 'node-forge';
+} from '../../../common/src/utils/selfAttestation';
 import {
-  castToScope,
   formatForbiddenCountriesListFromCircuitOutput,
   getAttributeFromUnpackedReveal,
-  getOlderThanFromCircuitOutput,
-  splitToWords,
-} from '../../../common/src/utils/utils';
-import { unpackReveal } from '../../../common/src/utils/revealBitmap';
-import { getCSCAModulusMerkleTree } from '../../../common/src/utils/csca';
-import { OpenPassportVerifierReport } from './OpenPassportVerifierReport';
-import { fetchTreeFromUrl } from '../../../common/src/utils/pubkeyTree';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
+  unpackReveal,
+} from '../../../common/src/utils/circuits/formatOutputs';
+import { castToScope } from '../../../common/src/utils/circuits/uuid';
+import { SelfVerifierReport } from './SelfVerifierReport';
+import {
+  registryAbi
+} from "./abi/IdentityRegistryImplV1";
+import {
+  verifyAllAbi
+} from "./abi/VerifyAll";
+import { ethers } from 'ethers';
+// import type { VcAndDiscloseHubProofStruct } from "../../../common/src/utils/contracts/typechain-types/contracts/IdentityVerificationHubImplV1.sol/IdentityVerificationHubImplV1";
+import {
+  groth16,
+  Groth16Proof,
+  PublicSignals
+} from 'snarkjs';
+import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 
 export class AttestationVerifier {
+
   protected devMode: boolean;
   protected scope: string;
-  protected report: OpenPassportVerifierReport;
+  protected report: SelfVerifierReport;
+  protected attestationId: number = 1;
+  protected targetRootTimestamp: number = 0;
+
   protected minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
-  protected nationality: { enabled: boolean; value: (typeof countryNames)[number] } = {
-    enabled: false,
-    value: '' as (typeof countryNames)[number],
-  };
   protected excludedCountries: { enabled: boolean; value: (typeof countryNames)[number][] } = {
     enabled: false,
     value: [],
   };
   protected ofac: boolean = false;
-  protected commitmentMerkleTreeUrl: string = '';
 
-  constructor(devMode: boolean = false) {
-    this.devMode = devMode;
-    this.report = new OpenPassportVerifierReport();
-  }
+  protected registryContract: any;
+  protected verifyAllContract: any;
 
-  public async verify(attestation: OpenPassportAttestation): Promise<OpenPassportVerifierReport> {
-    const kScaled =
-      attestation.proof.signatureAlgorithm === 'ecdsa'
-        ? ECDSA_K_LENGTH_FACTOR * k_dsc_ecdsa
-        : k_dsc;
-
-    let parsedPublicSignals;
-    if (attestation.proof.mode === 'vc_and_disclose') {
-      parsedPublicSignals = parsePublicSignalsDisclose(attestation.proof.value.publicSignals);
-    } else {
-      parsedPublicSignals = parsePublicSignalsProve(attestation.proof.value.publicSignals, kScaled);
-    }
-
-    this.verifyAttribute('scope', castToScope(parsedPublicSignals.scope), this.scope);
-
-    await this.verifyProof(
-      attestation.proof.mode,
-      attestation.proof.value.proof,
-      attestation.proof.value.publicSignals,
-      attestation.proof.signatureAlgorithm,
-      attestation.proof.hashFunction
-    );
-
-    switch (attestation.proof.mode) {
-      case 'register':
-        await this.verifyRegister(attestation);
-        break;
-      case 'prove_onchain':
-        await this.verifyProveOnChain(attestation);
-        break;
-      case 'prove_offchain':
-        await this.verifyProveOffChain(attestation);
-        break;
-      case 'vc_and_disclose':
-        await this.verifyDisclose(attestation);
-        break;
-    }
-    return this.report;
-  }
-
-  private async verifyRegister(attestation: OpenPassportAttestation) {
-    // verify dscProof
-    await this.verifyDscProof(attestation);
-    // verify that the blinded dscCommitments of proof and dscProof match
-    this.verifyBlindedDscCommitments(attestation);
-    // verify the root of the csca merkle tree
-    this.verifyCSCARoot(attestation);
-  }
-
-  private async verifyProveOffChain(attestation: OpenPassportAttestation) {
-    // verify disclose attributes
-    this.verifyDiscloseAttributes(attestation);
-    // verify certificate chain
-    this.verifyCertificateChain(attestation);
-  }
-
-  private async verifyProveOnChain(attestation: OpenPassportAttestation) {
-    // verify attributes
-    this.verifyDiscloseAttributes(attestation);
-    // verify the dsc proof
-    await this.verifyDscProof(attestation);
-    // verify that the blinded dscCommitments of proof and dscProof match
-    this.verifyBlindedDscCommitments(attestation);
-    // verify the root of the csca merkle tree
-    this.verifyCSCARoot(attestation);
-  }
-
-  private async verifyDisclose(attestation: OpenPassportAttestation) {
-    // verify the root of the commitment
-    this.verifyCommitment(attestation);
-    // verify disclose attributes
-    this.verifyDiscloseAttributes(attestation);
-  }
-
-  private verifyDiscloseAttributes(attestation: OpenPassportAttestation) {
-    let parsedPublicSignals;
-    if (attestation.proof.mode === 'vc_and_disclose') {
-      parsedPublicSignals = parsePublicSignalsDisclose(attestation.proof.value.publicSignals);
-    } else {
-      parsedPublicSignals = parsePublicSignalsProve(attestation.proof.value.publicSignals, k_dsc);
-    }
-    this.verifyAttribute(
-      'current_date',
-      parsedPublicSignals.current_date.toString(),
-      getCurrentDateFormatted().toString()
-    );
-
-    const unpackedReveal = unpackReveal(parsedPublicSignals.revealedData_packed);
-    if (this.minimumAge.enabled) {
-      const attributeValueInt = getOlderThanFromCircuitOutput(parsedPublicSignals.older_than);
-      const selfAttributeOlderThan = parseInt(this.minimumAge.value);
-      if (attributeValueInt < selfAttributeOlderThan) {
-        this.report.exposeAttribute(
-          'older_than',
-          attributeValueInt.toString(),
-          this.minimumAge.value.toString()
-        );
-      } else {
-        console.log('\x1b[32m%s\x1b[0m', '- minimum age verified');
-      }
-    }
-    if (this.nationality.enabled) {
-      if (this.nationality.value === 'Any') {
-        console.log('\x1b[32m%s\x1b[0m', '- nationality verified');
-      } else {
-        const attributeValue = getAttributeFromUnpackedReveal(unpackedReveal, 'nationality');
-        this.verifyAttribute('nationality', countryCodes[attributeValue], this.nationality.value);
-      }
-    }
-    if (this.ofac) {
-      const attributeValue = parsedPublicSignals.ofac_result.toString();
-      this.verifyAttribute('ofac', attributeValue, '1');
-    }
-    if (this.excludedCountries.enabled) {
-      const formattedCountryList = formatForbiddenCountriesListFromCircuitOutput(
-        parsedPublicSignals.forbidden_countries_list_packed_disclosed
-      );
-      const formattedCountryListFullCountryNames = formattedCountryList.map(
-        (countryCode) => countryCodes[countryCode]
-      );
-      this.verifyAttribute(
-        'forbidden_countries_list',
-        formattedCountryListFullCountryNames.toString(),
-        this.excludedCountries.value.toString()
-      );
-    }
-  }
-
-  private verifyCSCARoot(attestation: OpenPassportAttestation) {
-    // verify the root of the csca merkle tree
-    const parsedDscPublicSignals = parsePublicSignalsDsc(attestation.dscProof.value.publicSignals);
-    const cscaMerkleTreeFromDscProof = parsedDscPublicSignals.merkle_root;
-    const cscaMerkleTree = getCSCAModulusMerkleTree();
-    const cscaRoot = cscaMerkleTree.root;
-    this.verifyAttribute('merkle_root_csca', cscaRoot, cscaMerkleTreeFromDscProof);
-  }
-
-  private async verifyCommitment(attestation: OpenPassportAttestation) {
-    const tree = await fetchTreeFromUrl(this.commitmentMerkleTreeUrl);
-    const parsedPublicSignals = parsePublicSignalsDisclose(attestation.proof.value.publicSignals);
-    this.verifyAttribute(
-      'merkle_root_commitment',
-      tree.root.toString(),
-      parsedPublicSignals.merkle_root
-    );
-  }
-
-  private verifyCertificateChain(attestation: OpenPassportAttestation) {
-    const dscCertificate = forge.pki.certificateFromPem(attestation.dsc.value);
-    const verified_certificate = verifyDSCValidity(dscCertificate, this.devMode);
-    if (!verified_certificate) {
-      this.report.exposeAttribute('dsc', attestation.dsc.value, 'certificate chain is not valid');
-    } else {
-      console.log('\x1b[32m%s\x1b[0m', '- certificate verified');
-    }
-
-    const parsedDsc = parseCertificateSimple(attestation.dsc.value);
-    const signatureAlgorithmDsc = parsedDsc.signatureAlgorithm;
-    if (signatureAlgorithmDsc === 'ecdsa') {
-      throw new Error('ECDSA not supported yet');
-    } else {
-      const publicKeyDetails: PublicKeyDetailsRSA = parsedDsc.publicKeyDetails as PublicKeyDetailsRSA;
-      const dscModulus = publicKeyDetails.modulus;
-      const dscModulusBigInt = BigInt(`0x${dscModulus}`);
-      const dscModulusWords = splitToWords(dscModulusBigInt, n_dsc, k_dsc);
-      const pubKeyFromProof = parsePublicSignalsProve(
-        attestation.proof.value.publicSignals,
-        k_dsc
-      ).pubKey_disclosed;
-
-      const verified_modulus = areArraysEqual(dscModulusWords, pubKeyFromProof);
-      if (!verified_modulus) {
-        this.report.exposeAttribute(
-          'pubKey',
-          pubKeyFromProof,
-          'pubKey from proof does not match pubKey from DSC certificate'
-        );
-      } else {
-        console.log('\x1b[32m%s\x1b[0m', '- modulus verified');
-      }
-    }
-  }
-
-  private verifyBlindedDscCommitments(attestation: OpenPassportAttestation) {
-    const parsedPublicSignals = parsePublicSignalsProve(
-      attestation.proof.value.publicSignals,
-      k_dsc
-    );
-    const proofBlindedDscCommitment = parsedPublicSignals.blinded_dsc_commitment;
-
-    const parsedDscPublicSignals = parsePublicSignalsDsc(attestation.dscProof.value.publicSignals);
-    const dscBlindedDscCommitment = parsedDscPublicSignals.blinded_dsc_commitment;
-
-    this.verifyAttribute(
-      'blinded_dsc_commitment',
-      proofBlindedDscCommitment,
-      dscBlindedDscCommitment
-    );
-  }
-
-  private async verifyProof(
-    mode: Mode,
-    proof: string[],
-    publicSignals: string[],
-    signatureAlgorithm: string,
-    hashFunction: string
-  ): Promise<void> {
-    const vkey = getVkeyFromArtifacts(mode, signatureAlgorithm, hashFunction);
-    const isVerified = await groth16.verify(vkey, publicSignals, proof as any);
-    this.verifyAttribute('proof', isVerified.toString(), 'true');
-  }
-
-  private async verifyDscProof(attestation: OpenPassportAttestation) {
-    const dscSignatureAlgorithm = attestation.dscProof.signatureAlgorithm;
-    const dscHashFunction = attestation.dscProof.hashFunction;
-    const vkey = getVkeyFromArtifacts('dsc', dscSignatureAlgorithm, dscHashFunction);
-    const isVerified = await groth16.verify(
-      vkey,
-      attestation.dscProof.value.publicSignals,
-      attestation.dscProof.value.proof as any
-    );
-    this.verifyAttribute('dscProof', isVerified.toString(), 'true');
-  }
-
-  private verifyAttribute(
-    attribute: keyof OpenPassportVerifierReport,
-    value: string,
-    expectedValue: string
+  constructor(
+    devMode: boolean = false,
+    rpcUrl: string,
+    registryContractAddress: `0x${string}`,
+    verifyAllContractAddress: `0x${string}`,
+    targetRootTimestamp: number = 0
   ) {
-    if (value !== expectedValue) {
-      this.report.exposeAttribute(attribute, value, expectedValue);
-    } else {
-      console.log('\x1b[32m%s\x1b[0m', `- attribute ${attribute} verified`);
-    }
+    this.devMode = devMode;
+    this.report = new SelfVerifierReport();
+    const provider = new ethers.JsonRpcProvider(rpcUrl);
+    this.registryContract = new ethers.Contract(registryContractAddress, registryAbi, provider);
+    this.verifyAllContract = new ethers.Contract(verifyAllContractAddress, verifyAllAbi, provider);
+    this.targetRootTimestamp = targetRootTimestamp;
   }
+
+  public async verify(proof: Groth16Proof, publicSignals: PublicSignals): Promise<SelfAttestation> {
+
+    const solidityProof = await groth16.exportSolidityCallData(
+      proof,
+      publicSignals,
+    );
+
+    const vcAndDiscloseHubProof: any = {
+      olderThanEnabled: this.minimumAge.enabled,
+      olderThan: BigInt(this.minimumAge.value),
+      forbiddenCountriesEnabled: this.excludedCountries.enabled,
+      forbiddenCountriesListPacked: BigInt(this.excludedCountries.value.length),
+      ofacEnabled: this.ofac,
+      vcAndDiscloseProof: solidityProof
+    }
+
+
+    const result = await this.verifyAllContract.verifyAll(
+      this.targetRootTimestamp,
+      vcAndDiscloseHubProof,
+      [
+        revealedDataTypes.issuing_state,
+        revealedDataTypes.name,
+        revealedDataTypes.passport_number,
+        revealedDataTypes.nationality,
+        revealedDataTypes.date_of_birth,
+        revealedDataTypes.gender,
+        revealedDataTypes.expiry_date,
+      ]
+    );
+
+    console.log(result);
+
+    const credentialSubject = {
+      userId: "",
+      application: this.scope,
+      merkle_root: "",
+      attestation_id: "",
+      current_date: "",
+      issuing_state: result[0],
+      name: result[1],
+      passport_number: result[2],
+      nationality: result[3],
+      date_of_birth: result[4],
+      gender: result[5],
+      expiry_date: result[6],
+      older_than: result[7],
+      valid: result[8],
+      nullifier: publicSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX],
+    }
+
+    const attestation: SelfAttestation = {
+      '@context': ['https://www.w3.org/2018/credentials/v1'],
+      type: ['VerifiableCredential', 'SelfAttestation'],
+      issuer: 'https://selfattestation.com',
+      issuanceDate: new Date().toISOString(),
+      credentialSubject: credentialSubject,
+      proof: {
+        type: "Groth16Proof",
+        verificationMethod: "Vc and Disclose",
+        value: {
+          proof: proof,
+          publicSignals: publicSignals,
+        },
+        vkey: "",
+      }
+    }
+
+    return attestation;
+    
+  }
+
 }

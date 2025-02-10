@@ -28,6 +28,7 @@
     "deploy:verifiers:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_verifiers.ts --network sepolia --verify",
     "deploy:registry:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_registry.ts --network sepolia --verify",
     "deploy:hub:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_hub.ts --network sepolia --verify",
+    "deploy:verifyall:sepolia": "npx hardhat ignition deploy ignition/modules/deployVerifyAll.ts --network sepolia --verify",
     "deploy:all:sepolia": "npm run deploy:verifiers:sepolia && npm run deploy:registry:sepolia && npm run deploy:hub:sepolia",
     "update:cscaroot:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryCscaRoot.ts --network sepolia",
     "update:ofacroot:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryOfacRoot.ts --network sepolia",
