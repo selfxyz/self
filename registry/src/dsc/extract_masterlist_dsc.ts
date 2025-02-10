@@ -30,5 +30,3 @@ export async function extractMasterlistDsc() {
 
   console.log(`Extracted ${certificates.length} certificates.`);
 }
-
-extractMasterlistDsc();
