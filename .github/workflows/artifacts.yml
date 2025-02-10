@@ -5,6 +5,11 @@ on:
       - main
     paths:
       - "circuits/circuits/**"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "circuits/circuits/**"
 jobs:
   build:
     runs-on: ubuntu-22.04
