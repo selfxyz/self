@@ -13,6 +13,7 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import QRUpload from '../../images/icons/qr_upload.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -58,6 +59,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
     },
     [store, navigation, doneScanningQR],
   );
+  const onCancelPress = useHapticNavigation('Home', 'cancel');
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -69,11 +71,9 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
               autoPlay
               loop
               source={require('../../assets/animations/qr_scan.json')}
-              style={{
-                position: 'absolute',
-                width: '115%',
-                height: '115%',
-              }}
+              style={styles.animation}
+              cacheComposition={true}
+              renderMode="HARDWARE"
             />
           </>
         )}
@@ -117,9 +117,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
             </XStack>
           </YStack>
 
-          <SecondaryButton onPress={() => navigation.navigate('Home')}>
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
@@ -129,6 +127,11 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
 export default QRCodeViewFinderScreen;
 
 const styles = StyleSheet.create({
+  animation: {
+    position: 'absolute',
+    width: '115%',
+    height: '115%',
+  },
   subheader: {
     color: slate800,
     textAlign: 'left',

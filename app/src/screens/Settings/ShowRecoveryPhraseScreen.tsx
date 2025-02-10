@@ -10,6 +10,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { slate400 } from '../../utils/colors';
 import { loadSecretOrCreateIt } from '../../utils/keychain';
@@ -40,6 +41,9 @@ const ShowRecoveryPhraseScreen: React.FC<
     loadPassword();
   }, []);
 
+  const onCloudBackupPress = useHapticNavigation('TODO: cloud backup');
+  const onSkipPress = useHapticNavigation('TODO: skip backup', 'confirm');
+
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.BottomSection>
@@ -60,18 +64,10 @@ const ShowRecoveryPhraseScreen: React.FC<
             <Caption color={slate400}>
               You can reveal your recovery phrase in settings.
             </Caption>
-            <PrimaryButton
-              onPress={
-                () => undefined /* TODO: navigate to icloud backup screen */
-              }
-            >
+            <PrimaryButton onPress={onCloudBackupPress}>
               Enable iCloud Back up
             </PrimaryButton>
-            <SecondaryButton
-              onPress={
-                () => undefined /* TODO: show alert to confirm then navigate */
-              }
-            >
+            <SecondaryButton onPress={onSkipPress}>
               Skip making a back up
             </SecondaryButton>
           </YStack>

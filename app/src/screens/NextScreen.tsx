@@ -9,6 +9,7 @@ import CustomButton from '../components/CustomButton';
 import USER_PROFILE from '../images/user_profile.png';
 import useUserStore from '../stores/userStore';
 import { bgGreen, textBlack } from '../utils/colors';
+import { confirmTap } from '../utils/haptic';
 import { sendRegisterPayload } from '../utils/proving/payload';
 import { formatAttribute, getFirstName, maskString } from '../utils/utils';
 
@@ -130,9 +131,10 @@ const NextScreen: React.FC = () => {
 
       <YStack f={1} />
       <CustomButton
-        onPress={async () =>
-          passportData && (await sendRegisterPayload(passportData))
-        }
+        onPress={async () => {
+          confirmTap();
+          passportData && (await sendRegisterPayload(passportData));
+        }}
         text="TEE PROVING"
         Icon={<Cpu color={textBlack} />}
       />

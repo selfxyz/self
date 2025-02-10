@@ -1,10 +1,10 @@
 import React from 'react';
 import { StyleSheet } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
 import { Anchor, Image, Text, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import useHapticNavigation from '../hooks/useHapticNavigation';
 import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { slate50, slate100, slate500, slate700 } from '../utils/colors';
@@ -12,7 +12,7 @@ import { slate50, slate100, slate500, slate700 } from '../utils/colors';
 interface LaunchScreenProps {}
 
 const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
-  const navigation = useNavigation();
+  const onStartPress = useHapticNavigation('Start');
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -44,9 +44,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             </Anchor>
             &nbsp;of Self ID provided by Self Inc.
           </Text>
-          <PrimaryButton onPress={() => navigation.navigate('Start')}>
-            Get Started
-          </PrimaryButton>
+          <PrimaryButton onPress={onStartPress}>Get Started</PrimaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

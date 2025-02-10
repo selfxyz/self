@@ -4,6 +4,7 @@ import {
   NativeEventEmitter,
   NativeModules,
   Platform,
+  StyleSheet,
   Text,
 } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
@@ -18,10 +19,12 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
 import { slate100 } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
 import { scan } from '../../utils/nfcScannerNew';
 
 interface PassportNFCScanScreenProps {}
@@ -59,7 +62,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     }
   }, []);
 
-  const onPress = useCallback(async () => {
+  const onVerifyPress = useCallback(async () => {
+    buttonTap();
     if (isNfcEnabled) {
       try {
         setIsNfcSheetOpen(true);
@@ -80,6 +84,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       }
     }
   }, [isNfcSupported, isNfcEnabled, passportNumber, dateOfBirth, dateOfExpiry]);
+  const onCancelPress = useHapticNavigation('PassportCamera', 'cancel');
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const _cancelScanIfRunning = useCallback(async () => {
@@ -111,11 +116,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           autoPlay
           loop={false}
           source={require('../../assets/animations/passport_verify.json')}
-          style={{
-            backgroundColor: slate100,
-            width: '115%',
-            height: '115%',
-          }}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
@@ -153,16 +156,12 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               />
             </TextsContainer>
             <ButtonsContainer>
-              <PrimaryButton onPress={onPress} disabled={!isNfcSupported}>
+              <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>
                 {isNfcEnabled || !isNfcSupported
                   ? 'Start Scan'
                   : 'Open settings'}
               </PrimaryButton>
-              <SecondaryButton
-                onPress={() => navigation.navigate('PassportCamera')}
-              >
-                Cancel
-              </SecondaryButton>
+              <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
             </ButtonsContainer>
           </>
         )}
@@ -172,3 +171,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 };
 
 export default PassportNFCScanScreen;
+
+const styles = StyleSheet.create({
+  animation: {
+    color: slate100,
+    width: '115%',
+    height: '115%',
+  },
+});

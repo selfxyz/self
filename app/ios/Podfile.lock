@@ -1243,8 +1243,6 @@ PODS:
     - Yoga
   - react-native-date-picker (4.3.7):
     - React-Core
-  - react-native-fast-crypto (2.2.0):
-    - React
   - react-native-get-random-values (1.11.0):
     - React-Core
   - react-native-netinfo (11.4.1):
@@ -1529,6 +1527,27 @@ PODS:
     - React-Core
   - RNLocalize (3.4.1):
     - React-Core
+  - RNReactNativeHapticFeedback (2.3.3):
+    - DoubleConversion
+    - glog
+    - RCT-Folly (= 2024.01.01.00)
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - Yoga
   - RNScreens (4.6.0):
     - DoubleConversion
     - glog
@@ -1614,7 +1633,6 @@ DEPENDENCIES:
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
   - react-native-date-picker (from `../node_modules/react-native-date-picker`)
-  - react-native-fast-crypto (from `../node_modules/react-native-fast-crypto`)
   - react-native-get-random-values (from `../node_modules/react-native-get-random-values`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - react-native-nfc-manager (from `../node_modules/react-native-nfc-manager`)
@@ -1651,6 +1669,7 @@ DEPENDENCIES:
   - RNGestureHandler (from `../node_modules/react-native-gesture-handler`)
   - RNKeychain (from `../node_modules/react-native-keychain`)
   - RNLocalize (from `../node_modules/react-native-localize`)
+  - RNReactNativeHapticFeedback (from `../node_modules/react-native-haptic-feedback`)
   - RNScreens (from `../node_modules/react-native-screens`)
   - RNSVG (from `../node_modules/react-native-svg`)
   - RNZipArchive (from `../node_modules/react-native-zip-archive`)
@@ -1747,8 +1766,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
   react-native-date-picker:
     :path: "../node_modules/react-native-date-picker"
-  react-native-fast-crypto:
-    :path: "../node_modules/react-native-fast-crypto"
   react-native-get-random-values:
     :path: "../node_modules/react-native-get-random-values"
   react-native-netinfo:
@@ -1821,6 +1838,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keychain"
   RNLocalize:
     :path: "../node_modules/react-native-localize"
+  RNReactNativeHapticFeedback:
+    :path: "../node_modules/react-native-haptic-feedback"
   RNScreens:
     :path: "../node_modules/react-native-screens"
   RNSVG:
@@ -1887,7 +1906,6 @@ SPEC CHECKSUMS:
   React-Mapbuffer: 42c779748af341935a63ad8831723b8cb1e97830
   React-microtasksnativemodule: 744f7e26200ea3976fef8453101cefcc08756008
   react-native-date-picker: 5637f417bb0c1981bc9d483324d5eb5929a1651c
-  react-native-fast-crypto: 5943c42466b86ad70be60d3a5f64bd22251e5d9e
   react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
   react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
   react-native-nfc-manager: 5213321cf6c18d879c8092c0bf56806b771ec5ac
@@ -1924,6 +1942,7 @@ SPEC CHECKSUMS:
   RNGestureHandler: e705387b01bba53f4643bdff381ee08c7b9679a1
   RNKeychain: bfe3d12bf4620fe488771c414530bf16e88f3678
   RNLocalize: 06991b9c31e7a898a9fa6ddb204ce0f53a967248
+  RNReactNativeHapticFeedback: cba92e59f56506f6058d261dc85986012b2c5032
   RNScreens: 7cdbd2d97472f2838cee0d53171a89e7e0c30991
   RNSVG: 07dbd870b0dcdecc99b3a202fa37c8ca163caec2
   RNZipArchive: 6d736ee4e286dbbd9d81206b7a4da355596ca04a
@@ -1933,7 +1952,7 @@ SPEC CHECKSUMS:
   SSZipArchive: fe6a26b2a54d5a0890f2567b5cc6de5caa600aef
   SwiftQRScanner: e85a25f9b843e9231dab89a96e441472fe54a724
   SwiftyTesseract: 1f3d96668ae92dc2208d9842c8a59bea9fad2cbb
-  Yoga: a9ef4f5c2cd79ad812110525ef61048be6a582a4
+  Yoga: b05994d1933f507b0a28ceaa4fdb968dc18da178
 
 PODFILE CHECKSUM: e3c83aaffa4ed0a1159a91cee94b541d4c126625
 

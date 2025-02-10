@@ -1,23 +1,27 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Text, View } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { typography } from '../../components/typography/styles';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
+import { notificationError } from '../../utils/haptic';
 import { styles } from './ValidProofScreen';
 
 const WrongProofScreen: React.FC = () => {
-  const navigation = useNavigation();
   const { proofVerificationResult } = useUserStore();
   const { selectedApp } = useNavigationStore();
   const appName = selectedApp?.appName;
+
+  useEffect(() => {
+    notificationError();
+  }, []);
 
   const formatFieldName = (field: string) => {
     return field
@@ -64,6 +68,8 @@ const WrongProofScreen: React.FC = () => {
 
   console.log('Failed conditions:', JSON.stringify(failedConditions));
 
+  const onOkPress = useHapticNavigation('QRCodeViewFinder');
+
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
@@ -71,10 +77,7 @@ const WrongProofScreen: React.FC = () => {
           autoPlay
           loop={false}
           source={require('../../assets/animations/proof_failed.json')}
-          style={{
-            width: '125%',
-            height: '125%',
-          }}
+          style={styles.animation}
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
@@ -85,13 +88,7 @@ const WrongProofScreen: React.FC = () => {
             <Text style={typography.strong}>{appName}</Text>
           </Description>
         </View>
-        <PrimaryButton
-          onPress={() => {
-            navigation.navigate('QRCodeViewFinder');
-          }}
-        >
-          OK
-        </PrimaryButton>
+        <PrimaryButton onPress={onOkPress}>OK</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

@@ -5,12 +5,15 @@ import { ArrowRight } from '@tamagui/lucide-icons';
 import { Image, Text, YStack } from 'tamagui';
 
 import CustomButton from '../components/CustomButton';
+import useHapticNavigation from '../hooks/useHapticNavigation';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';
 import { textBlack } from '../utils/colors';
+import { buttonTap } from '../utils/haptic';
 
 const StartScreen: React.FC = () => {
   const navigation = useNavigation();
-
+  const onPassportOnboardingPress = useHapticNavigation('PassportOnboarding');
+  const onMockPassportPress = useHapticNavigation('CreateMock');
   return (
     <YStack f={1}>
       <YStack f={1} mt="$6" mb="$2.5" gap="$0" ai="center" jc="space-between">
@@ -27,23 +30,22 @@ const StartScreen: React.FC = () => {
         <CustomButton
           Icon={<ArrowRight />}
           text="Use my passport"
-          onPress={() => {
-            navigation.navigate('PassportOnboarding');
-          }}
+          onPress={onPassportOnboardingPress}
         />
         {/* TODO Only display this button during dev mode */}
         <CustomButton
           bgColor="white"
           Icon={<ArrowRight />}
           text="Use a mock passport"
-          onPress={() => {
-            navigation.navigate('CreateMock');
-          }}
+          onPress={onMockPassportPress}
         />
         <CustomButton
           text="Cancel"
           bgColor="$gray4"
-          onPress={navigation.goBack}
+          onPress={() => {
+            buttonTap();
+            navigation.goBack();
+          }}
         />
       </YStack>
     </YStack>

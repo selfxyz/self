@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -9,10 +9,15 @@ import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { useSettingStore } from '../stores/settingStore';
 import { slate700, white } from '../utils/colors';
+import { confirmTap, notificationWarning } from '../utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
   const navigation = useNavigation();
   const { dismissPrivacyNote } = useSettingStore();
+
+  useEffect(() => {
+    notificationWarning();
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -21,11 +26,9 @@ const DisclaimerScreen: React.FC = () => {
           autoPlay
           loop={false}
           source={require('../assets/animations/warning.json')}
-          style={{
-            position: 'absolute',
-            width: '125%',
-            height: '125%',
-          }}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
         />
         <YStack f={1} jc="flex-end" pb="$4">
           <Text style={styles.subheader}>Caution</Text>
@@ -44,6 +47,7 @@ const DisclaimerScreen: React.FC = () => {
           <PrimaryButton
             style={{ marginVertical: 30 }}
             onPress={() => {
+              confirmTap();
               dismissPrivacyNote();
               navigation.navigate('Home');
             }}
@@ -59,6 +63,11 @@ const DisclaimerScreen: React.FC = () => {
 export default DisclaimerScreen;
 
 const styles = StyleSheet.create({
+  animation: {
+    position: 'absolute',
+    width: '125%',
+    height: '125%',
+  },
   subheader: {
     color: white,
     fontFamily: 'DINOT-Medium',

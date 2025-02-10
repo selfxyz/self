@@ -236,7 +236,7 @@ const RootStack = createStackNavigator({
 
 const AppNavigation = createStaticNavigation(RootStack);
 
-type RootStackParamList = StaticParamList<typeof RootStack>;
+export type RootStackParamList = StaticParamList<typeof RootStack>;
 
 declare global {
   namespace ReactNavigation {

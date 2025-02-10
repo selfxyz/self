@@ -31,6 +31,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
 import { black, slate300, white } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
 // import { generateCircuitInputsInApp } from '../../utils/generateInputsInApp';
 // import { generateProof } from '../../utils/prover';
 import { CircuitName } from '../../utils/zkeyDownload';
@@ -159,6 +160,7 @@ const ProveScreen: React.FC = () => {
   }, [selectedApp.userId]);
 
   const handleProve = async () => {
+    buttonTap();
     try {
       setIsConnecting(true);
       setGeneratingProof(true);

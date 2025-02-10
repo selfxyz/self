@@ -1,20 +1,26 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { typography } from '../../components/typography/styles';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useNavigationStore from '../../stores/navigationStore';
+import { notificationSuccess } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const navigation = useNavigation();
   const { selectedApp } = useNavigationStore();
   const appName = selectedApp?.appName;
+  const onOkPress = useHapticNavigation('Home');
+
+  useEffect(() => {
+    notificationSuccess();
+  }, []);
+
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
@@ -22,10 +28,9 @@ const SuccessScreen: React.FC = () => {
           autoPlay
           loop={false}
           source={require('../../assets/animations/proof_success.json')}
-          style={{
-            width: '125%',
-            height: '125%',
-          }}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
@@ -36,13 +41,7 @@ const SuccessScreen: React.FC = () => {
             <Text style={typography.strong}>{appName}</Text>
           </Description>
         </View>
-        <PrimaryButton
-          onPress={() => {
-            navigation.navigate('Home');
-          }}
-        >
-          OK
-        </PrimaryButton>
+        <PrimaryButton onPress={onOkPress}>OK</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
@@ -51,6 +50,10 @@ const SuccessScreen: React.FC = () => {
 export default SuccessScreen;
 
 export const styles = StyleSheet.create({
+  animation: {
+    width: '125%',
+    height: '125%',
+  },
   content: {
     paddingTop: 40,
     paddingHorizontal: 10,

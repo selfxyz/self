@@ -29,6 +29,7 @@ import {
   separatorColor,
   textBlack,
 } from '../utils/colors';
+import { buttonTap, selectionChange } from '../utils/haptic';
 
 interface MockDataScreenProps {}
 
@@ -128,7 +129,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             Encryption
           </Text>
           <Button
-            onPress={() => setAlgorithmSheetOpen(true)}
+            onPress={() => {
+              buttonTap();
+              setAlgorithmSheetOpen(true);
+            }}
             p="$2"
             px="$3"
             bg="white"
@@ -147,7 +151,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             Nationality
           </Text>
           <Button
-            onPress={() => setCountrySheetOpen(true)}
+            onPress={() => {
+              buttonTap();
+              setCountrySheetOpen(true);
+            }}
             p="$2"
             px="$3"
             bg="white"
@@ -184,7 +191,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => setAge(age - 1)}
+            onPress={() => {
+              buttonTap();
+              setAge(age - 1);
+            }}
             disabled={age <= 0}
           >
             <Minus />
@@ -200,7 +210,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => setAge(age + 1)}
+            onPress={() => {
+              buttonTap();
+              setAge(age + 1);
+            }}
           >
             <Plus />
           </Button>
@@ -225,7 +238,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => setExpiryYears(expiryYears - 1)}
+            onPress={() => {
+              buttonTap();
+              setExpiryYears(expiryYears - 1);
+            }}
             disabled={expiryYears <= 0}
           >
             <Minus />
@@ -241,7 +257,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => setExpiryYears(expiryYears + 1)}
+            onPress={() => {
+              buttonTap();
+              setExpiryYears(expiryYears + 1);
+            }}
           >
             <Plus />
           </Button>
@@ -261,7 +280,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             <Switch
               size="$3.5"
               checked={isInOfacList}
-              onCheckedChange={() => setIsInOfacList(!isInOfacList)}
+              onCheckedChange={() => {
+                buttonTap();
+                setIsInOfacList(!isInOfacList);
+              }}
               bg={isInOfacList ? '$green7Light' : '$gray4'}
             >
               <Switch.Thumb animation="quick" bc="white" />
@@ -310,7 +332,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <YStack p="$4">
             <XStack ai="center" jc="space-between" mb="$4">
               <Text fontSize="$8">Select a country</Text>
-              <XStack onPress={() => setCountrySheetOpen(false)} p="$2">
+              <XStack
+                onPress={() => {
+                  selectionChange();
+                  setCountrySheetOpen(false);
+                }}
+                p="$2"
+              >
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
@@ -320,6 +348,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 <TouchableOpacity
                   key={countryCode}
                   onPress={() => {
+                    buttonTap();
                     handleCountrySelect(countryCode);
                     setCountrySheetOpen(false);
                   }}
@@ -354,7 +383,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <YStack p="$4">
             <XStack ai="center" jc="space-between" mb="$4">
               <Text fontSize="$8">Select an algorithm</Text>
-              <XStack onPress={() => setAlgorithmSheetOpen(false)} p="$2">
+              <XStack
+                onPress={() => {
+                  selectionChange();
+                  setAlgorithmSheetOpen(false);
+                }}
+                p="$2"
+              >
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
@@ -364,6 +399,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                 <TouchableOpacity
                   key={algorithm}
                   onPress={() => {
+                    buttonTap();
                     handleAlgorithmSelect(algorithm);
                     setAlgorithmSheetOpen(false);
                   }}

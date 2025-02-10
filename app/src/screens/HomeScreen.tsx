@@ -1,10 +1,10 @@
 import React from 'react';
 
-import { useNavigation } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
 
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
+import useHapticNavigation from '../hooks/useHapticNavigation';
 import ScanIcon from '../images/icons/qr_scan.svg';
 import WarnIcon from '../images/icons/warning.svg';
 import SelfIdCard from '../images/self-id-card.svg';
@@ -23,7 +23,8 @@ const ScanButton = styled(Button, {
 });
 
 const HomeScreen: React.FC = () => {
-  const navigation = useNavigation();
+  const onCaptionPress = useHapticNavigation('Launch');
+  const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
 
   return (
     <YStack bg={black} gap={20} jc="space-between" height={'100%'} padding={20}>
@@ -33,14 +34,14 @@ const HomeScreen: React.FC = () => {
           color={amber500}
           opacity={0.3}
           textTransform="uppercase"
-          onPress={() => navigation.navigate('Launch')}
+          onPress={onCaptionPress}
         >
           Only visible to you
         </Caption>
         <PrivacyNote />
       </YStack>
       <YStack ai="center" gap={20} justifyContent="center" paddingBottom={20}>
-        <ScanButton onPress={() => navigation.navigate('QRCodeViewFinder')}>
+        <ScanButton onPress={onScanButtonPress}>
           <ScanIcon color={amber500} />
         </ScanButton>
         <Caption color={amber500} textTransform="uppercase">
@@ -53,14 +54,14 @@ const HomeScreen: React.FC = () => {
 
 function PrivacyNote() {
   const { hasPrivacyNoteBeenDismissed } = useSettingStore();
-  const navigation = useNavigation();
+  const onDisclaimerPress = useHapticNavigation('Disclaimer');
 
   if (hasPrivacyNoteBeenDismissed) {
     return null;
   }
 
   return (
-    <Card onPressIn={() => navigation.navigate('Disclaimer')}>
+    <Card onPressIn={onDisclaimerPress}>
       <WarnIcon color={white} width={24} height={33} />
       <BodyText color={white} textAlign="center" fontSize={18}>
         A note on protecting your privacy

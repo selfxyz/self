@@ -73,6 +73,16 @@ pod install
 
 And run the app in Xcode.
 
+#### react-native-haptic-feedback v2.3.3
+
+To create a successful build, "Target Membership" for the AudioToolbox.framework needs to be updated.
+
+Pods Project > Frameworks > iOS > AudioToolbox.framework
+
+Then click on the "+" button in the "Target Membership" box and add `RNReactNativeHapticFeedback`
+
+[more info](https://github.com/mkuczera/react-native-haptic-feedback/issues/142)
+
 ## Modify the circuits
 
 If you want to modify the circuits, you'll have to adapt a few things.

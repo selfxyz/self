@@ -13,6 +13,7 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -38,6 +39,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
     },
     [store, navigation],
   );
+  const onCancelPress = useHapticNavigation('PassportOnboarding', 'cancel');
 
   return (
     <ExpandableBottomLayout.Layout>
@@ -47,11 +49,9 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
           autoPlay
           loop
           source={require('../../assets/animations/passport_scan.json')}
-          style={{
-            position: 'absolute',
-            width: '115%',
-            height: '115%',
-          }}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
@@ -92,11 +92,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
             </XStack>
           </YStack>
 
-          <SecondaryButton
-            onPress={() => navigation.navigate('PassportOnboarding')}
-          >
-            Cancel
-          </SecondaryButton>
+          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
@@ -106,6 +102,11 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 export default PassportCameraScreen;
 
 const styles = StyleSheet.create({
+  animation: {
+    position: 'absolute',
+    width: '115%',
+    height: '115%',
+  },
   subheader: {
     color: slate800,
     textAlign: 'left',
