@@ -23,6 +23,7 @@ import HomeScreen from './screens/HomeScreen';
 import LaunchScreen from './screens/LaunchScreen';
 import MockDataScreen from './screens/MockDataScreen';
 import NextScreen from './screens/NextScreen';
+import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen';
 import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
@@ -155,6 +156,12 @@ const AppNavigation = createNativeStackNavigator({
         passportNumber: '',
         dateOfBirth: '',
         dateOfExpiry: '',
+      },
+    },
+    ConfirmBelongingScreen: {
+      screen: ConfirmBelongingScreen,
+      options: {
+        headerShown: false,
       },
     },
     CreateMock: {

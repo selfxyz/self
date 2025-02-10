@@ -5,11 +5,14 @@ import {
   NativeModules,
   Platform,
   StyleSheet,
-  Text,
 } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
 
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Image } from 'tamagui';
 
@@ -17,6 +20,7 @@ import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
@@ -41,7 +45,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
-  const [scanningMessage, setScanningMessage] = useState('');
+
+  usePreventRemove(true, () => {});
 
   const checkNfcSupport = useCallback(async () => {
     const isSupported = await NfcManager.isSupported();
@@ -70,7 +75,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         await scan({ passportNumber, dateOfBirth, dateOfExpiry });
         // Feels better somehow
         await new Promise(resolve => setTimeout(resolve, 1000));
-        navigation.navigate('NextScreen');
+        navigation.navigate('ConfirmBelongingScreen');
       } catch (e) {
         console.log(e);
       } finally {
@@ -99,7 +104,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
           'NativeEvent',
-          (event: string) => setScanningMessage(event),
+          (event: string) => console.info(event),
         );
 
         return () => {
@@ -126,9 +131,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           <>
             <TextsContainer>
               <Title children="Ready to scan" />
-              <Description children={scanningMessage} />
+              <BodyText textAlign="center">
+                Hold your device near the NFC tag and stop moving when it
+                vibrates.
+              </BodyText>
             </TextsContainer>
-
             <Image
               h="$8"
               w="$8"
@@ -137,11 +144,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               source={{
                 uri: NFC_IMAGE,
               }}
+              margin={20}
             />
-            <Text>
-              Hold your device near the NFC tag and stop moving when it
-              vibrates.
-            </Text>
           </>
         ) : (
           <>

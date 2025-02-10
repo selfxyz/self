@@ -19,7 +19,7 @@ const NextScreen: React.FC = () => {
   const navigation = useNavigation();
   const handleNext = () => {
     setRegistered(true);
-    navigation.navigate('Home');
+    navigation.navigate('ConfirmBelongingScreen');
   };
   const dataHidden = false;
   const disclosureOptions: any = {

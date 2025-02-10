@@ -1,5 +1,6 @@
 import React from 'react';
 
+import { usePreventRemove } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
 
 import { BodyText } from '../components/typography/BodyText';
@@ -25,7 +26,8 @@ const ScanButton = styled(Button, {
 const HomeScreen: React.FC = () => {
   const onCaptionPress = useHapticNavigation('Launch');
   const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
-
+  // Prevents back navigation
+  usePreventRemove(true, () => {});
   return (
     <YStack bg={black} gap={20} jc="space-between" height={'100%'} padding={20}>
       <YStack ai="center" gap={20} justifyContent="flex-start">

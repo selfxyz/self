@@ -1,9 +1,10 @@
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { typography } from '../../components/typography/styles';
@@ -38,7 +39,7 @@ const SuccessScreen: React.FC = () => {
           <Title size="large">Identity Verified</Title>
           <Description>
             You've successfully proved your identity to{' '}
-            <Text style={typography.strong}>{appName}</Text>
+            <BodyText style={typography.strong}>{appName}</BodyText>
           </Description>
         </View>
         <PrimaryButton onPress={onOkPress}>OK</PrimaryButton>
