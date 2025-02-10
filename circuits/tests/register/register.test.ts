@@ -262,6 +262,38 @@ testSuite.forEach(
         expect(nullifierTampered).to.equal(nullifierValid);
         expect(commitmentTampered).to.not.be.equal(commitmentValid);
       });
+
+      if (sigAlg.startsWith('rsa') || sigAlg.startsWith('rsapss')) {
+        it('should fail if RSA public key prefix is invalid', async function () {
+          try {
+            const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+            tamperedInputs.raw_dsc[tamperedInputs.dsc_pubKey_offset - 1] = 
+              (tamperedInputs.raw_dsc[tamperedInputs.dsc_pubKey_offset - 1] + 1).toString();
+            
+            await circuit.calculateWitness(tamperedInputs);
+            expect.fail('Expected an error but none was thrown.');
+          } catch (error: any) {
+            expect(error.message).to.include('Assert Failed');
+          }
+        });
+
+        it('should pass with valid RSA prefix for the key length', async function () {
+          const keyLengthToPrefix = {
+            2048: [0x02, 0x82, 0x01, 0x01, 0x00],
+            3072: [0x02, 0x82, 0x01, 0x81, 0x00], 
+            4096: [0x02, 0x82, 0x02, 0x01, 0x00]
+          };
+
+          const expectedPrefix = keyLengthToPrefix[keyLength];
+          
+          for (let i = 0; i < 5; i++) {
+            const prefixByte = parseInt(inputs.raw_dsc[Number(inputs.dsc_pubKey_offset) - 5 + i]);
+            expect(prefixByte)
+              .to.equal(expectedPrefix[i], 
+                `Prefix byte ${i} mismatch for ${keyLength} bit key`);
+          }
+        });
+      }
     });
   }
 );

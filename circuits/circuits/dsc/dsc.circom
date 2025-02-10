@@ -13,6 +13,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/bytes.circom";
 include "../utils/passport/BytesToNum.circom";
+include "../utils/passport/checkRSAPrefix.circom";
 
 /// @title DSC
 /// @notice Circuit for verifying DSC certificate signature using CSCA certificate
@@ -51,10 +52,9 @@ template DSC(
     var kScaled = k_csca * kLengthFactor;
     var hashLength = getHashLength(signatureAlgorithm);
 
-    var prefixLength = getPrefixLength(kLengthFactor);
-    var prefix[prefixLength] = getPrefixInCSCA(kLengthFactor);
-
     var MAX_CSCA_PUBKEY_LENGTH = n_csca * kScaled / 8;
+
+    var prefixLength = 5;
 
     signal input raw_csca[MAX_CSCA_LENGTH];
     signal input raw_csca_actual_length;
@@ -126,14 +126,14 @@ template DSC(
         csca_pubKey_actual_size + prefixLength
     );
 
-    // check prefix is correct
-    signal prefix_checks[prefixLength];
-    for (var i = 0; i < prefixLength; i++) {
-        prefix_checks[i] <== IsEqual()([
-            extracted_csca_pubKey_with_prefix[i],
-            prefix[i]
-        ]);
-        prefix_checks[i] === 1;
+    // If using RSA or RSAPSS, check that the extracted prefix matches one of the allowed RSA prefixes
+    if (kLengthFactor == 1) {
+        CheckRSAPrefix(
+            prefixLength,
+            MAX_CSCA_PUBKEY_LENGTH + prefixLength
+        )(
+            extracted_csca_pubKey_with_prefix
+        );
     }
 
     // remove the prefix from the CSCA public key

@@ -10,6 +10,7 @@ include "../utils/crypto/bitify/splitWordsToBytes.circom";
 include "../utils/crypto/bitify/bytes.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../utils/passport/checkPubkeysEqual.circom";
+include "../utils/passport/checkRSAPrefix.circom";
 
 /// @title REGISTER
 /// @notice Main circuit — verifies the integrity of the passport data, the signature, and generates commitment and nullifier
@@ -66,10 +67,9 @@ template REGISTER(
     var HASH_LEN_BYTES = HASH_LEN_BITS / 8;
     var ECONTENT_HASH_ALGO_BYTES = ECONTENT_HASH_ALGO / 8;
 
-    var prefixLength = getPrefixLength(kLengthFactor);
-    var prefix[prefixLength] = getPrefixInDSC(kLengthFactor);
-
     var MAX_DSC_PUBKEY_LENGTH = n * kScaled / 8;
+
+    var prefixLength = 5;
 
     signal input raw_dsc[MAX_DSC_LENGTH];
     signal input raw_dsc_actual_length;
@@ -127,14 +127,14 @@ template REGISTER(
         dsc_pubKey_actual_size + prefixLength
     );
 
-    // check prefix is correct
-    signal prefix_checks[prefixLength];
-    for (var i = 0; i < prefixLength; i++) {
-        prefix_checks[i] <== IsEqual()([
-            extracted_dsc_pubKey_with_prefix[i],
-            prefix[i]
-        ]);
-        prefix_checks[i] === 1;
+    // If using RSA or RSAPSS, check that the extracted prefix matches one of the allowed RSA prefixes
+    if (kLengthFactor == 1) {
+        CheckRSAPrefix(
+            prefixLength,
+            MAX_DSC_PUBKEY_LENGTH + prefixLength
+        )(
+            extracted_dsc_pubKey_with_prefix
+        );
     }
 
     // remove the prefix from the DSC public key
