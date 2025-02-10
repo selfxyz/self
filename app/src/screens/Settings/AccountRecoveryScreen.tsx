@@ -26,7 +26,7 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection>
         <YStack alignItems="center" gap="$2.5" pb="$2.5">
-          <Title>Restore your Self ID account</Title>
+          <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.

@@ -273,7 +273,7 @@ const ProveScreen: React.FC = () => {
           marginTop={10}
           borderRadius={4}
         >
-          Self ID will confirm that these details are accurate and none of your
+          Self will confirm that these details are accurate and none of your
           confidential info will be revealed to {selectedApp.appName}
         </Caption>
         <PrimaryButton

@@ -171,7 +171,7 @@ const RootStack = createStackNavigator({
     Home: {
       screen: HomeScreen,
       options: {
-        title: 'Self ID',
+        title: 'Self',
         header: HomeNavBar,
       },
     },

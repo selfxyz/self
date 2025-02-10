@@ -42,8 +42,8 @@ const PassportOnboardingScreen: React.FC<
             Open your passport to the first page to scan it.
           </Description>
           <Additional textBreakStrategy="balanced">
-            Self ID will not capture an image of your passport. Our system is
-            only reading the fields.
+            Self will not capture an image of your passport. Our system is only
+            reading the fields.
           </Additional>
         </TextsContainer>
         <ButtonsContainer>

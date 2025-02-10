@@ -42,7 +42,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             <Anchor style={styles.link} href="https://example.com">
               Privacy notice
             </Anchor>
-            &nbsp;of Self ID provided by Self Inc.
+            &nbsp;of Self provided by Self Inc.
           </Text>
           <PrimaryButton onPress={onStartPress}>Get Started</PrimaryButton>
         </YStack>
