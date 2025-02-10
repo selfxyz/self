@@ -1,4 +1,5 @@
 import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { usePreventRemove } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
@@ -28,8 +29,16 @@ const HomeScreen: React.FC = () => {
   const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
   // Prevents back navigation
   usePreventRemove(true, () => {});
+  const { bottom } = useSafeAreaInsets();
   return (
-    <YStack bg={black} gap={20} jc="space-between" height={'100%'} padding={20}>
+    <YStack
+      bg={black}
+      gap={20}
+      jc="space-around"
+      flex={1}
+      paddingHorizontal={20}
+      paddingBottom={bottom + 20}
+    >
       <YStack ai="center" gap={20} justifyContent="flex-start">
         <SelfCard width="100%" />
         <Caption
@@ -42,11 +51,21 @@ const HomeScreen: React.FC = () => {
         </Caption>
         <PrivacyNote />
       </YStack>
-      <YStack ai="center" gap={20} justifyContent="center" paddingBottom={20}>
+      <YStack
+        ai="center"
+        gap={20}
+        justifyContent="center"
+        paddingBottom={20}
+        hitSlop={50}
+      >
         <ScanButton onPress={onScanButtonPress}>
           <ScanIcon color={amber500} />
         </ScanButton>
-        <Caption color={amber500} textTransform="uppercase">
+        <Caption
+          color={amber500}
+          textTransform="uppercase"
+          onPress={onScanButtonPress}
+        >
           Prove your SELF
         </Caption>
       </YStack>
