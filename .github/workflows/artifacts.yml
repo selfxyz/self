@@ -19,6 +19,12 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Install npm
+        run: |
+          curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash
+          nvm install 20
+          npm -v
+
       - name: Install dependencies
         run: |
           npm i -g yarn && cd circuits && yarn
