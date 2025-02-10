@@ -70,7 +70,18 @@ describe('ProveCountryIsNotInList', function () {
 
     it('should faild - country FRA is in the list', async () => {
       try {
-        const forbiddenCountriesList = ['XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'FRA'];
+        const forbiddenCountriesList = [
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'XXX',
+          'FRA',
+        ];
         const inputs = {
           dg1: formatInput(dg1),
           forbidden_countries_list: formatInput(formatCountriesList(forbiddenCountriesList)),
@@ -83,7 +94,18 @@ describe('ProveCountryIsNotInList', function () {
     });
 
     it('should succeed - XRA and AXX are in the list, not FRA', async () => {
-      const forbiddenCountriesList = ['XFR', 'AXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XXX', 'XFR', 'AXX', 'XXX'];
+      const forbiddenCountriesList = [
+        'XFR',
+        'AXX',
+        'XXX',
+        'XXX',
+        'XXX',
+        'XXX',
+        'XXX',
+        'XFR',
+        'AXX',
+        'XXX',
+      ];
       const inputs = {
         dg1: formatInput(dg1),
         forbidden_countries_list: formatInput(formatCountriesList(forbiddenCountriesList)),

@@ -3,6 +3,20 @@ import { Buffer } from 'buffer';
 import { ec as EC } from 'elliptic';
 import { sha384 } from 'js-sha512';
 
+/**
+ * @notice Verifies a COSE_Sign1 message signature against the provided ECDSA public key.
+ * @param data A Buffer containing the COSE_Sign1 encoded message.
+ * @param verifier An object providing the signature verification properties:
+ *                 - key.x: The hexadecimal string for the x-coordinate of the public key.
+ *                 - key.y: The hexadecimal string for the y-coordinate of the public key.
+ *                 - key.curve: The elliptic curve identifier (e.g., 'p256', 'p384') to be used.
+ * @param _options An object containing options for verification. Currently supports:
+ *                 - defaultType: The expected type identifier (not actively used in the verification flow).
+ * @return A Promise that resolves if the signature is valid; otherwise, it throws an error.
+ * @notice This function is typically invoked by the attestation verification process in @attest.ts
+ *         to ensure that the TEE's COSE_Sign1 attestation document has not been tampered with.
+ * @see https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html for p384 sha384 usage
+ */
 export const cose = {
   sign: {
     verify: async (

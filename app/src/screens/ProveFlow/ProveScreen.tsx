@@ -4,25 +4,10 @@ import { useNavigation } from '@react-navigation/native';
 import io, { Socket } from 'socket.io-client';
 import { Text, YStack } from 'tamagui';
 
-// import {
-//   DEVELOPMENT_MODE,
-//   MAX_CERT_BYTES,
-// } from '../../../../common/src/constants/constants';
 import {
   ArgumentsProveOffChain,
   OpenPassportApp,
 } from '../../../../common/src/utils/appType';
-import {
-  getCircuitNameOld,
-  parseCertificateSimple,
-} from '../../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-// import {
-//   getCSCAFromSKI,
-//   sendCSCARequest,
-// } from '../../../../common/src/utils/csca';
-// import { generateCircuitInputsDSC } from '../../../../common/src/utils/circuits/generateInputs';
-// import { buildAttestation } from '../../../../common/src/utils/openPassportAttestation';
-import { parsePassportData } from '../../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
@@ -32,13 +17,10 @@ import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-// import { generateCircuitInputsInApp } from '../../utils/generateInputsInApp';
-// import { generateProof } from '../../utils/prover';
-import { CircuitName } from '../../utils/zkeyDownload';
+import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const [generatingProof, setGeneratingProof] = useState(false);
   const selectedApp = useNavigationStore(
     state => state.selectedApp || { args: {} },
   ) as OpenPassportApp;
@@ -46,12 +28,10 @@ const ProveScreen: React.FC = () => {
     selectedApp.mode === 'register'
       ? {}
       : (selectedApp.args as ArgumentsProveOffChain).disclosureOptions || {};
-  const { isZkeyDownloading } = useNavigationStore();
 
   const { setProofVerificationResult, passportData } = useUserStore();
 
-  const [socket, setSocket] = useState<Socket | null>(null);
-  const [isConnecting, setIsConnecting] = useState(false);
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   if (!passportData) {
     return (
@@ -61,25 +41,12 @@ const ProveScreen: React.FC = () => {
     );
   }
 
-  const { signatureAlgorithm } = parseCertificateSimple(passportData.dsc);
-  const parsedPassportData = parsePassportData(passportData);
-  const circuitName = getCircuitNameOld(
-    selectedApp.mode,
-    signatureAlgorithm,
-    parsedPassportData.signedAttrHashFunction,
-  );
-
-  const waitForSocketConnection = (socketInstance: Socket): Promise<void> => {
-    return new Promise(resolve => {
-      if (socketInstance.connected) {
-        resolve();
-      } else {
-        socketInstance.once('connect', () => {
-          resolve();
-        });
-      }
-    });
-  };
+  function onVerify() {
+    buttonTap();
+    sendVcAndDisclosePayload(passportData).catch(e =>
+      console.log('Error sending VC and disclose payload', e),
+    );
+  }
 
   function goToErrorScreen() {
     navigate('WrongProofScreen');
@@ -159,101 +126,6 @@ const ProveScreen: React.FC = () => {
     };
   }, [selectedApp.userId]);
 
-  const handleProve = async () => {
-    buttonTap();
-    try {
-      setIsConnecting(true);
-      setGeneratingProof(true);
-
-      if (!socket) {
-        throw new Error('Socket not initialized');
-      }
-
-      await waitForSocketConnection(socket);
-      setIsConnecting(false);
-
-      socket.emit('proof_generation_start', {
-        sessionId: selectedApp.sessionId,
-      });
-
-      // const inputs = await generateCircuitInputsInApp(
-      //   passportData,
-      //   selectedApp,
-      // );
-      // let attestation;
-      // let proof;
-      // let dscProof;
-
-      switch (selectedApp.mode) {
-        case 'prove_onchain':
-        case 'register':
-        // const cscaInputs = generateCircuitInputsDSC(
-        //   dscSecret as string,
-        //   passportData.dsc,
-        //   MAX_CERT_BYTES,
-        //   selectedApp.devMode,
-        // );
-        // [dscProof, proof] = await Promise.all([
-        //   sendCSCARequest(cscaInputs),
-        //   generateProof(circuitName, inputs),
-        // ]);
-        // const cscaPem = getCSCAFromSKI(
-        //   authorityKeyIdentifier,
-        //   DEVELOPMENT_MODE,
-        // );
-        // const { signatureAlgorithm: signatureAlgorithmDsc } =
-        //   parseCertificateSimple(cscaPem);
-        // attestation = buildAttestation({
-        //   mode: selectedApp.mode,
-        //   proof: proof.proof,
-        //   publicSignals: proof.publicSignals,
-        //   signatureAlgorithm: signatureAlgorithm,
-        //   hashFunction: parsedPassportData.signedAttrHashFunction,
-        //   userIdType: selectedApp.userIdType,
-        //   dscProof: (dscProof as any).proof,
-        //   dscPublicSignals: (dscProof as any).pub_signals,
-        //   signatureAlgorithmDsc: signatureAlgorithmDsc,
-        //   hashFunctionDsc: parsedPassportData.signedAttrHashFunction,
-        // });
-        //   break;
-        // default:
-        //   proof = await generateProof(circuitName, inputs);
-        //   attestation = buildAttestation({
-        //     userIdType: selectedApp.userIdType,
-        //     mode: selectedApp.mode,
-        //     proof: proof.proof,
-        //     publicSignals: proof.publicSignals,
-        //     signatureAlgorithm: signatureAlgorithm,
-        //     hashFunction: parsedPassportData.signedAttrHashFunction,
-        //     dsc: passportData.dsc,
-        //   });
-        //   break;
-      }
-      // console.log('\x1b[90mattestation\x1b[0m', attestation);
-      // socket.emit('proof_generated', {
-      //   sessionId: selectedApp.sessionId,
-      //   proof: attestation,
-      // });
-    } catch (error) {
-      console.log('Error', {
-        message: String(error),
-        customData: {
-          type: 'error',
-        },
-      });
-      console.error('Error in handleProve:', error);
-      goToErrorScreen();
-      if (socket) {
-        socket.emit('proof_generation_failed', {
-          sessionId: selectedApp.sessionId,
-        });
-      }
-    } finally {
-      setGeneratingProof(false);
-      setIsConnecting(false);
-    }
-  };
-
   return (
     <ExpandableBottomLayout.Layout>
       <ExpandableBottomLayout.TopSection>
@@ -276,16 +148,7 @@ const ProveScreen: React.FC = () => {
           Self will confirm that these details are accurate and none of your
           confidential info will be revealed to {selectedApp.appName}
         </Caption>
-        <PrimaryButton
-          onPress={handleProve}
-          disabled={
-            generatingProof ||
-            isConnecting ||
-            isZkeyDownloading[circuitName as CircuitName]
-          }
-        >
-          Verify with Passcode
-        </PrimaryButton>
+        <PrimaryButton onLongPress={onVerify}>Hold To Verify</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

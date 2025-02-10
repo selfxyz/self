@@ -1963,10 +1963,28 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@openpassport/zk-kit-lean-imt@npm:^0.0.6":
+  version: 0.0.6
+  resolution: "@openpassport/zk-kit-lean-imt@npm:0.0.6"
+  dependencies:
+    "@openpassport/zk-kit-utils": "npm:0.0.1"
+  checksum: 10c0/2cb3f99e216391a325a7050290cccfa12323dc057d7cf4a26baeafe79a34c4ed3013da035fdbe9985395d5a668e37fd81f2b060834b67895bd3f82e7edfe0601
+  languageName: node
+  linkType: hard
+
 "@openpassport/zk-kit-smt@npm:^0.0.1":
   version: 0.0.1
   resolution: "@openpassport/zk-kit-smt@npm:0.0.1"
   checksum: 10c0/2d1d6ccd51c1cdf005e71090ac3d5d505ca58f58776bb7bd178c3d6bfdf3e22b69e50816e620f376663b63fa98bf22439c9b38de523de51e018b9e52f097624b
+  languageName: node
+  linkType: hard
+
+"@openpassport/zk-kit-utils@npm:0.0.1":
+  version: 0.0.1
+  resolution: "@openpassport/zk-kit-utils@npm:0.0.1"
+  dependencies:
+    buffer: "npm:^6.0.3"
+  checksum: 10c0/3a9adb279cfd5096c44934bb6c73979f21247eb0119a65f8b5c0bb1f457f5500de761fc627e0bd9e72a7cbf5ca65696c144bfffe3dbd1f1ce37a300c239a8e3f
   languageName: node
   linkType: hard
 
@@ -7210,6 +7228,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"buffer@npm:^6.0.3":
+  version: 6.0.3
+  resolution: "buffer@npm:6.0.3"
+  dependencies:
+    base64-js: "npm:^1.3.1"
+    ieee754: "npm:^1.2.1"
+  checksum: 10c0/2a905fbbcde73cc5d8bd18d1caa23715d5f83a5935867c2329f0ac06104204ba7947be098fe1317fbd8830e26090ff8e764f08cd14fefc977bb248c3487bcbd0
+  languageName: node
+  linkType: hard
+
 "burnt@npm:^0.12.2":
   version: 0.12.2
   resolution: "burnt@npm:0.12.2"
@@ -9678,7 +9706,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ieee754@npm:^1.1.13, ieee754@npm:^1.1.4, ieee754@npm:^1.1.8":
+"ieee754@npm:^1.1.13, ieee754@npm:^1.1.4, ieee754@npm:^1.1.8, ieee754@npm:^1.2.1":
   version: 1.2.1
   resolution: "ieee754@npm:1.2.1"
   checksum: 10c0/b0782ef5e0935b9f12883a2e2aa37baa75da6e66ce6515c168697b42160807d9330de9a32ec1ed73149aea02e0d822e572bca6f1e22bdcbd2149e13b050b17bb
@@ -12362,6 +12390,7 @@ __metadata:
     "@babel/core": "npm:^7.20.0"
     "@babel/plugin-transform-private-methods": "npm:^7.23.3"
     "@ethersproject/shims": "npm:^5.7.0"
+    "@openpassport/zk-kit-lean-imt": "npm:^0.0.6"
     "@openpassport/zk-kit-smt": "npm:^0.0.1"
     "@peculiar/asn1-schema": "npm:^2.3.15"
     "@peculiar/x509": "npm:^1.12.3"
@@ -13089,7 +13118,7 @@ __metadata:
   peerDependencies:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
-  checksum: 10c0/ebb3dfb9a111bf6082866999d31e10f952fcd12bcf2a81210ff9f44a4cb4d25e1b4caac5fdec512b367685e56a37e61de3e6648c2af45b93fcbaf704355dbaa6
+  checksum: 10c0/0e3f83f59dadc337ab46fa0c59bb2b80eb91d4756f0ac67d7b11e0d97044d58bbaca7ee5c7dcd1e0a389af3f16b0eaca12122d59905013a6f5a2f4423ead49d0
   languageName: node
   linkType: hard
 

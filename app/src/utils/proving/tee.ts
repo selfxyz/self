@@ -7,6 +7,12 @@ import { getPublicKey, verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
 
+/**
+ * @notice Encrypts plaintext using AES-256-GCM encryption.
+ * @param plaintext The string to be encrypted.
+ * @param key The encryption key as a forge ByteStringBuffer.
+ * @return An object containing the nonce, cipher_text, and auth_tag as arrays of numbers.
+ */
 function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
   const iv = forge.random.getBytesSync(12);
   const cipher = forge.cipher.createCipher('AES-GCM', key);
@@ -28,6 +34,15 @@ const pubkey =
   key1.getPublic().getX().toString('hex').padStart(64, '0') +
   key1.getPublic().getY().toString('hex').padStart(64, '0');
 
+/**
+ * @notice Sends a payload over WebSocket connecting to the TEE server, processes the attestation,
+ *         and submits a registration request encrypted via a shared key derived using ECDH.
+ * @param inputs The circuit input parameters.
+ * @param circuitName The name of the circuit.
+ * @param timeoutMs The timeout in milliseconds (default is 1200000 ms).
+ * @return A promise that resolves when the request completes or rejects on error/timeout.
+ * @dev This function sets up two WebSocket connections: one for RPC and one for subscription updates.
+ */
 export async function sendPayload(
   inputs: any,
   circuitName: string,
@@ -59,7 +74,6 @@ export async function sendPayload(
   ws.addEventListener('message', async event => {
     try {
       const result = JSON.parse(event.data);
-      console.log('Received message:', result);
       if (result.result?.attestation !== undefined) {
         await processAttestation(result);
       } else {
