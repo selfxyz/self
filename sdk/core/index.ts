@@ -5,8 +5,10 @@ import {
   SelfAttestation,
   // OpenPassportDynamicAttestation,
 } from '../../common/src/utils/selfAttestation';
+
 export {
   SelfVerifier,
   SelfVerifierReport,
   countryCodes,
+  SelfAttestation,
 };
