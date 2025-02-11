@@ -49,7 +49,8 @@ const routes = [
   [ShareIcon, 'Share Self app', 'share'],
 ] as [React.FC<SvgProps>, string, RouteOption][];
 
-if (__DEV__) {
+// temporarily always show so we can release builds for testing
+if (__DEV__ || true) {
   // @ts-expect-error
   routes.push([Bug, 'Debug menu', 'DevSettings']);
 }

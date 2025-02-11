@@ -6,7 +6,8 @@ import { Check, ChevronDown, Eraser, IterationCw } from '@tamagui/lucide-icons';
 import { Adapt, Button, Fieldset, Label, Select, Sheet, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../Navigation';
-import { borderColor, textBlack, textColor2 } from '../../utils/colors';
+import useUserStore from '../../stores/userStore';
+import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
 
@@ -88,6 +89,21 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
+  const {
+    clearPassportDataFromStorage,
+    clearPassportMetadataFromStorage,
+    setRegistered,
+  } = useUserStore();
+
+  const nav = useNavigation();
+
+  function handleRestart() {
+    clearPassportMetadataFromStorage();
+    clearPassportDataFromStorage();
+    setRegistered(false);
+    nav.navigate('Launch');
+  }
+
   return (
     <YStack gap="$2" mt="$2" ai="center">
       <Fieldset gap="$4" horizontal>
@@ -106,7 +122,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           borderWidth={1.2}
           size="$3.5"
           ml="$2"
-          //   onPress={handleRestart}
+          onPress={handleRestart}
         >
           <IterationCw color={textBlack} />
         </Button>
@@ -128,7 +144,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           borderWidth={1.2}
           size="$3.5"
           ml="$2"
-          //   onPress={clearPassportDataFromStorage}
+          onPress={clearPassportDataFromStorage}
         >
           <Eraser color={textBlack} />
         </Button>
@@ -152,7 +168,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
                     </Switch>
                   </Fieldset> */}
 
-      <Fieldset gap="$4" mt="$1" horizontal>
+      {/* <Fieldset gap="$4" mt="$1" horizontal>
         <Label
           color={textBlack}
           width={200}
@@ -168,11 +184,11 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           borderWidth={1.2}
           size="$3.5"
           ml="$2"
-          //   onPress={() => setDialogDeleteSecretIsOpen(true)}
+          // onPress={clearSecretFromStorage}
         >
           <Eraser color={textColor2} />
         </Button>
-      </Fieldset>
+      </Fieldset> */}
       <Dialog.Container visible={false}>
         <Dialog.Title>Delete Secret</Dialog.Title>
         <Dialog.Description>
