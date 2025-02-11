@@ -89,7 +89,7 @@ export class SelfVerifier extends AttestationVerifier {
     let selfArguments: ArgumentsProveOffChain | ArgumentsRegister;
     const argsVcAndDisclose: ArgumentsDisclose = {
       disclosureOptions: this.toDisclosureOptions(),
-      commitmentMerkleTreeUrl: '', // FIXME
+      commitmentMerkleTreeUrl: 'https://tree.openpassport.app',
     };
     selfArguments = argsVcAndDisclose;
 
