@@ -2,8 +2,8 @@ import { UserIdType } from "./circuits/uuid";
 
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 
-// OpenPassportAppType
-export interface OpenPassportAppPartial {
+// SelfAppType
+export interface SelfAppPartial {
   appName: string;
   scope: string;
   sessionId: string;
@@ -12,7 +12,7 @@ export interface OpenPassportAppPartial {
   devMode: boolean;
 }
 
-export interface OpenPassportApp extends OpenPassportAppPartial {
+export interface SelfApp extends SelfAppPartial {
   args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose;
 }
 

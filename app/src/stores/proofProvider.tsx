@@ -8,7 +8,7 @@ import React, {
 import io, { Socket } from 'socket.io-client';
 
 import { WS_URL } from '../../../common/src/constants/constants';
-import { OpenPassportApp } from '../../../common/src/utils/appType';
+import { SelfApp } from '../../../common/src/utils/appType';
 import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
 // failure means that one of the requirements was not met, error means we fucked up.
@@ -17,8 +17,8 @@ export type ProofStatus = 'success' | 'failure' | 'pending' | 'error';
 interface IProofContext {
   status: ProofStatus;
   proofVerificationResult: unknown;
-  selectedApp: OpenPassportApp;
-  setSelectedApp: (app: OpenPassportApp) => void;
+  selectedApp: SelfApp;
+  setSelectedApp: (app: SelfApp) => void;
   setProofVerificationResult: (result: unknown) => void;
   setStatus: (status: ProofStatus) => void;
 }
@@ -26,8 +26,8 @@ interface IProofContext {
 const defaults: IProofContext = {
   status: 'pending',
   proofVerificationResult: null,
-  selectedApp: {} as OpenPassportApp,
-  setSelectedApp: (_: OpenPassportApp) => undefined,
+  selectedApp: {} as SelfApp,
+  setSelectedApp: (_: SelfApp) => undefined,
   setProofVerificationResult: (_: unknown) => undefined,
   setStatus: (_: ProofStatus) => undefined,
 };
@@ -43,13 +43,13 @@ export function ProofProvider({ children }: PropsWithChildren) {
   const [status, setStatus] = useState<ProofStatus>(defaults.status);
   const [proofVerificationResult, setProofVerificationResult] =
     useState<unknown>(defaults.proofVerificationResult);
-  const [selectedApp, _setSelectedApp] = useState<OpenPassportApp>(
+  const [selectedApp, _setSelectedApp] = useState<SelfApp>(
     defaults.selectedApp,
   );
   const [_, setSocket] = useState<Socket | null>(null);
 
   // reset all the values so it not in wierd state
-  function setSelectedApp(app: OpenPassportApp) {
+  function setSelectedApp(app: SelfApp) {
     setStatus('pending');
     setProofVerificationResult(null);
     _setSelectedApp(app);
@@ -84,7 +84,7 @@ export const useProofInfo = () => {
 // handle it unmounting in progress?
 //
 function useWebsocket(
-  selectedApp: OpenPassportApp,
+  selectedApp: SelfApp,
   setStatus: React.Dispatch<React.SetStateAction<ProofStatus>>,
   setProofVerificationResult: React.Dispatch<unknown>,
   setSocket: React.Dispatch<React.SetStateAction<Socket | null>>,

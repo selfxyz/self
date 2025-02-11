@@ -1,33 +1,27 @@
-// import {
-//   ArgumentsDisclose,
-//   ArgumentsProveOffChain,
-//   ArgumentsProveOnChain,
-//   ArgumentsRegister,
-//   Mode,
-//   SelfAppPartial,
-//   SelfApp
-// } from '../../../common/src/utils/appType';
-import {
-  DEFAULT_RPC_URL,
-  countryNames,
-} from '../../../common/src/constants/constants';
-// import { UserIdType } from '../../../common/src/utils/circuits/uuid';
-import { AttestationVerifier } from './AttestationVerifier';
-export class SelfVerifier extends AttestationVerifier {
+import msgpack from 'msgpack-lite';
+import pako from 'pako';
 
+import { DEFAULT_RPC_URL, countryNames } from '../../../common/src/constants/constants';
+import {
+  ArgumentsDisclose,
+  ArgumentsProveOffChain,
+  ArgumentsRegister,
+  DisclosureOptions,
+  SelfApp,
+  SelfAppPartial,
+} from '../../../common/src/utils/appType';
+import { UserIdType } from '../../../common/src/utils/circuits/uuid';
+import { AttestationVerifier } from './AttestationVerifier';
+
+export class SelfVerifier extends AttestationVerifier {
   constructor(
-    scope: string, 
+    scope: string,
     devMode: boolean = false,
     rpcUrl: string = DEFAULT_RPC_URL,
     registryContractAddress: `0x${string}`,
     hubContractAddress: `0x${string}`
   ) {
-    super(
-      devMode,
-      rpcUrl,
-      registryContractAddress,
-      hubContractAddress
-    );
+    super(devMode, rpcUrl, registryContractAddress, hubContractAddress);
     this.scope = scope;
   }
 
@@ -72,18 +66,20 @@ export class SelfVerifier extends AttestationVerifier {
     return this;
   }
 
+  toDisclosureOptions(): DisclosureOptions {
+    return [
+      { key: 'minimumAge', ...this.minimumAge },
+      { key: 'nationality', ...this.nationality },
+      { key: 'excludedCountries', ...this.excludedCountries },
+      { key: 'ofac', enabled: this.ofac },
+    ];
+  }
+
   // TODO: related to the qr code
-  getIntent(
-    appName: string,
-    userId: string,
-    userIdType: UserIdType,
-    sessionId: string,
-    websocketUrl: string = WEBSOCKET_URL
-  ): string {
+  getIntent(appName: string, userId: string, userIdType: UserIdType, sessionId: string): string {
     const intent_raw: SelfAppPartial = {
       appName: appName,
       scope: this.scope,
-      websocketUrl: websocketUrl,
       sessionId: sessionId,
       userId: userId,
       userIdType: userIdType,
@@ -91,15 +87,11 @@ export class SelfVerifier extends AttestationVerifier {
     };
 
     let selfArguments: ArgumentsProveOffChain | ArgumentsRegister;
-        const argsVcAndDisclose: ArgumentsDisclose = {
-          disclosureOptions: {
-            minimumAge: this.minimumAge,
-            nationality: this.nationality,
-            excludedCountries: this.excludedCountries,
-            ofac: this.ofac,
-        };
-        selfArguments = argsVcAndDisclose;
-    }
+    const argsVcAndDisclose: ArgumentsDisclose = {
+      disclosureOptions: this.toDisclosureOptions(),
+      commitmentMerkleTreeUrl: '', // FIXME
+    };
+    selfArguments = argsVcAndDisclose;
 
     const intent: SelfApp = {
       ...intent_raw,
