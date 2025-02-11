@@ -5,6 +5,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
+import passportScanAnimation from '../../assets/animations/passport_scan.json';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import {
   PassportCamera,
@@ -49,7 +50,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         <LottieView
           autoPlay
           loop
-          source={require('../../assets/animations/passport_scan.json')}
+          source={passportScanAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"

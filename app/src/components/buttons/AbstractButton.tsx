@@ -7,6 +7,8 @@ import {
   ViewStyle,
 } from 'react-native';
 
+import { dinot } from '../../utils/fonts';
+
 export interface ButtonProps extends PressableProps {
   children: React.ReactNode;
 }
@@ -66,7 +68,7 @@ const styles = StyleSheet.create({
     padding: 16, // plus 4 of border = 20
   },
   text: {
-    fontFamily: 'DINOT-Medium',
+    fontFamily: dinot,
     textAlign: 'center',
     fontSize: 18,
   },

@@ -9,6 +9,7 @@ import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { slate50, slate100, slate500, slate700, white } from '../utils/colors';
+import { advercase, dinot } from '../utils/fonts';
 
 interface LaunchScreenProps {}
 
@@ -71,7 +72,7 @@ export default LaunchScreen;
 
 const styles = StyleSheet.create({
   subheader: {
-    fontFamily: 'DINOT-Medium',
+    fontFamily: dinot,
     color: slate700,
     fontWeight: '500',
     fontSize: 20,
@@ -101,7 +102,7 @@ const styles = StyleSheet.create({
     paddingTop: 0,
   },
   selfText: {
-    fontFamily: 'Advercase-Regular',
+    fontFamily: advercase,
     fontSize: 36,
     fontWeight: '500',
     color: white,

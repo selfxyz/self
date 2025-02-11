@@ -5,6 +5,7 @@ import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
+import qrScanAnimation from '../../assets/animations/qr_scan.json';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import {
   QRCodeScannerView,
@@ -71,7 +72,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
               <LottieView
                 autoPlay
                 loop
-                source={require('../../assets/animations/qr_scan.json')}
+                source={qrScanAnimation}
                 style={styles.animation}
                 cacheComposition={true}
                 renderMode="HARDWARE"

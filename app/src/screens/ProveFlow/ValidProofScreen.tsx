@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
+import proofSuccessAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
@@ -28,7 +29,7 @@ const SuccessScreen: React.FC = () => {
         <LottieView
           autoPlay
           loop={false}
-          source={require('../../assets/animations/proof_success.json')}
+          source={proofSuccessAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"

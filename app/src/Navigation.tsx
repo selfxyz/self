@@ -47,11 +47,12 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
+  const insets = useSafeAreaInsets();
   return (
     <NavBar.Container
       gap={14}
       paddingHorizontal={20}
-      paddingTop={12}
+      paddingTop={Math.max(insets.top, 12)}
       paddingBottom={20}
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={

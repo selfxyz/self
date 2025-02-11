@@ -3,6 +3,7 @@ import { Text, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
+import proofFailedAnimation from '../../assets/animations/proof_failed.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
@@ -76,7 +77,7 @@ const WrongProofScreen: React.FC = () => {
         <LottieView
           autoPlay
           loop={false}
-          source={require('../../assets/animations/proof_failed.json')}
+          source={proofFailedAnimation}
           style={styles.animation}
         />
       </ExpandableBottomLayout.TopSection>

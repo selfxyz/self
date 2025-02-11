@@ -16,6 +16,7 @@ import {
 import LottieView from 'lottie-react-native';
 import { Image } from 'tamagui';
 
+import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -120,7 +121,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         <LottieView
           autoPlay
           loop={false}
-          source={require('../../assets/animations/passport_verify.json')}
+          source={passportVerifyAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"

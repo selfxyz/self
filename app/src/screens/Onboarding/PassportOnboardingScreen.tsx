@@ -3,6 +3,7 @@ import { StatusBar, StyleSheet } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
+import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -29,7 +30,7 @@ const PassportOnboardingScreen: React.FC<
         <LottieView
           autoPlay
           loop={false}
-          source={require('../../assets/animations/passport_onboarding.json')}
+          source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}
           renderMode="HARDWARE"

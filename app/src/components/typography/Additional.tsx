@@ -2,6 +2,7 @@ import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
 
 import { slate400 } from '../../utils/colors';
+import { dinot } from '../../utils/fonts';
 
 interface AdditionalProps extends TextProps {}
 
@@ -22,6 +23,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     color: slate400,
     marginTop: 10,
-    fontFamily: 'DINOT-Medium',
+    fontFamily: dinot,
   },
 });

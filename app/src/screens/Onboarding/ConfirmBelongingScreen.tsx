@@ -4,6 +4,7 @@ import { StatusBar } from 'react-native';
 import { usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
+import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
@@ -30,7 +31,7 @@ const ConfirmBelongingScreen: React.FC = () => {
           <LottieView
             autoPlay
             loop={false}
-            source={require('../../assets/animations/loading/success.json')}
+            source={successAnimation}
             style={styles.animation}
             cacheComposition={true}
             renderMode="HARDWARE"
