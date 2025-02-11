@@ -24,7 +24,7 @@ const ConfirmBelongingScreen: React.FC = () => {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="black" />
+      <StatusBar barStyle="light-content" backgroundColor="black" hidden />
       <ExpandableBottomLayout.Layout>
         <ExpandableBottomLayout.TopSection>
           <LottieView

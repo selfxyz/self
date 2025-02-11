@@ -27,7 +27,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
-import { slate100 } from '../../utils/colors';
+import { black, slate100 } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { scan } from '../../utils/nfcScannerNew';
 
@@ -115,8 +115,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   );
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection roundTop backgroundColor={slate100}>
         <LottieView
           autoPlay
           loop={false}

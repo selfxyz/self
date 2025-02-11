@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet } from 'react-native';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -17,7 +17,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
-import { slate800 } from '../../utils/colors';
+import { black, slate800 } from '../../utils/colors';
 import handleQRCodeScan from '../../utils/qrCodeNew';
 
 interface QRCodeViewFinderScreenProps {}
@@ -61,47 +61,50 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const onCancelPress = useHapticNavigation('Home', 'cancel');
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
-        {!doneScanningQR && (
-          <>
-            <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
-            <LottieView
-              autoPlay
-              loop
-              source={require('../../assets/animations/qr_scan.json')}
-              style={styles.animation}
-              cacheComposition={true}
-              renderMode="HARDWARE"
-            />
-          </>
-        )}
-        {null}
-      </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
-        <YStack alignItems="center" gap="$2.5" paddingBottom={20}>
-          <YStack alignItems="center" gap="$6" pb="$2.5">
-            <Title>Verify your ID</Title>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View pt="$2">
-                <QRScan height={40} width={40} color={slate800} />
-              </View>
-              <View maxWidth="75%">
-                <Description style={styles.subheader}>
-                  Scan a partner's QR code
-                </Description>
-                <Additional style={styles.description}>
-                  Look for a QR code from a Self partner and position it in the
-                  camera frame above.
-                </Additional>
-              </View>
-            </XStack>
-          </YStack>
+    <>
+      <StatusBar barStyle="light-content" backgroundColor={black} />
+      <ExpandableBottomLayout.Layout>
+        <ExpandableBottomLayout.TopSection roundTop>
+          {!doneScanningQR && (
+            <>
+              <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
+              <LottieView
+                autoPlay
+                loop
+                source={require('../../assets/animations/qr_scan.json')}
+                style={styles.animation}
+                cacheComposition={true}
+                renderMode="HARDWARE"
+              />
+            </>
+          )}
+          {null}
+        </ExpandableBottomLayout.TopSection>
+        <ExpandableBottomLayout.BottomSection>
+          <YStack alignItems="center" gap="$2.5" paddingBottom={20}>
+            <YStack alignItems="center" gap="$6" pb="$2.5">
+              <Title>Verify your ID</Title>
+              <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+                <View pt="$2">
+                  <QRScan height={40} width={40} color={slate800} />
+                </View>
+                <View maxWidth="75%">
+                  <Description style={styles.subheader}>
+                    Scan a partner's QR code
+                  </Description>
+                  <Additional style={styles.description}>
+                    Look for a QR code from a Self partner and position it in
+                    the camera frame above.
+                  </Additional>
+                </View>
+              </XStack>
+            </YStack>
 
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
-        </YStack>
-      </ExpandableBottomLayout.BottomSection>
-    </ExpandableBottomLayout.Layout>
+            <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          </YStack>
+        </ExpandableBottomLayout.BottomSection>
+      </ExpandableBottomLayout.Layout>
+    </>
   );
 };
 

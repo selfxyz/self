@@ -13,7 +13,7 @@ import {
   NativeStackHeaderProps,
   createNativeStackNavigator,
 } from '@react-navigation/native-stack';
-import { Button, ViewStyle } from 'tamagui';
+import { Button, TextStyle, ViewStyle } from 'tamagui';
 
 import { NavBar } from './components/NavBar';
 import ActivityIcon from './images/icons/activity.svg';
@@ -55,7 +55,10 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
       paddingBottom={20}
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={
-        options.headerTintColor === white ? 'light-content' : 'dark-content'
+        options.headerTintColor === white ||
+        (options.headerTitleStyle as TextStyle)?.color === white
+          ? 'light-content'
+          : 'dark-content'
       }
     >
       <NavBar.LeftAction
@@ -208,7 +211,9 @@ const AppNavigation = createNativeStackNavigator({
         headerStyle: {
           backgroundColor: black,
         },
-        headerTintColor: white,
+        headerTitleStyle: {
+          color: white,
+        },
       },
     },
     ValidProofScreen: {

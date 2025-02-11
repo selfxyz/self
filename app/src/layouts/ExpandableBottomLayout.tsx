@@ -6,25 +6,45 @@ import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
 
-interface ExpandableBottomLayoutProps {
+interface ExpandableBottomLayoutProps extends ViewProps {
   children: React.ReactNode;
+  backgroundColor?: string;
 }
 
 interface TopSectionProps extends ViewProps {
   children: React.ReactNode;
+  roundTop?: boolean;
 }
 
 interface BottomSectionProps extends ViewProps {
   children: React.ReactNode;
 }
 
-const Layout: React.FC<ExpandableBottomLayoutProps> = ({ children }) => {
-  return <SafeAreaView style={styles.layout}>{children}</SafeAreaView>;
+const Layout: React.FC<ExpandableBottomLayoutProps> = ({
+  children,
+  backgroundColor,
+}) => {
+  return (
+    <SafeAreaView style={[styles.layout, { backgroundColor }]}>
+      {children}
+    </SafeAreaView>
+  );
 };
 
-const TopSection: React.FC<TopSectionProps> = ({ children, ...props }) => {
+const TopSection: React.FC<TopSectionProps> = ({
+  children,
+  backgroundColor,
+  ...props
+}) => {
   return (
-    <View {...props} style={styles.topSection}>
+    <View
+      {...props}
+      style={[
+        styles.topSection,
+        props.roundTop && styles.roundTop,
+        backgroundColor && { backgroundColor: backgroundColor as string },
+      ]}
+    >
       {children}
     </View>
   );
@@ -66,6 +86,12 @@ export const ExpandableBottomLayout = {
 };
 
 const styles = StyleSheet.create({
+  roundTop: {
+    borderTopRightRadius: 20,
+    borderTopLeftRadius: 20,
+    borderTopStartRadius: 20,
+    borderTopEndRadius: 20,
+  },
   layout: {
     height: '100%',
     flexDirection: 'column',
