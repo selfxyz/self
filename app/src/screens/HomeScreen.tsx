@@ -7,9 +7,9 @@ import { Button, YStack, styled } from 'tamagui';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
 import useHapticNavigation from '../hooks/useHapticNavigation';
+import SelfCard from '../images/card-style-1.svg';
 import ScanIcon from '../images/icons/qr_scan.svg';
 import WarnIcon from '../images/icons/warning.svg';
-import SelfCard from '../images/self-card.svg';
 import { useSettingStore } from '../stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '../utils/colors';
 
