@@ -1,122 +1,188 @@
-import React from 'react';
-import Dialog from 'react-native-dialog';
+import React, { PropsWithChildren, useCallback } from 'react';
+import { Linking, Platform, Share } from 'react-native';
+import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
+import { SvgProps } from 'react-native-svg';
 
-import { Eraser, IterationCw } from '@tamagui/lucide-icons';
-import { Button, Fieldset, Label, YStack } from 'tamagui';
+import { useNavigation } from '@react-navigation/native';
+import { Button, XStack, YStack } from 'tamagui';
 
-import { borderColor, textBlack, textColor2 } from '../utils/colors';
+import { version } from '../../package.json';
+import { BodyText } from '../components/typography/BodyText';
+import Github from '../images/icons/github.svg';
+import Cloud from '../images/icons/settings_cloud_backup.svg';
+import Data from '../images/icons/settings_data.svg';
+import Feedback from '../images/icons/settings_feedback.svg';
+import Lock from '../images/icons/settings_lock.svg';
+import ShareIcon from '../images/icons/share.svg';
+import Star from '../images/icons/star.svg';
+import Telegram from '../images/icons/telegram.svg';
+import Web from '../images/icons/webpage.svg';
+import { amber500, black, neutral700, slate800, white } from '../utils/colors';
 
 interface SettingsScreenProps {}
+interface MenuButtonProps extends PropsWithChildren {
+  Icon: React.FC<SvgProps>;
+  onPress: () => void;
+}
+interface MenuButtonProps {
+  Icon: React.FC<SvgProps>;
+  onPress: () => void;
+}
+interface SocialButtonProps {
+  Icon: React.FC<SvgProps>;
+  href: string;
+}
+
+const emailFeedback = 'feedback@self.xyz';
+type RouteOption =
+  | keyof ReactNavigation.RootParamList
+  | 'share'
+  | 'email_feedback';
+
+const storeURL = Platform.OS === 'ios' ? 'TODO: ios URL' : 'TODO: android URL';
+const routes = [
+  [Data, 'View passport info', 'TODO: passportinfo'],
+  [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
+  [Cloud, 'Enable cloud back up', 'CloudBackupSettingsScreen'],
+  [Feedback, 'Send feeback', 'email_feedback'],
+  [ShareIcon, 'Share Self app', 'share'],
+] as [React.FC<SvgProps>, string, RouteOption][];
+
+const social = [
+  [Github, 'https://github.com/selfxyz/self'],
+  [Web, 'https://www.self.xyz/'],
+  [Telegram, 'TODO: Telegram URL?'],
+] as [React.FC<SvgProps>, string][];
+
+const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
+  <Button
+    unstyled
+    onPress={onPress}
+    width="100%"
+    flexDirection="row"
+    gap={6}
+    padding={20}
+    borderBottomColor={neutral700}
+    borderBottomWidth={1}
+  >
+    <Icon height={24} width={21} color={white} />
+    <BodyText color={white} fontSize={18} lineHeight={23}>
+      {children}
+    </BodyText>
+  </Button>
+);
+
+const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
+  const onPress = useCallback(() => {
+    Linking.openURL(href);
+  }, []);
+
+  return (
+    <Button
+      unstyled
+      icon={<Icon height={32} width={32} color={amber500} onPress={onPress} />}
+    />
+  );
+};
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
+  const navigation = useNavigation();
+  const onMenuPress = useCallback(
+    (menuRoute: RouteOption) => {
+      return async () => {
+        switch (menuRoute) {
+          case 'share':
+            await Share.share(
+              Platform.OS === 'android'
+                ? { message: `Install Self App ${storeURL}` }
+                : { url: storeURL, message: 'Install Self App' },
+            );
+            break;
+
+          case 'email_feedback':
+            const subject = 'SELF App Feedback';
+            const deviceInfo = [
+              ['device', `${Platform.OS}@${Platform.Version}`],
+              ['app', `v${version}`],
+              [
+                'locales',
+                getLocales()
+                  .map(locale => `${locale.languageCode}-${locale.countryCode}`)
+                  .join(','),
+              ],
+              ['country', getCountry()],
+              ['tz', getTimeZone()],
+              ['ts', new Date()],
+              ['origin', 'settings/feedback'],
+            ] as [string, string][];
+
+            const body = `
+---
+${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
+---`;
+            await Linking.openURL(
+              `mailto:${emailFeedback}?subject=${encodeURIComponent(
+                subject,
+              )}&body=${encodeURIComponent(body)}`,
+            );
+            break;
+
+          default:
+            navigation.navigate(menuRoute);
+            break;
+        }
+      };
+    },
+    [navigation],
+  );
+
   return (
-    <YStack gap="$2" mt="$2" ai="center">
-      <Fieldset gap="$4" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="restart"
-        >
-          Rescan passport
-        </Label>
+    <YStack
+      bg={black}
+      gap={20}
+      jc="space-between"
+      height={'100%'}
+      padding={20}
+      borderTopLeftRadius={30}
+      borderTopRightRadius={30}
+      paddingBottom={50}
+    >
+      <YStack ai="flex-start" gap={20} justifyContent="flex-start" width="100%">
+        {routes.map(([Icon, menuText, menuRoute]) => (
+          <MenuButton
+            key={menuRoute}
+            Icon={Icon}
+            onPress={onMenuPress(menuRoute)}
+          >
+            {menuText}
+          </MenuButton>
+        ))}
+      </YStack>
+      <YStack ai="center" gap={20} justifyContent="center" paddingBottom={40}>
         <Button
-          bg="white"
+          unstyled
+          icon={<Star color={white} height={24} width={21} />}
+          width="100%"
+          padding={20}
+          backgroundColor={slate800}
+          color={white}
+          flexDirection="row"
           jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          //   onPress={handleRestart}
+          ai="center"
+          gap={6}
+          borderRadius={4}
         >
-          <IterationCw color={textBlack} />
+          <BodyText color={white}>Leave an app store review</BodyText>
         </Button>
-      </Fieldset>
-
-      <Fieldset gap="$4" mt="$1" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="skip"
-        >
-          Delete passport data
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          //   onPress={clearPassportDataFromStorage}
-        >
-          <Eraser color={textBlack} />
-        </Button>
-      </Fieldset>
-
-      {/* <Fieldset gap="$4" mt="$1" horizontal>
-                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                          Delete proofs
-                        </Label>
-                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
-                          <Eraser color={textBlack} />
-                        </Button>
-                      </Fieldset> */}
-
-      {/* <Fieldset horizontal>
-                    <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
-                      Private mode
-                    </Label>
-                    <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
-                      <Switch.Thumb animation="bouncy" bc={bgColor} />
-                    </Switch>
-                  </Fieldset> */}
-
-      <Fieldset gap="$4" mt="$1" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="skip"
-        >
-          Delete secret (caution)
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          //   onPress={() => setDialogDeleteSecretIsOpen(true)}
-        >
-          <Eraser color={textColor2} />
-        </Button>
-      </Fieldset>
-      <Dialog.Container visible={false}>
-        <Dialog.Title>Delete Secret</Dialog.Title>
-        <Dialog.Description>
-          You are about to delete your secret. Be careful! You will not be able
-          to recover your identity.
-        </Dialog.Description>
-        <Dialog.Button
-          //   onPress={() => setDialogDeleteSecretIsOpen(false)}
-          label="Cancel"
-        />
-        <Dialog.Button
-          //   onPress={() => handleDeleteSecret()}
-          label="Delete secret"
-        />
-      </Dialog.Container>
-      {/* <Fieldset gap="$4" mt="$1" horizontal>
-                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                          registered = (!registered)
-                        </Label>
-                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
-                          <UserPlus color={textColor2} />
-                        </Button>
-                      </Fieldset> */}
+        <XStack gap={32}>
+          {social.map(([Icon, href], i) => (
+            <SocialButton key={i} Icon={Icon} href={href} />
+          ))}
+        </XStack>
+        <BodyText color={amber500} fontSize={15}>
+          SELF
+        </BodyText>
+      </YStack>
     </YStack>
   );
 };
