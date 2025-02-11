@@ -168,7 +168,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     action: 'cancel',
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const _cancelScanIfRunning = useCallback(async () => {
     // // TODO: cancel if scanning
     // setIsNfcSheetOpen(false);
