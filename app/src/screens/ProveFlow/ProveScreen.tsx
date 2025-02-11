@@ -11,7 +11,7 @@ import {
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
-import { Caption } from '../../components/typography/styles';
+import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
@@ -145,6 +145,7 @@ const ProveScreen: React.FC = () => {
         <View>
           <Caption
             textAlign="center"
+            size="small"
             marginBottom={20}
             marginTop={10}
             borderRadius={4}

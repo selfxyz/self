@@ -36,6 +36,7 @@ import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
 import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
 import DevSettingsScreen from './screens/Settings/DevSettingsScreen';
+import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
@@ -272,7 +273,12 @@ const AppNavigation = createNativeStackNavigator({
         },
       },
     },
-
+    PassportDataInfo: {
+      screen: PassportDataInfoScreen,
+      options: {
+        title: 'Passport Data Info',
+      },
+    },
     DevSettings: {
       screen: DevSettingsScreen,
       options: {

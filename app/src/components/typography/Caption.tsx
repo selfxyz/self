@@ -1,6 +1,19 @@
-import { Text, styled } from 'tamagui';
+import { styled } from 'tamagui';
 
-export const Caption = styled(Text, {
+import { slate400 } from '../../utils/colors';
+import { BodyText } from './BodyText';
+
+export const Caption = styled(BodyText, {
   fontSize: 15,
-  fontFamily: 'DINOT-Medium',
+  color: slate400,
+  variants: {
+    size: {
+      small: {
+        fontSize: 14,
+      },
+      large: {
+        fontSize: 16,
+      },
+    },
+  },
 });
