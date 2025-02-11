@@ -85,6 +85,7 @@ export async function sendDscPayload(passportData: PassportData) {
 
 function generateTeeInputsVCAndDisclose(passportData: PassportData) {
   const majority = '18';
+  // THIS Does not work. need a package for this in react native
   const user_identifier = crypto.randomUUID();
   const selector_dg1 = Array(88).fill('1');
   const selector_older_than = '1';

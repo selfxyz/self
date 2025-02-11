@@ -4,6 +4,7 @@ import { k_dsc, n_dsc, PASSPORT_ATTESTATION_ID } from '../../../common/src/const
 import { generateCircuitInputsProve } from '../../../common/src/utils/generateInputs';
 import { majority, scope } from './testCases';
 
+
 export const generateCircuitInputsInSdk = (
   passportData: PassportData,
   circuit: CircuitName
@@ -15,6 +16,7 @@ export const generateCircuitInputsInSdk = (
       const selector_mode = 0;
       const secret = 0;
       const dsc_secret = 0;
+      // import missing
       const user_identifier = crypto.randomUUID();
       return generateCircuitInputsProve(
         selector_mode,

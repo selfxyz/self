@@ -1,19 +1,15 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
-import io, { Socket } from 'socket.io-client';
 import { Text, View, YStack } from 'tamagui';
 
-import {
-  ArgumentsProveOffChain,
-  OpenPassportApp,
-} from '../../../../common/src/utils/appType';
+import { ArgumentsProveOffChain } from '../../../../common/src/utils/appType';
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import useNavigationStore from '../../stores/navigationStore';
+import { useProofInfo } from '../../stores/proofProvider';
 import useUserStore from '../../stores/userStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
@@ -21,17 +17,11 @@ import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const selectedApp = useNavigationStore(
-    state => state.selectedApp || { args: {} },
-  ) as OpenPassportApp;
+  const { passportData } = useUserStore();
+  const { selectedApp, setStatus } = useProofInfo();
+
   const disclosureOptions =
-    selectedApp.mode === 'register'
-      ? {}
-      : (selectedApp.args as ArgumentsProveOffChain).disclosureOptions || {};
-
-  const { setProofVerificationResult, passportData } = useUserStore();
-
-  const [_socket, setSocket] = useState<Socket | null>(null);
+    (selectedApp?.args as ArgumentsProveOffChain)?.disclosureOptions || {};
 
   if (!passportData) {
     return (
@@ -43,91 +33,15 @@ const ProveScreen: React.FC = () => {
 
   function onVerify() {
     buttonTap();
-    sendVcAndDisclosePayload(passportData).catch(e =>
-      console.log('Error sending VC and disclose payload', e),
-    );
+    navigate('ProofRequestStatusScreen');
+    sendVcAndDisclosePayload(passportData).catch(e => {
+      console.log('Error sending VC and disclose payload', e);
+      setStatus('error');
+    });
   }
-
-  function goToErrorScreen() {
-    navigate('WrongProofScreen');
-  }
-
-  // eslint-disable-next-line react-hooks/rules-of-hooks
-  useEffect(() => {
-    let newSocket: Socket | null = null;
-
-    try {
-      newSocket = io(selectedApp.websocketUrl, {
-        path: '/websocket',
-        transports: ['websocket'],
-        query: { sessionId: selectedApp.sessionId, clientType: 'mobile' },
-      });
-
-      newSocket.on('connect', () => {
-        console.log('Connected to WebSocket server');
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket server');
-      });
-
-      newSocket.on('connect_error', error => {
-        console.error('Connection error:', error);
-        console.log('Error', {
-          message: 'Failed to connect to WebSocket server',
-          customData: {
-            type: 'error',
-          },
-        });
-        goToErrorScreen();
-      });
-
-      newSocket.on('proof_verification_result', result => {
-        setProofVerificationResult(JSON.parse(result));
-        console.log('result', result);
-        if (JSON.parse(result).valid) {
-          console.log('✅', {
-            message: 'Identity verified',
-            customData: {
-              type: 'success',
-            },
-          });
-          setTimeout(() => {
-            navigate('ValidProofScreen');
-          }, 700);
-        } else {
-          console.log('❌', {
-            message: 'Verification failed',
-            customData: {
-              type: 'info',
-            },
-          });
-          setTimeout(() => {
-            goToErrorScreen();
-          }, 700);
-        }
-      });
-
-      setSocket(newSocket);
-    } catch (error) {
-      console.error('Error setting up WebSocket:', error);
-      console.log('❌', {
-        message: 'Failed to set up connection',
-        customData: {
-          type: 'error',
-        },
-      });
-    }
-
-    return () => {
-      if (newSocket) {
-        newSocket.disconnect();
-      }
-    };
-  }, [selectedApp.userId]);
 
   return (
-    <ExpandableBottomLayout.Layout>
+    <ExpandableBottomLayout.Layout unsafeArea flex={1}>
       <ExpandableBottomLayout.TopSection>
         <YStack alignItems="center">
           <Text>Check</Text>
@@ -140,6 +54,7 @@ const ProveScreen: React.FC = () => {
       <ExpandableBottomLayout.BottomSection
         flexGrow={1}
         justifyContent="space-between"
+        paddingBottom={20}
       >
         <Disclosures disclosures={disclosureOptions} />
         <View>

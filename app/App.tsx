@@ -10,9 +10,9 @@ import { YStack } from 'tamagui';
 import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
 import { AuthProvider } from './src/stores/authProvider';
+import { ProofProvider } from './src/stores/proofProvider';
 import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
-import { setupUniversalLinkListener } from './src/utils/qrCode';
 
 global.Buffer = Buffer;
 
@@ -36,13 +36,10 @@ function App(): React.JSX.Element {
   useEffect(() => {
     // init
     initUserStore();
-    const universalLinkCleanup = setupUniversalLinkListener();
     segmentClient = createSegmentClient();
     Orientation.lockToPortrait();
-
     // cleanup
     return () => {
-      universalLinkCleanup();
       Orientation.unlockAllOrientations();
     };
   }, [initUserStore]);
@@ -50,7 +47,9 @@ function App(): React.JSX.Element {
   return (
     <YStack f={1} bc={bgWhite} h="100%" w="100%">
       <AuthProvider>
-        <AppNavigation />
+        <ProofProvider>
+          <AppNavigation />
+        </ProofProvider>
       </AuthProvider>
     </YStack>
   );

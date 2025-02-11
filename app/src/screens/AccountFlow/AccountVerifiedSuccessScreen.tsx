@@ -9,7 +9,7 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { styles } from '../ProveFlow/ValidProofScreen';
+import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const AccountVerifiedSuccessScreen: React.FC = () => {
   const navigation = useNavigation();

@@ -17,6 +17,7 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useProofInfo } from '../../stores/proofProvider';
 import useUserStore from '../../stores/userStore';
 import { black, slate800 } from '../../utils/colors';
 import handleQRCodeScan from '../../utils/qrCodeNew';
@@ -41,6 +42,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
+  const { setSelectedApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const onQRData = useCallback<QRCodeScannerViewProps['onQRData']>(
     async (error, uri) => {
@@ -53,7 +55,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
       } else {
         setDoneScanningQR(true);
         const encodedData = parseUrlParams(uri!);
-        await handleQRCodeScan(encodedData.get('data')!);
+        await handleQRCodeScan(encodedData.get('data')!, setSelectedApp);
         navigation.navigate('ProveScreen');
       }
     },

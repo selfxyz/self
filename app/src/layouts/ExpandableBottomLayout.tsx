@@ -9,6 +9,7 @@ import { black, white } from '../utils/colors';
 interface ExpandableBottomLayoutProps extends ViewProps {
   children: React.ReactNode;
   backgroundColor?: string;
+  unsafeArea?: boolean;
 }
 
 interface TopSectionProps extends ViewProps {
@@ -23,7 +24,15 @@ interface BottomSectionProps extends ViewProps {
 const Layout: React.FC<ExpandableBottomLayoutProps> = ({
   children,
   backgroundColor,
+  unsafeArea,
 }) => {
+  if (unsafeArea) {
+    return (
+      <View flex={1} flexDirection="column">
+        {children}
+      </View>
+    );
+  }
   return (
     <SafeAreaView style={[styles.layout, { backgroundColor }]}>
       {children}
@@ -87,6 +96,7 @@ export const ExpandableBottomLayout = {
 
 const styles = StyleSheet.create({
   roundTop: {
+    marginTop: 12,
     borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     borderTopStartRadius: 20,

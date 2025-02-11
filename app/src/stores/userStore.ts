@@ -37,8 +37,6 @@ interface UserState {
   setRegistered: (registered: boolean) => void;
   setDscSecret: (dscSecret: string) => void;
   setUserLoaded: (userLoaded: boolean) => void;
-  proofVerificationResult: string;
-  setProofVerificationResult: (proofVerificationResult: string) => void;
   setPassportMetadata: (metadata: PassportMetadata) => void;
   clearPassportMetadataFromStorage: () => void;
 }
@@ -68,10 +66,6 @@ const useUserStore = create<UserState>((set, get) => ({
   setPassportMetadata: async (metadata: PassportMetadata) => {
     await storePassportMetadata(metadata);
     set({ passportMetadata: metadata });
-  },
-  proofVerificationResult: 'null',
-  setProofVerificationResult: (proofVerificationResult: string) => {
-    set({ proofVerificationResult });
   },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow

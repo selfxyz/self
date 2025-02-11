@@ -1,7 +1,6 @@
 import { useToastController } from '@tamagui/toast';
 import { create } from 'zustand';
 
-import { OpenPassportApp } from '../../../common/src/utils/appType';
 import { segmentClient } from '../../App';
 import {
   IsZkeyDownloading,
@@ -15,8 +14,6 @@ interface NavigationState {
   toast: ReturnType<typeof useToastController>;
   selectedTab: string;
   setSelectedTab: (tab: string) => void;
-  selectedApp: OpenPassportApp | null;
-  setSelectedApp: (app: OpenPassportApp | null) => void;
   showRegistrationErrorSheet: boolean;
   registrationErrorMessage: string;
   setToast: (toast: ReturnType<typeof useToastController>) => void;
@@ -52,10 +49,8 @@ const useNavigationStore = create<NavigationState>((set, get) => ({
   toast: null as unknown as ReturnType<typeof useToastController>,
 
   selectedTab: 'scan',
-  selectedApp: null,
 
   setToast: toast => set({ toast }),
-  setSelectedApp: app => set({ selectedApp: app }),
 
   setSelectedTab: (tab: string) => {
     const { trackNavigation } = get();

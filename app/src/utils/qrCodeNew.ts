@@ -3,17 +3,16 @@ import { Linking } from 'react-native';
 import msgpack from 'msgpack-lite';
 import pako from 'pako';
 
-import { Mode, OpenPassportApp } from '../../../common/src/utils/appType';
-import { getCircuitNameOld } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import { parsePassportData } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
+import { SelfApp } from '../../../common/src/utils/appType';
 import useNavigationStore from '../stores/navigationStore';
 import useUserStore from '../stores/userStore';
-import { downloadZkey } from './zkeyDownload';
 
-export default async function handleQRCodeScan(result: string) {
+export default async function handleQRCodeScan(
+  result: string,
+  setApp: (app: SelfApp) => void,
+) {
   try {
     const { passportData } = useUserStore.getState();
-    const { setSelectedApp } = useNavigationStore.getState();
     if (passportData) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
@@ -21,19 +20,19 @@ export default async function handleQRCodeScan(result: string) {
       );
       const decompressedData = pako.inflate(uint8Array);
       const unpackedData = msgpack.decode(decompressedData);
-      const openPassportApp: OpenPassportApp = unpackedData;
-      const passportMetadata = parsePassportData(passportData);
+      const openPassportApp: SelfApp = unpackedData;
 
-      const circuitName =
-        openPassportApp.mode === 'vc_and_disclose'
-          ? 'vc_and_disclose'
-          : getCircuitNameOld(
-              'prove' as Mode,
-              passportMetadata.signatureAlgorithm,
-              passportMetadata.signedAttrHashFunction,
-            );
-      await downloadZkey(circuitName as any);
-      setSelectedApp(openPassportApp);
+      // TODO  think not needed
+      // const circuitName =
+      //   openPassportApp.mode === 'vc_and_disclose'
+      //     ? 'vc_and_disclose'
+      //     : getCircuitNameOld(
+      //         'prove' as Mode,
+      //         passportMetadata.signatureAlgorithm,
+      //         passportMetadata.signedAttrHashFunction,
+      //       );
+      // await downloadZkey(circuitName as any);
+      setApp(openPassportApp);
       console.log('✅', {
         message: 'QR code scanned',
         customData: {
@@ -57,12 +56,12 @@ export default async function handleQRCodeScan(result: string) {
   }
 }
 
-const handleUniversalLink = (url: string) => {
+const handleUniversalLink = (url: string, setApp: (app: SelfApp) => void) => {
   const { toast } = useNavigationStore.getState();
   const encodedData = new URL(url).searchParams.get('data');
   console.log('Encoded data:', encodedData);
   if (encodedData) {
-    handleQRCodeScan(encodedData);
+    handleQRCodeScan(encodedData, setApp);
   } else {
     console.error('No data found in the Universal Link');
     toast.show('Error', {
@@ -72,15 +71,15 @@ const handleUniversalLink = (url: string) => {
   }
 };
 
-export const setupUniversalLinkListener = () => {
+export const setupUniversalLinkListener = (setApp: (app: SelfApp) => void) => {
   Linking.getInitialURL().then(url => {
     if (url) {
-      handleUniversalLink(url);
+      handleUniversalLink(url, setApp);
     }
   });
 
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleUniversalLink(url);
+    handleUniversalLink(url, setApp);
   });
 
   return () => {

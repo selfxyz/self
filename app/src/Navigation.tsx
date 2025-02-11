@@ -31,10 +31,9 @@ import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen'
 import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
+import ProofRequestStatusScreen from './screens/ProveFlow/ProofRequestStatusScreen';
 import ProveScreen from './screens/ProveFlow/ProveScreen';
-import ValidProofScreen from './screens/ProveFlow/ValidProofScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
-import WrongProofScreen from './screens/ProveFlow/WrongProofScreen';
 import DevSettingsScreen from './screens/Settings/DevSettingsScreen';
 import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
@@ -217,14 +216,8 @@ const AppNavigation = createNativeStackNavigator({
         },
       },
     },
-    ValidProofScreen: {
-      screen: ValidProofScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    WrongProofScreen: {
-      screen: WrongProofScreen,
+    ProofRequestStatusScreen: {
+      screen: ProofRequestStatusScreen,
       options: {
         headerShown: false,
       },
