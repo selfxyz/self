@@ -18,6 +18,7 @@ const items: (keyof RootStackParamList)[] = [
   'PassportOnboarding',
   'PassportCamera',
   'PassportNFCScan',
+  'PassportDataInfo',
   'ConfirmBelongingScreen',
   'CreateMock',
   'NextScreen',

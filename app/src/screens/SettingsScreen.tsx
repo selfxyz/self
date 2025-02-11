@@ -42,7 +42,7 @@ type RouteOption =
 
 const storeURL = Platform.OS === 'ios' ? 'TODO: ios URL' : 'TODO: android URL';
 const routes = [
-  [Data, 'View passport info', 'TODO: passportinfo'],
+  [Data, 'View passport info', 'PassportDataInfo'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
   [Cloud, 'Enable cloud back up', 'CloudBackupSettingsScreen'],
   [Feedback, 'Send feeback', 'email_feedback'],
