@@ -1,13 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { OpenPassportAttestation } from '../../common/src/utils/openPassportAttestation';
-import { OpenPassportVerifier } from '@openpassport/core';
+import { OpenPassportAttestation, OpenPassportVerifier } from '@openpassport/core';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
 import { WS_URL } from '../../common/src/constants/constants';
-import { UserIdType } from '../../common/src/utils/utils';
+import { UserIdType } from '../../common/src/utils/circuits/uuid';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
@@ -49,7 +48,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   userIdType,
   openPassportVerifier,
   onSuccess,
-  websocketUrl = WEBSOCKET_URL,
+  websocketUrl = WS_URL,
   size = 300,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
