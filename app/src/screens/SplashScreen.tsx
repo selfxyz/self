@@ -12,7 +12,7 @@ import { impactLight } from '../utils/haptic';
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { userLoaded, passportData } = useUserStore();
-  // TODO: Uncomment when we are done testing
+
   const redirect = useCallback(() => {
     if (userLoaded && passportData) {
       navigation.navigate('Home');

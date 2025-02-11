@@ -1,11 +1,13 @@
 {
   "name": "openpassport",
-  "version": "0.0.1",
+  "version": "2.2.2",
   "private": true,
   "scripts": {
     "analyze-android": "react-native-bundle-visualizer --platform android --dev",
     "analyze-ios": "react-native-bundle-visualizer --platform ios --dev",
     "android": "react-native run-android",
+    "android:build-debug": "cd ./android && yarn android:build-debug-bundle && ./gradlew clean assembleDebug && cd ..",
+    "android:build-debug-bundle": "yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "clean": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build android/app/build android/build .yarn/cache ios/.xcode.env.local",
     "clean:xcode-env-local": "rm -f ios/.xcode.env.local",
     "fmt": "prettier --check .",
@@ -16,6 +18,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "nice": "yarn fmt:fix && yarn lint:fix",
+    "reinstall": "yarn clean && yarn install && yarn install-app",
     "start": "watchman watch-del-all && react-native start",
     "test": "jest --passWithNoTests"
   },

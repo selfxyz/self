@@ -281,7 +281,6 @@ const AppNavigation = createNativeStackNavigator({
     DevSettings: {
       screen: DevSettingsScreen,
       options: {
-        if: () => __DEV__,
         title: 'Developer Settings',
         headerStyle: {
           backgroundColor: white,
