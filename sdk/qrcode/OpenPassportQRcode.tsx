@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { OpenPassportAttestation, OpenPassportVerifier } from '@openpassport/core';
+import { SelfAttestation, SelfVerifier } from '@openpassport/core';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
@@ -20,8 +20,9 @@ interface OpenPassportQRcodeProps {
   appName: string;
   userId: string;
   userIdType: UserIdType;
-  openPassportVerifier: OpenPassportVerifier;
-  onSuccess: (attestation: OpenPassportAttestation) => void;
+  selfVerifier: SelfVerifier;
+  logoBase64?: string;
+  onSuccess: (attestation: SelfAttestation) => void;
   websocketUrl?: string;
   size?: number;
 }
@@ -45,8 +46,8 @@ const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => 
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   userId,
-  userIdType,
-  openPassportVerifier,
+  logoBase64 = '',
+  selfVerifier,
   onSuccess,
   websocketUrl = WS_URL,
   size = 300,
@@ -59,18 +60,22 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     initWebSocket(
       websocketUrl,
       sessionId,
+      {
+        appName,
+        userId,
+        logoBase64
+      },
       setProofStep,
       setProofVerified,
-      openPassportVerifier,
+      selfVerifier,
       onSuccess
     );
-  }, [sessionId, websocketUrl, openPassportVerifier]);
+  }, [sessionId, websocketUrl]);
 
   const generateUniversalLink = () => {
     const baseUrl = WS_URL;
     const path = '/websocket';
-    const data = openPassportVerifier.getIntent(appName, userId, userIdType, sessionId);
-    return `${baseUrl}${path}?data=${data}`;
+    return `${baseUrl}${path}?sessionId=${sessionId}`;
   };
 
   const renderProofStatus = () => (
