@@ -1,7 +1,7 @@
 import elliptic from 'elliptic';
 import forge from 'node-forge';
 import { v4 } from 'uuid';
-
+import io, { Socket } from 'socket.io-client';
 import { WS_RPC_URL, WS_URL } from '../../../../common/src/constants/constants';
 import { getPublicKey, verifyAttestation } from './attest';
 
@@ -50,7 +50,7 @@ export async function sendPayload(
 ) {
   const uuid = v4();
   const ws = new WebSocket(WS_RPC_URL);
-  let ws2: WebSocket | null = null;
+  let socket: Socket | null = null;
 
   function createHelloBody(uuidString: string) {
     return {
@@ -95,10 +95,43 @@ export async function sendPayload(
     );
   });
 
+  function setupSocketIO(uuidVal: string) {
+    socket = io(WS_URL, {
+      path: '/',
+      transports: ['websocket'],
+    });
+
+    socket.on('connect', () => {
+      console.log('SocketIO: Connection opened');
+      socket?.emit('subscribe', uuidVal);
+    });
+
+    socket.on('connect_error', (error) => {
+      console.error('SocketIO connection error:', error);
+    });
+
+    socket.on('message', (message) => {
+      const data = typeof message === 'string' ? JSON.parse(message) : message;
+      console.log('SocketIO message:', data);
+
+      if (data.new_status === 2) {
+        console.log('Proof generation completed');
+        socket?.disconnect();
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        }
+      }
+    });
+
+    socket.on('disconnect', (reason) => {
+      console.log(`SocketIO disconnected. Reason: ${reason}`);
+    });
+  }
+
   function processUuid(result: any) {
     const receivedUuid = result.result;
     console.log('Received UUID:', receivedUuid);
-    setupWs2(receivedUuid);
+    setupSocketIO(receivedUuid);
   }
 
   async function processAttestation(result: any) {
@@ -147,53 +180,28 @@ export async function sendPayload(
     ws.send(JSON.stringify(submitBody));
   }
 
-  function setupWs2(uuidVal: any) {
-    ws2 = new WebSocket(WS_URL);
-    ws2.addEventListener('open', () => {
-      console.log('WS2: Connection opened');
-      ws2?.send(`subscribe_${uuidVal}`);
-    });
-    ws2.addEventListener('error', err => {
-      console.error('WS2 error details:', {
-        error: err,
-        readyState: ws2?.readyState,
-        bufferedAmount: ws2?.bufferedAmount,
-      });
-    });
-    ws2.addEventListener('message', event => {
-      const message = JSON.parse(
-        typeof event.data === 'string' ? event.data : event.data.toString(),
-      );
-      console.log('WS2 message:', message);
-      if (message.new_status === 2) {
-        console.log('Proof generation completed');
-        if (ws2?.readyState === WebSocket.OPEN) {
-          ws2.close();
-        }
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
-      }
-    });
-    ws2.addEventListener('close', event => {
-      console.log(
-        `WS2 closed. Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`,
-      );
-    });
-  }
-
   return new Promise((resolve, reject) => {
     const timer = setTimeout(() => {
+      if (socket) {
+        socket.disconnect();
+      }
       ws.close();
       reject(new Error(`Request timed out after ${timeoutMs} ms`));
     }, timeoutMs);
 
     ws.addEventListener('close', () => {
       clearTimeout(timer);
+      if (socket) {
+        socket.disconnect();
+      }
       resolve(undefined);
     });
+
     ws.addEventListener('error', error => {
       clearTimeout(timer);
+      if (socket) {
+        socket.disconnect();
+      }
       reject(error);
     });
   });
