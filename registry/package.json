@@ -1,7 +1,15 @@
 {
-  "devDependencies": {
-    "@types/node": "^20.11.20",
-    "prisma": "^5.18.0"
+  "license": "MIT",
+  "scripts": {
+    "csca-tree": "ts-node src/csca/build_csca_merkle_tree.ts",
+    "db-clear": "ts-node src/deleteDb.ts",
+    "db-init": "npx prisma generate",
+    "db-push": "ts-node src/pushToDb.ts",
+    "dsc-tree": "ts-node src/dsc/build_dsc_merkle_tree.ts",
+    "extract-masterlist": "ts-node src/extractMasterList.ts",
+    "install-registry": "cd ../common && yarn && cd ../registry && yarn",
+    "mapJson": "ts-node src/buildMapJson.ts",
+    "parse-data": "ts-node src/parseData.ts"
   },
   "dependencies": {
     "@openpassport/zk-kit-imt": "^0.0.5",
@@ -23,16 +31,8 @@
     "poseidon-lite": "^0.2.0",
     "x509-ts": "^0.13.0"
   },
-  "scripts": {
-    "install-registry": "cd ../common && yarn && cd ../registry && yarn",
-    "db-init": "npx prisma generate",
-    "db-push": "ts-node src/pushToDb.ts",
-    "db-clear": "ts-node src/deleteDb.ts",
-    "extract-masterlist": "ts-node src/extractMasterList.ts",
-    "parse-data": "ts-node src/parseData.ts",
-    "mapJson": "ts-node src/buildMapJson.ts",
-    "dsc-tree": "ts-node src/dsc/build_dsc_merkle_tree.ts",
-    "csca-tree": "ts-node src/csca/build_csca_merkle_tree.ts"
-  },
-  "license": "MIT"
+  "devDependencies": {
+    "@types/node": "^20.11.20",
+    "prisma": "^5.18.0"
+  }
 }

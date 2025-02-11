@@ -11,22 +11,23 @@ import { impactLight } from '../utils/haptic';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
-  const { userLoaded, passportData } = useUserStore();
+  const { userLoaded } = useUserStore();
 
-  const redirect = useCallback(() => {
-    if (passportData) {
-      navigation.navigate('Home');
-    } else {
-      navigation.navigate('Launch');
-    }
-  }, [passportData, userLoaded]);
+  // TODO: Uncomment when we are done testing
+  // const redirect = useCallback(() => {
+  //   if (passportData) {
+  //     navigation.navigate('Home');
+  //   } else {
+  //     navigation.navigate('Launch');
+  //   }
+  // }, [passportData, userLoaded]);
 
   const handleAnimationFinish = useCallback(() => {
     setTimeout(() => {
       impactLight();
-      redirect();
-    }, 750);
-  }, [redirect]);
+      navigation.navigate('Launch');
+    }, 1000);
+  }, [userLoaded]);
 
   return (
     <LottieView

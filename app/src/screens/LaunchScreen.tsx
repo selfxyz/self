@@ -10,8 +10,10 @@ import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { slate50, slate100, slate500, slate700, white } from '../utils/colors';
 
-const LaunchScreen: React.FC = () => {
-  const onStartPress = useHapticNavigation('Start');
+interface LaunchScreenProps {}
+
+const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+  const onStartPress = useHapticNavigation('PassportCamera');
 
   return (
     <ExpandableBottomLayout.Layout>

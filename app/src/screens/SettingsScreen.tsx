@@ -4,6 +4,7 @@ import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { SvgProps } from 'react-native-svg';
 
 import { useNavigation } from '@react-navigation/native';
+import { Bug } from '@tamagui/lucide-icons';
 import { Button, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
@@ -47,6 +48,11 @@ const routes = [
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
 ] as [React.FC<SvgProps>, string, RouteOption][];
+
+if (__DEV__) {
+  // @ts-expect-error
+  routes.push([Bug, 'Debug menu', 'DevSettings']);
+}
 
 const social = [
   [Github, 'https://github.com/selfxyz/self'],

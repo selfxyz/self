@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import 'react-native-get-random-values';
+import Orientation from 'react-native-orientation-locker';
 
 import { createClient } from '@segment/analytics-react-native';
 import { Buffer } from 'buffer';
@@ -24,10 +25,6 @@ function App(): React.JSX.Element {
   const initUserStore = useUserStore(state => state.initUserStore);
   // const setSelectedTab = useNavigationStore(state => state.setSelectedTab);
 
-  useEffect(() => {
-    initUserStore();
-  }, [initUserStore]);
-
   // useEffect(() => {
   //   setToast(toast);
   // }, [toast, setToast]);
@@ -37,14 +34,18 @@ function App(): React.JSX.Element {
   // }, [setSelectedTab]);
 
   useEffect(() => {
-    const cleanup = setupUniversalLinkListener();
-    return cleanup;
-  }, []);
-
-  useEffect(() => {
-    // Initialize segment directly without any tracking checks
+    // init
+    initUserStore();
+    const universalLinkCleanup = setupUniversalLinkListener();
     segmentClient = createSegmentClient();
-  }, []);
+    Orientation.lockToPortrait();
+
+    // cleanup
+    return () => {
+      universalLinkCleanup();
+      Orientation.unlockAllOrientations();
+    };
+  }, [initUserStore]);
 
   return (
     <YStack f={1} bc={bgWhite} h="100%" w="100%">

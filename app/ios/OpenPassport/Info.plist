@@ -103,5 +103,9 @@
 		<string>slkscr.ttf</string>
 		<string>slkscrb.ttf</string>
 	</array>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array> 
 </dict>
 </plist>

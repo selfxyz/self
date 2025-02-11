@@ -12485,6 +12485,7 @@ __metadata:
     react-native-keychain: "npm:^8.2.0"
     react-native-localize: "npm:^3.4.1"
     react-native-nfc-manager: "npm:^3.15.1"
+    react-native-orientation-locker: "npm:^1.7.0"
     react-native-passport-reader: "npm:^1.0.3"
     react-native-randombytes: "npm:^3.6.1"
     react-native-safe-area-context: "npm:^5.2.0"
@@ -13147,7 +13148,7 @@ __metadata:
   peerDependencies:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
-  checksum: 10c0/ebb3dfb9a111bf6082866999d31e10f952fcd12bcf2a81210ff9f44a4cb4d25e1b4caac5fdec512b367685e56a37e61de3e6648c2af45b93fcbaf704355dbaa6
+  checksum: 10c0/0e3f83f59dadc337ab46fa0c59bb2b80eb91d4756f0ac67d7b11e0d97044d58bbaca7ee5c7dcd1e0a389af3f16b0eaca12122d59905013a6f5a2f4423ead49d0
   languageName: node
   linkType: hard
 
@@ -13251,6 +13252,20 @@ __metadata:
     "@expo/config-plugins":
       optional: true
   checksum: 10c0/5ef6ed403bc2b349c94bf7e2b711ae08652ff25df11159d2a354b712936a28007ecd03c81f78d6aa6873d010473554e1dbcc8e75f8dd17a886d6ebccec510785
+  languageName: node
+  linkType: hard
+
+"react-native-orientation-locker@npm:^1.7.0":
+  version: 1.7.0
+  resolution: "react-native-orientation-locker@npm:1.7.0"
+  peerDependencies:
+    react: ">=16.13.1"
+    react-native: ">=0.63.2"
+    react-native-windows: ">=0.63.3"
+  peerDependenciesMeta:
+    react-native-windows:
+      optional: true
+  checksum: 10c0/68ac54460a0722c203cda17d8a26cf8409115e6ed1ecc4324c25b60f94476f6200ae6646fa71495288d553f3a77a20c5548d0d33b434066ef8d7284dbbd094ff
   languageName: node
   linkType: hard
 

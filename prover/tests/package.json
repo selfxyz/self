@@ -1,8 +1,8 @@
 {
   "name": "modal-tests",
   "version": "0.0.1",
-  "author": "",
   "license": "MIT",
+  "author": "",
   "scripts": {
     "tests": " yarn ts-mocha -p ./tsconfig.json modal.test.ts --exit"
   },
