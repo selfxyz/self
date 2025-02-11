@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import { SelfAttestation, SelfVerifier } from '@openpassport/core';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
@@ -20,9 +19,8 @@ interface OpenPassportQRcodeProps {
   appName: string;
   userId: string;
   userIdType: UserIdType;
-  selfVerifier: SelfVerifier;
   logoBase64?: string;
-  onSuccess: (attestation: SelfAttestation) => void;
+  onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
 }
@@ -47,7 +45,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   appName,
   userId,
   logoBase64 = '',
-  selfVerifier,
   onSuccess,
   websocketUrl = WS_URL,
   size = 300,
@@ -67,7 +64,6 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
       },
       setProofStep,
       setProofVerified,
-      selfVerifier,
       onSuccess
     );
   }, [sessionId, websocketUrl]);

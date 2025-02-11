@@ -13,7 +13,7 @@ export interface SelfAppPartial {
 }
 
 export interface SelfApp extends SelfAppPartial {
-  args: ArgumentsProveOffChain | ArgumentsProveOnChain | ArgumentsRegister | ArgumentsDisclose;
+  args: ArgumentsDisclose;
 }
 
 export interface ArgumentsProveOffChain {
