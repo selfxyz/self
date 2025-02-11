@@ -1,7 +1,12 @@
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
-import { OpenPassportVerifier } from '@openpassport/core';
-import { OpenPassportAttestation } from '@openpassport/core';
+import { SelfAttestation, SelfVerifier } from '@openpassport/core';
+
+export interface WebAppInfo {
+  appName: string;
+  userId: string;
+  logoBase64: string;
+};
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
   io(websocketUrl + "/websocket", {
@@ -13,16 +18,21 @@ const handleWebSocketMessage =
   (
     newSocket: Socket,
     sessionId: string,
+    webAppInfo: WebAppInfo,
     setProofStep: (step: number) => void,
     setProofVerified: (proofVerified: boolean) => void,
-    openPassportVerifier: OpenPassportVerifier,
-    onSuccess: (proof: OpenPassportAttestation) => void
+    openPassportVerifier: SelfVerifier,
+    onSuccess: (proof: SelfAttestation) => void
   ) =>
     async (data) => {
       console.log('received mobile status:', data.status);
       switch (data.status) {
         case 'mobile_connected':
           setProofStep(QRcodeSteps.MOBILE_CONNECTED);
+          newSocket.emit('web_app_info', {
+            "webAppInfo": webAppInfo,
+            "disclosureOptions": openPassportVerifier.toDisclosureOptions()
+          });
           break;
         case 'mobile_disconnected':
           setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
@@ -41,9 +51,10 @@ const handleWebSocketMessage =
       }
 
       if (data.proof) {
+        // TODO: Remove frontend proof verification and wait for backend response before showing the validation animation
         console.log(data.proof);
         try {
-          const local_proofVerified = await openPassportVerifier.verify(data.proof);
+          const local_proofVerified = await openPassportVerifier.verify(data.proof); // FIXME: add publicSignals
           setProofVerified(local_proofVerified.valid);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           setTimeout(() => {
@@ -70,10 +81,11 @@ const handleWebSocketMessage =
 export function initWebSocket(
   websocketUrl: string,
   sessionId: string,
+  webAppInfo: WebAppInfo,
   setProofStep: (step: number) => void,
   setProofVerified: (proofVerified: boolean) => void,
-  openPassportVerifier: OpenPassportVerifier,
-  onSuccess: (proof: OpenPassportAttestation) => void
+  openPassportVerifier: SelfVerifier,
+  onSuccess: (proof: SelfAttestation) => void
 ) {
   const socket = newSocket(websocketUrl, sessionId);
   socket.on(
@@ -81,6 +93,7 @@ export function initWebSocket(
     handleWebSocketMessage(
       socket,
       sessionId,
+      webAppInfo,
       setProofStep,
       setProofVerified,
       openPassportVerifier,
