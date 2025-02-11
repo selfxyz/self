@@ -2,7 +2,6 @@ export const RELAYER_URL = 'https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.
 //export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
 export const COMMITMENT_TREE_TRACKER_URL =
   'https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download';
-export const WEBSOCKET_URL = 'https://proofofpassport-merkle-tree.xyz';
 export const CSCA_TREE_DEPTH = 12;
 export const DSC_TREE_DEPTH = 21;
 export const COMMITMENT_TREE_DEPTH = 33;
@@ -11,7 +10,8 @@ export const DEFAULT_USER_ID_TYPE = 'uuid';
 export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';
 
 export const WS_RPC_URL = "ws://54.71.75.253:8888/";
-export const WS_URL = "ws://43.205.137.10:8888/";
+export const WS_URL = 'https://websocket.openpassport.app';
+
 export const IMAGE_HASH = "002991b83537ca49d9cfcd3375d9148151121470eef8e84cac087d789af9d200bcc6582fb53e0e273aeddc83943c4def";
 
 export const PASSPORT_ATTESTATION_NAME = 'E-PASSPORT';
