@@ -4,8 +4,8 @@ import { OpenPassportVerifier } from '@openpassport/core';
 import { OpenPassportAttestation } from '@openpassport/core';
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
-  io(websocketUrl, {
-    path: '/websocket',
+  io(websocketUrl + "/websocket", {
+    path: '/',
     query: { sessionId, clientType: 'web' },
   });
 
