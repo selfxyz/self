@@ -1,7 +1,7 @@
 'use client';
 
 import { v4 as uuidv4 } from 'uuid';
-import { COMMITMENT_TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
+import { TREE_TRACKER_URL } from '../../../../../../common/src/constants/constants';
 import { OpenPassportVerifier } from '@openpassport/core';
 import OpenPassportQRcode from '../../../../../qrcode/OpenPassportQRcode';
 import axios from 'axios';
@@ -11,7 +11,7 @@ export default function Prove() {
 
 
   const openPassportVerifier = new OpenPassportVerifier('register', scope)
-    .setCommitmentMerkleTreeUrl(COMMITMENT_TREE_TRACKER_URL);
+    .setCommitmentMerkleTreeUrl(TREE_TRACKER_URL);
 
 
 

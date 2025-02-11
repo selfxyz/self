@@ -1,7 +1,7 @@
 import msgpack from 'msgpack-lite';
 import pako from 'pako';
 
-import { DEFAULT_RPC_URL, countryNames } from '../../../common/src/constants/constants';
+import { DEFAULT_RPC_URL, TREE_TRACKER_URL, countryNames } from '../../../common/src/constants/constants';
 import {
   ArgumentsDisclose,
   ArgumentsProveOffChain,
@@ -89,7 +89,7 @@ export class SelfVerifier extends AttestationVerifier {
     let selfArguments: ArgumentsProveOffChain | ArgumentsRegister;
     const argsVcAndDisclose: ArgumentsDisclose = {
       disclosureOptions: this.toDisclosureOptions(),
-      commitmentMerkleTreeUrl: 'https://tree.openpassport.app',
+      commitmentMerkleTreeUrl: TREE_TRACKER_URL,
     };
     selfArguments = argsVcAndDisclose;
 

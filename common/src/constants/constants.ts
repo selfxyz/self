@@ -1,7 +1,5 @@
 export const RELAYER_URL = 'https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint';
-//export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
-export const COMMITMENT_TREE_TRACKER_URL =
-  'https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download';
+export const TREE_TRACKER_URL = 'https://tree.openpassport.app';
 export const CSCA_TREE_DEPTH = 12;
 export const DSC_TREE_DEPTH = 21;
 export const COMMITMENT_TREE_DEPTH = 33;
