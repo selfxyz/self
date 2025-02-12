@@ -22,7 +22,7 @@ import useUserStore from '../../stores/userStore';
 import { black, slate800 } from '../../utils/colors';
 import handleQRCodeScan from '../../utils/qrCodeNew';
 
-interface QRCodeViewFinderScreenProps {}
+interface QRCodeViewFinderScreenProps { }
 
 // TODO: replace this with proper tested lib
 // or react-native-url-polyfill -> new URL(uri)
@@ -38,7 +38,7 @@ const parseUrlParams = (url: string): Map<string, string> => {
   return params;
 };
 
-const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
+const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({ }) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
@@ -55,7 +55,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
       } else {
         setDoneScanningQR(true);
         const encodedData = parseUrlParams(uri!);
-        await handleQRCodeScan(encodedData.get('data')!, setSelectedApp);
+        const sessionId = encodedData.get('sessionId');
         navigation.navigate('ProveScreen');
       }
     },

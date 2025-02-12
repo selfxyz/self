@@ -1,5 +1,6 @@
 import io, { Socket } from 'socket.io-client';
 import { QRcodeSteps } from './utils';
+import { SelfApp } from '../../../common/src/utils/appType';
 
 export interface WebAppInfo {
   appName: string;
@@ -8,28 +9,26 @@ export interface WebAppInfo {
 };
 
 const newSocket = (websocketUrl: string, sessionId: string) =>
-  io(websocketUrl + "/websocket", {
+  io(`${websocketUrl}/websocket`, {
     path: '/',
     query: { sessionId, clientType: 'web' },
   });
 
 const handleWebSocketMessage =
   (
-    newSocket: Socket,
+    socket: Socket,
     sessionId: string,
-    webAppInfo: WebAppInfo,
+    selfApp: SelfApp,
     setProofStep: (step: number) => void,
     setProofVerified: (proofVerified: boolean) => void,
     onSuccess: () => void
   ) =>
-    async (data) => {
-      console.log('received mobile status:', data.status);
+    async (data: any) => {
+      console.log('Received mobile status:', data.status);
       switch (data.status) {
         case 'mobile_connected':
           setProofStep(QRcodeSteps.MOBILE_CONNECTED);
-          newSocket.emit('web_app_info', {
-            "webAppInfo": webAppInfo,
-          });
+          socket.emit('self_app', selfApp);
           break;
         case 'mobile_disconnected':
           setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
@@ -45,13 +44,16 @@ const handleWebSocketMessage =
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           console.log('Proof generation failed');
           break;
+        default:
+          console.log('Unhandled status:', data.status);
+          break;
       }
     };
 
 export function initWebSocket(
   websocketUrl: string,
   sessionId: string,
-  webAppInfo: WebAppInfo,
+  selfApp: SelfApp,
   setProofStep: (step: number) => void,
   setProofVerified: (proofVerified: boolean) => void,
   onSuccess: () => void
@@ -62,7 +64,7 @@ export function initWebSocket(
     handleWebSocketMessage(
       socket,
       sessionId,
-      webAppInfo,
+      selfApp,
       setProofStep,
       setProofVerified,
       onSuccess
