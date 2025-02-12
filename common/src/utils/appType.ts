@@ -5,6 +5,7 @@ export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 // SelfAppType
 export interface SelfAppPartial {
   appName: string;
+  logoBase64: string;
   scope: string;
   sessionId: string;
   userId: string;
@@ -16,25 +17,8 @@ export interface SelfApp extends SelfAppPartial {
   args: ArgumentsDisclose;
 }
 
-export interface ArgumentsProveOffChain {
-  disclosureOptions: DisclosureOptions;
-}
-
-export interface ArgumentsProveOnChain {
-  disclosureOptions: DisclosureOptions;
-  modalServerUrl: string;
-  merkleTreeUrl: string;
-}
-
-export interface ArgumentsRegister {
-  cscaMerkleTreeUrl: string;
-  commitmentMerkleTreeUrl: string;
-  modalServerUrl: string;
-}
-
 export interface ArgumentsDisclose {
   disclosureOptions: DisclosureOptions;
-  commitmentMerkleTreeUrl: string;
 }
 
 type DisclosureBoolKeys = 'ofac'

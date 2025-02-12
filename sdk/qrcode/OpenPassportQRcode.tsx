@@ -5,21 +5,18 @@ import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
 import { WS_URL } from '../../common/src/constants/constants';
-import { UserIdType } from '../../common/src/utils/circuits/uuid';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
+import { SelfApp } from '../../common/src/utils/appType';
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
   ssr: false,
 });
 
 interface OpenPassportQRcodeProps {
-  appName: string;
-  userId: string;
-  userIdType: UserIdType;
-  logoBase64?: string;
+  selfApp: SelfApp;
   onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
@@ -28,7 +25,6 @@ interface OpenPassportQRcodeProps {
 // Create a wrapper component that handles client-side rendering
 const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => {
   const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -36,15 +32,12 @@ const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => 
   if (!isClient) {
     return null;
   }
-
   return <OpenPassportQRcode {...props} />;
 };
 
 // Your existing OpenPassportQRcode component
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
-  appName,
-  userId,
-  logoBase64 = '',
+  selfApp,
   onSuccess,
   websocketUrl = WS_URL,
   size = 300,
@@ -57,11 +50,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
     initWebSocket(
       websocketUrl,
       sessionId,
-      {
-        appName,
-        userId,
-        logoBase64
-      },
+      selfApp,
       setProofStep,
       setProofVerified,
       onSuccess
@@ -125,4 +114,4 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
-export default OpenPassportQRcodeWrapper;
+export { OpenPassportQRcodeWrapper, SelfApp };
