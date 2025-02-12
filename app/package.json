@@ -4,8 +4,8 @@
   "private": true,
   "sideEffects": false,
   "scripts": {
-    "analyze-android": "react-native-bundle-visualizer --platform android --dev",
-    "analyze-ios": "react-native-bundle-visualizer --platform ios --dev",
+    "analyze-android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
+    "analyze-ios": "yarn reinstall && react-native-bundle-visualizer --platform ios --dev",
     "android": "react-native run-android",
     "android:build-debug": "cd ./android && yarn android:build-debug-bundle && ./gradlew clean assembleDebug && cd ..",
     "android:build-debug-bundle": "yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
