@@ -29,49 +29,66 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const socketRef = useRef<Socket | null>(null);
 
     const startAppListener = (sessionId: string) => {
-        // Disconnect any already opened connection
-        if (socketRef.current) {
-            socketRef.current.disconnect();
+        console.log(`[AppProvider] Initializing WS connection with sessionId: ${sessionId}`);
+        try {
+            // If a socket connection already exists, disconnect it.
+            if (socketRef.current) {
+                console.log('[AppProvider] Disconnecting existing socket');
+                socketRef.current.disconnect();
+            }
+
+            // Ensure the URL uses the proper WebSocket scheme.
+            const connectionUrl = WS_URL.startsWith('https')
+                ? WS_URL.replace(/^https/, 'wss')
+                : WS_URL;
+            const socketUrl = `${connectionUrl}/websocket`;
+
+            // Create a new socket connection using the updated URL.
+            const socket = io(socketUrl, {
+                path: '/',
+                transports: ['websocket'],
+                query: {
+                    sessionId,
+                    clientType: 'mobile',
+                },
+            });
+            socketRef.current = socket;
+
+            socket.on('connect', () => {
+                console.log(`[AppProvider] Mobile WS connected (id: ${socket.id}) with sessionId: ${sessionId}`);
+            });
+
+            // Listen for the event (should be emitted from the web side once mobile connects).
+            socket.on('self_app', (data: any) => {
+                console.log('[AppProvider] Received self_app event with data:', data);
+                const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : data;
+                setSelfApp(appData);
+                console.log('[AppProvider] Updated selfApp state:', appData);
+                // Update the navigation store so that ProveScreen (and other screens) know which app is selected.
+                useNavigationStore.getState().update({ selectedApp: appData });
+                console.log('[AppProvider] Navigation store updated with selectedApp');
+            });
+
+            socket.on('connect_error', (error) => {
+                console.error('[AppProvider] Mobile WS connection error:', error);
+            });
+
+            socket.on('error', (error) => {
+                console.error('[AppProvider] Mobile WS error:', error);
+            });
+
+            socket.on('disconnect', (reason: string) => {
+                console.log('[AppProvider] Mobile WS disconnected:', reason);
+            });
+        } catch (error) {
+            console.error('[AppProvider] Exception in startAppListener:', error);
         }
-
-        // Create a new socket connection using the WS_URL from constants.
-        // Note: The query includes sessionId and sets clientType to "mobile"
-        const socket = io(`${WS_URL}/websocket`, {
-            path: '/',
-            transports: ['websocket'],
-            query: {
-                sessionId,
-                clientType: 'mobile',
-            },
-        });
-
-        socketRef.current = socket;
-
-        socket.on('connect', () => {
-            console.log(`Mobile WS connected (id: ${socket.id}) with sessionId: ${sessionId}`);
-        });
-
-        // When the mobile device receives the "self_app" event containing the SelfApp object...
-        socket.on('self_app', (data: any) => {
-            console.log('Mobile received self_app data:', data);
-            const appData: SelfApp = typeof data === 'string' ? JSON.parse(data) : data;
-            setSelfApp(appData);
-            // Update the navigation store so that ProveScreen (and other screens) know which app is selected.
-            useNavigationStore.getState().update({ selectedApp: appData });
-        });
-
-        socket.on('connect_error', (error) => {
-            console.error('Mobile WS connection error:', error);
-        });
-
-        socket.on('disconnect', (reason: string) => {
-            console.log('Mobile WS disconnected:', reason);
-        });
     };
 
     useEffect(() => {
         return () => {
             if (socketRef.current) {
+                console.log('[AppProvider] Cleaning up WS connection on unmount');
                 socketRef.current.disconnect();
             }
         };

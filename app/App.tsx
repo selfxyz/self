@@ -11,6 +11,7 @@ import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
 import { AuthProvider } from './src/stores/authProvider';
 import { ProofProvider } from './src/stores/proofProvider';
+import { AppProvider } from './src/stores/appProvider';
 import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 
@@ -46,11 +47,13 @@ function App(): React.JSX.Element {
 
   return (
     <YStack f={1} bc={bgWhite} h="100%" w="100%">
-      <AuthProvider>
-        <ProofProvider>
-          <AppNavigation />
-        </ProofProvider>
-      </AuthProvider>
+      <AppProvider>
+        <AuthProvider>
+          <ProofProvider>
+            <AppNavigation />
+          </ProofProvider>
+        </AuthProvider>
+      </AppProvider>
     </YStack>
   );
 }

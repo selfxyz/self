@@ -21,6 +21,7 @@ import { useProofInfo } from '../../stores/proofProvider';
 import useUserStore from '../../stores/userStore';
 import { black, slate800 } from '../../utils/colors';
 import handleQRCodeScan from '../../utils/qrCodeNew';
+import { useApp } from '../../stores/appProvider';
 
 interface QRCodeViewFinderScreenProps { }
 
@@ -44,22 +45,30 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({ }) => {
   const store = useUserStore();
   const { setSelectedApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
+  const { startAppListener } = useApp();
+
   const onQRData = useCallback<QRCodeScannerViewProps['onQRData']>(
     async (error, uri) => {
       if (doneScanningQR) {
-        // return
+        return;
       }
       if (error) {
-        // TODO: handle error better
         console.error(error);
       } else {
         setDoneScanningQR(true);
         const encodedData = parseUrlParams(uri!);
         const sessionId = encodedData.get('sessionId');
-        navigation.navigate('ProveScreen');
+        console.log('sessionId__', sessionId);
+
+        if (sessionId) {
+          console.log('starting app listener');
+          startAppListener(sessionId);
+        }
+
+        // navigation.navigate('ProveScreen');
       }
     },
-    [store, navigation, doneScanningQR],
+    [doneScanningQR, navigation, startAppListener],
   );
   const onCancelPress = useHapticNavigation('Home', 'cancel');
 
