@@ -1,6 +1,7 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
+import { v4 } from 'uuid';
 
 import namejson from '../../../../common/ofacdata/outputs/nameSMT.json';
 import { PASSPORT_ATTESTATION_ID } from '../../../../common/src/constants/constants';
@@ -86,7 +87,7 @@ export async function sendDscPayload(passportData: PassportData) {
 function generateTeeInputsVCAndDisclose(passportData: PassportData) {
   const majority = '18';
   // THIS Does not work. need a package for this in react native
-  const user_identifier = crypto.randomUUID();
+  const user_identifier = v4();
   const selector_dg1 = Array(88).fill('1');
   const selector_older_than = '1';
   const scope = '@coboyApp';
