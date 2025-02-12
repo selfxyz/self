@@ -7,9 +7,26 @@ module.exports = {
     'plugin:react/recommended',
     'plugin:react-hooks/recommended',
     'plugin:react-perf/all',
+    'plugin:@typescript-eslint/strict',
+    'plugin:sonarjs/recommended-legacy',
   ],
   parser: '@typescript-eslint/parser',
-  plugins: ['@typescript-eslint', 'react', 'react-hooks', 'react-perf'],
+  parserOptions: {
+    project: './tsconfig.json',
+    ecmaVersion: 2021,
+    sourceType: 'module',
+    ecmaFeatures: {
+      jsx: true,
+    },
+  },
+  plugins: [
+    '@typescript-eslint',
+    'react',
+    'react-hooks',
+    'react-perf',
+    'sonarjs',
+    'unused-imports',
+  ],
   ignorePatterns: [
     'ios/',
     'android/',
@@ -45,5 +62,32 @@ module.exports = {
     'no-console': ['warn', { allow: ['warn', 'error'] }],
     'prefer-const': 'warn',
     'no-duplicate-imports': 'error',
+
+    // Unused Imports
+    'unused-imports/no-unused-imports': 'error',
+
+    // SonarJS Rules
+    'sonarjs/no-duplicate-string': 'warn',
+    'sonarjs/cognitive-complexity': ['error', 15],
+    'sonarjs/no-identical-functions': 'warn',
+
+    // Additional TypeScript Strictness
+    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/explicit-function-return-type': 'warn',
+    '@typescript-eslint/strict-boolean-expressions': 'warn',
+    '@typescript-eslint/no-unnecessary-condition': 'warn',
+
+    // New rules from the code block
+    '@typescript-eslint/prefer-ts-expect-error': 'off',
+    '@typescript-eslint/ban-ts-comment': [
+      'warn',
+      {
+        'ts-ignore': 'allow-with-description',
+        'ts-expect-error': true,
+        'ts-nocheck': true,
+        'ts-check': false,
+        minimumDescriptionLength: 10,
+      },
+    ],
   },
 };
