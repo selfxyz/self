@@ -9,6 +9,13 @@ import { Button, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
 import { BodyText } from '../components/typography/BodyText';
+import {
+  appStoreUrl,
+  gitHubUrl,
+  playStoreUrl,
+  selfUrl,
+  telegramUrl,
+} from '../consts/links';
 import Github from '../images/icons/github.svg';
 import Cloud from '../images/icons/settings_cloud_backup.svg';
 import Data from '../images/icons/settings_data.svg';
@@ -40,7 +47,7 @@ type RouteOption =
   | 'share'
   | 'email_feedback';
 
-const storeURL = Platform.OS === 'ios' ? 'TODO: ios URL' : 'TODO: android URL';
+const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 const routes = [
   [Data, 'View passport info', 'PassportDataInfo'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
@@ -56,9 +63,9 @@ if (__DEV__ || true) {
 }
 
 const social = [
-  [Github, 'https://github.com/selfxyz/self'],
-  [Web, 'https://www.self.xyz/'],
-  [Telegram, 'TODO: Telegram URL?'],
+  [Github, gitHubUrl],
+  [Web, selfUrl],
+  [Telegram, telegramUrl],
 ] as [React.FC<SvgProps>, string][];
 
 const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (

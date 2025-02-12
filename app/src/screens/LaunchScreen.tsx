@@ -4,6 +4,7 @@ import { StyleSheet, View } from 'react-native';
 import { Anchor, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import { privacyUrl, termsUrl } from '../consts/links';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
@@ -47,14 +48,13 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             The simplest way to verify identity for safety and trust wherever
             you are.
           </Text>
-          {/* TODO add linking */}
           <Text style={styles.notice}>
             By continuing, you agree to the&nbsp;
-            <Anchor style={styles.link} href="https://example.com">
+            <Anchor style={styles.link} href={termsUrl}>
               User Terms and Conditions
             </Anchor>
             &nbsp;and acknowledge the&nbsp;
-            <Anchor style={styles.link} href="https://example.com">
+            <Anchor style={styles.link} href={privacyUrl}>
               Privacy notice
             </Anchor>
             &nbsp;of Self provided by Self Inc.
