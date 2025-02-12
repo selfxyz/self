@@ -1,9 +1,8 @@
-import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
 import io, { Socket } from 'socket.io-client';
 
 import { WS_URL } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
-import useNavigationStore from './navigationStore';
 
 interface IAppContext {
     selfApp: SelfApp | null;
@@ -16,7 +15,7 @@ interface IAppContext {
      *
      * @param sessionId - The session ID from the scanned QR code.
      */
-    startAppListener: (sessionId: string) => void;
+    startAppListener: (sessionId: string, setSelectedApp: (app: SelfApp) => void) => void;
 }
 
 const AppContext = createContext<IAppContext>({
@@ -28,7 +27,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
     const socketRef = useRef<Socket | null>(null);
 
-    const startAppListener = (sessionId: string) => {
+    const startAppListener = (sessionId: string, setSelectedApp: (app: SelfApp) => void) => {
         console.log(`[AppProvider] Initializing WS connection with sessionId: ${sessionId}`);
         try {
             // If a socket connection already exists, disconnect it.
@@ -65,8 +64,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
                 setSelfApp(appData);
                 console.log('[AppProvider] Updated selfApp state:', appData);
                 // Update the navigation store so that ProveScreen (and other screens) know which app is selected.
-                useNavigationStore.getState().update({ selectedApp: appData });
-                console.log('[AppProvider] Navigation store updated with selectedApp');
+                setSelectedApp(appData);
+                console.log('[AppProvider] Called setSelectedApp with appData:', appData);
             });
 
             socket.on('connect_error', (error) => {

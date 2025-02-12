@@ -62,10 +62,10 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({ }) => {
 
         if (sessionId) {
           console.log('starting app listener');
-          startAppListener(sessionId);
+          startAppListener(sessionId, setSelectedApp);
         }
 
-        // navigation.navigate('ProveScreen');
+        navigation.navigate('ProveScreen');
       }
     },
     [doneScanningQR, navigation, startAppListener],
