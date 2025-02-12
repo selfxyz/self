@@ -34,10 +34,10 @@ const HomeScreen: React.FC = () => {
     <YStack
       bg={black}
       gap={20}
-      jc="space-around"
+      jc="space-between"
       flex={1}
       paddingHorizontal={20}
-      paddingBottom={bottom + 20}
+      paddingBottom={bottom}
     >
       <YStack ai="center" gap={20} justifyContent="flex-start">
         <SelfCard width="100%" />
@@ -51,19 +51,14 @@ const HomeScreen: React.FC = () => {
         </Caption>
         <PrivacyNote />
       </YStack>
-      <YStack
-        ai="center"
-        gap={20}
-        justifyContent="center"
-        paddingBottom={20}
-        hitSlop={50}
-      >
-        <ScanButton onPress={onScanButtonPress}>
+      <YStack ai="center" gap={20} justifyContent="flex-end">
+        <ScanButton onPress={onScanButtonPress} hitSlop={50}>
           <ScanIcon color={amber500} />
         </ScanButton>
         <Caption
           color={amber500}
           textTransform="uppercase"
+          hitSlop={50}
           onPress={onScanButtonPress}
         >
           Prove your SELF

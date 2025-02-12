@@ -6,7 +6,7 @@ import { SvgProps } from 'react-native-svg';
 
 import { useNavigation } from '@react-navigation/native';
 import { Bug } from '@tamagui/lucide-icons';
-import { Button, View, ScrollView, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
 import { BodyText } from '../components/typography/BodyText';
@@ -154,28 +154,28 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
   const { bottom } = useSafeAreaInsets();
   return (
     <View backgroundColor={white}>
-    <YStack
-      bg={black}
-      gap={20}
-      jc="space-between"
-      height={'100%'}
-      padding={20}
-      borderTopLeftRadius={30}
-      borderTopRightRadius={30}
-    >
-      <ScrollView>
-        <YStack ai="flex-start" justifyContent="flex-start" width="100%">
-          {routes.map(([Icon, menuText, menuRoute]) => (
-            <MenuButton
-              key={menuRoute}
-              Icon={Icon}
-              onPress={onMenuPress(menuRoute)}
-            >
-              {menuText}
-            </MenuButton>
-          ))}
-        </YStack>
-      </ScrollView>
+      <YStack
+        bg={black}
+        gap={20}
+        jc="space-between"
+        height={'100%'}
+        padding={20}
+        borderTopLeftRadius={30}
+        borderTopRightRadius={30}
+      >
+        <ScrollView>
+          <YStack ai="flex-start" justifyContent="flex-start" width="100%">
+            {routes.map(([Icon, menuText, menuRoute]) => (
+              <MenuButton
+                key={menuRoute}
+                Icon={Icon}
+                onPress={onMenuPress(menuRoute)}
+              >
+                {menuText}
+              </MenuButton>
+            ))}
+          </YStack>
+        </ScrollView>
         <YStack ai="center" gap={20} justifyContent="center" paddingBottom={50}>
           <Button
             unstyled

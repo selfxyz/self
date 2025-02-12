@@ -1,6 +1,7 @@
 import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
@@ -65,9 +66,8 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const { bottom } = useSafeAreaInsets();
   const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
 
-  const totalBottom = typeof incomingBottom === 'number'
-    ? bottom + incomingBottom
-    : bottom;
+  const totalBottom =
+    typeof incomingBottom === 'number' ? bottom + incomingBottom : bottom;
   return (
     <View {...props} style={styles.bottomSection} paddingBottom={totalBottom}>
       {children}

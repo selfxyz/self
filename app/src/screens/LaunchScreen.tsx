@@ -4,9 +4,9 @@ import { StyleSheet, View } from 'react-native';
 import { Anchor, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { privacyUrl, termsUrl } from '../consts/links';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
+import { privacyUrl, termsUrl } from '../consts/links';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
@@ -44,28 +44,26 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           </YStack>
         </YStack>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white} justifyContent="flex-end">
-          <BodyText style={styles.subheader}>
-            The simplest way to verify identity for safety and trust wherever
-            you are.
-          </BodyText>
-          <Caption style={styles.notice} size={'small'}>
-            By continuing, you agree to the&nbsp;
-            <Anchor
-              style={styles.link}
-              href={termsUrl}
-            >
-              User Terms and Conditions
-            </Anchor>
-            &nbsp;and acknowledge the&nbsp;
-            <Anchor style={styles.link} href={privacyUrl}>
-              Privacy notice
-            </Anchor>
-            &nbsp;of Self provided by Self Inc.
-          </Caption>
-          <PrimaryButton onPress={onStartPress}>
-            Get Started
-          </PrimaryButton>
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={white}
+        justifyContent="flex-end"
+      >
+        <BodyText style={styles.subheader}>
+          The simplest way to verify identity for safety and trust wherever you
+          are.
+        </BodyText>
+        <Caption style={styles.notice} size={'small'}>
+          By continuing, you agree to the&nbsp;
+          <Anchor style={styles.link} href={termsUrl}>
+            User Terms and Conditions
+          </Anchor>
+          &nbsp;and acknowledge the&nbsp;
+          <Anchor style={styles.link} href={privacyUrl}>
+            Privacy notice
+          </Anchor>
+          &nbsp;of Self provided by Self Inc.
+        </Caption>
+        <PrimaryButton onPress={onStartPress}>Get Started</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
