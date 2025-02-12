@@ -1,0 +1,12 @@
+{
+  "DeployVerifiers#Verifier_dsc_sha256_rsa_65537_4096": "0x583a4eBf6227B670B9Bc230bE4C121f90F1d9a37",
+  "DeployVerifiers#Verifier_register_sha256_sha256_sha256_rsa_65537_4096": "0x8A8D8B953e5255ec9fEF0E11698c57aB7eDb2F20",
+  "DeployVerifiers#Verifier_vc_and_disclose": "0x27b7c511f1bdD5aB3Dda35815D76a87A261303De",
+  "DeployRegistryModule#PoseidonT3": "0x9ea847fC73AD27107BFc47b1C634264a109fD3Be",
+  "DeployRegistryModule#IdentityRegistryImplV1": "0x28B0762591122cCCb021832Af867e89eb1A4d590",
+  "DeployRegistryModule#IdentityRegistry": "0x7e2141b4aCc9155dA47Aae691E1213c48D882326",
+  "DeployHub#IdentityVerificationHubImplV1": "0xa491039C0c776aA9f14969176b767863E4c5870c",
+  "DeployHub#IdentityVerificationHub": "0xF02d92fc3B35cDe4066B027A0Ac9949a139437f3",
+  "UpdateRegistryCscaRoot#IdentityRegistryImplV1": "0x7e2141b4aCc9155dA47Aae691E1213c48D882326",
+  "UpdateRegistryOfacRoot#IdentityRegistryImplV1": "0x7e2141b4aCc9155dA47Aae691E1213c48D882326"
+}

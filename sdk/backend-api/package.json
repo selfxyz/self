@@ -1,0 +1,29 @@
+{
+  "name": "backend-api",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/app.ts",
+    "init": "bash scripts/copy_abi.sh && bash scripts/copy_deployedAddress.sh",
+    "start:daemon": "bun run src/app.ts > app.log 2>&1 &",
+    "stop:daemon": "pkill -f 'bun run src/app.ts'"
+  },
+  "dependencies": {
+    "@elysiajs/swagger": "^1.2.0",
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "dotenv": "^16.4.7",
+    "elysia": "latest",
+    "logixlysia": "^4.1.1",
+    "pg": "^8.13.1",
+    "poseidon-lite": "^0.3.0",
+    "snarkjs": "^0.7.5",
+    "swagger": "^0.7.5",
+    "viem": "^2.22.23"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.11.11",
+    "bun-types": "latest"
+  },
+  "module": "index.ts"
+}

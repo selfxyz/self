@@ -1,0 +1,355 @@
+{
+  "_format": "hh-sol-artifact-1",
+  "contractName": "IIdentityVerificationHubV1",
+  "sourceName": "contracts/interfaces/IIdentityVerificationHubV1.sol",
+  "abi": [
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "forbiddenCountriesListPacked",
+          "type": "uint256"
+        }
+      ],
+      "name": "getReadableForbiddenCountries",
+      "outputs": [
+        {
+          "internalType": "string[10]",
+          "name": "forbiddenCountries",
+          "type": "string[10]"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256[3]",
+          "name": "revealedDataPacked",
+          "type": "uint256[3]"
+        },
+        {
+          "internalType": "enum IIdentityVerificationHubV1.RevealedDataType[]",
+          "name": "types",
+          "type": "uint8[]"
+        }
+      ],
+      "name": "getReadableRevealedData",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "string",
+              "name": "issuingState",
+              "type": "string"
+            },
+            {
+              "internalType": "string[]",
+              "name": "name",
+              "type": "string[]"
+            },
+            {
+              "internalType": "string",
+              "name": "passportNumber",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "nationality",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "dateOfBirth",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "gender",
+              "type": "string"
+            },
+            {
+              "internalType": "string",
+              "name": "expiryDate",
+              "type": "string"
+            },
+            {
+              "internalType": "uint256",
+              "name": "olderThan",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "ofac",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IIdentityVerificationHubV1.ReadableRevealedData",
+          "name": "readableData",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "dscCircuitVerifierId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "pubSignals",
+              "type": "uint256[2]"
+            }
+          ],
+          "internalType": "struct IDscCircuitVerifier.DscCircuitProof",
+          "name": "dscCircuitProof",
+          "type": "tuple"
+        }
+      ],
+      "name": "registerDscKeyCommitment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "registerCircuitVerifierId",
+          "type": "uint256"
+        },
+        {
+          "components": [
+            {
+              "internalType": "uint256[2]",
+              "name": "a",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[2][2]",
+              "name": "b",
+              "type": "uint256[2][2]"
+            },
+            {
+              "internalType": "uint256[2]",
+              "name": "c",
+              "type": "uint256[2]"
+            },
+            {
+              "internalType": "uint256[3]",
+              "name": "pubSignals",
+              "type": "uint256[3]"
+            }
+          ],
+          "internalType": "struct IRegisterCircuitVerifier.RegisterCircuitProof",
+          "name": "registerCircuitProof",
+          "type": "tuple"
+        }
+      ],
+      "name": "registerPassportCommitment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "registry",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "registryAddr",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "typeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "sigTypeToDscCircuitVerifiers",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "typeId",
+          "type": "uint256"
+        }
+      ],
+      "name": "sigTypeToRegisterCircuitVerifiers",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "verifier",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [],
+      "name": "vcAndDiscloseCircuitVerifier",
+      "outputs": [
+        {
+          "internalType": "address",
+          "name": "verifierAddr",
+          "type": "address"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
+      "inputs": [
+        {
+          "components": [
+            {
+              "internalType": "bool",
+              "name": "olderThanEnabled",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "olderThan",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "forbiddenCountriesEnabled",
+              "type": "bool"
+            },
+            {
+              "internalType": "uint256",
+              "name": "forbiddenCountriesListPacked",
+              "type": "uint256"
+            },
+            {
+              "internalType": "bool",
+              "name": "ofacEnabled",
+              "type": "bool"
+            },
+            {
+              "components": [
+                {
+                  "internalType": "uint256[2]",
+                  "name": "a",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[2][2]",
+                  "name": "b",
+                  "type": "uint256[2][2]"
+                },
+                {
+                  "internalType": "uint256[2]",
+                  "name": "c",
+                  "type": "uint256[2]"
+                },
+                {
+                  "internalType": "uint256[16]",
+                  "name": "pubSignals",
+                  "type": "uint256[16]"
+                }
+              ],
+              "internalType": "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
+              "name": "vcAndDiscloseProof",
+              "type": "tuple"
+            }
+          ],
+          "internalType": "struct IIdentityVerificationHubV1.VcAndDiscloseHubProof",
+          "name": "proof",
+          "type": "tuple"
+        }
+      ],
+      "name": "verifyVcAndDisclose",
+      "outputs": [
+        {
+          "components": [
+            {
+              "internalType": "uint256",
+              "name": "attestationId",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "scope",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "userIdentifier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nullifier",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "identityCommitmentRoot",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256[3]",
+              "name": "revealedDataPacked",
+              "type": "uint256[3]"
+            },
+            {
+              "internalType": "uint256",
+              "name": "forbiddenCountriesListPacked",
+              "type": "uint256"
+            }
+          ],
+          "internalType": "struct IIdentityVerificationHubV1.VcAndDiscloseVerificationResult",
+          "name": "result",
+          "type": "tuple"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ],
+  "bytecode": "0x",
+  "deployedBytecode": "0x",
+  "linkReferences": {},
+  "deployedLinkReferences": {}
+}
