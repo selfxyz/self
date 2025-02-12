@@ -6,7 +6,7 @@ export const COMMITMENT_TREE_DEPTH = 33;
 export const DEFAULT_USER_ID_TYPE = 'uuid';
 
 export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';
-
+export const REDIRECT_URL = 'https://redirect.openpassport.app';
 export const WS_RPC_URL = "ws://54.71.75.253:8888/";
 export const WS_URL = 'https://websocket.openpassport.app';
 
