@@ -19,9 +19,7 @@ import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
-import useUserStore from '../../stores/userStore';
 import { black, slate800 } from '../../utils/colors';
-import handleQRCodeScan from '../../utils/qrCodeNew';
 
 interface QRCodeViewFinderScreenProps {}
 
@@ -42,7 +40,6 @@ const parseUrlParams = (url: string): Map<string, string> => {
 const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const store = useUserStore();
   const { setSelectedApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { startAppListener } = useApp();
