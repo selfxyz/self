@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
-import "../libraries/CircuitAttributeHandler.sol";
+import {CircuitAttributeHandler} from "../libraries/CircuitAttributeHandler.sol";
 
 contract TestCircuitAttributeHandler {
     function testGetIssuingState(bytes memory charcodes) external pure returns (string memory) {

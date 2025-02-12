@@ -1,18 +1,18 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
-import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
-import "./constants/CircuitConstants.sol";
-import "./constants/AttestationId.sol";
-import "./libraries/Formatter.sol";
-import "./libraries/CircuitAttributeHandler.sol";
-import "./interfaces/IIdentityVerificationHubV1.sol";
-import "./interfaces/IIdentityRegistryV1.sol";
-import "./interfaces/IRegisterCircuitVerifier.sol";
-import "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import "./interfaces/IDscCircuitVerifier.sol";
-import "./upgradeable/ImplRoot.sol";
+import {UUPSUpgradeable} from "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
+import {Ownable2StepUpgradeable} from "@openzeppelin/contracts-upgradeable/access/Ownable2StepUpgradeable.sol";
+import {CircuitConstants} from "./constants/CircuitConstants.sol";
+import {AttestationId} from "./constants/AttestationId.sol";
+import {Formatter} from "./libraries/Formatter.sol";
+import {CircuitAttributeHandler} from "./libraries/CircuitAttributeHandler.sol";
+import {IIdentityVerificationHubV1} from "./interfaces/IIdentityVerificationHubV1.sol";
+import {IIdentityRegistryV1} from "./interfaces/IIdentityRegistryV1.sol";
+import {IRegisterCircuitVerifier} from "./interfaces/IRegisterCircuitVerifier.sol";
+import {IVcAndDiscloseCircuitVerifier} from "./interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {IDscCircuitVerifier} from "./interfaces/IDscCircuitVerifier.sol";
+import {ImplRoot} from "./upgradeable/ImplRoot.sol";
 
 /**
  * @notice ⚠️ CRITICAL STORAGE LAYOUT WARNING ⚠️

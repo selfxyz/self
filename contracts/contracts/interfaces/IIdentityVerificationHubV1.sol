@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
-import "./IRegisterCircuitVerifier.sol";
-import "./IDscCircuitVerifier.sol";
-import "./IVcAndDiscloseCircuitVerifier.sol";
-import "../constants/CircuitConstants.sol";
+import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
+import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
+import {IVcAndDiscloseCircuitVerifier} from "./IVcAndDiscloseCircuitVerifier.sol";
+import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /**
  * @title IIdentityVerificationHubV1

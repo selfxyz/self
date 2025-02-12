@@ -32,9 +32,27 @@ export class Formatter {
         if (date.length !== 6) {
             throw new Error("InvalidDateLength");
         }
-        const year = Formatter.substring(date, 0, 2);
-        const month = Formatter.substring(date, 2, 4);
-        const day = Formatter.substring(date, 4, 6);
+
+        const dateBytes = Array.from(date);
+
+        for (let i = 0; i < 6; i++) {
+            if (dateBytes[i] < '0' || dateBytes[i] > '9') {
+                throw new Error("InvalidAsciiCode");
+            }
+        }
+
+        if (dateBytes[2] > '1' || (dateBytes[2] === '1' && dateBytes[3] > '2')) {
+            throw new Error("InvalidMonthRange");
+        }
+
+        if (dateBytes[4] > '3' || (dateBytes[4] === '3' && dateBytes[5] > '1')) {
+            throw new Error("InvalidDayRange");
+        }
+
+        const year = date.substring(0, 2);
+        const month = date.substring(2, 4);
+        const day = date.substring(4, 6);
+
         return `${day}-${month}-${year}`;
     }
 

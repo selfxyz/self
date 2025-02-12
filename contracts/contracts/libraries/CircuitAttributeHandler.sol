@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
-import "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
-import "../constants/CircuitConstants.sol";
-import "./Formatter.sol";
+import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
+import {CircuitConstants} from "../constants/CircuitConstants.sol";
+import {Formatter} from "./Formatter.sol";
 
 /**
  * @title CircuitAttributeHandler Library

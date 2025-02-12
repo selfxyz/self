@@ -289,6 +289,29 @@ describe("Airdrop", () => {
         await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
+    
+    it("should revert with InvalidUserIdentifier when user identifier is 0", async () => {
+        const { owner, user1 } = deployedActors;
+
+        vcAndDiscloseProof = await generateVcAndDiscloseProof(
+            registerSecret,
+            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+            deployedActors.mockPassport,
+            "test-airdrop",
+            new Array(88).fill("1"),
+            "1",
+            imt,
+            "20",
+            undefined,
+            undefined,
+            forbiddenCountriesList,
+            "0000000000000000000000000000000000000000"
+        );
+
+        await airdrop.connect(owner).openRegistration();
+        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+            .to.be.revertedWithCustomError(airdrop, "InvalidUserIdentifier");
+    });
 
     it("should not able to register address when rootTimestamp is different", async () => {
         const {registry, owner, user1, mockPassport} = deployedActors;

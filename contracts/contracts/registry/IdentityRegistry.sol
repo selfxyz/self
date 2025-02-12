@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
-import "../upgradeable/ProxyRoot.sol";
+import {ProxyRoot} from "../upgradeable/ProxyRoot.sol";
 
 /**
  * @title IdentityRegistry

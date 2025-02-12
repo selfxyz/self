@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
-
+pragma solidity 0.8.28;
 /**
  * @title IRegisterCircuitVerifier
  * @notice Interface for verifying register circuit proofs.

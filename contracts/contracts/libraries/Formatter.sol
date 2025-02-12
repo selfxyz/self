@@ -8,8 +8,14 @@ pragma solidity ^0.8.28;
 library Formatter {
     error InvalidDateLength();
     error InvalidAsciiCode();
+    error InvalidYearRange();
+    error InvalidMonthRange();
+    error InvalidDayRange();
+    error InvalidFieldElement();
+    error InvalidDateDigit();
 
     uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+    uint256 constant SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
     /**
      * @notice Formats a full name string into first name(s) and last name.
@@ -67,9 +73,23 @@ library Formatter {
     function formatDate(
         string memory date
     ) internal pure returns (string memory) {
-        // Ensure the date string is the correct length.
-        if (bytes(date).length != 6) {
+        bytes memory dateBytes = bytes(date);
+        if (dateBytes.length != 6) {
             revert InvalidDateLength();
+        }
+
+        if (dateBytes[2] > '1' || (dateBytes[2] == '1' && dateBytes[3] > '2')) {
+            revert InvalidMonthRange();
+        }
+
+        if (dateBytes[4] > '3' || (dateBytes[4] == '3' && dateBytes[5] > '1')) {
+            revert InvalidDayRange();
+        }
+
+        for (uint i = 0; i < 6; i++) {
+            if (dateBytes[i] < '0' || dateBytes[i] > '9') {
+                revert InvalidAsciiCode();
+            }
         }
 
         string memory year = substring(date, 0, 2);
@@ -102,6 +122,13 @@ library Formatter {
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
     ) internal pure returns (bytes memory) {
+        if (
+            publicSignals[0] >= SNARK_SCALAR_FIELD ||
+            publicSignals[1] >= SNARK_SCALAR_FIELD ||
+            publicSignals[2] >= SNARK_SCALAR_FIELD
+        ) {
+            revert InvalidFieldElement();
+        }
         uint8[3] memory bytesCount = [31, 31, 29];
         bytes memory bytesArray = new bytes(91);
 
@@ -132,6 +159,10 @@ library Formatter {
             string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries
         )
     {
+        if (publicSignal >= SNARK_SCALAR_FIELD) {
+            revert InvalidFieldElement();
+        }
+
         for (uint256 j = 0; j < MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
             uint256 byteIndex = j * 3;
 
@@ -155,6 +186,11 @@ library Formatter {
     function proofDateToUnixTimestamp(
         uint256[6] memory dateNum
     ) internal pure returns (uint256) {
+        for (uint256 i = 0; i < 6; i++) {
+        if (dateNum[i] > 9) {
+            revert InvalidDateDigit();
+            }
+        }
         string memory date = "";
         for (uint256 i = 0; i < 6; i++) {
             date = string(
@@ -176,8 +212,23 @@ library Formatter {
     function dateToUnixTimestamp(
         string memory date
     ) internal pure returns (uint256) {
-        if (bytes(date).length != 6) {
+        bytes memory dateBytes = bytes(date);
+        if (dateBytes.length != 6) {
             revert InvalidDateLength();
+        }
+
+        if (dateBytes[2] > '1' || (dateBytes[2] == '1' && dateBytes[3] > '2')) {
+            revert InvalidMonthRange();
+        }
+
+        if (dateBytes[4] > '3' || (dateBytes[4] == '3' && dateBytes[5] > '1')) {
+            revert InvalidDayRange();
+        }
+
+        for (uint i = 0; i < 6; i++) {
+            if (dateBytes[i] < '0' || dateBytes[i] > '9') {
+                revert InvalidAsciiCode();
+            }
         }
 
         uint256 year = parseDatePart(substring(date, 0, 2)) + 2000;
@@ -225,7 +276,10 @@ library Formatter {
         uint digit;
         uint result;
         for (uint i = 0; i < tempEmptyStringTest.length; i++) {
-            digit = uint(uint8(tempEmptyStringTest[i])) - 48; // '0' is 48 in ASCII
+            if (uint8(tempEmptyStringTest[i]) < 48 || uint8(tempEmptyStringTest[i]) > 57) {
+                revert InvalidAsciiCode();
+            }
+            digit = uint8(tempEmptyStringTest[i]) - 48;
             result = result * 10 + digit;
         }
         return result;
@@ -246,6 +300,14 @@ library Formatter {
         uint256 day
     ) internal pure returns (uint timestamp) {
         uint16 i;
+
+        if (year < 1970 || year > 2100) {
+            revert InvalidYearRange();
+        }
+
+        if (month < 1 || month > 12) {
+            revert InvalidMonthRange();
+        }
 
         // Year.
         for (i = 1970; i < year; i++) {
@@ -275,6 +337,10 @@ library Formatter {
         monthDayCounts[10] = 30;
         monthDayCounts[11] = 31;
 
+        if (day < 1 || day > monthDayCounts[month - 1]) {
+            revert InvalidDayRange();
+        }
+
         for (i = 1; i < month; i++) {
             timestamp += monthDayCounts[i - 1] * 1 days;
         }
@@ -291,6 +357,10 @@ library Formatter {
      * @return True if the year is a leap year, otherwise false.
      */
     function isLeapYear(uint256 year) internal pure returns (bool) {
+        if (year < 1970 || year > 2100) {
+            revert InvalidYearRange();
+        }
+
         if (year % 4 != 0) {
             return false;
         } else if (year % 100 != 0) {

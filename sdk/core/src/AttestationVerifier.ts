@@ -76,7 +76,6 @@ export class AttestationVerifier {
       vcAndDiscloseProof: solidityProof
     }
 
-
     const result = await this.verifyAllContract.verifyAll(
       this.targetRootTimestamp,
       vcAndDiscloseHubProof,

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.28;
+pragma solidity 0.8.28;
 
-import "../../contracts/upgradeable/ImplRoot.sol";
+import {ImplRoot} from "../../contracts/upgradeable/ImplRoot.sol";
 
 contract MockImplRoot is ImplRoot {
 
