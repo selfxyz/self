@@ -17,6 +17,7 @@ const newSocket = (websocketUrl: string, sessionId: string) => {
   return io(fullUrl, {
     path: '/',
     query: { sessionId, clientType: 'web' },
+    transports: ['websocket'],
   });
 };
 
@@ -72,23 +73,33 @@ export function initWebSocket(
   const socket = newSocket(websocketUrl, sessionId);
 
   socket.on('connect', () => {
-    console.log(`[WebSocket] WebSocket client connected with id: ${socket.id}`);
+    console.log(`[WebSocket] Connected with id: ${socket.id}, transport: ${socket.io.engine.transport.name}`);
   });
 
   socket.on('connect_error', (error) => {
     console.error('[WebSocket] Connection error:', error);
   });
 
-  socket.on('mobile_status', handleWebSocketMessage(
-    socket,
-    sessionId,
-    selfApp,
-    setProofStep,
-    setProofVerified,
-    onSuccess
-  ));
+  socket.on('mobile_status', (data) => {
+    console.log('[WebSocket] Raw mobile_status event received:', data);
+    handleWebSocketMessage(
+      socket,
+      sessionId,
+      selfApp,
+      setProofStep,
+      setProofVerified,
+      onSuccess
+    )(data);
+  });
 
   socket.on('disconnect', (reason: string) => {
-    console.log('[WebSocket] Disconnected from WebSocket server. Reason:', reason);
+    console.log(`[WebSocket] Disconnected. Reason: ${reason}, Last transport: ${socket.io.engine.transport?.name}`);
   });
+
+  return () => {
+    console.log(`[WebSocket] Cleaning up connection for sessionId: ${sessionId}`);
+    if (socket) {
+      socket.disconnect();
+    }
+  };
 }

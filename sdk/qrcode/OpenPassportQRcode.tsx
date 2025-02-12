@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
@@ -44,18 +44,31 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [sessionId, setSessionId] = useState(uuidv4());
+  const [sessionId] = useState(uuidv4());
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   useEffect(() => {
-    initWebSocket(
-      websocketUrl,
-      sessionId,
-      selfApp,
-      setProofStep,
-      setProofVerified,
-      onSuccess
-    );
-  }, [sessionId, websocketUrl]);
+    // Only initialize if we don't have a socket already
+    if (!socketRef.current) {
+      console.log('[QRCode] Initializing new WebSocket connection');
+      socketRef.current = initWebSocket(
+        websocketUrl,
+        sessionId,
+        selfApp,
+        setProofStep,
+        setProofVerified,
+        onSuccess
+      );
+    }
+
+    return () => {
+      console.log('[QRCode] Cleaning up WebSocket connection');
+      if (socketRef.current) {
+        socketRef.current();
+        socketRef.current = null;
+      }
+    };
+  }, [websocketUrl, sessionId, selfApp, onSuccess]);
 
   const generateUniversalLink = () => {
     const baseUrl = REDIRECT_URL;
