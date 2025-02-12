@@ -9,9 +9,9 @@ import { YStack } from 'tamagui';
 // Adjust the import path as needed
 import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
+import { AppProvider } from './src/stores/appProvider';
 import { AuthProvider } from './src/stores/authProvider';
 import { ProofProvider } from './src/stores/proofProvider';
-import { AppProvider } from './src/stores/appProvider';
 import useUserStore from './src/stores/userStore';
 import { bgWhite } from './src/utils/colors';
 

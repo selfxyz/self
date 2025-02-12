@@ -1,7 +1,8 @@
 import elliptic from 'elliptic';
 import forge from 'node-forge';
-import { v4 } from 'uuid';
 import io, { Socket } from 'socket.io-client';
+import { v4 } from 'uuid';
+
 import { WS_RPC_URL, WS_URL } from '../../../../common/src/constants/constants';
 import { getPublicKey, verifyAttestation } from './attest';
 
@@ -106,11 +107,11 @@ export async function sendPayload(
       socket?.emit('subscribe', uuidVal);
     });
 
-    socket.on('connect_error', (error) => {
+    socket.on('connect_error', error => {
       console.error('SocketIO connection error:', error);
     });
 
-    socket.on('message', (message) => {
+    socket.on('message', message => {
       const data = typeof message === 'string' ? JSON.parse(message) : message;
       console.log('SocketIO message:', data);
 
@@ -123,7 +124,7 @@ export async function sendPayload(
       }
     });
 
-    socket.on('disconnect', (reason) => {
+    socket.on('disconnect', reason => {
       console.log(`SocketIO disconnected. Reason: ${reason}`);
     });
   }

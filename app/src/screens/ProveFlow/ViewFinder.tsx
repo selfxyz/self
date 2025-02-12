@@ -17,13 +17,13 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
 import useUserStore from '../../stores/userStore';
 import { black, slate800 } from '../../utils/colors';
 import handleQRCodeScan from '../../utils/qrCodeNew';
-import { useApp } from '../../stores/appProvider';
 
-interface QRCodeViewFinderScreenProps { }
+interface QRCodeViewFinderScreenProps {}
 
 // TODO: replace this with proper tested lib
 // or react-native-url-polyfill -> new URL(uri)
@@ -39,7 +39,7 @@ const parseUrlParams = (url: string): Map<string, string> => {
   return params;
 };
 
-const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({ }) => {
+const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
