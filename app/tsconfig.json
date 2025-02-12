@@ -4,5 +4,6 @@
     "lib": ["dom", "esnext"],
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "types": ["react-native", "jest"]
-  }
+  },
+  "include": ["./*.js", "./*.ts", "./.eslintrc.js", "src/**/*"]
 }
