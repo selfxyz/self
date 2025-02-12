@@ -30,6 +30,8 @@ export const saltLengths = [64, 48, 32];
 
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 
+export const OFAC_TREE_LEVELS = 64;
+
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,
   sha224: 512,

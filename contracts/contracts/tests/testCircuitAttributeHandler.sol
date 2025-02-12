@@ -36,16 +36,34 @@ contract TestCircuitAttributeHandler {
         return CircuitAttributeHandler.getOlderThan(charcodes);
     }
 
-    function testGetOfac(bytes memory charcodes) external pure returns (uint256) {
-        return CircuitAttributeHandler.getOfac(charcodes);
+    function testGetPassportNoOfac(bytes memory charcodes) external pure returns (uint256) {
+        return CircuitAttributeHandler.getPassportNoOfac(charcodes);
+    }
+
+    function testGetNameAndDobOfac(bytes memory charcodes) external pure returns (uint256) {
+        return CircuitAttributeHandler.getNameAndDobOfac(charcodes);
+    }
+
+    function testGetNameAndYobOfac(bytes memory charcodes) external pure returns (uint256) {
+        return CircuitAttributeHandler.getNameAndYobOfac(charcodes);
     }
 
     function testCompareOlderThan(bytes memory charcodes, uint256 olderThan) external pure returns (bool) {
         return CircuitAttributeHandler.compareOlderThan(charcodes, olderThan);
     }
 
-    function testCompareOfac(bytes memory charcodes) external pure returns (bool) {
-        return CircuitAttributeHandler.compareOfac(charcodes);
+    function testCompareOfac(
+        bytes memory charcodes,
+        bool checkPassportNo,
+        bool checkNameAndDob,
+        bool checkNameAndYob
+    ) external pure returns (bool) {
+        return CircuitAttributeHandler.compareOfac(
+            charcodes,
+            checkPassportNo,
+            checkNameAndDob,
+            checkNameAndYob
+        );
     }
 
     function testExtractStringAttribute(bytes memory charcodes, uint256 start, uint256 end) external pure returns (string memory) {

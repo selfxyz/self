@@ -7,7 +7,7 @@ import {
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf, getLeafCscaTree, getLeaf, getLeafDscTree } from '../trees';
+import { getCountryLeaf, getNameDobLeaf, getPassportNumberAndNationalityLeaf, getLeafCscaTree, getLeaf, getLeafDscTree, getNameYobLeaf } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
   extractSignatureFromDSC,
@@ -167,7 +167,9 @@ export function generateCircuitInputsVCandDisclose(
   selector_older_than: string | number,
   merkletree: LeanIMT,
   majority: string,
-  name_smt: SMT,
+  passportNo_smt: SMT,
+  nameAndDob_smt: SMT,
+  nameAndYob_smt: SMT,
   selector_ofac: string | number,
   forbidden_countries_list: string[],
   user_identifier: string
@@ -199,13 +201,28 @@ export function generateCircuitInputsVCandDisclose(
   const formattedMajority = majority.length === 1 ? `0${majority}` : majority;
   const majority_ascii = formattedMajority.split('').map((char) => char.charCodeAt(0));
 
-  // SMT -  OFAC
-  const name_leaf = getNameLeaf(formattedMrz.slice(10, 49)); // [6-44] + 5 shift
+  // SMT - OFAC
+  const passportNo_leaf = getPassportNumberAndNationalityLeaf(formattedMrz.slice(49, 58), formattedMrz.slice(59, 62));
+  const namedob_leaf = getNameDobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 68)); // [57-62] + 5 shift
+  const name_leaf = getNameYobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 64));
+
   const {
-    root: smt_root,
-    closestleaf: smt_leaf_key,
-    siblings: smt_siblings,
-  } = generateSMTProof(name_smt, name_leaf);
+    root: passportNo_smt_root,
+    closestleaf: passportNo_smt_leaf_key,
+    siblings: passportNo_smt_siblings,
+  } = generateSMTProof(passportNo_smt, passportNo_leaf);
+
+  const {
+    root: nameAndDob_smt_root,
+    closestleaf: nameAndDob_smt_leaf_key,
+    siblings: nameAndDob_smt_siblings,
+  } = generateSMTProof(nameAndDob_smt, namedob_leaf);
+
+  const {
+    root: nameAndYob_smt_root,
+    closestleaf: nameAndYob_smt_leaf_key,
+    siblings: nameAndYob_smt_siblings,
+  } = generateSMTProof(nameAndYob_smt, name_leaf);
 
   return {
     secret: formatInput(secret),
@@ -223,9 +240,15 @@ export function generateCircuitInputsVCandDisclose(
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
-    smt_root: formatInput(smt_root),
-    smt_leaf_key: formatInput(smt_leaf_key),
-    smt_siblings: formatInput(smt_siblings),
+    ofac_passportno_smt_root: formatInput(passportNo_smt_root),
+    ofac_passportno_smt_leaf_key: formatInput(passportNo_smt_leaf_key),
+    ofac_passportno_smt_siblings: formatInput(passportNo_smt_siblings),
+    ofac_namedob_smt_root: formatInput(nameAndDob_smt_root),
+    ofac_namedob_smt_leaf_key: formatInput(nameAndDob_smt_leaf_key),
+    ofac_namedob_smt_siblings: formatInput(nameAndDob_smt_siblings),
+    ofac_nameyob_smt_root: formatInput(nameAndYob_smt_root),
+    ofac_nameyob_smt_leaf_key: formatInput(nameAndYob_smt_leaf_key),
+    ofac_nameyob_smt_siblings: formatInput(nameAndYob_smt_siblings),
     selector_ofac: formatInput(selector_ofac),
     forbidden_countries_list: formatInput(formatCountriesList(forbidden_countries_list)),
   };
@@ -237,9 +260,11 @@ export function generateCircuitInputsOfac(
   proofLevel: number
 ) {
   const mrz_bytes = formatMrz(passportData.mrz);
-  const passport_leaf = getPassportNumberLeaf(mrz_bytes.slice(49, 58));
+  console.log('mrz_bytes', mrz_bytes);
+  console.log('mrz_bytes.slice(59, 62)', mrz_bytes.slice(59, 62).map((byte) => String.fromCharCode(byte)));
+  const passport_leaf = getPassportNumberAndNationalityLeaf(mrz_bytes.slice(49, 58), mrz_bytes.slice(59, 62));
   const namedob_leaf = getNameDobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 68)); // [57-62] + 5 shift
-  const name_leaf = getNameLeaf(mrz_bytes.slice(10, 49)); // [6-44] + 5 shift
+  const name_leaf = getNameYobLeaf(mrz_bytes.slice(10, 49), mrz_bytes.slice(62, 64));
 
   let root, closestleaf, siblings;
   if (proofLevel == 3) {

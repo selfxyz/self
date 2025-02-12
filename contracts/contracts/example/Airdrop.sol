@@ -87,7 +87,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      * @param _olderThan Value for 'olderThan' verification.
      * @param _forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
      * @param _forbiddenCountriesListPacked Packed list of forbidden countries.
-     * @param _ofacEnabled Flag indicating if OFAC verification is enabled.
+     * @param _ofacEnabled Array of flags indicating which OFAC checks are enabled. [passportNo, nameAndDob, nameAndYob]
      */
     constructor(
         address _identityVerificationHub, 
@@ -100,7 +100,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         uint256 _olderThan,
         bool _forbiddenCountriesEnabled,
         uint256 _forbiddenCountriesListPacked,
-        bool _ofacEnabled
+        bool[3] memory _ofacEnabled
     ) 
         PassportAirdropRoot(
             _identityVerificationHub, 

@@ -20,9 +20,9 @@
   "scripts": {
     "compile": "npx hardhat clean && npx hardhat compile",
     "deploy:all:sepolia": "npm run deploy:verifiers:sepolia && npm run deploy:registry:sepolia && npm run deploy:hub:sepolia",
-    "deploy:hub:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_hub.ts --network sepolia --verify",
-    "deploy:registry:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_registry.ts --network sepolia --verify",
-    "deploy:verifiers:sepolia": "npx hardhat ignition deploy ignition/modules/deploy_verifiers.ts --network sepolia --verify",
+    "deploy:hub:sepolia": "npx hardhat ignition deploy ignition/modules/deployHub.ts --network sepolia --verify",
+    "deploy:registry:sepolia": "npx hardhat ignition deploy ignition/modules/deployRegistry.ts --network sepolia --verify",
+    "deploy:verifiers:sepolia": "npx hardhat ignition deploy ignition/modules/deployVerifiers.ts --network sepolia --verify",
     "deploy:verifyall:sepolia": "npx hardhat ignition deploy ignition/modules/deployVerifyAll.ts --network sepolia --verify",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
     "publish": "npm publish --access public",

@@ -17,7 +17,12 @@ include "../date/isOlderThan.circom";
 /// @input selector_ofac bitmap used to reveal the OFAC verification result
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
-template DISCLOSE(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+template DISCLOSE(
+    MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH,
+    passportNoTreeLevels,
+    namedobTreeLevels,
+    nameyobTreeLevels
+) {
 
     signal input dg1[93];
     signal input selector_dg1[88];
@@ -28,9 +33,18 @@ template DISCLOSE(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input forbidden_countries_list[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
 
-    signal input smt_leaf_key;
-    signal input smt_root;
-    signal input smt_siblings[256];
+    signal input ofac_passportno_smt_leaf_key;
+    signal input ofac_passportno_smt_root;
+    signal input ofac_passportno_smt_siblings[passportNoTreeLevels];
+
+    signal input ofac_namedob_smt_leaf_key;
+    signal input ofac_namedob_smt_root;
+    signal input ofac_namedob_smt_siblings[namedobTreeLevels];
+
+    signal input ofac_nameyob_smt_leaf_key;
+    signal input ofac_nameyob_smt_root;
+    signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
+    
     signal input selector_ofac;
     
     // assert selectors are 0 or 1
@@ -52,7 +66,7 @@ template DISCLOSE(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     older_than_verified[0] <== isOlderThan.out * majority[0];
     older_than_verified[1] <== isOlderThan.out * majority[1];
 
-    signal revealedData[91]; // mrz: 88 bytes | older_than: 2 bytes | ofac: 1 byte
+    signal revealedData[93]; // mrz: 88 bytes | older_than: 2 bytes | ofac: 3 byte
     for (var i = 0; i < 88; i++) {
         revealedData[i] <== dg1[5+i] * selector_dg1[i];
     }
@@ -60,10 +74,31 @@ template DISCLOSE(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     revealedData[88] <== older_than_verified[0] * selector_older_than;
     revealedData[89] <== older_than_verified[1] * selector_older_than;
 
-    signal ofacCheckResult <== OFAC_NAME()(dg1, smt_leaf_key, smt_root, smt_siblings);
-    revealedData[90] <== ofacCheckResult * selector_ofac;
+    signal ofacCheckResultPassportNo <== OFAC_PASSPORT_NUMBER(passportNoTreeLevels)(
+        dg1,
+        ofac_passportno_smt_leaf_key,
+        ofac_passportno_smt_root,
+        ofac_passportno_smt_siblings
+    );
 
-    signal output revealedData_packed[3] <== PackBytes(91)(revealedData);
+    signal ofacCheckResultNameDob <== OFAC_NAME_DOB(namedobTreeLevels)(
+        dg1,
+        ofac_namedob_smt_leaf_key,
+        ofac_namedob_smt_root,
+        ofac_namedob_smt_siblings
+    );
+
+    signal ofacCheckResultNameYob <== OFAC_NAME_YOB(nameyobTreeLevels)(
+        dg1,
+        ofac_nameyob_smt_leaf_key,
+        ofac_nameyob_smt_root,
+        ofac_nameyob_smt_siblings
+    );
+    
+    revealedData[90] <== ofacCheckResultPassportNo * selector_ofac;
+    revealedData[91] <== ofacCheckResultNameDob * selector_ofac;
+    revealedData[92] <== ofacCheckResultNameYob * selector_ofac;
+    signal output revealedData_packed[3] <== PackBytes(93)(revealedData);
 
     var chunkLength = computeIntChunkLength(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3);
     signal output forbidden_countries_list_packed[chunkLength] <== ProveCountryIsNotInList(MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH)(dg1, forbidden_countries_list);

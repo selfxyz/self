@@ -43,7 +43,7 @@ library CircuitAttributeHandler {
     uint256 private constant OLDER_THAN_END = 89;
 
     uint256 private constant OFAC_START = 90;
-    uint256 private constant OFAC_END = 90;
+    uint256 private constant OFAC_END = 92;
 
     /**
      * @notice Retrieves the issuing state from the encoded attribute byte array.
@@ -120,12 +120,51 @@ library CircuitAttributeHandler {
     }
 
     /**
-     * @notice Retrieves the OFAC status from the encoded attribute byte array.
+     * @notice Retrieves the passport number OFAC status from the encoded attribute byte array.
      * @param charcodes The byte array containing passport attribute data.
-     * @return The OFAC status as a uint256.
+     * @return The OFAC status for passport number check as a uint256.
      */
-    function getOfac(bytes memory charcodes) internal pure returns (uint256) {
+    function getPassportNoOfac(bytes memory charcodes) internal pure returns (uint256) {
         return uint8(charcodes[OFAC_START]);
+    }
+
+    /**
+     * @notice Retrieves the name and date of birth OFAC status from the encoded attribute byte array.
+     * @param charcodes The byte array containing passport attribute data.
+     * @return The OFAC status for name and DOB check as a uint256.
+     */
+    function getNameAndDobOfac(bytes memory charcodes) internal pure returns (uint256) {
+        return uint8(charcodes[OFAC_START + 1]);
+    }
+
+    /**
+     * @notice Retrieves the name and year of birth OFAC status from the encoded attribute byte array.
+     * @param charcodes The byte array containing passport attribute data.
+     * @return The OFAC status for name and YOB check as a uint256.
+     */
+    function getNameAndYobOfac(bytes memory charcodes) internal pure returns (uint256) {
+        return uint8(charcodes[OFAC_START + 2]);
+    }
+
+    /**
+     * @notice Performs selective OFAC checks based on provided flags.
+     * @param charcodes The byte array containing passport attribute data.
+     * @param checkPassportNo Whether to check the passport number OFAC status.
+     * @param checkNameAndDob Whether to check the name and date of birth OFAC status.
+     * @param checkNameAndYob Whether to check the name and year of birth OFAC status.
+     * @return True if all enabled checks pass (equal 1), false if any enabled check fails.
+     * @dev Checks are only performed for flags that are set to true. If a flag is false,
+     * that particular check is considered to have passed regardless of its actual value.
+     */
+    function compareOfac(
+        bytes memory charcodes,
+        bool checkPassportNo,
+        bool checkNameAndDob,
+        bool checkNameAndYob
+    ) internal pure returns (bool) {
+        return (!checkPassportNo || getPassportNoOfac(charcodes) == 1) &&
+               (!checkNameAndDob || getNameAndDobOfac(charcodes) == 1) &&
+               (!checkNameAndYob || getNameAndYobOfac(charcodes) == 1);
     }
 
     /**
@@ -139,17 +178,6 @@ library CircuitAttributeHandler {
         uint256 olderThan
     ) internal pure returns (bool) {
         return getOlderThan(charcodes) >= olderThan;
-    }
-
-    /**
-     * @notice Compares the extracted OFAC value to the expected active status (1).
-     * @param charcodes The byte array containing passport attribute data.
-     * @return True if the extracted OFAC value equals 1, false otherwise.
-     */
-    function compareOfac(
-        bytes memory charcodes
-    ) internal pure returns (bool) {
-        return getOfac(charcodes) == 1;
     }
 
     /**

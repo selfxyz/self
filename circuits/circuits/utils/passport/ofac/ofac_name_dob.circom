@@ -3,13 +3,13 @@ pragma circom 2.1.9;
 include "circomlib/circuits/poseidon.circom";
 include "../../crypto/merkle-trees/smt.circom";
 
-template OFAC_NAME_DOB() {
+template OFAC_NAME_DOB(nLevels) {
 
     signal input dg1[93];
 
     signal input smt_leaf_key;
     signal input smt_root;
-    signal input smt_siblings[256];
+    signal input smt_siblings[nLevels];
     // Name Hash
     component poseidon_hasher[3];
     for (var j = 0; j < 3; j++) {
@@ -25,10 +25,9 @@ template OFAC_NAME_DOB() {
     for(var i = 0; i < 6; i++) {
         pos_dob.inputs[i] <== dg1[62 + i];
     }
-
     
     // NameDob hash
     signal name_dob_hash <== Poseidon(2)([pos_dob.out, name_hash]);
 
-    signal output ofacCheckResult <== SMTVerify(256)(name_dob_hash, smt_leaf_key, smt_root, smt_siblings, 0);
+    signal output ofacCheckResult <== SMTVerify(nLevels)(name_dob_hash, smt_leaf_key, smt_root, smt_siblings, 0);
 }

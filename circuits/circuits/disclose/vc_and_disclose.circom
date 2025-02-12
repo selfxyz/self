@@ -2,7 +2,9 @@ pragma circom 2.1.9;
 
 include "../utils/passport/disclose/disclose.circom";
 include "../utils/passport/disclose/proveCountryIsNotInList.circom";
-include "../utils/passport/ofac/ofac_name.circom";
+include "../utils/passport/ofac/ofac_name_dob.circom";
+include "../utils/passport/ofac/ofac_name_yob.circom";
+include "../utils/passport/ofac/ofac_passport_number.circom";
 include "../utils/passport/disclose/verify_commitment.circom";
 include "../utils/passport/date/isValid.circom";
 
@@ -33,7 +35,13 @@ include "../utils/passport/date/isValid.circom";
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
 /// @output nullifier Scope nullifier - not deterministic on the passport data
-template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
+template VC_AND_DISCLOSE(
+    nLevels,
+    MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH,
+    passportNoTreeLevels,
+    namedobTreeLevels,
+    nameyobTreeLevels
+) {
     signal input secret;
     signal input attestation_id;
     signal input dg1[93];
@@ -53,9 +61,18 @@ template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 
     signal input forbidden_countries_list[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
 
-    signal input smt_leaf_key;
-    signal input smt_root;
-    signal input smt_siblings[256];
+    signal input ofac_passportno_smt_leaf_key;
+    signal input ofac_passportno_smt_root;
+    signal input ofac_passportno_smt_siblings[passportNoTreeLevels];
+
+    signal input ofac_namedob_smt_leaf_key;
+    signal input ofac_namedob_smt_root;
+    signal input ofac_namedob_smt_siblings[namedobTreeLevels];
+
+    signal input ofac_nameyob_smt_leaf_key;
+    signal input ofac_nameyob_smt_root;
+    signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
+
     signal input selector_ofac;
 
     signal input scope;
@@ -83,15 +100,26 @@ template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
     IsValid()(current_date,validity_ASCII);
     
     // disclose optional data
-    component disclose = DISCLOSE(10);
+    component disclose = DISCLOSE(
+        10,
+        passportNoTreeLevels,
+        namedobTreeLevels,
+        nameyobTreeLevels
+    );
     disclose.dg1 <== dg1;
     disclose.selector_dg1 <== selector_dg1;
     disclose.selector_older_than <== selector_older_than;
     disclose.current_date <== current_date;
     disclose.majority <== majority;
-    disclose.smt_leaf_key <== smt_leaf_key;
-    disclose.smt_root <== smt_root;
-    disclose.smt_siblings <== smt_siblings;
+    disclose.ofac_passportno_smt_leaf_key <== ofac_passportno_smt_leaf_key;
+    disclose.ofac_passportno_smt_root <== ofac_passportno_smt_root;
+    disclose.ofac_passportno_smt_siblings <== ofac_passportno_smt_siblings;
+    disclose.ofac_namedob_smt_leaf_key <== ofac_namedob_smt_leaf_key;
+    disclose.ofac_namedob_smt_root <== ofac_namedob_smt_root;
+    disclose.ofac_namedob_smt_siblings <== ofac_namedob_smt_siblings;
+    disclose.ofac_nameyob_smt_leaf_key <== ofac_nameyob_smt_leaf_key;
+    disclose.ofac_nameyob_smt_root <== ofac_nameyob_smt_root;
+    disclose.ofac_nameyob_smt_siblings <== ofac_nameyob_smt_siblings;
     disclose.selector_ofac <== selector_ofac;
     disclose.forbidden_countries_list <== forbidden_countries_list;
 
@@ -106,10 +134,12 @@ template VC_AND_DISCLOSE(nLevels, MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) {
 component main {
     public [
         merkle_root,
-        smt_root,
+        ofac_passportno_smt_root,
+        ofac_namedob_smt_root,
+        ofac_nameyob_smt_root,
         scope,
         user_identifier,
         current_date,
         attestation_id
     ]
-} = VC_AND_DISCLOSE(33, 10);
+} = VC_AND_DISCLOSE(33, 10, 64, 64, 64);

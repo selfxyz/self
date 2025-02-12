@@ -77,18 +77,27 @@ library CircuitConstants {
     uint256 constant VC_AND_DISCLOSE_CURRENT_DATE_INDEX = 7;
     
     /**
-     * @notice Index to access the SMT (Sparse Merkle Tree) root in the VC and Disclose circuit public signals.
+     * @notice Index to access the passport number SMT root in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_SMT_ROOT_INDEX = 13;
-    
+    uint256 constant VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX = 13;
+
+    /**
+     * @notice Index to access the name and date of birth SMT root in the VC and Disclose circuit public signals.
+     */
+    uint256 constant VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX = 14;
+
+    /**
+     * @notice Index to access the name and year of birth SMT root in the VC and Disclose circuit public signals.
+     */
+    uint256 constant VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX = 15;
+
     /**
      * @notice Index to access the scope in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_SCOPE_INDEX = 14;
-    
+    uint256 constant VC_AND_DISCLOSE_SCOPE_INDEX = 16;
+
     /**
      * @notice Index to access the user identifier in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX = 15;
-
+    uint256 constant VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX = 17;
 }

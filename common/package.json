@@ -22,6 +22,7 @@
     "country-iso-3-to-2": "^1.1.1",
     "elliptic": "^6.5.5",
     "fs": "^0.0.1-security",
+    "i18n-iso-countries": "^7.13.0",
     "js-sha1": "^0.7.0",
     "js-sha256": "^0.11.0",
     "js-sha512": "^0.9.0",

@@ -4,14 +4,14 @@ import { wasm as wasm_tester } from 'circom_tester';
 import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoSMT.json';
-import nameDobjson from '../../../common/ofacdata/outputs/nameDobSMT.json';
-import namejson from '../../../common/ofacdata/outputs/nameSMT.json';
+import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 
 let circuit: any;
 
-// Mock passport added in ofac list to test circuits
+// Mock passport not added in ofac list
 const passportData = genMockPassportData(
   'sha256',
   'sha256',
@@ -20,7 +20,7 @@ const passportData = genMockPassportData(
   '040211',
   '300101'
 );
-// Mock passport not added in ofac list to test circuits
+// Mock passport in ofac list
 const passportDataInOfac = genMockPassportData(
   'sha256',
   'sha256',
@@ -39,19 +39,16 @@ const passportDataInOfac = genMockPassportData(
 // 2. Invalid proof : Correct path and corresponding closest leaf AND leaf == pasport_hash ; Valid prove of membership ; Hence non-membership proof would fail
 // 3. Invalid proof : Correct path but wrong corresponding siblings ; fails due to calculatedRoot != smt_root
 
-// Level 3: Passport number match in OfacList
-describe('OFAC - Passport number match', function () {
+// Level 3: Passport number and Nationality match in OfacList
+describe('OFAC - Passport number and Nationality match', function () {
   this.timeout(0);
-  let passno_smt = new SMT(poseidon2, true);
+  let passNoAndNationality_smt = new SMT(poseidon2, true);
   let memSmtInputs: any;
   let nonMemSmtInputs: any;
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(
-        __dirname,
-        '../../circuits/ofac/../../circuits/tests/ofac/ofac_passport_number_tester.circom'
-      ),
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
       {
         include: [
           'node_modules',
@@ -61,11 +58,17 @@ describe('OFAC - Passport number match', function () {
       }
     );
 
-    passno_smt.import(passportNojson);
     const proofLevel = 3;
-    memSmtInputs = generateCircuitInputsOfac(passportDataInOfac, passno_smt, proofLevel);
+    passNoAndNationality_smt.import(passportNoAndNationalityjson);
+    memSmtInputs = generateCircuitInputsOfac(
+      passportDataInOfac,
+      passNoAndNationality_smt,
+      proofLevel
+    );
+    // console.log('memSmtInputs', memSmtInputs);
 
-    nonMemSmtInputs = generateCircuitInputsOfac(passportData, passno_smt, proofLevel);
+    nonMemSmtInputs = generateCircuitInputsOfac(passportData, passNoAndNationality_smt, proofLevel);
+    // console.log('nonMemSmtInputs', nonMemSmtInputs);
   });
 
   // Compile circuit
@@ -73,7 +76,7 @@ describe('OFAC - Passport number match', function () {
     expect(circuit).to.not.be.undefined;
   });
 
-  // Correct siblings and closest leaf : Everything correct as a proof
+  // Correct siblings and closest leaf: Everything correct as a proof
   it('should pass without errors, all conditions satisfied', async function () {
     let w = await circuit.calculateWitness(nonMemSmtInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
@@ -87,7 +90,7 @@ describe('OFAC - Passport number match', function () {
     expect(ofacCheckResult).to.equal('0');
   });
 
-  // Give wrong closest leaf but correct siblings array : Fail of SMT Verification
+  // Give wrong closest leaf but correct siblings array: Fail of SMT Verification
   it('should pass - wrong merkleroot, level 3', async function () {
     const wrongInputs = {
       ...nonMemSmtInputs,
@@ -118,7 +121,7 @@ describe('OFAC - Name and DOB match', function () {
       }
     );
 
-    namedob_smt.import(nameDobjson);
+    namedob_smt.import(nameAndDobjson);
     const proofLevel = 2;
     memSmtInputs = generateCircuitInputsOfac(
       // proof of membership
@@ -167,8 +170,8 @@ describe('OFAC - Name and DOB match', function () {
   });
 });
 
-// Level 1: Name match in OfacList
-describe('OFAC - Name match', function () {
+// Level 1: Name and YOB match in OfacList
+describe('OFAC - Name and YOB match', function () {
   this.timeout(0);
   let name_smt = new SMT(poseidon2, true);
   let memSmtInputs: any;
@@ -176,7 +179,7 @@ describe('OFAC - Name match', function () {
 
   before(async () => {
     circuit = await wasm_tester(
-      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_tester.circom'),
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_name_yob_tester.circom'),
       {
         include: [
           'node_modules',
@@ -186,7 +189,7 @@ describe('OFAC - Name match', function () {
       }
     );
 
-    name_smt.import(namejson);
+    name_smt.import(nameAndYobjson);
     const proofLevel = 1;
     memSmtInputs = generateCircuitInputsOfac(
       // proof of membership
@@ -229,6 +232,104 @@ describe('OFAC - Name match', function () {
       smt_leaf_key: BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString(),
     };
     let w = await circuit.calculateWitness(wrongInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
+  });
+});
+
+describe.only('OFAC - SMT Security Tests', function () {
+  this.timeout(0);
+  let passNoAndNationality_smt = new SMT(poseidon2, true);
+  let circuit: any;
+  let baseInputs: any;
+
+  before(async () => {
+    circuit = await wasm_tester(
+      path.join(__dirname, '../../circuits/tests/ofac/ofac_passport_number_tester.circom'),
+      {
+        include: [
+          'node_modules',
+          './node_modules/@zk-kit/binary-merkle-root.circom/src',
+          './node_modules/circomlib/circuits',
+        ],
+      }
+    );
+
+    passNoAndNationality_smt.import(passportNoAndNationalityjson);
+    const proofLevel = 3;
+    baseInputs = generateCircuitInputsOfac(passportData, passNoAndNationality_smt, proofLevel);
+  });
+
+  it('should reject proof with invalid siblings length', async function () {
+    const overflowInputs = {
+      ...baseInputs,
+      smt_siblings: Array(65)
+        .fill('0')
+        .map((x) => x.toString()), // More siblings than tree depth
+    };
+
+    try {
+      await circuit.calculateWitness(overflowInputs);
+      expect.fail('Should have thrown error');
+    } catch (err) {
+      expect(err.toString()).to.include('Too many values for input signal');
+    }
+  });
+
+  it('should reject proof with malformed path bits', async function () {
+    const malformedPathInputs = {
+      ...baseInputs,
+      // Modify one of the siblings to be an invalid value
+      smt_siblings: baseInputs.smt_siblings.map((x: string, i: number) =>
+        i === 0 ? '2'.repeat(254) : x
+      ),
+    };
+
+    try {
+      await circuit.calculateWitness(malformedPathInputs);
+      expect.fail('Should have thrown error');
+    } catch (err) {
+      expect(err.toString()).to.include('Error');
+    }
+  });
+
+  // Test against zero value attack
+  it('should handle zero values in siblings array correctly', async function () {
+    const zeroSiblingsInputs = {
+      ...baseInputs,
+      smt_siblings: Array(64)
+        .fill('0')
+        .map((x) => x.toString()),
+    };
+
+    let w = await circuit.calculateWitness(zeroSiblingsInputs);
+    const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
+    expect(ofacCheckResult).to.equal('0');
+  });
+
+  // Test against incorrect tree height
+  it('should reject proof with incorrect number of siblings', async function () {
+    const wrongHeightInputs = {
+      ...baseInputs,
+      smt_siblings: baseInputs.smt_siblings.slice(0, 32), // Only half the siblings
+    };
+
+    try {
+      await circuit.calculateWitness(wrongHeightInputs);
+      expect.fail('Should have thrown error');
+    } catch (err) {
+      expect(err.toString()).to.include('Not enough values for input signal');
+    }
+  });
+
+  // Test against invalid root
+  it('should reject proof with invalid merkle root', async function () {
+    const invalidRootInputs = {
+      ...baseInputs,
+      smt_root: (BigInt(baseInputs.smt_root) ^ 1n).toString(), // Modify smt_root by one bit
+    };
+
+    let w = await circuit.calculateWitness(invalidRootInputs);
     const ofacCheckResult = (await circuit.getOutput(w, ['ofacCheckResult'])).ofacCheckResult;
     expect(ofacCheckResult).to.equal('0');
   });

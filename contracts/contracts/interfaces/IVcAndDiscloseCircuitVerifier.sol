@@ -19,7 +19,7 @@ interface IVcAndDiscloseCircuitVerifier {
         uint[2] a;
         uint[2][2] b;
         uint[2] c;
-        uint[16] pubSignals;
+        uint[18] pubSignals;
     }
 
     /**
@@ -35,6 +35,6 @@ interface IVcAndDiscloseCircuitVerifier {
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,
-        uint[16] calldata pubSignals
+        uint[18] calldata pubSignals
     ) external view returns (bool);
 }

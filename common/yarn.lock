@@ -782,6 +782,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"diacritics@npm:1.3.0":
+  version: 1.3.0
+  resolution: "diacritics@npm:1.3.0"
+  checksum: 10c0/bc99c3d2e64315b1830f1573eafe1f7b06fd5dbc9687f35ea8e2e25ce8618d1444d0a2c8313b98467b0aff1d0ee35b8f9f67ef214e56e810b37da3cdb29785ac
+  languageName: node
+  linkType: hard
+
 "diff@npm:^3.1.0":
   version: 3.5.0
   resolution: "diff@npm:3.5.0"
@@ -1496,6 +1503,15 @@ __metadata:
     agent-base: "npm:^7.1.2"
     debug: "npm:4"
   checksum: 10c0/f729219bc735edb621fa30e6e84e60ee5d00802b8247aac0d7b79b0bd6d4b3294737a337b93b86a0bd9e68099d031858a39260c976dc14cdbba238ba1f8779ac
+  languageName: node
+  linkType: hard
+
+"i18n-iso-countries@npm:^7.13.0":
+  version: 7.13.0
+  resolution: "i18n-iso-countries@npm:7.13.0"
+  dependencies:
+    diacritics: "npm:1.3.0"
+  checksum: 10c0/7b9bb3d64e575857d7bcf0543fd86b50b9233689140c3e9b2dc9c125bbb71f0cbb800b9546a287ea6e9d745a3c446dc272db66863fa6d28b70add88cc0fa4fda
   languageName: node
   linkType: hard
 
@@ -2397,6 +2413,7 @@ __metadata:
     country-iso-3-to-2: "npm:^1.1.1"
     elliptic: "npm:^6.5.5"
     fs: "npm:^0.0.1-security"
+    i18n-iso-countries: "npm:^7.13.0"
     js-sha1: "npm:^0.7.0"
     js-sha256: "npm:^0.11.0"
     js-sha512: "npm:^0.9.0"

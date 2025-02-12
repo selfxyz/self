@@ -72,18 +72,34 @@ interface IIdentityRegistryV1 {
     ) external view returns (uint256);
 
     /**
-     * @notice Retrieves the current OFAC root.
-     * @return The current OFAC root value.
+     * @notice Retrieves the current passport number OFAC root.
+     * @return The current passport number OFAC root value.
      */
-    function getOfacRoot() external view returns (uint256);
+    function getPassportNoOfacRoot() external view returns (uint256);
 
     /**
-     * @notice Checks if the provided OFAC root matches the stored OFAC root.
-     * @param root The OFAC root to verify.
-     * @return True if the given root equals the stored OFAC root, otherwise false.
+     * @notice Retrieves the current name and date of birth OFAC root.
+     * @return The current name and date of birth OFAC root value.
      */
-    function checkOfacRoot(
-        uint256 root
+    function getNameAndDobOfacRoot() external view returns (uint256);
+
+    /**
+     * @notice Retrieves the current name and year of birth OFAC root.
+     * @return The current name and year of birth OFAC root value.
+     */
+    function getNameAndYobOfacRoot() external view returns (uint256);
+
+    /**
+     * @notice Checks if the provided OFAC roots match the stored OFAC roots.
+     * @param passportNoRoot The passport number OFAC root to verify.
+     * @param nameAndDobRoot The name and date of birth OFAC root to verify.
+     * @param nameAndYobRoot The name and year of birth OFAC root to verify.
+     * @return True if all provided roots match the stored values, false otherwise.
+     */
+    function checkOfacRoots(
+        uint256 passportNoRoot,
+        uint256 nameAndDobRoot,
+        uint256 nameAndYobRoot
     ) external view returns (bool);
 
     /**

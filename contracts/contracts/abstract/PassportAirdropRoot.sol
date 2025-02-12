@@ -78,7 +78,7 @@ abstract contract PassportAirdropRoot is
      * @param olderThan Value to compare against for 'olderThan' verification.
      * @param forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
      * @param forbiddenCountriesListPacked Packed list of forbidden countries.
-     * @param ofacEnabled Flag indicating if OFAC verification is enabled.
+     * @param ofacEnabled Array of flags indicating if each OFAC verification is enabled.
      */
     constructor(
         address identityVerificationHub, 
@@ -90,7 +90,7 @@ abstract contract PassportAirdropRoot is
         uint256 olderThan,
         bool forbiddenCountriesEnabled,
         uint256 forbiddenCountriesListPacked,
-        bool ofacEnabled
+        bool[3] memory ofacEnabled
     ) {
         _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
         _identityRegistry = IIdentityRegistryV1(identityRegistry);

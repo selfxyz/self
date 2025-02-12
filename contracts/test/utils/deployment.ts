@@ -1,6 +1,6 @@
 import { ethers } from "hardhat";
 import { Signer } from "ethers";
-import { getSMT } from "./generateProof";
+import { getSMTs } from "./generateProof";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";
@@ -149,8 +149,15 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     const csca_root = getCscaTreeRoot();
     await registryContract.updateCscaRoot(csca_root, { from: owner });
 
-    const nameSMT = getSMT();
-    await registryContract.updateOfacRoot(nameSMT.root, { from: owner });
+    const {
+        passportNo_smt,
+        nameAndDob_smt,
+        nameAndYob_smt
+    } = getSMTs();
+
+    await registryContract.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });
+    await registryContract.updateNameAndDobOfacRoot(nameAndDob_smt.root, { from: owner });
+    await registryContract.updateNameAndYobOfacRoot(nameAndYob_smt.root, { from: owner });
 
     return {
         hub: hubContract,

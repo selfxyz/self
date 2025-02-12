@@ -45,7 +45,7 @@ export function unpackReveal(revealedData_packed: string | string[]): string[] {
         ? revealedData_packed
         : [revealedData_packed];
 
-    const bytesCount = [31, 31, 29]; // nb of bytes in each of the first three field elements
+    const bytesCount = [31, 31, 31]; // nb of bytes in each of the first three field elements
     const bytesArray = packedArray.flatMap((element: string, index: number) => {
         const bytes = bytesCount[index] || 31; // Use 31 as default if index is out of range
         const elementBigInt = BigInt(element);

@@ -115,9 +115,9 @@ library Formatter {
 
     /**
      * @notice Converts an array of three field elements into a bytes representation.
-     * @dev Each element is converted into a specific number of bytes: 31, 31, and 29 respectively.
+     * @dev Each element is converted into a specific number of bytes: 31, 31, and 31 respectively.
      * @param publicSignals An array of three unsigned integers representing field elements.
-     * @return bytesArray A bytes array of total length 91 that encodes the three field elements.
+     * @return bytesArray A bytes array of total length 93 that encodes the three field elements.
      */
     function fieldElementsToBytes(
         uint256[3] memory publicSignals
@@ -129,8 +129,8 @@ library Formatter {
         ) {
             revert InvalidFieldElement();
         }
-        uint8[3] memory bytesCount = [31, 31, 29];
-        bytes memory bytesArray = new bytes(91);
+        uint8[3] memory bytesCount = [31, 31, 31];
+        bytes memory bytesArray = new bytes(93);
 
         uint256 index = 0;
         for (uint256 i = 0; i < 3; i++) {

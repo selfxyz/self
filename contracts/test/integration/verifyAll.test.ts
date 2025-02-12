@@ -55,6 +55,8 @@ describe("VerifyAll", () => {
             "20",
             undefined,
             undefined,
+            undefined,
+            undefined,
             forbiddenCountriesList,
             (await deployedActors.user1.getAddress()).slice(2)
         );
@@ -87,7 +89,7 @@ describe("VerifyAll", () => {
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: [true, true, true],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
@@ -116,7 +118,7 @@ describe("VerifyAll", () => {
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: [true, true, true],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
@@ -147,7 +149,7 @@ describe("VerifyAll", () => {
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: [true, true, true],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
@@ -177,7 +179,7 @@ describe("VerifyAll", () => {
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
                 forbiddenCountriesListPacked: forbiddenCountriesListPacked,
-                ofacEnabled: true,
+                ofacEnabled: [true, true, true],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 

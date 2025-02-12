@@ -57,7 +57,9 @@ contract VerifyAll is Ownable {
                 gender: "",
                 expiryDate: "",
                 olderThan: 0,
-                ofac: 0
+                passportNoOfac: 1,
+                nameAndDobOfac: 1,
+                nameAndYobOfac: 1
             });
             return (emptyData, false);
         }
@@ -73,7 +75,9 @@ contract VerifyAll is Ownable {
                     gender: "",
                     expiryDate: "",
                     olderThan: 0,
-                    ofac: 0
+                    passportNoOfac: 1,
+                    nameAndDobOfac: 1,
+                    nameAndYobOfac: 1
                 });
                 return (emptyData, false);
             }

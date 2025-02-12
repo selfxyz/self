@@ -6,6 +6,7 @@ import { ZeroAddress } from "ethers";
 import { generateRandomFieldElement } from "../utils/utils";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
+
 describe("Unit Tests for IdentityRegistry", () => {
     let deployedActors: DeployedActors;
     let snapshotId: string;
@@ -202,36 +203,73 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).getIdentityCommitmentIndex(commitment)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it("should return ofac root", async () => {
+        it("should return passport number OFAC root", async () => {
             const {registry, owner} = deployedActors;
             const root = generateRandomFieldElement();
-            await registry.connect(owner).updateOfacRoot(root);
-            const ofacRoot = await registry.getOfacRoot();
+            await registry.connect(owner).updatePassportNoOfacRoot(root);
+            const ofacRoot = await registry.getPassportNoOfacRoot();
             expect(ofacRoot).to.equal(root);
         });
 
-        it("should fail if ofac root is called by non-proxy", async () => {
-            const {registryImpl, user1} = deployedActors;
-            await expect(registryImpl.connect(user1).getOfacRoot()).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
-        });
-
-        it("should return true if checkOfacRoot is called with valid root", async () => {
+        it("should return name and DOB OFAC root", async () => {
             const {registry, owner} = deployedActors;
             const root = generateRandomFieldElement();
-            await registry.connect(owner).updateOfacRoot(root);
-            expect(await registry.checkOfacRoot(root)).to.equal(true);
+            await registry.connect(owner).updateNameAndDobOfacRoot(root);
+            const ofacRoot = await registry.getNameAndDobOfacRoot();
+            expect(ofacRoot).to.equal(root);
         });
 
-        it("should return false if checkOfacRoot is called with invalid root", async () => {
-            const {registry} = deployedActors;
+        it("should return name and YOB OFAC root", async () => {
+            const {registry, owner} = deployedActors;
             const root = generateRandomFieldElement();
-            expect(await registry.checkOfacRoot(root)).to.equal(false);
+            await registry.connect(owner).updateNameAndYobOfacRoot(root);
+            const ofacRoot = await registry.getNameAndYobOfacRoot();
+            expect(ofacRoot).to.equal(root);
         });
 
-        it("should fail if checkOfacRoot is called by non-proxy", async () => {
+        it("should fail if passport number OFAC root is called by non-proxy", async () => {
             const {registryImpl, user1} = deployedActors;
-            const root = generateRandomFieldElement();
-            await expect(registryImpl.connect(user1).checkOfacRoot(root)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            await expect(registryImpl.connect(user1).getPassportNoOfacRoot())
+                .to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("should fail if name and DOB OFAC root is called by non-proxy", async () => {
+            const {registryImpl, user1} = deployedActors;
+            await expect(registryImpl.connect(user1).getNameAndDobOfacRoot())
+                .to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("should fail if name and YOB OFAC root is called by non-proxy", async () => {
+            const {registryImpl, user1} = deployedActors;
+            await expect(registryImpl.connect(user1).getNameAndYobOfacRoot())
+                .to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+        });
+
+        it("should return true if checkOfacRoots is called with valid roots", async () => {
+            const {registry, owner} = deployedActors;
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
+            await registry.connect(owner).updatePassportNoOfacRoot(passportRoot);
+            await registry.connect(owner).updateNameAndDobOfacRoot(dobRoot);
+            await registry.connect(owner).updateNameAndYobOfacRoot(yobRoot);
+            expect(await registry.checkOfacRoots(passportRoot, dobRoot, yobRoot)).to.equal(true);
+        });
+
+        it("should return false if checkOfacRoots is called with invalid roots", async () => {
+            const {registry} = deployedActors;
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
+            expect(await registry.checkOfacRoots(passportRoot, dobRoot, yobRoot)).to.equal(false);
+        });
+
+        it("should fail if checkOfacRoots is called by non-proxy", async () => {
+            const {registryImpl, user1} = deployedActors;
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
+            await expect(registryImpl.connect(user1).checkOfacRoots(passportRoot, dobRoot, yobRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
         it("should return csca root", async () => {
@@ -295,29 +333,49 @@ describe("Unit Tests for IdentityRegistry", () => {
             await expect(registryImpl.connect(user1).updateHub(newHubAddress)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
-        it("should update OFAC root", async () => {
+        it("should update OFAC roots", async () => {
             const { registry } = deployedActors;
-            const newOfacRoot = generateRandomFieldElement();
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
 
-            await expect(registry.updateOfacRoot(newOfacRoot))
-                .to.emit(registry, "OfacRootUpdated")
-                .withArgs(newOfacRoot);
+            await expect(registry.updatePassportNoOfacRoot(passportRoot))
+                .to.emit(registry, "PassportNoOfacRootUpdated")
+                .withArgs(passportRoot);
 
-            expect(await registry.getOfacRoot()).to.equal(newOfacRoot);
+            await expect(registry.updateNameAndDobOfacRoot(dobRoot))
+                .to.emit(registry, "NameAndDobOfacRootUpdated")
+                .withArgs(dobRoot);
+
+            await expect(registry.updateNameAndYobOfacRoot(yobRoot))
+                .to.emit(registry, "NameAndYobOfacRootUpdated")
+                .withArgs(yobRoot);
+
+            expect(await registry.getPassportNoOfacRoot()).to.equal(passportRoot);
+            expect(await registry.getNameAndDobOfacRoot()).to.equal(dobRoot);
+            expect(await registry.getNameAndYobOfacRoot()).to.equal(yobRoot);
         });
 
         it("should not update OFAC root if caller is not owner", async () => {
             const { registry, user1 } = deployedActors;
-            const newOfacRoot = generateRandomFieldElement();
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
 
-            await expect(registry.connect(user1).updateOfacRoot(newOfacRoot)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+            await expect(registry.connect(user1).updatePassportNoOfacRoot(passportRoot)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+            await expect(registry.connect(user1).updateNameAndDobOfacRoot(dobRoot)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
+            await expect(registry.connect(user1).updateNameAndYobOfacRoot(yobRoot)).to.be.revertedWithCustomError(registry, "OwnableUnauthorizedAccount");
         });
 
         it("should not update OFAC root if caller is not proxy", async () => {
             const { registryImpl, user1 } = deployedActors;
-            const newOfacRoot = generateRandomFieldElement();
+            const passportRoot = generateRandomFieldElement();
+            const dobRoot = generateRandomFieldElement();
+            const yobRoot = generateRandomFieldElement();
 
-            await expect(registryImpl.connect(user1).updateOfacRoot(newOfacRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            await expect(registryImpl.connect(user1).updatePassportNoOfacRoot(passportRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            await expect(registryImpl.connect(user1).updateNameAndDobOfacRoot(dobRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
+            await expect(registryImpl.connect(user1).updateNameAndYobOfacRoot(yobRoot)).to.be.revertedWithCustomError(registryImpl, "UUPSUnauthorizedCallContext");
         });
 
         it("should update CSCA root", async () => {
@@ -669,7 +727,9 @@ describe("Unit Tests for IdentityRegistry", () => {
 
             const initialHub = await registry.hub();
             const initialCscaRoot = await registry.getCscaRoot();
-            const initialOfacRoot = await registry.getOfacRoot();
+            const initialPassportNoOfacRoot = await registry.getPassportNoOfacRoot();
+            const initialNameAndDobOfacRoot = await registry.getNameAndDobOfacRoot();
+            const initialNameAndYobOfacRoot = await registry.getNameAndYobOfacRoot();
 
             const attestationId = generateRandomFieldElement();
             const nullifier = generateRandomFieldElement();
@@ -707,7 +767,9 @@ describe("Unit Tests for IdentityRegistry", () => {
             
             expect(await registryV2.hub()).to.equal(initialHub);
             expect(await registryV2.getCscaRoot()).to.equal(initialCscaRoot);
-            expect(await registryV2.getOfacRoot()).to.equal(initialOfacRoot);
+            expect(await registryV2.getPassportNoOfacRoot()).to.equal(initialPassportNoOfacRoot);
+            expect(await registryV2.getNameAndDobOfacRoot()).to.equal(initialNameAndDobOfacRoot);
+            expect(await registryV2.getNameAndYobOfacRoot()).to.equal(initialNameAndYobOfacRoot);
             expect(await registryV2.getIdentityCommitmentMerkleRoot()).to.equal(initialCommitmentRoot);
             expect(await registryV2.getIdentityCommitmentMerkleTreeSize()).to.equal(initialTreeSize);
 

@@ -64,8 +64,8 @@ export class Formatter {
     }
 
     static fieldElementsToBytes(publicSignals: [bigint, bigint, bigint]): Uint8Array {
-        const bytesCount = [31, 31, 29];
-        const totalLength = 91;
+        const bytesCount = [31, 31, 31];
+        const totalLength = 93;
         const bytesArray = new Uint8Array(totalLength);
         let index = 0;
         for (let i = 0; i < 3; i++) {
@@ -198,7 +198,7 @@ export class CircuitAttributeHandler {
     static OLDER_THAN_START = 88;
     static OLDER_THAN_END = 89;
     static OFAC_START = 90;
-    static OFAC_END = 90;
+    static OFAC_END = 92;
 
     static getIssuingState(input: string | Uint8Array): string {
         const charcodes = this.normalizeInput(input);
@@ -245,9 +245,19 @@ export class CircuitAttributeHandler {
         return digit1 * 10 + digit2;
     }
 
-    static getOfac(input: string | Uint8Array): number {
+    static getPassportNoOfac(input: string | Uint8Array): number {
         const charcodes = this.normalizeInput(input);
         return charcodes[this.OFAC_START];
+    }
+
+    static getNameAndDobOfac(input: string | Uint8Array): number {
+        const charcodes = this.normalizeInput(input);
+        return charcodes[this.OFAC_START + 1];
+    }
+
+    static getNameAndYobOfac(input: string | Uint8Array): number {
+        const charcodes = this.normalizeInput(input);
+        return charcodes[this.OFAC_START + 2];
     }
 
     static compareOlderThan(input: string | Uint8Array, olderThan: number): boolean {
@@ -255,9 +265,21 @@ export class CircuitAttributeHandler {
         return this.getOlderThan(charcodes) >= olderThan;
     }
 
-    static compareOfac(input: string | Uint8Array): boolean {
+    /**
+     * Performs selective OFAC checks based on provided flags.
+     * @param input The input string or byte array containing passport attribute data.
+     * @param checkPassportNo Whether to check the passport number OFAC status.
+     * @param checkNameAndDob Whether to check the name and date of birth OFAC status.
+     * @param checkNameAndYob Whether to check the name and year of birth OFAC status.
+     * @returns True if all enabled checks pass (equal 1), false if any enabled check fails.
+     * @remarks Checks are only performed for flags that are set to true. If a flag is false,
+     * that particular check is considered to have passed regardless of its actual value.
+     */
+    static compareOfac(input: string | Uint8Array, checkPassportNo: boolean, checkNameAndDob: boolean, checkNameAndYob: boolean): boolean {
         const charcodes = this.normalizeInput(input);
-        return this.getOfac(charcodes) === 1;
+        return (!checkPassportNo || this.getPassportNoOfac(charcodes) === 1) &&
+               (!checkNameAndDob || this.getNameAndDobOfac(charcodes) === 1) &&
+               (!checkNameAndYob || this.getNameAndYobOfac(charcodes) === 1);
     }
 
     private static normalizeInput(input: string | Uint8Array): Uint8Array {
