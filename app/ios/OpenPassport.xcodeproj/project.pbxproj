@@ -12,6 +12,7 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		1608339F2D5CF89D00056417 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1608339E2D5CF89D00056417 /* AudioToolbox.framework */; };
 		1648EB782CC9564D003BEA7D /* LottieView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1648EB772CC9564D003BEA7D /* LottieView.swift */; };
 		164FD9672D569A640067E63B /* QRCodeScannerViewManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */; };
 		164FD9692D569C1F0067E63B /* QRCodeScannerViewManager.m in Sources */ = {isa = PBXBuildFile; fileRef = 164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */; };
@@ -105,6 +106,7 @@
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = OpenPassport/Info.plist; sourceTree = "<group>"; };
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = OpenPassport/main.m; sourceTree = "<group>"; };
 		15C30A8C4A6C42558DC9D78B /* Inter-Medium.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-Medium.otf"; sourceTree = "<group>"; };
+		1608339E2D5CF89D00056417 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		1648EB772CC9564D003BEA7D /* LottieView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LottieView.swift; sourceTree = "<group>"; };
 		164FD9662D569A640067E63B /* QRCodeScannerViewManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QRCodeScannerViewManager.swift; sourceTree = "<group>"; };
 		164FD9682D569C1F0067E63B /* QRCodeScannerViewManager.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = QRCodeScannerViewManager.m; sourceTree = "<group>"; };
@@ -152,6 +154,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1608339F2D5CF89D00056417 /* AudioToolbox.framework in Frameworks */,
 				F2B6CAF95CEE1D3F94541B0F /* Pods_OpenPassport.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -224,6 +227,7 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				1608339E2D5CF89D00056417 /* AudioToolbox.framework */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				AF34842C3AD0E76B7A7D5C5E /* Pods_OpenPassport.framework */,
 			);
