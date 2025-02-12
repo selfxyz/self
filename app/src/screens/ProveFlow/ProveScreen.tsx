@@ -5,6 +5,7 @@ import LottieView from 'lottie-react-native';
 import { Text, View, YStack } from 'tamagui';
 
 import { ArgumentsDisclose } from '../../../../common/src/utils/appType';
+import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
@@ -34,11 +35,11 @@ const ProveScreen: React.FC = () => {
 
   // FIXME: Probably not the right animation, but we need to show something while
   // waiting for the web app data
-  if (!selectedApp) {
+  if (!selectedApp.sessionId) {
     return (
       <Text mt="$10" fontSize="$9" color={black} textAlign="center">
         <LottieView
-          source={require('../../assets/animations/loading.json')}
+          source={miscAnimation}
           autoPlay
           loop
         />
