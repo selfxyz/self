@@ -5,7 +5,7 @@ import { SvgProps } from 'react-native-svg';
 
 import { useNavigation } from '@react-navigation/native';
 import { Bug } from '@tamagui/lucide-icons';
-import { Button, XStack, YStack } from 'tamagui';
+import { Button, ScrollView, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
 import { BodyText } from '../components/typography/BodyText';
@@ -75,7 +75,8 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     width="100%"
     flexDirection="row"
     gap={6}
-    padding={20}
+    py={20}
+    px={10}
     borderBottomColor={neutral700}
     borderBottomWidth={1}
   >
@@ -161,17 +162,19 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
       borderTopRightRadius={30}
       paddingBottom={50}
     >
-      <YStack ai="flex-start" gap={20} justifyContent="flex-start" width="100%">
-        {routes.map(([Icon, menuText, menuRoute]) => (
-          <MenuButton
-            key={menuRoute}
-            Icon={Icon}
-            onPress={onMenuPress(menuRoute)}
-          >
-            {menuText}
-          </MenuButton>
-        ))}
-      </YStack>
+      <ScrollView>
+        <YStack ai="flex-start" justifyContent="flex-start" width="100%">
+          {routes.map(([Icon, menuText, menuRoute]) => (
+            <MenuButton
+              key={menuRoute}
+              Icon={Icon}
+              onPress={onMenuPress(menuRoute)}
+            >
+              {menuText}
+            </MenuButton>
+          ))}
+        </YStack>
+      </ScrollView>
       <YStack ai="center" gap={20} justifyContent="center" paddingBottom={40}>
         <Button
           unstyled
