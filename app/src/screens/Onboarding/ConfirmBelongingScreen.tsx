@@ -1,5 +1,4 @@
 import React, { useEffect } from 'react';
-import { StatusBar } from 'react-native';
 
 import { usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -10,6 +9,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
@@ -25,9 +25,8 @@ const ConfirmBelongingScreen: React.FC = () => {
 
   return (
     <>
-      <StatusBar barStyle="light-content" backgroundColor="black" hidden />
-      <ExpandableBottomLayout.Layout>
-        <ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.Layout backgroundColor={black}>
+        <ExpandableBottomLayout.TopSection backgroundColor={black}>
           <LottieView
             autoPlay
             loop={false}
@@ -37,7 +36,11 @@ const ConfirmBelongingScreen: React.FC = () => {
             renderMode="HARDWARE"
           />
         </ExpandableBottomLayout.TopSection>
-        <ExpandableBottomLayout.BottomSection gap={20}>
+        <ExpandableBottomLayout.BottomSection
+          gap={20}
+          paddingBottom={20}
+          backgroundColor={white}
+        >
           <Title textAlign="center">Confirm your identity</Title>
           <Description textAlign="center" paddingBottom={20}>
             By continuing, you certify that this passport belongs to you and is

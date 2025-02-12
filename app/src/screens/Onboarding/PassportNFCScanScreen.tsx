@@ -28,7 +28,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
-import { black, slate100 } from '../../utils/colors';
+import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { scan } from '../../utils/nfcScannerNew';
 
@@ -127,7 +127,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         {isNfcSheetOpen ? (
           <>
             <TextsContainer>

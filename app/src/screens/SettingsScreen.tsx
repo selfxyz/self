@@ -1,11 +1,12 @@
 import React, { PropsWithChildren, useCallback } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 
 import { useNavigation } from '@react-navigation/native';
 import { Bug } from '@tamagui/lucide-icons';
-import { Button, ScrollView, XStack, YStack } from 'tamagui';
+import { Button, View, ScrollView, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
 import { BodyText } from '../components/typography/BodyText';
@@ -150,8 +151,9 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
     },
     [navigation],
   );
-
+  const { bottom } = useSafeAreaInsets();
   return (
+    <View backgroundColor={white}>
     <YStack
       bg={black}
       gap={20}
@@ -160,7 +162,6 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
       padding={20}
       borderTopLeftRadius={30}
       borderTopRightRadius={30}
-      paddingBottom={50}
     >
       <ScrollView>
         <YStack ai="flex-start" justifyContent="flex-start" width="100%">
@@ -175,32 +176,36 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           ))}
         </YStack>
       </ScrollView>
-      <YStack ai="center" gap={20} justifyContent="center" paddingBottom={40}>
-        <Button
-          unstyled
-          icon={<Star color={white} height={24} width={21} />}
-          width="100%"
-          padding={20}
-          backgroundColor={slate800}
-          color={white}
-          flexDirection="row"
-          jc="center"
-          ai="center"
-          gap={6}
-          borderRadius={4}
-        >
-          <BodyText color={white}>Leave an app store review</BodyText>
-        </Button>
-        <XStack gap={32}>
-          {social.map(([Icon, href], i) => (
-            <SocialButton key={i} Icon={Icon} href={href} />
-          ))}
-        </XStack>
-        <BodyText color={amber500} fontSize={15}>
-          SELF
-        </BodyText>
+        <YStack ai="center" gap={20} justifyContent="center" paddingBottom={50}>
+          <Button
+            unstyled
+            icon={<Star color={white} height={24} width={21} />}
+            width="100%"
+            padding={20}
+            backgroundColor={slate800}
+            color={white}
+            flexDirection="row"
+            jc="center"
+            ai="center"
+            gap={6}
+            borderRadius={4}
+            onPress={() => Linking.openURL(storeURL)}
+          >
+            <BodyText color={white}>Leave an app store review</BodyText>
+          </Button>
+          <XStack gap={32}>
+            {social.map(([Icon, href], i) => (
+              <SocialButton key={i} Icon={Icon} href={href} />
+            ))}
+          </XStack>
+          <BodyText color={amber500} fontSize={15}>
+            SELF
+          </BodyText>
+          {/* Dont remove if not viewing on ios */}
+          <View marginBottom={bottom} />
+        </YStack>
       </YStack>
-    </YStack>
+    </View>
   );
 };
 

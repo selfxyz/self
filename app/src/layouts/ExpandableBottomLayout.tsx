@@ -1,42 +1,38 @@
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
+import { StatusBar, StyleSheet } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
 
 interface ExpandableBottomLayoutProps extends ViewProps {
   children: React.ReactNode;
-  backgroundColor?: string;
-  unsafeArea?: boolean;
+  backgroundColor: string;
 }
 
 interface TopSectionProps extends ViewProps {
   children: React.ReactNode;
+  backgroundColor: string;
   roundTop?: boolean;
 }
 
 interface BottomSectionProps extends ViewProps {
   children: React.ReactNode;
+  backgroundColor: string;
 }
 
 const Layout: React.FC<ExpandableBottomLayoutProps> = ({
   children,
   backgroundColor,
-  unsafeArea,
 }) => {
-  if (unsafeArea) {
-    return (
-      <View flex={1} flexDirection="column">
-        {children}
-      </View>
-    );
-  }
   return (
-    <SafeAreaView style={[styles.layout, { backgroundColor }]}>
+    <View flex={1} flexDirection="column" backgroundColor={backgroundColor}>
+      <StatusBar
+        barStyle={backgroundColor === black ? 'light-content' : 'dark-content'}
+        backgroundColor={backgroundColor}
+      />
       {children}
-    </SafeAreaView>
+    </View>
   );
 };
 
@@ -45,13 +41,16 @@ const TopSection: React.FC<TopSectionProps> = ({
   backgroundColor,
   ...props
 }) => {
+  const { top } = useSafeAreaInsets();
   return (
     <View
       {...props}
+      backgroundColor={backgroundColor}
       style={[
         styles.topSection,
         props.roundTop && styles.roundTop,
-        backgroundColor && { backgroundColor: backgroundColor as string },
+        props.roundTop ? { marginTop: top } : { paddingTop: top },
+        { backgroundColor },
       ]}
     >
       {children}
@@ -63,8 +62,14 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   children,
   ...props
 }) => {
+  const { bottom } = useSafeAreaInsets();
+  const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
+
+  const totalBottom = typeof incomingBottom === 'number'
+    ? bottom + incomingBottom
+    : bottom;
   return (
-    <View {...props} style={styles.bottomSection}>
+    <View {...props} style={styles.bottomSection} paddingBottom={totalBottom}>
       {children}
     </View>
   );
@@ -97,10 +102,9 @@ export const ExpandableBottomLayout = {
 const styles = StyleSheet.create({
   roundTop: {
     marginTop: 12,
-    borderTopRightRadius: 20,
-    borderTopLeftRadius: 20,
-    borderTopStartRadius: 20,
-    borderTopEndRadius: 20,
+    overflow: 'hidden',
+    borderTopRightRadius: 30,
+    borderTopLeftRadius: 30,
   },
   layout: {
     height: '100%',

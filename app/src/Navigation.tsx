@@ -226,6 +226,12 @@ const AppNavigation = createNativeStackNavigator({
       screen: SettingsScreen,
       options: {
         title: 'Settings',
+        headerStyle: {
+          backgroundColor: white,
+        },
+        headerTitleStyle: {
+          color: black,
+        },
       },
       config: {
         screens: {},
@@ -276,6 +282,9 @@ const AppNavigation = createNativeStackNavigator({
       screen: PassportDataInfoScreen,
       options: {
         title: 'Passport Data Info',
+        headerStyle: {
+          backgroundColor: white,
+        },
       },
     },
     DevSettings: {

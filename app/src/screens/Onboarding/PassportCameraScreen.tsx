@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -19,7 +19,7 @@ import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
-import { black, slate800 } from '../../utils/colors';
+import { black, slate800, white } from '../../utils/colors';
 
 interface PassportNFCScanScreen {}
 
@@ -43,9 +43,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const onCancelPress = useHapticNavigation('PassportOnboarding', 'cancel');
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection roundTop>
-        <StatusBar barStyle="light-content" backgroundColor={black} />
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
         <LottieView
           autoPlay
@@ -56,7 +55,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5">
           <YStack alignItems="center" gap="$6" pb="$2.5">
             <Title>Scan your passport</Title>

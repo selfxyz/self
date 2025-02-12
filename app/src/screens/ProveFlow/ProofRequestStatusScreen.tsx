@@ -14,7 +14,7 @@ import { typography } from '../../components/typography/styles';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { ProofStatus, useProofInfo } from '../../stores/proofProvider';
-import { white } from '../../utils/colors';
+import { black, white } from '../../utils/colors';
 import { notificationError, notificationSuccess } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
@@ -58,7 +58,11 @@ const SuccessScreen: React.FC = () => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <StatusBar barStyle="dark-content" backgroundColor={white} />
-      <ExpandableBottomLayout.TopSection roundTop marginTop={20}>
+      <ExpandableBottomLayout.TopSection
+        roundTop
+        marginTop={20}
+        backgroundColor={black}
+      >
         <LottieView
           autoPlay
           loop={status === 'pending'}
@@ -68,7 +72,10 @@ const SuccessScreen: React.FC = () => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection paddingBottom={20}>
+      <ExpandableBottomLayout.BottomSection
+        paddingBottom={20}
+        backgroundColor={white}
+      >
         <View style={styles.content}>
           <Title size="large">{getTitle(status)}</Title>
           <Info status={status} appName={appName} />

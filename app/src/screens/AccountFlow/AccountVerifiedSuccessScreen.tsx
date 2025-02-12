@@ -9,14 +9,15 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { black, white } from '../../utils/colors';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const AccountVerifiedSuccessScreen: React.FC = () => {
   const navigation = useNavigation();
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black} roundTop>
         <LottieView
           autoPlay
           loop={false}
@@ -26,7 +27,7 @@ const AccountVerifiedSuccessScreen: React.FC = () => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack
           pt={40}
           px={10}
@@ -34,7 +35,7 @@ const AccountVerifiedSuccessScreen: React.FC = () => {
           jc="center"
           ai="center"
           mb={20}
-          gap="10px"
+          gap={10}
         >
           <Title size="large">ID Verified</Title>
           <Description>

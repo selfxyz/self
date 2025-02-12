@@ -9,7 +9,7 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { slate600, white } from '../../utils/colors';
+import { black, slate600, white } from '../../utils/colors';
 
 interface AccountRecoveryScreenProps {}
 
@@ -18,13 +18,13 @@ const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
   const onCreateAccountPress = useHapticNavigation('SaveRecoveryPhrase');
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <View borderColor={slate600} borderWidth="$1" borderRadius="$10" p="$5">
           <RestoreAccountSvg height={80} width={80} color={white} />
         </View>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack alignItems="center" gap="$2.5" pb="$2.5">
           <Title>Restore your Self account</Title>
           <Description>

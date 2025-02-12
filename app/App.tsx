@@ -12,7 +12,6 @@ import { createSegmentClient } from './src/Segment';
 import { AuthProvider } from './src/stores/authProvider';
 import { ProofProvider } from './src/stores/proofProvider';
 import useUserStore from './src/stores/userStore';
-import { bgWhite } from './src/utils/colors';
 
 global.Buffer = Buffer;
 
@@ -45,7 +44,7 @@ function App(): React.JSX.Element {
   }, [initUserStore]);
 
   return (
-    <YStack f={1} bc={bgWhite} h="100%" w="100%">
+    <YStack f={1} h="100%" w="100%">
       <AuthProvider>
         <ProofProvider>
           <AppNavigation />

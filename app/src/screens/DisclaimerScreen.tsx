@@ -11,7 +11,7 @@ import Caution from '../components/typography/Caution';
 import { SubHeader } from '../components/typography/SubHeader';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { useSettingStore } from '../stores/settingStore';
-import { white } from '../utils/colors';
+import { black, white } from '../utils/colors';
 import { confirmTap, notificationWarning } from '../utils/haptic';
 
 const DisclaimerScreen: React.FC = () => {
@@ -23,8 +23,8 @@ const DisclaimerScreen: React.FC = () => {
   }, []);
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <LottieView
           autoPlay
           loop={false}
@@ -37,7 +37,7 @@ const DisclaimerScreen: React.FC = () => {
           <SubHeader style={{ color: white }}>Caution</SubHeader>
         </YStack>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <YStack gap="$2.5">
           <Caution>
             Apps that request sensitive or personally identifiable information

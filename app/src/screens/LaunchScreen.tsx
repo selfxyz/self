@@ -5,11 +5,13 @@ import { Anchor, Text, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { privacyUrl, termsUrl } from '../consts/links';
+import { BodyText } from '../components/typography/BodyText';
+import { Caption } from '../components/typography/Caption';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
-import { slate50, slate100, slate500, slate700, white } from '../utils/colors';
+import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
 
 interface LaunchScreenProps {}
@@ -18,8 +20,8 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   const onStartPress = useHapticNavigation('PassportCamera');
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <YStack
           flex={1}
           justifyContent="flex-start"
@@ -42,15 +44,17 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           </YStack>
         </YStack>
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
-        <YStack gap="$2.5">
-          <Text style={styles.subheader}>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white} justifyContent="flex-end">
+          <BodyText style={styles.subheader}>
             The simplest way to verify identity for safety and trust wherever
             you are.
-          </Text>
-          <Text style={styles.notice}>
+          </BodyText>
+          <Caption style={styles.notice} size={'small'}>
             By continuing, you agree to the&nbsp;
-            <Anchor style={styles.link} href={termsUrl}>
+            <Anchor
+              style={styles.link}
+              href={termsUrl}
+            >
               User Terms and Conditions
             </Anchor>
             &nbsp;and acknowledge the&nbsp;
@@ -58,11 +62,10 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
               Privacy notice
             </Anchor>
             &nbsp;of Self provided by Self Inc.
-          </Text>
-          <PrimaryButton style={styles.button} onPress={onStartPress}>
+          </Caption>
+          <PrimaryButton onPress={onStartPress}>
             Get Started
           </PrimaryButton>
-        </YStack>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
@@ -72,17 +75,22 @@ export default LaunchScreen;
 
 const styles = StyleSheet.create({
   subheader: {
-    fontFamily: dinot,
-    color: slate700,
     fontWeight: '500',
     fontSize: 20,
     lineHeight: 26,
     textAlign: 'center',
   },
   link: {
+    // must pass into Anchor component
+    fontFamily: dinot,
+    color: slate500,
+    fontSize: 14,
+    lineHeight: 18,
     textDecorationLine: 'underline',
   },
   notice: {
+    marginTop: 26,
+    marginBottom: 10,
     paddingTop: 10,
     paddingBottom: 10,
     paddingLeft: 20,
@@ -106,9 +114,6 @@ const styles = StyleSheet.create({
     fontSize: 36,
     fontWeight: '500',
     color: white,
-  },
-  button: {
-    marginBottom: '15%',
   },
   card: {
     width: '100%',

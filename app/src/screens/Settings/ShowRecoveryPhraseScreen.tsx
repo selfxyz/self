@@ -39,8 +39,8 @@ const ShowRecoveryPhraseScreen: React.FC<
   }, []);
 
   return (
-    <ExpandableBottomLayout.Layout>
-      <ExpandableBottomLayout.BottomSection>
+    <ExpandableBottomLayout.Layout backgroundColor="white">
+      <ExpandableBottomLayout.BottomSection backgroundColor="white">
         <YStack
           alignItems="center"
           height="100%"

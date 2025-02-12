@@ -41,8 +41,8 @@ const ProveScreen: React.FC = () => {
   }
 
   return (
-    <ExpandableBottomLayout.Layout unsafeArea flex={1}>
-      <ExpandableBottomLayout.TopSection>
+    <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <YStack alignItems="center">
           <Text>Check</Text>
           <BodyText fontSize={24} color={slate300} textAlign="center">
@@ -55,6 +55,7 @@ const ProveScreen: React.FC = () => {
         flexGrow={1}
         justifyContent="space-between"
         paddingBottom={20}
+        backgroundColor={white}
       >
         <Disclosures disclosures={disclosureOptions} />
         <View>
