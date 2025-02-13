@@ -1,9 +1,14 @@
 import elliptic from 'elliptic';
 import forge from 'node-forge';
+import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 
-import { WS_RPC_URL, WS_URL } from '../../../../common/src/constants/constants';
-import { getPublicKey, verifyAttestation } from './attest';
+import { WS_DB_RELAYER_OLD } from '../../../../common/src/constants/constants';
+import {
+  ProofStatusEnum,
+  updateGlobalProofStatus,
+} from '../../stores/proofProvider';
+import { verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
 
@@ -46,156 +51,119 @@ const pubkey =
 export async function sendPayload(
   inputs: any,
   circuitName: string,
+  wsRpcUrl: string,
   timeoutMs = 1200000,
-) {
-  const uuid = v4();
-  const ws = new WebSocket(WS_RPC_URL);
-  let ws2: WebSocket | null = null;
-
-  function createHelloBody(uuidString: string) {
-    return {
-      jsonrpc: '2.0',
-      method: 'openpassport_hello',
-      id: 1,
-      params: {
-        user_pubkey: [4, ...Array.from(Buffer.from(pubkey, 'hex'))],
-        uuid: uuidString,
-      },
-    };
-  }
-
-  ws.addEventListener('open', () => {
-    const helloBody = createHelloBody(uuid);
-    console.log('Connected to rpc');
-    console.log('Sending hello body:', helloBody);
-    ws.send(JSON.stringify(helloBody));
-  });
-
-  ws.addEventListener('message', async event => {
-    try {
-      const result = JSON.parse(event.data);
-      if (result.result?.attestation !== undefined) {
-        await processAttestation(result);
-      } else {
-        processUuid(result);
+): Promise<void> {
+  return new Promise(resolve => {
+    let finalized = false;
+    function finalize(status: ProofStatusEnum) {
+      if (!finalized) {
+        finalized = true;
+        updateGlobalProofStatus(status);
+        clearTimeout(timer);
+        resolve();
       }
-    } catch (error) {
-      console.error('Error processing message:', error);
-      console.error('Raw message data:', event.data);
     }
-  });
 
-  ws.addEventListener('error', error => {
-    console.error('WebSocket 1 error:', error);
-  });
+    const uuid = v4();
+    const ws = new WebSocket(wsRpcUrl);
+    let socket: Socket | null = null;
 
-  ws.addEventListener('close', event => {
-    console.log(
-      `WebSocket 1 closed. Code: ${event.code}, Reason: ${event.reason}`,
-    );
-  });
-
-  function processUuid(result: any) {
-    const receivedUuid = result.result;
-    console.log('Received UUID:', receivedUuid);
-    setupWs2(receivedUuid);
-  }
-
-  async function processAttestation(result: any) {
-    const serverPubkey = getPublicKey(result.result.attestation);
-    const verified = await verifyAttestation(result.result.attestation);
-    console.log('AWS Root Certificate verified:', verified);
-    const key2 = ec.keyFromPublic(serverPubkey as string, 'hex');
-    const sharedKey = key1.derive(key2.getPublic());
-    const forgeKey = forge.util.createBuffer(
-      Buffer.from(sharedKey.toString('hex').padStart(64, '0'), 'hex').toString(
-        'binary',
-      ),
-    );
-    const encryptionData = encryptAES256GCM(
-      JSON.stringify({
-        type: 'register',
-        circuit: {
-          name: 'register_sha1_sha256_sha256_rsa_65537_4096',
-          inputs: JSON.stringify(inputs),
-          public_inputs: JSON.stringify({}),
+    function createHelloBody(uuidString: string) {
+      return {
+        jsonrpc: '2.0',
+        method: 'openpassport_hello',
+        id: 1,
+        params: {
+          user_pubkey: [4, ...Array.from(Buffer.from(pubkey, 'hex'))],
+          uuid: uuidString,
         },
-      }),
-      forgeKey,
-    );
-    const submitBody = {
-      jsonrpc: '2.0',
-      method: 'openpassport_submit_request',
-      id: 1,
-      params: {
-        uuid: result.result.uuid,
-        ...encryptionData,
-        onchain: true,
-      },
-    };
-    console.log('Sending submit body');
-    const truncatedBody = {
-      ...submitBody,
-      params: {
-        uuid: submitBody.params.uuid,
-        nonce: submitBody.params.nonce.slice(0, 3) + '...',
-        cipher_text: submitBody.params.cipher_text.slice(0, 3) + '...',
-        auth_tag: submitBody.params.auth_tag.slice(0, 3) + '...',
-      },
-    };
-    console.log('Truncated submit body:', truncatedBody);
-    ws.send(JSON.stringify(submitBody));
-  }
+      };
+    }
 
-  function setupWs2(uuidVal: any) {
-    ws2 = new WebSocket(WS_URL);
-    ws2.addEventListener('open', () => {
-      console.log('WS2: Connection opened');
-      ws2?.send(`subscribe_${uuidVal}`);
+    ws.addEventListener('open', () => {
+      const helloBody = createHelloBody(uuid);
+      console.log('Connected to rpc, sending hello body:', helloBody);
+      ws.send(JSON.stringify(helloBody));
     });
-    ws2.addEventListener('error', err => {
-      console.error('WS2 error details:', {
-        error: err,
-        readyState: ws2?.readyState,
-        bufferedAmount: ws2?.bufferedAmount,
-      });
-    });
-    ws2.addEventListener('message', event => {
-      const message = JSON.parse(
-        typeof event.data === 'string' ? event.data : event.data.toString(),
-      );
-      console.log('WS2 message:', message);
-      if (message.new_status === 2) {
-        console.log('Proof generation completed');
-        if (ws2?.readyState === WebSocket.OPEN) {
-          ws2.close();
+
+    ws.addEventListener('message', async event => {
+      try {
+        const result = JSON.parse(event.data);
+        // If attestation is present, process it.
+        if (result.result?.attestation !== undefined) {
+          // const serverPubkey = getPublicKey(result.result.attestation);
+          const verified = await verifyAttestation(result.result.attestation);
+          console.log('AWS Root Certificate verified:', verified);
+          if (verified) {
+            finalize(ProofStatusEnum.SUCCESS);
+          } else {
+            finalize(ProofStatusEnum.FAILURE);
+          }
+        } else {
+          // Otherwise, assume it's a UUID. Set up SocketIO to get further progress.
+          const receivedUuid = result.result;
+          console.log('Received UUID:', receivedUuid);
+          if (!socket) {
+            socket = io(WS_DB_RELAYER_OLD, {
+              path: '/',
+              transports: ['websocket'],
+            });
+            socket.on('connect', () => {
+              console.log('SocketIO: Connection opened');
+              socket?.emit('subscribe', receivedUuid);
+            });
+            socket.on('message', message => {
+              const data =
+                typeof message === 'string' ? JSON.parse(message) : message;
+              console.log('SocketIO message:', data);
+              // When the proof has generated, disconnect and close the WebSocket.
+              if (data.new_status === 2) {
+                console.log('Proof generation completed');
+                socket?.disconnect();
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.close();
+                }
+              }
+            });
+            socket.on('disconnect', reason => {
+              console.log(`SocketIO disconnected. Reason: ${reason}`);
+            });
+          }
         }
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.close();
-        }
+      } catch (error) {
+        console.error('Error processing message:', error);
+        finalize(ProofStatusEnum.ERROR);
       }
     });
-    ws2.addEventListener('close', event => {
-      console.log(
-        `WS2 closed. Code: ${event.code}, Reason: ${event.reason}, Clean: ${event.wasClean}`,
-      );
-    });
-  }
 
-  return new Promise((resolve, reject) => {
-    const timer = setTimeout(() => {
-      ws.close();
-      reject(new Error(`Request timed out after ${timeoutMs} ms`));
-    }, timeoutMs);
-
-    ws.addEventListener('close', () => {
-      clearTimeout(timer);
-      resolve(undefined);
-    });
     ws.addEventListener('error', error => {
-      clearTimeout(timer);
-      reject(error);
+      console.error('WebSocket error:', error);
+      finalize(ProofStatusEnum.ERROR);
     });
+
+    ws.addEventListener('close', event => {
+      console.log(
+        `WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
+      );
+      // If finalization hasn't occurred, assume the connection closed unexpectedly.
+      if (!finalized) {
+        finalize(ProofStatusEnum.FAILURE);
+      }
+    });
+
+    const timer = setTimeout(() => {
+      if (socket) {
+        socket.disconnect();
+      }
+      if (
+        ws.readyState === WebSocket.OPEN ||
+        ws.readyState === WebSocket.CONNECTING
+      ) {
+        ws.close();
+      }
+      finalize(ProofStatusEnum.ERROR);
+    }, timeoutMs);
   });
 }
 

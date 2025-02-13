@@ -29,6 +29,7 @@ target 'OpenPassport' do
   pod 'RNFS', :path => '../node_modules/react-native-fs'
   pod 'lottie-ios'
   pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
+  pod 'RNReactNativeHapticFeedback', :path => '../node_modules/react-native-haptic-feedback', :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -87,5 +88,14 @@ target 'OpenPassport' do
       :mac_catalyst_enabled => false,
       # :ccache_enabled => true
     )
+
+    installer.pods_project.targets.each do |target|
+      if target.name == 'RNReactNativeHapticFeedback'
+        target.build_configurations.each do |config|
+          config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
+          config.build_settings['OTHER_LDFLAGS'] << '-framework AudioToolbox'
+        end
+      end
+    end
   end
 end

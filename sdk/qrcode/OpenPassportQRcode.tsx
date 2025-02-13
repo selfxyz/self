@@ -1,28 +1,23 @@
-import React, { useEffect, useState } from 'react';
-import { OpenPassportAttestation } from '../../common/src/utils/openPassportAttestation';
-import { OpenPassportVerifier } from '@openpassport/core';
+import React, { useEffect, useState, useRef } from 'react';
 import { BounceLoader } from 'react-spinners';
 import Lottie from 'lottie-react';
 import CHECK_ANIMATION from './animations/check_animation.json';
 import X_ANIMATION from './animations/x_animation.json';
 import LED from './components/LED';
-import { WEBSOCKET_URL } from '../../common/src/constants/constants';
-import { UserIdType } from '../../common/src/utils/utils';
+import { REDIRECT_URL, WS_DB_RELAYER_NEW } from '../../common/src/constants/constants';
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
+import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
   ssr: false,
 });
 
 interface OpenPassportQRcodeProps {
-  appName: string;
-  userId: string;
-  userIdType: UserIdType;
-  openPassportVerifier: OpenPassportVerifier;
-  onSuccess: (attestation: OpenPassportAttestation) => void;
+  selfApp: SelfApp;
+  onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
 }
@@ -30,7 +25,6 @@ interface OpenPassportQRcodeProps {
 // Create a wrapper component that handles client-side rendering
 const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => {
   const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
     setIsClient(true);
   }, []);
@@ -38,40 +32,47 @@ const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => 
   if (!isClient) {
     return null;
   }
-
   return <OpenPassportQRcode {...props} />;
 };
 
 // Your existing OpenPassportQRcode component
 const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
-  appName,
-  userId,
-  userIdType,
-  openPassportVerifier,
+  selfApp,
   onSuccess,
-  websocketUrl = WEBSOCKET_URL,
+  websocketUrl = WS_DB_RELAYER_NEW,
   size = 300,
 }) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [sessionId, setSessionId] = useState(uuidv4());
+  const [sessionId] = useState(uuidv4());
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   useEffect(() => {
-    initWebSocket(
-      websocketUrl,
-      sessionId,
-      setProofStep,
-      setProofVerified,
-      openPassportVerifier,
-      onSuccess
-    );
-  }, [sessionId, websocketUrl, openPassportVerifier]);
+    // Only initialize if we don't have a socket already
+    if (!socketRef.current) {
+      console.log('[QRCode] Initializing new WebSocket connection');
+      socketRef.current = initWebSocket(
+        websocketUrl,
+        sessionId,
+        selfApp,
+        setProofStep,
+        setProofVerified,
+        onSuccess
+      );
+    }
+
+    return () => {
+      console.log('[QRCode] Cleaning up WebSocket connection');
+      if (socketRef.current) {
+        socketRef.current();
+        socketRef.current = null;
+      }
+    };
+  }, [websocketUrl, sessionId, selfApp, onSuccess]);
 
   const generateUniversalLink = () => {
-    const baseUrl = 'https://proofofpassport-merkle-tree.xyz';
-    const path = '/open-passport';
-    const data = openPassportVerifier.getIntent(appName, userId, userIdType, sessionId);
-    return `${baseUrl}${path}?data=${data}`;
+    const baseUrl = REDIRECT_URL;
+    return `${baseUrl}?sessionId=${sessionId}`;
   };
 
   const renderProofStatus = () => (
@@ -125,4 +126,4 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
-export default OpenPassportQRcodeWrapper;
+export { OpenPassportQRcodeWrapper, SelfApp, SelfAppBuilder };

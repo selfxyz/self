@@ -25,6 +25,7 @@ import SaveRecoveryPhraseScreen from './screens/AccountFlow/SaveRecoveryPhraseSc
 import DisclaimerScreen from './screens/DisclaimerScreen';
 import HomeScreen from './screens/HomeScreen';
 import LaunchScreen from './screens/LaunchScreen';
+import LoadingScreen from './screens/LoadingScreen';
 import MockDataScreen from './screens/MockDataScreen';
 import NextScreen from './screens/NextScreen';
 import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen';
@@ -167,6 +168,12 @@ const AppNavigation = createNativeStackNavigator({
     },
     ConfirmBelongingScreen: {
       screen: ConfirmBelongingScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    LoadingScreen: {
+      screen: LoadingScreen,
       options: {
         headerShown: false,
       },

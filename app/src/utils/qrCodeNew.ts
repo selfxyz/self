@@ -34,7 +34,7 @@ export default async function handleQRCodeScan(
       // await downloadZkey(circuitName as any);
       setApp(openPassportApp);
       console.log('✅', {
-        message: 'QR code scanned',
+        message: 'QR code scannedrre',
         customData: {
           type: 'success',
         },

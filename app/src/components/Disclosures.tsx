@@ -2,22 +2,18 @@ import React from 'react';
 
 import { XStack, YStack } from 'tamagui';
 
-import { DisclosureOptions } from '../../../common/src/utils/appType';
+import {
+  DisclosureAttributes,
+  DisclosureOption,
+  DisclosureOptions,
+} from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
-import { Numerical } from '../components/typography/Numerical';
 import CheckMark from '../images/icons/checkmark.svg';
-import { slate200, slate400, slate500 } from '../utils/colors';
+import { slate200, slate500 } from '../utils/colors';
 
 interface DisclosureProps {
-  disclosures: Partial<DisclosureOptions>;
+  disclosures: DisclosureOptions;
 }
-
-const DISCLOSURES: Array<keyof DisclosureOptions> = [
-  'excludedCountries',
-  'minimumAge',
-  'ofac',
-  'nationality',
-];
 
 function listToString(list: string[]): string {
   if (list.length === 1) {
@@ -29,43 +25,51 @@ function listToString(list: string[]): string {
 }
 
 export default function Disclosures({ disclosures }: DisclosureProps) {
-  const enabledDisclosures = React.useMemo(
-    () => DISCLOSURES.filter(onlyEnabled(disclosures)),
-    [disclosures],
-  );
+  // Convert the array into a lookup map keyed by the disclosure's key.
+  const disclosureMap = React.useMemo(() => {
+    return disclosures.reduce((acc, disclosure) => {
+      acc[disclosure.key] = disclosure;
+      return acc;
+    }, {} as Partial<Record<DisclosureAttributes, DisclosureOption>>);
+  }, [disclosures]);
+
+  // Define the order in which disclosures should appear.
+  const ORDERED_KEYS: DisclosureAttributes[] = [
+    'excludedCountries',
+    'minimumAge',
+    'ofac',
+    'nationality',
+  ];
 
   return (
     <YStack>
-      {enabledDisclosures.map(type => {
+      {ORDERED_KEYS.map(key => {
+        const disclosure = disclosureMap[key];
+        if (!disclosure || !disclosure.enabled) {
+          return null;
+        }
         let text = '';
-        switch (type) {
+        switch (key) {
           case 'ofac':
             text = 'I am not on the OFAC list';
-            return <DisclosureItem key={type} text={text} />;
+            break;
           case 'excludedCountries':
             text = `I am not a resident of any of the following countries: ${listToString(
-              disclosures.excludedCountries!.value,
+              (disclosure as { value: string[] }).value,
             )}`;
-            return <DisclosureItem key={type} text={text} />;
+            break;
           case 'nationality':
             text = `I have a valid passport from ${
-              disclosures.nationality!.value
+              (disclosure as { value: string }).value
             }`;
-            return <DisclosureItem key={type} text={text} />;
+            break;
           case 'minimumAge':
-            text = `Age [over ${disclosures.minimumAge!.value}]`;
-            return <DisclosureItem key={type} text={text} />;
-          default: {
-            // TODO disclosureOptions does not have a type for this case yet. will wait for team to add it
-            return (
-              <DiscloseAddress
-                key={'address'}
-                text="I control the following wallet address:"
-                address={'0x'}
-              />
-            );
-          }
+            text = `Age [over ${(disclosure as { value: string }).value}]`;
+            break;
+          default:
+            return null;
         }
+        return <DisclosureItem key={key} text={text} />;
       })}
     </YStack>
   );
@@ -73,7 +77,6 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
 
 interface DisclosureItemProps {
   text: string;
-  type?: string;
 }
 
 const DisclosureItem: React.FC<DisclosureItemProps> = ({
@@ -93,45 +96,32 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
   );
 };
 
-interface DiscloseAddressProps {
-  text: string;
-  address: string;
-}
+// interface DiscloseAddressProps {
+//   text: string;
+//   address: string;
+// }
 
-const DiscloseAddress: React.FC<DiscloseAddressProps> = ({
-  text,
-  address,
-}: DiscloseAddressProps) => {
-  return (
-    <YStack gap={10} paddingVertical={22} paddingHorizontal={10}>
-      <XStack gap={10}>
-        <CheckMark width={22} />
-        <BodyText color={slate500}>{text}</BodyText>
-      </XStack>
-      <YStack
-        gap={8}
-        borderRadius={10}
-        borderColor={slate200}
-        borderWidth={1}
-        padding={8}
-        marginStart={34}
-      >
-        <BodyText color={slate400}>Address</BodyText>
-        <Numerical>{address}</Numerical>
-      </YStack>
-    </YStack>
-  );
-};
-
-function onlyEnabled(
-  disclosures: Partial<DisclosureOptions>,
-): (
-  value: keyof DisclosureOptions,
-  index: number,
-  array: (keyof DisclosureOptions)[],
-) => unknown {
-  return type => {
-    const disclosure = disclosures[type];
-    return typeof disclosure === 'boolean' ? disclosure : !!disclosure?.enabled;
-  };
-}
+// const DiscloseAddress: React.FC<DiscloseAddressProps> = ({
+//   text,
+//   address,
+// }: DiscloseAddressProps) => {
+//   return (
+//     <YStack gap={10} paddingVertical={22} paddingHorizontal={10}>
+//       <XStack gap={10}>
+//         <CheckMark width={22} />
+//         <BodyText color={slate500}>{text}</BodyText>
+//       </XStack>
+//       <YStack
+//         gap={8}
+//         borderRadius={10}
+//         borderColor={slate200}
+//         borderWidth={1}
+//         padding={8}
+//         marginStart={34}
+//       >
+//         <BodyText color={slate400}>Address</BodyText>
+//         <Numerical>{address}</Numerical>
+//       </YStack>
+//     </YStack>
+//   );
+// };

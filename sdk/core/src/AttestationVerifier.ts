@@ -1,34 +1,14 @@
-import {
-  countryNames,
-} from '../../../common/src/constants/constants';
-import type { SelfAttestation } from '../../../common/src/utils/selfAttestation';
-import {
-  parsePublicSignalsDisclose,
-} from '../../../common/src/utils/selfAttestation';
-import {
-  formatForbiddenCountriesListFromCircuitOutput,
-  getAttributeFromUnpackedReveal,
-  unpackReveal,
-} from '../../../common/src/utils/circuits/formatOutputs';
-import { castToScope } from '../../../common/src/utils/circuits/uuid';
-import { SelfVerifierReport } from './SelfVerifierReport';
-import {
-  registryAbi
-} from "./abi/IdentityRegistryImplV1";
-import {
-  verifyAllAbi
-} from "./abi/VerifyAll";
 import { ethers } from 'ethers';
+import { countryNames } from '../../../common/src/constants/constants';
+import { SelfAttestation } from '../../../common/src/utils/selfAttestation';
+import { SelfVerifierReport } from './SelfVerifierReport';
+import { registryAbi } from './abi/IdentityRegistryImplV1';
+import { verifyAllAbi } from './abi/VerifyAll';
 // import type { VcAndDiscloseHubProofStruct } from "../../../common/src/utils/contracts/typechain-types/contracts/IdentityVerificationHubImplV1.sol/IdentityVerificationHubImplV1";
-import {
-  groth16,
-  Groth16Proof,
-  PublicSignals
-} from 'snarkjs';
+import { groth16, Groth16Proof, PublicSignals } from 'snarkjs';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 
 export class AttestationVerifier {
-
   protected devMode: boolean;
   protected scope: string;
   protected report: SelfVerifierReport;
@@ -61,11 +41,7 @@ export class AttestationVerifier {
   }
 
   public async verify(proof: Groth16Proof, publicSignals: PublicSignals): Promise<SelfAttestation> {
-
-    const solidityProof = await groth16.exportSolidityCallData(
-      proof,
-      publicSignals,
-    );
+    const solidityProof = await groth16.exportSolidityCallData(proof, publicSignals);
 
     const vcAndDiscloseHubProof: any = {
       olderThanEnabled: this.minimumAge.enabled,
@@ -73,8 +49,8 @@ export class AttestationVerifier {
       forbiddenCountriesEnabled: this.excludedCountries.enabled,
       forbiddenCountriesListPacked: BigInt(this.excludedCountries.value.length),
       ofacEnabled: this.ofac,
-      vcAndDiscloseProof: solidityProof
-    }
+      vcAndDiscloseProof: solidityProof,
+    };
 
     const result = await this.verifyAllContract.verifyAll(
       this.targetRootTimestamp,
@@ -93,11 +69,11 @@ export class AttestationVerifier {
     console.log(result);
 
     const credentialSubject = {
-      userId: "",
+      userId: '',
       application: this.scope,
-      merkle_root: "",
-      attestation_id: "",
-      current_date: "",
+      merkle_root: '',
+      attestation_id: '',
+      current_date: '',
       issuing_state: result[0],
       name: result[1],
       passport_number: result[2],
@@ -108,7 +84,7 @@ export class AttestationVerifier {
       older_than: result[7],
       valid: result[8],
       nullifier: publicSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX],
-    }
+    };
 
     const attestation: SelfAttestation = {
       '@context': ['https://www.w3.org/2018/credentials/v1'],
@@ -117,18 +93,16 @@ export class AttestationVerifier {
       issuanceDate: new Date().toISOString(),
       credentialSubject: credentialSubject,
       proof: {
-        type: "Groth16Proof",
-        verificationMethod: "Vc and Disclose",
+        type: 'Groth16Proof',
+        verificationMethod: 'Vc and Disclose',
         value: {
           proof: proof,
           publicSignals: publicSignals,
         },
-        vkey: "",
-      }
-    }
+        vkey: '',
+      },
+    };
 
     return attestation;
-    
   }
-
 }

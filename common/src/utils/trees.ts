@@ -9,14 +9,32 @@ import { packBytesAndPoseidon } from './hash';
 import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
 import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
 import { max_dsc_bytes } from '../constants/constants';
-import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
-import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { pad } from './passports/passport';
 import countries from "i18n-iso-countries";
 import en from "i18n-iso-countries/langs/en.json";
 countries.registerLocale(en);
+import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
+import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
+
+
+export async function getCSCATree(devMode: boolean = false): Promise<string[][]> {
+  if (devMode) {
+    return serialized_csca_tree;
+  }
+  const response = await fetch(CSCA_TREE_URL);
+  return await response.json().then(data => data);
+}
+
+export async function getDSCTree(devMode: boolean = false): Promise<string> {
+  if (devMode) {
+    return serialized_dsc_tree;
+  }
+  const response = await fetch(DSC_TREE_URL);
+  return await response.json();
+}
 
 export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
   const response = await fetch(url);
@@ -67,19 +85,8 @@ export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
 }
 
-/*** get inclusion proofs for DSC and CSCA Trees ***/
-export function getTreeInclusionProof(leaf: string, type: 'csca' | 'dsc') {
-  switch (type) {
-    case 'csca':
-      return getCscaTreeInclusionProof(leaf);
-    case 'dsc':
-      return getDscTreeInclusionProof(leaf);
-    default:
-      throw new Error('Invalid tree type');
-  }
-}
 
-function getDscTreeInclusionProof(leaf: string): [string, number[], bigint[], number] {
+export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: string): [string, number[], bigint[], number] {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, serialized_dsc_tree);
   const index = tree.indexOf(BigInt(leaf));
@@ -90,7 +97,7 @@ function getDscTreeInclusionProof(leaf: string): [string, number[], bigint[], nu
   return [tree.root, path, siblings, leaf_depth];
 }
 
-function getCscaTreeInclusionProof(leaf: string) {
+export function getCscaTreeInclusionProof(leaf: string, serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(serialized_csca_tree);
   const index = tree.indexOf(leaf);
@@ -100,8 +107,7 @@ function getCscaTreeInclusionProof(leaf: string) {
   const proof = tree.createProof(index);
   return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
 }
-
-export function getCscaTreeRoot() {
+export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(serialized_csca_tree);
   return tree.root;
@@ -258,15 +264,15 @@ function processPassportNoAndNationality(passno: string, nationality: string, in
 // will be removed once we parse the OFAC list better, starting from the XML file.
 const normalizeCountryName = (country: string): string => {
   const mapping: Record<string, string> = {
-      "palestinian": "Palestine",
-      "korea, north": "North Korea",
-      "korea, south": "Korea, Republic of",
-      "united kingdom": "United Kingdom",
-      "syria": "Syrian Arab Republic",
-      "burma": "Myanmar",
-      "cabo verde": "Cape Verde",
-      "congo, democratic republic of the": "Democratic Republic of the Congo",
-      "macau": "Macao",
+    "palestinian": "Palestine",
+    "korea, north": "North Korea",
+    "korea, south": "Korea, Republic of",
+    "united kingdom": "United Kingdom",
+    "syria": "Syrian Arab Republic",
+    "burma": "Myanmar",
+    "cabo verde": "Cape Verde",
+    "congo, democratic republic of the": "Democratic Republic of the Congo",
+    "macau": "Macao",
   };
   return mapping[country.toLowerCase()] || country;
 };

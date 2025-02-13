@@ -17,10 +17,9 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
-import useUserStore from '../../stores/userStore';
 import { black, slate800, white } from '../../utils/colors';
-import handleQRCodeScan from '../../utils/qrCodeNew';
 
 interface QRCodeViewFinderScreenProps {}
 
@@ -41,25 +40,29 @@ const parseUrlParams = (url: string): Map<string, string> => {
 const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const store = useUserStore();
-  const { setSelectedApp } = useProofInfo();
+  const { setSelectedApp, cleanSelfApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
+  const { startAppListener } = useApp();
+
   const onQRData = useCallback<QRCodeScannerViewProps['onQRData']>(
     async (error, uri) => {
       if (doneScanningQR) {
-        // return
+        return;
       }
       if (error) {
-        // TODO: handle error better
         console.error(error);
       } else {
         setDoneScanningQR(true);
         const encodedData = parseUrlParams(uri!);
-        await handleQRCodeScan(encodedData.get('data')!, setSelectedApp);
+        const sessionId = encodedData.get('sessionId');
+        cleanSelfApp();
+        if (sessionId) {
+          startAppListener(sessionId, setSelectedApp);
+        }
         navigation.navigate('ProveScreen');
       }
     },
-    [store, navigation, doneScanningQR],
+    [doneScanningQR, navigation, startAppListener],
   );
   const onCancelPress = useHapticNavigation('Home', 'cancel');
 

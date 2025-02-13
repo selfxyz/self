@@ -7,52 +7,91 @@ import React, {
 
 import io, { Socket } from 'socket.io-client';
 
+import { WS_DB_RELAYER_NEW } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
 import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
-// failure means that one of the requirements was not met, error means we fucked up.
-export type ProofStatus = 'success' | 'failure' | 'pending' | 'error';
+export enum ProofStatusEnum {
+  PENDING = 'pending',
+  SUCCESS = 'success',
+  FAILURE = 'failure',
+  ERROR = 'error',
+}
 
 interface IProofContext {
-  status: ProofStatus;
+  status: ProofStatusEnum;
   proofVerificationResult: unknown;
   selectedApp: SelfApp;
   setSelectedApp: (app: SelfApp) => void;
+  cleanSelfApp: () => void;
   setProofVerificationResult: (result: unknown) => void;
-  setStatus: (status: ProofStatus) => void;
+  setStatus: (status: ProofStatusEnum) => void;
 }
 
 const defaults: IProofContext = {
-  status: 'pending',
+  status: ProofStatusEnum.PENDING,
   proofVerificationResult: null,
   selectedApp: {} as SelfApp,
   setSelectedApp: (_: SelfApp) => undefined,
+  cleanSelfApp: () => undefined,
   setProofVerificationResult: (_: unknown) => undefined,
-  setStatus: (_: ProofStatus) => undefined,
+  setStatus: (_: ProofStatusEnum) => undefined,
 };
 
 const ProofContext = createContext<IProofContext>(defaults);
 
-const Provider = ProofContext.Provider;
+// Global setter for proof status – accessible from non‑React code
+let globalSetProofStatus: ((status: ProofStatusEnum) => void) | null = null;
+export function updateGlobalProofStatus(status: ProofStatusEnum) {
+  if (globalSetProofStatus) {
+    globalSetProofStatus(status);
+  }
+}
 
 /*
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
 export function ProofProvider({ children }: PropsWithChildren) {
-  const [status, setStatus] = useState<ProofStatus>(defaults.status);
+  const [status, setStatus] = useState<ProofStatusEnum>(
+    ProofStatusEnum.PENDING,
+  );
   const [proofVerificationResult, setProofVerificationResult] =
     useState<unknown>(defaults.proofVerificationResult);
-  const [selectedApp, _setSelectedApp] = useState<SelfApp>(
+  const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
-  const [_, setSocket] = useState<Socket | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   // reset all the values so it not in wierd state
   function setSelectedApp(app: SelfApp) {
-    setStatus('pending');
+    setStatus(ProofStatusEnum.PENDING);
     setProofVerificationResult(null);
-    _setSelectedApp(app);
+    setSelectedAppInternal(app);
   }
+
+  function cleanSelfApp() {
+    const emptySelfApp: SelfApp = {
+      appName: '',
+      logoBase64: '',
+      scope: '',
+      sessionId: '',
+      userId: '',
+      userIdType: 'uuid',
+      devMode: true,
+      args: {
+        disclosureOptions: [],
+      },
+    };
+    setSelectedAppInternal(emptySelfApp);
+  }
+
+  // Make the setter available globally
+  useEffect(() => {
+    globalSetProofStatus = setStatus;
+    return () => {
+      globalSetProofStatus = null;
+    };
+  }, [setStatus]);
 
   useWebsocket(selectedApp, setStatus, setProofVerificationResult, setSocket);
 
@@ -67,12 +106,15 @@ export function ProofProvider({ children }: PropsWithChildren) {
     status,
     proofVerificationResult,
     selectedApp,
-    setStatus,
     setSelectedApp,
+    cleanSelfApp,
     setProofVerificationResult,
+    setStatus,
   };
 
-  return <Provider value={publicApi}>{children}</Provider>;
+  return (
+    <ProofContext.Provider value={publicApi}>{children}</ProofContext.Provider>
+  );
 }
 
 export const useProofInfo = () => {
@@ -84,21 +126,21 @@ export const useProofInfo = () => {
 //
 function useWebsocket(
   selectedApp: SelfApp,
-  setStatus: React.Dispatch<React.SetStateAction<ProofStatus>>,
+  setStatus: React.Dispatch<React.SetStateAction<ProofStatusEnum>>,
   setProofVerificationResult: React.Dispatch<unknown>,
   setSocket: React.Dispatch<React.SetStateAction<Socket | null>>,
 ) {
   useEffect(() => {
     let newSocket: Socket | null = null;
 
-    if (!selectedApp.websocketUrl || !selectedApp.sessionId) {
+    if (!selectedApp.sessionId) {
       return;
     }
-    console.log('creating ws', selectedApp.websocketUrl, selectedApp.sessionId);
+    console.log('creating ws', WS_DB_RELAYER_NEW, selectedApp.sessionId);
 
     try {
-      newSocket = io(selectedApp.websocketUrl, {
-        path: '/websocket',
+      newSocket = io(WS_DB_RELAYER_NEW + '/websocket', {
+        path: '/',
         transports: ['websocket'],
         query: { sessionId: selectedApp.sessionId, clientType: 'mobile' },
       });
@@ -119,7 +161,7 @@ function useWebsocket(
             type: 'error',
           },
         });
-        setStatus('error');
+        setStatus(ProofStatusEnum.ERROR);
       });
 
       newSocket.on('proof_verification_result', result => {
@@ -127,7 +169,7 @@ function useWebsocket(
         setProofVerificationResult(data);
         console.log('result', result, data);
         if (data.valid) {
-          setStatus('success');
+          setStatus(ProofStatusEnum.SUCCESS);
           console.log('✅', {
             message: 'Identity verified',
             customData: {
@@ -135,7 +177,7 @@ function useWebsocket(
             },
           });
         } else {
-          setStatus('failure');
+          setStatus(ProofStatusEnum.FAILURE);
           console.log('❌', {
             message: 'Verification failed',
             customData: {
@@ -148,7 +190,7 @@ function useWebsocket(
       setSocket(newSocket);
     } catch (error) {
       console.error('Error setting up WebSocket:', error);
-      setStatus('error');
+      setStatus(ProofStatusEnum.ERROR);
       console.log('❌', {
         message: 'Failed to set up connection',
         customData: {
@@ -162,5 +204,5 @@ function useWebsocket(
         setSocket(null);
       }
     };
-  }, [selectedApp.websocketUrl, selectedApp.sessionId]);
+  }, [selectedApp.sessionId]);
 }

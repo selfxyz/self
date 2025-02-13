@@ -1,18 +1,24 @@
 export const RELAYER_URL = 'https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint';
-//export const COMMITMENT_TREE_TRACKER_URL = "https://app.proofofpassport.com/apiv2/download-merkle-tree"
-export const COMMITMENT_TREE_TRACKER_URL =
-  'https://proofofpassport-merkle-tree.xyz/api/merkle-tree/download';
-export const WEBSOCKET_URL = 'https://proofofpassport-merkle-tree.xyz';
+export const TREE_TRACKER_URL = 'https://tree.openpassport.app';
 export const CSCA_TREE_DEPTH = 12;
 export const DSC_TREE_DEPTH = 21;
 export const COMMITMENT_TREE_DEPTH = 33;
 export const DEFAULT_USER_ID_TYPE = 'uuid';
 
 export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';
-
+export const REDIRECT_URL = 'https://redirect.openpassport.app';
 export const WS_RPC_URL = "ws://54.71.75.253:8888/";
-export const WS_URL = "ws://43.205.137.10:8888/";
-export const IMAGE_HASH = "002991b83537ca49d9cfcd3375d9148151121470eef8e84cac087d789af9d200bcc6582fb53e0e273aeddc83943c4def";
+export const WS_RPC_URL_REGISTER = "ws://register.proving.openpassport.app:8888/";
+export const WS_RPC_URL_DSC = "ws://dsc.proving.openpassport.app:8888/";
+export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.openpassport.app:8888/";
+export const WS_DB_RELAYER_OLD = '"ws://3.110.97.137:8888/';
+export const WS_DB_RELAYER_NEW = 'https://websocket.openpassport.app';
+
+export const CSCA_TREE_URL = 'https://tree.openpassport.app/csca';
+export const DSC_TREE_URL = 'https://tree.openpassport.app/dsc';
+export const IDENTITY_TREE_URL = 'https://tree.openpassport.app/identity';
+
+export const IMAGE_HASH = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 export const PASSPORT_ATTESTATION_NAME = 'E-PASSPORT';
 // poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
@@ -29,9 +35,15 @@ export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
 
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+export const DEPLOYED_CIRCUITS_REGISTER = [
+  'register_sha1_sha256_sha256_rsa_65537_4096',
+]
 
 export const OFAC_TREE_LEVELS = 64;
 
+export const DEPLOYED_CIRCUITS_DSC = [
+  'dsc_sha256_rsa_65537_4096',
+]
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,
   sha224: 512,

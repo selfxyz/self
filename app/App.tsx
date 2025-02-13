@@ -9,6 +9,7 @@ import { YStack } from 'tamagui';
 // Adjust the import path as needed
 import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
+import { AppProvider } from './src/stores/appProvider';
 import { AuthProvider } from './src/stores/authProvider';
 import { ProofProvider } from './src/stores/proofProvider';
 import useUserStore from './src/stores/userStore';
@@ -45,11 +46,13 @@ function App(): React.JSX.Element {
 
   return (
     <YStack f={1} h="100%" w="100%">
-      <AuthProvider>
-        <ProofProvider>
-          <AppNavigation />
-        </ProofProvider>
-      </AuthProvider>
+      <AppProvider>
+        <AuthProvider>
+          <ProofProvider>
+            <AppNavigation />
+          </ProofProvider>
+        </AuthProvider>
+      </AppProvider>
     </YStack>
   );
 }
