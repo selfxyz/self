@@ -20,7 +20,6 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
 import { black, slate800 } from '../../utils/colors';
-import { SelfApp } from '../../../../common/src/utils/appType';
 
 interface QRCodeViewFinderScreenProps { }
 

@@ -8,9 +8,17 @@ export const DEFAULT_USER_ID_TYPE = 'uuid';
 export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';
 export const REDIRECT_URL = 'https://redirect.openpassport.app';
 export const WS_RPC_URL = "ws://54.71.75.253:8888/";
-export const WS_URL = 'https://websocket.openpassport.app';
+export const WS_RPC_URL_REGISTER = "ws://register.proving.openpassport.app:8888/";
+export const WS_RPC_URL_DSC = "ws://dsc.proving.openpassport.app:8888/";
+export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.openpassport.app:8888/";
+export const WS_DB_RELAYER_OLD = '"ws://3.110.97.137:8888/';
+export const WS_DB_RELAYER_NEW = 'https://websocket.openpassport.app';
 
-export const IMAGE_HASH = "002991b83537ca49d9cfcd3375d9148151121470eef8e84cac087d789af9d200bcc6582fb53e0e273aeddc83943c4def";
+export const CSCA_TREE_URL = 'https://tree.openpassport.app/csca';
+export const DSC_TREE_URL = 'https://tree.openpassport.app/dsc';
+export const IDENTITY_TREE_URL = 'https://tree.openpassport.app/identity';
+
+export const IMAGE_HASH = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 
 export const PASSPORT_ATTESTATION_NAME = 'E-PASSPORT';
 // poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
@@ -32,7 +40,7 @@ export const DEPLOYED_CIRCUITS_REGISTER = [
 ]
 
 export const DEPLOYED_CIRCUITS_DSC = [
-  'dsc_rsa_sha256_65537_4096',
+  'dsc_sha256_rsa_65537_4096',
 ]
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,

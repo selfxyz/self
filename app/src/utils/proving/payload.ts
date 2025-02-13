@@ -4,7 +4,14 @@ import { poseidon2 } from 'poseidon-lite';
 import { v4 } from 'uuid';
 
 import namejson from '../../../../common/ofacdata/outputs/nameSMT.json';
-import { PASSPORT_ATTESTATION_ID } from '../../../../common/src/constants/constants';
+import {
+  DEPLOYED_CIRCUITS_DSC,
+  DEPLOYED_CIRCUITS_REGISTER,
+  PASSPORT_ATTESTATION_ID,
+  WS_RPC_URL_DSC,
+  WS_RPC_URL_REGISTER,
+  WS_RPC_URL_VC_AND_DISCLOSE,
+} from '../../../../common/src/constants/constants';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
@@ -28,19 +35,33 @@ function generateTeeInputsRegister(secret: string, passportData: PassportData) {
 
 function checkPassportSupported(passportData: PassportData) {
   if (!passportData.parsed) {
-    throw new Error('Passport data is not parsed');
+    console.log('Passport data is not parsed');
+    return false;
   }
   const passportMetadata = passportData.passportMetadata;
   if (!passportMetadata) {
-    throw new Error('Passport is null');
+    console.log('Passport metadata is null');
+    return false;
   }
   if (!passportMetadata.cscaFound) {
-    throw new Error('CSCA not found');
+    console.log('CSCA not found');
+    return false;
   }
-  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-    // TODO, check if the circuit is deployed
+  const circuitNameRegister = getCircuitNameFromPassportData(
+    passportData,
+    'register',
+  );
+  if (
+    !circuitNameRegister ||
+    !DEPLOYED_CIRCUITS_REGISTER.includes(circuitNameRegister)
+  ) {
+    console.log('Circuit not supported:', circuitNameRegister);
+    return false;
+  }
+  const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
+  if (!circuitNameDsc || !DEPLOYED_CIRCUITS_DSC.includes(circuitNameDsc)) {
+    console.log('DSC circuit not supported:', circuitNameDsc);
+    return false;
   }
   return true;
 }
@@ -52,13 +73,14 @@ export async function sendRegisterPayload(passportData: PassportData) {
   const isSupported = checkPassportSupported(passportData);
   if (!isSupported) {
     // TODO: show a screen explaining that the passport is not supported.
+    console.log('Passport not supported');
     return;
   }
-  const { inputs, circuitName } = generateTeeInputsRegister(
+  const { inputs, circuitName } = await generateTeeInputsRegister(
     mock_secret,
     passportData,
   );
-  await sendPayload(inputs, circuitName);
+  await sendPayload(inputs, circuitName, WS_RPC_URL_REGISTER);
 }
 
 function generateTeeInputsDsc(passportData: PassportData) {
@@ -70,18 +92,19 @@ function generateTeeInputsDsc(passportData: PassportData) {
   return { inputs, circuitName };
 }
 
-export async function sendDscPayload(passportData: PassportData) {
+export async function sendDscPayload(passportData: PassportData): Promise<boolean> {
   if (!passportData) {
-    return null;
+    return false;
   }
   const isSupported = checkPassportSupported(passportData);
   if (!isSupported) {
-    // TODO: show a screen explaining that the passport is not supported.
-    return;
+    console.log('Passport not supported'); //TODO: show a screen explaining that the passport is not supported.
+    return false;
   }
   const { inputs, circuitName } = generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
-  await sendPayload(inputs, circuitName);
+  const result = await sendPayload(inputs, circuitName, WS_RPC_URL_DSC);
+  return result;
 }
 
 function generateTeeInputsVCAndDisclose(passportData: PassportData) {
@@ -135,5 +158,5 @@ export async function sendVcAndDisclosePayload(
     return;
   }
   const { inputs, circuitName } = generateTeeInputsVCAndDisclose(passportData);
-  await sendPayload(inputs, circuitName);
+  await sendPayload(inputs, circuitName, WS_RPC_URL_VC_AND_DISCLOSE);
 }

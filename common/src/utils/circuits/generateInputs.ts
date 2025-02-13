@@ -7,7 +7,7 @@ import {
 } from '../../constants/constants';
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { getCountryLeaf, getNameLeaf, getNameDobLeaf, getPassportNumberLeaf, getLeafCscaTree, getLeaf, getLeafDscTree } from '../trees';
+import { getCountryLeaf, getCSCATree, getCscaTreeInclusionProof, getDSCTree, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameLeaf, getPassportNumberLeaf } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
   extractSignatureFromDSC,
@@ -28,12 +28,13 @@ import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
-import { getTreeInclusionProof } from '../trees';
 
-export function generateCircuitInputsDSC(
+export async function generateCircuitInputsDSC(
   dscCertificate: string,
   devMode: boolean = false
 ) {
+  const serialized_csca_tree = (await getCSCATree(devMode) as any).data;
+  console.log('serialized_csca_tree', serialized_csca_tree);
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
@@ -49,7 +50,7 @@ export function generateCircuitInputsDSC(
   );
 
   const leaf = getLeafCscaTree(cscaParsed);
-  const [root, path, siblings] = getTreeInclusionProof(leaf, 'csca');
+  const [root, path, siblings] = getCscaTreeInclusionProof(leaf, serialized_csca_tree);
 
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
@@ -85,10 +86,13 @@ export function generateCircuitInputsDSC(
   };
 }
 
-export function generateCircuitInputsRegister(
+export async function generateCircuitInputsRegister(
   secret: string,
-  passportData: PassportData
+  passportData: PassportData,
+  devMode: boolean = false
 ) {
+  const serialized_dsc_tree = await getDSCTree(devMode);
+
   if (!passportData.parsed) {
     throw new Error('Passport data is not parsed');
   }
@@ -123,7 +127,7 @@ export function generateCircuitInputsRegister(
   );
 
   const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed);
-  const [root, path, siblings, leaf_depth] = getTreeInclusionProof(dsc_leaf, 'dsc')
+  const [root, path, siblings, leaf_depth] = getDscTreeInclusionProof(dsc_leaf, serialized_dsc_tree);
   const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 
   // Get start index of DSC pubkey based on algorithm

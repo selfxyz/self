@@ -14,14 +14,16 @@ import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const ConfirmBelongingScreen: React.FC = () => {
-  const onOkPress = useHapticNavigation('Home');
+  const onOkPress = useHapticNavigation('LoadingScreen');
+
+
 
   useEffect(() => {
     notificationSuccess();
   }, []);
 
   // Prevents back navigation
-  usePreventRemove(true, () => {});
+  usePreventRemove(true, () => { });
 
   return (
     <>

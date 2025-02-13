@@ -193,6 +193,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
 
   const cert = derToPem(attestationDoc.certificate);
   const imageHash = getImageHash(attestation);
+  console.log('imageHash', imageHash);
   if (imageHash !== IMAGE_HASH) {
     throw new Error('Invalid image hash');
   }

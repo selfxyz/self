@@ -25,7 +25,7 @@ const ScanButton = styled(Button, {
 });
 
 const HomeScreen: React.FC = () => {
-  const onCaptionPress = useHapticNavigation('Launch');
+  const onCaptionPress = useHapticNavigation('ConfirmBelongingScreen');
   const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
   // Prevents back navigation
   usePreventRemove(true, () => {});

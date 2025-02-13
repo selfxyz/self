@@ -2,7 +2,11 @@ import React from 'react';
 
 import { XStack, YStack } from 'tamagui';
 
-import { DisclosureOptions, DisclosureAttributes, DisclosureOption } from '../../../common/src/utils/appType';
+import {
+  DisclosureAttributes,
+  DisclosureOption,
+  DisclosureOptions,
+} from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import { Numerical } from '../components/typography/Numerical';
 import CheckMark from '../images/icons/checkmark.svg';
@@ -31,11 +35,16 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
   }, [disclosures]);
 
   // Define the order in which disclosures should appear.
-  const ORDERED_KEYS: DisclosureAttributes[] = ['excludedCountries', 'minimumAge', 'ofac', 'nationality'];
+  const ORDERED_KEYS: DisclosureAttributes[] = [
+    'excludedCountries',
+    'minimumAge',
+    'ofac',
+    'nationality',
+  ];
 
   return (
     <YStack>
-      {ORDERED_KEYS.map((key) => {
+      {ORDERED_KEYS.map(key => {
         const disclosure = disclosureMap[key];
         if (!disclosure || !disclosure.enabled) {
           return null;
@@ -47,11 +56,13 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
             break;
           case 'excludedCountries':
             text = `I am not a resident of any of the following countries: ${listToString(
-              (disclosure as { value: string[] }).value
+              (disclosure as { value: string[] }).value,
             )}`;
             break;
           case 'nationality':
-            text = `I have a valid passport from ${(disclosure as { value: string }).value}`;
+            text = `I have a valid passport from ${
+              (disclosure as { value: string }).value
+            }`;
             break;
           case 'minimumAge':
             text = `Age [over ${(disclosure as { value: string }).value}]`;
@@ -69,7 +80,9 @@ interface DisclosureItemProps {
   text: string;
 }
 
-const DisclosureItem: React.FC<DisclosureItemProps> = ({ text }: DisclosureItemProps) => {
+const DisclosureItem: React.FC<DisclosureItemProps> = ({
+  text,
+}: DisclosureItemProps) => {
   return (
     <XStack
       gap={10}

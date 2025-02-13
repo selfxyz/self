@@ -38,11 +38,7 @@ const ProveScreen: React.FC = () => {
   if (!selectedApp.sessionId) {
     return (
       <Text mt="$10" fontSize="$9" color={black} textAlign="center">
-        <LottieView
-          source={miscAnimation}
-          autoPlay
-          loop
-        />
+        <LottieView source={miscAnimation} autoPlay loop />
       </Text>
     );
   }
