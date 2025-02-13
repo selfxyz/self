@@ -31,9 +31,9 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
           options.headerBackTitle || (canGoBack() ? 'back' : undefined)
         }
         onPress={goBack}
-        {...options.headerTitleStyle}
+        {...(options.headerTitleStyle as ViewStyle)}
       />
-      <NavBar.Title {...options.headerTitleStyle}>
+      <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
         {props.options.title}
       </NavBar.Title>
     </NavBar.Container>
