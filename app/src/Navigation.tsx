@@ -119,6 +119,7 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
+  orientation: 'portrait_up',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
@@ -146,6 +147,8 @@ const AppNavigation = createNativeStackNavigator({
     PassportOnboarding: {
       screen: PassportOnboardingScreen,
       options: {
+        animation: 'slide_from_bottom',
+        // presentation: 'modal' wanted to do this but seems to break stuff
         headerShown: false,
       },
     },
@@ -153,12 +156,14 @@ const AppNavigation = createNativeStackNavigator({
       screen: PassportCameraScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
       },
     },
     PassportNFCScan: {
       screen: PassportNFCScanScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
       },
       initialParams: {
         passportNumber: '',
@@ -198,6 +203,7 @@ const AppNavigation = createNativeStackNavigator({
         title: 'Self',
         header: HomeNavBar,
         navigationBarColor: black,
+        presentation: 'card',
       },
     },
     Disclaimer: {
@@ -211,6 +217,8 @@ const AppNavigation = createNativeStackNavigator({
       screen: QRCodeViewFinderScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
+        // presentation: 'modal',
       },
     },
     ProveScreen: {
@@ -229,11 +237,14 @@ const AppNavigation = createNativeStackNavigator({
       screen: ProofRequestStatusScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
+        presentation: 'containedModal',
       },
     },
     Settings: {
       screen: SettingsScreen,
       options: {
+        animation: 'slide_from_bottom',
         title: 'Settings',
         headerStyle: {
           backgroundColor: white,
@@ -257,6 +268,7 @@ const AppNavigation = createNativeStackNavigator({
       screen: SaveRecoveryPhraseScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
       },
     },
     RecoverWithPhrase: {
@@ -277,6 +289,7 @@ const AppNavigation = createNativeStackNavigator({
       screen: AccountVerifiedSuccessScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
       },
     },
     ShowRecoveryPhrase: {
