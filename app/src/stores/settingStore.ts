@@ -5,6 +5,8 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 interface SettingsState {
   hasPrivacyNoteBeenDismissed: boolean;
   dismissPrivacyNote: () => void;
+  cloudBackupEnabled: boolean;
+  toggleCloudBackupEnabled: () => void;
 }
 
 /*
@@ -15,6 +17,12 @@ export const useSettingStore = create<SettingsState>()(
     (set, _get) => ({
       hasPrivacyNoteBeenDismissed: false,
       dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
+
+      cloudBackupEnabled: false,
+      toggleCloudBackupEnabled: () =>
+        set(oldState => ({
+          cloudBackupEnabled: !oldState.cloudBackupEnabled,
+        })),
     }),
     {
       name: 'setting-storage',

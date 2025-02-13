@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
@@ -7,31 +7,31 @@ import { YStack } from 'tamagui';
 import Mnemonic from '../../components/Mnemonic';
 import Description from '../../components/typography/Description';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { AuthContext } from '../../stores/authProvider';
-import { loadSecretOrCreateIt } from '../../utils/keychain';
+import { useAuth } from '../../stores/authProvider';
 
 interface ShowRecoveryPhraseScreenProps {}
 
 const ShowRecoveryPhraseScreen: React.FC<
   ShowRecoveryPhraseScreenProps
 > = ({}) => {
-  const { loginWithBiometrics } = useContext(AuthContext);
+  const { getOrCreatePrivateKey } = useAuth();
   const [mnemonic, setMnemonic] = useState<string[]>();
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
-    await loginWithBiometrics();
   }, []);
 
   const loadMnemonic = useCallback(async () => {
-    const privKey = await loadSecretOrCreateIt();
-
+    const privKey = await getOrCreatePrivateKey();
+    if (!privKey) {
+      return;
+    }
     const { languageTag } = findBestLanguageTag(
       Object.keys(ethers.wordlists),
     ) || { languageTag: 'en' };
 
     const words = ethers.Mnemonic.entropyToPhrase(
-      privKey,
+      privKey.data,
       ethers.wordlists[languageTag],
     );
 

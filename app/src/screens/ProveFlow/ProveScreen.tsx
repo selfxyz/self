@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -12,36 +12,32 @@ import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHol
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import useUserStore from '../../stores/userStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const { passportData } = useUserStore();
+  const { getData } = usePassport();
+
   const { selectedApp, setStatus } = useProofInfo();
+
+  const onVerify = useCallback(async function () {
+    buttonTap();
+    navigate('ProofRequestStatusScreen');
+    try {
+      const passportData = await getData();
+      await sendVcAndDisclosePayload(passportData!.data);
+    } catch (e) {
+      console.log('Error sending VC and disclose payload', e);
+      setStatus(ProofStatusEnum.ERROR);
+    }
+  }, []);
 
   const disclosureOptions =
     (selectedApp?.args as ArgumentsDisclose)?.disclosureOptions || [];
-
-  if (!passportData) {
-    return (
-      <Text mt="$10" fontSize="$9" color={black} textAlign="center">
-        No passport data
-      </Text>
-    );
-  }
-
-  function onVerify() {
-    buttonTap();
-    navigate('ProofRequestStatusScreen');
-    sendVcAndDisclosePayload(passportData).catch(e => {
-      console.log('Error sending VC and disclose payload', e);
-      setStatus(ProofStatusEnum.ERROR);
-    });
-  }
 
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>

@@ -12474,6 +12474,7 @@ __metadata:
     react-native: "npm:0.75.4"
     react-native-biometrics: "npm:^3.0.1"
     react-native-bundle-visualizer: "npm:^3.1.3"
+    react-native-cloud-storage: "npm:^2.2.2"
     react-native-crypto: "npm:^2.2.0"
     react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35"
     react-native-dialog: "npm:^9.3.0"
@@ -13119,6 +13120,20 @@ __metadata:
   bin:
     react-native-bundle-visualizer: src/react-native-bundle-visualizer.js
   checksum: 10c0/b1f159f865cf8ac1b2c0bc9504d33dbc598878eba305c720966714a4c0fa746bb5ca9b2e066223a09b6f37e2c50e22724df8e139f974f365e1a5553f3b82b66d
+  languageName: node
+  linkType: hard
+
+"react-native-cloud-storage@npm:^2.2.2":
+  version: 2.2.2
+  resolution: "react-native-cloud-storage@npm:2.2.2"
+  peerDependencies:
+    expo: ">=48.0.0"
+    react: "*"
+    react-native: "*"
+  peerDependenciesMeta:
+    expo:
+      optional: true
+  checksum: 10c0/c6aa7f4c3d29cc96433806f90717d3f87df661d11c651ad67dd349de618f9a14e6284b3a5608d0fed03bb2e4c880cb44ee5054dba8e0d789d9928f3a6f607103
   languageName: node
   linkType: hard
 

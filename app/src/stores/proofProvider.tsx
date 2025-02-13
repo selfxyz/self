@@ -1,7 +1,9 @@
 import React, {
   PropsWithChildren,
   createContext,
+  useCallback,
   useEffect,
+  useMemo,
   useState,
 } from 'react';
 
@@ -63,13 +65,13 @@ export function ProofProvider({ children }: PropsWithChildren) {
   const [_socket, setSocket] = useState<Socket | null>(null);
 
   // reset all the values so it not in wierd state
-  function setSelectedApp(app: SelfApp) {
+  const setSelectedApp = useCallback((app: SelfApp) => {
     setStatus(ProofStatusEnum.PENDING);
     setProofVerificationResult(null);
     setSelectedAppInternal(app);
-  }
+  }, []);
 
-  function cleanSelfApp() {
+  const cleanSelfApp = useCallback(() => {
     const emptySelfApp: SelfApp = {
       appName: '',
       logoBase64: '',
@@ -83,7 +85,7 @@ export function ProofProvider({ children }: PropsWithChildren) {
       },
     };
     setSelectedAppInternal(emptySelfApp);
-  }
+  }, []);
 
   // Make the setter available globally
   useEffect(() => {
@@ -102,15 +104,18 @@ export function ProofProvider({ children }: PropsWithChildren) {
     };
   }, []);
 
-  const publicApi: IProofContext = {
-    status,
-    proofVerificationResult,
-    selectedApp,
-    setSelectedApp,
-    cleanSelfApp,
-    setProofVerificationResult,
-    setStatus,
-  };
+  const publicApi: IProofContext = useMemo(
+    () => ({
+      status,
+      proofVerificationResult,
+      selectedApp,
+      setSelectedApp,
+      cleanSelfApp,
+      setProofVerificationResult,
+      setStatus,
+    }),
+    [status, proofVerificationResult, setSelectedApp, cleanSelfApp],
+  );
 
   return (
     <ProofContext.Provider value={publicApi}>{children}</ProofContext.Provider>

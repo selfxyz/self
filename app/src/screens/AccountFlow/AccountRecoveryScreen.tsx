@@ -14,7 +14,7 @@ import { black, slate600, white } from '../../utils/colors';
 interface AccountRecoveryScreenProps {}
 
 const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
-  const onRestoreAccountPress = useHapticNavigation('RecoverWithPhrase');
+  const onRestoreAccountPress = useHapticNavigation('AccountRecoveryChoice');
   const onCreateAccountPress = useHapticNavigation('SaveRecoveryPhrase');
 
   return (

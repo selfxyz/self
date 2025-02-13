@@ -7,10 +7,10 @@ import { create } from 'zustand';
 import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData, Proof } from '../../../common/src/utils/types';
 import {
-  loadPassportData,
-  loadPassportMetadata,
-  loadSecretOrCreateIt,
-  storePassportData,
+  // loadPassportData,
+  // loadPassportMetadata,
+  // loadSecretOrCreateIt,
+  // storePassportData,
   storePassportMetadata,
 } from '../utils/keychain';
 
@@ -73,68 +73,61 @@ const useUserStore = create<UserState>((set, get) => ({
   // 	- If the commitment is present in the tree, proceed to main screen
   // 	- If the commitment is not present in the tree, proceed to main screen AND try registering it in the background
   initUserStore: async () => {
-    const secret = await loadSecretOrCreateIt();
-    set({ secret });
-    // const dscSecret = await generateDscSecret();
-    // set({ dscSecret });
-
-    const passportDataString = await loadPassportData();
-    const passportMetadataString = await loadPassportMetadata();
-
-    if (!passportDataString || !passportMetadataString) {
-      console.log(
-        'No passport data or metadata found, starting onboarding flow',
-      );
-      set({
-        userLoaded: true,
-      });
-      return;
-    }
-
-    // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
-    const isAlreadyRegistered = true;
-    const passportData: PassportData = JSON.parse(passportDataString);
-    const passportMetadata: PassportMetadata = JSON.parse(
-      passportMetadataString,
-    );
-
-    if (!isAlreadyRegistered) {
-      console.log(
-        'not registered but passport data found, skipping to nextScreen',
-      );
-      set({
-        passportData: passportData,
-        passportMetadata: passportMetadata,
-        userLoaded: true,
-      });
-      return;
-    }
-
-    console.log(
-      'registered and passport data found, skipping to app selection screen',
-    );
-    set({
-      passportData: passportData,
-      passportMetadata: passportMetadata,
-      registered: true,
-      userLoaded: true,
-    });
+    // const secret = await loadSecretOrCreateIt();
+    // set({ secret });
+    // // const dscSecret = await generateDscSecret();
+    // // set({ dscSecret });
+    // const passportDataString = await loadPassportData();
+    // const passportMetadataString = await loadPassportMetadata();
+    // if (!passportDataString || !passportMetadataString) {
+    //   console.log(
+    //     'No passport data or metadata found, starting onboarding flow',
+    //   );
+    //   set({
+    //     userLoaded: true,
+    //   });
+    //   return;
+    // }
+    // // const isAlreadyRegistered = await isCommitmentRegistered(secret, JSON.parse(passportData));
+    // const isAlreadyRegistered = true;
+    // const passportData: PassportData = JSON.parse(passportDataString);
+    // const passportMetadata: PassportMetadata = JSON.parse(
+    //   passportMetadataString,
+    // );
+    // if (!isAlreadyRegistered) {
+    //   console.log(
+    //     'not registered but passport data found, skipping to nextScreen',
+    //   );
+    //   set({
+    //     passportData: passportData,
+    //     passportMetadata: passportMetadata,
+    //     userLoaded: true,
+    //   });
+    //   return;
+    // }
+    // console.log(
+    //   'registered and passport data found, skipping to app selection screen',
+    // );
+    // set({
+    //   passportData: passportData,
+    //   passportMetadata: passportMetadata,
+    //   registered: true,
+    //   userLoaded: true,
+    // });
   },
 
   // When reading passport for the first time:
   // - Check presence of secret. If there is none, create one and store it
   // 	- Store the passportData and try registering the commitment in the background
-  registerPassportData: async passportData => {
-    const alreadyStoredPassportData = await loadPassportData();
-
-    if (alreadyStoredPassportData) {
-      console.log(
-        'a passportData is already stored, replacing it with the new one',
-      );
-    }
-
-    await storePassportData(passportData);
-    set({ passportData });
+  registerPassportData: async (/*passportData*/) => {
+    // const alreadyStoredPassportData = await loadPassportData();
+    // if (alreadyStoredPassportData) {
+    //   console.log(
+    //     'a passportData is already stored, replacing it with the new one',
+    //   );
+    // }
+    // await storePassportData(passportData);
+    // set({ passportData });
   },
 
   clearPassportDataFromStorage: async () => {

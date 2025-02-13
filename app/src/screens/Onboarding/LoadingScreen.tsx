@@ -6,20 +6,19 @@ import LottieView from 'lottie-react-native';
 // Import passport data generation and payload functions from common
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
-import { PassportData } from '../../../../common/src/utils/types';
 // Import animations
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
+import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import useUserStore from '../../stores/userStore';
 import { sendDscPayload } from '../../utils/proving/payload';
 
 const LoadingScreen: React.FC = () => {
-  const goToSuccessScreen = useHapticNavigation(
-    'AccountVerifiedSuccess',
-    'default',
-  );
+  const { setData } = usePassport();
+  const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess', {
+    action: 'default',
+  });
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { status, setStatus } = useProofInfo();
 
@@ -53,11 +52,8 @@ const LoadingScreen: React.FC = () => {
           '300101',
         );
         const passportDataInit = initPassportDataParsing(passportData);
-        await useUserStore.getState().registerPassportData(passportDataInit);
-        // This will trigger sendPayload(), which updates global status via your tee.ts code.
-        await sendDscPayload(
-          useUserStore.getState().passportData as PassportData,
-        );
+        setData(passportDataInit);
+        await sendDscPayload(passportDataInit);
       } catch (error) {
         console.error('Error processing payload:', error);
         setStatus(ProofStatusEnum.ERROR);

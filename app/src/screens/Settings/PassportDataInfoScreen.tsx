@@ -1,13 +1,11 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
+import { useFocusEffect } from '@react-navigation/native';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 
-import {
-  PassportMetadata,
-  parsePassportData,
-} from '../../../../common/src/utils/passports/passport_parsing/parsePassportData';
+import { PassportMetadata } from '../../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { Caption } from '../../components/typography/Caption';
-import useUserStore from '../../stores/userStore';
+import { usePassport } from '../../stores/passportDataProvider';
 import { black, slate200, white } from '../../utils/colors';
 
 // TODO clarify if we need more/less keys to be displayed
@@ -54,10 +52,25 @@ const InfoRow: React.FC<{
 interface PassportDataInfoScreenProps {}
 
 const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
-  const { passportData } = useUserStore();
-  const passportMetaData = passportData
-    ? parsePassportData(passportData)
-    : null;
+  const { getMetadata } = usePassport();
+  const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
+
+  const loadData = useCallback(async () => {
+    if (metadata) {
+      return;
+    }
+
+    const result = await getMetadata();
+    if (!result || !result.data) {
+      // maybe handle error instead
+      return;
+    }
+    setMetadata(result.data);
+  }, [metadata, getMetadata]);
+
+  useFocusEffect(() => {
+    loadData();
+  });
 
   return (
     <ScrollView px="$4" backgroundColor={white}>
@@ -67,11 +80,13 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
             key={key}
             label={label}
             value={
-              key === 'cscaFound'
-                ? passportMetaData?.cscaFound === true
+              !metadata
+                ? ''
+                : key === 'cscaFound'
+                ? metadata?.cscaFound === true
                   ? 'Yes'
                   : 'No'
-                : (passportMetaData?.[key as keyof PassportMetadata] as
+                : (metadata?.[key as keyof PassportMetadata] as
                     | string
                     | number) || 'None'
             }

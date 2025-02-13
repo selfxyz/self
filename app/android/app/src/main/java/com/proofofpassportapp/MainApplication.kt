@@ -8,10 +8,6 @@ import com.facebook.react.ReactPackage
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint
 import com.facebook.react.defaults.DefaultReactNativeHost
 import com.facebook.soloader.SoLoader
-import com.proofofpassportapp.CameraActivityPackage
-import io.tradle.nfc.RNPassportReaderPackage
-import com.rnfs.RNFSPackage
-import com.proofofpassportapp.QRCodeScannerPackage
 
 class MainApplication : Application(), ReactApplication {
 
@@ -23,6 +19,7 @@ class MainApplication : Application(), ReactApplication {
               // add(MyReactNativePackage())
               add(CameraActivityPackage())
               add(QRCodeScannerPackage())
+              add(BackupPackage())
             }
 
         override fun getJSMainModuleName(): String = "index"

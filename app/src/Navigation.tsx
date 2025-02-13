@@ -10,8 +10,10 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import DefaultNavBar from './components/DefaultNavBar';
 import HomeNavBar from './components/HomeNavBar';
+import AccountRecoveryChoiceScreen from './screens/AccountFlow/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from './screens/AccountFlow/AccountRecoveryScreen';
 import AccountVerifiedSuccessScreen from './screens/AccountFlow/AccountVerifiedSuccessScreen';
+import RecoverWithCloudScreen from './screens/AccountFlow/RecoverWithCloud';
 import RecoverWithPhraseScreen from './screens/AccountFlow/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from './screens/AccountFlow/SaveRecoveryPhraseScreen';
 import DisclaimerScreen from './screens/DisclaimerScreen';
@@ -27,6 +29,7 @@ import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScr
 import ProofRequestStatusScreen from './screens/ProveFlow/ProofRequestStatusScreen';
 import ProveScreen from './screens/ProveFlow/ProveScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
+import CloudBackupScreen from './screens/Settings/CloudBackupScreen';
 import DevSettingsScreen from './screens/Settings/DevSettingsScreen';
 import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
@@ -44,6 +47,9 @@ const AppNavigation = createNativeStackNavigator({
   },
   layout: ({ children }) => <SafeAreaProvider>{children}</SafeAreaProvider>,
   screens: {
+    /**
+     * STATIC SCREENS
+     */
     Splash: {
       screen: SplashScreen,
       options: {
@@ -62,6 +68,9 @@ const AppNavigation = createNativeStackNavigator({
         headerShown: false,
       },
     },
+    /**
+     * SCAN PASSPORT FLOW
+     */
     PassportOnboarding: {
       screen: PassportOnboardingScreen,
       options: {
@@ -115,6 +124,9 @@ const AppNavigation = createNativeStackNavigator({
         title: 'TODO: NextScreen',
       },
     },
+    /**
+     * HOME SECTION
+     */
     Home: {
       screen: HomeScreen,
       options: {
@@ -131,6 +143,9 @@ const AppNavigation = createNativeStackNavigator({
         headerShown: false,
       },
     },
+    /**
+     * QR CODE SCANNING + PROVE FLOW
+     */
     QRCodeViewFinder: {
       screen: QRCodeViewFinderScreen,
       options: {
@@ -159,25 +174,17 @@ const AppNavigation = createNativeStackNavigator({
         presentation: 'containedModal',
       },
     },
-    Settings: {
-      screen: SettingsScreen,
-      options: {
-        animation: 'slide_from_bottom',
-        title: 'Settings',
-        headerStyle: {
-          backgroundColor: white,
-        },
-        headerTitleStyle: {
-          color: black,
-        },
-        navigationBarColor: black,
-      },
-      config: {
-        screens: {},
-      },
-    },
+    /**
+     * CREATE OR RECOVER ACCOUNT
+     */
     AccountRecovery: {
       screen: AccountRecoveryScreen,
+      options: {
+        headerShown: false,
+      },
+    },
+    AccountRecoveryChoice: {
+      screen: AccountRecoveryChoiceScreen,
       options: {
         headerShown: false,
       },
@@ -203,11 +210,37 @@ const AppNavigation = createNativeStackNavigator({
         headerBackTitle: 'close',
       },
     },
+    RecoverWithCloud: {
+      screen: RecoverWithCloudScreen,
+      options: {
+        headerShown: false,
+      },
+    },
     AccountVerifiedSuccess: {
       screen: AccountVerifiedSuccessScreen,
       options: {
         headerShown: false,
         animation: 'slide_from_bottom',
+      },
+    },
+    /**
+     * SETTINGS
+     */
+    Settings: {
+      screen: SettingsScreen,
+      options: {
+        animation: 'slide_from_bottom',
+        title: 'Settings',
+        headerStyle: {
+          backgroundColor: white,
+        },
+        headerTitleStyle: {
+          color: black,
+        },
+        navigationBarColor: black,
+      },
+      config: {
+        screens: {},
       },
     },
     ShowRecoveryPhrase: {
@@ -234,6 +267,18 @@ const AppNavigation = createNativeStackNavigator({
         title: 'Developer Settings',
         headerStyle: {
           backgroundColor: white,
+        },
+      },
+    },
+    CloudBackupSettings: {
+      screen: CloudBackupScreen,
+      options: {
+        title: 'Cloud backup',
+        headerStyle: {
+          backgroundColor: black,
+        },
+        headerTitleStyle: {
+          color: slate300,
         },
       },
     },

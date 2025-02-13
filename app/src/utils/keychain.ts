@@ -6,20 +6,26 @@ import { PassportMetadata } from '../../../common/src/utils/passports/passport_p
 import { PassportData } from '../../../common/src/utils/types';
 
 export async function restoreSecret(mnemonic: string) {
+  console.warn(
+    'DEPRECATED: `restoreSecret` should not be used anymore, use `TODO().restore`',
+  );
   const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
-  const newSecret = restoredWallet.privateKey;
+  return restoreFromPrivateKey(restoredWallet.privateKey);
+}
 
-  const existingSecret = await Keychain.getGenericPassword({
+export async function restoreFromPrivateKey(privateKey: string) {
+  console.warn(
+    'DEPRECATED: `restoreFromPrivateKey` should not be used anymore, use `TODO().restoreFromPrivateKey`',
+  );
+  await Keychain.setGenericPassword('secret', privateKey, {
     service: 'secret',
   });
-
-  if (newSecret !== (existingSecret as Keychain.UserCredentials).password) {
-    throw new Error('Mnemonic didnt match previously stored secret');
-  }
-  return newSecret;
 }
 
 export async function loadSecretOrCreateIt() {
+  console.warn(
+    'DEPRECATED: `loadSecretOrCreateIt` should not be used anymore, use `TODO().loadSecretOrCreateIt`',
+  );
   const secret = await loadSecret();
   if (secret) {
     return secret;
@@ -33,11 +39,17 @@ export async function loadSecretOrCreateIt() {
 }
 
 export async function loadSecret() {
+  console.warn(
+    'DEPRECATED: `loadSecret` should not be used anymore, use `TODO().loadSecret`',
+  );
   const secretCreds = await Keychain.getGenericPassword({ service: 'secret' });
   return secretCreds === false ? false : secretCreds.password;
 }
 
 export async function loadPassportData() {
+  console.warn(
+    '`loadPassportData` should not be used anymore, use `usePassport().getData`',
+  );
   const passportDataCreds = await Keychain.getGenericPassword({
     service: 'passportData',
   });
@@ -45,6 +57,9 @@ export async function loadPassportData() {
 }
 
 export async function storePassportData(passportData: PassportData) {
+  console.warn(
+    'DEPRECATED: `storePassportData` should not be used anymore, use `usePassport().setData`',
+  );
   await Keychain.setGenericPassword(
     'passportData',
     JSON.stringify(passportData),
@@ -53,6 +68,9 @@ export async function storePassportData(passportData: PassportData) {
 }
 
 export async function loadPassportMetadata() {
+  console.warn(
+    'DEPRECATED: `loadPassportMetadata` should not be used anymore, use `usePassport().getMetadata`',
+  );
   const metadataCreds = await Keychain.getGenericPassword({
     service: 'passportMetadata',
   });
@@ -60,6 +78,9 @@ export async function loadPassportMetadata() {
 }
 
 export async function storePassportMetadata(metadata: PassportMetadata) {
+  console.warn(
+    'DEPRECATED: `storePassportMetadata` should not be used anymore, use `usePassport().setMetadata`',
+  );
   await Keychain.setGenericPassword(
     'passportMetadata',
     JSON.stringify(metadata),

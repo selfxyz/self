@@ -1,4 +1,4 @@
-import React, { useCallback, useContext, useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
@@ -12,41 +12,45 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { AuthContext } from '../../stores/authProvider';
+import { useAuth } from '../../stores/authProvider';
+import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
-import { loadSecretOrCreateIt } from '../../utils/keychain';
 
 interface SaveRecoveryPhraseScreenProps {}
 
 const SaveRecoveryPhraseScreen: React.FC<
   SaveRecoveryPhraseScreenProps
 > = ({}) => {
-  const { loginWithBiometrics } = useContext(AuthContext);
+  const { getOrCreatePrivateKey } = useAuth();
   const [mnemonic, setMnemonic] = useState<string[]>();
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
 
   const onRevealWords = useCallback(async () => {
     await loadMnemonic();
-    await loginWithBiometrics();
     setUserHasSeenMnemonic(true);
   }, []);
 
   const loadMnemonic = useCallback(async () => {
-    const privKey = await loadSecretOrCreateIt();
+    const privKey = await getOrCreatePrivateKey();
+    if (!privKey) {
+      return;
+    }
 
     const { languageTag } = findBestLanguageTag(
       Object.keys(ethers.wordlists),
     ) || { languageTag: 'en' };
 
     const words = ethers.Mnemonic.entropyToPhrase(
-      privKey,
+      privKey.data,
       ethers.wordlists[languageTag],
     );
 
     setMnemonic(words.trim().split(' '));
   }, []);
 
-  const onCloudBackupPress = useHapticNavigation('TODO: cloud backup');
+  const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
+    params: { nextScreen: 'AccountVerifiedSuccess' },
+  });
   const onSkipPress = useHapticNavigation('AccountVerifiedSuccess');
 
   return (
@@ -70,10 +74,10 @@ const SaveRecoveryPhraseScreen: React.FC<
               You can reveal your recovery phrase in settings.
             </Caption>
             <PrimaryButton onPress={onCloudBackupPress}>
-              Enable iCloud Back up
+              Enable {STORAGE_NAME}
             </PrimaryButton>
             <SecondaryButton onPress={onSkipPress}>
-              {userHasSeenMnemonic ? 'Continue' : 'Skip making a back up'}
+              {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}
             </SecondaryButton>
           </YStack>
         </YStack>

@@ -18,7 +18,7 @@ import {
   telegramUrl,
 } from '../consts/links';
 import Github from '../images/icons/github.svg';
-import Cloud from '../images/icons/settings_cloud_backup.svg';
+// import Cloud from '../images/icons/settings_cloud_backup.svg';
 import Data from '../images/icons/settings_data.svg';
 import Feedback from '../images/icons/settings_feedback.svg';
 import Lock from '../images/icons/settings_lock.svg';
@@ -52,7 +52,7 @@ const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 const routes = [
   [Data, 'View passport info', 'PassportDataInfo'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
-  [Cloud, 'Enable cloud back up', 'CloudBackupSettingsScreen'],
+  // [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
 ] as [React.FC<SvgProps>, string, RouteOption][];

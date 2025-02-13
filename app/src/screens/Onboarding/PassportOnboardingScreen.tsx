@@ -21,7 +21,7 @@ const PassportOnboardingScreen: React.FC<
   PassportOnboardingScreenProps
 > = ({}) => {
   const handleCameraPress = useHapticNavigation('PassportCamera');
-  const onCancelPress = useHapticNavigation(null, 'cancel');
+  const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>

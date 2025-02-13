@@ -11,6 +11,7 @@ import AppNavigation from './src/Navigation';
 import { createSegmentClient } from './src/Segment';
 import { AppProvider } from './src/stores/appProvider';
 import { AuthProvider } from './src/stores/authProvider';
+import { PassportProvider } from './src/stores/passportDataProvider';
 import { ProofProvider } from './src/stores/proofProvider';
 import useUserStore from './src/stores/userStore';
 
@@ -46,13 +47,15 @@ function App(): React.JSX.Element {
 
   return (
     <YStack f={1} h="100%" w="100%">
-      <AppProvider>
-        <AuthProvider>
-          <ProofProvider>
-            <AppNavigation />
-          </ProofProvider>
-        </AuthProvider>
-      </AppProvider>
+      <AuthProvider>
+        <PassportProvider>
+          <AppProvider>
+            <ProofProvider>
+              <AppNavigation />
+            </ProofProvider>
+          </AppProvider>
+        </PassportProvider>
+      </AuthProvider>
     </YStack>
   );
 }
