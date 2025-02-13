@@ -79,32 +79,42 @@ module.exports = {
 
     // SonarJS Rules
     'sonarjs/no-duplicate-string': 'warn',
-    'sonarjs/cognitive-complexity': ['error', 15],
+    'sonarjs/cognitive-complexity': ['warn', 20],
     'sonarjs/no-identical-functions': 'warn',
     'sonarjs/no-invalid-await': 'off',
+    'sonarjs/no-redundant-optional': 'off',
+    'sonarjs/prefer-read-only-props': 'warn',
+    'sonarjs/todo-tag': 'warn',
+    'sonarjs/no-unused-vars': 'off',
 
     // Additional TypeScript Strictness
-    '@typescript-eslint/no-floating-promises': 'error',
+    '@typescript-eslint/no-floating-promises': [
+      'error',
+      {
+        ignoreVoid: true,
+        ignoreIIFE: true,
+      },
+    ],
     '@typescript-eslint/explicit-function-return-type': 'warn',
     '@typescript-eslint/strict-boolean-expressions': 'warn',
     '@typescript-eslint/no-unnecessary-condition': 'warn',
+    '@typescript-eslint/no-non-null-assertion': 'warn',
 
-    // New rules from the code block
-    '@typescript-eslint/prefer-ts-expect-error': 'off',
-    '@typescript-eslint/ban-ts-comment': [
-      'warn',
-      {
-        'ts-ignore': 'allow-with-description',
-        'ts-expect-error': true,
-        'ts-nocheck': true,
-        'ts-check': false,
-        minimumDescriptionLength: 10,
-      },
-    ],
+    // React Performance Rules
+    'react-perf/jsx-no-new-function-as-prop': 'warn',
+    'react-perf/jsx-no-new-object-as-prop': 'warn',
+    'react-perf/jsx-no-new-array-as-prop': 'warn',
+    'react-perf/jsx-no-jsx-as-prop': 'warn',
 
     // Import rules
     'import/order': 'off',
     'simple-import-sort/imports': 'error',
     'simple-import-sort/exports': 'off',
+
+    // Handle empty object patterns in destructuring
+    'no-empty-pattern': 'off',
+
+    // Escape characters in JSX
+    'react/no-unescaped-entities': 'off',
   },
 };

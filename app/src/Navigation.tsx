@@ -6,8 +6,10 @@ import {
   StaticParamList,
   createNavigationContainerRef,
   createStaticNavigation,
+  StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import DefaultNavBar from './components/DefaultNavBar';
 import HomeNavBar from './components/HomeNavBar';

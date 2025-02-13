@@ -1,6 +1,3 @@
-import React, { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
-
 import {
   useFocusEffect,
   useIsFocused,

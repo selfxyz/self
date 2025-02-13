@@ -108,7 +108,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   const attestationDoc = (await decode(payload)) as AttestationDoc;
 
   for (const field of requiredFields) {
-    //@ts-ignore
+    //@ts-expect-error
     if (!attestationDoc[field]) {
       throw new Error(`Missing required field: ${field}`);
     }
