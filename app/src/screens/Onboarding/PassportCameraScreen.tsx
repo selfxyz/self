@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -20,6 +20,7 @@ import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import useUserStore from '../../stores/userStore';
 import { black, slate800, white } from '../../utils/colors';
+import { formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
 
@@ -27,16 +28,48 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
+
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
     (error, result) => {
       if (error) {
-        // TODO: handle error better
         console.error(error);
-      } else {
-        const { passportNumber, dateOfBirth, dateOfExpiry } = result!;
-        store.update({ passportNumber, dateOfBirth, dateOfExpiry });
-        navigation.navigate('PassportNFCScan');
+        //TODO:  Add error handling here
+        return;
       }
+
+      if (!result) {
+        console.error('No result from passport scan');
+        return;
+      }
+
+      const { passportNumber, dateOfBirth, dateOfExpiry } = result;
+
+      if (Platform.OS === 'ios') {
+        store.update({
+          passportNumber,
+          dateOfBirth: formatDateToYYMMDD(dateOfBirth),
+          dateOfExpiry: formatDateToYYMMDD(dateOfExpiry),
+        });
+        // Explicitly log the update
+        console.log('Updated store with:', {
+          passportNumber,
+          dateOfBirth: formatDateToYYMMDD(dateOfBirth),
+          dateOfExpiry: formatDateToYYMMDD(dateOfExpiry),
+        });
+      } else {
+        store.update({
+          passportNumber,
+          dateOfBirth,
+          dateOfExpiry,
+        });
+        // Explicitly log the update
+        console.log('Updated store with:', {
+          passportNumber,
+          dateOfBirth,
+          dateOfExpiry,
+        });
+      }
+      navigation.navigate('PassportNFCScan');
     },
     [store, navigation],
   );

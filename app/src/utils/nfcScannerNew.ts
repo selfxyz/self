@@ -22,10 +22,16 @@ interface Inputs {
 
 export const scan = async (inputs: Inputs) => {
   const { passportNumber, dateOfBirth, dateOfExpiry } = inputs;
+  console.log('passportNumber', passportNumber);
+  console.log('dateOfBirth', dateOfBirth);
+  console.log('dateOfExpiry', dateOfExpiry);
   const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
   if (!check.success) {
     amplitude.track('inputs_invalid', { error: check.message });
-    return;
+    throw new Error(
+      'Invalid inputs, please rescan the passport with the camera',
+    ); // TODO: toast message
+    //useHapticNavigation('PassportCamera', 'cancel'); TODO: move user back to the previous screen
   }
   console.log('SCANNING');
   if (Platform.OS === 'android') {

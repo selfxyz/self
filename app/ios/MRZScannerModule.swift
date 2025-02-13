@@ -31,10 +31,17 @@ class MRZScannerModule: NSObject, RCTBridgeModule {
           let lottieView = LottieView(animationFileName: "passport", loopMode: .loop)
 
           scannerView.onScanResult = { scanResult in
+              // Format dates to YYMMDD format
+              let dateFormatter = DateFormatter()
+              dateFormatter.dateFormat = "yyMMdd"
+              
+              let birthDate = scanResult.birthdate.map { dateFormatter.string(from: $0) } ?? ""
+              let expiryDate = scanResult.expiryDate.map { dateFormatter.string(from: $0) } ?? ""
+              
               let resultDict: [String: Any] = [
                   "documentNumber": scanResult.documentNumber,
-                  "expiryDate": scanResult.expiryDate?.description ?? "",
-                  "birthDate": scanResult.birthdate?.description ?? ""
+                  "expiryDate": expiryDate,
+                  "birthDate": birthDate
               ]
               resolve(resultDict)
               
