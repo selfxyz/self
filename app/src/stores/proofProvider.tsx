@@ -52,13 +52,15 @@ export function updateGlobalProofStatus(status: ProofStatusEnum) {
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
 export function ProofProvider({ children }: PropsWithChildren) {
-  const [status, setStatus] = useState<ProofStatusEnum>(ProofStatusEnum.PENDING);
+  const [status, setStatus] = useState<ProofStatusEnum>(
+    ProofStatusEnum.PENDING,
+  );
   const [proofVerificationResult, setProofVerificationResult] =
     useState<unknown>(defaults.proofVerificationResult);
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
-  const [socket, setSocket] = useState<Socket | null>(null);
+  const [_socket, setSocket] = useState<Socket | null>(null);
 
   // reset all the values so it not in wierd state
   function setSelectedApp(app: SelfApp) {
@@ -110,7 +112,9 @@ export function ProofProvider({ children }: PropsWithChildren) {
     setStatus,
   };
 
-  return <ProofContext.Provider value={publicApi}>{children}</ProofContext.Provider>;
+  return (
+    <ProofContext.Provider value={publicApi}>{children}</ProofContext.Provider>
+  );
 }
 
 export const useProofInfo = () => {

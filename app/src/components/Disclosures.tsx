@@ -8,9 +8,8 @@ import {
   DisclosureOptions,
 } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
-import { Numerical } from '../components/typography/Numerical';
 import CheckMark from '../images/icons/checkmark.svg';
-import { slate200, slate400, slate500 } from '../utils/colors';
+import { slate200, slate500 } from '../utils/colors';
 
 interface DisclosureProps {
   disclosures: DisclosureOptions;
@@ -97,32 +96,32 @@ const DisclosureItem: React.FC<DisclosureItemProps> = ({
   );
 };
 
-interface DiscloseAddressProps {
-  text: string;
-  address: string;
-}
+// interface DiscloseAddressProps {
+//   text: string;
+//   address: string;
+// }
 
-const DiscloseAddress: React.FC<DiscloseAddressProps> = ({
-  text,
-  address,
-}: DiscloseAddressProps) => {
-  return (
-    <YStack gap={10} paddingVertical={22} paddingHorizontal={10}>
-      <XStack gap={10}>
-        <CheckMark width={22} />
-        <BodyText color={slate500}>{text}</BodyText>
-      </XStack>
-      <YStack
-        gap={8}
-        borderRadius={10}
-        borderColor={slate200}
-        borderWidth={1}
-        padding={8}
-        marginStart={34}
-      >
-        <BodyText color={slate400}>Address</BodyText>
-        <Numerical>{address}</Numerical>
-      </YStack>
-    </YStack>
-  );
-};
+// const DiscloseAddress: React.FC<DiscloseAddressProps> = ({
+//   text,
+//   address,
+// }: DiscloseAddressProps) => {
+//   return (
+//     <YStack gap={10} paddingVertical={22} paddingHorizontal={10}>
+//       <XStack gap={10}>
+//         <CheckMark width={22} />
+//         <BodyText color={slate500}>{text}</BodyText>
+//       </XStack>
+//       <YStack
+//         gap={8}
+//         borderRadius={10}
+//         borderColor={slate200}
+//         borderWidth={1}
+//         padding={8}
+//         marginStart={34}
+//       >
+//         <BodyText color={slate400}>Address</BodyText>
+//         <Numerical>{address}</Numerical>
+//       </YStack>
+//     </YStack>
+//   );
+// };

@@ -21,7 +21,7 @@ import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
 import { black, slate800 } from '../../utils/colors';
 
-interface QRCodeViewFinderScreenProps { }
+interface QRCodeViewFinderScreenProps {}
 
 // TODO: replace this with proper tested lib
 // or react-native-url-polyfill -> new URL(uri)
@@ -37,7 +37,7 @@ const parseUrlParams = (url: string): Map<string, string> => {
   return params;
 };
 
-const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({ }) => {
+const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { setSelectedApp, cleanSelfApp } = useProofInfo();

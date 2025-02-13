@@ -92,7 +92,9 @@ function generateTeeInputsDsc(passportData: PassportData) {
   return { inputs, circuitName };
 }
 
-export async function sendDscPayload(passportData: PassportData): Promise<boolean> {
+export async function sendDscPayload(
+  passportData: PassportData,
+): Promise<boolean> {
   if (!passportData) {
     return false;
   }

@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useRef,
-  useState,
-} from 'react';
+import React, { createContext, useContext, useEffect, useRef } from 'react';
 
 import io, { Socket } from 'socket.io-client';
 
@@ -34,7 +28,6 @@ const AppContext = createContext<IAppContext>({
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
-  const [selfApp, setSelfApp] = useState<SelfApp | null>(null);
   const socketRef = useRef<Socket | null>(null);
 
   const startAppListener = (

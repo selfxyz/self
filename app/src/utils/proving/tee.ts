@@ -4,8 +4,11 @@ import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 
 import { WS_DB_RELAYER_OLD } from '../../../../common/src/constants/constants';
-import { getPublicKey, verifyAttestation } from './attest';
-import { updateGlobalProofStatus, ProofStatusEnum } from '../../stores/proofProvider';
+import {
+  ProofStatusEnum,
+  updateGlobalProofStatus,
+} from '../../stores/proofProvider';
+import { verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
 
@@ -51,7 +54,7 @@ export async function sendPayload(
   wsRpcUrl: string,
   timeoutMs = 1200000,
 ): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     let finalized = false;
     function finalize(status: ProofStatusEnum) {
       if (!finalized) {
@@ -89,7 +92,7 @@ export async function sendPayload(
         const result = JSON.parse(event.data);
         // If attestation is present, process it.
         if (result.result?.attestation !== undefined) {
-          const serverPubkey = getPublicKey(result.result.attestation);
+          // const serverPubkey = getPublicKey(result.result.attestation);
           const verified = await verifyAttestation(result.result.attestation);
           console.log('AWS Root Certificate verified:', verified);
           if (verified) {
@@ -153,7 +156,10 @@ export async function sendPayload(
       if (socket) {
         socket.disconnect();
       }
-      if (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING) {
+      if (
+        ws.readyState === WebSocket.OPEN ||
+        ws.readyState === WebSocket.CONNECTING
+      ) {
         ws.close();
       }
       finalize(ProofStatusEnum.ERROR);

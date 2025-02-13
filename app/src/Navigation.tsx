@@ -25,6 +25,7 @@ import SaveRecoveryPhraseScreen from './screens/AccountFlow/SaveRecoveryPhraseSc
 import DisclaimerScreen from './screens/DisclaimerScreen';
 import HomeScreen from './screens/HomeScreen';
 import LaunchScreen from './screens/LaunchScreen';
+import LoadingScreen from './screens/LoadingScreen';
 import MockDataScreen from './screens/MockDataScreen';
 import NextScreen from './screens/NextScreen';
 import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen';
@@ -41,7 +42,6 @@ import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import StartScreen from './screens/StartScreen';
 import { black, neutral400, slate300, white } from './utils/colors';
-import LoadingScreen from './screens/LoadingScreen';
 
 const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
@@ -57,7 +57,7 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
       backgroundColor={headerStyle.backgroundColor as string}
       barStyle={
         options.headerTintColor === white ||
-          (options.headerTitleStyle as TextStyle)?.color === white
+        (options.headerTitleStyle as TextStyle)?.color === white
           ? 'light-content'
           : 'dark-content'
       }
@@ -301,7 +301,7 @@ export type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
 declare global {
   namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList { }
+    interface RootParamList extends RootStackParamList {}
   }
 }
 
