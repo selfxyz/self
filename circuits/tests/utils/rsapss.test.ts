@@ -67,7 +67,10 @@ describe('VerifyRsapss Circuit Test', function () {
         algorithm.saltLength
       );
 
-      const invalidSignature = signature.map((byte: string) => String((parseInt(byte) + 1) % 256));
+      const invalidSignature = [...signature];
+      const randomIndex = Math.floor(Math.random() * signature.length);
+      invalidSignature[randomIndex] = String((BigInt(signature[randomIndex]) + 1n).toString());
+
       const circuit = await wasmTester(
         path.join(
           __dirname,
@@ -95,7 +98,11 @@ describe('VerifyRsapss Circuit Test', function () {
         algorithm.saltLength
       );
 
-      const invalidMessage = message.map((byte: number) => String((byte + 1) % 256));
+      // Flip one bit in the message
+      const invalidMessage = [...message];
+      const randomIndex = Math.floor(Math.random() * message.length);
+      invalidMessage[randomIndex] = invalidMessage[randomIndex] === 0 ? 1 : 0;
+
       const circuit = await wasmTester(
         path.join(
           __dirname,
