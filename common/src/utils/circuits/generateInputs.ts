@@ -34,8 +34,7 @@ export async function generateCircuitInputsDSC(
   dscCertificate: string,
   devMode: boolean = true
 ) {
-  const serialized_csca_tree = (await getCSCATree(devMode) as any).data;
-  console.log('serialized_csca_tree', serialized_csca_tree);
+  const serialized_csca_tree = (await getCSCATree(devMode) as any);
   const dscParsed = parseCertificateSimple(dscCertificate);
   const dscMetadata = parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
@@ -127,7 +126,7 @@ export async function generateCircuitInputsRegister(
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
-  const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed);
+  const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed); // TODO: WRONG 
   const [root, path, siblings, leaf_depth] = getDscTreeInclusionProof(dsc_leaf, serialized_dsc_tree);
   const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 

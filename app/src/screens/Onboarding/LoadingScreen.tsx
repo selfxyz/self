@@ -12,7 +12,7 @@ import miscAnimation from '../../assets/animations/loading/misc.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import { sendDscPayload } from '../../utils/proving/payload';
+import { registerPassport } from '../../utils/proving/payload';
 
 const LoadingScreen: React.FC = () => {
   const { setData } = usePassport();
@@ -53,7 +53,7 @@ const LoadingScreen: React.FC = () => {
         );
         const passportDataInit = initPassportDataParsing(passportData);
         setData(passportDataInit);
-        await sendDscPayload(passportDataInit);
+        await registerPassport(passportDataInit);
       } catch (error) {
         console.error('Error processing payload:', error);
         setStatus(ProofStatusEnum.ERROR);

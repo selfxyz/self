@@ -21,6 +21,7 @@ import {
   generateCircuitInputsVCandDisclose,
 } from '../../../../common/src/utils/circuits/generateInputs';
 import { generateCommitment } from '../../../../common/src/utils/passports/passport';
+import { getDSCTree, getLeafDscTree } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { sendPayload } from './tee';
 
@@ -167,4 +168,44 @@ export async function sendVcAndDisclosePayload(
   }
   const { inputs, circuitName } = generateTeeInputsVCAndDisclose(passportData);
   await sendPayload(inputs, circuitName, WS_RPC_URL_VC_AND_DISCLOSE);
+}
+
+/*** Logic Flow ****/
+
+function isUserRegistered(_passportData: PassportData) {
+  // check if user is already registered
+  // if registered, return true
+  // if not registered, return false
+  return false;
+}
+
+async function checkIdPassportDscIsInTree(passportData: PassportData) {
+  // download the dsc tree and check if the passport leaf is in the tree
+  const dscTree = await getDSCTree(false);
+  const hashFunction = (a: any, b: any) => poseidon2([a, b]);
+  const tree = LeanIMT.import(hashFunction, dscTree);
+  const leaf = getLeafDscTree(
+    passportData.dsc_parsed,
+    passportData.csca_parsed,
+  );
+  console.log('DSC leaf:', leaf);
+  const index = tree.indexOf(BigInt(leaf));
+  if (index === -1) {
+    console.log('DSC is not found in the tree, sending DSC payload');
+    await sendDscPayload(passportData);
+  } else {
+    console.log('DSC is found in the tree, skipping DSC payload');
+  }
+}
+
+export async function registerPassport(passportData: PassportData) {
+  // check if user is already registered
+  const isRegistered = isUserRegistered(passportData);
+  if (isRegistered) {
+    return; // TODO: show a screen explaining that the passport is already registered, needs to bring passphrase or secret from icloud backup
+  }
+  // download the dsc tree and check if the passport leaf is in the tree
+  await checkIdPassportDscIsInTree(passportData);
+  // send the register payload
+  await sendRegisterPayload(passportData);
 }

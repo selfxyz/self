@@ -20,20 +20,20 @@ import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
 import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
 
 
-export async function getCSCATree(devMode: boolean = false): Promise<string[][]> {
+export async function getCSCATree(devMode: boolean): Promise<string[][]> {
   if (devMode) {
     return serialized_csca_tree;
   }
   const response = await fetch(CSCA_TREE_URL);
-  return await response.json().then(data => data);
+  return await response.json().then(data => data.data ? JSON.parse(data.data) : data);
 }
 
-export async function getDSCTree(devMode: boolean = false): Promise<string> {
+export async function getDSCTree(devMode: boolean): Promise<string> {
   if (devMode) {
     return serialized_dsc_tree;
   }
   const response = await fetch(DSC_TREE_URL);
-  return await response.json();
+  return await response.json().then(data => data.data ? data.data : data);
 }
 
 export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
@@ -66,7 +66,7 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
 }
 
 
-export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string {
+export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string { // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);
   return getLeafDscTree(dscParsed, cscaParsed);
 }
@@ -97,9 +97,9 @@ export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: stri
   return [tree.root, path, siblings, leaf_depth];
 }
 
-export function getCscaTreeInclusionProof(leaf: string, serialized_csca_tree: any[][]) {
+export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  tree.setNodes(serialized_csca_tree);
+  tree.setNodes(_serialized_csca_tree);
   const index = tree.indexOf(leaf);
   if (index === -1) {
     throw new Error('Your public key was not found in the registry');
