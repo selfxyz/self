@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react';
 import 'react-native-get-random-values';
 import Orientation from 'react-native-orientation-locker';
 
 import { Buffer } from 'buffer';
-
+import React, { useEffect } from 'react';
+import Orientation from 'react-native-orientation-locker';
 import { YStack } from 'tamagui';
 
 import AppNavigation from './src/Navigation';

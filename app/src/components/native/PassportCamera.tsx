@@ -7,7 +7,6 @@ import {
 } from 'react-native';
 
 import { extractMRZInfo } from '../../utils/utils';
-
 import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
 
 interface RCTPassportOCRViewManagerProps extends RCTFragmentViewManagerProps {

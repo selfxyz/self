@@ -1,6 +1,5 @@
 import { castCSCAProof } from '../../../common/src/utils/types';
 import useUserStore from '../stores/userStore';
-
 import { ModalProofSteps } from './utils';
 
 export const sendCSCARequest = async (

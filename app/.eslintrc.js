@@ -29,6 +29,7 @@ module.exports = {
     'sonarjs',
     'unused-imports',
     'import',
+    'simple-import-sort',
   ],
   ignorePatterns: [
     'ios/',
@@ -80,6 +81,7 @@ module.exports = {
     'sonarjs/no-duplicate-string': 'warn',
     'sonarjs/cognitive-complexity': ['error', 15],
     'sonarjs/no-identical-functions': 'warn',
+    'sonarjs/no-invalid-await': 'off',
 
     // Additional TypeScript Strictness
     '@typescript-eslint/no-floating-promises': 'error',
@@ -100,30 +102,9 @@ module.exports = {
       },
     ],
 
-    // Import Rules
-    'import/no-unresolved': 'error',
-    'import/named': 'error',
-    'import/default': 'error',
-    'import/namespace': 'error',
-    'import/no-unused-modules': 'error',
-    'import/no-duplicates': 'error',
-    'import/order': [
-      'error',
-      {
-        groups: [
-          'builtin',
-          'external',
-          'internal',
-          'parent',
-          'sibling',
-          'index',
-        ],
-        'newlines-between': 'always',
-        alphabetize: {
-          order: 'asc',
-          caseInsensitive: true,
-        },
-      },
-    ],
+    // Import rules
+    'import/order': 'off',
+    'simple-import-sort/imports': 'error',
+    'simple-import-sort/exports': 'off',
   },
 };

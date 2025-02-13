@@ -1,7 +1,6 @@
 import React from 'react';
 
 import { amber50, black, slate300, white } from '../../utils/colors';
-
 import AbstractButton, { ButtonProps } from './AbstractButton';
 
 export function PrimaryButton({ children, ...props }: ButtonProps) {

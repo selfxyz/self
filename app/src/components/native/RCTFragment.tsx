@@ -1,9 +1,9 @@
 import React, { useEffect, useRef } from 'react';
 import {
+  findNodeHandle,
   NativeSyntheticEvent,
   requireNativeComponent,
   UIManager,
-  findNodeHandle,
 } from 'react-native';
 
 export interface RCTFragmentViewManagerProps {

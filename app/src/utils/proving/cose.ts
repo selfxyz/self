@@ -1,6 +1,5 @@
-import { Buffer } from 'buffer';
-
 import { decode, encode } from '@stablelib/cbor';
+import { Buffer } from 'buffer';
 import { ec as EC } from 'elliptic';
 import { sha384 } from 'js-sha512';
 
