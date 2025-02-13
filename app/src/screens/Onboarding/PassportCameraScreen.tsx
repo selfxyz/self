@@ -1,10 +1,7 @@
-import React, { useCallback } from 'react';
-import { Platform, StyleSheet } from 'react-native';
-
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useCallback } from 'react';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
 import passportScanAnimation from '../../assets/animations/passport_scan.json';
