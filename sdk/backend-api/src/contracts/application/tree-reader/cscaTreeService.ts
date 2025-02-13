@@ -12,5 +12,6 @@ export async function getCscaTree() {
     if (localRoot !== contractRoot) {
         throw new Error('CSCA tree root is different from contract root');
     }
-    return serialized_csca_tree.toString();
+    const serializedTree = tree.nodes.map(layer => layer.map(node => node.toString()));
+    return JSON.stringify(serializedTree);
 }
