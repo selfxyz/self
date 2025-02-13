@@ -3,7 +3,9 @@ import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
 import { v4 } from 'uuid';
 
-import namejson from '../../../../common/ofacdata/outputs/nameSMT.json';
+import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
+import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
   DEPLOYED_CIRCUITS_DSC,
   DEPLOYED_CIRCUITS_REGISTER,
@@ -123,8 +125,12 @@ function generateTeeInputsVCAndDisclose(passportData: PassportData) {
   );
   const tree = new LeanIMT<bigint>((a, b) => poseidon2([a, b]), []);
   tree.insert(BigInt(commitment));
-  let smt = new SMT(poseidon2, true);
-  smt.import(namejson);
+  const passportNoAndNationalitySMT = new SMT(poseidon2, true);
+  passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);
+  const nameAndDobSMT = new SMT(poseidon2, true);
+  nameAndDobSMT.import(nameAndDobSMTData);
+  const nameAndYobSMT = new SMT(poseidon2, true);
+  nameAndYobSMT.import(nameAndYobSMTData);
 
   const selector_ofac = 1;
   const forbidden_countries_list = ['ABC', 'DEF'];
@@ -138,7 +144,9 @@ function generateTeeInputsVCAndDisclose(passportData: PassportData) {
     selector_older_than,
     tree,
     majority,
-    smt,
+    passportNoAndNationalitySMT,
+    nameAndDobSMT,
+    nameAndYobSMT,
     selector_ofac,
     forbidden_countries_list,
     user_identifier,
