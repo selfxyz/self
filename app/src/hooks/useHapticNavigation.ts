@@ -8,23 +8,30 @@ import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 
 const useHapticNavigation = (
-  screen: keyof RootStackParamList,
+  screen: keyof RootStackParamList | null,
   action: NavigationAction = 'default',
 ) => {
   const navigation = useNavigation();
+
+  if (screen === null && action !== 'cancel') {
+    throw new Error('Only cancel actions can have null screens');
+  }
 
   return useCallback(() => {
     switch (action) {
       case 'cancel':
         selectionChange();
-        break;
+        navigation.goBack();
+        return;
       case 'confirm':
         impactMedium();
         break;
       default:
         impactLight();
     }
-    navigation.navigate(screen);
+    if (screen) {
+      navigation.navigate(screen);
+    }
   }, [navigation, screen, action]);
 };
 
