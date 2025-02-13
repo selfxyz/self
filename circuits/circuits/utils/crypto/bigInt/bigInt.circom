@@ -5,6 +5,7 @@ include "circomlib/circuits/bitify.circom";
 include "./bigIntFunc.circom";
 include "./bigIntOverflow.circom";
 include "../int/arithmetic.circom";
+include "@openpassport/zk-email-circuits/lib/bigint.circom";
 
 // What BigInt in this lib means
 // We represent big number as array of chunks with some shunk_size (will be explained later) 
@@ -120,6 +121,25 @@ template BigGreaterThan(CHUNK_SIZE, CHUNK_NUMBER){
     component lessEqThan = BigLessEqThan(CHUNK_SIZE, CHUNK_NUMBER);
     lessEqThan.in <== in;
     out <== 1 - lessEqThan.out;
+}
+
+// lowerbound <= value < upperbound
+template BigRangeCheck(CHUNK_SIZE, CHUNK_NUMBER) {
+    signal input value[CHUNK_NUMBER];
+    signal input lowerBound[CHUNK_NUMBER];
+    signal input upperBound[CHUNK_NUMBER];
+
+    signal output out;
+
+    component greaterThanLower = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    greaterThanLower.a <== value;
+    greaterThanLower.b <== lowerBound;
+
+    component lessThanUpper = BigLessThan(CHUNK_SIZE, CHUNK_NUMBER);
+    lessThanUpper.a <== value;
+    lessThanUpper.b <== upperBound;
+
+    out <== (1 - greaterThanLower.out) * lessThanUpper.out;
 }
 
 // calculates in ^ (-1) % modulus;

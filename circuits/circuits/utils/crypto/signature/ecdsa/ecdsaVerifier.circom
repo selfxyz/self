@@ -1,13 +1,15 @@
 pragma circom 2.1.9;
 
 include "../../../passport/signatureAlgorithm.circom";
+include "../../bigInt/bigInt.circom";
+include "../../utils/isNBits.circom";
 include "ecdsa.circom";
 
 /// @title EcdsaVerifier
 /// @notice Verifies an ECDSA signature for a given signature algorithm, public key, and message hash
 /// @param signatureAlgorithm The hashing/signature algorithm as defined in `signatureAlgorithm.circom`
-/// @param n The number of chunks used to represent integers (e.g., public key components and signature)
-/// @param k The base chunk size, scaled based on the signature algorithm
+/// @param n The base chunk size, scaled based on the signature algorithm
+/// @param k The number of chunks used to represent integers (e.g., public key components and signature)
 /// @input signature The [R, S] component in an array
 /// @input pubKey The public key to verify the signature
 /// @input hashParsed The hash of the message to be verified
@@ -59,6 +61,19 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
 
     // verify eContentHash signature
     component ecdsa_verify = verifyECDSABits(n, k, a, b, p, n * k);
+
+    component rangeCheck[4 * k]; 
+    for (var i = 0; i < k; i++) { 
+        rangeCheck[4 * i + 0] = isNBits(n);
+        rangeCheck[4 * i + 1] = isNBits(n);
+        rangeCheck[4 * i + 2] = isNBits(n);
+        rangeCheck[4 * i + 3] = isNBits(n);
+
+        rangeCheck[4 * i + 0].in <== signature_r[i];
+        rangeCheck[4 * i + 1].in <== signature_s[i];
+        rangeCheck[4 * i + 2].in <== pubKey_x[i];
+        rangeCheck[4 * i + 3].in <== pubKey_y[i];
+    }
 
     ecdsa_verify.pubkey <== pubkey_xy;
     ecdsa_verify.signature <== [signature_r, signature_s];
