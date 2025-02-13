@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
-
 import { useFocusEffect } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, Separator, XStack, YStack } from 'tamagui';
 
 import { PassportMetadata } from '../../../../common/src/utils/passports/passport_parsing/parsePassportData';
@@ -85,10 +84,10 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
               !metadata
                 ? ''
                 : key === 'cscaFound'
-                ? metadata?.cscaFound === true
+                ? metadata.cscaFound === true
                   ? 'Yes'
                   : 'No'
-                : (metadata?.[key as keyof PassportMetadata] as
+                : (metadata[key as keyof PassportMetadata] as
                     | string
                     | number) || 'None'
             }

@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import React, {
   createContext,
   PropsWithChildren,
@@ -8,8 +9,6 @@ import React, {
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
-
-import { ethers } from 'ethers';
 
 type SignedPayload<T> = { signature: string; data: T };
 const _getSecurely = async function <T>(

@@ -1,9 +1,9 @@
 import React, { useCallback, useMemo, useState } from 'react';
 
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import React, { useCallback } from 'react';
 import { YStack } from 'tamagui';
 
-import { RootStackParamList } from '../../Navigation';
 import BackupDocumentationLink from '../../components/BackupDocumentationLink';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -13,6 +13,7 @@ import { Title } from '../../components/typography/Title';
 import { useModal } from '../../hooks/useModal';
 import Cloud from '../../images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { RootStackParamList } from '../../Navigation';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupPrivateKey } from '../../utils/cloudBackup';
