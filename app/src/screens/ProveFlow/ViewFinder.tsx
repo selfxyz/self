@@ -1,7 +1,11 @@
 import React, { useCallback, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
@@ -43,6 +47,13 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const { setSelectedApp, cleanSelfApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { startAppListener } = useApp();
+
+  // This resets to the default state when we navigate back to this screen
+  useFocusEffect(
+    useCallback(() => {
+      setDoneScanningQR(false);
+    }, []),
+  );
 
   const onQRData = useCallback<QRCodeScannerViewProps['onQRData']>(
     async (error, uri) => {
