@@ -11,6 +11,7 @@ import { dinot } from '../../utils/fonts';
 
 export interface ButtonProps extends PressableProps {
   children: React.ReactNode;
+  animatedComponent?: React.ReactNode;
 }
 
 interface AbstractButtonProps extends ButtonProps {
@@ -31,6 +32,7 @@ export default function AbstractButton({
   color,
   borderColor,
   style,
+  animatedComponent,
   ...pressable
 }: AbstractButtonProps) {
   const hasBorder = borderColor ? true : false;
@@ -44,6 +46,7 @@ export default function AbstractButton({
         style as ViewStyle,
       ]}
     >
+      {animatedComponent}
       <Text style={[styles.text, { color: color }]}>{children}</Text>
     </Pressable>
   );
