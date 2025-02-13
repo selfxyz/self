@@ -63,6 +63,9 @@ export class SelfAppBuilder {
   constructor(appName: string, scope: string) {
     this.appName = appName;
     this.scope = scope;
+    this.args = {
+      disclosureOptions: []
+    };
   }
 
   setLogoBase64(logoBase64: string) {
@@ -91,6 +94,7 @@ export class SelfAppBuilder {
       key: 'minimumAge',
       value: age.toString()
     });
+    return this;
   }
 
   nationality(nationality: string) {
@@ -99,6 +103,7 @@ export class SelfAppBuilder {
       key: 'nationality',
       value: nationality
     });
+    return this;
   }
 
   ofac(ofac: boolean) {
@@ -106,6 +111,7 @@ export class SelfAppBuilder {
       enabled: true,
       key: 'ofac',
     });
+    return this;
   }
 
   excludedCountries(countries: string[]) {
@@ -114,6 +120,7 @@ export class SelfAppBuilder {
       key: 'excludedCountries',
       value: countries
     });
+    return this;
   }
 
   build(): SelfApp {

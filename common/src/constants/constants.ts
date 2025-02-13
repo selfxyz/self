@@ -27,7 +27,13 @@ export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
 
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+export const DEPLOYED_CIRCUITS_REGISTER = [
+  'register_sha1_sha256_sha256_rsa_65537_4096',
+]
 
+export const DEPLOYED_CIRCUITS_DSC = [
+  'dsc_rsa_sha256_65537_4096',
+]
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,
   sha224: 512,

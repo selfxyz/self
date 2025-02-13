@@ -19,6 +19,7 @@ interface IProofContext {
   proofVerificationResult: unknown;
   selectedApp: SelfApp;
   setSelectedApp: (app: SelfApp) => void;
+  cleanSelfApp: () => void;
   setProofVerificationResult: (result: unknown) => void;
   setStatus: (status: ProofStatus) => void;
 }
@@ -28,6 +29,7 @@ const defaults: IProofContext = {
   proofVerificationResult: null,
   selectedApp: {} as SelfApp,
   setSelectedApp: (_: SelfApp) => undefined,
+  cleanSelfApp: () => undefined,
   setProofVerificationResult: (_: unknown) => undefined,
   setStatus: (_: ProofStatus) => undefined,
 };
@@ -55,6 +57,22 @@ export function ProofProvider({ children }: PropsWithChildren) {
     _setSelectedApp(app);
   }
 
+  function cleanSelfApp() {
+    const emptySelfApp: SelfApp = {
+      appName: '',
+      logoBase64: '',
+      scope: '',
+      sessionId: '',
+      userId: '',
+      userIdType: 'uuid',
+      devMode: true,
+      args: {
+        disclosureOptions: [],
+      },
+    };
+    _setSelectedApp(emptySelfApp);
+  }
+
   useWebsocket(selectedApp, setStatus, setProofVerificationResult, setSocket);
 
   useEffect(() => {
@@ -70,6 +88,7 @@ export function ProofProvider({ children }: PropsWithChildren) {
     selectedApp,
     setStatus,
     setSelectedApp,
+    cleanSelfApp,
     setProofVerificationResult,
   };
 

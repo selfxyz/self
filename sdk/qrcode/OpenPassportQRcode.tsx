@@ -10,7 +10,7 @@ import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
-import { SelfApp } from '../../common/src/utils/appType';
+import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
   ssr: false,
 });
@@ -126,4 +126,4 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
-export { OpenPassportQRcodeWrapper, SelfApp };
+export { OpenPassportQRcodeWrapper, SelfApp, SelfAppBuilder };
