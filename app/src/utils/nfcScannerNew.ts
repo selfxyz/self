@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
+import * as amplitude from '@amplitude/analytics-react-native';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 

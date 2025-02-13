@@ -96,6 +96,8 @@
     "@types/react-native": "^0.73.0",
     "@types/react-native-dotenv": "^0.2.0",
     "eslint": "^8.19.0",
+    "eslint-import-resolver-typescript": "^3.7.0",
+    "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-jest": "^28.11.0",
     "eslint-plugin-react-perf": "^3.3.3",
     "eslint-plugin-sonarjs": "^3.0.1",

@@ -3,6 +3,7 @@ import 'react-native-get-random-values';
 import Orientation from 'react-native-orientation-locker';
 
 import { Buffer } from 'buffer';
+
 import { YStack } from 'tamagui';
 
 import AppNavigation from './src/Navigation';

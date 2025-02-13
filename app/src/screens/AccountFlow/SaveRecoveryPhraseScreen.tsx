@@ -3,9 +3,9 @@ import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
 
-import Mnemonic from '../../components/Mnemonic';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import Mnemonic from '../../components/Mnemonic';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';

@@ -6,6 +6,8 @@ import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
+import React, { useCallback, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
 import {
   Button,
   Fieldset,

@@ -2,6 +2,8 @@ import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 import { Check, ChevronDown, Eraser, IterationCw } from '@tamagui/lucide-icons';
+import React from 'react';
+import Dialog from 'react-native-dialog';
 import { Adapt, Button, Fieldset, Label, Select, Sheet, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../Navigation';

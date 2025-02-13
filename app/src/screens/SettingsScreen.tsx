@@ -1,11 +1,10 @@
+import { useNavigation } from '@react-navigation/native';
+import { Bug } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useCallback } from 'react';
 import { Linking, Platform, Share } from 'react-native';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
-
-import { useNavigation } from '@react-navigation/native';
-import { Bug } from '@tamagui/lucide-icons';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';

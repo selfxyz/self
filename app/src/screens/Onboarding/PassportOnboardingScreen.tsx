@@ -1,13 +1,11 @@
 import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 
-import LottieView from 'lottie-react-native';
-
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import ButtonsContainer from '../../components/ButtonsContainer';
+import TextsContainer from '../../components/TextsContainer';
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';

@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { useNavigation } from '@react-navigation/native';
 import { ArrowRight, Cpu } from '@tamagui/lucide-icons';
+import React from 'react';
 import { Fieldset, Image, Text, YStack, useWindowDimensions } from 'tamagui';
 
 import { attributeToPosition } from '../../../common/src/constants/constants';

@@ -9,6 +9,8 @@ module.exports = {
     'plugin:react-perf/all',
     'plugin:@typescript-eslint/strict',
     'plugin:sonarjs/recommended-legacy',
+    'plugin:import/recommended',
+    'plugin:import/typescript',
   ],
   parser: '@typescript-eslint/parser',
   parserOptions: {
@@ -26,6 +28,7 @@ module.exports = {
     'react-perf',
     'sonarjs',
     'unused-imports',
+    'import',
   ],
   ignorePatterns: [
     'ios/',
@@ -39,6 +42,13 @@ module.exports = {
     react: {
       version: 'detect',
     },
+    'import/resolver': {
+      typescript: {
+        alwaysTryTypes: true,
+        project: './tsconfig.json',
+      },
+    },
+    'import/ignore': ['react-native'],
   },
   rules: {
     // React Rules
@@ -87,6 +97,32 @@ module.exports = {
         'ts-nocheck': true,
         'ts-check': false,
         minimumDescriptionLength: 10,
+      },
+    ],
+
+    // Import Rules
+    'import/no-unresolved': 'error',
+    'import/named': 'error',
+    'import/default': 'error',
+    'import/namespace': 'error',
+    'import/no-unused-modules': 'error',
+    'import/no-duplicates': 'error',
+    'import/order': [
+      'error',
+      {
+        groups: [
+          'builtin',
+          'external',
+          'internal',
+          'parent',
+          'sibling',
+          'index',
+        ],
+        'newlines-between': 'always',
+        alphabetize: {
+          order: 'asc',
+          caseInsensitive: true,
+        },
       },
     ],
   },

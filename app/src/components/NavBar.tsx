@@ -1,7 +1,6 @@
+import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
 import { StatusBar, StatusBarStyle } from 'react-native';
-
-import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import {
   Button,
   TextProps,

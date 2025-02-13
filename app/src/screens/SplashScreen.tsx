@@ -3,6 +3,8 @@ import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useCallback } from 'react';
+import { StyleSheet } from 'react-native';
 
 import splashAnimation from '../assets/animations/splash.json';
 import { loadSecret, useAuth } from '../stores/authProvider';

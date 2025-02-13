@@ -7,6 +7,8 @@ import {
   useNavigation,
 } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet } from 'react-native';
 import { View, XStack, YStack } from 'tamagui';
 
 import qrScanAnimation from '../../assets/animations/qr_scan.json';

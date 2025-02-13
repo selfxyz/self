@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
-
 import Clipboard from '@react-native-clipboard/clipboard';
+import React, { useCallback, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
 import {
