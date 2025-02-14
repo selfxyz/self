@@ -29,7 +29,14 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
             }
           />
         }
-        onPress={() => props.navigation.navigate('Activity')}
+        // disable icon click for now
+        onPress={() => {
+          // props.navigation.navigate('Activity');
+          return false;
+        }}
+        style={{
+          opacity: 0,
+        }}
       />
       <NavBar.Title size="large" color={white}>
         {props.options.title}
