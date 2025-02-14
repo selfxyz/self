@@ -23,11 +23,12 @@ const AccountRecoveryChoiceScreen: React.FC<
 > = ({}) => {
   const { restoreAccountFromPrivateKey } = useAuth();
   const [restoring, setRestoring] = useState(false);
-  const { cloudBackupEnabled, toggleCloudBackupEnabled } = useSettingStore();
+  const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
+    useSettingStore();
   const { download } = useBackupPrivateKey();
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
-  const onEnterRecoveryPress = useHapticNavigation('SaveRecoveryPhrase');
+  const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
 
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
@@ -63,15 +64,20 @@ const AccountRecoveryChoiceScreen: React.FC<
           <Description>
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
+            {biometricsAvailable && (
+              <>
+                Your device doesn't support biometrics or is disabled for apps
+                and is required for cloud storage.
+              </>
+            )}
           </Description>
 
           <YStack gap="$2.5" width="100%" pt="$6">
             <PrimaryButton
               onPress={onRestoreFromCloudPress}
-              // disabled={restoring}
-              disabled
+              disabled={restoring || !biometricsAvailable}
             >
-              Restore from {STORAGE_NAME} (soon)
+              Restore from {STORAGE_NAME}
             </PrimaryButton>
             <XStack gap={64} ai="center" justifyContent="space-between">
               <Separator flexGrow={1} />

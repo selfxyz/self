@@ -74,7 +74,7 @@ const SaveRecoveryPhraseScreen: React.FC<
               You can reveal your recovery phrase in settings.
             </Caption>
             <PrimaryButton onPress={onCloudBackupPress}>
-              Enable {STORAGE_NAME}
+              Enable {STORAGE_NAME} backups
             </PrimaryButton>
             <SecondaryButton onPress={onSkipPress}>
               {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}

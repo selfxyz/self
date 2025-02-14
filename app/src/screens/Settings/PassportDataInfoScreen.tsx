@@ -52,7 +52,7 @@ const InfoRow: React.FC<{
 interface PassportDataInfoScreenProps {}
 
 const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
-  const { getMetadata } = usePassport();
+  const { getData } = usePassport();
   const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
 
   const loadData = useCallback(async () => {
@@ -60,13 +60,15 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
       return;
     }
 
-    const result = await getMetadata();
+    const result = await getData();
+
     if (!result || !result.data) {
       // maybe handle error instead
       return;
     }
-    setMetadata(result.data);
-  }, [metadata, getMetadata]);
+
+    setMetadata(result.data.passportMetadata!);
+  }, [metadata, getData]);
 
   useFocusEffect(() => {
     loadData();

@@ -1,12 +1,11 @@
-import React from 'react';
+import React, { useCallback, useState } from 'react';
 
-import { StaticScreenProps } from '@react-navigation/native';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { View, XStack, YStack, styled } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
 import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
@@ -23,25 +22,28 @@ const ModalBackDrop = styled(View, {
   height: '100%',
 });
 
-const ModalDescription = styled(Description, {
-  textAlign: 'left',
-});
+export interface ModalParams extends Record<string, any> {
+  titleText: string;
+  bodyText: string;
+  buttonText: string;
+  onButtonPress: (() => Promise<void>) | (() => void);
+  onModalDismiss: () => void;
+}
 
-interface ModalScreenProps
-  extends StaticScreenProps<{
-    titleText: string;
-    bodyText: string;
-    buttonText: string;
-    onButtonPress: () => void;
-    onModalDismiss: () => void;
-  }> {}
+interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
-  const navigateBack = useHapticNavigation('Home', { action: 'cancel' });
-  const onButtonPressed = () => {
-    params?.onButtonPress();
-    navigateBack();
-  };
+  const navigation = useNavigation();
+  const [pending, setPending] = useState(false);
+  const onButtonPressed = useCallback(async () => {
+    setPending(true);
+    try {
+      await params?.onButtonPress();
+      navigation.goBack();
+    } finally {
+      setPending(false);
+    }
+  }, []);
 
   return (
     <ModalBackDrop>
@@ -51,16 +53,18 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
             <LogoInversed />
             <ModalClose
               onPress={() => {
-                navigateBack();
+                navigation.goBack();
                 params?.onModalDismiss();
               }}
             />
           </XStack>
           <YStack gap={20}>
             <Title textAlign="left">{params?.titleText}</Title>
-            <ModalDescription>{params?.bodyText}</ModalDescription>
+            <Description style={{ textAlign: 'left' }}>
+              {params?.bodyText}
+            </Description>
           </YStack>
-          <PrimaryButton onPress={onButtonPressed}>
+          <PrimaryButton onPress={onButtonPressed} disabled={pending}>
             {params?.buttonText}
           </PrimaryButton>
         </YStack>

@@ -5,6 +5,8 @@ import { createJSONStorage, persist } from 'zustand/middleware';
 interface SettingsState {
   hasPrivacyNoteBeenDismissed: boolean;
   dismissPrivacyNote: () => void;
+  biometricsAvailable: boolean;
+  setBiometricsAvailable: (biometricsAvailable: boolean) => void;
   cloudBackupEnabled: boolean;
   toggleCloudBackupEnabled: () => void;
 }
@@ -17,6 +19,12 @@ export const useSettingStore = create<SettingsState>()(
     (set, _get) => ({
       hasPrivacyNoteBeenDismissed: false,
       dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
+
+      biometricsAvailable: false,
+      setBiometricsAvailable: biometricsAvailable =>
+        set({
+          biometricsAvailable,
+        }),
 
       cloudBackupEnabled: false,
       toggleCloudBackupEnabled: () =>

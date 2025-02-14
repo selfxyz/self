@@ -16,8 +16,7 @@
       android:label="@string/app_name"
       android:icon="@mipmap/ic_launcher"
       android:roundIcon="@mipmap/ic_launcher"
-      android:allowBackup="false"
-      tools:replace="android:allowBackup, android:icon, android:roundIcon, android:name"
+      tools:replace="android:icon, android:roundIcon, android:name"
       android:theme="@style/AppTheme"
       android:supportsRtl="true">
       <activity
@@ -43,11 +42,3 @@
       </activity>
     </application>
 </manifest>
-
-
-<!--
-TODO: add this back to <application />
-    android:allowBackup="true"
-    android:backupInForeground="true"
-    android:dataExtractionRules="@xml/backup_rules"
--->

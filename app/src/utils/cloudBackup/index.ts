@@ -1,90 +1,108 @@
 import { useMemo } from 'react';
-import { NativeModules, Platform } from 'react-native';
-import { CloudStorage, CloudStorageScope } from 'react-native-cloud-storage';
-import RNFS from 'react-native-fs';
+import { Platform } from 'react-native';
+import {
+  CloudStorage,
+  CloudStorageProvider,
+  CloudStorageScope,
+} from 'react-native-cloud-storage';
 
-// Note: also defined in app/android/app/src/main/res/xml/backup_rules.xml
-const ENCRYPTED_FILE_PATH =
-  RNFS.DocumentDirectoryPath + '/encrypted-private-key';
+import { name } from '../../../package.json';
+import { googleSignIn } from './google';
 
-export const STORAGE_NAME =
-  Platform.OS === 'ios' ? 'iCloud Backup' : 'Android Backup';
+const FOLDER = `/${name}`;
+const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;
+CloudStorage.setProviderOptions({ scope: CloudStorageScope.AppData });
 
-export const useBackupPrivateKey =
-  Platform.OS === 'ios'
-    ? useICloudBackupPrivateKey
-    : useAndroidBackupPrivateKey;
+export const STORAGE_NAME = Platform.OS === 'ios' ? 'iCloud' : 'Google Drive';
 
-/// ANDROID
-function useAndroidBackupPrivateKey() {
+/**
+ * For some reason google drive api can be very ... brittle and abort randomly (network conditions)
+ * so retry a couple times for good measure.
+ *
+ * Filter the error message by checking if `abort` is included didnt help as the error can be `path not found`
+ * maybe some race conditions on the drive side
+ */
+async function withRetries<T>(
+  promiseBuilder: () => Promise<T>,
+  retries = 10,
+): Promise<T> {
+  let latestError: Error;
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await promiseBuilder();
+    } catch (e) {
+      retries++;
+      latestError = e as Error;
+      if (retries < i - 1) {
+        console.info('retry #', i);
+        await new Promise(resolve => setTimeout(resolve, 200 * i));
+      }
+    }
+  }
+  throw new Error(
+    `retry count exhausted (${retries}), original error ${latestError!}`,
+  );
+}
+
+export function useBackupPrivateKey() {
   return useMemo(
     () => ({
-      upload: (privateKey: string) => backupWithAndroidBackup(privateKey),
-      download: () => downloadFromAndroidBackup(),
-      disableBackup: () => disableBackupToAndroidBackup,
+      upload,
+      download,
+      disableBackup,
     }),
     [],
   );
 }
 
-async function backupWithAndroidBackup(privateKey: string) {
+async function addAccessTokenForGoogleDrive() {
+  if (CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive) {
+    const response = await googleSignIn();
+    if (!response) {
+      // user canceled
+      return;
+    }
+    CloudStorage.setProviderOptions({
+      accessToken: response.accessToken,
+    });
+  }
+}
+
+async function upload(privateKey: string) {
   if (!privateKey) {
     throw new Error(
       'Private key not set yet. Did the user see the recovery phrase?',
     );
   }
 
-  const { BackupModule } = NativeModules;
-  await RNFS.write(ENCRYPTED_FILE_PATH, privateKey);
-  await BackupModule.backupNow();
-}
-
-async function downloadFromAndroidBackup() {
-  const { BackupModule } = NativeModules;
-  await BackupModule.restoreNow();
-  const privateKey = await RNFS.readFile(ENCRYPTED_FILE_PATH);
-  return privateKey;
-}
-
-async function disableBackupToAndroidBackup() {
-  const { BackupModule } = NativeModules;
-  await RNFS.unlink(ENCRYPTED_FILE_PATH);
-  await BackupModule.backupNow();
-}
-
-/// IOS
-function useICloudBackupPrivateKey() {
-  return useMemo(
-    () => ({
-      upload: (privateKey: string) => backupWithICloud(privateKey),
-      download: () => downloadFromICloud(),
-      disableBackup: () => disableBackupToICloud,
-    }),
-    [],
-  );
-}
-
-async function backupWithICloud(privateKey: string) {
-  if (!privateKey) {
-    throw new Error(
-      'Private key not set yet. Did the user see the recovery phrase?',
-    );
+  await addAccessTokenForGoogleDrive();
+  try {
+    await CloudStorage.mkdir(FOLDER);
+  } catch (e) {
+    console.error(e);
+    if (!(e as Error).message.includes('already')) {
+      throw e;
+    }
   }
-
-  await CloudStorage.writeFile(
-    ENCRYPTED_FILE_PATH,
-    privateKey,
-    CloudStorageScope.AppData,
+  await withRetries(() =>
+    CloudStorage.writeFile(ENCRYPTED_FILE_PATH, privateKey),
   );
 }
-async function downloadFromICloud() {
-  const privateKey = await CloudStorage.readFile(
-    ENCRYPTED_FILE_PATH,
-    CloudStorageScope.AppData,
+
+async function download() {
+  await addAccessTokenForGoogleDrive();
+  if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
+    const privateKey = await withRetries(() =>
+      CloudStorage.readFile(ENCRYPTED_FILE_PATH),
+    );
+    return privateKey;
+  }
+  throw new Error(
+    'Couldnt find the encrypted backup, did you back it up previously?',
   );
-  return privateKey;
 }
 
-async function disableBackupToICloud() {
-  await CloudStorage.unlink(ENCRYPTED_FILE_PATH, CloudStorageScope.AppData);
+async function disableBackup() {
+  await addAccessTokenForGoogleDrive();
+  withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
 }

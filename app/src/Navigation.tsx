@@ -13,7 +13,6 @@ import HomeNavBar from './components/HomeNavBar';
 import AccountRecoveryChoiceScreen from './screens/AccountFlow/AccountRecoveryChoiceScreen';
 import AccountRecoveryScreen from './screens/AccountFlow/AccountRecoveryScreen';
 import AccountVerifiedSuccessScreen from './screens/AccountFlow/AccountVerifiedSuccessScreen';
-import RecoverWithCloudScreen from './screens/AccountFlow/RecoverWithCloud';
 import RecoverWithPhraseScreen from './screens/AccountFlow/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from './screens/AccountFlow/SaveRecoveryPhraseScreen';
 import DisclaimerScreen from './screens/DisclaimerScreen';
@@ -215,12 +214,6 @@ const AppNavigation = createNativeStackNavigator({
           color: slate300,
         },
         headerBackTitle: 'close',
-      },
-    },
-    RecoverWithCloud: {
-      screen: RecoverWithCloudScreen,
-      options: {
-        headerShown: false,
       },
     },
     AccountVerifiedSuccess: {

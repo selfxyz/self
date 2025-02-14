@@ -21,9 +21,9 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       bodyText:
         "We've improved performance, fixed bugs, and added new features. Update now to install the latest version of Self.",
       buttonText: 'Update and restart',
-      onButtonPress: () => {
+      onButtonPress: async () => {
         if (newVersionUrl !== null) {
-          Linking.openURL(
+          await Linking.openURL(
             newVersionUrl, // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
           );
         }
