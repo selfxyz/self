@@ -52,6 +52,7 @@ async function queryWithRetry(
 interface LastEventData {
     blockNumber: number;
     index: number;
+    commitment: string;
 }
 
 /// @notice retrieve the event with the highest index from the db and return the block number
@@ -60,10 +61,11 @@ export async function getLastEventFromDB(type: TreeType): Promise<LastEventData 
         const tableName = type === 'dsc' ? 'dsc_key_commitment_events' : 'identity_commitment_events';
         const query = `
             SELECT 
-                block_number,
-                event_index
+                blockNumber,
+                index,
+                commitment
             FROM ${tableName}
-            ORDER BY event_index DESC 
+            ORDER BY index DESC 
             LIMIT 1
         `;
 
@@ -71,8 +73,9 @@ export async function getLastEventFromDB(type: TreeType): Promise<LastEventData 
         if (result.rows.length === 0) return null;
 
         return {
-            blockNumber: result.rows[0].block_number,
-            index: result.rows[0].event_index
+            blockNumber: result.rows[0].blockNumber,
+            index: result.rows[0].index,
+            commitment: result.rows[0].commitment
         };
     } catch (error) {
         console.error('Error getting last event:', error);
@@ -92,22 +95,18 @@ export async function addEventsInDB(type: TreeType, events: EventsData[]) {
             for (const event of events) {
                 const query = `
                     INSERT INTO ${tableName} (
-                        event_index,
+                        index,
                         commitment,
-                        merkle_root,
-                        block_number,
-                        timestamp
+                        blockNumber
                     )
-                    VALUES ($1, $2, $3, $4, $5)
-                    ON CONFLICT (event_index) DO NOTHING
+                    VALUES ($1, $2, $3)
+                    ON CONFLICT (index) DO NOTHING
                 `;
 
                 await client.query(query, [
                     event.index,
                     event.commitment,
-                    event.merkleRoot,
-                    event.blockNumber,
-                    event.timestamp
+                    event.blockNumber
                 ]);
             }
 
@@ -130,27 +129,28 @@ export async function addEventsInDB(type: TreeType, events: EventsData[]) {
 export async function getTreeFromDB(type: TreeType) {
     try {
         const tableName = type === 'dsc' ? 'dsc_key_commitment_tree' : 'identity_commitment_tree';
-        const query = `SELECT tree_data FROM ${tableName} ORDER BY id DESC LIMIT 1`;
+        // Since there's at most one row in these tables, no ORDER BY is needed.
+        const query = `SELECT tree FROM ${tableName} LIMIT 1`;
         const result = await queryWithRetry(query);
 
         if (result.rows.length === 0) return null;
-        return result.rows[0].tree_data;
+        return result.rows[0].tree;
     } catch (error) {
         console.error(`Error getting ${type} tree:`, error);
         return null;
     }
 }
 
-/// @notice set the tree in the db, we only need to store the latest tree in the db and update it's value
+/// @notice set the tree in the db
 export async function setTreeInDB(type: TreeType, tree: string) {
     try {
         const tableName = type === 'dsc' ? 'dsc_key_commitment_tree' : 'identity_commitment_tree';
-        const query = `
-            INSERT INTO ${tableName} (tree_data)
-            VALUES ($1)
-        `;
-
-        await queryWithRetry(query, [tree]);
+        // First, try to update an existing row
+        const updateResult = await queryWithRetry(`UPDATE ${tableName} SET tree = $1;`, [tree]);
+        if (updateResult.rowCount === 0) {
+            // If no row exists, insert one
+            await queryWithRetry(`INSERT INTO ${tableName} (tree) VALUES ($1);`, [tree]);
+        }
         return true;
     } catch (error) {
         console.error(`Error setting ${type} tree:`, error);

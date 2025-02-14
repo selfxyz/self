@@ -66,9 +66,7 @@ async function getEvents(
             events.push({
                 index: Number(imtIndex),
                 commitment: commitment.toString(),
-                merkleRoot: imtRoot.toString(),
                 blockNumber: Number(log.blockNumber),
-                timestamp: Number(log.blockTimestamp),
             });
         }
 
