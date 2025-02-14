@@ -42,7 +42,8 @@ const ScreenSelector = ({}) => {
   return (
     <Select
       onValueChange={screen => {
-        navigation.navigate(screen as keyof RootStackParamList);
+        // @ts-expect-error - weird typing?
+        navigation.navigate(screen);
       }}
       disablePreventBodyScroll
     >

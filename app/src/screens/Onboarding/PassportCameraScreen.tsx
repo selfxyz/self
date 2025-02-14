@@ -73,7 +73,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
     },
     [store, navigation],
   );
-  const onCancelPress = useHapticNavigation('PassportOnboarding', {
+  const onCancelPress = useHapticNavigation('Launch', {
     action: 'cancel',
   });
 

@@ -9,6 +9,7 @@ import { Bug } from '@tamagui/lucide-icons';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
+import { RootStackParamList } from '../Navigation';
 import { BodyText } from '../components/typography/BodyText';
 import {
   appStoreUrl,
@@ -43,10 +44,7 @@ interface SocialButtonProps {
 }
 
 const emailFeedback = 'feedback@self.xyz';
-type RouteOption =
-  | keyof ReactNavigation.RootParamList
-  | 'share'
-  | 'email_feedback';
+type RouteOption = keyof RootStackParamList | 'share' | 'email_feedback';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 const routes = [
@@ -144,6 +142,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             break;
 
           default:
+            // @ts-expect-error - weird typing?
             navigation.navigate(menuRoute);
             break;
         }

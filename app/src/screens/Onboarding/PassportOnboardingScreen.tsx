@@ -13,7 +13,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100 } from '../../utils/colors';
+import { black, slate100, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 
@@ -26,7 +26,7 @@ const PassportOnboardingScreen: React.FC<
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <StatusBar barStyle="light-content" backgroundColor={black} />
-      <ExpandableBottomLayout.TopSection roundTop>
+      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
           autoPlay
           loop={false}
@@ -36,7 +36,7 @@ const PassportOnboardingScreen: React.FC<
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection>
+      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
           <Title>Scan your passport</Title>
           {/* TODO: consider moving textBreakStrategy to the component itself if we use it more often */}
