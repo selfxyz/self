@@ -163,7 +163,6 @@ const AppNavigation = createNativeStackNavigator({
       options: {
         headerShown: false,
         animation: 'slide_from_bottom',
-        presentation: 'containedModal',
       },
     },
     /**

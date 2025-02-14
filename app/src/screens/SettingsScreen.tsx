@@ -78,6 +78,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
     px={10}
     borderBottomColor={neutral700}
     borderBottomWidth={1}
+    hitSlop={4}
   >
     <Icon height={24} width={21} color={white} />
     <BodyText color={white} fontSize={18} lineHeight={23}>

@@ -32,7 +32,6 @@ const items: (keyof RootStackParamList)[] = [
   'AccountRecovery',
   'SaveRecoveryPhrase',
   'RecoverWithPhrase',
-  'AccountVerifiedSuccess',
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
 ];

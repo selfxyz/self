@@ -36,7 +36,7 @@ export function HeldPrimaryButton({
       toValue: 0,
       duration: ACTION_TIMER,
       useNativeDriver: true,
-    });
+    }).start();
   };
 
   const getButtonSize = (e: LayoutChangeEvent) => {
@@ -57,13 +57,14 @@ export function HeldPrimaryButton({
     return {
       transform: [{ scaleX }],
       backgroundColor: bgColor,
+      height: size.height,
     };
   };
 
   useEffect(() => {
     animation.addListener(({ value }) => {
       // when the animation is done we want to call the onPress function
-      if (value === 1) {
+      if (value >= 0.95) {
         // @ts-expect-error
         onPress();
       }
@@ -78,6 +79,7 @@ export function HeldPrimaryButton({
       {...props}
       onPressIn={onPressIn}
       onPressOut={onPressOut}
+      // @ts-expect-error actually it is there
       onLayout={getButtonSize}
       animatedComponent={
         <Animated.View style={[styles.fill, size, getProgressStyles()]} />

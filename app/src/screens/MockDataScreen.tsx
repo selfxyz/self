@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
@@ -27,6 +28,7 @@ import {
   borderColor,
   separatorColor,
   textBlack,
+  white,
 } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
 
@@ -117,9 +119,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     navigation.navigate('ConfirmBelongingScreen');
   }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
 
+  const { top, bottom } = useSafeAreaInsets();
   return (
     <>
-      <YStack f={1} gap="$4" px="$4">
+      <YStack
+        f={1}
+        gap="$4"
+        px="$4"
+        backgroundColor={white}
+        paddingTop={top}
+        paddingBottom={bottom}
+      >
         <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>
           Generate passport data
         </Text>
