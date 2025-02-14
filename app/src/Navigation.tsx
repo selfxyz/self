@@ -25,7 +25,7 @@ import LoadingScreen from './screens/Onboarding/LoadingScreen';
 import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
-import UnsupportedPassportScreen from './screens/Onboarding/UnspportedPassport';
+import UnsupportedPassportScreen from './screens/Onboarding/UnsupportedPassport';
 import ProofRequestStatusScreen from './screens/ProveFlow/ProofRequestStatusScreen';
 import ProveScreen from './screens/ProveFlow/ProveScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
