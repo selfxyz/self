@@ -307,9 +307,13 @@ const AppNavigation = createNativeStackNavigator({
 
 export type RootStackParamList = StaticParamList<typeof AppNavigation>;
 
+type ReactNavigation = {
+  RootParamList: RootStackParamList;
+};
+
 declare global {
-  namespace ReactNavigation {
-    interface RootParamList extends RootStackParamList {}
+  interface Window {
+    ReactNavigation: ReactNavigation;
   }
 }
 
