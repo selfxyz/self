@@ -34,6 +34,7 @@ const items: (keyof RootStackParamList)[] = [
   'RecoverWithPhrase',
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
+  'UnsupportedPassport',
 ];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
