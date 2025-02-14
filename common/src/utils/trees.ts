@@ -19,11 +19,12 @@ countries.registerLocale(en);
 
 export async function getCSCATree(): Promise<string[][]> {
   const response = await fetch(CSCA_TREE_URL);
-  const status = await response.json().then(data => data.status ? data.status : data);
+  const data = await response.json();
+  const status = data.status ? data.status : data;
   if (status === 'error') {
     throw new Error('Error fetching CSCA tree');
   }
-  const tree = await response.json().then(data => data.data ? JSON.parse(data.data) : data);
+  const tree = data.data ? JSON.parse(data.data) : data;
 
   console.log('CSCA tree:', tree);
   return tree;
@@ -31,11 +32,12 @@ export async function getCSCATree(): Promise<string[][]> {
 
 export async function getDSCTree(): Promise<string> {
   const response = await fetch(DSC_TREE_URL);
-  const status = await response.json().then(data => data.status ? data.status : data);
+  const data = await response.json();
+  const status = data.status ? data.status : data;
   if (status === 'error') {
     throw new Error('Error fetching DSC tree');
   }
-  const tree = await response.json().then(data => data.data ? data.data : data);
+  const tree = data.data ? data.data : data;
   console.log('DSC tree:', tree);
   return tree;
 }
