@@ -1,6 +1,7 @@
 import { getContractInstance } from "./getContracts";
 import { getChain } from "./chains";
 import { EventsData } from "./tree-reader/constants";
+
 async function getEvents(
     eventName: string,
     startBlock: number,
@@ -16,47 +17,62 @@ async function getEvents(
             rpcUrl
         );
 
+        // Retrieve the latest block number so we know our upper bound.
+        const latestBlock = await publicClient.getBlockNumber();
+        // Set the maximum block range for a single query.
+        const maxBlockRange = 50000;
+        let currentFromBlock = startBlock;
+        let allLogs: any[] = [];
 
-        const logs = await publicClient.getContractEvents({
-            address: contract.address,
-            abi: contract.abi,
-            eventName: eventName,
-            fromBlock: BigInt(startBlock),
-            toBlock: 'latest',
-            strict: true
-        });
-
-        console.log(`\x1b[90mFound ${logs.length} ${eventName} events\x1b[0m`);
-
-        const events: EventsData[] = [];
-
-        for (const log of logs) {
+        // Loop over block ranges in chunks.
+        while (currentFromBlock <= latestBlock) {
+            const currentToBlock = Math.min(currentFromBlock + maxBlockRange - 1, Number(latestBlock));
+            console.log(
+                `Fetching ${eventName} logs from block ${currentFromBlock} to ${currentToBlock}`
+            );
             try {
-                if (!log.blockNumber) continue;
-
-                const { commitment, imtIndex, imtRoot } = log.args as {
-                    commitment: bigint,
-                    imtIndex: bigint,
-                    imtRoot: bigint
-                };
-
-                const block = await publicClient.getBlock({
-                    blockNumber: log.blockNumber
+                const logsChunk = await publicClient.getContractEvents({
+                    address: contract.address,
+                    abi: contract.abi,
+                    eventName: eventName,
+                    fromBlock: BigInt(currentFromBlock),
+                    toBlock: BigInt(currentToBlock),
+                    strict: true,
                 });
-
-                events.push({
-                    index: Number(imtIndex),
-                    commitment: commitment.toString(),
-                    merkleRoot: imtRoot.toString(),
-                    blockNumber: Number(log.blockNumber),
-                    timestamp: Number(block.timestamp)
-                });
-            } catch (error) {
-                console.error(`Error processing log for ${eventName}:`, error);
+                allLogs = [...allLogs, ...logsChunk];
+            } catch (err) {
+                console.error(
+                    `Error fetching logs for ${eventName} from block ${currentFromBlock} to ${currentToBlock}`,
+                    err
+                );
+                throw err;
             }
+            currentFromBlock = currentToBlock + 1;
         }
 
-        return events;
+        console.log(`Found ${allLogs.length} total ${eventName} events over sliced blocks`);
+
+        // Process each log into an EventsData object.
+        const events: EventsData[] = [];
+        for (const log of allLogs) {
+            if (!log.blockNumber) continue;
+
+            const { commitment, imtIndex, imtRoot } = log.args as {
+                commitment: bigint,
+                imtIndex: bigint,
+                imtRoot: bigint
+            };
+
+            events.push({
+                index: Number(imtIndex),
+                commitment: commitment.toString(),
+                merkleRoot: imtRoot.toString(),
+                blockNumber: Number(log.blockNumber),
+                timestamp: Number(log.blockTimestamp),
+            });
+        }
+
+        return events.sort((a, b) => a.index - b.index);
     } catch (error) {
         console.error(`Error getting ${eventName} events:`, error);
         throw error;
