@@ -19,12 +19,25 @@ countries.registerLocale(en);
 
 export async function getCSCATree(): Promise<string[][]> {
   const response = await fetch(CSCA_TREE_URL);
-  return await response.json().then(data => data.data ? JSON.parse(data.data) : data);
+  const status = await response.json().then(data => data.status ? data.status : data);
+  if (status === 'error') {
+    throw new Error('Error fetching CSCA tree');
+  }
+  const tree = await response.json().then(data => data.data ? JSON.parse(data.data) : data);
+
+  console.log('CSCA tree:', tree);
+  return tree;
 }
 
 export async function getDSCTree(): Promise<string> {
   const response = await fetch(DSC_TREE_URL);
-  return await response.json().then(data => data.data ? data.data : data);
+  const status = await response.json().then(data => data.status ? data.status : data);
+  if (status === 'error') {
+    throw new Error('Error fetching DSC tree');
+  }
+  const tree = await response.json().then(data => data.data ? data.data : data);
+  console.log('DSC tree:', tree);
+  return tree;
 }
 
 export async function getCommitmentTree(): Promise<string> {
@@ -47,12 +60,14 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   if (type === 'dsc') {
     // for now, we pad it for sha
+    const tbsArray = Object.keys(parsed.tbsBytes).map(key => parsed.tbsBytes[key]);
     const [paddedTbsBytes, tbsBytesPaddedLength] = pad(parsed.hashAlgorithm)(
-      parsed.tbsBytes,
+      tbsArray,
       max_dsc_bytes
     );
     const dsc_hash = packBytesAndPoseidon(Array.from(paddedTbsBytes));
-    return poseidon2([dsc_hash, parsed.tbsBytes.length]).toString();
+
+    return poseidon2([dsc_hash, tbsArray.length]).toString();
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
     const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
@@ -73,7 +88,9 @@ export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string 
 
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
   const dscLeaf = getLeaf(dsc_parsed, 'dsc');
+  console.log('dscLeaf', dscLeaf);
   const cscaLeaf = getLeaf(csca_parsed, 'csca');
+  console.log('cscaLeaf', cscaLeaf);
   return poseidon2([dscLeaf, cscaLeaf]).toString();
 }
 
@@ -95,6 +112,7 @@ export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: stri
 
 export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
+  console.log('serialized_csca_tree', _serialized_csca_tree);
   tree.setNodes(_serialized_csca_tree);
   const index = tree.indexOf(leaf);
   if (index === -1) {

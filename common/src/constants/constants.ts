@@ -26,7 +26,7 @@ export const CHAIN_NAME = 'optimism';
 export const RPC_URL = 'https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL';
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
-export const DEVELOPMENT_MODE = true;
+export const DEVELOPMENT_MODE = false;
 export const DEFAULT_MAJORITY = '18';
 
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
@@ -35,6 +35,7 @@ export const saltLengths = [64, 48, 32];
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
 export const DEPLOYED_CIRCUITS_REGISTER = [
   'register_sha1_sha256_sha256_rsa_65537_4096',
+  'register_sha256_sha256_sha256_rsa_65537_4096',
 ]
 
 export const OFAC_TREE_LEVELS = 64;

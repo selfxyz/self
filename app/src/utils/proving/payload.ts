@@ -144,6 +144,12 @@ async function checkIdPassportDscIsInTree(
       return false;
     }
   } else {
+    // console.log('DSC i found in the tree, sending DSC payload for debug');
+    // const dscStatus = await sendDscPayload(passportData);
+    // if (dscStatus !== ProofStatusEnum.SUCCESS) {
+    //   console.log('DSC proof failed');
+    //   return false;
+    // }
     console.log('DSC is found in the tree, skipping DSC payload');
   }
   return true;

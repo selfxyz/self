@@ -13,6 +13,7 @@ import { PassportData } from '../../../common/src/utils/types';
 import useNavigationStore from '../stores/navigationStore';
 import { storePassportData } from '../stores/passportDataProvider';
 import { checkInputs } from '../utils/utils';
+import useHapticNavigation from '../hooks/useHapticNavigation';
 
 interface Inputs {
   passportNumber: string;
@@ -231,6 +232,7 @@ const handleResponseAndroid = async (response: any) => {
 async function parseAndStorePassportData(passportData: PassportData) {
   const { trackEvent } = useNavigationStore.getState();
   const parsedPassportData = initPassportDataParsing(passportData);
+  arePassportDataSupported(parsedPassportData);
   await storePassportData(parsedPassportData);
 
   const passportMetadata =
@@ -260,4 +262,12 @@ async function parseAndStorePassportData(passportData: PassportData) {
     csca_signature_algorithm_bits: passportMetadata.cscaSignatureAlgorithmBits,
     dsc: passportMetadata.dsc,
   });
+}
+
+
+function arePassportDataSupported(passportData: PassportData) {
+  if (!passportData.passportMetadata?.cscaFound) {
+    return false;
+  }
+  return true;
 }
