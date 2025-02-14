@@ -7,9 +7,6 @@ import React, {
   useState,
 } from 'react';
 
-import io, { Socket } from 'socket.io-client';
-
-import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
 import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
@@ -28,6 +25,7 @@ interface IProofContext {
   cleanSelfApp: () => void;
   setProofVerificationResult: (result: unknown) => void;
   setStatus: (status: ProofStatusEnum) => void;
+  resetProof: () => void;
 }
 
 const defaults: IProofContext = {
@@ -38,6 +36,7 @@ const defaults: IProofContext = {
   cleanSelfApp: () => undefined,
   setProofVerificationResult: (_: unknown) => undefined,
   setStatus: (_: ProofStatusEnum) => undefined,
+  resetProof: () => undefined,
 };
 
 const ProofContext = createContext<IProofContext>(defaults);
@@ -62,7 +61,6 @@ export function ProofProvider({ children }: PropsWithChildren) {
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
-  const [_socket, setSocket] = useState<Socket | null>(null);
 
   // reset all the values so it not in wierd state
   const setSelectedApp = useCallback((app: SelfApp) => {
@@ -95,6 +93,13 @@ export function ProofProvider({ children }: PropsWithChildren) {
     setSelectedAppInternal(emptySelfApp);
   }, []);
 
+  // New function to reset the proof status and related state
+  const resetProof = useCallback(() => {
+    setStatus(ProofStatusEnum.PENDING);
+    setProofVerificationResult(null);
+    setSelectedAppInternal(defaults.selectedApp);
+  }, []);
+
   // Make the setter available globally
   useEffect(() => {
     globalSetProofStatus = setStatus;
@@ -102,8 +107,6 @@ export function ProofProvider({ children }: PropsWithChildren) {
       globalSetProofStatus = null;
     };
   }, [setStatus]);
-
-  useWebsocket(selectedApp, setStatus, setProofVerificationResult, setSocket);
 
   useEffect(() => {
     const universalLinkCleanup = setupUniversalLinkListener(setSelectedApp);
@@ -121,6 +124,7 @@ export function ProofProvider({ children }: PropsWithChildren) {
       cleanSelfApp,
       setProofVerificationResult,
       setStatus,
+      resetProof,
     }),
     [
       status,
@@ -128,6 +132,7 @@ export function ProofProvider({ children }: PropsWithChildren) {
       selectedApp,
       setSelectedApp,
       cleanSelfApp,
+      resetProof,
     ],
   );
 
@@ -139,89 +144,3 @@ export function ProofProvider({ children }: PropsWithChildren) {
 export const useProofInfo = () => {
   return React.useContext(ProofContext);
 };
-
-// TODO store sockon on a ref?
-// handle it unmounting in progress?
-//
-function useWebsocket(
-  selectedApp: SelfApp,
-  setStatus: React.Dispatch<React.SetStateAction<ProofStatusEnum>>,
-  setProofVerificationResult: React.Dispatch<unknown>,
-  setSocket: React.Dispatch<React.SetStateAction<Socket | null>>,
-) {
-  useEffect(() => {
-    let newSocket: Socket | null = null;
-
-    if (!selectedApp.sessionId) {
-      return;
-    }
-    console.log('creating ws', WS_DB_RELAYER, selectedApp.sessionId);
-
-    try {
-      newSocket = io(WS_DB_RELAYER + '/websocket', {
-        path: '/',
-        transports: ['websocket'],
-        query: { sessionId: selectedApp.sessionId, clientType: 'mobile' },
-      });
-
-      newSocket.on('connect', () => {
-        console.log('Connected to WebSocket server');
-      });
-
-      newSocket.on('disconnect', () => {
-        console.log('Disconnected from WebSocket server');
-      });
-
-      newSocket.on('connect_error', error => {
-        console.error('Connection error:', error);
-        console.log('Error', {
-          message: 'Failed to connect to WebSocket server',
-          customData: {
-            type: 'error',
-          },
-        });
-        setStatus(ProofStatusEnum.ERROR);
-      });
-
-      newSocket.on('proof_verification_result', result => {
-        const data = JSON.parse(result);
-        setProofVerificationResult(data);
-        console.log('result', result, data);
-        if (data.valid) {
-          setStatus(ProofStatusEnum.SUCCESS);
-          console.log('✅', {
-            message: 'Identity verified',
-            customData: {
-              type: 'success',
-            },
-          });
-        } else {
-          setStatus(ProofStatusEnum.FAILURE);
-          console.log('❌', {
-            message: 'Verification failed',
-            customData: {
-              type: 'info',
-            },
-          });
-        }
-      });
-
-      setSocket(newSocket);
-    } catch (error) {
-      console.error('Error setting up WebSocket:', error);
-      setStatus(ProofStatusEnum.ERROR);
-      console.log('❌', {
-        message: 'Failed to set up connection',
-        customData: {
-          type: 'error',
-        },
-      });
-    }
-    return () => {
-      if (newSocket) {
-        newSocket.disconnect();
-        setSocket(null);
-      }
-    };
-  }, [selectedApp.sessionId]);
-}

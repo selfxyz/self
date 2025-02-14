@@ -28,7 +28,7 @@ const LoadingScreen: React.FC = () => {
     }, 3000);
   };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const { status, setStatus } = useProofInfo();
+  const { status, setStatus, resetProof } = useProofInfo();
   // const { getPassportDataAndSecret } = usePassport();
 
   // Ensure we only set the initial status once on mount (if needed)
@@ -36,17 +36,25 @@ const LoadingScreen: React.FC = () => {
     setStatus(ProofStatusEnum.PENDING);
   }, []);
 
+  // New effect to reset status when the screen loads
+  useEffect(() => {
+    resetProof();
+    processPayloadCalled.current = false;
+  }, []);
+
   useEffect(() => {
     // Change animation based on the global proof status.
     if (status === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
       goToSuccessScreenWithDelay();
+      setTimeout(() => resetProof(), 3000);
     } else if (
       status === ProofStatusEnum.FAILURE ||
       status === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
       goToErrorScreenWithDelay();
+      setTimeout(() => resetProof(), 3000);
     }
   }, [status]);
 

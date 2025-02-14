@@ -60,25 +60,35 @@ export async function sendPayload(
   endpoint: string,
   wsRpcUrl: string,
   timeoutMs = 1200000,
-): Promise<void> {
+  options?: {
+    updateGlobalOnSuccess?: boolean;
+    updateGlobalOnFailure?: boolean;
+  },
+): Promise<ProofStatusEnum> {
+  const opts = {
+    updateGlobalOnSuccess: true,
+    updateGlobalOnFailure: true,
+    ...options,
+  };
   return new Promise(resolve => {
     let finalized = false;
     function finalize(status: ProofStatusEnum) {
-      console.log('Finalizing with status:', status);
       if (!finalized) {
         finalized = true;
-        updateGlobalProofStatus(status);
         clearTimeout(timer);
-        resolve();
+        if (
+          (status === ProofStatusEnum.SUCCESS && opts.updateGlobalOnSuccess) ||
+          (status !== ProofStatusEnum.SUCCESS && opts.updateGlobalOnFailure)
+        ) {
+          updateGlobalProofStatus(status);
+        }
+        resolve(status);
       }
     }
-
     console.log(inputs);
-
     const uuid = v4();
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
-
     function createHelloBody(uuidString: string) {
       return {
         jsonrpc: '2.0',
@@ -90,17 +100,14 @@ export async function sendPayload(
         },
       };
     }
-
     ws.addEventListener('open', () => {
       const helloBody = createHelloBody(uuid);
       console.log('Connected to rpc, sending hello body:', helloBody);
       ws.send(JSON.stringify(helloBody));
     });
-
     ws.addEventListener('message', async event => {
       try {
         const result = JSON.parse(event.data);
-        // If attestation is present, process it.
         if (result.result?.attestation !== undefined) {
           const serverPubkey = getPublicKey(result.result.attestation);
           const verified = await verifyAttestation(result.result.attestation);
@@ -123,7 +130,6 @@ export async function sendPayload(
             endpointType,
             endpoint,
           );
-          console.log('payload', payload);
           const encryptionData = encryptAES256GCM(
             JSON.stringify(payload),
             forgeKey,
@@ -150,7 +156,6 @@ export async function sendPayload(
           console.log('Truncated submit body:', truncatedBody);
           ws.send(JSON.stringify(submitBody));
         } else {
-          // Otherwise, assume it's a UUID. Set up SocketIO to get further progress.
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
           console.log(result);
@@ -167,7 +172,6 @@ export async function sendPayload(
               const data =
                 typeof message === 'string' ? JSON.parse(message) : message;
               console.log('SocketIO message:', data);
-              // When the proof has generated, disconnect and close the WebSocket.
               if (data.status === 2) {
                 console.log('Proof generation completed');
                 socket?.disconnect();
@@ -187,22 +191,18 @@ export async function sendPayload(
         finalize(ProofStatusEnum.ERROR);
       }
     });
-
     ws.addEventListener('error', error => {
       console.error('WebSocket error:', error);
       finalize(ProofStatusEnum.ERROR);
     });
-
     ws.addEventListener('close', event => {
       console.log(
         `WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
       );
-      // If finalization hasn't occurred, assume the connection closed unexpectedly.
       if (!finalized) {
         finalize(ProofStatusEnum.FAILURE);
       }
     });
-
     const timer = setTimeout(() => {
       if (socket) {
         socket.disconnect();

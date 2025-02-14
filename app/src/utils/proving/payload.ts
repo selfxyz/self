@@ -33,6 +33,7 @@ import {
   getLeafDscTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
+import { ProofStatusEnum } from '../../stores/proofProvider';
 import { sendPayload } from './tee';
 
 async function generateTeeInputsRegister(
@@ -123,26 +124,55 @@ async function generateTeeInputsDsc(passportData: PassportData) {
   return { inputs, circuitName };
 }
 
-export async function sendDscPayload(passportData: PassportData): Promise<any> {
+async function checkIdPassportDscIsInTree(
+  passportData: PassportData,
+): Promise<boolean> {
+  const dscTree = await getDSCTree();
+  const hashFunction = (a: any, b: any) => poseidon2([a, b]);
+  const tree = LeanIMT.import(hashFunction, dscTree);
+  const leaf = getLeafDscTree(
+    passportData.dsc_parsed!,
+    passportData.csca_parsed!,
+  );
+  console.log('DSC leaf:', leaf);
+  const index = tree.indexOf(BigInt(leaf));
+  if (index === -1) {
+    console.log('DSC is not found in the tree, sending DSC payload');
+    const dscStatus = await sendDscPayload(passportData);
+    if (dscStatus !== ProofStatusEnum.SUCCESS) {
+      console.log('DSC proof failed');
+      return false;
+    }
+  } else {
+    console.log('DSC is found in the tree, skipping DSC payload');
+  }
+  return true;
+}
+
+export async function sendDscPayload(
+  passportData: PassportData,
+): Promise<ProofStatusEnum | false> {
   if (!passportData) {
     return false;
   }
   const isSupported = checkPassportSupported(passportData);
   if (!isSupported) {
-    console.log('Passport not supported'); //TODO: show a screen explaining that the passport is not supported.
+    console.log('Passport not supported');
     return false;
   }
   const { inputs, circuitName } = await generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
-  const result = await sendPayload(
+  const dscStatus = await sendPayload(
     inputs,
     'dsc',
     circuitName,
     'https',
     'https://self.xyz',
     WS_RPC_URL_DSC,
+    undefined,
+    { updateGlobalOnSuccess: false },
   );
-  return result;
+  return dscStatus;
 }
 
 /*** DISCLOSURE ***/
@@ -266,36 +296,17 @@ function isUserRegistered(_passportData: PassportData, _secret: string) {
   return false;
 }
 
-async function checkIdPassportDscIsInTree(passportData: PassportData) {
-  // download the dsc tree and check if the passport leaf is in the tree
-  const dscTree = await getDSCTree();
-  const hashFunction = (a: any, b: any) => poseidon2([a, b]);
-  const tree = LeanIMT.import(hashFunction, dscTree);
-  const leaf = getLeafDscTree(
-    passportData.dsc_parsed!,
-    passportData.csca_parsed!,
-  );
-  console.log('DSC leaf:', leaf);
-  const index = tree.indexOf(BigInt(leaf));
-  if (index === -1) {
-    console.log('DSC is not found in the tree, sending DSC payload');
-    await sendDscPayload(passportData);
-  } else {
-    console.log('DSC is found in the tree, skipping DSC payload');
-  }
-}
-
 export async function registerPassport(
   passportData: PassportData,
   secret: string,
 ) {
-  // check if user is already registered
   const isRegistered = isUserRegistered(passportData, secret);
   if (isRegistered) {
     return; // TODO: show a screen explaining that the passport is already registered, needs to bring passphrase or secret from icloud backup
   }
-  // download the dsc tree and check if the passport leaf is in the tree
-  await checkIdPassportDscIsInTree(passportData);
-  // send the register payload
+  const dscOk = await checkIdPassportDscIsInTree(passportData);
+  if (!dscOk) {
+    return;
+  }
   await sendRegisterPayload(passportData, secret);
 }
