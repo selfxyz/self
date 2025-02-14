@@ -3,10 +3,9 @@ import { Signer } from "ethers";
 import { getSMTs } from "./generateProof";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
-import { initPassportDataParsing } from "../../../common/src/utils/passports/passport";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
-
+import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
 import {
     DeployedActors,
     VcAndDiscloseVerifier,
@@ -49,7 +48,6 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "940131",
         "401031"
     );
-    mockPassport = initPassportDataParsing(mockPassport);
 
     // Deploy verifiers
     const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local"
@@ -146,7 +144,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     ) as IdentityVerificationHubImplV1;
 
     // Initialize roots
-    const csca_root = getCscaTreeRoot();
+    const csca_root = getCscaTreeRoot(serialized_csca_tree);
     await registryContract.updateCscaRoot(csca_root, { from: owner });
 
     const {

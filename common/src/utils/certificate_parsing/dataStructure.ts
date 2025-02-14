@@ -16,7 +16,7 @@ export interface CertificateData {
   | PublicKeyDetailsECDSA
   | PublicKeyDetailsRSAPSS
   | undefined;
-  tbsBytes: Uint8Array | undefined;
+  tbsBytes: number[] | undefined;
   tbsBytesLength: string;
   rawPem: string;
   rawTxt: string;

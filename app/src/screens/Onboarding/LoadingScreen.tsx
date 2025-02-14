@@ -5,12 +5,12 @@ import LottieView from 'lottie-react-native';
 
 // Import passport data generation and payload functions from common
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
-import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 // Import animations
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
+// import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { registerPassport } from '../../utils/proving/payload';
 
@@ -29,6 +29,7 @@ const LoadingScreen: React.FC = () => {
   };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { status, setStatus } = useProofInfo();
+  // const { getPassportDataAndSecret } = usePassport();
 
   // Ensure we only set the initial status once on mount (if needed)
   useEffect(() => {
@@ -66,8 +67,17 @@ const LoadingScreen: React.FC = () => {
             '000101',
             '300101',
           );
-          const passportDataInit = initPassportDataParsing(passportData);
-          await registerPassport(passportDataInit);
+          await registerPassport(passportData, '0');
+
+          // const passportDataAndSecret = await getPassportDataAndSecret();
+          // if (!passportDataAndSecret) {
+          //   return;
+          // }
+
+          // const { passportData, secret } = passportDataAndSecret.data;
+
+          // // This will trigger sendPayload(), which updates global status via your tee.ts code.
+          // registerPassport(passportData, secret);
         } catch (error) {
           console.error('Error processing payload:', error);
           setStatus(ProofStatusEnum.ERROR);

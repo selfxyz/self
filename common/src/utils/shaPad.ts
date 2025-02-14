@@ -1,7 +1,8 @@
 // Copied from zk-email cuz it uses crypto so can't import it here.
 
 // Puts an end selector, a bunch of 0s, then the length, then fill the rest with 0s.
-export function shaPad(prehash_prepad_m: Uint8Array, maxShaBytes: number): [Uint8Array, number] {
+export function shaPad(prehash_prepad_m_array: number[], maxShaBytes: number): [number[], number] {
+  let prehash_prepad_m = new Uint8Array(prehash_prepad_m_array);
   let length_bits = prehash_prepad_m.length * 8; // bytes to bits
   let length_in_bytes = int64toBytes(length_bits);
   prehash_prepad_m = mergeUInt8Arrays(prehash_prepad_m, int8toBytes(2 ** 7)); // Add the 1 on the end, length 505
@@ -18,13 +19,14 @@ export function shaPad(prehash_prepad_m: Uint8Array, maxShaBytes: number): [Uint
     prehash_prepad_m.length === maxShaBytes,
     `Padding to max length did not complete properly! Your padded message is ${prehash_prepad_m.length} long but max is ${maxShaBytes}!`
   );
-  return [prehash_prepad_m, messageLen];
+  return [Array.from(prehash_prepad_m), messageLen];
 }
 
 export function sha384_512Pad(
-  prehash_prepad_m: Uint8Array,
+  prehash_prepad_m_array: number[],
   maxShaBytes: number
-): [Uint8Array, number] {
+): [number[], number] {
+  let prehash_prepad_m = new Uint8Array(prehash_prepad_m_array);
   // Length in bits before padding
   let length_bits = prehash_prepad_m.length * 8;
 
@@ -57,7 +59,7 @@ export function sha384_512Pad(
     `Padding to max length did not complete properly! Your padded message is ${prehash_prepad_m.length} long but max is ${maxShaBytes}!`
   );
 
-  return [prehash_prepad_m, messageLen];
+  return [Array.from(prehash_prepad_m), messageLen];
 }
 
 // Helper function to convert 128-bit length to bytes

@@ -35,7 +35,7 @@ import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
 import { getLeafDscTree } from '../trees';
 
-/// @dev will brutforce passport and dsc signature — needs to be trigerred after generating mock passport data
+/// @dev will bruteforce passport and dsc signature
 export function initPassportDataParsing(passportData: PassportData) {
   const passportMetadata = parsePassportData(passportData);
   passportData.passportMetadata = passportMetadata;
@@ -45,7 +45,6 @@ export function initPassportDataParsing(passportData: PassportData) {
     const cscaParsed = parseCertificateSimple(passportData.passportMetadata.csca);
     passportData.csca_parsed = cscaParsed;
   }
-  passportData.parsed = true;
   return passportData;
 }
 
@@ -101,18 +100,9 @@ export function padWithZeroes(bytes: number[], length: number) {
   return bytes.concat(new Array(length - bytes.length).fill(0));
 }
 
-function validatePassportMetadata(passportData: PassportData): void {
-  if (!passportData.parsed) {
-    throw new Error('Passport data is not parsed');
-  }
-}
-
 /// @notice Get the signature of the passport and the public key of the DSC
 /// @dev valid for only for the passport/dsc chain
 export function getPassportSignatureInfos(passportData: PassportData) {
-  if (!passportData.parsed) {
-    throw new Error('Passport data is not parsed');
-  }
   const passportMetadata = passportData.passportMetadata;
   const signatureAlgorithmFullName = getSignatureAlgorithmFullName(
     passportData.dsc_parsed,
@@ -257,7 +247,6 @@ export function getSignatureAlgorithmFullName(
 
 /*** retrieve pubKey bytes - will be used in generateCircuitsInputsCSCA ***/
 export function getPubKeyBytes(passportData: PassportData, type: 'dsc' | 'csca'): number[] {
-  validatePassportMetadata(passportData);
   if (type === 'dsc') {
     return getDscPubKeyBytes(passportData);
   } else if (type === 'csca') {

@@ -16,22 +16,13 @@ import { pad } from './passports/passport';
 import countries from "i18n-iso-countries";
 import en from "i18n-iso-countries/langs/en.json";
 countries.registerLocale(en);
-import serialized_csca_tree from '../../pubkeys/serialized_csca_tree.json';
-import serialized_dsc_tree from '../../pubkeys/serialized_dsc_tree.json';
 
-
-export async function getCSCATree(devMode: boolean): Promise<string[][]> {
-  if (devMode) {
-    return serialized_csca_tree;
-  }
+export async function getCSCATree(): Promise<string[][]> {
   const response = await fetch(CSCA_TREE_URL);
   return await response.json().then(data => data.data ? JSON.parse(data.data) : data);
 }
 
-export async function getDSCTree(devMode: boolean): Promise<string> {
-  if (devMode) {
-    return serialized_dsc_tree;
-  }
+export async function getDSCTree(): Promise<string> {
   const response = await fetch(DSC_TREE_URL);
   return await response.json().then(data => data.data ? data.data : data);
 }
@@ -112,6 +103,7 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
   const proof = tree.createProof(index);
   return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
 }
+
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
   tree.setNodes(serialized_csca_tree);

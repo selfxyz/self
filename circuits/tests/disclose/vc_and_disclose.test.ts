@@ -20,17 +20,14 @@ import {
   formatAndUnpackForbiddenCountriesList,
   getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
-import {
-  generateCommitment,
-  initPassportDataParsing,
-} from '../../../common/src/utils/passports/passport';
+import { generateCommitment } from '../../../common/src/utils/passports/passport';
 
 describe('Disclose', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
   let w: any;
-  let passportData = genMockPassportData(
+  const passportData = genMockPassportData(
     'sha256',
     'sha256',
     'rsa_sha256_65537_2048',
@@ -38,7 +35,6 @@ describe('Disclose', function () {
     '000101',
     '300101'
   );
-  passportData = initPassportDataParsing(passportData);
   const forbidden_countries_list = ['ALG', 'DZA'];
 
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
@@ -356,7 +352,7 @@ describe('Disclose', function () {
       for (const testCase of testCases) {
         console.log(`Testing: ${testCase.desc}`);
 
-        const passportData = initPassportDataParsing(testCase.data);
+        const passportData = testCase.data;
         const sanctionedCommitment = generateCommitment(
           secret,
           PASSPORT_ATTESTATION_ID,

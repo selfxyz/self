@@ -7,8 +7,8 @@ import React, {
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
+import { loadSecretOrCreateIt } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 
 async function loadPassportData() {
@@ -17,24 +17,24 @@ async function loadPassportData() {
   });
   return passportDataCreds === false ? false : passportDataCreds.password;
 }
-async function storePassportData(passportData: PassportData) {
+
+async function loadPassportDataAndSecret() {
+  const passportData = await loadPassportData();
+  const secret = await loadSecretOrCreateIt();
+  if (!secret || !passportData) {
+    return false;
+  }
+  return JSON.stringify({
+    secret,
+    passportData: JSON.parse(passportData),
+  });
+}
+
+export async function storePassportData(passportData: PassportData) {
   await Keychain.setGenericPassword(
     'passportData',
     JSON.stringify(passportData),
     { service: 'passportData' },
-  );
-}
-async function loadPassportMetadata() {
-  const metadataCreds = await Keychain.getGenericPassword({
-    service: 'passportMetadata',
-  });
-  return metadataCreds === false ? false : metadataCreds.password;
-}
-async function storePassportMetadata(metadata: PassportMetadata) {
-  await Keychain.setGenericPassword(
-    'passportMetadata',
-    JSON.stringify(metadata),
-    { service: 'passportMetadata' },
   );
 }
 
@@ -44,18 +44,16 @@ interface PassportProviderProps extends PropsWithChildren {
 interface IPassportContext {
   getData: () => Promise<{ signature: string; data: PassportData } | null>;
   setData: (data: PassportData) => Promise<void>;
-  getMetadata: () => Promise<{
+  getPassportDataAndSecret: () => Promise<{
+    data: { passportData: PassportData; secret: string };
     signature: string;
-    data: PassportMetadata;
   } | null>;
-  setMetadata: (metadata: PassportMetadata) => Promise<void>;
 }
 
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
-  getMetadata: () => Promise.resolve(null),
   setData: storePassportData,
-  setMetadata: storePassportMetadata,
+  getPassportDataAndSecret: () => Promise.resolve(null),
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -66,10 +64,11 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     [_getSecurely],
   );
 
-  const getMetadata = useCallback(
+  const getPassportDataAndSecret = useCallback(
     () =>
-      _getSecurely<PassportMetadata>(loadPassportMetadata, str =>
-        JSON.parse(str),
+      _getSecurely<{ passportData: PassportData; secret: string }>(
+        loadPassportDataAndSecret,
+        str => JSON.parse(str),
       ),
     [_getSecurely],
   );
@@ -77,11 +76,10 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const state: IPassportContext = useMemo(
     () => ({
       getData,
-      getMetadata,
       setData: storePassportData,
-      setMetadata: storePassportMetadata,
+      getPassportDataAndSecret,
     }),
-    [getData, getMetadata],
+    [getData, getPassportDataAndSecret],
   );
 
   return (

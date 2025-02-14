@@ -9,6 +9,7 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
+import { useAuth } from '../../stores/authProvider';
 import {
   black,
   slate300,
@@ -17,7 +18,6 @@ import {
   slate700,
   white,
 } from '../../utils/colors';
-import { restoreSecret } from '../../utils/keychain';
 
 interface RecoverWithPhraseScreenProps {}
 
@@ -25,6 +25,7 @@ const RecoverWithPhraseScreen: React.FC<
   RecoverWithPhraseScreenProps
 > = ({}) => {
   const navigation = useNavigation();
+  const { restoreAccountFromMnemonic } = useAuth();
   const [mnemonic, setMnemonic] = useState<string>();
 
   const onPaste = useCallback(async () => {
@@ -38,7 +39,7 @@ const RecoverWithPhraseScreen: React.FC<
     if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
       return;
     }
-    await restoreSecret(mnemonic);
+    await restoreAccountFromMnemonic(mnemonic);
     navigation.navigate('Home');
   }, [mnemonic]);
 

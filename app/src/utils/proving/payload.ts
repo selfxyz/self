@@ -27,6 +27,7 @@ import {
 } from '../../../../common/src/utils/circuits/generateInputs';
 import { generateCommitment } from '../../../../common/src/utils/passports/passport';
 import {
+  getCSCATree,
   getCommitmentTree,
   getDSCTree,
   getLeafDscTree,
@@ -34,13 +35,16 @@ import {
 import { PassportData } from '../../../../common/src/utils/types';
 import { sendPayload } from './tee';
 
-const mock_secret = '0'; //TODO: retrieve the secret from keychain
-
 async function generateTeeInputsRegister(
   secret: string,
   passportData: PassportData,
 ) {
-  const inputs = await generateCircuitInputsRegister(secret, passportData);
+  const serialized_dsc_tree = await getDSCTree();
+  const inputs = generateCircuitInputsRegister(
+    secret,
+    passportData,
+    serialized_dsc_tree,
+  );
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
   if (circuitName == null) {
     throw new Error('Circuit name is null');
@@ -49,10 +53,6 @@ async function generateTeeInputsRegister(
 }
 
 function checkPassportSupported(passportData: PassportData) {
-  if (!passportData.parsed) {
-    console.log('Passport data is not parsed');
-    return false;
-  }
   const passportMetadata = passportData.passportMetadata;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
@@ -81,7 +81,10 @@ function checkPassportSupported(passportData: PassportData) {
   return true;
 }
 
-export async function sendRegisterPayload(passportData: PassportData) {
+export async function sendRegisterPayload(
+  passportData: PassportData,
+  secret: string,
+) {
   if (!passportData) {
     return null;
   }
@@ -91,8 +94,9 @@ export async function sendRegisterPayload(passportData: PassportData) {
     console.log('Passport not supported');
     return;
   }
+
   const { inputs, circuitName } = await generateTeeInputsRegister(
-    mock_secret,
+    secret,
     passportData,
   );
   console.log('WS_RPC_URL_REGISTER', WS_RPC_URL_REGISTER);
@@ -106,8 +110,12 @@ export async function sendRegisterPayload(passportData: PassportData) {
   );
 }
 
-function generateTeeInputsDsc(passportData: PassportData) {
-  const inputs = generateCircuitInputsDSC(passportData.dsc, false);
+async function generateTeeInputsDsc(passportData: PassportData) {
+  const serialized_csca_tree = await getCSCATree();
+  const inputs = generateCircuitInputsDSC(
+    passportData.dsc,
+    serialized_csca_tree,
+  );
   const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
   if (circuitName == null) {
     throw new Error('Circuit name is null');
@@ -124,7 +132,7 @@ export async function sendDscPayload(passportData: PassportData): Promise<any> {
     console.log('Passport not supported'); //TODO: show a screen explaining that the passport is not supported.
     return false;
   }
-  const { inputs, circuitName } = generateTeeInputsDsc(passportData);
+  const { inputs, circuitName } = await generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
   const result = await sendPayload(
     inputs,
@@ -251,7 +259,7 @@ export async function sendVcAndDisclosePayload(
 
 /*** Logic Flow ****/
 
-function isUserRegistered(_passportData: PassportData) {
+function isUserRegistered(_passportData: PassportData, _secret: string) {
   // check if user is already registered
   // if registered, return true
   // if not registered, return false
@@ -260,12 +268,12 @@ function isUserRegistered(_passportData: PassportData) {
 
 async function checkIdPassportDscIsInTree(passportData: PassportData) {
   // download the dsc tree and check if the passport leaf is in the tree
-  const dscTree = await getDSCTree(false);
+  const dscTree = await getDSCTree();
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
   const leaf = getLeafDscTree(
-    passportData.dsc_parsed,
-    passportData.csca_parsed,
+    passportData.dsc_parsed!,
+    passportData.csca_parsed!,
   );
   console.log('DSC leaf:', leaf);
   const index = tree.indexOf(BigInt(leaf));
@@ -277,14 +285,17 @@ async function checkIdPassportDscIsInTree(passportData: PassportData) {
   }
 }
 
-export async function registerPassport(passportData: PassportData) {
+export async function registerPassport(
+  passportData: PassportData,
+  secret: string,
+) {
   // check if user is already registered
-  const isRegistered = isUserRegistered(passportData);
+  const isRegistered = isUserRegistered(passportData, secret);
   if (isRegistered) {
     return; // TODO: show a screen explaining that the passport is already registered, needs to bring passphrase or secret from icloud backup
   }
   // download the dsc tree and check if the passport leaf is in the tree
   await checkIdPassportDscIsInTree(passportData);
   // send the register payload
-  await sendRegisterPayload(passportData);
+  await sendRegisterPayload(passportData, secret);
 }

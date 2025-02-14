@@ -3,42 +3,20 @@ import { resetGenericPassword } from 'react-native-keychain';
 import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
 
-// import { generateDscSecret } from '../../../common/src/utils/csca';
-import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
-import { PassportData, Proof } from '../../../common/src/utils/types';
-import {
-  // loadPassportData,
-  // loadPassportMetadata,
-  // loadSecretOrCreateIt,
-  // storePassportData,
-  storePassportMetadata,
-} from '../utils/keychain';
-
 interface UserState {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
   countryCode: string;
   registered: boolean;
-  passportData: PassportData | null;
-  passportMetadata: PassportMetadata | null;
-  secret: string;
-  cscaProof: Proof | null;
-  localProof: Proof | null;
-  dscSecret: string | null;
   userLoaded: boolean;
   initUserStore: () => void;
-  registerPassportData: (passportData: PassportData) => Promise<void>;
   clearPassportDataFromStorage: () => void;
   clearSecretFromStorage: () => void;
-  clearProofsFromStorage: () => void;
   update: (patch: any) => void;
   deleteMrzFields: () => void;
   setRegistered: (registered: boolean) => void;
-  setDscSecret: (dscSecret: string) => void;
   setUserLoaded: (userLoaded: boolean) => void;
-  setPassportMetadata: (metadata: PassportMetadata) => void;
-  clearPassportMetadataFromStorage: () => void;
 }
 
 const useUserStore = create<UserState>((set, get) => ({
@@ -47,25 +25,12 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
   countryCode: '',
-  dscSecret: null,
   registered: false,
-  passportData: null,
-  passportMetadata: null,
-  secret: '',
-  cscaProof: null,
-  localProof: null,
   setRegistered: (registered: boolean) => {
     set({ registered });
   },
-  setDscSecret: (dscSecret: string) => {
-    set({ dscSecret });
-  },
   setUserLoaded: (userLoaded: boolean) => {
     set({ userLoaded });
-  },
-  setPassportMetadata: async (metadata: PassportMetadata) => {
-    await storePassportMetadata(metadata);
-    set({ passportMetadata: metadata });
   },
   // When user opens the app, checks presence of passportData
   // - If passportData is not present, starts the onboarding flow
@@ -116,27 +81,8 @@ const useUserStore = create<UserState>((set, get) => ({
     // });
   },
 
-  // When reading passport for the first time:
-  // - Check presence of secret. If there is none, create one and store it
-  // 	- Store the passportData and try registering the commitment in the background
-  registerPassportData: async (/*passportData*/) => {
-    // const alreadyStoredPassportData = await loadPassportData();
-    // if (alreadyStoredPassportData) {
-    //   console.log(
-    //     'a passportData is already stored, replacing it with the new one',
-    //   );
-    // }
-    // await storePassportData(passportData);
-    // set({ passportData });
-  },
-
   clearPassportDataFromStorage: async () => {
     await resetGenericPassword({ service: 'passportData' });
-  },
-
-  clearProofsFromStorage: async () => {
-    get().cscaProof = null;
-    get().localProof = null;
   },
 
   clearSecretFromStorage: async () => {
@@ -156,11 +102,6 @@ const useUserStore = create<UserState>((set, get) => ({
       dateOfBirth: '',
       dateOfExpiry: '',
     }),
-
-  clearPassportMetadataFromStorage: async () => {
-    await resetGenericPassword({ service: 'passportMetadata' });
-    set({ passportMetadata: null });
-  },
 }));
 
 export default useUserStore;

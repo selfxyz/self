@@ -344,14 +344,8 @@ export function getCertificateFromPem(pemContent: string): Certificate {
   return new Certificate({ schema: asn1.result })
 }
 
-export function getTBSBytes(pemContent: string): Uint8Array {
-  const certificate = getCertificateFromPem(pemContent);
-  return Uint8Array.from(
-    certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
-  );
-}
-export function getTBSBytesForge(certificate: Certificate): Uint8Array {
-  return Uint8Array.from(
+export function getTBSBytesForge(certificate: Certificate): number[] {
+  return Array.from(
     certificate.tbsView.map((byte) => parseInt(byte.toString(16), 16))
   );
 }

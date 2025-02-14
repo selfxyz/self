@@ -14,6 +14,7 @@ import {
 import { getCurveForElliptic } from '../certificate_parsing/curves';
 import { formatAndConcatenateDataHashes, formatMrz } from './format';
 import { generateSignedAttr } from './format';
+import { initPassportDataParsing } from './passport';
 
 function generateRandomBytes(length: number): number[] {
   // Generate numbers between -128 and 127 to match the existing signed byte format
@@ -259,7 +260,7 @@ export function genMockPassportData(
   const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
 
-  return {
+  return initPassportDataParsing({
     dsc: dsc,
     mrz: mrz,
     dg2Hash: dataGroupHashes.find(([dgNum]) => dgNum === 2)?.[1] || [],
@@ -267,9 +268,7 @@ export function genMockPassportData(
     signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
     photoBase64: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIy3...',
-    mockUser: true,
-    parsed: false,
-  };
+  });
 }
 
 function sign(

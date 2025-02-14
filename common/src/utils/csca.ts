@@ -6,7 +6,7 @@ import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 import { splitToWords } from './bytes';
 import path from 'path';
 
-export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): [number, number] {
+export function findStartIndexEC(modulus: string, messagePadded: number[]): [number, number] {
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     modulusNumArray.push(parseInt(modulus.slice(i, i + 2), 16));
@@ -38,15 +38,13 @@ export function findStartIndexEC(modulus: string, messagePadded: Uint8Array): [n
 }
 
 // @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
-export function findStartIndex(modulus: string, messagePadded: Uint8Array): [number, number] {
+export function findStartIndex(modulus: string, messagePaddedNumber: number[]): [number, number] {
   const modulusNumArray = [];
   for (let i = 0; i < modulus.length; i += 2) {
     const hexPair = modulus.slice(i, i + 2);
     const number = parseInt(hexPair, 16);
     modulusNumArray.push(number);
   }
-
-  const messagePaddedNumber = Array.from(messagePadded);
 
   // console.log('Modulus length:', modulusNumArray.length);
   // console.log('Message length:', messagePaddedNumber.length);
@@ -71,7 +69,7 @@ export function findStartIndex(modulus: string, messagePadded: Uint8Array): [num
 
 export function findOIDPosition(
   oid: string,
-  message: Uint8Array
+  message: number[]
 ): { oid_index: number; oid_length: number } {
   // Convert OID string like "1.2.840.113549" to byte array
   const oidParts = oid.split('.').map(Number);

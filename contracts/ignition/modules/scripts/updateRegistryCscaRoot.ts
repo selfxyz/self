@@ -3,6 +3,7 @@ import hre from "hardhat";
 import fs from "fs";
 import path from "path";
 import { getCscaTreeRoot } from "../../../../common/src/utils/trees";
+import serialized_csca_tree from "../../../../common/pubkeys/serialized_csca_tree.json";
 
 module.exports = buildModule("UpdateRegistryCscaRoot", (m) => {
 
@@ -15,7 +16,7 @@ module.exports = buildModule("UpdateRegistryCscaRoot", (m) => {
 
   const deployedRegistryInstance = m.contractAt("IdentityRegistryImplV1", registryAddress);
   console.log("Deployed registry instance", deployedRegistryInstance);
-  const merkleRoot = getCscaTreeRoot();
+  const merkleRoot = getCscaTreeRoot(serialized_csca_tree);
   console.log("Merkle root", merkleRoot);
   m.call(deployedRegistryInstance, "updateCscaRoot", [merkleRoot]);
   return { deployedRegistryInstance };
