@@ -30,6 +30,7 @@ import ProveScreen from './screens/ProveFlow/ProveScreen';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
 import CloudBackupScreen from './screens/Settings/CloudBackupScreen';
 import DevSettingsScreen from './screens/Settings/DevSettingsScreen';
+import ModalScreen from './screens/Settings/ModalScreen';
 import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
@@ -65,6 +66,14 @@ const AppNavigation = createNativeStackNavigator({
       screen: StartScreen,
       options: {
         headerShown: false,
+      },
+    },
+    Modal: {
+      screen: ModalScreen,
+      options: {
+        headerShown: false,
+        presentation: 'transparentModal',
+        animation: 'fade',
       },
     },
     /**

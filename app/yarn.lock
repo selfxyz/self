@@ -12474,9 +12474,11 @@ __metadata:
     react-native: "npm:0.75.4"
     react-native-biometrics: "npm:^3.0.1"
     react-native-bundle-visualizer: "npm:^3.1.3"
+    react-native-check-version: "npm:^1.3.0"
     react-native-cloud-storage: "npm:^2.2.2"
     react-native-crypto: "npm:^2.2.0"
     react-native-date-picker: "https://github.com/norman-kapschefsky/react-native-date-picker#07b13884e392f386611248bab0f2f9b1093b2f35"
+    react-native-device-info: "npm:^14.0.4"
     react-native-dialog: "npm:^9.3.0"
     react-native-dotenv: "npm:^3.4.11"
     react-native-fs: "npm:^2.20.0"
@@ -13123,6 +13125,16 @@ __metadata:
   languageName: node
   linkType: hard
 
+"react-native-check-version@npm:^1.3.0":
+  version: 1.3.0
+  resolution: "react-native-check-version@npm:1.3.0"
+  peerDependencies:
+    react-native: ">=0.40.0"
+    react-native-device-info: ">=0.20.0"
+  checksum: 10c0/6a4216841ae0d59cb1fd952107960b29867423838f8bbfbd9a49a53ed50e240e6e3892408865009188a9c7f3b56c2eec730147b0f1374ae0f15ee6c2979c7deb
+  languageName: node
+  linkType: hard
+
 "react-native-cloud-storage@npm:^2.2.2":
   version: 2.2.2
   resolution: "react-native-cloud-storage@npm:2.2.2"
@@ -13164,6 +13176,15 @@ __metadata:
     react: ">= 17.0.1"
     react-native: ">= 0.64.3"
   checksum: 10c0/ebb3dfb9a111bf6082866999d31e10f952fcd12bcf2a81210ff9f44a4cb4d25e1b4caac5fdec512b367685e56a37e61de3e6648c2af45b93fcbaf704355dbaa6
+  languageName: node
+  linkType: hard
+
+"react-native-device-info@npm:^14.0.4":
+  version: 14.0.4
+  resolution: "react-native-device-info@npm:14.0.4"
+  peerDependencies:
+    react-native: "*"
+  checksum: 10c0/3d89519b4e9f9f130b352f5243282f8b807aba0f55ccc0e1dc9f15b285215949751491ef2f11f1984a55f0f5e0ae76cd16620d2cdfcc118e2ca5f39d300d5524
   languageName: node
   linkType: hard
 

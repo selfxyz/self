@@ -1,11 +1,12 @@
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { usePreventRemove } from '@react-navigation/native';
+import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
 
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
+import { useAppUpdates } from '../hooks/useAppUpdates';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import SelfCard from '../images/card-style-1.svg';
 import ScanIcon from '../images/icons/qr_scan.svg';
@@ -25,6 +26,15 @@ const ScanButton = styled(Button, {
 });
 
 const HomeScreen: React.FC = () => {
+  const [isNewVersionAvailable, showAppUpdateModal, isModalDismissed] =
+    useAppUpdates();
+
+  useFocusEffect(() => {
+    if (isNewVersionAvailable && !isModalDismissed) {
+      showAppUpdateModal();
+    }
+  });
+
   const onCaptionPress = useHapticNavigation('ConfirmBelongingScreen');
   const onScanButtonPress = useHapticNavigation('QRCodeViewFinder');
   // Prevents back navigation
