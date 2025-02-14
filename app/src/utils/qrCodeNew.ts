@@ -22,16 +22,6 @@ export default async function handleQRCodeScan(
       const unpackedData = msgpack.decode(decompressedData);
       const openPassportApp: SelfApp = unpackedData;
 
-      // TODO  think not needed
-      // const circuitName =
-      //   openPassportApp.mode === 'vc_and_disclose'
-      //     ? 'vc_and_disclose'
-      //     : getCircuitNameOld(
-      //         'prove' as Mode,
-      //         passportMetadata.signatureAlgorithm,
-      //         passportMetadata.signedAttrHashFunction,
-      //       );
-      // await downloadZkey(circuitName as any);
       setApp(openPassportApp);
       console.log('✅', {
         message: 'QR code scannedrre',

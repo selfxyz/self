@@ -21,18 +21,7 @@ global.Buffer = Buffer;
 export let segmentClient: ReturnType<typeof createClient> | null = null;
 
 function App(): React.JSX.Element {
-  // const toast = useToastController();
-  // const setToast = useNavigationStore(state => state.setToast);
   const initUserStore = useUserStore(state => state.initUserStore);
-  // const setSelectedTab = useNavigationStore(state => state.setSelectedTab);
-
-  // useEffect(() => {
-  //   setToast(toast);
-  // }, [toast, setToast]);
-
-  // useEffect(() => {
-  //   setSelectedTab('splash');
-  // }, [setSelectedTab]);
 
   useEffect(() => {
     // init
