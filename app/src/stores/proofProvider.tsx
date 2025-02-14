@@ -66,6 +66,11 @@ export function ProofProvider({ children }: PropsWithChildren) {
 
   // reset all the values so it not in wierd state
   const setSelectedApp = useCallback((app: SelfApp) => {
+    console.log('[ProofProvider] Setting new app:', app);
+    if (!app || Object.keys(app).length === 0) {
+      console.log('[ProofProvider] Ignoring empty app data');
+      return;
+    }
     setStatus(ProofStatusEnum.PENDING);
     setProofVerificationResult(null);
     setSelectedAppInternal(app);
@@ -117,7 +122,13 @@ export function ProofProvider({ children }: PropsWithChildren) {
       setProofVerificationResult,
       setStatus,
     }),
-    [status, proofVerificationResult, setSelectedApp, cleanSelfApp],
+    [
+      status,
+      proofVerificationResult,
+      selectedApp,
+      setSelectedApp,
+      cleanSelfApp,
+    ],
   );
 
   return (

@@ -12,7 +12,6 @@ import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import useUserStore from '../../stores/userStore';
 import { registerPassport } from '../../utils/proving/payload';
 
 const LoadingScreen: React.FC = () => {
@@ -68,8 +67,6 @@ const LoadingScreen: React.FC = () => {
             '300101',
           );
           const passportDataInit = initPassportDataParsing(passportData);
-          await useUserStore.getState().registerPassportData(passportDataInit);
-          // This will trigger sendPayload(), which updates global status via your tee.ts code.
           await registerPassport(passportDataInit);
         } catch (error) {
           console.error('Error processing payload:', error);

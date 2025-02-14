@@ -126,4 +126,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
 
-export { OpenPassportQRcodeWrapper, SelfApp, SelfAppBuilder };
+// Export the wrapper component as the default export
+export default OpenPassportQRcodeWrapper;
+
+// Also export other components/types that might be needed
+export { OpenPassportQRcode, SelfApp, SelfAppBuilder };

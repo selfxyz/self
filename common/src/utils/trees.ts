@@ -8,7 +8,7 @@ import {
 import { packBytesAndPoseidon } from './hash';
 import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, IDENTITY_TREE_URL, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
 import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
 import { max_dsc_bytes } from '../constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
@@ -33,6 +33,11 @@ export async function getDSCTree(devMode: boolean): Promise<string> {
     return serialized_dsc_tree;
   }
   const response = await fetch(DSC_TREE_URL);
+  return await response.json().then(data => data.data ? data.data : data);
+}
+
+export async function getCommitmentTree(): Promise<string> {
+  const response = await fetch(IDENTITY_TREE_URL);
   return await response.json().then(data => data.data ? data.data : data);
 }
 

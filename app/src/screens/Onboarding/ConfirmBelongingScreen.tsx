@@ -14,7 +14,7 @@ import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const ConfirmBelongingScreen: React.FC = () => {
-  const onOkPress = useHapticNavigation('LoadingScreen', 'default');
+  const onOkPress = useHapticNavigation('LoadingScreen');
   useEffect(() => {
     notificationSuccess();
   }, []);

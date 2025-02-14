@@ -34,7 +34,7 @@ type DisclosureBoolOption = {
 }
 
 type DisclosureMatchKeys = 'nationality' | 'minimumAge'
-interface DisclosureMatchOption<T = DisclosureMatchKeys> {
+export interface DisclosureMatchOption<T = DisclosureMatchKeys> {
   enabled: boolean;
   key: T;
   value: string;
@@ -53,7 +53,7 @@ export type DisclosureOptions = Array<DisclosureOption>
 
 export type GetDisclosure<T extends DisclosureAttributes> = T extends DisclosureMatchKeys ? DisclosureMatchOption : T extends DisclosureListKeys ? DisclosureListOption : DisclosureBoolOption
 
-
+// {"appName": "Mock App2", "args": {"disclosureOptions": [[Object]]}, "devMode": false, "endpoint": "https://mock-app2.com", "endpointType": "https", "header": "", "logoBase64": "", "scope": "scope", "sessionId": "05ce9b3f-cf20-4eca-8bf1-df2694967787", "userId": "06e946f1-485c-4af4-97c4-74a61cf47724", "userIdType": "uuid"}
 export class SelfAppBuilder {
   appName: string;
   logoBase64: string;
@@ -76,6 +76,11 @@ export class SelfAppBuilder {
     this.header = '';
     this.endpoint = endpoint;
     this.sessionId = v4();
+    this.logoBase64 = '';
+    this.userId = '';
+    this.userIdType = 'uuid';
+    this.devMode = false;
+    this.endpointType = 'https';
   }
 
   setLogoBase64(logoBase64: string) {

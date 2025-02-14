@@ -1,19 +1,24 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
-import { v4 } from 'uuid';
 
 import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
+  DEFAULT_MAJORITY,
   DEPLOYED_CIRCUITS_DSC,
   DEPLOYED_CIRCUITS_REGISTER,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_DSC,
   WS_RPC_URL_REGISTER,
   WS_RPC_URL_VC_AND_DISCLOSE,
+  attributeToPosition,
 } from '../../../../common/src/constants/constants';
+import {
+  DisclosureMatchOption,
+  SelfApp,
+} from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
@@ -21,7 +26,11 @@ import {
   generateCircuitInputsVCandDisclose,
 } from '../../../../common/src/utils/circuits/generateInputs';
 import { generateCommitment } from '../../../../common/src/utils/passports/passport';
-import { getDSCTree, getLeafDscTree } from '../../../../common/src/utils/trees';
+import {
+  getCommitmentTree,
+  getDSCTree,
+  getLeafDscTree,
+} from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { sendPayload } from './tee';
 
@@ -128,35 +137,74 @@ export async function sendDscPayload(passportData: PassportData): Promise<any> {
   return result;
 }
 
-function generateTeeInputsVCAndDisclose(passportData: PassportData) {
-  const majority = '18';
-  // THIS Does not work. need a package for this in react native
-  const user_identifier = v4();
-  const selector_dg1 = Array(88).fill('1');
-  const selector_older_than = '1';
-  const scope = '@coboyApp';
-  const attestation_id = PASSPORT_ATTESTATION_ID;
+/*** DISCLOSURE ***/
 
-  const commitment = generateCommitment(
-    mock_secret,
-    attestation_id,
-    passportData,
-  );
-  const tree = new LeanIMT<bigint>((a, b) => poseidon2([a, b]), []);
-  tree.insert(BigInt(commitment));
+async function getSMT() {
+  // TODO: get the SMT from an endpoint
   const passportNoAndNationalitySMT = new SMT(poseidon2, true);
   passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);
   const nameAndDobSMT = new SMT(poseidon2, true);
   nameAndDobSMT.import(nameAndDobSMTData);
   const nameAndYobSMT = new SMT(poseidon2, true);
   nameAndYobSMT.import(nameAndYobSMTData);
+  return { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT };
+}
 
-  const selector_ofac = 1;
-  const forbidden_countries_list = ['ABC', 'DEF'];
+async function generateTeeInputsVCAndDisclose(
+  secret: string,
+  passportData: PassportData,
+  selfApp: SelfApp,
+) {
+  let majority = DEFAULT_MAJORITY;
+  const minAgeOption = selfApp.args.disclosureOptions.find(
+    opt => opt.key === 'minimumAge',
+  );
+  if (
+    minAgeOption &&
+    minAgeOption.enabled &&
+    minAgeOption.key === 'minimumAge'
+  ) {
+    majority = (minAgeOption as DisclosureMatchOption<'minimumAge'>).value;
+  }
+
+  const user_identifier = selfApp.userId;
+
+  let selector_dg1 = new Array(88).fill('0');
+  const nationalityOption = selfApp.args.disclosureOptions.find(
+    opt => opt.key === 'nationality',
+  );
+  if (nationalityOption && nationalityOption.enabled) {
+    const [start, end] = attributeToPosition.nationality;
+    for (let i = start; i <= end && i < selector_dg1.length; i++) {
+      selector_dg1[i] = '1';
+    }
+  }
+  // TODO: add more options, we have to do it to in OpenpassportQrcode.ts
+
+  const selector_older_than = minAgeOption && minAgeOption.enabled ? '1' : '0';
+  const ofacOption = selfApp.args.disclosureOptions.find(
+    opt => opt.key === 'ofac',
+  );
+  const selector_ofac = ofacOption && ofacOption.enabled ? 1 : 0;
+  const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
+    await getSMT();
+  const scope = selfApp.scope;
+  const attestation_id = PASSPORT_ATTESTATION_ID;
+  const commitment = generateCommitment(secret, attestation_id, passportData);
+  const _tree = await getCommitmentTree();
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), _tree);
+  tree.insert(BigInt(commitment)); // TODO: dont do that! for now we add the commitment as the whole flow is not yet implemented
+  let forbidden_countries_list: string[] = ['ABC', 'DEF']; // TODO: add the countries from the disclosure options
+  const excludedCountriesOption = selfApp.args.disclosureOptions.find(
+    opt => opt.key === 'excludedCountries',
+  ) as { enabled: boolean; key: string; value: string[] } | undefined;
+  if (excludedCountriesOption && excludedCountriesOption.enabled) {
+    forbidden_countries_list = excludedCountriesOption.value;
+  }
 
   const inputs = generateCircuitInputsVCandDisclose(
-    mock_secret,
-    PASSPORT_ATTESTATION_ID,
+    secret,
+    attestation_id,
     passportData,
     scope,
     selector_dg1,
@@ -174,7 +222,9 @@ function generateTeeInputsVCAndDisclose(passportData: PassportData) {
 }
 
 export async function sendVcAndDisclosePayload(
+  secret: string,
   passportData: PassportData | null,
+  selfApp: SelfApp,
 ) {
   if (!passportData) {
     return null;
@@ -184,13 +234,17 @@ export async function sendVcAndDisclosePayload(
     // TODO: show a screen explaining that the passport is not supported.
     return;
   }
-  const { inputs, circuitName } = generateTeeInputsVCAndDisclose(passportData);
+  const { inputs, circuitName } = await generateTeeInputsVCAndDisclose(
+    secret,
+    passportData,
+    selfApp,
+  );
   await sendPayload(
     inputs,
     'vc_and_disclose',
     circuitName,
-    'https',
-    'https://self.xyz',
+    selfApp.endpointType,
+    selfApp.endpoint,
     WS_RPC_URL_VC_AND_DISCLOSE,
   );
 }

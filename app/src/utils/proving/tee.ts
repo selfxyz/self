@@ -73,6 +73,8 @@ export async function sendPayload(
       }
     }
 
+    console.log(inputs);
+
     const uuid = v4();
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
@@ -121,6 +123,7 @@ export async function sendPayload(
             endpointType,
             endpoint,
           );
+          console.log('payload', payload);
           const encryptionData = encryptAES256GCM(
             JSON.stringify(payload),
             forgeKey,
@@ -224,6 +227,7 @@ export type TEEPayloadDisclose = {
   type: 'disclose';
   endpointType: string;
   endpoint: string;
+  onchain: boolean;
   circuit: {
     name: string;
     inputs: string;
@@ -250,6 +254,7 @@ export function getPayload(
       type: 'disclose',
       endpointType: endpointType,
       endpoint: endpoint,
+      onchain: endpointType === 'celo' ? true : false,
       circuit: {
         name: circuitName,
         inputs: JSON.stringify(inputs),

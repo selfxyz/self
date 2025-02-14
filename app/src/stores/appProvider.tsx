@@ -67,22 +67,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         );
       });
 
-      // Listen for the event (should be emitted from the web side once mobile connects).
-      socket.on('self_app', (data: any) => {
+      // Listen for the event only once so that duplicate self_app events are ignored.
+      socket.once('self_app', (data: any) => {
         console.log('[AppProvider] Received self_app event with data:', data);
-        const appData: SelfApp =
-          typeof data === 'string' ? JSON.parse(data) : data;
-        // setSelfApp(appData);
-        console.log(
-          '[AppProvider] Updated selfApp state:',
-          JSON.stringify(appData),
-        );
-        // Update the navigation store so that ProveScreen (and other screens) know which app is selected.
-        setSelectedApp(appData);
-        console.log(
-          '[AppProvider] Called setSelectedApp with appData:',
-          appData,
-        );
+        try {
+          const appData: SelfApp =
+            typeof data === 'string' ? JSON.parse(data) : data;
+          if (!appData || !appData.sessionId) {
+            console.error('[AppProvider] Invalid app data received');
+            return;
+          }
+          console.log(
+            '[AppProvider] Processing valid app data:',
+            JSON.stringify(appData),
+          );
+          setSelectedApp(appData);
+        } catch (error) {
+          console.error('[AppProvider] Error processing app data:', error);
+        }
       });
 
       socket.on('connect_error', error => {

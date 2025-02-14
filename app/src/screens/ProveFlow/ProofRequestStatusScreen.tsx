@@ -13,7 +13,7 @@ import { Title } from '../../components/typography/Title';
 import { typography } from '../../components/typography/styles';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { ProofStatus, useProofInfo } from '../../stores/proofProvider';
+import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { black, white } from '../../utils/colors';
 import { notificationError, notificationSuccess } from '../../utils/haptic';
 
@@ -88,7 +88,7 @@ const SuccessScreen: React.FC = () => {
   );
 };
 
-function getAnimation(status: ProofStatus) {
+function getAnimation(status: ProofStatusEnum) {
   switch (status) {
     case 'success':
       return succesAnimation;
@@ -100,7 +100,7 @@ function getAnimation(status: ProofStatus) {
   }
 }
 
-function getTitle(status: ProofStatus) {
+function getTitle(status: ProofStatusEnum) {
   switch (status) {
     case 'success':
       return 'Identity Verified';
@@ -113,7 +113,13 @@ function getTitle(status: ProofStatus) {
 }
 
 // Dont deduplicate this until we know what the pending state will look like
-function Info({ status, appName }: { status: ProofStatus; appName: string }) {
+function Info({
+  status,
+  appName,
+}: {
+  status: ProofStatusEnum;
+  appName: string;
+}) {
   if (status === 'success') {
     return (
       <Description>
