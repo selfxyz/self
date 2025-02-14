@@ -18,7 +18,7 @@ REGISTER_CIRCUITS=(
     "register_sha256_sha256_sha256_ecdsa_secp256r1:false"
     "register_sha256_sha256_sha256_ecdsa_secp384r1:false"
     "register_sha256_sha256_sha256_rsa_65537_3072:false"
-    "register_sha256_sha256_sha256_rsa_65537_4096:false"
+    "register_sha256_sha256_sha256_rsa_65537_4096:true"
     "register_sha256_sha256_sha256_rsapss_3_32_4096:false"
     "register_sha256_sha256_sha256_rsapss_65537_4096:false"
     "register_sha384_sha384_sha384_ecdsa_brainpoolP256r1:false"
