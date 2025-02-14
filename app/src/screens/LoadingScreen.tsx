@@ -1,9 +1,9 @@
+// Import passport data generation and payload functions from common
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-// Import passport data generation and payload functions from common
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { PassportData } from '../../../common/src/utils/types';

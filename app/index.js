@@ -1,7 +1,6 @@
 /**
  * @format
  */
-
 import { config } from '@tamagui/config/v2-native';
 import { ToastProvider } from '@tamagui/toast';
 import React from 'react';

@@ -1,3 +1,4 @@
+// Adjust the import path as needed
 import 'react-native-get-random-values';
 import Orientation from 'react-native-orientation-locker';
 

@@ -1,3 +1,4 @@
+// Import passport data generation and payload functions from common
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
