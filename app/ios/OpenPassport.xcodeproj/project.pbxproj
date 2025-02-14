@@ -70,29 +70,6 @@
 
 /* Begin PBXFileReference section */
 		00B1702DFCD448D5897AAF17 /* Inter-BoldItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-BoldItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-BoldItalic.otf"; sourceTree = "<group>"; };
-		054340B62C71B2960014B445 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
-		054340B72C71B2960014B445 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
-		054340B92C71B2960014B445 /* SceneDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SceneDelegate.h; sourceTree = "<group>"; };
-		054340BA2C71B2960014B445 /* SceneDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = SceneDelegate.m; sourceTree = "<group>"; };
-		054340BC2C71B2960014B445 /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
-		054340BD2C71B2960014B445 /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
-		054340C02C71B2960014B445 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
-		054340C32C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = OpenPassport_App_Clip.xcdatamodel; sourceTree = "<group>"; };
-		054340C52C71B2980014B445 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		054340C82C71B2980014B445 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
-		054340CA2C71B2980014B445 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		054340CB2C71B2980014B445 /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
-		054340CD2C71B2980014B445 /* OpenPassport_App_Clip.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = OpenPassport_App_Clip.entitlements; sourceTree = "<group>"; };
-		0573C4CA2C72E6D0006C7386 /* PassportReader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PassportReader.swift; sourceTree = SOURCE_ROOT; };
-		0573C4CC2C72E6D0006C7386 /* PassportReader.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = PassportReader.m; sourceTree = SOURCE_ROOT; };
-		0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QKMRZScannerViewRepresentable.swift; sourceTree = SOURCE_ROOT; };
-		0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = QRScannerBridge.m; sourceTree = SOURCE_ROOT; };
-		0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MRZScannerModule.swift; sourceTree = SOURCE_ROOT; };
-		0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerViewController.swift; sourceTree = SOURCE_ROOT; };
-		0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MRZScannerModule.m; sourceTree = SOURCE_ROOT; };
-		0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ScannerHostingController.swift; sourceTree = SOURCE_ROOT; };
-		0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = QRScannerBridge.swift; sourceTree = SOURCE_ROOT; };
-		0573C4ED2C72E857006C7386 /* passport.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = passport.json; sourceTree = SOURCE_ROOT; };
 		05B4DDF62C7850A80067519E /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = "OpenPassport App Clip/Images.xcassets"; sourceTree = "<group>"; };
 		05D985FA2BB3344600F58EEA /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = OpenPassport/Assets.xcassets; sourceTree = "<group>"; };
 		06064B357139453EB2788C18 /* Inter-MediumItalic.otf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-MediumItalic.otf"; path = "../node_modules/@tamagui/font-inter/otf/Inter-MediumItalic.otf"; sourceTree = "<group>"; };
@@ -162,36 +139,6 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		054340B52C71B2960014B445 /* OpenPassport App Clip */ = {
-			isa = PBXGroup;
-			children = (
-				054340B62C71B2960014B445 /* AppDelegate.h */,
-				0573C4ED2C72E857006C7386 /* passport.json */,
-				054340B72C71B2960014B445 /* AppDelegate.m */,
-				0573C4D22C72E6D0006C7386 /* MRZScannerModule.m */,
-				0573C4D02C72E6D0006C7386 /* MRZScannerModule.swift */,
-				0573C4CC2C72E6D0006C7386 /* PassportReader.m */,
-				0573C4CA2C72E6D0006C7386 /* PassportReader.swift */,
-				0573C4CD2C72E6D0006C7386 /* QKMRZScannerViewRepresentable.swift */,
-				0573C4CE2C72E6D0006C7386 /* QRScannerBridge.m */,
-				0573C4D62C72E6D0006C7386 /* QRScannerBridge.swift */,
-				0573C4D12C72E6D0006C7386 /* QRScannerViewController.swift */,
-				0573C4D42C72E6D0006C7386 /* ScannerHostingController.swift */,
-				054340B92C71B2960014B445 /* SceneDelegate.h */,
-				054340BA2C71B2960014B445 /* SceneDelegate.m */,
-				054340BC2C71B2960014B445 /* ViewController.h */,
-				054340BD2C71B2960014B445 /* ViewController.m */,
-				054340BF2C71B2960014B445 /* Main.storyboard */,
-				054340C52C71B2980014B445 /* Assets.xcassets */,
-				054340C72C71B2980014B445 /* LaunchScreen.storyboard */,
-				054340CA2C71B2980014B445 /* Info.plist */,
-				054340CB2C71B2980014B445 /* main.m */,
-				054340CD2C71B2980014B445 /* OpenPassport_App_Clip.entitlements */,
-				054340C22C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld */,
-			);
-			path = "OpenPassport App Clip";
-			sourceTree = "<group>";
-		};
 		13B07FAE1A68108700A75B9A /* OpenPassport */ = {
 			isa = PBXGroup;
 			children = (
@@ -277,7 +224,6 @@
 				05B4DDF62C7850A80067519E /* Images.xcassets */,
 				13B07FAE1A68108700A75B9A /* OpenPassport */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
-				054340B52C71B2960014B445 /* OpenPassport App Clip */,
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
@@ -519,25 +465,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
-
-/* Begin PBXVariantGroup section */
-		054340BF2C71B2960014B445 /* Main.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				054340C02C71B2960014B445 /* Base */,
-			);
-			name = Main.storyboard;
-			sourceTree = "<group>";
-		};
-		054340C72C71B2980014B445 /* LaunchScreen.storyboard */ = {
-			isa = PBXVariantGroup;
-			children = (
-				054340C82C71B2980014B445 /* Base */,
-			);
-			name = LaunchScreen.storyboard;
-			sourceTree = "<group>";
-		};
-/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		13B07F941A680F5B00A75B9A /* Debug */ = {
@@ -1031,19 +958,6 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
-
-/* Begin XCVersionGroup section */
-		054340C22C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodeld */ = {
-			isa = XCVersionGroup;
-			children = (
-				054340C32C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodel */,
-			);
-			currentVersion = 054340C32C71B2960014B445 /* OpenPassport_App_Clip.xcdatamodel */;
-			path = OpenPassport_App_Clip.xcdatamodeld;
-			sourceTree = "<group>";
-			versionGroupType = wrapper.xcdatamodel;
-		};
-/* End XCVersionGroup section */
 	};
 	rootObject = 83CBB9F71A601CBA00E9B192 /* Project object */;
 }
