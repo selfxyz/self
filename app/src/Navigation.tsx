@@ -23,7 +23,9 @@ import MockDataScreen from './screens/MockDataScreen';
 import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen';
 import LoadingScreen from './screens/Onboarding/LoadingScreen';
 import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
+import PassportCameraTrouble from './screens/Onboarding/PassportCameraTrouble';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
+import PassportNFCTrouble from './screens/Onboarding/PassportNFCTrouble';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
 import UnsupportedPassportScreen from './screens/Onboarding/UnsupportedPassport';
 import ProofRequestStatusScreen from './screens/ProveFlow/ProofRequestStatusScreen';
@@ -77,6 +79,22 @@ const AppNavigation = createNativeStackNavigator({
         animation: 'slide_from_bottom',
         // presentation: 'modal' wanted to do this but seems to break stuff
         headerShown: false,
+      },
+    },
+    PassportCameraTrouble: {
+      screen: PassportCameraTrouble,
+      options: {
+        headerShown: false,
+        animation: 'slide_from_bottom',
+        presentation: 'modal',
+      },
+    },
+    PassportNFCTrouble: {
+      screen: PassportNFCTrouble,
+      options: {
+        headerShown: false,
+        animation: 'slide_from_bottom',
+        presentation: 'modal',
       },
     },
     PassportCamera: {

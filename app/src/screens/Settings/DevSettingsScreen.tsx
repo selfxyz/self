@@ -35,6 +35,8 @@ const items: (keyof RootStackParamList)[] = [
   'ShowRecoveryPhrase',
   'CloudBackupSettings',
   'UnsupportedPassport',
+  'PassportCameraTrouble',
+  'PassportNFCTrouble',
 ];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
