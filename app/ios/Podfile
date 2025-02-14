@@ -7,7 +7,7 @@ require Pod::Executable.execute_command('node', ['-p',
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-project 'OpenPassport.xcodeproj'
+project 'Self.xcodeproj'
 
 platform :ios, '14.0'
 prepare_react_native_project!
@@ -19,7 +19,7 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'OpenPassport' do
+target 'Self' do
 
   config = use_native_modules!
 
