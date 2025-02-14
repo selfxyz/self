@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import LottieView from 'lottie-react-native';
@@ -9,16 +9,25 @@ import { initPassportDataParsing } from '../../../../common/src/utils/passports/
 // Import animations
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
+import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import useUserStore from '../../stores/userStore';
 import { registerPassport } from '../../utils/proving/payload';
 
 const LoadingScreen: React.FC = () => {
-  const { setData } = usePassport();
-  const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess', {
-    action: 'default',
-  });
+  const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
+  const goToErrorScreen = useHapticNavigation('ConfirmBelongingScreen');
+  const goToSuccessScreenWithDelay = () => {
+    setTimeout(() => {
+      goToSuccessScreen();
+    }, 3000);
+  };
+  const goToErrorScreenWithDelay = () => {
+    setTimeout(() => {
+      goToErrorScreen();
+    }, 3000);
+  };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { status, setStatus } = useProofInfo();
 
@@ -30,36 +39,45 @@ const LoadingScreen: React.FC = () => {
   useEffect(() => {
     // Change animation based on the global proof status.
     if (status === ProofStatusEnum.SUCCESS) {
-      goToSuccessScreen();
+      setAnimationSource(successAnimation);
+      goToSuccessScreenWithDelay();
     } else if (
       status === ProofStatusEnum.FAILURE ||
       status === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
+      goToErrorScreenWithDelay();
     }
   }, [status]);
 
+  // Use a ref to make sure processPayload is only executed once during the component's lifecycle.
+  const processPayloadCalled = useRef(false);
+
   useEffect(() => {
-    const processPayload = async () => {
-      try {
-        // Generate passport data and update the store.
-        const passportData = genMockPassportData(
-          'sha1',
-          'sha256',
-          'rsa_sha256_65537_2048',
-          'FRA',
-          '000101',
-          '300101',
-        );
-        const passportDataInit = initPassportDataParsing(passportData);
-        setData(passportDataInit);
-        await registerPassport(passportDataInit);
-      } catch (error) {
-        console.error('Error processing payload:', error);
-        setStatus(ProofStatusEnum.ERROR);
-      }
-    };
-    processPayload();
+    if (!processPayloadCalled.current) {
+      processPayloadCalled.current = true;
+      const processPayload = async () => {
+        try {
+          // Generate passport data and update the store.
+          const passportData = genMockPassportData(
+            'sha1',
+            'sha256',
+            'rsa_sha256_65537_2048',
+            'FRA',
+            '000101',
+            '300101',
+          );
+          const passportDataInit = initPassportDataParsing(passportData);
+          await useUserStore.getState().registerPassportData(passportDataInit);
+          // This will trigger sendPayload(), which updates global status via your tee.ts code.
+          await registerPassport(passportDataInit);
+        } catch (error) {
+          console.error('Error processing payload:', error);
+          setStatus(ProofStatusEnum.ERROR);
+        }
+      };
+      processPayload();
+    }
   }, []);
 
   return (

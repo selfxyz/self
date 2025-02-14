@@ -5,6 +5,7 @@ import * as asn1 from 'asn1.js';
 import * as asn1js from 'asn1js';
 import { Buffer } from 'buffer';
 import elliptic from 'elliptic';
+import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
 
 import { IMAGE_HASH } from '../../../../common/src/constants/constants';
@@ -70,21 +71,18 @@ export const numberInRange = (
  * @param certChainStr An array of certificates in PEM format, ordered from leaf to root.
  * @return True if the certificate chain is valid, false otherwise.
  */
-export const verifyCertChain = (
+export const verifyCertChain = async (
   rootPem: string,
   certChainStr: string[],
-): boolean => {
+): Promise<boolean> => {
   try {
     // Parse all certificates
-    const rootCert = new X509Certificate(rootPem);
     const certChain = certChainStr.map(cert => new X509Certificate(cert));
 
     // Verify the chain from leaf to root
-    for (let i = 0; i < certChain.length; i++) {
+    // certChain[0] is the root, we use the hardcoded rootPem
+    for (let i = 1; i < certChain.length; i++) {
       const currentCert = certChain[i];
-      const issuerCert =
-        i === certChain.length - 1 ? rootCert : certChain[i + 1];
-
       // Verify certificate validity period
       const now = new Date();
       if (now < currentCert.notBefore || now > currentCert.notAfter) {
@@ -94,7 +92,10 @@ export const verifyCertChain = (
 
       // Verify signature
       try {
-        const isValid = currentCert.verify(issuerCert);
+        const isValid = verifyCertificateSignature(
+          certChainStr[i],
+          i === 1 ? rootPem : certChainStr[i - 1],
+        );
         if (!isValid) {
           console.error(`Certificate at index ${i} has invalid signature`);
           return false;
@@ -199,7 +200,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   }
   console.log('TEE image hash verified');
 
-  if (!verifyCertChain(AWS_ROOT_PEM, [...certChain, cert])) {
+  if (!(await verifyCertChain(AWS_ROOT_PEM, [...certChain, cert]))) {
     throw new Error('Invalid certificate chain');
   }
 
@@ -340,9 +341,51 @@ export function getCertificateFromPem(pemContent: string): Certificate {
   }
 
   const asn1Data = asn1js.fromBER(arrayBuffer);
-  if (asn1.offset === -1) {
+  if (asn1Data.offset === -1) {
     throw new Error(`ASN.1 parsing error: ${asn1Data.result.error}`);
   }
 
   return new Certificate({ schema: asn1Data.result });
+}
+
+function verifyCertificateSignature(child: string, parent: string): boolean {
+  const certBuffer_csca = Buffer.from(
+    parent.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+    'base64',
+  );
+  const asn1Data_csca = asn1js.fromBER(certBuffer_csca);
+  const cert_csca = new Certificate({ schema: asn1Data_csca.result });
+  const publicKeyInfo_csca = cert_csca.subjectPublicKeyInfo;
+  const publicKeyBuffer_csca =
+    publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
+  const curve = 'p384';
+  const ec_csca = new elliptic.ec(curve);
+  const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
+
+  const tbsHash = getTBSHash(child);
+
+  const certBuffer_dsc = Buffer.from(
+    child.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+    'base64',
+  );
+  const asn1Data_dsc = asn1js.fromBER(certBuffer_dsc);
+  const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
+  const signatureValue = cert_dsc.signatureValue.valueBlock.valueHexView;
+  const signature_crypto = Buffer.from(signatureValue).toString('hex');
+  return key_csca.verify(tbsHash, signature_crypto);
+}
+
+export function getTBSHash(pem: string): string {
+  const certBuffer = Buffer.from(
+    pem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+    'base64',
+  );
+  const asn1Data_cert = asn1js.fromBER(certBuffer);
+  const cert = new Certificate({ schema: asn1Data_cert.result });
+  const tbsAsn1 = cert.encodeTBS();
+  const tbsDer = tbsAsn1.toBER(false);
+  const tbsBytes = Buffer.from(tbsDer);
+  const tbsBytesArray = Array.from(tbsBytes);
+  const msgHash = sha384(tbsBytesArray);
+  return msgHash as string;
 }

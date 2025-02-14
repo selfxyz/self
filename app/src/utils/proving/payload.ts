@@ -27,8 +27,11 @@ import { sendPayload } from './tee';
 
 const mock_secret = '0'; //TODO: retrieve the secret from keychain
 
-function generateTeeInputsRegister(secret: string, passportData: PassportData) {
-  const inputs = generateCircuitInputsRegister(secret, passportData);
+async function generateTeeInputsRegister(
+  secret: string,
+  passportData: PassportData,
+) {
+  const inputs = await generateCircuitInputsRegister(secret, passportData);
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
   if (circuitName == null) {
     throw new Error('Circuit name is null');
@@ -83,7 +86,15 @@ export async function sendRegisterPayload(passportData: PassportData) {
     mock_secret,
     passportData,
   );
-  await sendPayload(inputs, circuitName, WS_RPC_URL_REGISTER);
+  console.log('WS_RPC_URL_REGISTER', WS_RPC_URL_REGISTER);
+  await sendPayload(
+    inputs,
+    'register',
+    circuitName,
+    'https',
+    'https://self.xyz',
+    WS_RPC_URL_REGISTER,
+  );
 }
 
 function generateTeeInputsDsc(passportData: PassportData) {
@@ -106,7 +117,14 @@ export async function sendDscPayload(passportData: PassportData): Promise<any> {
   }
   const { inputs, circuitName } = generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
-  const result = await sendPayload(inputs, circuitName, WS_RPC_URL_DSC);
+  const result = await sendPayload(
+    inputs,
+    'dsc',
+    circuitName,
+    'https',
+    'https://self.xyz',
+    WS_RPC_URL_DSC,
+  );
   return result;
 }
 
@@ -167,7 +185,14 @@ export async function sendVcAndDisclosePayload(
     return;
   }
   const { inputs, circuitName } = generateTeeInputsVCAndDisclose(passportData);
-  await sendPayload(inputs, circuitName, WS_RPC_URL_VC_AND_DISCLOSE);
+  await sendPayload(
+    inputs,
+    'vc_and_disclose',
+    circuitName,
+    'https',
+    'https://self.xyz',
+    WS_RPC_URL_VC_AND_DISCLOSE,
+  );
 }
 
 /*** Logic Flow ****/

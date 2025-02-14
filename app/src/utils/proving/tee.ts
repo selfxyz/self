@@ -3,12 +3,16 @@ import forge from 'node-forge';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 
-import { WS_DB_RELAYER_OLD } from '../../../../common/src/constants/constants';
+import {
+  CIRCUIT_TYPES,
+  WS_DB_RELAYER,
+} from '../../../../common/src/constants/constants';
+import { EndpointType } from '../../../../common/src/utils/appType';
 import {
   ProofStatusEnum,
   updateGlobalProofStatus,
 } from '../../stores/proofProvider';
-import { verifyAttestation } from './attest';
+import { getPublicKey, verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
 
@@ -50,13 +54,17 @@ const pubkey =
  */
 export async function sendPayload(
   inputs: any,
+  circuit: (typeof CIRCUIT_TYPES)[number],
   circuitName: string,
+  endpointType: EndpointType,
+  endpoint: string,
   wsRpcUrl: string,
   timeoutMs = 1200000,
 ): Promise<void> {
   return new Promise(resolve => {
     let finalized = false;
     function finalize(status: ProofStatusEnum) {
+      console.log('Finalizing with status:', status);
       if (!finalized) {
         finalized = true;
         updateGlobalProofStatus(status);
@@ -92,20 +100,59 @@ export async function sendPayload(
         const result = JSON.parse(event.data);
         // If attestation is present, process it.
         if (result.result?.attestation !== undefined) {
-          // const serverPubkey = getPublicKey(result.result.attestation);
+          const serverPubkey = getPublicKey(result.result.attestation);
           const verified = await verifyAttestation(result.result.attestation);
-          console.log('AWS Root Certificate verified:', verified);
-          if (verified) {
-            finalize(ProofStatusEnum.SUCCESS);
-          } else {
+          if (!verified) {
             finalize(ProofStatusEnum.FAILURE);
+            throw new Error('Attestation verification failed');
           }
+          const key2 = ec.keyFromPublic(serverPubkey as string, 'hex');
+          const sharedKey = key1.derive(key2.getPublic());
+          const forgeKey = forge.util.createBuffer(
+            Buffer.from(
+              sharedKey.toString('hex').padStart(64, '0'),
+              'hex',
+            ).toString('binary'),
+          );
+          const payload = getPayload(
+            inputs,
+            circuit,
+            circuitName,
+            endpointType,
+            endpoint,
+          );
+          const encryptionData = encryptAES256GCM(
+            JSON.stringify(payload),
+            forgeKey,
+          );
+          const submitBody = {
+            jsonrpc: '2.0',
+            method: 'openpassport_submit_request',
+            id: 1,
+            params: {
+              uuid: result.result.uuid,
+              ...encryptionData,
+            },
+          };
+          console.log('Sending submit body');
+          const truncatedBody = {
+            ...submitBody,
+            params: {
+              uuid: submitBody.params.uuid,
+              nonce: submitBody.params.nonce.slice(0, 3) + '...',
+              cipher_text: submitBody.params.cipher_text.slice(0, 3) + '...',
+              auth_tag: submitBody.params.auth_tag.slice(0, 3) + '...',
+            },
+          };
+          console.log('Truncated submit body:', truncatedBody);
+          ws.send(JSON.stringify(submitBody));
         } else {
           // Otherwise, assume it's a UUID. Set up SocketIO to get further progress.
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
+          console.log(result);
           if (!socket) {
-            socket = io(WS_DB_RELAYER_OLD, {
+            socket = io(WS_DB_RELAYER, {
               path: '/',
               transports: ['websocket'],
             });
@@ -113,17 +160,18 @@ export async function sendPayload(
               console.log('SocketIO: Connection opened');
               socket?.emit('subscribe', receivedUuid);
             });
-            socket.on('message', message => {
+            socket.on('status', message => {
               const data =
                 typeof message === 'string' ? JSON.parse(message) : message;
               console.log('SocketIO message:', data);
               // When the proof has generated, disconnect and close the WebSocket.
-              if (data.new_status === 2) {
+              if (data.status === 2) {
                 console.log('Proof generation completed');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
+                finalize(ProofStatusEnum.SUCCESS);
               }
             });
             socket.on('disconnect', reason => {
@@ -168,3 +216,55 @@ export async function sendPayload(
 }
 
 export { encryptAES256GCM };
+
+/***
+ *  types
+ * ***/
+export type TEEPayloadDisclose = {
+  type: 'disclose';
+  endpointType: string;
+  endpoint: string;
+  circuit: {
+    name: string;
+    inputs: string;
+  };
+};
+
+export type TEEPayload = {
+  type: 'register' | 'dsc';
+  onchain: true;
+  circuit: {
+    name: string;
+    inputs: string;
+  };
+};
+export function getPayload(
+  inputs: any,
+  circuit: string,
+  circuitName: string,
+  endpointType: string,
+  endpoint: string,
+) {
+  if (circuit === 'vc_and_disclose') {
+    const payload: TEEPayloadDisclose = {
+      type: 'disclose',
+      endpointType: endpointType,
+      endpoint: endpoint,
+      circuit: {
+        name: circuitName,
+        inputs: JSON.stringify(inputs),
+      },
+    };
+    return payload;
+  } else if (circuit === 'register' || circuit === 'dsc') {
+    const payload: TEEPayload = {
+      type: circuit as 'register' | 'dsc',
+      onchain: true,
+      circuit: {
+        name: circuitName,
+        inputs: JSON.stringify(inputs),
+      },
+    };
+    return payload;
+  }
+}

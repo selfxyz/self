@@ -1,19 +1,23 @@
 import { UserIdType } from "./circuits/uuid";
 
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
+export type EndpointType = 'https' | 'celo';
+
+import { v4 } from 'uuid';
 
 // SelfAppType
 export interface SelfAppPartial {
   appName: string;
   logoBase64: string;
+  endpointType: EndpointType;
+  endpoint: string;
+  header: string;
   scope: string;
   sessionId: string;
   userId: string;
   userIdType: UserIdType;
   devMode: boolean;
 }
-
-
 
 export interface SelfApp extends SelfAppPartial {
   args: ArgumentsDisclose;
@@ -58,14 +62,20 @@ export class SelfAppBuilder {
   userId: string;
   userIdType: UserIdType;
   devMode: boolean;
+  endpointType: EndpointType;
+  endpoint: string;
+  header: string;
   args: ArgumentsDisclose;
 
-  constructor(appName: string, scope: string) {
+  constructor(appName: string, scope: string, endpoint: string) {
     this.appName = appName;
     this.scope = scope;
     this.args = {
       disclosureOptions: []
     };
+    this.header = '';
+    this.endpoint = endpoint;
+    this.sessionId = v4();
   }
 
   setLogoBase64(logoBase64: string) {
@@ -75,6 +85,16 @@ export class SelfAppBuilder {
 
   setUserId(userId: string) {
     this.userId = userId;
+    return this;
+  }
+
+  setEndpointType(endpointType: EndpointType) {
+    this.endpointType = endpointType;
+    return this;
+  }
+
+  setEndpoint(endpoint: string) {
+    this.endpoint = endpoint;
     return this;
   }
 
@@ -124,6 +144,25 @@ export class SelfAppBuilder {
   }
 
   build(): SelfApp {
+    if (!this.appName) {
+      throw new Error('appName is required');
+    }
+    if (!this.scope) {
+      throw new Error('scope is required');
+    }
+    if (!this.sessionId) {
+      throw new Error('sessionId is required');
+    }
+    if (!this.endpoint) {
+      throw new Error('endpoint is required');
+    }
+    if (this.endpointType === 'https' && !this.endpoint.startsWith('https://')) {
+      throw new Error('endpoint must start with https://');
+    }
+    if (this.endpointType === 'celo' && !this.endpoint.startsWith('0x')) {
+      throw new Error('endpoint must be a valid address');
+    }
+
     return {
       appName: this.appName,
       logoBase64: this.logoBase64,
@@ -132,6 +171,9 @@ export class SelfAppBuilder {
       userId: this.userId,
       userIdType: this.userIdType,
       devMode: this.devMode,
+      endpointType: this.endpointType,
+      endpoint: this.endpoint,
+      header: this.header,
       args: this.args
     };
   }

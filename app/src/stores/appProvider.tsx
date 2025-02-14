@@ -2,7 +2,7 @@ import React, { createContext, useContext, useEffect, useRef } from 'react';
 
 import io, { Socket } from 'socket.io-client';
 
-import { WS_DB_RELAYER_NEW } from '../../../common/src/constants/constants';
+import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
 
 interface IAppContext {
@@ -45,9 +45,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       }
 
       // Ensure the URL uses the proper WebSocket scheme.
-      const connectionUrl = WS_DB_RELAYER_NEW.startsWith('https')
-        ? WS_DB_RELAYER_NEW.replace(/^https/, 'wss')
-        : WS_DB_RELAYER_NEW;
+      const connectionUrl = WS_DB_RELAYER.startsWith('https')
+        ? WS_DB_RELAYER.replace(/^https/, 'wss')
+        : WS_DB_RELAYER;
       const socketUrl = `${connectionUrl}/websocket`;
 
       // Create a new socket connection using the updated URL.

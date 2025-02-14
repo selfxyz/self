@@ -9,7 +9,7 @@ import React, {
 
 import io, { Socket } from 'socket.io-client';
 
-import { WS_DB_RELAYER_NEW } from '../../../common/src/constants/constants';
+import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
 import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
@@ -76,6 +76,9 @@ export function ProofProvider({ children }: PropsWithChildren) {
       appName: '',
       logoBase64: '',
       scope: '',
+      endpointType: 'https',
+      endpoint: '',
+      header: '',
       sessionId: '',
       userId: '',
       userIdType: 'uuid',
@@ -141,10 +144,10 @@ function useWebsocket(
     if (!selectedApp.sessionId) {
       return;
     }
-    console.log('creating ws', WS_DB_RELAYER_NEW, selectedApp.sessionId);
+    console.log('creating ws', WS_DB_RELAYER, selectedApp.sessionId);
 
     try {
-      newSocket = io(WS_DB_RELAYER_NEW + '/websocket', {
+      newSocket = io(WS_DB_RELAYER + '/websocket', {
         path: '/',
         transports: ['websocket'],
         query: { sessionId: selectedApp.sessionId, clientType: 'mobile' },
