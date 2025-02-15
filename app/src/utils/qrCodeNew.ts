@@ -24,7 +24,7 @@ export default async function handleQRCodeScan(
 
       setApp(openPassportApp);
       console.log('✅', {
-        message: 'QR code scannedrre',
+        message: 'QR code scanned',
         customData: {
           type: 'success',
         },

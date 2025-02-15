@@ -10,10 +10,10 @@ import { Buffer } from 'buffer';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
+import useHapticNavigation from '../hooks/useHapticNavigation';
 import useNavigationStore from '../stores/navigationStore';
 import { storePassportData } from '../stores/passportDataProvider';
 import { checkInputs } from '../utils/utils';
-import useHapticNavigation from '../hooks/useHapticNavigation';
 
 interface Inputs {
   passportNumber: string;
@@ -263,7 +263,6 @@ async function parseAndStorePassportData(passportData: PassportData) {
     dsc: passportMetadata.dsc,
   });
 }
-
 
 function arePassportDataSupported(passportData: PassportData) {
   if (!passportData.passportMetadata?.cscaFound) {
