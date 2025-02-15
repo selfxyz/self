@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -13,6 +13,7 @@ import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHol
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useApp } from '../../stores/appProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
@@ -23,6 +24,12 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, setStatus } = useProofInfo();
+  const { handleProofVerified } = useApp();
+  const selectedAppRef = useRef(selectedApp);
+
+  useEffect(() => {
+    selectedAppRef.current = selectedApp;
+  }, [selectedApp]);
 
   // Add effect to log when selectedApp changes
   useEffect(() => {
@@ -58,6 +65,7 @@ const ProveScreen: React.FC = () => {
   const onVerify = useCallback(
     async function () {
       buttonTap();
+      const currentApp = selectedAppRef.current;
       try {
         // getData first because that triggers biometric authentication and feels nicer to do before navigating
         // then wait a second and navigate to the status screen. use finally so that any errors thrown here dont prevent the navigate
@@ -75,7 +83,15 @@ const ProveScreen: React.FC = () => {
           return;
         }
         const { passportData, secret } = passportDataAndSecret.data;
-        await sendVcAndDisclosePayload(secret, passportData, selectedApp);
+        const status = await sendVcAndDisclosePayload(
+          secret,
+          passportData,
+          selectedApp,
+        );
+        handleProofVerified(
+          currentApp.sessionId,
+          status === ProofStatusEnum.SUCCESS,
+        );
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         setStatus(ProofStatusEnum.ERROR);
@@ -87,6 +103,7 @@ const ProveScreen: React.FC = () => {
       sendVcAndDisclosePayload,
       setStatus,
       buttonTap,
+      selectedAppRef,
     ],
   );
 
@@ -100,7 +117,15 @@ const ProveScreen: React.FC = () => {
       '000101',
       '300101',
     );
-    await sendVcAndDisclosePayload('0', passportData, selectedApp);
+    const status = await sendVcAndDisclosePayload(
+      '0',
+      passportData,
+      selectedApp,
+    );
+    handleProofVerified(
+      selectedAppRef.current.sessionId,
+      status === ProofStatusEnum.SUCCESS,
+    );
   }
 
   return (
