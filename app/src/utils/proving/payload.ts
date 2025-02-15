@@ -283,7 +283,7 @@ export async function sendVcAndDisclosePayload(
     passportData,
     selfApp,
   );
-  await sendPayload(
+  return await sendPayload(
     inputs,
     'vc_and_disclose',
     circuitName,
