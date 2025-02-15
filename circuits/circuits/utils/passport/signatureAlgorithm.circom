@@ -53,128 +53,88 @@ ID to Signature Algorithm
 function getHashLength(signatureAlgorithm) {
     if (signatureAlgorithm == 1 ) {
         return 256;
-    }
-    if (signatureAlgorithm == 3) {
+    } else if (signatureAlgorithm == 3) {
         return 160;
-    }
-    if (signatureAlgorithm == 4) {
+    } else if (signatureAlgorithm == 4) {
         return 256;
-    }
-    if (signatureAlgorithm == 7) {
+    } else if (signatureAlgorithm == 7) {
         return 160;
-    }
-    if (signatureAlgorithm == 8) {
+    } else if (signatureAlgorithm == 8) {
         return 256;
-    }
-    if (signatureAlgorithm == 9) {
+    } else if (signatureAlgorithm == 9) {
         return 384;
-    }
-    if (signatureAlgorithm == 10) {
+    } else if (signatureAlgorithm == 10) {
         return 256;
-    }
-    if (signatureAlgorithm == 11) {
+    } else if (signatureAlgorithm == 11) {
         return 160;
-    }
-    if (signatureAlgorithm == 12) {
+    } else if (signatureAlgorithm == 12) {
         return 256;
-    }
-    if (signatureAlgorithm == 13) {
+    } else if (signatureAlgorithm == 13) {
         return 256;
-    }
-    if (signatureAlgorithm == 14) {
+    } else if (signatureAlgorithm == 14) {
         return 256;
-    }
-    if (signatureAlgorithm == 15) {
+    } else if (signatureAlgorithm == 15) {
         return 512;
-    }
-    if (signatureAlgorithm == 16) {
+    } else if (signatureAlgorithm == 16) {
         return 256;
-    }
-    if (signatureAlgorithm == 17) {
+    } else if (signatureAlgorithm == 17) {
         return 256;
-    }
-    if (signatureAlgorithm == 18) {
+    } else if (signatureAlgorithm == 18) {
         return 384;
-    }
-    if (signatureAlgorithm == 19) {
+    } else if (signatureAlgorithm == 19) {
         return 256;
-    }
-    if (signatureAlgorithm == 20) {
+    } else if (signatureAlgorithm == 21) { 
         return 256;
-    }
-    if (signatureAlgorithm == 21) { 
-        return 256;
-    }
-    if (signatureAlgorithm == 22) {
+    } else if (signatureAlgorithm == 22) {
         return 384;
-    }
-    if (signatureAlgorithm == 23) { 
+    } else if (signatureAlgorithm == 23) { 
         return 256;
-    }
-    if (signatureAlgorithm == 24) {
+    } else if (signatureAlgorithm == 24) {
         return 384;
-    }
-    if (signatureAlgorithm == 25) {
+    } else if (signatureAlgorithm == 25) {
         return 512; 
-    }
-    if (signatureAlgorithm == 26) { 
+    } else if (signatureAlgorithm == 26) { 
         return 512;
-    }
-    if (signatureAlgorithm == 27) { 
+    } else if (signatureAlgorithm == 27) { 
         return 160;
-    }
-    if (signatureAlgorithm == 28) { 
+    } else if (signatureAlgorithm == 28) { 
         return 256;
-    }
-    if (signatureAlgorithm == 29) { 
+    } else if (signatureAlgorithm == 29) { 
         return 512;
-    }
-    if (signatureAlgorithm == 30) { 
+    } else if (signatureAlgorithm == 30) { 
         return 224;
-    }
-    if (signatureAlgorithm == 31) {
+    } else if (signatureAlgorithm == 31) {
         return 512;
-    }
-    if (signatureAlgorithm == 32) {
+    } else if (signatureAlgorithm == 32) {
         return 256;
-    }
-    if (signatureAlgorithm == 33) {
+    } else if (signatureAlgorithm == 33) {
         return 160;
-    }
-    if (signatureAlgorithm == 34) {
+    } else if (signatureAlgorithm == 34) {
         return 384;
-    }
-    if (signatureAlgorithm == 35) {
+    } else if (signatureAlgorithm == 35) {
         return 384;
-    }
-    if (signatureAlgorithm == 36) {
+    } else if (signatureAlgorithm == 36) {
         return 160;
-    }
-    if (signatureAlgorithm == 37) {
+    } else if (signatureAlgorithm == 37) {
         return 256;
-    }
-    if (signatureAlgorithm == 38) {
+    } else if (signatureAlgorithm == 38) {
         return 384;
-    }
-    if (signatureAlgorithm == 39) {
+    } else if (signatureAlgorithm == 39) {
         return 512;
-    }
-    if (signatureAlgorithm == 40) {
+    } else if (signatureAlgorithm == 40) {
         return 256;
-    }
-    if (signatureAlgorithm == 41) {
+    } else if (signatureAlgorithm == 41) {
         return 512;
-    }
-    if (signatureAlgorithm == 42) {
+    } else if (signatureAlgorithm == 42) {
         return 512;
-    }
-    if (signatureAlgorithm == 43) {
+    } else if (signatureAlgorithm == 43) {
         return 256;
-    }
-    if (signatureAlgorithm == 44) {
+    } else if (signatureAlgorithm == 44) {
         return 224;
+    } else {
+        assert(1==0);
+        return 0;
     }
-    return 0;
 }
 
 /// @title GetMinKeyLength
@@ -184,127 +144,90 @@ function getHashLength(signatureAlgorithm) {
 /// @dev for RSAPSS and ECDSA, it's always the same as in the circuit name
 /// @dev for RSA, it can be lower, because we use the same circuit for multiple key lengths
 function getMinKeyLength(signatureAlgorithm) {
-    if (signatureAlgorithm == 1 ) {
+    if (signatureAlgorithm == 1) {
         return 2048;
-    }
-    if (signatureAlgorithm == 3) {
+    } else if (signatureAlgorithm == 3) {
         return 2048;
-    }
-    if (signatureAlgorithm == 4) {
+    } else if (signatureAlgorithm == 4) {
         return 2048;
-    }
-    if (signatureAlgorithm == 7) {
+    } else if (signatureAlgorithm == 7) {
         return 256;
-    }
-    if (signatureAlgorithm == 8) {
+    } else if (signatureAlgorithm == 8) {
         return 256;
-    }
-    if (signatureAlgorithm == 9) {
+    } else if (signatureAlgorithm == 9) {
         return 384;
-    }
-    if (signatureAlgorithm == 10) {
+    } else if (signatureAlgorithm == 10) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 11) {
+    } else if (signatureAlgorithm == 11) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 12) {
+    } else if (signatureAlgorithm == 12) {
         return 4096;
-    }
-    if (signatureAlgorithm == 13) {
+    } else if (signatureAlgorithm == 13) {
         return 2048;
-    }
-    if (signatureAlgorithm == 14) {
+    } else if (signatureAlgorithm == 14) {
         return 2048; // down to 2048 for 3072 (not used now)
-    }
-    if (signatureAlgorithm == 15) {
+    } else if (signatureAlgorithm == 15) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 16) {
+    } else if (signatureAlgorithm == 16) {
         return 3072;
-    }
-    if (signatureAlgorithm == 17) {
+    } else if (signatureAlgorithm == 17) {
         return 4096;
-    }
-    if (signatureAlgorithm == 18) {
+    } else if (signatureAlgorithm == 18) {
         return 3072;
-    }
-    if (signatureAlgorithm == 19) {
+    } else if (signatureAlgorithm == 19) {
         return 3072;
-    }
-    if (signatureAlgorithm == 21) { 
+    } else if (signatureAlgorithm == 21) {
         return 256;
-    }
-    if (signatureAlgorithm == 22) { 
+    } else if (signatureAlgorithm == 22) {
         return 384;
-    }
-    if (signatureAlgorithm == 23) { 
+    } else if (signatureAlgorithm == 23) {
         return 384;
-    }
-    if (signatureAlgorithm == 24) { 
+    } else if (signatureAlgorithm == 24) {
         return 256;
-    } 
-    if (signatureAlgorithm == 25) { 
+    } else if (signatureAlgorithm == 25) {
         return 256;
-    }
-    if (signatureAlgorithm == 26) { 
+    } else if (signatureAlgorithm == 26) {
         return 384;
-    }
-    if (signatureAlgorithm == 27) { 
+    } else if (signatureAlgorithm == 27) {
         return 224;
-    }
-    if (signatureAlgorithm == 28) { 
+    } else if (signatureAlgorithm == 28) {
         return 224;
-    }
-    if (signatureAlgorithm == 29) { 
+    } else if (signatureAlgorithm == 29) {
         return 512;
-    }
-    if (signatureAlgorithm == 30) { 
+    } else if (signatureAlgorithm == 30) {
         return 224;
-    }
-    if (signatureAlgorithm == 31) {
+    } else if (signatureAlgorithm == 31) {
         return 2048;
-    }
-    if (signatureAlgorithm == 32) {
+    } else if (signatureAlgorithm == 32) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 33) {
+    } else if (signatureAlgorithm == 33) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 34) {
+    } else if (signatureAlgorithm == 34) {
         return 2048; // down to 2048 for 4096
-    }
-    if (signatureAlgorithm == 35) {
+    } else if (signatureAlgorithm == 35) {
         return 4096;
-    }
-    if (signatureAlgorithm == 36) {
+    } else if (signatureAlgorithm == 36) {
         return 256;
-    }
-    if (signatureAlgorithm == 37) {
+    } else if (signatureAlgorithm == 37) {
         return 384;
-    }
-    if (signatureAlgorithm == 38) {
+    } else if (signatureAlgorithm == 38) {
         return 512;
-    }
-    if (signatureAlgorithm == 39) {
+    } else if (signatureAlgorithm == 39) {
         return 4096;
-    }
-    if (signatureAlgorithm == 40) {
+    } else if (signatureAlgorithm == 40) {
         return 521;
-    }
-    if (signatureAlgorithm == 41) {
+    } else if (signatureAlgorithm == 41) {
         return 521;
-    }
-    if (signatureAlgorithm == 42) {
+    } else if (signatureAlgorithm == 42) {
         return 2048;
-    }
-    if (signatureAlgorithm == 43) {
+    } else if (signatureAlgorithm == 43) {
         return 2048;
-    }
-    if (signatureAlgorithm == 44) {
+    } else if (signatureAlgorithm == 44) {
         return 224;
+    } else {
+        assert(1==0);
+        return 0;
     }
-    return 4096; // default to highest key length
 }
 
 /// @title GetKLengthFactor
@@ -315,126 +238,88 @@ function getMinKeyLength(signatureAlgorithm) {
 function getKLengthFactor(signatureAlgorithm) {
     if (signatureAlgorithm == 1) {
         return 1;
-    }
-    if (signatureAlgorithm == 3) {
+    } else if (signatureAlgorithm == 3) {
         return 1;
-    }
-    if (signatureAlgorithm == 4) {
+    } else if (signatureAlgorithm == 4) {
         return 1;
-    }
-    if (signatureAlgorithm == 7) {
+    } else if (signatureAlgorithm == 7) {
         return 2;
-    }
-    if (signatureAlgorithm == 8) {
+    } else if (signatureAlgorithm == 8) {
         return 2;
-    }
-    if (signatureAlgorithm == 9) {
+    } else if (signatureAlgorithm == 9) {
         return 2;
-    }
-    if (signatureAlgorithm == 10) {
+    } else if (signatureAlgorithm == 10) {
         return 1;
-    }
-    if (signatureAlgorithm == 11) {
+    } else if (signatureAlgorithm == 11) {
         return 1;
-    }
-    if (signatureAlgorithm == 12) {
+    } else if (signatureAlgorithm == 12) {
         return 1;
-    }
-    if (signatureAlgorithm == 13) {
+    } else if (signatureAlgorithm == 13) {
         return 1;
-    }
-    if (signatureAlgorithm == 14) {
+    } else if (signatureAlgorithm == 14) {
         return 1;
-    }
-    if (signatureAlgorithm == 15) {
+    } else if (signatureAlgorithm == 15) {
         return 1;
-    }
-    if (signatureAlgorithm == 16) {
+    } else if (signatureAlgorithm == 16) {
         return 1;
-    }
-    if (signatureAlgorithm == 17) {
+    } else if (signatureAlgorithm == 17) {
         return 1;
-    }
-    if (signatureAlgorithm == 18) {
+    } else if (signatureAlgorithm == 18) {
         return 1;
-    }
-    if (signatureAlgorithm == 19) {
+    } else if (signatureAlgorithm == 19) {
         return 1;
-    }
-    if (signatureAlgorithm == 21) { 
+    } else if (signatureAlgorithm == 21) {
         return 2;
-    }
-    if (signatureAlgorithm == 22) { 
+    } else if (signatureAlgorithm == 22) {
         return 2;
-    }
-    if (signatureAlgorithm == 23) { 
+    } else if (signatureAlgorithm == 23) {
         return 2;
-    }
-    if (signatureAlgorithm == 24) { 
+    } else if (signatureAlgorithm == 24) {
         return 2;
-    }
-    if (signatureAlgorithm == 25) { 
+    } else if (signatureAlgorithm == 25) {
         return 2;
-    }
-    if (signatureAlgorithm == 26) { 
+    } else if (signatureAlgorithm == 26) {
         return 2;
-    }
-    if (signatureAlgorithm == 27) { 
+    } else if (signatureAlgorithm == 27) {
         return 2;
-    }
-    if (signatureAlgorithm == 28) { 
+    } else if (signatureAlgorithm == 28) {
         return 2;
-    }
-    if (signatureAlgorithm == 29) { 
+    } else if (signatureAlgorithm == 29) {
         return 2;
-    }
-    if (signatureAlgorithm == 30) { 
+    } else if (signatureAlgorithm == 30) {
         return 2;
-    }
-    if (signatureAlgorithm == 31) {
+    } else if (signatureAlgorithm == 31) {
         return 1;
-    }
-    if (signatureAlgorithm == 32) {
+    } else if (signatureAlgorithm == 32) {
         return 1;
-    }
-    if (signatureAlgorithm == 33) {
+    } else if (signatureAlgorithm == 33) {
         return 1;
-    }
-    if (signatureAlgorithm == 34) {
+    } else if (signatureAlgorithm == 34) {
         return 1;
-    }
-    if (signatureAlgorithm == 35) {
+    } else if (signatureAlgorithm == 35) {
         return 1;
-    }
-    if (signatureAlgorithm == 36) {
+    } else if (signatureAlgorithm == 36) {
         return 2;
-    }
-    if (signatureAlgorithm == 37) {
+    } else if (signatureAlgorithm == 37) {
         return 2;
-    }
-    if (signatureAlgorithm == 38) {
+    } else if (signatureAlgorithm == 38) {
         return 2;
-    }
-    if (signatureAlgorithm == 39) {
+    } else if (signatureAlgorithm == 39) {
         return 1;
-    }
-    if (signatureAlgorithm == 40) {
+    } else if (signatureAlgorithm == 40) {
         return 2;
-    }
-    if (signatureAlgorithm == 41) {
+    } else if (signatureAlgorithm == 41) {
         return 2;
-    }
-    if (signatureAlgorithm == 42) {
+    } else if (signatureAlgorithm == 42) {
         return 1;
-    }
-    if (signatureAlgorithm == 43) {
+    } else if (signatureAlgorithm == 43) {
         return 1;
-    }
-    if (signatureAlgorithm == 44) {
+    } else if (signatureAlgorithm == 44) {
         return 2;
+    } else {
+        assert(1==0);
+        return 0;
     }
-    return 0;
-
 }
 
 /// @title GetExponentBits
@@ -442,69 +327,50 @@ function getKLengthFactor(signatureAlgorithm) {
 /// @param signatureAlgorithm ID of the signature algorithm
 /// @output exponentBits Amount of bits of the exponent
 function getExponentBits(signatureAlgorithm) {
-    
-    if (signatureAlgorithm == 1 ) {
+    if (signatureAlgorithm == 1) {
         return 17; // 65537
-    }
-    if (signatureAlgorithm == 3 ) {
+    } else if (signatureAlgorithm == 3) {
         return 17;
-    }
-    if (signatureAlgorithm == 4 ) {
+    } else if (signatureAlgorithm == 4) {
         return 17;
-    }
-    if (signatureAlgorithm == 10) {
+    } else if (signatureAlgorithm == 10) {
         return 17;
-    }
-    if (signatureAlgorithm == 11) {
+    } else if (signatureAlgorithm == 11) {
         return 17;
-    }
-    if (signatureAlgorithm == 12) {
+    } else if (signatureAlgorithm == 12) {
         return 17;
-    }
-    if (signatureAlgorithm == 13) {
+    } else if (signatureAlgorithm == 13) {
         return 2; // 3
-    }
-    if (signatureAlgorithm == 14) {
+    } else if (signatureAlgorithm == 14) {
         return 17;
-    }
-    if (signatureAlgorithm == 15) {
+    } else if (signatureAlgorithm == 15) {
         return 17;
-    }
-    if (signatureAlgorithm == 16) {
+    } else if (signatureAlgorithm == 16) {
         return 2;
-    }
-    if (signatureAlgorithm == 17) {
+    } else if (signatureAlgorithm == 17) {
         return 2;
-    }
-    if (signatureAlgorithm == 18) {
+    } else if (signatureAlgorithm == 18) {
         return 17;
-    }
-    if (signatureAlgorithm == 19) {
+    } else if (signatureAlgorithm == 19) {
         return 17;
-    }
-    if (signatureAlgorithm == 31) {
+    } else if (signatureAlgorithm == 31) {
         return 17;
-    }
-    if (signatureAlgorithm == 32) {
+    } else if (signatureAlgorithm == 32) {
         return 2;
-    }
-    if (signatureAlgorithm == 33) {
+    } else if (signatureAlgorithm == 33) {
         return 2;
-    }
-    if (signatureAlgorithm == 34) {
+    } else if (signatureAlgorithm == 34) {
         return 17;
-    }
-    if (signatureAlgorithm == 35) {
+    } else if (signatureAlgorithm == 35) {
         return 17;
-    }
-    if (signatureAlgorithm == 39) {
+    } else if (signatureAlgorithm == 39) {
         return 17;
-    }
-    if (signatureAlgorithm == 42) {
+    } else if (signatureAlgorithm == 42) {
         return 17;
-    }
-    if (signatureAlgorithm == 43) {
+    } else if (signatureAlgorithm == 43) {
         return 2;
+    } else {
+        assert(1==0);
+        return 0;
     }
-    return 0;
 }
