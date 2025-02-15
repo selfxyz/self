@@ -43,7 +43,7 @@ export class RegistryContract {
     }
 
     public async updateCscaRoot(root: bigint) {
-        const hash = await this.registry.write.updateCscaRoot(root) as `0x${string}`;
+        const hash = await this.registry.write.updateCscaRoot([root]) as `0x${string}`;
         const receipt = await waitForTransactionReceipt(this.client, { hash });
         return { hash };
     }

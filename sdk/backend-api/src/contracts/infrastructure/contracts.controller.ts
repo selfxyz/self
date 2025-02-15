@@ -46,47 +46,56 @@ export const ContractsController = new Elysia()
     },
   ).post(
     'update-csca-root',
-    async (request) => {
+    async ({ body, set }) => {
       try {
-        const { root } = request.body;
+        if (!body.root) {
+          set.status = 400;
+          return {
+            status: "error",
+            message: "Root parameter is required"
+          };
+        }
+
         const registryContract = new RegistryContract(
           getChain(process.env.NETWORK as string),
           process.env.PRIVATE_KEY as `0x${string}`,
           process.env.RPC_URL as string
         );
-        const tx = await registryContract.updateCscaRoot(BigInt(root));
+        console.log("body.root", body.root);
+
+        const tx = await registryContract.updateCscaRoot(BigInt(body.root));
         return {
           status: "success",
-          data: [tx.hash],
+          data: [tx.hash]
         };
       } catch (error) {
+        set.status = 500;
         return {
           status: "error",
-          message: error instanceof Error ? error.message : "Unknown error",
+          message: error instanceof Error ? error.message : "Unknown error"
         };
       }
     },
     {
       body: t.Object({
-        root: t.String(),
+        root: t.String()
       }),
       response: {
         200: t.Object({
           status: t.String(),
-          data: t.Array(t.String()),
+          data: t.Array(t.String())
         }),
         500: t.Object({
           status: t.String(),
-          message: t.String(),
-        }),
+          message: t.String()
+        })
       },
       detail: {
         tags: ['CSCA'],
         summary: 'Update CSCA root in registry contract',
-        description: 'Update the CSCA root in registry contract',
-      },
+        description: 'Update the CSCA root in registry contract'
+      }
     }
-
   )
   .get(
     'dsc-key-commitment-root',

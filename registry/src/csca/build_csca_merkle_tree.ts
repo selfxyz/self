@@ -117,6 +117,8 @@ async function buildCscaMerkleTree() {
 
 async function serializeCscaTree(tree: IMT) {
     const serializedTree = tree.nodes.map(layer => layer.map(node => node.toString()));
+    const root = tree.root.toString();
+    console.log('\x1b[34m%s\x1b[0m', "Tree root: ", root);
     await writeFile("outputs/serialized_csca_tree.json", JSON.stringify(serializedTree));
     fs.copyFileSync("outputs/serialized_csca_tree.json", "../common/pubkeys/serialized_csca_tree.json");
     console.log("serialized_csca_tree.json written and copied in common/pubkeys!");
