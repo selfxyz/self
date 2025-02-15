@@ -2,17 +2,9 @@
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
 
-// @ts-ignore
-import * as amplitude from '@amplitude/analytics-react-native';
-import '@react-navigation/native';
 import { Buffer } from 'buffer';
 
-import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
-import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
-import useNavigationStore from '../stores/navigationStore';
-import { storePassportData } from '../stores/passportDataProvider';
-import { checkInputs } from '../utils/utils';
 
 interface Inputs {
   passportNumber: string;
@@ -21,97 +13,34 @@ interface Inputs {
 }
 
 export const scan = async (inputs: Inputs) => {
-  const { passportNumber, dateOfBirth, dateOfExpiry } = inputs;
-  console.log('passportNumber', passportNumber);
-  console.log('dateOfBirth', dateOfBirth);
-  console.log('dateOfExpiry', dateOfExpiry);
-  const check = checkInputs(passportNumber, dateOfBirth, dateOfExpiry);
-  if (!check.success) {
-    amplitude.track('inputs_invalid', { error: check.message });
-    throw new Error(
-      'Invalid inputs, please rescan the passport with the camera',
-    ); // TODO: toast message
-    //useHapticNavigation('PassportCamera', 'cancel'); TODO: move user back to the previous screen
-  }
-  console.log('SCANNING');
-  if (Platform.OS === 'android') {
-    await scanAndroid(inputs);
-  } else {
-    await scanIOS(inputs);
-  }
+  return Platform.OS === 'android'
+    ? await scanAndroid(inputs)
+    : await scanIOS(inputs);
 };
 
 const scanAndroid = async (inputs: Inputs) => {
-  const { passportNumber, dateOfBirth, dateOfExpiry } = inputs;
-
-  try {
-    const response = await PassportReader.scan({
-      documentNumber: passportNumber,
-      dateOfBirth: dateOfBirth,
-      dateOfExpiry: dateOfExpiry,
-    });
-    console.log('scanned');
-
-    amplitude.track('nfc_scan_successful');
-    await handleResponseAndroid(response);
-  } catch (e: any) {
-    console.log('error during scan:', e);
-
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
-    if (e.message.includes('InvalidMRZKey')) {
-      // TODO: Go back to the previous screen and rescan the passport with the camera/manual inputs
-      //   toast.show('Error', {
-      //     message:
-      //       'Go to previous screen and rescan your passport with the camera',
-      //     customData: {
-      //       type: 'error',
-      //     },
-      //     timeout: 5000,
-      //   });
-      //   useNavigationStore.getState().setSelectedTab('scan');
-    } else {
-      //   toast.show('Error', {
-      //     message: e.message,
-      //     customData: {
-      //       type: 'error',
-      //     },
-      //   });
-    }
-  }
+  return await PassportReader.scan({
+    documentNumber: inputs.passportNumber,
+    dateOfBirth: inputs.dateOfBirth,
+    dateOfExpiry: inputs.dateOfExpiry,
+  });
 };
 
 const scanIOS = async (inputs: Inputs) => {
-  const { passportNumber, dateOfBirth, dateOfExpiry } = inputs;
-
-  console.log('passportNumber', passportNumber);
-  console.log('dateOfBirth', dateOfBirth);
-  console.log('dateOfExpiry', dateOfExpiry);
-
-  try {
-    const response = await NativeModules.PassportReader.scanPassport(
-      passportNumber,
-      dateOfBirth,
-      dateOfExpiry,
-    );
-    console.log('scanned');
-    await handleResponseIOS(response);
-    amplitude.track('nfc_scan_successful');
-  } catch (e: any) {
-    console.log('error during scan:', e);
-    amplitude.track('nfc_scan_unsuccessful', { error: e.message });
-    if (!e.message.includes('UserCanceled')) {
-      // handle cancelation
-    }
-    if (e.message.includes('InvalidMRZKey')) {
-      // handle error
-    } else {
-      // handle error
-    }
-  }
+  return await NativeModules.PassportReader.scanPassport(
+    inputs.passportNumber,
+    inputs.dateOfBirth,
+    inputs.dateOfExpiry,
+  );
 };
 
-const handleResponseIOS = async (response: any) => {
-  const { trackEvent } = useNavigationStore.getState();
+export const parseScanResponse = (response: any) => {
+  return Platform.OS === 'android'
+    ? handleResponseAndroid(response)
+    : handleResponseIOS(response);
+};
+
+const handleResponseIOS = (response: any) => {
   const parsed = JSON.parse(response);
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
@@ -119,8 +48,8 @@ const handleResponseIOS = async (response: any) => {
   const dg2HashString = dgHashesObj?.DG2?.sodHash;
   const dg2Hash = Array.from(Buffer.from(dg2HashString, 'hex'));
 
-  const eContentBase64 = parsed?.eContentBase64; // this is what we call concatenatedDataHashes in android world
-  const signedAttributes = parsed?.signedAttributes; // this is what we call eContent in android world
+  const eContentBase64 = parsed?.eContentBase64;
+  const signedAttributes = parsed?.signedAttributes;
   const mrz = parsed?.passportMRZ;
   const signatureBase64 = parsed?.signatureBase64;
   const _dataGroupsPresent = parsed?.dataGroupsPresent;
@@ -150,7 +79,7 @@ const handleResponseIOS = async (response: any) => {
     Buffer.from(signatureBase64, 'base64'),
   ).map(byte => (byte > 127 ? byte - 256 : byte));
 
-  const passportData = {
+  return {
     mrz,
     dsc: pem,
     dg2Hash: dg2Hash,
@@ -159,23 +88,11 @@ const handleResponseIOS = async (response: any) => {
     eContent: concatenatedDataHashesArraySigned,
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
-    photoBase64: '',
     parsed: false,
   };
-
-  try {
-    parseAndStorePassportData(passportData);
-  } catch (e: any) {
-    console.log('error during parsing:', e);
-    trackEvent('Passport ParseFailed', {
-      success: false,
-      error: e.message,
-    });
-  }
 };
 
-const handleResponseAndroid = async (response: any) => {
-  const { trackEvent } = useNavigationStore.getState();
+const handleResponseAndroid = (response: any) => {
   const {
     mrz,
     eContent,
@@ -205,7 +122,7 @@ const handleResponseAndroid = async (response: any) => {
     .filter(num => !isNaN(num))
     .sort((a, b) => a - b);
 
-  const passportData: PassportData = {
+  return {
     mrz: mrz.replace(/\n/g, ''),
     dsc: pem,
     dg2Hash,
@@ -214,50 +131,5 @@ const handleResponseAndroid = async (response: any) => {
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
-    photoBase64: '',
-  };
-
-  try {
-    parseAndStorePassportData(passportData);
-  } catch (e: any) {
-    console.log('error during parsing:', e);
-    trackEvent('Passport ParseFailed', {
-      success: false,
-      error: e.message,
-    });
-  }
+  } as PassportData;
 };
-
-async function parseAndStorePassportData(passportData: PassportData) {
-  const { trackEvent } = useNavigationStore.getState();
-  const parsedPassportData = initPassportDataParsing(passportData);
-  await storePassportData(parsedPassportData);
-
-  const passportMetadata =
-    parsedPassportData.passportMetadata as PassportMetadata;
-
-  trackEvent('Passport Parsed', {
-    success: true,
-    data_groups: passportMetadata.dataGroups,
-    dg1_hash_function: passportMetadata.dg1HashFunction,
-    dg1_hash_offset: passportMetadata.dg1HashOffset,
-    dg_padding_bytes: passportMetadata.dgPaddingBytes,
-    e_content_size: passportMetadata.eContentSize,
-    e_content_hash_function: passportMetadata.eContentHashFunction,
-    e_content_hash_offset: passportMetadata.eContentHashOffset,
-    signed_attr_size: passportMetadata.signedAttrSize,
-    signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
-    signature_algorithm: passportMetadata.signatureAlgorithm,
-    salt_length: passportMetadata.saltLength,
-    curve_or_exponent: passportMetadata.curveOrExponent,
-    signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
-    country_code: passportMetadata.countryCode,
-    csca_found: passportMetadata.cscaFound,
-    csca_hash_function: passportMetadata.cscaHashFunction,
-    csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
-    csca_salt_length: passportMetadata.cscaSaltLength,
-    csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
-    csca_signature_algorithm_bits: passportMetadata.cscaSignatureAlgorithmBits,
-    dsc: passportMetadata.dsc,
-  });
-}

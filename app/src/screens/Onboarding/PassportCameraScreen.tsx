@@ -18,9 +18,10 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
 import { black, slate800, white } from '../../utils/colors';
-import { formatDateToYYMMDD } from '../../utils/utils';
+import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
 
@@ -28,12 +29,13 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
+  const { trackEvent } = useNavigationStore();
 
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
     (error, result) => {
       if (error) {
         console.error(error);
-        //TODO:  Add error handling here
+        //TODO: Add error handling here
         return;
       }
 
@@ -44,31 +46,37 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
       const { passportNumber, dateOfBirth, dateOfExpiry } = result;
 
-      if (Platform.OS === 'ios') {
-        store.update({
+      const formattedDateOfBirth =
+        Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfBirth) : dateOfBirth;
+      const formattedDateOfExpiry =
+        Platform.OS === 'ios' ? formatDateToYYMMDD(dateOfExpiry) : dateOfExpiry;
+
+      if (
+        !checkScannedInfo(
           passportNumber,
-          dateOfBirth: formatDateToYYMMDD(dateOfBirth),
-          dateOfExpiry: formatDateToYYMMDD(dateOfExpiry),
+          formattedDateOfBirth,
+          formattedDateOfExpiry,
+        )
+      ) {
+        trackEvent('Passport Camera Scan Failed', {
+          passportNumberLength: passportNumber.length,
+          dateOfBirthLength: formattedDateOfBirth.length,
+          dateOfExpiryLength: formattedDateOfExpiry.length,
         });
-        // Explicitly log the update
-        console.log('Updated store with:', {
-          passportNumber,
-          dateOfBirth: formatDateToYYMMDD(dateOfBirth),
-          dateOfExpiry: formatDateToYYMMDD(dateOfExpiry),
-        });
-      } else {
-        store.update({
-          passportNumber,
-          dateOfBirth,
-          dateOfExpiry,
-        });
-        // Explicitly log the update
-        console.log('Updated store with:', {
-          passportNumber,
-          dateOfBirth,
-          dateOfExpiry,
-        });
+        navigation.navigate('PassportCameraTrouble');
+        return;
       }
+
+      store.update({
+        passportNumber,
+        dateOfBirth: formattedDateOfBirth,
+        dateOfExpiry: formattedDateOfExpiry,
+      });
+      console.log('Updated store with:', {
+        passportNumber,
+        dateOfBirth: formattedDateOfBirth,
+        dateOfExpiry: formattedDateOfExpiry,
+      });
       navigation.navigate('PassportNFCScan');
     },
     [store, navigation],
@@ -80,7 +88,11 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-        <PassportCamera onPassportRead={onPassportRead} isMounted={isFocused} />
+        <PassportCamera
+          key={isFocused ? 'active' : 'inactive'}
+          onPassportRead={onPassportRead}
+          isMounted={isFocused}
+        />
         <LottieView
           autoPlay
           loop

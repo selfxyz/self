@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 
 import LottieView from 'lottie-react-native';
@@ -22,14 +22,25 @@ const PassportOnboardingScreen: React.FC<
 > = ({}) => {
   const handleCameraPress = useHapticNavigation('PassportCamera');
   const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
+  const animationRef = useRef<LottieView>(null);
+
+  useEffect(() => {
+    animationRef.current?.play();
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <StatusBar barStyle="light-content" backgroundColor={black} />
       <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
         <LottieView
-          autoPlay
+          ref={animationRef}
+          autoPlay={false}
           loop={false}
+          onAnimationFinish={() => {
+            setTimeout(() => {
+              animationRef.current?.play();
+            }, 5000); // Pause 5 seconds before playing again
+          }}
           source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}

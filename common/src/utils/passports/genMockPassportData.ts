@@ -267,7 +267,6 @@ export function genMockPassportData(
     eContent: eContent,
     signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
-    photoBase64: 'iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAABjElEQVR42mL8//8/AyUYiBQYmIy3...',
   });
 }
 

@@ -10,7 +10,6 @@ export type PassportData = {
   eContent: number[];
   signedAttr: number[];
   encryptedDigest: number[];
-  photoBase64: string;
   passportMetadata?: PassportMetadata;
   dsc_parsed?: CertificateData;
   csca_parsed?: CertificateData;

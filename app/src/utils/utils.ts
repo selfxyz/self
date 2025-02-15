@@ -95,31 +95,21 @@ export function getFirstName(mrz: string): string {
   }
 }
 
-export function checkInputs(
+export function checkScannedInfo(
   passportNumber: string,
   dateOfBirth: string,
   dateOfExpiry: string,
-): { success: boolean; message: string } {
-  // if (passportNumber.length !== 9) {
-  //   throw new Error('Passport number must be 9 characters long');
-  // }
+): boolean {
+  if (passportNumber.length > 9) {
+    return false;
+  }
   if (dateOfBirth.length !== 6) {
-    return {
-      success: false,
-      message: 'Complete Step 1 first',
-    };
+    return false;
   }
   if (dateOfExpiry.length !== 6) {
-    return {
-      success: false,
-      message: 'Date of expiry must be 6 characters long',
-    };
+    return false;
   }
-
-  return {
-    success: true,
-    message: '',
-  };
+  return true;
 }
 
 export const maskString = (input: string): string => {
