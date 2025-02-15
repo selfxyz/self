@@ -33,16 +33,52 @@ export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
 
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+
 export const DEPLOYED_CIRCUITS_REGISTER = [
+  'register_sha1_sha1_sha1_rsa_65537_4096',
   'register_sha1_sha256_sha256_rsa_65537_4096',
+  'register_sha224_sha224_sha224_ecdsa_brainpoolP224r1',
+  'register_sha256_sha224_sha224_ecdsa_secp224r1',
+  'register_sha256_sha256_sha256_ecdsa_brainpoolP256r1',
+  'register_sha256_sha256_sha256_ecdsa_brainpoolP384r1',
+  'register_sha256_sha256_sha256_ecdsa_secp256r1',
+  'register_sha256_sha256_sha256_ecdsa_secp384r1',
+  'register_sha256_sha256_sha256_rsa_3_4096',
   'register_sha256_sha256_sha256_rsa_65537_4096',
+  'register_sha256_sha256_sha256_rsapss_3_32_2048',
+  'register_sha256_sha256_sha256_rsapss_65537_32_2048',
+  'register_sha256_sha256_sha256_rsapss_65537_32_3072',
+  'register_sha384_sha384_sha384_ecdsa_brainpoolP384r1',
+  'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',
+  'register_sha384_sha384_sha384_ecdsa_secp384r1',
+  'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',
+  'register_sha512_sha512_sha512_rsa_65537_4096',
+  'register_sha512_sha512_sha512_rsapss_65537_64_2048',
 ]
 
 export const OFAC_TREE_LEVELS = 64;
 
 export const DEPLOYED_CIRCUITS_DSC = [
+  'dsc_sha1_ecdsa_brainpoolP256r1',
+  'dsc_sha1_rsa_65537_4096',
+  'dsc_sha256_ecdsa_brainpoolP256r1',
+  'dsc_sha256_ecdsa_brainpoolP384r1',
+  'dsc_sha256_ecdsa_secp256r1',
+  'dsc_sha256_ecdsa_secp384r1',
+  'dsc_sha256_ecdsa_secp521r1',
   'dsc_sha256_rsa_65537_4096',
+  'dsc_sha256_rsapss_3_32_3072',
+  'dsc_sha256_rsapss_65537_32_3072',
+  'dsc_sha256_rsapss_65537_32_4096',
+  'dsc_sha384_ecdsa_brainpoolP384r1',
+  'dsc_sha384_ecdsa_brainpoolP512r1',
+  'dsc_sha384_ecdsa_secp384r1',
+  'dsc_sha512_ecdsa_brainpoolP512r1',
+  'dsc_sha512_ecdsa_secp521r1',
+  'dsc_sha512_rsa_65537_4096',
+  'dsc_sha512_rsapss_65537_64_4096',
 ]
+
 export const MAX_PADDED_ECONTENT_LEN: Partial<Record<(typeof hashAlgos)[number], number>> = {
   sha1: 384,
   sha224: 512,
