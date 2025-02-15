@@ -13,7 +13,6 @@ import { AppProvider } from './src/stores/appProvider';
 import { AuthProvider } from './src/stores/authProvider';
 import { PassportProvider } from './src/stores/passportDataProvider';
 import { ProofProvider } from './src/stores/proofProvider';
-import useUserStore from './src/stores/userStore';
 
 global.Buffer = Buffer;
 
@@ -21,18 +20,15 @@ global.Buffer = Buffer;
 export let segmentClient: ReturnType<typeof createClient> | null = null;
 
 function App(): React.JSX.Element {
-  const initUserStore = useUserStore(state => state.initUserStore);
-
   useEffect(() => {
     // init
-    initUserStore();
     segmentClient = createSegmentClient();
     Orientation.lockToPortrait();
     // cleanup
     return () => {
       Orientation.unlockAllOrientations();
     };
-  }, [initUserStore]);
+  }, []);
 
   return (
     <YStack f={1} h="100%" w="100%">

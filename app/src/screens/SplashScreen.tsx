@@ -5,9 +5,9 @@ import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import splashAnimation from '../assets/animations/splash.json';
-import { useAuth } from '../stores/authProvider';
+import { loadSecret, useAuth } from '../stores/authProvider';
+import { loadPassportData } from '../stores/passportDataProvider';
 import { useSettingStore } from '../stores/settingStore';
-import useUserStore from '../stores/userStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 
@@ -15,7 +15,6 @@ const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { createSigningKeyPair } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
-  const { userLoaded, passportData } = useUserStore();
 
   useEffect(() => {
     createSigningKeyPair()
@@ -28,20 +27,19 @@ const SplashScreen: React.FC = ({}) => {
       });
   }, []);
 
-  const redirect = useCallback(() => {
-    if (userLoaded && passportData) {
-      navigation.navigate('Home');
-    } else {
-      navigation.navigate('Launch');
-    }
-  }, [passportData, userLoaded]);
-
   const handleAnimationFinish = useCallback(() => {
-    setTimeout(() => {
+    setTimeout(async () => {
       impactLight();
-      redirect();
+      const secret = await loadSecret();
+      const passportData = await loadPassportData();
+
+      if (secret && passportData) {
+        navigation.navigate('Home');
+      } else {
+        navigation.navigate('Launch');
+      }
     }, 1000);
-  }, [userLoaded]);
+  }, [navigation]);
 
   return (
     <LottieView

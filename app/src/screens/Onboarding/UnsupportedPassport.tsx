@@ -14,8 +14,7 @@ import { notificationError } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const UnsupportedPassportScreen: React.FC = () => {
-  // whereto?
-  const onPress = useHapticNavigation('Launch', { action: 'cancel' });
+  const onPress = useHapticNavigation('Launch');
   useEffect(() => {
     notificationError();
   }, []);

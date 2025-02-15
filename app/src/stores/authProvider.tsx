@@ -69,7 +69,7 @@ async function createSigningKeyPair(): Promise<boolean> {
   }
 }
 
-async function loadSecret() {
+export async function loadSecret() {
   const secretCreds = await Keychain.getGenericPassword({ service: 'secret' });
   return secretCreds === false ? false : secretCreds.password;
 }

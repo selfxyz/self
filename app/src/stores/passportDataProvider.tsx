@@ -11,14 +11,14 @@ import { PassportData } from '../../../common/src/utils/types';
 import { loadSecretOrCreateIt } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 
-async function loadPassportData() {
+export async function loadPassportData() {
   const passportDataCreds = await Keychain.getGenericPassword({
     service: 'passportData',
   });
   return passportDataCreds === false ? false : passportDataCreds.password;
 }
 
-async function loadPassportDataAndSecret() {
+export async function loadPassportDataAndSecret() {
   const passportData = await loadPassportData();
   const secret = await loadSecretOrCreateIt();
   if (!secret || !passportData) {
@@ -38,6 +38,10 @@ export async function storePassportData(passportData: PassportData) {
   );
 }
 
+export async function clearPassportData() {
+  await Keychain.resetGenericPassword({ service: 'passportData' });
+}
+
 interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
@@ -48,12 +52,14 @@ interface IPassportContext {
     data: { passportData: PassportData; secret: string };
     signature: string;
   } | null>;
+  clearPassportData: () => Promise<void>;
 }
 
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
   setData: storePassportData,
   getPassportDataAndSecret: () => Promise.resolve(null),
+  clearPassportData: clearPassportData,
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
@@ -78,6 +84,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       getData,
       setData: storePassportData,
       getPassportDataAndSecret,
+      clearPassportData: clearPassportData,
     }),
     [getData, getPassportDataAndSecret],
   );

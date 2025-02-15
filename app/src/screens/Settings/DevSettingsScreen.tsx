@@ -5,7 +5,7 @@ import { Check, ChevronDown, Eraser, IterationCw } from '@tamagui/lucide-icons';
 import { Adapt, Button, Fieldset, Label, Select, Sheet, YStack } from 'tamagui';
 
 import { RootStackParamList } from '../../Navigation';
-import useUserStore from '../../stores/userStore';
+import { usePassport } from '../../stores/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
@@ -93,13 +93,12 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const { clearPassportDataFromStorage, setRegistered } = useUserStore();
+  const { clearPassportData } = usePassport();
 
   const nav = useNavigation();
 
   function handleRestart() {
-    clearPassportDataFromStorage();
-    setRegistered(false);
+    clearPassportData();
     nav.navigate('Launch');
   }
 
@@ -148,69 +147,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           <Eraser color={textBlack} />
         </Button>
       </Fieldset>
-
-      {/* <Fieldset gap="$4" mt="$1" horizontal>
-                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                          Delete proofs
-                        </Label>
-                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={clearProofsFromStorage}>
-                          <Eraser color={textBlack} />
-                        </Button>
-                      </Fieldset> */}
-
-      {/* <Fieldset horizontal>
-                    <Label color={textBlack} width={225} justifyContent="flex-end" htmlFor="restart" >
-                      Private mode
-                    </Label>
-                    <Switch size="$3.5" checked={hideData} onCheckedChange={handleHideData}>
-                      <Switch.Thumb animation="bouncy" bc={bgColor} />
-                    </Switch>
-                  </Fieldset> */}
-
-      {/* <Fieldset gap="$4" mt="$1" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="skip"
-        >
-          Delete secret (caution)
-        </Label>
-        <Button
-          bg="white"
-          jc="center"
-          borderColor={borderColor}
-          borderWidth={1.2}
-          size="$3.5"
-          ml="$2"
-          // onPress={clearSecretFromStorage}
-        >
-          <Eraser color={textColor2} />
-        </Button>
-      </Fieldset> */}
-      {/* <Dialog.Container visible={false}>
-        <Dialog.Title>Delete Secret</Dialog.Title>
-        <Dialog.Description>
-          You are about to delete your secret. Be careful! You will not be able
-          to recover your identity.
-        </Dialog.Description>
-        <Dialog.Button
-          //   onPress={() => setDialogDeleteSecretIsOpen(false)}
-          label="Cancel"
-        />
-        <Dialog.Button
-          //   onPress={() => handleDeleteSecret()}
-          label="Delete secret"
-        />
-      </Dialog.Container> */}
-      {/* <Fieldset gap="$4" mt="$1" horizontal>
-                        <Label color={textBlack} width={200} justifyContent="flex-end" htmlFor="skip" >
-                          registered = (!registered)
-                        </Label>
-                        <Button bg="white" jc="center" borderColor={borderColor} borderWidth={1.2} size="$3.5" ml="$2" onPress={() => setRegistered(!registered)}>
-                          <UserPlus color={textColor2} />
-                        </Button>
-                      </Fieldset> */}
 
       <Fieldset marginTop={30} gap="$4" mt="$1" horizontal>
         <Label color={textBlack} justifyContent="flex-end" htmlFor="skip">

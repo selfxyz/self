@@ -17,7 +17,10 @@ import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
+import {
+  isUserRegistered,
+  sendVcAndDisclosePayload,
+} from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
@@ -75,6 +78,21 @@ const ProveScreen: React.FC = () => {
           return;
         }
         const { passportData, secret } = passportDataAndSecret.data;
+
+        // passport must be supported, because it was stored in the first place
+        // check if commitment has been registered.
+        // if not, either:
+        // - registration is ongoing => show a loading screen. TODO detect this?
+        // - registration failed => send to ConfirmBelongingScreen to register again
+        const isRegistered = await isUserRegistered(passportData, secret);
+        if (!isRegistered) {
+          console.log(
+            'User is not registered, sending to ConfirmBelongingScreen',
+          );
+          navigate('ConfirmBelongingScreen');
+          return;
+        }
+
         await sendVcAndDisclosePayload(secret, passportData, selectedApp);
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
