@@ -5,14 +5,14 @@ import pako from 'pako';
 
 import { SelfApp } from '../../../common/src/utils/appType';
 import useNavigationStore from '../stores/navigationStore';
-import useUserStore from '../stores/userStore';
+import { loadPassportData } from '../stores/passportDataProvider';
 
 export default async function handleQRCodeScan(
   result: string,
   setApp: (app: SelfApp) => void,
 ) {
   try {
-    const { passportData } = useUserStore.getState();
+    const passportData = await loadPassportData();
     if (passportData) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
