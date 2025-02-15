@@ -19,7 +19,7 @@ let dscDescriptions: { [dscDescription: string]: number } = {};
 let undefinedFilePathsCsca: string[] = [];
 let undefinedFilePathsDsc: string[] = [];
 let dscDescriptionsExtrapolated: { [dscDescription: string]: number } = {};
-function processCertificate(pemContent: string, filePath: string) {
+async function processCertificate(pemContent: string, filePath: string) {
     try {
         const certificate: CertificateData = parseCertificateSimple(pemContent);
         if (parseInt(certificate.tbsBytesLength) > tbs_max_bytes) {
@@ -51,7 +51,7 @@ function processCertificate(pemContent: string, filePath: string) {
         // console.log(`Signature Algorithm: ${certificate.signatureAlgorithm}`);
         // console.log(`Hash Algorithm: ${certificate.hashAlgorithm}`);
         // CSCA parsing
-        const dscMetaData = parseDscCertificateData(certificate);
+        const dscMetaData = await parseDscCertificateData(certificate);
         // console.log('js: dscMetaData', dscMetaData);
         let cscaDesc = '';
         if (dscMetaData.cscaFound) {
@@ -117,7 +117,7 @@ async function buildDscMerkleTree() {
             const file_path = path.join(path_to_pem_files, file);
             try {
                 const pemContent = fs.readFileSync(file_path, 'utf8');
-                const leafValue = processCertificate(pemContent, file_path);
+                const leafValue = await processCertificate(pemContent, file_path);
                 if (leafValue) {
                     tree.insert(BigInt(leafValue));
                 }
@@ -139,7 +139,7 @@ async function buildDscMerkleTree() {
             if (fs.existsSync(pemFilePath)) {
                 try {
                     const pemContent = fs.readFileSync(pemFilePath, 'utf8');
-                    const leafValue = processCertificate(pemContent, pemFilePath);
+                    const leafValue = await processCertificate(pemContent, pemFilePath);
                     if (leafValue) {
                         tree.insert(BigInt(leafValue));
                     }

@@ -1,6 +1,6 @@
 import * as forge from 'node-forge';
 import * as fs from 'fs';
-import { MODAL_SERVER_ADDRESS } from '../constants/constants';
+import { CSCA_TREE_URL, MODAL_SERVER_ADDRESS } from '../constants/constants';
 import axios from 'axios';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 import { splitToWords } from './bytes';
@@ -138,28 +138,35 @@ export function findOIDPosition(
 }
 
 
+export async function getCSCAFromSKI(ski: string, devMode: boolean = true): Promise<string> {
+  if (devMode) {
+    const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
+    const cscaPemPROD = (SKI_PEM as any)[normalizedSki];
+    const cscaPemDEV = (SKI_PEM_DEV as any)[normalizedSki];
+    let cscaPem = cscaPemDEV || cscaPemPROD;
+    if (!cscaPem) {
+      console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
+      throw new Error(
+        `CSCA not found, authorityKeyIdentifier: ${ski}, areMockPassportsAllowed: ${devMode}`
+      );
+    }
 
-export function getCSCAFromSKI(ski: string, devMode: boolean): string {
-  const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
+    if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
+      cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
+    }
 
-  const cscaPemPROD = (SKI_PEM as any)[normalizedSki];
-  const cscaPemDEV = (SKI_PEM_DEV as any)[normalizedSki];
-
-  let cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
-
-  if (!cscaPem) {
-    console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
-    throw new Error(
-      `CSCA not found, authorityKeyIdentifier: ${ski}, areMockPassportsAllowed: ${devMode}`
-    );
+    return cscaPem;
   }
-
-  if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
-    cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
+  else {
+    const response = await fetch(`${CSCA_TREE_URL}/api/v1/csca-from-ski/${ski}`);
+    const data = await response.json();
+    if (!data.found) {
+      throw new Error(`CSCA not found, authorityKeyIdentifier: ${ski}`);
+    }
+    return data.data;
   }
-
-  return cscaPem;
 }
+
 
 
 export function getTBSHash(

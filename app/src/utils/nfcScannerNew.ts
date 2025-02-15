@@ -233,7 +233,7 @@ const handleResponseAndroid = async (response: any) => {
 
 async function parsePassportDataAsync(passportData: PassportData) {
   const { trackEvent } = useNavigationStore.getState();
-  const parsedPassportData = initPassportDataParsing(passportData);
+  const parsedPassportData = await initPassportDataParsing(passportData);
   const passportMetadata: PassportMetadata =
     parsedPassportData.passportMetadata as PassportMetadata;
   await useUserStore.getState().registerPassportData(parsedPassportData);

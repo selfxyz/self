@@ -49,7 +49,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "940131",
         "401031"
     );
-    mockPassport = initPassportDataParsing(mockPassport);
+    mockPassport = await initPassportDataParsing(mockPassport);
 
     // Deploy verifiers
     const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local"

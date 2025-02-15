@@ -7,16 +7,16 @@ import {
 } from '../certificate_parsing/dataStructure';
 import { parsePassportData } from '../passports/passport_parsing/parsePassportData';
 
-export function getCircuitNameFromPassportData(passportData: PassportData, circuitType: 'register' | 'dsc') {
+export async function getCircuitNameFromPassportData(passportData: PassportData, circuitType: 'register' | 'dsc') {
   if (circuitType === 'register') {
-    return getRegisterNameFromPassportData(passportData);
+    return await getRegisterNameFromPassportData(passportData);
   } else {
-    return getDSCircuitNameFromPassportData(passportData);
+    return await getDSCircuitNameFromPassportData(passportData);
   }
 }
 
-function getDSCircuitNameFromPassportData(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
+async function getDSCircuitNameFromPassportData(passportData: PassportData) {
+  const passportMetadata = await parsePassportData(passportData);
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
   const hashFunction = passportMetadata.cscaHashFunction;
   const parsedCSCA = parseCertificateSimple(passportData.passportMetadata.csca);
@@ -48,8 +48,8 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
 
 }
 
-function getRegisterNameFromPassportData(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
+async function getRegisterNameFromPassportData(passportData: PassportData) {
+  const passportMetadata = await parsePassportData(passportData);
   const parsedDsc = parseCertificateSimple(passportData.dsc);
   const dgHashAlgo = passportMetadata.dg1HashFunction;
   const eContentHashAlgo = passportMetadata.eContentHashFunction;

@@ -16,31 +16,28 @@ dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
-testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
-  let passportData = genMockPassportData(
-    hashFunction,
-    hashFunction,
-    `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
-    'FRA',
-    '000101',
-    '300101'
-  );
-  passportData = initPassportDataParsing(passportData);
-  const passportMetadata = passportData.passportMetadata;
-
-  describe(`DSC chain certificate - ${passportMetadata.cscaHashFunction.toUpperCase()} ${passportMetadata.cscaSignatureAlgorithm.toUpperCase()} ${passportMetadata.cscaCurveOrExponent.toUpperCase()} ${
-    passportData.csca_parsed.publicKeyDetails.bits
-  }`, function () {
-    this.timeout(0); // Disable timeout
+for (const { sigAlg, hashFunction, domainParameter, keyLength } of testSuite) {
+  describe(`DSC chain certificate - ${sigAlg} ${hashFunction} ${domainParameter} ${keyLength}`, function () {
+    let passportData;
+    let inputs;
     let circuit;
 
-    const inputs = generateCircuitInputsDSC(passportData.dsc, true);
+    before(async function () {
+      passportData = genMockPassportData(
+        hashFunction,
+        hashFunction,
+        `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+        'FRA',
+        '000101',
+        '300101'
+      );
+      passportData = await initPassportDataParsing(passportData);
+      inputs = await generateCircuitInputsDSC(passportData.dsc, true);
 
-    before(async () => {
       circuit = await wasm_tester(
         path.join(
           __dirname,
-          `../../circuits/dsc/instances/${getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
+          `../../circuits/dsc/instances/${await getCircuitNameFromPassportData(passportData, 'dsc')}.circom`
         ),
         {
           include: [
@@ -124,9 +121,9 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
 
     it('should fail if csca_pubKey_actual_size is lower than the minimum key length', async () => {
       try {
-        const dscParsed = parseCertificateSimple(passportData.dsc);
-        const dscMetadata = parseDscCertificateData(dscParsed);
-        const cscaParsed = parseCertificateSimple(dscMetadata.csca);
+        const dscParsed = await parseCertificateSimple(passportData.dsc);
+        const dscMetadata = await parseDscCertificateData(dscParsed);
+        const cscaParsed = await parseCertificateSimple(dscMetadata.csca);
 
         const tamperedInputs = JSON.parse(JSON.stringify(inputs));
         if (cscaParsed.signatureAlgorithm === 'rsa') {
@@ -284,4 +281,4 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       }
     });
   });
-});
+}

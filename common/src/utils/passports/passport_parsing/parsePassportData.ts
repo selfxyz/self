@@ -88,7 +88,7 @@ export function getCurveOrExponent(certData: CertificateData): string {
   return (certData.publicKeyDetails as PublicKeyDetailsECDSA).curve;
 }
 
-export function parsePassportData(passportData: PassportData): PassportMetadata {
+export async function parsePassportData(passportData: PassportData): Promise<PassportMetadata> {
   const dg1HashInfo = passportData.mrz
     ? findDG1HashInEContent(passportData.mrz, passportData.eContent)
     : null;
@@ -117,7 +117,7 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
     parsedDsc = parseCertificateSimple(passportData.dsc);
     dscSignatureAlgorithmBits = parseInt(parsedDsc.publicKeyDetails?.bits || '0');
 
-    dscMetaData = parseDscCertificateData(parsedDsc);
+    dscMetaData = await parseDscCertificateData(parsedDsc);
   }
 
   return {

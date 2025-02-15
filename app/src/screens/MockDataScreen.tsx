@@ -31,9 +31,9 @@ import {
 } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
 
-interface MockDataScreenProps {}
+interface MockDataScreenProps { }
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+const MockDataScreen: React.FC<MockDataScreenProps> = ({ }) => {
   const navigation = useNavigation();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
@@ -78,14 +78,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       .replace(/[^a-z0-9]/gi, '')
       .toUpperCase();
     await new Promise(resolve =>
-      setTimeout(() => {
+      setTimeout(async () => {
         let mockPassportData;
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
             'sha1',
             'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
@@ -99,7 +99,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             'sha1',
             'sha256',
             signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
@@ -107,7 +107,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             randomPassportNumber,
           );
         }
-        const passportDataInit = initPassportDataParsing(mockPassportData);
+        const passportDataInit = await initPassportDataParsing(mockPassportData);
         useUserStore.getState().registerPassportData(passportDataInit);
         useUserStore.getState().setRegistered(true);
         resolve(null);

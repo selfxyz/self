@@ -71,8 +71,8 @@ export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateD
   return getLeafDscTree(dscParsed, cscaParsed);
 }
 
-export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string {
-  return getLeafDscTreeFromDscCertificateMetadata(dscParsed, parseDscCertificateData(dscParsed));
+export async function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): Promise<string> {
+  return getLeafDscTreeFromDscCertificateMetadata(dscParsed, await parseDscCertificateData(dscParsed));
 }
 
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {

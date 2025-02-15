@@ -16,7 +16,7 @@ export interface DscCertificateMetaData {
   cscaBits: number;
 }
 
-export function parseDscCertificateData(dscCert: CertificateData): DscCertificateMetaData {
+export async function parseDscCertificateData(dscCert: CertificateData): Promise<DscCertificateMetaData> {
   let csca,
     cscaParsed,
     cscaHashAlgorithm,
@@ -28,7 +28,7 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
   let cscaFound = false;
   if (dscCert.authorityKeyIdentifier) {
     try {
-      csca = getCSCAFromSKI(dscCert.authorityKeyIdentifier, true);
+      csca = await getCSCAFromSKI(dscCert.authorityKeyIdentifier, true);
       if (csca) {
         cscaParsed = parseCertificateSimple(csca);
         const details = brutforceSignatureAlgorithmDsc(dscCert, cscaParsed);

@@ -51,7 +51,7 @@ const LoadingScreen: React.FC = () => {
           '000101',
           '300101',
         );
-        const passportDataInit = initPassportDataParsing(passportData);
+        const passportDataInit = await initPassportDataParsing(passportData);
         setData(passportDataInit);
         await registerPassport(passportDataInit);
       } catch (error) {

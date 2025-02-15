@@ -14,11 +14,11 @@ const testCases = [
 ];
 
 
-describe('Mock Passport Data Generator', function () {
+describe('Mock Passport Data Generator', async function () {
   this.timeout(0);
 
   testCases.forEach(({ dgHashAlgo, eContentHashAlgo, sigAlg }) => {
-    it(`should generate valid passport data for ${sigAlg}`, () => {
+    it(`should generate valid passport data for ${sigAlg}`, async () => {
       const passportData = genMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
@@ -27,18 +27,18 @@ describe('Mock Passport Data Generator', function () {
         '000101',
         '300101'
       );
-      expect(verify(passportData, dgHashAlgo, eContentHashAlgo, sigAlg)).to.be.true;
+      expect(await verify(passportData, dgHashAlgo, eContentHashAlgo, sigAlg)).to.be.true;
     });
   });
 });
 
-function verify(
+async function verify(
   passportData: PassportData,
   dgHashAlgo: string,
   eContentHashAlgo: string,
   sigAlg: string
-): boolean {
-  const passportMetaData = parsePassportData(passportData);
+): Promise<boolean> {
+  const passportMetaData = await parsePassportData(passportData);
   // console.log('passportMetaData', passportMetaData);
 
   expect(passportMetaData.dg1HashFunction).to.equal(dgHashAlgo);

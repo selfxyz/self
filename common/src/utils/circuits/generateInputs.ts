@@ -36,7 +36,7 @@ export async function generateCircuitInputsDSC(
 ) {
   const serialized_csca_tree = (await getCSCATree(devMode) as any);
   const dscParsed = parseCertificateSimple(dscCertificate);
-  const dscMetadata = parseDscCertificateData(dscParsed);
+  const dscMetadata = await parseDscCertificateData(dscParsed);
   const cscaParsed = parseCertificateSimple(dscMetadata.csca);
 
   // CSCA is padded with 0s to max_csca_bytes
