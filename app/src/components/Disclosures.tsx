@@ -2,17 +2,13 @@ import React from 'react';
 
 import { XStack, YStack } from 'tamagui';
 
-import {
-  DisclosureAttributes,
-  DisclosureOption,
-  DisclosureOptions,
-} from '../../../common/src/utils/appType';
+import { SelfAppDisclosureConfig } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';
 
 interface DisclosureProps {
-  disclosures: DisclosureOptions;
+  disclosures: SelfAppDisclosureConfig;
 }
 
 function listToString(list: string[]): string {
@@ -25,29 +21,30 @@ function listToString(list: string[]): string {
 }
 
 export default function Disclosures({ disclosures }: DisclosureProps) {
-  // Convert the array into a lookup map keyed by the disclosure's key.
-  const disclosureMap = React.useMemo(() => {
-    return disclosures.reduce((acc, disclosure) => {
-      acc[disclosure.key] = disclosure;
-      return acc;
-    }, {} as Partial<Record<DisclosureAttributes, DisclosureOption>>);
-  }, [disclosures]);
 
   // Define the order in which disclosures should appear.
-  const ORDERED_KEYS: DisclosureAttributes[] = [
+  const ORDERED_KEYS = [
+    'issuing_state',
+    'name',
+    'passport_number',
+    'nationality',
+    'date_of_birth',
+    'gender',
+    'expiry_date',
+    'ofac',
     'excludedCountries',
     'minimumAge',
-    'ofac',
-    'nationality',
-  ];
+
+  ] as const;
 
   return (
     <YStack>
       {ORDERED_KEYS.map(key => {
-        const disclosure = disclosureMap[key];
-        if (!disclosure || !disclosure.enabled) {
+        const isEnabled = disclosures[key];
+        if (!isEnabled) {
           return null;
         }
+
         let text = '';
         switch (key) {
           case 'ofac':
@@ -55,16 +52,32 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
             break;
           case 'excludedCountries':
             text = `I am not a resident of any of the following countries: ${listToString(
-              (disclosure as { value: string[] }).value,
+              disclosures.excludedCountries || []
             )}`;
             break;
-          case 'nationality':
-            text = `I have a valid passport from ${
-              (disclosure as { value: string }).value
-            }`;
-            break;
           case 'minimumAge':
-            text = `Age [over ${(disclosure as { value: string }).value}]`;
+            text = `Age [over ${disclosures.minimumAge}]`;
+            break;
+          case 'name':
+            text = 'Name';
+            break;
+          case 'passport_number':
+            text = 'Passport Number';
+            break;
+          case 'date_of_birth':
+            text = 'Date of Birth';
+            break;
+          case 'gender':
+            text = 'Gender';
+            break;
+          case 'expiry_date':
+            text = 'Passport Expiry Date';
+            break;
+          case 'issuing_state':
+            text = 'Issuing State';
+            break;
+          case 'nationality':
+            text = 'Nationality';
             break;
           default:
             return null;

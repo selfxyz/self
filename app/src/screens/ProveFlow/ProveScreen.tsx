@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { ArgumentsDisclose } from '../../../../common/src/utils/appType';
+import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
@@ -37,8 +37,8 @@ const ProveScreen: React.FC = () => {
   }, [selectedApp]);
 
   const disclosureOptions = useMemo(() => {
-    return (selectedApp?.args as ArgumentsDisclose)?.disclosureOptions || [];
-  }, [selectedApp?.args]);
+    return selectedApp?.disclosures as SelfAppDisclosureConfig || [];
+  }, [selectedApp?.disclosures]);
 
   // Format the base64 image string correctly
   const logoSource = useMemo(() => {

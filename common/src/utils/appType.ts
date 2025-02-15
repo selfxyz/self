@@ -28,7 +28,6 @@ export interface SelfAppDisclosureConfig {
   date_of_birth?: boolean;
   gender?: boolean;
   expiry_date?: boolean;
-  older_than?: boolean;
   // custom checks
   ofac?: boolean;
   excludedCountries?: string[];

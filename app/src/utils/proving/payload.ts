@@ -22,7 +22,7 @@ import {
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from '../../../../common/src/utils/circuits/generateInputs';
-// import { generateCommitment } from '../../../../common/src/utils/passports/passport';
+import { generateCommitment } from '../../../../common/src/utils/passports/passport';
 import {
   getCSCATree,
   getCommitmentTree,
@@ -222,8 +222,8 @@ async function generateTeeInputsVCAndDisclose(
     await getOfacSMTs();
   const serialized_tree = await getCommitmentTree();
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
-  // const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, passportData);
-  // tree.insert(BigInt(commitment)); // TODO: dont do that! for now we add the commitment as the whole flow is not yet implemented
+  const commitment = generateCommitment(secret, PASSPORT_ATTESTATION_ID, passportData);
+  tree.insert(BigInt(commitment)); // TODO: dont do that! for now we add the commitment as the whole flow is not yet implemented
 
   const inputs = generateCircuitInputsVCandDisclose(
     secret,
