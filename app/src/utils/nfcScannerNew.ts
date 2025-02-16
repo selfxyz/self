@@ -1,11 +1,8 @@
 import '@react-navigation/native';
 
-import * as amplitude from '@amplitude/analytics-react-native';
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
-
-import { Buffer } from 'buffer';
 
 import { PassportData } from '../../../common/src/utils/types';
 

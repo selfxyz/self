@@ -1,7 +1,5 @@
-import React, { useCallback, useMemo, useState } from 'react';
-
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
 
 import BackupDocumentationLink from '../../components/BackupDocumentationLink';

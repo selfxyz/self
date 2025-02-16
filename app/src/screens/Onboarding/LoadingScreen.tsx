@@ -1,9 +1,8 @@
 // Import passport data generation and payload functions from common
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
-
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';

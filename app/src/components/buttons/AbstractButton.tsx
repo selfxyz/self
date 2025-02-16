@@ -1,6 +1,5 @@
 import React from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
-
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { dinot } from '../../utils/fonts';

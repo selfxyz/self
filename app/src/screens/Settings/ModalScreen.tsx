@@ -1,7 +1,8 @@
 import React, { useCallback } from 'react';
 
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import { View, XStack, YStack, styled } from 'tamagui';
+import React, { useCallback, useState } from 'react';
+import { styled,View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
@@ -37,7 +38,7 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
   const onButtonPressed = useCallback(async () => {
     try {
-      await params?.onButtonPress();
+      await params.onButtonPress();
       navigation.goBack();
     } catch (error) {
       console.error(error);
@@ -58,9 +59,9 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
             {params?.preventDismiss ? null : <ModalClose onPress={onClose} />}
           </XStack>
           <YStack gap={20}>
-            <Title textAlign="left">{params?.titleText}</Title>
+            <Title textAlign="left">{params.titleText}</Title>
             <Description style={{ textAlign: 'left' }}>
-              {params?.bodyText}
+              {params.bodyText}
             </Description>
           </YStack>
           <PrimaryButton onPress={onButtonPressed}>

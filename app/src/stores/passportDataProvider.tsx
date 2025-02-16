@@ -8,8 +8,7 @@ import React, {
 import Keychain from 'react-native-keychain';
 
 import { PassportData } from '../../../common/src/utils/types';
-import { loadSecretOrCreateIt } from '../stores/authProvider';
-import { useAuth } from './authProvider';
+import { loadSecretOrCreateIt , useAuth } from '../stores/authProvider';
 
 export async function loadPassportData() {
   const passportDataCreds = await Keychain.getGenericPassword({

@@ -3,6 +3,8 @@ import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect, useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
@@ -48,7 +50,7 @@ const ProveScreen: React.FC = () => {
 
   // Format the base64 image string correctly
   const logoSource = useMemo(() => {
-    if (!selectedApp?.logoBase64) {
+    if (!selectedApp.logoBase64) {
       return null;
     }
     // Ensure the base64 string has the correct data URI prefix
@@ -56,17 +58,17 @@ const ProveScreen: React.FC = () => {
       ? selectedApp.logoBase64
       : `data:image/png;base64,${selectedApp.logoBase64}`;
     return { uri: base64String };
-  }, [selectedApp?.logoBase64]);
+  }, [selectedApp.logoBase64]);
 
   const url = useMemo(() => {
-    if (!selectedApp?.endpoint) {
+    if (!selectedApp.endpoint) {
       return null;
     }
     const urlFormatted = selectedApp.endpoint
       .replace(/^https?:\/\//, '')
       .split('/')[0];
     return urlFormatted;
-  }, [selectedApp?.endpoint]);
+  }, [selectedApp.endpoint]);
 
   const onVerify = useCallback(
     async function () {

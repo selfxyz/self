@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 
 import { useNavigation } from '@react-navigation/native';
+import { useCallback } from 'react';
 
 import { ModalParams } from '../screens/Settings/ModalScreen';
 

@@ -1,8 +1,7 @@
+import { useNavigation } from '@react-navigation/native';
 import { useState } from 'react';
 import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
-
-import { useNavigation } from '@react-navigation/native';
 
 export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const navigation = useNavigation();

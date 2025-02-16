@@ -1,3 +1,5 @@
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Linking,
@@ -7,9 +9,6 @@ import {
   StyleSheet,
 } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
-
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { Image } from 'tamagui';
 
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';

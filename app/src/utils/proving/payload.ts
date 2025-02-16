@@ -14,7 +14,6 @@ import {
   WS_RPC_URL_DSC,
   WS_RPC_URL_REGISTER,
   WS_RPC_URL_VC_AND_DISCLOSE,
-  attributeToPosition,
 } from '../../../../common/src/constants/constants';
 import { SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
@@ -28,8 +27,8 @@ import {
   generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import {
-  getCSCATree,
   getCommitmentTree,
+  getCSCATree,
   getDSCTree,
   getLeafDscTree,
 } from '../../../../common/src/utils/trees';
