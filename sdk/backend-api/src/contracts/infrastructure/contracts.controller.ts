@@ -6,6 +6,8 @@ import { getDscCommitmentEvents } from '../application/getEvents';
 import { MerkleTreeService } from '../application/tree-reader/leanImtService';
 import { getContractInstanceRoot } from '../application/tree-reader/getTree';
 import { getCscaTree } from '../application/tree-reader/cscaTreeService';
+import { IMAGE_HASH } from '../../../../../common/src/constants/constants';
+import { getCSCAFromSKIApi } from '../application/skiPem';
 
 const dscTree = new MerkleTreeService('dsc');
 const commitmentTree = new MerkleTreeService('identity');
@@ -433,4 +435,70 @@ export const ContractsController = new Elysia()
         description: 'Retrieve the current state of the CSCA tree'
       }
     }
-  );
+  )
+  .get(
+    'image-hash',
+    async () => {
+      return {
+        status: 'success',
+        data: [IMAGE_HASH]
+      };
+    },
+    {
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Array(t.String()),
+        })
+      },
+      detail: {
+        tags: ['Constants'],
+        summary: 'Get image hash constant',
+        description: 'Retrieve the image hash constant used in the system'
+      }
+    }
+  )
+  .get(
+    'csca-from-ski/:ski',
+    async ({ params }) => {
+      try {
+        const response = getCSCAFromSKIApi(params.ski);
+        if (!response.found) {
+          return {
+            status: 'error',
+            message: response.result,
+            data: undefined
+          };
+        }
+        return {
+          status: 'success',
+          data: response.result,
+          message: undefined
+        };
+      } catch (error) {
+        return {
+          status: 'error',
+          message: error instanceof Error ? error.message : 'Unknown error',
+          data: undefined
+        };
+      }
+    },
+    {
+      params: t.Object({
+        ski: t.String()
+      }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Union([t.String(), t.Undefined()]),
+          message: t.Union([t.String(), t.Undefined()])
+        })
+      },
+      detail: {
+        tags: ['CSCA'],
+        summary: 'Get CSCA certificate from SKI',
+        description: 'Retrieve the CSCA certificate using the provided Subject Key Identifier (SKI)'
+      }
+    }
+  )
+// ... existing code ...
