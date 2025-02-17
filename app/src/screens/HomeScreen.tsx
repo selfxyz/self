@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
 import { Button, YStack, styled } from 'tamagui';
 
+import { pressedStyle } from '../components/buttons/pressedStyle';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
 import { useAppUpdates } from '../hooks/useAppUpdates';
@@ -98,7 +99,7 @@ function PrivacyNote() {
   }
 
   return (
-    <Card onPressIn={onDisclaimerPress}>
+    <Card onPress={onDisclaimerPress} pressStyle={pressedStyle}>
       <WarnIcon color={white} width={24} height={33} />
       <BodyText color={white} textAlign="center" fontSize={18}>
         A note on protecting your privacy

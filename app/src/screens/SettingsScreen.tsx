@@ -10,6 +10,7 @@ import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
 import { version } from '../../package.json';
 import { RootStackParamList } from '../Navigation';
+import { pressedStyle } from '../components/buttons/pressedStyle';
 import { BodyText } from '../components/typography/BodyText';
 import {
   appStoreUrl,
@@ -28,6 +29,7 @@ import Star from '../images/icons/star.svg';
 import Telegram from '../images/icons/telegram.svg';
 import Web from '../images/icons/webpage.svg';
 import { amber500, black, neutral700, slate800, white } from '../utils/colors';
+import { impactLight } from '../utils/haptic';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {
@@ -47,6 +49,12 @@ const emailFeedback = 'feedback@self.xyz';
 type RouteOption = keyof RootStackParamList | 'share' | 'email_feedback';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
+
+const goToStore = () => {
+  impactLight();
+  Linking.openURL(storeURL);
+};
+
 const routes = [
   [Data, 'View passport info', 'PassportDataInfo'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
@@ -71,6 +79,7 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
   <Button
     unstyled
     onPress={onPress}
+    pressStyle={pressedStyle}
     width="100%"
     flexDirection="row"
     gap={6}
@@ -89,12 +98,14 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
 
 const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
   const onPress = useCallback(() => {
+    impactLight();
     Linking.openURL(href);
   }, []);
 
   return (
     <Button
       unstyled
+      hitSlop={8}
       icon={<Icon height={32} width={32} color={amber500} onPress={onPress} />}
     />
   );
@@ -105,6 +116,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const onMenuPress = useCallback(
     (menuRoute: RouteOption) => {
       return async () => {
+        impactLight();
         switch (menuRoute) {
           case 'share':
             await Share.share(
@@ -188,7 +200,8 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             ai="center"
             gap={6}
             borderRadius={4}
-            onPress={() => Linking.openURL(storeURL)}
+            pressStyle={pressedStyle}
+            onPress={goToStore}
           >
             <BodyText color={white}>Leave an app store review</BodyText>
           </Button>

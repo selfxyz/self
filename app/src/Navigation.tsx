@@ -1,4 +1,5 @@
 import React from 'react';
+import { StatusBar } from 'react-native';
 import 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
@@ -55,7 +56,10 @@ const AppNavigation = createNativeStackNavigator({
     Splash: {
       screen: SplashScreen,
       options: {
-        headerShown: false,
+        header: () => (
+          <StatusBar barStyle="light-content" backgroundColor={black} />
+        ),
+        navigationBarColor: black,
       },
     },
     Launch: {
@@ -140,12 +144,13 @@ const AppNavigation = createNativeStackNavigator({
       screen: LoadingScreen,
       options: {
         headerShown: false,
+        navigationBarColor: black,
       },
     },
     CreateMock: {
       screen: MockDataScreen,
       options: {
-        if: () => true, // TODO: dev only
+        if: () => __DEV__,
         title: 'Mock Passport',
       },
     },
