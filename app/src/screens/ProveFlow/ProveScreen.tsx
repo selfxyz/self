@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -32,7 +32,10 @@ const ProveScreen: React.FC = () => {
 
   const isProcessingRef = useRef(false);
   useEffect(() => {
-    if (!selectedApp || selectedAppRef.current?.sessionId === selectedApp.sessionId) {
+    if (
+      !selectedApp ||
+      selectedAppRef.current?.sessionId === selectedApp.sessionId
+    ) {
       return; // Avoid unnecessary updates
     }
     selectedAppRef.current = selectedApp;
@@ -68,23 +71,34 @@ const ProveScreen: React.FC = () => {
   const onVerify = useCallback(
     async function () {
       buttonTap();
-      if (isProcessingRef.current) return;
+      if (isProcessingRef.current) {
+        return;
+      }
       isProcessingRef.current = true;
 
       const currentApp = selectedAppRef.current;
       try {
+        let timeToNavigateToStatusScreen: NodeJS.Timeout;
         // getData first because that triggers biometric authentication and feels nicer to do before navigating
-        // then wait a second and navigate to the status screen. use finally so that any errors thrown here dont prevent the navigate
+        // then wait a second and navigate to the status screen. use finally so that any errors thrown here don't prevent the navigate
         // importantly we are NOT awaiting the navigate call because
         // we Do NOT want to delay the callsendVcAndDisclosePayload
-        const passportDataAndSecret = await getPassportDataAndSecret().finally(
-          () => {
-            setTimeout(() => {
-              navigate('ProofRequestStatusScreen');
-            }, 1000);
+        const passportDataAndSecret = await getPassportDataAndSecret().catch(
+          (e: Error) => {
+            // catch here so that the code to navigate to the status screen will still be called.
+            console.error('Error getPassportDataAndSecret', e);
+            setStatus(ProofStatusEnum.ERROR);
           },
         );
+        // navigate to the status screen after short delay so it feels more like it waited for the auth to finish
+        timeToNavigateToStatusScreen = setTimeout(() => {
+          navigate('ProofRequestStatusScreen');
+          // the calls to setStatus change what is shown on this status screen
+        }, 1000);
+
         if (!passportDataAndSecret) {
+          // TODO is there another screen to navigate to here? like we do for not registered?
+          console.log('No passport data or secret');
           setStatus(ProofStatusEnum.ERROR);
           return;
         }
@@ -98,9 +112,11 @@ const ProveScreen: React.FC = () => {
         const isRegistered = await isUserRegistered(passportData, secret);
         console.log('isRegistered', isRegistered);
         if (!isRegistered) {
+          clearTimeout(timeToNavigateToStatusScreen);
           console.log(
             'User is not registered, sending to ConfirmBelongingScreen',
           );
+
           navigate('ConfirmBelongingScreen');
           return;
         }

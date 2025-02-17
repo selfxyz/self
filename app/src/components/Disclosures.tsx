@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { XStack, YStack } from 'tamagui';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
@@ -22,7 +22,7 @@ function listToString(list: string[]): string {
 
 export default function Disclosures({ disclosures }: DisclosureProps) {
   // Define the order in which disclosures should appear.
-  const ORDERED_KEYS = [
+  const ORDERED_KEYS: Array<keyof SelfAppDisclosureConfig> = [
     'issuing_state',
     'name',
     'passport_number',
@@ -36,53 +36,55 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
   ] as const;
 
   return (
-    <YStack>
-      {ORDERED_KEYS.map(key => {
-        const isEnabled = disclosures[key];
-        if (!isEnabled) {
-          return null;
-        }
-
-        let text = '';
-        switch (key) {
-          case 'ofac':
-            text = 'I am not on the OFAC list';
-            break;
-          case 'excludedCountries':
-            text = `I am not a resident of any of the following countries: ${listToString(
-              disclosures.excludedCountries || [],
-            )}`;
-            break;
-          case 'minimumAge':
-            text = `Age [over ${disclosures.minimumAge}]`;
-            break;
-          case 'name':
-            text = 'Name';
-            break;
-          case 'passport_number':
-            text = 'Passport Number';
-            break;
-          case 'date_of_birth':
-            text = 'Date of Birth';
-            break;
-          case 'gender':
-            text = 'Gender';
-            break;
-          case 'expiry_date':
-            text = 'Passport Expiry Date';
-            break;
-          case 'issuing_state':
-            text = 'Issuing State';
-            break;
-          case 'nationality':
-            text = 'Nationality';
-            break;
-          default:
+    <ScrollView>
+      <YStack>
+        {ORDERED_KEYS.map(key => {
+          const isEnabled = disclosures[key];
+          if (!isEnabled) {
             return null;
-        }
-        return <DisclosureItem key={key} text={text} />;
-      })}
-    </YStack>
+          }
+
+          let text = '';
+          switch (key) {
+            case 'ofac':
+              text = 'I am not on the OFAC list';
+              break;
+            case 'excludedCountries':
+              text = `I am not a resident of any of the following countries: ${listToString(
+                disclosures.excludedCountries || [],
+              )}`;
+              break;
+            case 'minimumAge':
+              text = `Age [over ${disclosures.minimumAge}]`;
+              break;
+            case 'name':
+              text = 'Name';
+              break;
+            case 'passport_number':
+              text = 'Passport Number';
+              break;
+            case 'date_of_birth':
+              text = 'Date of Birth';
+              break;
+            case 'gender':
+              text = 'Gender';
+              break;
+            case 'expiry_date':
+              text = 'Passport Expiry Date';
+              break;
+            case 'issuing_state':
+              text = 'Issuing State';
+              break;
+            case 'nationality':
+              text = 'Nationality';
+              break;
+            default:
+              return null;
+          }
+          return <DisclosureItem key={key} text={text} />;
+        })}
+      </YStack>
+    </ScrollView>
   );
 }
 
