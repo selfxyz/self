@@ -279,12 +279,17 @@ export const ContractsController = new Elysia()
     'is-nullifier-onchain',
     async (request) => {
       const { nullifier } = request.body;
+      console.log("nullifier", nullifier);
       const registryContract = new RegistryContract(
         getChain(process.env.NETWORK as string),
         process.env.PRIVATE_KEY as `0x${string}`,
         process.env.RPC_URL as string
       );
-      const isNullifierOnchain = await registryContract.nullifiers("1", BigInt(nullifier));
+      const isNullifierOnchain = await registryContract.nullifiers(
+        "0x0000000000000000000000000000000000000000000000000000000000000001",
+        nullifier
+      );
+      console.log("isNullifierOnchain", isNullifierOnchain);
       return {
         status: "success",
         data: isNullifierOnchain,

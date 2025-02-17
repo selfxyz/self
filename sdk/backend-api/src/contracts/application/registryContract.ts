@@ -50,9 +50,9 @@ export class RegistryContract {
 
     public async nullifiers(
         attestationId: string,
-        nullifier: bigint
+        nullifier: string
     ) {
-        const isNullifierOnchain = await this.registry.read.nullifiers(attestationId, nullifier);
+        const isNullifierOnchain = await this.registry.read.nullifiers([attestationId, nullifier]);
         return isNullifierOnchain;
     }
 
