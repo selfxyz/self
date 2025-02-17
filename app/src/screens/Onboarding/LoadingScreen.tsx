@@ -96,7 +96,9 @@ const LoadingScreen: React.FC = () => {
           console.log('Passport is nullified:', isNullifierOnchain);
 
           if (isRegistered) {
-            console.log('Passport is registered already. Skipping to HomeScreen');
+            console.log(
+              'Passport is registered already. Skipping to HomeScreen',
+            );
             navigation.navigate('Home');
             return;
           }

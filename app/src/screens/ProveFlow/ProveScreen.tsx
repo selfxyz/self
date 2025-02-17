@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -32,7 +38,10 @@ const ProveScreen: React.FC = () => {
 
   const isProcessingRef = useRef(false);
   useEffect(() => {
-    if (!selectedApp || selectedAppRef.current?.sessionId === selectedApp.sessionId) {
+    if (
+      !selectedApp ||
+      selectedAppRef.current?.sessionId === selectedApp.sessionId
+    ) {
       return; // Avoid unnecessary updates
     }
     selectedAppRef.current = selectedApp;
@@ -68,7 +77,7 @@ const ProveScreen: React.FC = () => {
   const onVerify = useCallback(
     async function () {
       buttonTap();
-      if (isProcessingRef.current) return;
+      if (isProcessingRef.current) {return;}
       isProcessingRef.current = true;
 
       const currentApp = selectedAppRef.current;
