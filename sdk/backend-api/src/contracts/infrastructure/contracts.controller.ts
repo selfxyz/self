@@ -276,6 +276,42 @@ export const ContractsController = new Elysia()
     },
   )
   .post(
+    'is-nullifier-onchain',
+    async (request) => {
+      const { nullifier } = request.body;
+      const registryContract = new RegistryContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const isNullifierOnchain = await registryContract.nullifiers("1", BigInt(nullifier));
+      return {
+        status: "success",
+        data: isNullifierOnchain,
+      };
+    },
+    {
+      body: t.Object({
+        nullifier: t.String(),
+      }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Boolean(),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Nullifier'],
+        summary: 'Check if a nullifier is onchain',
+        description: 'Check if a nullifier is onchain',
+      },
+    },
+  )
+  .post(
     'verify-vc-and-disclose-proof',
     async (request) => {
       try {

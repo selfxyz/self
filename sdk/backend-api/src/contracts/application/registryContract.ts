@@ -48,6 +48,14 @@ export class RegistryContract {
         return { hash };
     }
 
+    public async nullifiers(
+        attestationId: string,
+        nullifier: bigint
+    ) {
+        const isNullifierOnchain = await this.registry.read.nullifiers(attestationId, nullifier);
+        return isNullifierOnchain;
+    }
+
     public async devAddDscKeyCommitment(
         dscCommitment: bigint
     ) {
