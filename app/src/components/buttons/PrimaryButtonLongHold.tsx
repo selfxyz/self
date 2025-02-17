@@ -20,10 +20,11 @@ export function HeldPrimaryButton({
   ...props
 }: ButtonProps) {
   const animation = useAnimatedValue(0);
-
+  const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
 
   const onPressIn = () => {
+    setHasTriggered(false);
     Animated.timing(animation, {
       toValue: 1,
       duration: ACTION_TIMER,
@@ -32,6 +33,7 @@ export function HeldPrimaryButton({
   };
 
   const onPressOut = () => {
+    setHasTriggered(false);
     Animated.timing(animation, {
       toValue: 0,
       duration: ACTION_TIMER,
@@ -63,8 +65,8 @@ export function HeldPrimaryButton({
 
   useEffect(() => {
     animation.addListener(({ value }) => {
-      // when the animation is done we want to call the onPress function
-      if (value >= 0.95) {
+      if (value >= 0.95 && !hasTriggered) {
+        setHasTriggered(true);
         // @ts-expect-error
         onPress();
       }
@@ -72,7 +74,7 @@ export function HeldPrimaryButton({
     return () => {
       animation.removeAllListeners();
     };
-  }, [animation]);
+  }, [animation, hasTriggered]);
 
   return (
     <PrimaryButton

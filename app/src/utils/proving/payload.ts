@@ -15,10 +15,7 @@ import {
   WS_RPC_URL_VC_AND_DISCLOSE,
   attributeToPosition,
 } from '../../../../common/src/constants/constants';
-import {
-  DisclosureMatchOption,
-  SelfApp,
-} from '../../../../common/src/utils/appType';
+import { SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
@@ -82,6 +79,7 @@ export function checkPassportSupported(passportData: PassportData) {
     console.log('DSC circuit not supported:', circuitNameDsc);
     return false;
   }
+  console.log('Passport supported');
   return true;
 }
 
@@ -137,6 +135,12 @@ async function checkIdPassportDscIsInTree(
       return false;
     }
   } else {
+    // console.log('DSC i found in the tree, sending DSC payload for debug');
+    // const dscStatus = await sendDscPayload(passportData);
+    // if (dscStatus !== ProofStatusEnum.SUCCESS) {
+    //   console.log('DSC proof failed');
+    //   return false;
+    // }
     console.log('DSC is found in the tree, skipping DSC payload');
   }
   return true;
@@ -170,7 +174,7 @@ export async function sendDscPayload(
 
 /*** DISCLOSURE ***/
 
-async function getSMT() {
+async function getOfacSMTs() {
   // TODO: get the SMT from an endpoint
   const passportNoAndNationalitySMT = new SMT(poseidon2, true);
   passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);
@@ -186,56 +190,44 @@ async function generateTeeInputsVCAndDisclose(
   passportData: PassportData,
   selfApp: SelfApp,
 ) {
-  let majority = DEFAULT_MAJORITY;
-  const minAgeOption = selfApp.args.disclosureOptions.find(
-    opt => opt.key === 'minimumAge',
-  );
-  if (
-    minAgeOption &&
-    minAgeOption.enabled &&
-    minAgeOption.key === 'minimumAge'
-  ) {
-    majority = (minAgeOption as DisclosureMatchOption<'minimumAge'>).value;
-  }
+  const { scope, userId, disclosures } = selfApp;
 
-  const user_identifier = selfApp.userId;
+  const selector_dg1 = Array(88).fill('0');
 
-  let selector_dg1 = new Array(88).fill('0');
-  const nationalityOption = selfApp.args.disclosureOptions.find(
-    opt => opt.key === 'nationality',
-  );
-  if (nationalityOption && nationalityOption.enabled) {
-    const [start, end] = attributeToPosition.nationality;
-    for (let i = start; i <= end && i < selector_dg1.length; i++) {
-      selector_dg1[i] = '1';
+  Object.entries(disclosures).forEach(([attribute, reveal]) => {
+    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
+      return;
     }
-  }
-  // TODO: add more options, we have to do it to in OpenpassportQrcode.ts
+    if (reveal) {
+      const [start, end] =
+        attributeToPosition[attribute as keyof typeof attributeToPosition];
+      selector_dg1.fill('1', start, end + 1);
+    }
+  });
 
-  const selector_older_than = minAgeOption && minAgeOption.enabled ? '1' : '0';
-  const ofacOption = selfApp.args.disclosureOptions.find(
-    opt => opt.key === 'ofac',
-  );
-  const selector_ofac = ofacOption && ofacOption.enabled ? 1 : 0;
+  const majority = disclosures.minimumAge
+    ? disclosures.minimumAge.toString()
+    : DEFAULT_MAJORITY;
+  const selector_older_than = disclosures.minimumAge ? '1' : '0';
+
+  const selector_ofac = disclosures.ofac ? 1 : 0;
+
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
-    await getSMT();
-  const scope = selfApp.scope;
-  const attestation_id = PASSPORT_ATTESTATION_ID;
-  const commitment = generateCommitment(secret, attestation_id, passportData);
-  const _tree = await getCommitmentTree();
-  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), _tree);
-  tree.insert(BigInt(commitment)); // TODO: dont do that! for now we add the commitment as the whole flow is not yet implemented
-  let forbidden_countries_list: string[] = ['ABC', 'DEF']; // TODO: add the countries from the disclosure options
-  const excludedCountriesOption = selfApp.args.disclosureOptions.find(
-    opt => opt.key === 'excludedCountries',
-  ) as { enabled: boolean; key: string; value: string[] } | undefined;
-  if (excludedCountriesOption && excludedCountriesOption.enabled) {
-    forbidden_countries_list = excludedCountriesOption.value;
-  }
+    await getOfacSMTs();
+  const serialized_tree = await getCommitmentTree();
+  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
+  console.log('tree', tree);
+  // const commitment = generateCommitment(
+  //   secret,
+  //   PASSPORT_ATTESTATION_ID,
+  //   passportData,
+  // );
+  // tree.insert(BigInt(commitment));
+  // Uncomment to add artificially the commitment to the tree
 
   const inputs = generateCircuitInputsVCandDisclose(
     secret,
-    attestation_id,
+    PASSPORT_ATTESTATION_ID,
     passportData,
     scope,
     selector_dg1,
@@ -246,8 +238,8 @@ async function generateTeeInputsVCAndDisclose(
     nameAndDobSMT,
     nameAndYobSMT,
     selector_ofac,
-    forbidden_countries_list,
-    user_identifier,
+    disclosures.excludedCountries ?? [],
+    userId,
   );
   return { inputs, circuitName: 'vc_and_disclose' };
 }
@@ -265,7 +257,7 @@ export async function sendVcAndDisclosePayload(
     passportData,
     selfApp,
   );
-  await sendPayload(
+  return await sendPayload(
     inputs,
     'vc_and_disclose',
     circuitName,

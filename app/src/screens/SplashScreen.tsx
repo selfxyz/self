@@ -39,7 +39,7 @@ const SplashScreen: React.FC = ({}) => {
         navigation.navigate('Launch');
       }
     }, 1000);
-  }, [navigation]);
+  }, [loadSecret, loadPassportData, navigation]);
 
   return (
     <LottieView

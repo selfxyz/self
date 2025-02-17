@@ -4,9 +4,6 @@ import { StyleSheet } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
-// Import passport data generation and payload functions from common
-import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
-// Import animations
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
@@ -76,24 +73,12 @@ const LoadingScreen: React.FC = () => {
       const processPayload = async () => {
         try {
           // Generate passport data and update the store.
-          const passportData = genMockPassportData(
-            'sha1',
-            'sha256',
-            'rsa_sha256_65537_2048',
-            'FRA',
-            '000101',
-            '300101',
-          );
-
           const passportDataAndSecret = await getPassportDataAndSecret();
           if (!passportDataAndSecret) {
             return;
           }
 
-          const {
-            // passportData,
-            secret,
-          } = passportDataAndSecret.data;
+          const { passportData, secret } = passportDataAndSecret.data;
 
           const isSupported = checkPassportSupported(passportData);
           if (!isSupported) {
@@ -107,6 +92,8 @@ const LoadingScreen: React.FC = () => {
 
           const isRegistered = await isUserRegistered(passportData, secret);
           const isNullifierOnchain = await isPassportNullified(passportData);
+          console.log('User is registered:', isRegistered);
+          console.log('Passport is nullified:', isNullifierOnchain);
           if (isNullifierOnchain && !isRegistered) {
             console.log(
               'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
@@ -120,6 +107,7 @@ const LoadingScreen: React.FC = () => {
         } catch (error) {
           console.error('Error processing payload:', error);
           setStatus(ProofStatusEnum.ERROR);
+          setTimeout(() => resetProof(), 1000);
         }
       };
       processPayload();

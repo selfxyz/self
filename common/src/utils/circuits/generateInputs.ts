@@ -201,7 +201,7 @@ export function generateCircuitInputsVCandDisclose(
 
   // SMT - OFAC
   const passportNo_leaf = getPassportNumberAndNationalityLeaf(formattedMrz.slice(49, 58), formattedMrz.slice(59, 62));
-  const namedob_leaf = getNameDobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 68)); // [57-62] + 5 shift
+  const namedob_leaf = getNameDobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 68));
   const name_leaf = getNameYobLeaf(formattedMrz.slice(10, 49), formattedMrz.slice(62, 64));
 
   const {

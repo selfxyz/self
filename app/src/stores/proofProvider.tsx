@@ -86,9 +86,7 @@ export function ProofProvider({ children }: PropsWithChildren) {
       userId: '',
       userIdType: 'uuid',
       devMode: true,
-      args: {
-        disclosureOptions: [],
-      },
+      disclosures: {},
     };
     setSelectedAppInternal(emptySelfApp);
   }, []);

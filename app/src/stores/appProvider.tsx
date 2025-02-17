@@ -14,16 +14,46 @@ interface IAppContext {
    * listens for the "self_app" event and updates the navigation store.
    *
    * @param sessionId - The session ID from the scanned QR code.
+   * @param setSelectedApp - The function to update the selected app in the navigation store.
    */
   startAppListener: (
     sessionId: string,
     setSelectedApp: (app: SelfApp) => void,
   ) => void;
+
+  /**
+   * Call this function with the sessionId and success status to notify the web app
+   * that the proof has been verified.
+   *
+   * @param sessionId - The session ID from the scanned QR code.
+   * @param success - Whether the proof was verified successfully.
+   */
+  handleProofVerified: (sessionId: string, success: boolean) => void;
 }
 
 const AppContext = createContext<IAppContext>({
   startAppListener: () => {},
+  handleProofVerified: () => {},
 });
+
+const initSocket = (sessionId: string) => {
+  // Ensure the URL uses the proper WebSocket scheme.
+  const connectionUrl = WS_DB_RELAYER.startsWith('https')
+    ? WS_DB_RELAYER.replace(/^https/, 'wss')
+    : WS_DB_RELAYER;
+  const socketUrl = `${connectionUrl}/websocket`;
+
+  // Create a new socket connection using the updated URL.
+  const socket = io(socketUrl, {
+    path: '/',
+    transports: ['websocket'],
+    query: {
+      sessionId,
+      clientType: 'mobile',
+    },
+  });
+  return socket;
+};
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
@@ -44,21 +74,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         socketRef.current.disconnect();
       }
 
-      // Ensure the URL uses the proper WebSocket scheme.
-      const connectionUrl = WS_DB_RELAYER.startsWith('https')
-        ? WS_DB_RELAYER.replace(/^https/, 'wss')
-        : WS_DB_RELAYER;
-      const socketUrl = `${connectionUrl}/websocket`;
-
-      // Create a new socket connection using the updated URL.
-      const socket = io(socketUrl, {
-        path: '/',
-        transports: ['websocket'],
-        query: {
-          sessionId,
-          clientType: 'mobile',
-        },
-      });
+      const socket = initSocket(sessionId);
       socketRef.current = socket;
 
       socket.on('connect', () => {
@@ -103,6 +119,27 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
+  const handleProofVerified = (sessionId: string, proof_verified: boolean) => {
+    console.log(
+      '[AppProvider] handleProofVerified called with sessionId:',
+      sessionId,
+    );
+
+    if (!socketRef.current) {
+      socketRef.current = initSocket(sessionId);
+    }
+
+    console.log('[AppProvider] Emitting proof_verified event with data:', {
+      session_id: sessionId,
+      proof_verified,
+    });
+
+    socketRef.current.emit('proof_verified', {
+      session_id: sessionId,
+      proof_verified,
+    });
+  };
+
   useEffect(() => {
     return () => {
       if (socketRef.current) {
@@ -113,7 +150,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <AppContext.Provider value={{ startAppListener }}>
+    <AppContext.Provider value={{ startAppListener, handleProofVerified }}>
       {children}
     </AppContext.Provider>
   );

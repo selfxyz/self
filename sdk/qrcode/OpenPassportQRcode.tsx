@@ -11,6 +11,7 @@ import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/sty
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
 import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
+
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
   ssr: false,
 });

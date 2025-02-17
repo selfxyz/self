@@ -5,7 +5,6 @@ import {
   PublicKeyDetailsRSA,
   PublicKeyDetailsRSAPSS,
 } from '../certificate_parsing/dataStructure';
-import { parsePassportData } from '../passports/passport_parsing/parsePassportData';
 
 export function getCircuitNameFromPassportData(passportData: PassportData, circuitType: 'register' | 'dsc') {
   if (circuitType === 'register') {
@@ -16,11 +15,17 @@ export function getCircuitNameFromPassportData(passportData: PassportData, circu
 }
 
 function getDSCircuitNameFromPassportData(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
+
+  if (!passportData.passportMetadata) {
+    throw new Error("Passport data are not parsed");
+  }
+  const passportMetadata = passportData.passportMetadata;
+  if (!passportMetadata.cscaFound) {
+    throw new Error("CSCA not found");
+  }
+  const parsedCSCA = passportData.csca_parsed;
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
   const hashFunction = passportMetadata.cscaHashFunction;
-  const parsedCSCA = parseCertificateSimple(passportData.passportMetadata.csca);
-  const bits = parsedCSCA.publicKeyDetails.bits;
 
   if (signatureAlgorithm === 'ecdsa') {
     const curve = (parsedCSCA.publicKeyDetails as PublicKeyDetailsECDSA).curve;
@@ -49,8 +54,15 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
 }
 
 function getRegisterNameFromPassportData(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
-  const parsedDsc = parseCertificateSimple(passportData.dsc);
+  if (!passportData.passportMetadata) {
+    throw new Error("Passport data are not parsed");
+  }
+  const passportMetadata = passportData.passportMetadata;
+  if (!passportMetadata.cscaFound) {
+    throw new Error("CSCA not found");
+  }
+  const parsedDsc = passportData.dsc_parsed;
+
   const dgHashAlgo = passportMetadata.dg1HashFunction;
   const eContentHashAlgo = passportMetadata.eContentHashFunction;
   const signedAttrHashAlgo = passportMetadata.signedAttrHashFunction;

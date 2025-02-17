@@ -55,6 +55,11 @@ const handleWebSocketMessage =
           setProofVerified(false);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           break;
+        case 'proof_verified':
+          console.log('[WebSocket] Proof verified.');
+          setProofVerified(true);
+          setProofStep(QRcodeSteps.PROOF_VERIFIED);
+          break;
         default:
           console.log('[WebSocket] Unhandled mobile status:', data.status);
           break;

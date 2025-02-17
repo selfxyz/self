@@ -1,10 +1,4 @@
-import * as forge from 'node-forge';
-import * as fs from 'fs';
-import { MODAL_SERVER_ADDRESS } from '../constants/constants';
-import axios from 'axios';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
-import { splitToWords } from './bytes';
-import path from 'path';
 
 export function findStartIndexEC(modulus: string, messagePadded: number[]): [number, number] {
   const modulusNumArray = [];
@@ -135,8 +129,6 @@ export function findOIDPosition(
   throw new Error('OID not found in message');
 }
 
-
-
 export function getCSCAFromSKI(ski: string, devMode: boolean): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
 
@@ -158,49 +150,3 @@ export function getCSCAFromSKI(ski: string, devMode: boolean): string {
 
   return cscaPem;
 }
-
-
-export function getTBSHash(
-  cert: forge.pki.Certificate,
-  hashFunction: 'sha1' | 'sha256',
-  n: number,
-  k: number
-): string[] {
-  const tbsCertAsn1 = forge.pki.certificateToAsn1(cert).value[0];
-  const tbsCertDer = forge.asn1.toDer(tbsCertAsn1 as any).getBytes();
-  const md = hashFunction === 'sha256' ? forge.md.sha256.create() : forge.md.sha1.create();
-  md.update(tbsCertDer);
-  const tbsCertificateHash = md.digest();
-  const tbsCertificateHashString = tbsCertificateHash.data;
-  const tbsCertificateHashHex = Buffer.from(tbsCertificateHashString, 'binary').toString('hex');
-  const tbsCertificateHashBigint = BigInt(`0x${tbsCertificateHashHex}`);
-  // console.log('tbsCertificateHashBigint', tbsCertificateHashBigint);
-  return splitToWords(tbsCertificateHashBigint, n, k);
-}
-
-export const sendCSCARequest = async (inputs_csca: any): Promise<any> => {
-  try {
-    const response = await axios.post(MODAL_SERVER_ADDRESS, inputs_csca, {
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
-    return response.data;
-  } catch (error) {
-    if (axios.isAxiosError(error)) {
-      console.error('Axios error:', error.message);
-      if (error.response) {
-        console.error('Response data:', error.response.data);
-        console.error('Response status:', error.response.status);
-      }
-    } else {
-      console.error('Unexpected error:', error);
-    }
-    throw error;
-  }
-};
-
-export const generateDscSecret = () => {
-  const secretBytes = forge.random.getBytesSync(31);
-  return BigInt(`0x${forge.util.bytesToHex(secretBytes)}`).toString();
-};

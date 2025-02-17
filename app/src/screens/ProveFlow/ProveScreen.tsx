@@ -1,11 +1,11 @@
-import React, { useCallback, useEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { ArgumentsDisclose } from '../../../../common/src/utils/appType';
+import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
@@ -13,6 +13,7 @@ import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHol
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useApp } from '../../stores/appProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
@@ -26,15 +27,21 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, setStatus } = useProofInfo();
+  const { handleProofVerified } = useApp();
+  const selectedAppRef = useRef(selectedApp);
 
-  // Add effect to log when selectedApp changes
+  const isProcessingRef = useRef(false);
   useEffect(() => {
+    if (!selectedApp || selectedAppRef.current?.sessionId === selectedApp.sessionId) {
+      return; // Avoid unnecessary updates
+    }
+    selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
   }, [selectedApp]);
 
   const disclosureOptions = useMemo(() => {
-    return (selectedApp?.args as ArgumentsDisclose)?.disclosureOptions || [];
-  }, [selectedApp?.args]);
+    return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
+  }, [selectedApp?.disclosures]);
 
   // Format the base64 image string correctly
   const logoSource = useMemo(() => {
@@ -61,6 +68,10 @@ const ProveScreen: React.FC = () => {
   const onVerify = useCallback(
     async function () {
       buttonTap();
+      if (isProcessingRef.current) return;
+      isProcessingRef.current = true;
+
+      const currentApp = selectedAppRef.current;
       try {
         // getData first because that triggers biometric authentication and feels nicer to do before navigating
         // then wait a second and navigate to the status screen. use finally so that any errors thrown here dont prevent the navigate
@@ -85,6 +96,7 @@ const ProveScreen: React.FC = () => {
         // - registration is ongoing => show a loading screen. TODO detect this?
         // - registration failed => send to ConfirmBelongingScreen to register again
         const isRegistered = await isUserRegistered(passportData, secret);
+        console.log('isRegistered', isRegistered);
         if (!isRegistered) {
           console.log(
             'User is not registered, sending to ConfirmBelongingScreen',
@@ -92,11 +104,22 @@ const ProveScreen: React.FC = () => {
           navigate('ConfirmBelongingScreen');
           return;
         }
+        console.log('currentApp', currentApp);
 
-        await sendVcAndDisclosePayload(secret, passportData, selectedApp);
+        const status = await sendVcAndDisclosePayload(
+          secret,
+          passportData,
+          currentApp,
+        );
+        handleProofVerified(
+          currentApp.sessionId,
+          status === ProofStatusEnum.SUCCESS,
+        );
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         setStatus(ProofStatusEnum.ERROR);
+      } finally {
+        isProcessingRef.current = false;
       }
     },
     [
@@ -118,7 +141,15 @@ const ProveScreen: React.FC = () => {
       '000101',
       '300101',
     );
-    await sendVcAndDisclosePayload('0', passportData, selectedApp);
+    const status = await sendVcAndDisclosePayload(
+      '0',
+      passportData,
+      selectedApp,
+    );
+    handleProofVerified(
+      selectedAppRef.current.sessionId,
+      status === ProofStatusEnum.SUCCESS,
+    );
   }
 
   return (
