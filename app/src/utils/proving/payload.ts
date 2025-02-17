@@ -1,7 +1,3 @@
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
-import { poseidon2 } from 'poseidon-lite';
-
 import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
@@ -35,6 +31,9 @@ import {
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
 import { sendPayload } from './tee';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+import { poseidon2 } from 'poseidon-lite';
 
 async function generateTeeInputsRegister(
   secret: string,

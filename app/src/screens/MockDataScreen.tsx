@@ -1,3 +1,15 @@
+import { countryCodes } from '../../../common/src/constants/constants';
+import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import CustomButton from '../components/CustomButton';
+import { usePassport } from '../stores/passportDataProvider';
+import {
+  bgWhite,
+  borderColor,
+  separatorColor,
+  textBlack,
+  white,
+} from '../utils/colors';
+import { buttonTap, selectionChange } from '../utils/haptic';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';

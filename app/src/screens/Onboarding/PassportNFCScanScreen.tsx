@@ -1,23 +1,10 @@
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import {
-  Linking,
-  NativeEventEmitter,
-  NativeModules,
-  Platform,
-  StyleSheet,
-} from 'react-native';
-import NfcManager from 'react-native-nfc-manager';
-import { Image } from 'tamagui';
-
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
-import { PrimaryButton } from '../../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
@@ -30,6 +17,18 @@ import useUserStore from '../../stores/userStore';
 import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScannerNew';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import {
+  Linking,
+  NativeEventEmitter,
+  NativeModules,
+  Platform,
+  StyleSheet,
+} from 'react-native';
+import NfcManager from 'react-native-nfc-manager';
+import { Image } from 'tamagui';
 
 interface PassportNFCScanScreenProps {}
 

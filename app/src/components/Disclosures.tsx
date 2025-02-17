@@ -10,6 +10,8 @@ import { SelfAppDisclosureConfig } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
 import CheckMark from '../images/icons/checkmark.svg';
 import { slate200, slate500 } from '../utils/colors';
+import React from 'react';
+import { ScrollView, XStack, YStack } from 'tamagui';
 
 interface DisclosureProps {
   disclosures: SelfAppDisclosureConfig;

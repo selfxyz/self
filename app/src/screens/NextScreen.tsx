@@ -1,8 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
-import { ArrowRight, Cpu } from '@tamagui/lucide-icons';
-import React from 'react';
-import { Fieldset, Image, Text, useWindowDimensions, YStack } from 'tamagui';
-
 import { attributeToPosition } from '../../../common/src/constants/constants';
 import CustomButton from '../components/CustomButton';
 import USER_PROFILE from '../images/user_profile.png';
@@ -11,6 +6,10 @@ import { bgGreen, textBlack } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
 import { sendDscPayload, sendRegisterPayload } from '../utils/proving/payload';
 import { formatAttribute, getFirstName, maskString } from '../utils/utils';
+import { useNavigation } from '@react-navigation/native';
+import { ArrowRight, Cpu } from '@tamagui/lucide-icons';
+import React from 'react';
+import { Fieldset, Image, Text, useWindowDimensions, YStack } from 'tamagui';
 
 const NextScreen: React.FC = () => {
   const { passportData, setRegistered } = useUserStore();

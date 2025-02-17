@@ -1,12 +1,11 @@
-import { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button } from 'tamagui';
-
 import ActivityIcon from '../images/icons/activity.svg';
 import SettingsIcon from '../images/icons/settings.svg';
 import { black, neutral400, white } from '../utils/colors';
 import { NavBar } from './NavBar';
+import { NativeStackHeaderProps } from '@react-navigation/native-stack';
+import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button } from 'tamagui';
 
 const HomeNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();

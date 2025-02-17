@@ -1,7 +1,6 @@
+import { bgBlue, bgGreen, textBlack } from '../utils/colors';
 import React from 'react';
 import { Button, Text } from 'tamagui';
-
-import { bgBlue, bgGreen, textBlack } from '../utils/colors';
 
 interface CustomButtonProps {
   text: string;

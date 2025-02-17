@@ -1,3 +1,5 @@
+import { name } from '../../../package.json';
+import { googleSignIn } from './google';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import {
@@ -5,9 +7,6 @@ import {
   CloudStorageProvider,
   CloudStorageScope,
 } from 'react-native-cloud-storage';
-
-import { name } from '../../../package.json';
-import { googleSignIn } from './google';
 
 const FOLDER = `/${name}`;
 const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;

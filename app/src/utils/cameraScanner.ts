@@ -1,7 +1,6 @@
+import { extractMRZInfo, formatDateToYYMMDD } from './utils';
 import * as amplitude from '@amplitude/analytics-react-native';
 import { NativeModules, Platform } from 'react-native';
-
-import { extractMRZInfo, formatDateToYYMMDD } from './utils';
 
 type Callback = (
   error: Error | null,

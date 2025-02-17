@@ -1,8 +1,7 @@
-import React from 'react';
-import { Text, View } from 'tamagui';
-
 import { slate500 } from '../utils/colors';
 import { Caption } from './typography/Caption';
+import React from 'react';
+import { Text, View } from 'tamagui';
 
 export interface TipProps {
   title: string;

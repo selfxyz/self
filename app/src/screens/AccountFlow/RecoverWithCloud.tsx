@@ -1,7 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
-import React, { useCallback } from 'react';
-import { YStack } from 'tamagui';
-
 import BackupDocumentationLink from '../../components/BackupDocumentationLink';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { Caption } from '../../components/typography/Caption';
@@ -13,6 +9,9 @@ import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupPrivateKey } from '../../utils/cloudBackup';
 import { black, white } from '../../utils/colors';
+import { useNavigation } from '@react-navigation/native';
+import React, { useCallback } from 'react';
+import { YStack } from 'tamagui';
 
 interface RecoverWithCloudScreenProps {}
 

@@ -1,13 +1,12 @@
-import { useNavigation } from '@react-navigation/native';
-import { ArrowRight } from '@tamagui/lucide-icons';
-import React from 'react';
-import { Image, Text, YStack } from 'tamagui';
-
 import CustomButton from '../components/CustomButton';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import OPENPASSPORT_LOGO from '../images/openpassport.png';
 import { textBlack } from '../utils/colors';
 import { buttonTap } from '../utils/haptic';
+import { useNavigation } from '@react-navigation/native';
+import { ArrowRight } from '@tamagui/lucide-icons';
+import React from 'react';
+import { Image, Text, YStack } from 'tamagui';
 
 const StartScreen: React.FC = () => {
   const navigation = useNavigation();

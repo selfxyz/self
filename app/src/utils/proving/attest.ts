@@ -1,3 +1,6 @@
+import { IMAGE_HASH } from '../../../../common/src/constants/constants';
+import { AWS_ROOT_PEM } from './awsRootPem';
+import cose from './cose';
 import { X509Certificate } from '@peculiar/x509';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';

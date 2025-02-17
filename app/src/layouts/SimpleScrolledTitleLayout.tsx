@@ -1,10 +1,9 @@
-import React from 'react';
-import { ScrollView, YStack } from 'tamagui';
-
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { Title } from '../components/typography/Title';
 import { white } from '../utils/colors';
 import { ExpandableBottomLayout } from './ExpandableBottomLayout';
+import React from 'react';
+import { ScrollView, YStack } from 'tamagui';
 
 interface DetailListProps
   extends React.PropsWithChildren<{ title: string; onDismiss: () => void }> {}

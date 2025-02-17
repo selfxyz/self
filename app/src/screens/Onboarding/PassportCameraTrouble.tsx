@@ -1,10 +1,9 @@
-import React from 'react';
-
 import Tips, { TipProps } from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
 import { slate500 } from '../../utils/colors';
+import React from 'react';
 
 const tips: TipProps[] = [
   {

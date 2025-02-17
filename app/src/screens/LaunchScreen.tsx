@@ -1,7 +1,3 @@
-import React from 'react';
-import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
-import { Anchor, Text, XStack, YStack } from 'tamagui';
-
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
@@ -13,6 +9,9 @@ import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
+import React from 'react';
+import { StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import { Anchor, Text, XStack, YStack } from 'tamagui';
 
 interface LaunchScreenProps {}
 

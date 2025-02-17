@@ -1,6 +1,3 @@
-import React from 'react';
-import { View, YStack } from 'tamagui';
-
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
@@ -9,6 +6,8 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, slate600, white } from '../../utils/colors';
+import React from 'react';
+import { View, YStack } from 'tamagui';
 
 interface AccountRecoveryScreenProps {}
 

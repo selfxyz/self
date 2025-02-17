@@ -1,8 +1,7 @@
-import { useNavigation } from '@react-navigation/native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
 import type { RootStackParamList } from '../Navigation';
 import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
+import { useNavigation } from '@react-navigation/native';
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
 

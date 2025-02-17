@@ -1,7 +1,3 @@
-import { usePreventRemove } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
-
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
@@ -11,6 +7,9 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
+import { usePreventRemove } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useEffect } from 'react';
 
 const ConfirmBelongingScreen: React.FC = () => {
   const onOkPress = useHapticNavigation('LoadingScreen');

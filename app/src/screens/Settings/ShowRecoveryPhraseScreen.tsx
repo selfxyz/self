@@ -7,6 +7,9 @@ import Mnemonic from '../../components/Mnemonic';
 import Description from '../../components/typography/Description';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
+import React, { useCallback, useState } from 'react';
+import { findBestLanguageTag } from 'react-native-localize';
+import { YStack } from 'tamagui';
 
 interface ShowRecoveryPhraseScreenProps {}
 

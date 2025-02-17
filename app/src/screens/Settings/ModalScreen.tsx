@@ -10,6 +10,9 @@ import { Title } from '../../components/typography/Title';
 import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { styled, View, XStack, YStack } from 'tamagui';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',

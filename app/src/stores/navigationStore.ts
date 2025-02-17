@@ -1,7 +1,6 @@
+import { createSegmentClient } from '../Segment';
 import { useToastController } from '@tamagui/toast';
 import { create } from 'zustand';
-
-import { createSegmentClient } from '../Segment';
 
 interface NavigationState {
   toast: ReturnType<typeof useToastController>;

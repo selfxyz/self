@@ -1,8 +1,7 @@
-import { ethers } from 'ethers';
-import * as Keychain from 'react-native-keychain';
-
 import { PassportMetadata } from '../../../common/src/utils/passports/passport_parsing/parsePassportData';
 import { PassportData } from '../../../common/src/utils/types';
+import { ethers } from 'ethers';
+import * as Keychain from 'react-native-keychain';
 
 export async function restoreSecret(mnemonic: string) {
   console.warn(

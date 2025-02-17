@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { slate200, slate300, slate500, white } from '../../utils/colors';
 import AbstractButton, { ButtonProps } from './AbstractButton';
+import React from 'react';
 
 export function SecondaryButton({ children, ...props }: ButtonProps) {
   const isDisabled = props.disabled;

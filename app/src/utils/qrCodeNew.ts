@@ -1,11 +1,9 @@
-import { Linking } from 'react-native';
-
-import { decode } from 'msgpack-lite';
-import { inflate } from 'pako';
-
 import { SelfApp } from '../../../common/src/utils/appType';
 import useNavigationStore from '../stores/navigationStore';
 import { loadPassportData } from '../stores/passportDataProvider';
+import { decode } from 'msgpack-lite';
+import { inflate } from 'pako';
+import { Linking } from 'react-native';
 
 export default async function handleQRCodeScan(
   result: string,

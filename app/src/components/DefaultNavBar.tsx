@@ -1,10 +1,9 @@
+import { white } from '../utils/colors';
+import { NavBar } from './NavBar';
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle } from 'tamagui';
-
-import { white } from '../utils/colors';
-import { NavBar } from './NavBar';
 
 const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
