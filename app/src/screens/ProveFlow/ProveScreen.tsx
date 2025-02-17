@@ -1,9 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-} from 'react';
+import React, { useCallback, useEffect, useMemo, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -76,7 +71,9 @@ const ProveScreen: React.FC = () => {
   const onVerify = useCallback(
     async function () {
       buttonTap();
-      if (isProcessingRef.current) {return;}
+      if (isProcessingRef.current) {
+        return;
+      }
       isProcessingRef.current = true;
 
       const currentApp = selectedAppRef.current;
