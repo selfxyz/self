@@ -3,7 +3,6 @@ import React, {
   useEffect,
   useMemo,
   useRef,
-  useState,
 } from 'react';
 import { StyleSheet } from 'react-native';
 
