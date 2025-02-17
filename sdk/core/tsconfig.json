@@ -11,22 +11,19 @@
     "forceConsistentCasingInFileNames": true,
     "resolveJsonModule": true,
     "jsx": "react",
-    "moduleResolution": "node"
+    "moduleResolution": "node",
+    "baseUrl": ".",
+    "paths": {
+      "@common/*": ["../../common/src/*"]
+    }
   },
   "include": [
     "index.ts",
-    "src/index.node.ts",
     "src/**/*",
-    "common/**/*",
+    "../../common/src/**/*",
     "circuits/**/*",
     "circuits/**/*.json",
-    "utils/utils.ts",
-    "../../common/src/utils/selfAttestation.ts"
+    "utils/utils.ts"
   ],
-  "exclude": [
-    "node_modules",
-    "**/__tests__/*",
-    "dist",
-    "common/src/utils/csca.ts"
-  ]
+  "exclude": ["node_modules", "**/__tests__/*", "dist", "common/src/utils/csca.ts"]
 }

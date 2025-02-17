@@ -7,10 +7,12 @@ import { generateCommitment } from "../../../common/src/utils/passports/passport
 import { ATTESTATION_ID, CIRCUIT_CONSTANTS } from "../utils/constants";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
-import { generateVcAndDiscloseProof } from "../utils/generateProof";
+import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/generateProof";
 import { Formatter } from "../utils/formatter";
 import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
 import { VerifyAll } from "../../typechain-types";
+import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
+import { VcAndDiscloseProof } from "../utils/types";
 
 describe("VerifyAll", () => {
     let deployedActors: DeployedActors;
@@ -24,6 +26,10 @@ describe("VerifyAll", () => {
     let nullifier: any;
     let forbiddenCountriesList: string[];
     let forbiddenCountriesListPacked: string;
+    let rawProof: {
+        proof: Groth16Proof,
+        publicSignals: PublicSignals
+    };
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
@@ -185,7 +191,7 @@ describe("VerifyAll", () => {
 
             const types = ['0', '1', '2'];
             const [readableData, success] = await verifyAll.verifyAll(
-                123456, // Invalid timestamp
+                123456,
                 vcAndDiscloseHubProof,
                 types
             );
@@ -220,4 +226,5 @@ describe("VerifyAll", () => {
             ).to.be.revertedWithCustomError(verifyAll, "OwnableUnauthorizedAccount");
         });
     });
+
 });

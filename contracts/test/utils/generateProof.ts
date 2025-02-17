@@ -55,7 +55,7 @@ export async function generateRegisterProof(
     console.log(CYAN, "=== Start generateRegisterProof ===", RESET);
 
     // Get the circuit inputs
-    const registerCircuitInputs: CircuitSignals = generateCircuitInputsRegister(
+    const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
         secret,
         passportData,
         serialized_dsc_tree
@@ -96,7 +96,7 @@ export async function generateDscProof(
 ): Promise<DscCircuitProof> {
     console.log(CYAN, "=== Start generateDscProof ===", RESET);
 
-    const dscCircuitInputs: CircuitSignals = generateCircuitInputsDSC(
+    const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(
         dscCertificate,
         serialized_csca_tree
     );
@@ -125,7 +125,7 @@ export async function generateDscProof(
     return fixedProof;
 }
 
-export async function generateVcAndDiscloseProof(
+export async function generateVcAndDiscloseRawProof(
     secret: string,
     attestationId: string,
     passportData: PassportData,
@@ -140,8 +140,10 @@ export async function generateVcAndDiscloseProof(
     selectorOfac: string | number = "1",
     forbiddenCountriesList: string[] = ["AAA"],
     userIdentifier: string = "0000000000000000000000000000000000000000"
-): Promise<VcAndDiscloseProof> {
-
+): Promise<{
+    proof: Groth16Proof,
+    publicSignals: PublicSignals
+}> {
     // Initialize all three SMTs if not provided
     if (!passportNo_smt || !nameAndDob_smt || !nameAndYob_smt) {
         const smts = getSMTs();
@@ -167,7 +169,7 @@ export async function generateVcAndDiscloseProof(
         userIdentifier
     );
 
-    console.log(CYAN, "=== Start generateDscProof ===", RESET);
+    console.log(CYAN, "=== Start generateVcAndDiscloseRawProof ===", RESET);
     const startTime = performance.now();
     const vcAndDiscloseProof = await groth16.fullProve(
         vcAndDiscloseCircuitInputs,
@@ -185,15 +187,51 @@ export async function generateVcAndDiscloseProof(
         throw new Error("Generated VC and Disclose proof verification failed");
     }
     console.log(GREEN, "VC and Disclose proof verified successfully", RESET);
+    console.log(CYAN, "=== End generateVcAndDiscloseRawProof ===", RESET);
 
-    const rawCallData = await groth16.exportSolidityCallData(vcAndDiscloseProof.proof, vcAndDiscloseProof.publicSignals);
+    return vcAndDiscloseProof;
+}
+
+export async function generateVcAndDiscloseProof(
+    secret: string,
+    attestationId: string,
+    passportData: PassportData,
+    scope: string,
+    selectorDg1: string[] = new Array(93).fill("1"),
+    selectorOlderThan: string | number = "1",
+    merkletree: LeanIMT<bigint>,
+    majority: string = "20",
+    passportNo_smt?: SMT,
+    nameAndDob_smt?: SMT,
+    nameAndYob_smt?: SMT,
+    selectorOfac: string | number = "1",
+    forbiddenCountriesList: string[] = ["AAA"],
+    userIdentifier: string = "0000000000000000000000000000000000000000"
+): Promise<VcAndDiscloseProof> {
+    const rawProof = await generateVcAndDiscloseRawProof(
+        secret,
+        attestationId,
+        passportData,
+        scope,
+        selectorDg1,
+        selectorOlderThan,
+        merkletree,
+        majority,
+        passportNo_smt,
+        nameAndDob_smt,
+        nameAndYob_smt,
+        selectorOfac,
+        forbiddenCountriesList,
+        userIdentifier
+    );
+
+    const rawCallData = await groth16.exportSolidityCallData(rawProof.proof, rawProof.publicSignals);
     const fixedProof = parseSolidityCalldata(rawCallData, {} as VcAndDiscloseProof);
 
-    console.log(CYAN, "=== End generateVcAndDiscloseProof ===", RESET);
     return fixedProof;
 }
 
-function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
+export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
     const parsed = JSON.parse("[" + rawCallData + "]");
     
     return {
