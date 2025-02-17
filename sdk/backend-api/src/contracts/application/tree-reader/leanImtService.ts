@@ -49,7 +49,7 @@ export class MerkleTreeService {
     private async checkForEvents() {
         const lastEventData = await getLastEventFromDB(this.type);
         const lastEventBlock = lastEventData?.blockNumber || DEPLOYMENT_BLOCK;
-        const lastEventIndex = lastEventData?.index || -1;
+        const lastEventIndex = lastEventData?.index !== undefined ? lastEventData.index : -1;
 
         let events: EventsData[];
         switch (this.type) {
