@@ -45,7 +45,7 @@ const config: HardhatUserConfig = {
     },
     mainnet: {
       chainId: 1,
-      url: process.env.MAINNET_RPC_URL as string,
+      url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
       accounts: [process.env.PRIVATE_KEY as string],
     },
     sepolia: {
@@ -55,17 +55,17 @@ const config: HardhatUserConfig = {
     },
     celo: {
       chainId: 42220,
-      url: process.env.CELO_RPC_URL as string,
-      accounts: [process.env.PRIVATE_KEY as string],
+      url: process.env.CELO_RPC_URL || "https://forno.celo.org",
+      accounts: [process.env.CELO_KEY as string],
     },
     celoAlfajores: {
       chainId: 44787,
-      url: process.env.CELO_ALFAJORES_RPC_URL as string,
+      url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
       accounts: [process.env.PRIVATE_KEY as string],
     },
     celoBaklava: {
       chainId: 62320,
-      url: process.env.CELO_BAKLAVA_RPC_URL as string,
+      url: process.env.CELO_BAKLAVA_RPC_URL || "https://baklava-forno.celo-testnet.org",
       accounts: [process.env.PRIVATE_KEY as string],
     },
   },
@@ -73,7 +73,18 @@ const config: HardhatUserConfig = {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY as string,
       ethereum: process.env.ETHERSCAN_API_KEY as string,
-    }
+      celo: process.env.CELOSCAN_API_KEY as string,
+    },
+    customChains: [
+      {
+        network: "celo",
+        chainId: 42220,
+        urls: {
+          apiURL: "https://api.celoscan.io/api",
+          browserURL: "https://celoscan.io"
+        }
+      }
+    ]
   }
 };
 
