@@ -15,6 +15,7 @@ export const WS_DB_RELAYER = 'wss://websocket.openpassport.app';
 export const CSCA_TREE_URL = 'https://tree.openpassport.app/csca';
 export const DSC_TREE_URL = 'https://tree.openpassport.app/dsc';
 export const IDENTITY_TREE_URL = 'https://tree.openpassport.app/identity';
+export const API_URL = 'https://tree.openpassport.app/api/v1';
 
 export const IMAGE_HASH = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
 

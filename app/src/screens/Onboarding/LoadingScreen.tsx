@@ -94,7 +94,14 @@ const LoadingScreen: React.FC = () => {
           const isNullifierOnchain = await isPassportNullified(passportData);
           console.log('User is registered:', isRegistered);
           console.log('Passport is nullified:', isNullifierOnchain);
-          if (isNullifierOnchain && !isRegistered) {
+
+          if (isRegistered) {
+            console.log('Passport is registered already. Skipping to HomeScreen');
+            navigation.navigate('Home');
+            return;
+          }
+
+          if (isNullifierOnchain) {
             console.log(
               'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
             );
