@@ -5,6 +5,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import {
   StaticParamList,
+  createNavigationContainerRef,
   createStaticNavigation,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -39,6 +40,7 @@ import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScree
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import StartScreen from './screens/StartScreen';
+import useNavigationStore from './stores/navigationStore';
 import { black, slate300, white } from './utils/colors';
 
 const AppNavigation = createNativeStackNavigator({
@@ -316,4 +318,25 @@ declare global {
   }
 }
 
-export default createStaticNavigation(AppNavigation);
+// Create a ref that we can use to access the navigation state
+export const navigationRef = createNavigationContainerRef();
+
+const Navigation = createStaticNavigation(AppNavigation);
+const NavigationWithTracking = () => {
+  const { trackEvent } = useNavigationStore();
+
+  const trackScreenView = () => {
+    const currentRoute = navigationRef.getCurrentRoute();
+    if (currentRoute) {
+      console.log(`Screen View: ${currentRoute.name}`);
+      trackEvent(`Screen View: ${currentRoute.name}`, {
+        screenName: currentRoute.name,
+        params: currentRoute.params,
+      });
+    }
+  };
+
+  return <Navigation ref={navigationRef} onStateChange={trackScreenView} />;
+};
+
+export default NavigationWithTracking;

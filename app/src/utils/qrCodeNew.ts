@@ -1,7 +1,7 @@
 import { Linking } from 'react-native';
 
-import msgpack from 'msgpack-lite';
-import pako from 'pako';
+import { decode } from 'msgpack-lite';
+import { inflate } from 'pako';
 
 import { SelfApp } from '../../../common/src/utils/appType';
 import useNavigationStore from '../stores/navigationStore';
@@ -18,8 +18,8 @@ export default async function handleQRCodeScan(
       const uint8Array = new Uint8Array(
         decodedResult.split('').map(char => char.charCodeAt(0)),
       );
-      const decompressedData = pako.inflate(uint8Array);
-      const unpackedData = msgpack.decode(decompressedData);
+      const decompressedData = inflate(uint8Array);
+      const unpackedData = decode(decompressedData);
       const openPassportApp: SelfApp = unpackedData;
 
       setApp(openPassportApp);

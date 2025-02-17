@@ -150,7 +150,6 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlinVersion"
     implementation("net.java.dev.jna:jna:5.13.0@aar")
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android'
-    implementation project(':react-native-fs')
 
     implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0'

@@ -7,6 +7,8 @@ import {
   createClient,
 } from '@segment/analytics-react-native';
 
+let segmentClient: ReturnType<typeof createClient> | null = null;
+
 class DisableTrackingPlugin extends EventPlugin {
   type = PluginType.before;
 
@@ -36,6 +38,10 @@ export const createSegmentClient = () => {
     return null;
   }
 
+  if (segmentClient) {
+    return segmentClient;
+  }
+
   const client = createClient({
     writeKey: SEGMENT_KEY,
     trackAppLifecycleEvents: true,
@@ -51,6 +57,7 @@ export const createSegmentClient = () => {
   });
 
   client.add({ plugin: new DisableTrackingPlugin() });
+  segmentClient = client;
 
   return client;
 };

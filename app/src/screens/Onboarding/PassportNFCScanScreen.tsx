@@ -13,6 +13,7 @@ import LottieView from 'lottie-react-native';
 import { Image } from 'tamagui';
 
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
+import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
 import ButtonsContainer from '../../components/ButtonsContainer';
 import TextsContainer from '../../components/TextsContainer';
@@ -86,10 +87,19 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         console.log('NFC Scan Successful');
         trackEvent('NFC Scan Successful');
 
-        const passportData = parseScanResponse(scanResponse);
-        const parsedPassportData = initPassportDataParsing(passportData);
-        await storePassportData(parsedPassportData);
+        let parsedPassportData: PassportData | null = null;
+        try {
+          const passportData = parseScanResponse(scanResponse);
+          parsedPassportData = initPassportDataParsing(passportData);
+        } catch (e: any) {
+          console.error('Parsing NFC Response Unsuccessful');
+          trackEvent('Parsing NFC Response Unsuccessful', {
+            error: e.message,
+          });
+          return;
+        }
 
+        await storePassportData(parsedPassportData);
         const passportMetadata = parsedPassportData.passportMetadata!;
         trackEvent('Passport Parsed', {
           success: true,

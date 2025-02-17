@@ -8,5 +8,3 @@ include ':react-native-passport-reader'
 project(':react-native-passport-reader').projectDir = new File(rootProject.projectDir, './react-native-passport-reader/android')
 include ':passportreader'
 project(':passportreader').projectDir = new File(rootProject.projectDir, './android-passport-reader/app')
-include ':react-native-fs'
-project(':react-native-fs').projectDir = new File(settingsDir, '../node_modules/react-native-fs/android')

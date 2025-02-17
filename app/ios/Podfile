@@ -26,7 +26,6 @@ target 'Self' do
   use_frameworks!
   pod 'NFCPassportReader', git: 'https://github.com/zk-passport/NFCPassportReader', commit: '8e72f0a2d3ca3bede00304bd22ed10829535dd53'
   pod 'QKMRZScanner'
-  pod 'RNFS', :path => '../node_modules/react-native-fs'
   pod 'lottie-ios'
   pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
   pod 'RNReactNativeHapticFeedback', :path => '../node_modules/react-native-haptic-feedback', :modular_headers => true
