@@ -39,7 +39,6 @@ import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
-import StartScreen from './screens/StartScreen';
 import useNavigationStore from './stores/navigationStore';
 import { black, slate300, white } from './utils/colors';
 
@@ -66,12 +65,6 @@ const AppNavigation = createNativeStackNavigator({
     },
     Launch: {
       screen: LaunchScreen,
-      options: {
-        headerShown: false,
-      },
-    },
-    Start: {
-      screen: StartScreen,
       options: {
         headerShown: false,
       },

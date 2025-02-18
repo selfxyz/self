@@ -21,15 +21,8 @@ import {
 
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import CustomButton from '../components/CustomButton';
 import { usePassport } from '../stores/passportDataProvider';
-import {
-  bgWhite,
-  borderColor,
-  separatorColor,
-  textBlack,
-  white,
-} from '../utils/colors';
+import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
 
 interface MockDataScreenProps {}
@@ -316,12 +309,10 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
             These passport data are only for testing purposes.
           </Text>
-          <CustomButton
-            onPress={handleGenerate}
-            text="Generate passport data"
-            Icon={isGenerating ? <Spinner /> : <Cpu color={textBlack} />}
-            isDisabled={isGenerating}
-          />
+          <Button onPress={handleGenerate} disabled={isGenerating}>
+            {isGenerating ? <Spinner /> : <Cpu color={textBlack} />} Generate
+            passport data
+          </Button>
         </YStack>
       </YStack>
       <Sheet
@@ -334,7 +325,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       >
         <Sheet.Overlay />
         <Sheet.Frame
-          bg={bgWhite}
+          bg={white}
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
@@ -385,7 +376,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       >
         <Sheet.Overlay />
         <Sheet.Frame
-          bg={bgWhite}
+          bg={white}
           borderTopLeftRadius="$9"
           borderTopRightRadius="$9"
         >
