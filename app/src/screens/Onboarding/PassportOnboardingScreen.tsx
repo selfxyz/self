@@ -50,7 +50,6 @@ const PassportOnboardingScreen: React.FC<
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
         <TextsContainer>
           <Title>Scan your passport</Title>
-          {/* TODO: consider moving textBreakStrategy to the component itself if we use it more often */}
           <Description textBreakStrategy="balanced">
             Open your passport to the first page to scan it.
           </Description>

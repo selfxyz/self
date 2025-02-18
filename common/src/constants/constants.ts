@@ -338,6 +338,7 @@ export const countryCodes = {
   GMB: 'Gambia',
   GEO: 'Georgia',
   DEU: 'Germany',
+  "D<<": 'Germany', // Bundesrepublik Deutschland uses this in passports instead of DEU
   GHA: 'Ghana',
   GIB: 'Gibraltar',
   GRC: 'Greece',
@@ -504,11 +505,15 @@ export const countryCodes = {
   ZMB: 'Zambia',
   ZWE: 'Zimbabwe',
 };
+// not using a library for this as the entry countries use can be differnt than the ISO 3166-1 alpha-3 standard
+export type Country3LetterCode = keyof typeof countryCodes;
+
 export function getCountryCode(countryName: string): string | string {
   const entries = Object.entries(countryCodes);
   const found = entries.find(([_, name]) => name.toLowerCase() === countryName.toLowerCase());
   return found ? found[0] : 'undefined';
 }
+
 export const countryNames = [
   'Any',
   'Afghanistan',

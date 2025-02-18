@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: black,
     overflow: 'hidden',
-    padding: 20, // TODO necessary?
+    padding: 20,
   },
   bottomSection: {
     backgroundColor: white,

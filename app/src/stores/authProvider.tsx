@@ -23,7 +23,7 @@ const _getSecurely = async function <T>(
 
   const result = await biometrics.createSignature({
     payload: dataString,
-    promptMessage: 'Allow access to account private key',
+    promptMessage: 'Allow access to identity',
     // @ts-expect-error
     allowDeviceCredentials: true,
   });

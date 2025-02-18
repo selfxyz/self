@@ -23,7 +23,6 @@ const SuccessScreen: React.FC = () => {
   const goHome = useHapticNavigation('Home');
 
   function onOkPress() {
-    // TODO should we reset everything?
     goHome();
   }
 
@@ -136,8 +135,12 @@ function Info({
       </Description>
     );
   } else {
-    // TODO what?
-    return <Description> Proving minimum viable identity </Description>;
+    return (
+      <Description>
+        <BodyText style={typography.strong}>{appName} </BodyText>will only know
+        what you disclose
+      </Description>
+    );
   }
 }
 
