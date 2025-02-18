@@ -46,13 +46,17 @@ function processCertificate(pemContent: string, filePath: string) {
             return null;
         }
 
-        console.log('\x1b[90mFile:', 'common/' + filePath.split('/common/')[1], '\x1b[0m');
+        // Display only the relative path from the registry directory
+        const registryIndex = filePath.indexOf('/registry/');
+        const displayPath = registryIndex !== -1
+            ? filePath.substring(registryIndex + 1)  // +1 to remove the leading slash
+            : filePath;
+        console.log('\x1b[90mFile:', displayPath, '\x1b[0m');
         // console.log(`Key Length: ${keyLength} bits`);
         // console.log(`Signature Algorithm: ${certificate.signatureAlgorithm}`);
         // console.log(`Hash Algorithm: ${certificate.hashAlgorithm}`);
         // CSCA parsing
         const dscMetaData = parseDscCertificateData(certificate);
-        // console.log('js: dscMetaData', dscMetaData);
         let cscaDesc = '';
         if (dscMetaData.cscaFound) {
             if (dscMetaData.cscaSignatureAlgorithm == 'ecdsa') {
@@ -152,12 +156,12 @@ async function buildDscMerkleTree() {
     logTree();
     console.log('Root Value:', '\x1b[35m' + tree.root + '\x1b[0m');
 
-    // console.log(`Max TBS bytes: ${tbs_max_bytes}`);
-    // console.log(`Max Key Length: ${key_length_max_bytes}`);
-    // console.log('js: countryKeyBitLengths', countryKeyBitLengths);
-    // console.log('js: cscaDescriptions', cscaDescriptions);
-    // console.log('js: dscDescriptions', dscDescriptions);
-    // console.log('js: dscDescriptionsExtrapolated', dscDescriptionsExtrapolated);
+    console.log(`Max TBS bytes: ${tbs_max_bytes}`);
+    console.log(`Max Key Length: ${key_length_max_bytes}`);
+    console.log('js: countryKeyBitLengths', countryKeyBitLengths);
+    console.log('js: cscaDescriptions', cscaDescriptions);
+    console.log('js: dscDescriptions', dscDescriptions);
+    console.log('js: dscDescriptionsExtrapolated', dscDescriptionsExtrapolated);
     console.log('\x1b[90mCSCA: Error parsing these files:', undefinedFilePathsCsca, '\x1b[0m');
     console.log('\x1b[90mDSC: Error parsing these files:', undefinedFilePathsDsc, '\x1b[0m');
     return tree;
@@ -185,10 +189,10 @@ function logTree() {
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠉⠀⠀⠀⠀⡠⠊⢃⠀⠐⠋⢀⡀⠀⠀⢠⠔⠊⠀⠀⠀⠀⠀⠑⢄⠀⠀⠃⠀⠀⠞⠀⠀⠑⢄⠀⠃⠀⠀⠘⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣸⠝⠂⠀⠀⠀⡠⠊⠁⠀⠈⡄⠀⠀⡇⠀⠑⠀⢸⠄⠀⠀⠀⠀⡠⠤⢀⠈⡀⠀⠲⠀⢰⠀⠀⠀⠀⠈⡧⢀⠀⠀⠀⢡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠖⠃⠀⠀⠀⠀⡐⠁⠀⠀⠀⠀⠠⠠⠊⠀⣀⣀⠄⠊⠀⠀⠀⠀⡜⠀⠀⠀⠑⢼⡀⠀⠀⡌⠀⠀⠀⠀⠀⢨⢄⠈⢢⣄⠀⠑⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⠞⠁⠀⠀⡠⠊⠉⢈⠠⠴⠊⢢⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠠⠋⠈⠁⠀⠀⠀⢀⠘⡈⢢⠜⠀⠀⠀⠀⠀⠀⠀⠑⠠⠈⠢⠑⠄⡀⠀⠁⠒⠠⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⢀⠎⠀⡰⠒⠁⠀⠀⠀⢠⠂⠀⠑⠐⠒⠀⠐⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠑⢲⡀⠀⠀⠀⠀⠀⣠⠤⡀⠀⠀⠀⠀⠀⣀⣈⠡⠈⠦⣤⡀⠡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣤⠞⠁⠀⠀⡠⠊⠉⢈⠠⠴⠊⢢⠀⠀⡼⠀⠀⠀⠀⠀⠀⠀⠀⠠⠋⠈⠁⠀⠀⠀⢀⠎⠑⢲⡀⠀⠀⠀⠀⣠⠤⡀⠀⠀⠀⠀⠀⣀⣈⠡⠈⠦⣤⡀⠡⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀⠀⢀⠎⠀⡰⠒⠁⠀⠀⠀⢠⠂⠀⠑⠐⠒⠀⠐⢄⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠎⠑⢲⡀⠀⠀⠀⠀⠀⣠⠤⡀⠀⠀⠀⠀⠀⠈⠂⠴⠀⠀⠀⠀⠀⠀⠡⠑⠦⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣠⣖⠯⠐⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠘⠆⠀⠀⠀⠀⠀⠀⠈⠃⠀⢀⡠⠐⠂⠘⠀⢀⠎⠀⠀⠀⠀⠉⠅⠐⠢⡀⠀⠀⠈⠂⠒⠂⠠⠤⡀⠀⠓⡄⠀⠀⣘⡂⣣⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
-⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⡏⠄⠀⠀⠀⠀⠀⢀⣂⠁⠀⠀⠀⠀⠀⢀⡀⠘⠂⠀⠐⠒⠢⢀⠀⠀⠈⠉⡤⢀⡀⠀⠀⠋⠀⠀⣀⣀⠀⠀⠀⠀⠀⠈⠒⠀⠀⠀⠀⠀⠀⠀⠈⠂⠴⠀⠀⠀⠀⠀⠀⠡⠑⠦⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
+⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡔⡏⠄⠀⠀⠀⠀⠀⢀⣂⠁⠀⠀⠀⠀⠀⢀⡀⠘⠂⠀⠐⠒⠢⢀⠀⠀⠈⠉⡤⢀⡀⠀⠀⠋⠀⠀⣀⣀⠀⠀⠀⠀⠀⠈⠒⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠠⡤⡴⡖⠒⠂⣹⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧⡡⠐⢄⠢⠤⡤⠒⠪⠉⠐⢄⠀⠀⢀⡠⡎⡑⠠⠀⡠⠂⠀⠠⢈⣦⡄⡀⠀⢱⠈⠁⠂⠀⠀⠤⠔⡉⠉⠂⠀⠀⠀⢀⠀⠀⠀⡀⠤⠠⠤⢀⠀⠀⠀⠀⠀⢀⣀⠠⡤⡴⡖⠒⠂⣹⣇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠒⠛⠳⠶⠥⠖⢬⢲⣦⠵⢤⡨⢆⣈⣁⣀⢡⡐⣄⢣⡐⡄⠀⢢⡀⠸⢿⣴⣕⣂⡀⠀⡇⠀⠀⠀⠀⣇⠤⢒⣓⣀⡤⠄⡷⠶⢡⡤⣤⡶⡶⢬⡿⢿⠭⢝⣿⣛⣷⣾⣿⡕⢴⠥⠒⠉⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠑⠺⠦⢤⣌⢒⠠⠄⡘⣭⣍⠻⣛⣳⣾⣅⣀⡈⠽⣧⣼⠢⣙⣿⣮⠂⢄⡀⠀⢠⣷⣜⠫⣟⣗⠠⡾⠊⣀⣠⠿⠴⠿⡻⠉⣰⣥⣔⣥⠶⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀

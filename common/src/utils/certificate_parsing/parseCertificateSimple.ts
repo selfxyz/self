@@ -250,16 +250,27 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
 export const getAuthorityKeyIdentifier = (cert: Certificate): string => {
   const authorityKeyIdentifier = cert.extensions.find((ext) => ext.extnID === '2.5.29.35');
   if (authorityKeyIdentifier) {
-    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString(
-      'hex'
-    );
-    akiValue = akiValue.replace(/^(?:3016)?(?:0414)?/, '');
-    // cur off the first 2 bytes
-    akiValue = akiValue.slice(4);
-    return akiValue;
+    let akiValue = Buffer.from(authorityKeyIdentifier.extnValue.valueBlock.valueHexView).toString('hex');
+
+    // Match the ASN.1 sequence header pattern: 30 followed by length
+    const sequenceMatch = akiValue.match(/^30([0-9a-f]{2}|8[0-9a-f][0-9a-f])/i);
+    if (sequenceMatch) {
+      // console.log('Sequence length indicator:', sequenceMatch[1]);
+    }
+
+    // Match the keyIdentifier pattern: 80 followed by length (usually 14)
+    const keyIdMatch = akiValue.match(/80([0-9a-f]{2})/i);
+    if (keyIdMatch) {
+      const keyIdLength = parseInt(keyIdMatch[1], 16);
+      // Extract the actual key ID (length * 2 because hex)
+      const startIndex = akiValue.indexOf(keyIdMatch[0]) + 4;
+      akiValue = akiValue.slice(startIndex, startIndex + (keyIdLength * 2));
+      return akiValue.toUpperCase();
+    }
   }
   return null;
 };
+
 
 export const getCircuitName = (
   circuitMode: 'prove' | 'dsc' | 'vc_and_disclose',

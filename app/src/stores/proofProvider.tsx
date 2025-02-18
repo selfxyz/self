@@ -18,42 +18,44 @@ export enum ProofStatusEnum {
 }
 
 interface IProofContext {
-  status: ProofStatusEnum;
+  registrationStatus: ProofStatusEnum;
+  disclosureStatus: ProofStatusEnum;
   proofVerificationResult: unknown;
   selectedApp: SelfApp;
   setSelectedApp: (app: SelfApp) => void;
   cleanSelfApp: () => void;
   setProofVerificationResult: (result: unknown) => void;
-  setStatus: (status: ProofStatusEnum) => void;
   resetProof: () => void;
 }
 
 const defaults: IProofContext = {
-  status: ProofStatusEnum.PENDING,
+  registrationStatus: ProofStatusEnum.PENDING,
+  disclosureStatus: ProofStatusEnum.PENDING,
   proofVerificationResult: null,
   selectedApp: {} as SelfApp,
   setSelectedApp: (_: SelfApp) => undefined,
   cleanSelfApp: () => undefined,
   setProofVerificationResult: (_: unknown) => undefined,
-  setStatus: (_: ProofStatusEnum) => undefined,
   resetProof: () => undefined,
 };
 
-const ProofContext = createContext<IProofContext>(defaults);
+export const ProofContext = createContext<IProofContext>(defaults);
 
-// Global setter for proof status – accessible from non‑React code
-let globalSetProofStatus: ((status: ProofStatusEnum) => void) | null = null;
-export function updateGlobalProofStatus(status: ProofStatusEnum) {
-  if (globalSetProofStatus) {
-    globalSetProofStatus(status);
-  }
-}
+export let globalSetRegistrationStatus:
+  | ((status: ProofStatusEnum) => void)
+  | null = null;
+export let globalSetDisclosureStatus:
+  | ((status: ProofStatusEnum) => void)
+  | null = null;
 
 /*
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
-export function ProofProvider({ children }: PropsWithChildren) {
-  const [status, setStatus] = useState<ProofStatusEnum>(
+export function ProofProvider({ children }: PropsWithChildren<{}>) {
+  const [registrationStatus, setRegistrationStatus] = useState<ProofStatusEnum>(
+    ProofStatusEnum.PENDING,
+  );
+  const [disclosureStatus, setDisclosureStatus] = useState<ProofStatusEnum>(
     ProofStatusEnum.PENDING,
   );
   const [proofVerificationResult, setProofVerificationResult] =
@@ -62,14 +64,11 @@ export function ProofProvider({ children }: PropsWithChildren) {
     defaults.selectedApp,
   );
 
-  // reset all the values so it not in wierd state
   const setSelectedApp = useCallback((app: SelfApp) => {
-    console.log('[ProofProvider] Setting new app:', app);
     if (!app || Object.keys(app).length === 0) {
-      console.log('[ProofProvider] Ignoring empty app data');
       return;
     }
-    setStatus(ProofStatusEnum.PENDING);
+    setRegistrationStatus(ProofStatusEnum.PENDING);
     setProofVerificationResult(null);
     setSelectedAppInternal(app);
   }, []);
@@ -91,20 +90,21 @@ export function ProofProvider({ children }: PropsWithChildren) {
     setSelectedAppInternal(emptySelfApp);
   }, []);
 
-  // New function to reset the proof status and related state
   const resetProof = useCallback(() => {
-    setStatus(ProofStatusEnum.PENDING);
+    setRegistrationStatus(ProofStatusEnum.PENDING);
+    setDisclosureStatus(ProofStatusEnum.PENDING);
     setProofVerificationResult(null);
     setSelectedAppInternal(defaults.selectedApp);
   }, []);
 
-  // Make the setter available globally
   useEffect(() => {
-    globalSetProofStatus = setStatus;
+    globalSetRegistrationStatus = setRegistrationStatus;
+    globalSetDisclosureStatus = setDisclosureStatus;
     return () => {
-      globalSetProofStatus = null;
+      globalSetRegistrationStatus = null;
+      globalSetDisclosureStatus = null;
     };
-  }, [setStatus]);
+  }, [setRegistrationStatus, setDisclosureStatus]);
 
   useEffect(() => {
     const universalLinkCleanup = setupUniversalLinkListener(setSelectedApp);
@@ -115,17 +115,18 @@ export function ProofProvider({ children }: PropsWithChildren) {
 
   const publicApi: IProofContext = useMemo(
     () => ({
-      status,
+      registrationStatus,
+      disclosureStatus,
       proofVerificationResult,
       selectedApp,
       setSelectedApp,
       cleanSelfApp,
       setProofVerificationResult,
-      setStatus,
       resetProof,
     }),
     [
-      status,
+      registrationStatus,
+      disclosureStatus,
       proofVerificationResult,
       selectedApp,
       setSelectedApp,

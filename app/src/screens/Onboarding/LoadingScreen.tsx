@@ -34,37 +34,30 @@ const LoadingScreen: React.FC = () => {
     }, 3000);
   };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const { status, setStatus, resetProof } = useProofInfo();
+  const { registrationStatus, resetProof, setProofVerificationResult } =
+    useProofInfo();
   const { getPassportDataAndSecret, clearPassportData } = usePassport();
 
-  // Ensure we only set the initial status once on mount (if needed)
   useEffect(() => {
-    setStatus(ProofStatusEnum.PENDING);
-  }, []);
-
-  // New effect to reset status when the screen loads
-  useEffect(() => {
+    setProofVerificationResult(null);
     resetProof();
-    processPayloadCalled.current = false;
   }, []);
 
   useEffect(() => {
-    // Change animation based on the global proof status.
-    if (status === ProofStatusEnum.SUCCESS) {
+    if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
       goToSuccessScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     } else if (
-      status === ProofStatusEnum.FAILURE ||
-      status === ProofStatusEnum.ERROR
+      registrationStatus === ProofStatusEnum.FAILURE ||
+      registrationStatus === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
-  }, [status]);
+  }, [registrationStatus]);
 
-  // Use a ref to make sure processPayload is only executed once during the component's lifecycle.
   const processPayloadCalled = useRef(false);
 
   useEffect(() => {
@@ -72,41 +65,39 @@ const LoadingScreen: React.FC = () => {
       processPayloadCalled.current = true;
       const processPayload = async () => {
         try {
-          // Generate passport data and update the store.
           const passportDataAndSecret = await getPassportDataAndSecret();
           if (!passportDataAndSecret) {
             return;
           }
-
           const { passportData, secret } = passportDataAndSecret.data;
-
           const isSupported = checkPassportSupported(passportData);
           if (!isSupported) {
             goToUnsupportedScreen();
             console.log('Passport not supported');
-            // passport data has not been fully parsed correctly
-            // so we clear it from the keychain
             clearPassportData();
             return;
           }
-
           const isRegistered = await isUserRegistered(passportData, secret);
           const isNullifierOnchain = await isPassportNullified(passportData);
           console.log('User is registered:', isRegistered);
           console.log('Passport is nullified:', isNullifierOnchain);
-          if (isNullifierOnchain && !isRegistered) {
+          if (isRegistered) {
+            console.log(
+              'Passport is registered already. Skipping to HomeScreen',
+            );
+            navigation.navigate('Home');
+            return;
+          }
+          if (isNullifierOnchain) {
             console.log(
               'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
             );
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-
-          // This will trigger sendPayload(), which updates global status via your tee.ts code.
           registerPassport(passportData, secret);
         } catch (error) {
           console.error('Error processing payload:', error);
-          setStatus(ProofStatusEnum.ERROR);
           setTimeout(() => resetProof(), 1000);
         }
       };
@@ -117,8 +108,6 @@ const LoadingScreen: React.FC = () => {
   return (
     <LottieView
       autoPlay
-      // Loop only the misc animation. Once payload processing completes,
-      // success or error animations will display without looping.
       loop={animationSource === miscAnimation}
       source={animationSource}
       style={styles.animation}

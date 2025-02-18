@@ -3,10 +3,14 @@ import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
 import elliptic from 'elliptic';
+import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
 
-import { IMAGE_HASH } from '../../../../common/src/constants/constants';
+import {
+  PCR0_MANAGER_ADDRESS,
+  RPC_URL,
+} from '../../../../common/src/constants/constants';
 import { AWS_ROOT_PEM } from './awsRootPem';
 import cose from './cose';
 
@@ -165,9 +169,9 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   );
 
   const cert = derToPem(attestationDoc.certificate);
-  const imageHash = getImageHash(attestation);
-  console.log('imageHash', imageHash);
-  if (imageHash !== IMAGE_HASH) {
+  const isPCR0Set = await checkPCR0Mapping(attestation);
+  console.log('isPCR0Set', isPCR0Set);
+  if (!isPCR0Set) {
     throw new Error('Invalid image hash');
   }
   console.log('TEE image hash verified');
@@ -360,4 +364,76 @@ function getTBSHash(pem: string): string {
   const tbsBytesArray = Array.from(tbsBytes);
   const msgHash = sha384(tbsBytesArray);
   return msgHash as string;
+}
+
+// Minimal ABI containing only the view function we need.
+const PCR0ManagerABI = [
+  'function isPCR0Set(bytes calldata pcr0) external view returns (bool)',
+];
+
+/**
+ * @notice Queries the PCR0Manager contract to verify that the PCR0 value extracted from the attestation
+ *         is mapped to true.
+ * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
+ * @return A promise that resolves to true if the PCR0 value is set in the contract, or false otherwise.
+ */
+export async function checkPCR0Mapping(
+  attestation: Array<number>,
+): Promise<boolean> {
+  // Obtain the PCR0 image hash from the attestation
+  const imageHashHex = getImageHash(attestation);
+  console.log('imageHash', imageHashHex);
+  // The getImageHash function returns a hex string (without the "0x" prefix)
+  // For a SHA384 hash, we expect 96 hex characters (48 bytes)
+  if (imageHashHex.length !== 96) {
+    throw new Error(
+      `Invalid PCR0 hash length: expected 96 hex characters, got ${imageHashHex.length}`,
+    );
+  }
+
+  // Convert the PCR0 hash from hex to a byte array, ensuring proper "0x" prefix
+  const pcr0Bytes = ethers.getBytes(`0x${imageHashHex}`);
+  if (pcr0Bytes.length !== 48) {
+    throw new Error(
+      `Invalid PCR0 bytes length: expected 48, got ${pcr0Bytes.length}`,
+    );
+  }
+
+  const celoProvider = new ethers.JsonRpcProvider(RPC_URL);
+
+  // Create a contract instance for the PCR0Manager
+  const pcr0Manager = new ethers.Contract(
+    PCR0_MANAGER_ADDRESS,
+    PCR0ManagerABI,
+    celoProvider,
+  );
+
+  try {
+    // Query the contract: isPCR0Set returns true if the given PCR0 value is set
+    return await pcr0Manager.isPCR0Set(pcr0Bytes);
+  } catch (error) {
+    console.error('Error checking PCR0 mapping:', error);
+    throw error;
+  }
+}
+
+// Add a helper function to validate and format PCR0 values
+export function formatPCR0Value(pcr0: string): Uint8Array {
+  // Remove "0x" prefix if present
+  const cleanHex = pcr0.startsWith('0x') ? pcr0.slice(2) : pcr0;
+
+  // Validate hex string length (96 characters for 48 bytes)
+  if (cleanHex.length !== 96) {
+    throw new Error(
+      `Invalid PCR0 length: expected 96 hex characters, got ${cleanHex.length}`,
+    );
+  }
+
+  // Validate hex string format
+  if (!/^[0-9a-fA-F]+$/.test(cleanHex)) {
+    throw new Error('Invalid hex string: contains non-hex characters');
+  }
+
+  // Convert to bytes
+  return ethers.getBytes(`0x${cleanHex}`);
 }

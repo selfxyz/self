@@ -8,7 +8,7 @@ type ContractBase = {
     address: string;
 }
 
-type ContractName = "registry" | "hub";
+type ContractName = "registry" | "hub" | "PCR0Manager";
 
 export function getContractInstance(contractName: ContractName, chain: any, privateKey: `0x${string}`, rpcUrl: string) {
     const walletClient = getWalletClient(chain, privateKey, rpcUrl);
@@ -26,6 +26,12 @@ export function getContractInstance(contractName: ContractName, chain: any, priv
             contractBase = {
                 abi: getAbi("IdentityVerificationHubImplV1"),
                 address: getAddresses(chain.id)["DeployHub#IdentityVerificationHub"],
+            };
+            break;
+        case "PCR0Manager":
+            contractBase = {
+                abi: getAbi("PCR0Manager"),
+                address: getAddresses(chain.id)["DeployPCR0#PCR0Manager"],
             };
             break;
         default:

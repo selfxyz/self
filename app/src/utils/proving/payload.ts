@@ -6,6 +6,7 @@ import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT
 import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
+  API_URL,
   DEFAULT_MAJORITY,
   DEPLOYED_CIRCUITS_DSC,
   DEPLOYED_CIRCUITS_REGISTER,
@@ -99,6 +100,12 @@ export async function sendRegisterPayload(
     'https',
     'https://self.xyz',
     WS_RPC_URL_REGISTER,
+    undefined,
+    {
+      updateGlobalOnSuccess: true,
+      updateGlobalOnFailure: true,
+      flow: 'registration',
+    },
   );
 }
 
@@ -264,6 +271,12 @@ export async function sendVcAndDisclosePayload(
     selfApp.endpointType,
     selfApp.endpoint,
     WS_RPC_URL_VC_AND_DISCLOSE,
+    undefined,
+    {
+      updateGlobalOnSuccess: true,
+      updateGlobalOnFailure: true,
+      flow: 'disclosure',
+    },
   );
 }
 
@@ -286,9 +299,18 @@ export async function isUserRegistered(
 
 export async function isPassportNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
-  console.log('nullifier', nullifier);
-  // TODO: check if the nullifier is onchain
-  return false;
+  const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
+  console.log('checking for nullifier', nullifierHex);
+  const response = await fetch(`${API_URL}/is-nullifier-onchain/`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ nullifier: nullifierHex }),
+  });
+  const data = await response.json();
+  console.log('isPassportNullified', data);
+  return data.data;
 }
 
 export async function registerPassport(

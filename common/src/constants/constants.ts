@@ -1,29 +1,26 @@
-export const RELAYER_URL = 'https://0pw5u65m3a.execute-api.eu-north-1.amazonaws.com/api-stage/mint';
-export const TREE_TRACKER_URL = 'https://tree.openpassport.app';
+export const TREE_TRACKER_URL = 'https://tree.self.xyz';
 export const CSCA_TREE_DEPTH = 12;
 export const DSC_TREE_DEPTH = 21;
 export const COMMITMENT_TREE_DEPTH = 33;
 export const DEFAULT_USER_ID_TYPE = 'uuid';
 
-export const MODAL_SERVER_ADDRESS = 'https://zk-passport--dsc-prover-generate-dsc-proof.modal.run';
-export const REDIRECT_URL = 'https://redirect.openpassport.app';
-export const WS_RPC_URL_REGISTER = "ws://register.proving.openpassport.app:8888/";
-export const WS_RPC_URL_DSC = "ws://dsc.proving.openpassport.app:8888/";
-export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.openpassport.app:8888/";
-export const WS_DB_RELAYER = 'wss://websocket.openpassport.app';
+export const REDIRECT_URL = 'https://redirect.self.xyz';
+export const WS_RPC_URL_REGISTER = "ws://register.proving.self.xyz:8888/";
+export const WS_RPC_URL_DSC = "ws://dsc.proving.self.xyz:8888/";
+export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.self.xyz:8888/";
+export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
 
-export const CSCA_TREE_URL = 'https://tree.openpassport.app/csca';
-export const DSC_TREE_URL = 'https://tree.openpassport.app/dsc';
-export const IDENTITY_TREE_URL = 'https://tree.openpassport.app/identity';
+export const API_URL = 'https://api.self.xyz';
+export const CSCA_TREE_URL = 'https://tree.self.xyz/csca';
+export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
+export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
 
-export const IMAGE_HASH = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000";
-
-export const PASSPORT_ATTESTATION_NAME = 'E-PASSPORT';
-// poseidon1([BigInt(Buffer.from(PASSPORT_ATTESTATION_NAME).readUIntBE(0, 6))]).toString();
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
 
-export const CHAIN_NAME = 'optimism';
-export const RPC_URL = 'https://opt-mainnet.g.alchemy.com/v2/Mjj_SdklUaCdR6EPfVKXb7m6Pj5TjzWL';
+export const CHAIN_NAME = 'celo';
+export const RPC_URL = 'https://forno.celo.org';
+export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8';
+
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
 export const DEVELOPMENT_MODE = false;

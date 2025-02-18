@@ -11,5 +11,6 @@
   "DeployHub#IdentityVerificationHub": "0x1Fe004D984a6Caba2a3849A4a20BAA08350e91CB",
   "UpdateRegistryCscaRoot#IdentityRegistryImplV1": "0x537F2fd23A0432887F32414001Cc7572260544B1",
   "UpdateRegistryHub#IdentityRegistryImplV1": "0x537F2fd23A0432887F32414001Cc7572260544B1",
-  "UpdateRegistryOfacRoot#IdentityRegistryImplV1": "0x537F2fd23A0432887F32414001Cc7572260544B1"
+  "UpdateRegistryOfacRoot#IdentityRegistryImplV1": "0x537F2fd23A0432887F32414001Cc7572260544B1",
+  "DeployPCR0#PCR0Manager": "0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8"
 }

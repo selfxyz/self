@@ -18,7 +18,8 @@ import { black, white } from '../../utils/colors';
 import { notificationError, notificationSuccess } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, proofVerificationResult, status } = useProofInfo();
+  const { selectedApp, proofVerificationResult, disclosureStatus } =
+    useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -27,14 +28,13 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    if (status === 'success') {
+    if (disclosureStatus === 'success') {
       notificationSuccess();
-    } else if (status === 'failure' || status === 'error') {
+    } else if (disclosureStatus === 'failure' || disclosureStatus === 'error') {
       notificationError();
     }
-  }, [status]);
+  }, [disclosureStatus]);
 
-  // im not sure this is the best way to do this yet but its a good start until we move the websockets to a provider
   useEffect(() => {
     if (!proofVerificationResult) {
       return;
@@ -51,7 +51,6 @@ const SuccessScreen: React.FC = () => {
       }
     }
     console.log('Failed conditions:', JSON.stringify(failedConditions));
-    // failedConditions.length > 0 ? setStatus('failure') : setStatus('success');
   }, [proofVerificationResult]);
 
   return (
@@ -64,8 +63,8 @@ const SuccessScreen: React.FC = () => {
       >
         <LottieView
           autoPlay
-          loop={status === 'pending'}
-          source={getAnimation(status)}
+          loop={disclosureStatus === 'pending'}
+          source={getAnimation(disclosureStatus)}
           style={styles.animation}
           cacheComposition={false}
           renderMode="HARDWARE"
@@ -76,10 +75,13 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(status)}</Title>
-          <Info status={status} appName={appName} />
+          <Title size="large">{getTitle(disclosureStatus)}</Title>
+          <Info status={disclosureStatus} appName={appName} />
         </View>
-        <PrimaryButton disabled={status === 'pending'} onPress={onOkPress}>
+        <PrimaryButton
+          disabled={disclosureStatus === 'pending'}
+          onPress={onOkPress}
+        >
           OK
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
@@ -111,7 +113,6 @@ function getTitle(status: ProofStatusEnum) {
   }
 }
 
-// Dont deduplicate this until we know what the pending state will look like
 function Info({
   status,
   appName,
