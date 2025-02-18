@@ -7,6 +7,7 @@ import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
 import { privacyUrl, termsUrl } from '../consts/links';
+import useConnectionModal from '../hooks/useConnectionModal';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
@@ -17,6 +18,7 @@ import { advercase, dinot } from '../utils/fonts';
 interface LaunchScreenProps {}
 
 const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+  useConnectionModal();
   const onStartPress = useHapticNavigation('PassportOnboarding');
   const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
@@ -29,9 +31,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           paddingVertical="$2"
           gap="$4"
         >
-          <TouchableWithoutFeedback
-            onPress={() => (__DEV__ ? createMock() : null)}
-          >
+          <TouchableWithoutFeedback onPress={__DEV__ ? createMock : undefined}>
             <View style={styles.cardContainer}>
               <GetStartedCard style={styles.card} />
             </View>
@@ -45,7 +45,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             >
               <Logo style={styles.logo} />
               <Text
-                onPress={() => (__DEV__ ? skipToHome() : null)}
+                onPress={__DEV__ ? skipToHome : undefined}
                 style={styles.selfText}
               >
                 Self

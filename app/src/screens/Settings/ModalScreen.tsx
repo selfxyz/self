@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import { View, XStack, YStack, styled } from 'tamagui';
@@ -28,22 +28,26 @@ export interface ModalParams extends Record<string, any> {
   buttonText: string;
   onButtonPress: (() => Promise<void>) | (() => void);
   onModalDismiss: () => void;
+  preventDismiss?: boolean;
 }
 
 interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
-  const [pending, setPending] = useState(false);
   const onButtonPressed = useCallback(async () => {
-    setPending(true);
     try {
       await params?.onButtonPress();
       navigation.goBack();
-    } finally {
-      setPending(false);
+    } catch (error) {
+      console.error(error);
     }
   }, []);
+
+  const onClose = useCallback(() => {
+    navigation.goBack();
+    params?.onModalDismiss();
+  }, [params]);
 
   return (
     <ModalBackDrop>
@@ -51,12 +55,7 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
         <YStack gap={40}>
           <XStack alignItems="center" justifyContent="space-between">
             <LogoInversed />
-            <ModalClose
-              onPress={() => {
-                navigation.goBack();
-                params?.onModalDismiss();
-              }}
-            />
+            {params?.preventDismiss ? null : <ModalClose onPress={onClose} />}
           </XStack>
           <YStack gap={20}>
             <Title textAlign="left">{params?.titleText}</Title>
@@ -64,7 +63,7 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
               {params?.bodyText}
             </Description>
           </YStack>
-          <PrimaryButton onPress={onButtonPressed} disabled={pending}>
+          <PrimaryButton onPress={onButtonPressed}>
             {params?.buttonText}
           </PrimaryButton>
         </YStack>

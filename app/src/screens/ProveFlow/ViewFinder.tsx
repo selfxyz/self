@@ -18,6 +18,7 @@ import {
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
@@ -42,6 +43,7 @@ const parseUrlParams = (url: string): Map<string, string> => {
 };
 
 const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
+  const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const { setSelectedApp, cleanSelfApp } = useProofInfo();
@@ -93,11 +95,13 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   );
   const onCancelPress = useHapticNavigation('Home', { action: 'cancel' });
 
+  const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
+
   return (
     <>
       <ExpandableBottomLayout.Layout backgroundColor={white}>
         <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
-          {!doneScanningQR && (
+          {shouldRenderCamera && (
             <>
               <QRCodeScannerView onQRData={onQRData} isMounted={isFocused} />
               <LottieView

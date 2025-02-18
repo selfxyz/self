@@ -1,25 +1,30 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 
 import { useNavigation } from '@react-navigation/native';
 
 import { ModalParams } from '../screens/Settings/ModalScreen';
 
 export const useModal = (params: ModalParams) => {
+  const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
 
   const showModal = useCallback(() => {
+    setVisible(true);
     navigation.navigate('Modal', params);
-  }, [navigation, params]);
+  }, [params]);
 
   const dismissModal = useCallback(() => {
+    setVisible(false);
     const routes = navigation.getState()?.routes;
     if (routes?.at(routes.length - 1)?.name === 'Modal') {
       navigation.goBack();
     }
-  }, [navigation, params]);
+    params.onModalDismiss();
+  }, [params]);
 
   return {
     showModal,
     dismissModal,
+    visible,
   };
 };
