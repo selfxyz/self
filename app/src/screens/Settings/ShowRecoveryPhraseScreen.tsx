@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
-import { YStack } from 'tamagui';
 
 import Mnemonic from '../../components/Mnemonic';
 import Description from '../../components/typography/Description';
@@ -40,20 +39,16 @@ const ShowRecoveryPhraseScreen: React.FC<
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor="white">
-      <ExpandableBottomLayout.BottomSection backgroundColor="white">
-        <YStack
-          alignItems="center"
-          height="100%"
-          justifyContent="flex-start"
-          pt="40%"
-          gap="$10"
-        >
-          <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
-          <Description>
-            This phrase is the only way to recover your account. Keep it secret,
-            keep it safe.
-          </Description>
-        </YStack>
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor="white"
+        justifyContent="center"
+        gap={20}
+      >
+        <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+        <Description>
+          This phrase is the only way to recover your account. Keep it secret,
+          keep it safe.
+        </Description>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

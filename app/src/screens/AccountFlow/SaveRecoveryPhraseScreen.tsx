@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { findBestLanguageTag } from 'react-native-localize';
 
 import { ethers } from 'ethers';
-import { YStack } from 'tamagui';
 
 import Mnemonic from '../../components/Mnemonic';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -55,33 +54,36 @@ const SaveRecoveryPhraseScreen: React.FC<
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <ExpandableBottomLayout.TopSection roundTop backgroundColor={white}>
-        <YStack
-          alignItems="center"
-          gap="$2.5"
-          pb="$2.5"
-          height="100%"
-          justifyContent="flex-end"
-        >
-          <Title>Save your recovery phrase</Title>
-          <Description>
-            This phrase is the only way to recover your account. Keep it secret,
-            keep it safe.
-          </Description>
-          <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
-          <YStack gap="$2.5" width="100%" pt="$6" alignItems="center">
-            <Caption color={slate400}>
-              You can reveal your recovery phrase in settings.
-            </Caption>
-            <PrimaryButton onPress={onCloudBackupPress}>
-              Enable {STORAGE_NAME} backups
-            </PrimaryButton>
-            <SecondaryButton onPress={onSkipPress}>
-              {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}
-            </SecondaryButton>
-          </YStack>
-        </YStack>
+      <ExpandableBottomLayout.TopSection
+        roundTop
+        backgroundColor={white}
+        justifyContent="space-between"
+        gap={10}
+      >
+        <Title paddingTop={20} textAlign="center">
+          Save your recovery phrase
+        </Title>
+        <Description paddingBottom={10}>
+          This phrase is the only way to recover your account. Keep it secret,
+          keep it safe.
+        </Description>
       </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection
+        style={{ paddingTop: 0 }}
+        gap={10}
+        backgroundColor={white}
+      >
+        <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+        <Caption color={slate400}>
+          You can reveal your recovery phrase in settings.
+        </Caption>
+        <PrimaryButton onPress={onCloudBackupPress}>
+          Enable {STORAGE_NAME} backups
+        </PrimaryButton>
+        <SecondaryButton onPress={onSkipPress}>
+          {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}
+        </SecondaryButton>
+      </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
 };

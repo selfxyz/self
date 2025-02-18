@@ -85,6 +85,7 @@ const FullSection: React.FC<FullSectionProps> = ({
 
 const BottomSection: React.FC<BottomSectionProps> = ({
   children,
+  style,
   ...props
 }) => {
   const { bottom } = useSafeAreaInsets();
@@ -93,7 +94,11 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const totalBottom =
     typeof incomingBottom === 'number' ? bottom + incomingBottom : bottom;
   return (
-    <View {...props} style={styles.bottomSection} paddingBottom={totalBottom}>
+    <View
+      {...props}
+      style={[styles.bottomSection, style]}
+      paddingBottom={totalBottom}
+    >
       {children}
     </View>
   );
