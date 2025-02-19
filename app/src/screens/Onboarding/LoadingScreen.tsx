@@ -85,6 +85,7 @@ const LoadingScreen: React.FC = () => {
             console.log(
               'Passport is registered already. Skipping to HomeScreen',
             );
+            // Should this go the to AccountVerified Screen too?
             navigation.navigate('Home');
             return;
           }

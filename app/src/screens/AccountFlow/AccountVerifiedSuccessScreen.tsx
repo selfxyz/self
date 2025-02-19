@@ -45,7 +45,7 @@ const AccountVerifiedSuccessScreen: React.FC = () => {
         </YStack>
         <PrimaryButton
           onPress={() => {
-            navigation.navigate('Home');
+            navigation.navigate('SaveRecoveryPhrase');
           }}
         >
           Continue
