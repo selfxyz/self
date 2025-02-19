@@ -68,6 +68,8 @@ const SuccessScreen: React.FC = () => {
           style={styles.animation}
           cacheComposition={false}
           renderMode="HARDWARE"
+          speed={1}
+          progress={0}
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection

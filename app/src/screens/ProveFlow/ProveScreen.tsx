@@ -167,6 +167,8 @@ const ProveScreen: React.FC = () => {
               cacheComposition={true}
               renderMode="HARDWARE"
               style={styles.animation}
+              speed={1}
+              progress={0}
             />
           ) : (
             <YStack alignItems="center" justifyContent="center">
