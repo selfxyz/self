@@ -18,18 +18,19 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import useNavigationStore from '../../stores/navigationStore';
 import useUserStore from '../../stores/userStore';
+import analytics from '../../utils/analytics';
 import { black, slate800, white } from '../../utils/colors';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
 
+const { trackEvent } = analytics();
+
 const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
-  const { trackEvent } = useNavigationStore();
 
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
     (error, result) => {

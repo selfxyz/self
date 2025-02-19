@@ -39,7 +39,7 @@ import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
-import useNavigationStore from './stores/navigationStore';
+import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
 
 const AppNavigation = createNativeStackNavigator({
@@ -314,22 +314,22 @@ declare global {
 // Create a ref that we can use to access the navigation state
 export const navigationRef = createNavigationContainerRef();
 
+const { trackScreenView } = analytics();
+
 const Navigation = createStaticNavigation(AppNavigation);
 const NavigationWithTracking = () => {
-  const { trackEvent } = useNavigationStore();
-
-  const trackScreenView = () => {
+  const trackScreen = () => {
     const currentRoute = navigationRef.getCurrentRoute();
     if (currentRoute) {
       console.log(`Screen View: ${currentRoute.name}`);
-      trackEvent(`Screen View: ${currentRoute.name}`, {
+      trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
         params: currentRoute.params,
       });
     }
   };
 
-  return <Navigation ref={navigationRef} onStateChange={trackScreenView} />;
+  return <Navigation ref={navigationRef} onStateChange={trackScreen} />;
 };
 
 export default NavigationWithTracking;

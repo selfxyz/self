@@ -4,7 +4,6 @@ import { decode } from 'msgpack-lite';
 import { inflate } from 'pako';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import useNavigationStore from '../stores/navigationStore';
 import { loadPassportData } from '../stores/passportDataProvider';
 
 export default async function handleQRCodeScan(
@@ -47,17 +46,12 @@ export default async function handleQRCodeScan(
 }
 
 const handleUniversalLink = (url: string, setApp: (app: SelfApp) => void) => {
-  const { toast } = useNavigationStore.getState();
   const encodedData = new URL(url).searchParams.get('data');
   console.log('Encoded data:', encodedData);
   if (encodedData) {
     handleQRCodeScan(encodedData, setApp);
   } else {
     console.error('No data found in the Universal Link');
-    toast.show('Error', {
-      message: 'Invalid link',
-      type: 'error',
-    });
   }
 };
 

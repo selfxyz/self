@@ -25,12 +25,14 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import useNavigationStore from '../../stores/navigationStore';
 import { storePassportData } from '../../stores/passportDataProvider';
 import useUserStore from '../../stores/userStore';
+import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScannerNew';
+
+const { trackEvent } = analytics();
 
 interface PassportNFCScanScreenProps {}
 
@@ -42,7 +44,6 @@ const emitter =
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const navigation = useNavigation();
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
-  const { trackEvent } = useNavigationStore();
   const [dialogMessage, setDialogMessage] = useState('');
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
