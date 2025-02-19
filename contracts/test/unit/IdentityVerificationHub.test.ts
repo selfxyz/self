@@ -28,7 +28,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
             expect(await hub.vcAndDiscloseCircuitVerifier()).to.equal(vcAndDisclose.target);
 
             const registerId = RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096;
-            const dscId = DscVerifierId.dsc_rsa_sha256_65537_4096;
+            const dscId = DscVerifierId.dsc_sha256_rsa_65537_4096;
             expect(await hub.sigTypeToRegisterCircuitVerifiers(registerId)).to.equal(register.target);
             expect(await hub.sigTypeToDscCircuitVerifiers(dscId)).to.equal(dsc.target);
 
@@ -209,7 +209,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
 
         it("should update DSC verifier", async () => {
             const { hub, user1 } = deployedActors;
-            const verifierId = DscVerifierId.dsc_rsa_sha256_65537_4096;
+            const verifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
             const newVerifierAddress = await user1.getAddress();
 
             await expect(hub.updateDscVerifier(verifierId, newVerifierAddress))
@@ -221,7 +221,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
 
         it("should not update DSC verifier if caller is not owner", async () => {
             const { hub, user1 } = deployedActors;
-            const verifierId = DscVerifierId.dsc_rsa_sha256_65537_4096;
+            const verifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
             const newVerifierAddress = await user1.getAddress();
 
             await expect(hub.connect(user1).updateDscVerifier(verifierId, newVerifierAddress)).to.be.revertedWithCustomError(hub, "OwnableUnauthorizedAccount");
@@ -229,7 +229,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
 
         it("should not update DSC verifier if caller is not proxy", async () => {
             const { hubImpl, user1 } = deployedActors;
-            const verifierId = DscVerifierId.dsc_rsa_sha256_65537_4096;
+            const verifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
             const newVerifierAddress = await user1.getAddress();
 
             await expect(hubImpl.updateDscVerifier(verifierId, newVerifierAddress)).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
@@ -358,7 +358,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
 
         it("should return correct dsc circuit verifier address", async () => {
             const { hub, dsc } = deployedActors;
-            const verifierId = DscVerifierId.dsc_rsa_sha256_65537_4096;
+            const verifierId = DscVerifierId.dsc_sha256_rsa_65537_4096;
             expect(await hub.sigTypeToDscCircuitVerifiers(verifierId)).to.equal(dsc.target);
         });
 
@@ -380,7 +380,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
                 RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096
             );
             const dscCircuitVerifierIdsBefore = await hub.sigTypeToDscCircuitVerifiers(
-                DscVerifierId.dsc_rsa_sha256_65537_4096
+                DscVerifierId.dsc_sha256_rsa_65537_4096
             );
             
             const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
@@ -405,7 +405,7 @@ describe("Unit Tests for IdentityVerificationHub", () => {
                 RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096
             )).to.equal(registerCircuitVerifierIdsBefore);
             expect(await hubV2.sigTypeToDscCircuitVerifiers(
-                DscVerifierId.dsc_rsa_sha256_65537_4096
+                DscVerifierId.dsc_sha256_rsa_65537_4096
             )).to.equal(dscCircuitVerifierIdsBefore);
 
             const implementationSlot = "0x360894a13ba1a3210667c828492db98dca3e2076cc3735a920a3ca505d382bbc";

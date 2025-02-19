@@ -58,7 +58,6 @@ describe("Airdrop", () => {
             (await deployedActors.user1.getAddress()).slice(2)
         );
 
-
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         token = await tokenFactory.connect(deployedActors.owner).deploy();
         await token.waitForDeployment();
@@ -369,7 +368,6 @@ describe("Airdrop", () => {
             countriesListPacked,
             [true, true, true],
         );
-        console.log()
         await newAirdrop.waitForDeployment();
 
         await newAirdrop.connect(owner).openRegistration();

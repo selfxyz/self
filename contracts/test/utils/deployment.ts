@@ -129,7 +129,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         vcAndDiscloseVerifier.target,
         [RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096],
         [registerVerifier.target],
-        [DscVerifierId.dsc_rsa_sha256_65537_4096],
+        [DscVerifierId.dsc_sha256_rsa_65537_4096],
         [dscVerifier.target]
     ]);
     const hubFactory = await ethers.getContractFactory("IdentityVerificationHub", owner);

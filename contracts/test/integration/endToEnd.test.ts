@@ -49,7 +49,7 @@ describe("End to End Tests", function () {
                 const previousRoot = await registry.getDscKeyCommitmentMerkleRoot();                
                 const previousSize = await registry.getDscKeyCommitmentTreeSize();
                 registerDscTx = await hub.registerDscKeyCommitment(
-                    DscVerifierId.dsc_rsa_sha256_65537_4096,
+                    DscVerifierId.dsc_sha256_rsa_65537_4096,
                     dscProof
                 );
                 const receipt = await registerDscTx.wait() as TransactionReceipt;
