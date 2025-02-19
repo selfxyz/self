@@ -1,4 +1,4 @@
-name: OpenPassport CI/CD
+name: R1cs, Cpp, Wasm circuit builds
 on:
   workflow_dispatch:
   push:
@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "circuits/circuits/**"
+      - "circuits/scripts/build/build_cpp.sh"
       - ".github/workflows/artifacts.yml"
   pull_request:
     branches:
@@ -16,7 +17,7 @@ on:
 
 jobs:
   build:
-    runs-on: ['self-hosted', 'org', 'ubuntu-22-04']
+    runs-on: ["self-hosted", "org", "ubuntu-22-04"]
 
     steps:
       - name: Checkout Repository
