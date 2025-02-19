@@ -4,6 +4,9 @@ const segmentClient = createSegmentClient();
 
 function cleanParams(properties: Record<string, any>) {
   const newParams = {};
+  if (!properties.params) {
+    return newParams;
+  }
   for (const key of Object.keys(properties.params)) {
     if (typeof properties.params[key] !== 'function') {
       (newParams as Record<string, any>)[key] = properties.params[key];
