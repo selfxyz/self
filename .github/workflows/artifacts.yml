@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: ['self-hosted', 'org', 'ubuntu-22-04']
+    runs-on: ['self-hosted', 'org', '128-ram']
 
     steps:
       - name: Checkout Repository
