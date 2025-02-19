@@ -8,26 +8,25 @@ if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" ]]; then
 fi
 
 REGISTER_CIRCUITS=(
-    "register_sha1_sha1_sha1_ecdsa_brainpoolP224r1:false"
-    "register_sha1_sha1_sha1_ecdsa_secp256r1:false"
-    "register_sha1_sha1_sha1_rsa_65537_2048:false"
+    "register_sha1_sha1_sha1_rsa_65537_4096:true"
     "register_sha1_sha256_sha256_rsa_65537_4096:true"
-    "register_sha256_sha224_sha224_ecdsa_brainpoolP224r1:false"
-    "register_sha256_sha256_sha256_ecdsa_brainpoolP224r1:false"
+    "register_sha224_sha224_sha224_ecdsa_brainpoolP224r1:true"
+    "register_sha256_sha224_sha224_ecdsa_secp224r1:true"
     "register_sha256_sha256_sha256_ecdsa_brainpoolP256r1:true"
-    "register_sha256_sha256_sha256_ecdsa_secp256r1:false"
-    "register_sha256_sha256_sha256_ecdsa_secp384r1:false"
-    "register_sha256_sha256_sha256_rsa_65537_3072:false"
+    "register_sha256_sha256_sha256_ecdsa_brainpoolP384r1:true"
+    "register_sha256_sha256_sha256_ecdsa_secp256r1:true"
+    "register_sha256_sha256_sha256_ecdsa_secp384r1:true"
+    "register_sha256_sha256_sha256_rsa_3_4096:true"
     "register_sha256_sha256_sha256_rsa_65537_4096:true"
-    "register_sha256_sha256_sha256_rsapss_3_32_4096:false"
-    "register_sha256_sha256_sha256_rsapss_65537_4096:false"
-    "register_sha384_sha384_sha384_ecdsa_brainpoolP256r1:false"
-    "register_sha384_sha384_sha384_ecdsa_brainpoolP384r1:false"
-    "register_sha384_sha384_sha384_ecdsa_secp384r1:false"
-    "register_sha512_sha512_sha512_ecdsa_brainpoolP256r1:false"
-    "register_sha512_sha512_sha512_ecdsa_brainpoolP384r1:false"
-    "register_sha512_sha512_sha512_ecdsa_brainpoolP512r1:false"
-    "register_sha512_sha512_sha512_rsa_65537_4096:false"
+    "register_sha256_sha256_sha256_rsapss_3_32_2048:true"
+    "register_sha256_sha256_sha256_rsapss_65537_32_2048:true"
+    "register_sha256_sha256_sha256_rsapss_65537_32_3072:true"
+    "register_sha384_sha384_sha384_ecdsa_brainpoolP384r1:true"
+    "register_sha384_sha384_sha384_ecdsa_brainpoolP512r1:true"
+    "register_sha384_sha384_sha384_ecdsa_secp384r1:true"
+    "register_sha512_sha512_sha512_ecdsa_brainpoolP512r1:true"
+    "register_sha512_sha512_sha512_rsa_65537_4096:true"
+    "register_sha512_sha512_sha512_rsapss_65537_64_2048:true"
 )
 
 DISCLOSE_CIRCUITS=(
@@ -35,30 +34,24 @@ DISCLOSE_CIRCUITS=(
 )
 
 DSC_CIRCUITS=(
-    # ECDSA circuits
-    "dsc_sha1_ecdsa_brainpoolP256r1:false"
-    "dsc_sha256_ecdsa_brainpoolP224r1:false"
-    "dsc_sha256_ecdsa_brainpoolP256r1:false"
-    "dsc_sha256_ecdsa_brainpoolP384r1:false"
-    "dsc_sha256_ecdsa_secp256r1:false"
-    "dsc_sha256_ecdsa_secp384r1:false"
-    "dsc_sha256_ecdsa_secp521r1:false"
-    "dsc_sha384_ecdsa_brainpoolP384r1:false"
-    "dsc_sha384_ecdsa_brainpoolP512r1:false"
-    "dsc_sha384_ecdsa_secp384r1:false"
-    "dsc_sha512_ecdsa_brainpoolP512r1:false"
-    "dsc_sha512_ecdsa_secp521r1:false"
-
-    # RSA circuits
-    "dsc_sha1_rsa_65537_4096:false"
+    "dsc_sha1_ecdsa_brainpoolP256r1:true"
+    "dsc_sha1_rsa_65537_4096:true"
+    "dsc_sha256_ecdsa_brainpoolP256r1:true"
+    "dsc_sha256_ecdsa_brainpoolP384r1:true"
+    "dsc_sha256_ecdsa_secp256r1:true"
+    "dsc_sha256_ecdsa_secp384r1:true"
+    "dsc_sha256_ecdsa_secp521r1:true"
     "dsc_sha256_rsa_65537_4096:true"
-    "dsc_sha512_rsa_65537_4096:false"
-
-    # RSA-PSS circuits
-    "dsc_sha256_rsapss_3_32_3072:false"
-    "dsc_sha256_rsapss_65537_32_3072:false"
-    "dsc_sha256_rsapss_65537_32_4096:false"
-    "dsc_sha512_rsapss_65537_64_4096:false"
+    "dsc_sha256_rsapss_3_32_3072:true"
+    "dsc_sha256_rsapss_65537_32_3072:true"
+    "dsc_sha256_rsapss_65537_32_4096:true"
+    "dsc_sha384_ecdsa_brainpoolP384r1:true"
+    "dsc_sha384_ecdsa_brainpoolP512r1:true"
+    "dsc_sha384_ecdsa_secp384r1:true"
+    "dsc_sha512_ecdsa_brainpoolP512r1:true"
+    "dsc_sha512_ecdsa_secp521r1:true"
+    "dsc_sha512_rsa_65537_4096:true"
+    "dsc_sha512_rsapss_65537_64_4096:true"
 )
 
 if [[ $1 == "register" ]]; then
@@ -88,6 +81,12 @@ for item in "${allowed_circuits[@]}"; do
         continue
     fi
 
+    while [[ ${#pids[@]} -ge 5 ]]; do
+        echo "Waiting for some processes to finish..."
+        wait "${pids[@]}"
+        pids=()  # Clear the array after waiting
+    done
+
     echo $filename $allowed
     filepath=${basepath}/${filename}.circom
     circom_pid=$!
@@ -97,7 +96,7 @@ for item in "${allowed_circuits[@]}"; do
         -l "circuits/node_modules" \
         -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
         -l "circuits/node_modules/circomlib/circuits" \
-        --O1 -c --output $output && \
+        --O1 -c --r1cs --wasm --output $output && \
         cd $output/${circuit_name}_cpp && \
         make 
     ) & 
