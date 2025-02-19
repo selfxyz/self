@@ -1,6 +1,7 @@
 import Elysia, { t } from 'elysia';
 import { ProofVerifier } from '../../contracts/application/proofVerifier';
 import { RegistryContract } from '../../contracts/application/registryContract';
+import { HubContract } from '../application/hubContract';
 import { getChain } from '../../contracts/application/chains';
 import { getDscCommitmentEvents } from '../application/getEvents';
 import { MerkleTreeService } from '../application/tree-reader/leanImtService';
@@ -47,7 +48,8 @@ export const ContractsController = new Elysia()
         description: 'Retrieve the identity commitment root in registry contract',
       },
     },
-  ).post(
+  )
+  .post(
     'update-csca-root',
     async ({ body, set }) => {
       try {
@@ -316,6 +318,68 @@ export const ContractsController = new Elysia()
         description: 'Check if a nullifier is onchain',
       },
     },
+  )
+  .get(
+    'sig-to-register',
+    async ({ query }) => {
+      const id = Number(query.id);
+      const hubContract = new HubContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const address = await hubContract.sigTypeToRegisterCircuitVerifiers(id);
+      return { status: 'success', data: address };
+    },
+    {
+      query: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.String(),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Hub'],
+        summary: 'Get Register Circuit Verifier Address via Query',
+        description: 'Retrieve the Register Circuit Verifier address by passing id as a query parameter.',
+      },
+    }
+  )
+  .get(
+    'sig-to-dsc',
+    async ({ query }) => {
+      const id = Number(query.id);
+      const hubContract = new HubContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const address = await hubContract.sigTypeToDscCircuitVerifiers(id);
+      return { status: 'success', data: address };
+    },
+    {
+      query: t.Object({ id: t.String() }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.String(),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Hub'],
+        summary: 'Get DSC Circuit Verifier Address via Query',
+        description: 'Retrieve the DSC Circuit Verifier address by passing id as a query parameter.',
+      },
+    }
   )
   .post(
     'verify-vc-and-disclose-proof',

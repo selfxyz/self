@@ -1,26 +1,13 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import * as dotenv from "dotenv";
 import * as fs from "fs";
 import * as path from "path";
+import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/constants";
 
 dotenv.config();
 
-const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-11155111/deployed_addresses.json"), "utf-8"));
+const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"), "utf-8"));
 const contractAbiPath = path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts");
-
-const ProveVerifierList = [
-    "Verifier_prove_rsa_65537_sha1",
-    "Verifier_prove_rsa_65537_sha256",
-    "Verifier_prove_rsapss_65537_sha256",
-    "Verifier_prove_ecdsa_secp256r1_sha256",
-    "Verifier_prove_ecdsa_secp256r1_sha1",
-]
-
-const DscVerifierList = [
-    "Verifier_dsc_rsa_65537_sha1_4096",
-    "Verifier_dsc_rsa_65537_sha256_4096",
-    "Verifier_dsc_rsapss_65537_sha256_4096"
-]
 
 function getContractAddressByPartialName(partialName: string): string | unknown {
     for (const [key, value] of Object.entries(deployedAddresses)) {
@@ -31,40 +18,51 @@ function getContractAddressByPartialName(partialName: string): string | unknown 
     return undefined;
 }
 
-function computeVerifierId(input: string): string {
-    return ethers.keccak256(ethers.toUtf8Bytes(input));
-}
-
 async function main() {
 
-    const verifierIds: {
-        proveVerifierIds: { [key: string]: string },
-        dscVerifierIds: { [key: string]: string }
-    } = {
-        proveVerifierIds: {},
-        dscVerifierIds: {}
+    const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL as string);
+    const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
+    const identityVerificationHubAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/artifacts/DeployHub#IdentityVerificationHubImplV1.json"), "utf-8");
+    const identityVerificationHubAbi = JSON.parse(identityVerificationHubAbiFile).abi;
+    const identityVerificationHub = new ethers.Contract(deployedAddresses["DeployHub#IdentityVerificationHub"], identityVerificationHubAbi, wallet);
+
+    const registerVerifierKeys = Object.keys(RegisterVerifierId).filter(key => isNaN(Number(key)));
+    for (const key of registerVerifierKeys) {
+        const verifierName = `Verifier_${key}`;
+        const verifierAddress = getContractAddressByPartialName(verifierName);
+        if (!verifierAddress) {
+            console.log(`Skipping ${verifierName} because no deployed address was found.`);
+            continue;
+        }
+        console.log(`Updating for ${verifierName}`);
+        const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
+
+        const tx = await identityVerificationHub.updateRegisterCircuitVerifier(
+            verifierId,
+            verifierAddress
+        );
+        const receipt = await tx.wait();
+        console.log(`${verifierName} is updated wit this tx: ${receipt.hash}`)
     }
 
-    const provider = new ethers.JsonRpcProvider(process.env.SEPOLIA_RPC_URL as string);
-    const wallet = new ethers.Wallet(process.env.PKEY as string, provider);
-    const GenericVerifierAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts/Deploy_Open_Passport_Verifier#GenericVerifier.json"), "utf-8");
-    const GenericVerifierAbi = JSON.parse(GenericVerifierAbiFile).abi;
-    const genericVerifier = new ethers.Contract(getContractAddressByPartialName("GenericVerifier") as string, GenericVerifierAbi, wallet);
+    const dscKeys = Object.keys(DscVerifierId).filter(key => isNaN(Number(key)));
+    for (const key of dscKeys) {
+        const verifierName = `Verifier_${key}`;
+        const verifierAddress = getContractAddressByPartialName(verifierName);
+        if (!verifierAddress) {
+            console.log(`Skipping ${verifierName} because no deployed address was found.`);
+            continue;
+        }
+        const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
 
-    for (let i = 0; i < ProveVerifierList.length; i++) {
-        // const proveVerifierAddress = getContractAddressByPartialName(ProveVerifierList[i]) as string;
-        const proveVerifierId = computeVerifierId(ProveVerifierList[i]);
-        verifierIds.proveVerifierIds[ProveVerifierList[i]] = proveVerifierId;
-        // await genericVerifier.updateVerifier(0, proveVerifierId, proveVerifierAddress);
+        const tx = await identityVerificationHub.updateDscVerifier(
+            verifierId,
+            verifierAddress
+        );
+        const receipt = await tx.wait();
+        console.log(`${verifierName} is updated wit this tx: ${receipt.hash}`);
     }
-    for (let i = 0; i < DscVerifierList.length; i++) {
-        // const dscVerifierAddress = getContractAddressByPartialName(DscVerifierList[i]) as string;
-        const dscVerifierId = computeVerifierId(DscVerifierList[i]);
-        verifierIds.dscVerifierIds[DscVerifierList[i]] = dscVerifierId;
-        // await genericVerifier.updateVerifier(1, dscVerifierId, dscVerifierAddress);
-    }
-    const outputPath = path.join(__dirname, "verifierIds.json");
-    fs.writeFileSync(outputPath, JSON.stringify(verifierIds, null, 2), "utf-8");
+
 }
 
 main().catch((error) => {
