@@ -40,14 +40,39 @@ contract VerifyAll is Ownable {
         view
         returns (
             IIdentityVerificationHubV1.ReadableRevealedData memory,
-            bool
+            bool,
+            string memory
         )
     {
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result;
         try _hub.verifyVcAndDisclose(proof) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
             result = _result;
-        } catch {
+        } catch (bytes memory lowLevelData) {
+            string memory errorCode;
+            if (lowLevelData.length >= 4) {
+                bytes4 errorSelector;
+                assembly {
+                    errorSelector := mload(add(lowLevelData, 32))
+                }
+                if (errorSelector == bytes4(keccak256("LENGTH_MISMATCH()"))) {
+                    errorCode = "LENGTH_MISMATCH";
+                } else if (errorSelector == bytes4(keccak256("NO_VERIFIER_SET()"))) {
+                    errorCode = "NO_VERIFIER_SET";
+                } else if (errorSelector == bytes4(keccak256("CURRENT_DATE_NOT_IN_VALID_RANGE()"))) {
+                    errorCode = "CURRENT_DATE_NOT_IN_VALID_RANGE";
+                } else if (errorSelector == bytes4(keccak256("INVALID_OLDER_THAN()"))) {
+                    errorCode = "INVALID_OLDER_THAN";
+                } else if (errorSelector == bytes4(keccak256("INVALID_OFAC()"))) {
+                    errorCode = "INVALID_OFAC";
+                } else if (errorSelector == bytes4(keccak256("INVALID_OFAC_ROOT()"))) {
+                    errorCode = "INVALID_OFAC_ROOT";
+                } else if (errorSelector == bytes4(keccak256("INVALID_FORBIDDEN_COUNTRIES()"))) {
+                    errorCode = "INVALID_FORBIDDEN_COUNTRIES";
+                } else if (errorSelector == bytes4(keccak256("INVALID_VC_AND_DISCLOSE_PROOF()"))) {
+                    errorCode = "INVALID_VC_AND_DISCLOSE_PROOF";
+                }
+            }
             IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1.ReadableRevealedData({
                 issuingState: "",
                 name: new string[](0),
@@ -61,7 +86,7 @@ contract VerifyAll is Ownable {
                 nameAndDobOfac: 1,
                 nameAndYobOfac: 1
             });
-            return (emptyData, false);
+            return (emptyData, false, errorCode);
         }
 
         if (targetRootTimestamp != 0) {
@@ -79,14 +104,14 @@ contract VerifyAll is Ownable {
                     nameAndDobOfac: 1,
                     nameAndYobOfac: 1
                 });
-                return (emptyData, false);
+                return (emptyData, false, "INVALID_TIMESTAMP");
             }
         }
 
         uint256[3] memory revealedDataPacked = result.revealedDataPacked;
         IIdentityVerificationHubV1.ReadableRevealedData memory readableData = _hub.getReadableRevealedData(revealedDataPacked, types);
 
-        return (readableData, true);
+        return (readableData, true, "");
     }
 
     /// @notice Updates the hub contract address
