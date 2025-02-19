@@ -1,11 +1,21 @@
 import React from 'react';
 
 import { useNavigation } from '@react-navigation/native';
-import { Check, ChevronDown, Eraser, IterationCw } from '@tamagui/lucide-icons';
+import {
+  Check,
+  ChevronDown,
+  Eraser,
+  IterationCw,
+  VenetianMask,
+} from '@tamagui/lucide-icons';
 import { Adapt, Button, Fieldset, Label, Select, Sheet, YStack } from 'tamagui';
 
+import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
-import { usePassport } from '../../stores/passportDataProvider';
+import {
+  storePassportData,
+  usePassport,
+} from '../../stores/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
@@ -102,6 +112,18 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     nav.navigate('Launch');
   }
 
+  function handleGenerateMockPassportData() {
+    const passportData = genMockPassportData(
+      'sha256',
+      'sha256',
+      'rsa_sha256_65537_2048',
+      'FRA',
+      '000101',
+      '300101',
+    );
+    storePassportData(passportData);
+  }
+
   return (
     <YStack gap="$2" mt="$2" ai="center">
       <Fieldset gap="$4" horizontal>
@@ -123,6 +145,27 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           onPress={handleRestart}
         >
           <IterationCw color={textBlack} />
+        </Button>
+      </Fieldset>
+      <Fieldset gap="$4" horizontal>
+        <Label
+          color={textBlack}
+          width={200}
+          justifyContent="flex-end"
+          htmlFor="restart"
+        >
+          Generate mock passport data
+        </Label>
+        <Button
+          bg="white"
+          jc="center"
+          borderColor={borderColor}
+          borderWidth={1.2}
+          size="$3.5"
+          ml="$2"
+          onPress={handleGenerateMockPassportData}
+        >
+          <VenetianMask color={textBlack} />
         </Button>
       </Fieldset>
 
