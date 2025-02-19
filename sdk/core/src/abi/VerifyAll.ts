@@ -58,6 +58,32 @@ export const verifyAllAbi = [
   },
   {
     inputs: [],
+    name: '_hub',
+    outputs: [
+      {
+        internalType: 'contract IIdentityVerificationHubV1',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
+    name: '_registry',
+    outputs: [
+      {
+        internalType: 'contract IIdentityRegistryV1',
+        name: '',
+        type: 'address',
+      },
+    ],
+    stateMutability: 'view',
+    type: 'function',
+  },
+  {
+    inputs: [],
     name: 'owner',
     outputs: [
       {

@@ -3,6 +3,7 @@ import { artifacts, ethers } from "hardhat";
 import hre from "hardhat";
 import fs from "fs";
 import path from "path";
+import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 
 function getHubInitializeData() {
     const hubArtifact = artifacts.readArtifactSync("IdentityVerificationHubImplV1");
@@ -28,9 +29,15 @@ export default buildModule("DeployHub", (m) => {
     const initializeData = hubInterface.encodeFunctionData("initialize", [
         registryAddress,
         vcAndDiscloseVerifierAddress,
-        ["4", "7", "0"],
+        [
+            RegisterVerifierId.register_sha1_sha256_sha256_rsa_65537_4096, 
+            RegisterVerifierId.register_sha256_sha256_sha256_ecdsa_brainpoolP256r1, 
+            RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096
+        ],
         [registerVerifierAddress, registerVerifierAddress2, registerVerifierAddress3],
-        ["1"],
+        [
+            DscVerifierId.dsc_sha256_rsa_65537_4096
+        ],
         [dscVerifierAddress]
     ]);
 

@@ -17,7 +17,6 @@ export interface SelfVerificationResult {
   credentialSubject: {
     merkle_root?: string;
     attestation_id?: string;
-    targetRootTimestamp?: string;
     current_date?: string;
     issuing_state?: string;
     name?: string;

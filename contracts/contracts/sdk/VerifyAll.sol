@@ -11,8 +11,8 @@ import {CircuitConstants} from "../constants/CircuitConstants.sol";
 /// @dev This contract interacts with IdentityVerificationHub and IdentityRegistry
 contract VerifyAll is Ownable {
 
-    IIdentityVerificationHubV1 _hub;
-    IIdentityRegistryV1 _registry;
+    IIdentityVerificationHubV1 public _hub;
+    IIdentityRegistryV1 public _registry;
 
     /// @notice Initializes the contract with hub and registry addresses
     /// @param hub The address of the IdentityVerificationHub contract

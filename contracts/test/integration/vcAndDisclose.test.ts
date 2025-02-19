@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
 import { ethers } from "hardhat";
-import { CIRCUIT_CONSTANTS } from "../utils/constants";
+import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateVcAndDiscloseProof, getSMTs } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";

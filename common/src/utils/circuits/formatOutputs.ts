@@ -1,5 +1,5 @@
 import { attributeToPosition } from '../../constants/constants';
-import { DisclosureOptions } from '../appType';
+import { SelfAppDisclosureConfig } from '../appType';
 
 /*** OpenPassport Attestation ***/
 export function formatForbiddenCountriesListFromCircuitOutput(
@@ -103,7 +103,7 @@ export function revealBitmapFromMapping(attributeToReveal: { [key: string]: stri
 
     return reveal_bitmap;
 }
-export function revealBitmapFromAttributes(disclosureOptions: DisclosureOptions): string[] {
+export function revealBitmapFromAttributes(disclosureOptions: SelfAppDisclosureConfig): string[] {
     const reveal_bitmap = Array(88).fill('0');
 
     Object.entries(disclosureOptions).forEach(([attribute, { enabled }]) => {

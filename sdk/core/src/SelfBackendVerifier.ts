@@ -2,18 +2,26 @@ import { VcAndDiscloseProof } from './types/types';
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
 import { parseSolidityCalldata } from './utils/utils';
+import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS } from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { groth16, Groth16Proof, PublicSignals } from 'snarkjs';
-import { countryCodes, countryNames, getCountryCode } from '@common/constants/constants';
-import type { SelfVerificationResult } from '@common/utils/selfAttestation';
-import { castToScope } from '@common/utils/circuits/uuid';
-import { CIRCUIT_CONSTANTS, revealedDataTypes } from '@common/constants/constants';
-import { packForbiddenCountriesList } from '@common/utils/contracts/formatCallData';
+import {
+  countryCodes,
+  countryNames,
+  getCountryCode,
+} from '../../../common/src/constants/constants';
+import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
+import { castToScope } from '../../../common/src/utils/circuits/uuid';
+import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
+import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
-  protected targetRootTimestamp: number = 0;
+  protected targetRootTimestamp: { enabled: boolean; value: number } = {
+    enabled: false,
+    value: 0,
+  };
 
   protected nationality: { enabled: boolean; value: (typeof countryNames)[number] } = {
     enabled: false,
@@ -31,15 +39,10 @@ export class SelfBackendVerifier {
   protected registryContract: any;
   protected verifyAllContract: any;
 
-  constructor(
-    rpcUrl: string,
-    scope: string,
-    registryContractAddress: `0x${string}`,
-    verifyAllContractAddress: `0x${string}`
-  ) {
+  constructor(rpcUrl: string, scope: string) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.registryContract = new ethers.Contract(registryContractAddress, registryAbi, provider);
-    this.verifyAllContract = new ethers.Contract(verifyAllContractAddress, verifyAllAbi, provider);
+    this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
+    this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
     this.scope = scope;
   }
 
@@ -61,6 +64,7 @@ export class SelfBackendVerifier {
     const isValidScope =
       this.scope ===
       castToScope(BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]));
+
     const isValidAttestationId =
       this.attestationId.toString() ===
       publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
@@ -93,9 +97,16 @@ export class SelfBackendVerifier {
       revealedDataTypes.name_and_yob_ofac,
     ];
 
-    const timestamp = this.targetRootTimestamp;
+    let timestamp;
+    if (this.targetRootTimestamp.enabled) {
+      timestamp = this.targetRootTimestamp.value;
+    } else {
+      const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
+      timestamp = await this.registryContract.rootTimestamps(currentRoot);
+    }
 
     const result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
+    console.log('result: ', result);
 
     let isValidNationality = true;
     if (this.nationality.enabled) {
@@ -145,7 +156,7 @@ export class SelfBackendVerifier {
   }
 
   setTargetRootTimestamp(targetRootTimestamp: number): this {
-    this.targetRootTimestamp = targetRootTimestamp;
+    this.targetRootTimestamp = { enabled: true, value: targetRootTimestamp };
     return this;
   }
 
