@@ -61,6 +61,7 @@ template PackBytesAndPoseidon(k) {
     signal packed[packed_length] <== PackBytes(k)(in);
     signal output out <== CustomHasher(packed_length)(packed);
 }
+
 /// @title AssertBytes
 /// @notice Asserts that every element in the input array is a valid byte (i.e., less than 256).
 /// @param k The number of elements in the input array.
@@ -68,21 +69,10 @@ template PackBytesAndPoseidon(k) {
 /// @dev This template uses a chain of LessThan components to check that each byte is below 256. The results are cumulatively multiplied in checkArray, and the final constraint (checkArray[k-1] === 1) enforces that all bytes meet the condition.
 template AssertBytes(k) {
     signal input in[k];
-    signal checkArray[k];
-    component lessThan256[k];
+    component num2bits[k];
 
     for (var i = 0; i < k; i++) {
-        if (i == 0) {
-            lessThan256[i] = LessThan(8);
-            lessThan256[i].in[0] <== in[i];
-            lessThan256[i].in[1] <== 256;
-            checkArray[i] <== lessThan256[i].out;
-        } else {
-            lessThan256[i] = LessThan(8);
-            lessThan256[i].in[0] <== in[i];
-            lessThan256[i].in[1] <== 256;
-            checkArray[i] <== lessThan256[i].out * checkArray[i-1];
-        }
+        num2bits[i] = Num2Bits(8);
+        num2bits[i].in <== in[i];
     }
-    checkArray[k-1] === 1;
 }

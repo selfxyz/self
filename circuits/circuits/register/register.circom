@@ -92,6 +92,9 @@ template REGISTER(
     
     signal input secret;
 
+    // assert only bytes are used in raw_dsc
+    AssertBytes(MAX_DSC_LENGTH)(raw_dsc);
+
     // check dsc_pubKey_actual_size is at least the minimum key length
     signal dsc_pubKey_actual_size_in_range <== GreaterEqThan(12)([
         dsc_pubKey_actual_size,

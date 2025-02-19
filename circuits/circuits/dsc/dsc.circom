@@ -68,6 +68,9 @@ template DSC(
     signal input path[nLevels];
     signal input siblings[nLevels];
 
+    // assert only bytes are used in raw_csca
+    AssertBytes(MAX_CSCA_LENGTH)(raw_csca);
+
     // first, compute raw_dsc_actual_length
     // by getting the values of the last 4 bytes of the padded length
     // cf sha padding
