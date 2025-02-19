@@ -58,6 +58,9 @@ abstract contract IdentityVerificationHubStorageV1 is
     /// @notice Address of the VC and Disclose circuit verifier.
     address internal _vcAndDiscloseCircuitVerifier;
 
+    /// @notice Address of the key in the TEE server
+    address internal _teeServerPublicKey;
+
     /// @notice Mapping from signature type to register circuit verifier addresses.
     mapping(uint256 => address) internal _sigTypeToRegisterCircuitVerifiers;
 
@@ -110,6 +113,11 @@ contract IdentityVerificationHubImplV1 is
      */
     event VcAndDiscloseCircuitUpdated(address vcAndDiscloseCircuitVerifier);
     /**
+     * @notice Emitted when the TEE server public key is updated.
+     * @param teeServerPublicKey The new TEE server public key.
+     */
+    event TeeServerPublicKeyUpdated(address teeServerPublicKey);
+    /**
      * @notice Emitted when a register circuit verifier is updated.
      * @param typeId The signature type id.
      * @param verifier The new verifier address for the register circuit.
@@ -149,6 +157,10 @@ contract IdentityVerificationHubImplV1 is
     /// @notice Thrown when the OFAC check fails.
     /// @dev Indicates that the proof did not satisfy the required OFAC conditions.
     error INVALID_OFAC();
+
+    /// @notice Thrown when the TEE server signature verification fails.
+    /// @dev Indicates that the provided TEE server signature attached to the proof is invalid.
+    error INVALID_TEE_SERVER_SIGNATURE();
     
     /// @notice Thrown when the register circuit proof is invalid.
     /// @dev The register circuit verifier did not validate the provided proof.
@@ -207,6 +219,7 @@ contract IdentityVerificationHubImplV1 is
     function initialize(
         address registryAddress,
         address vcAndDiscloseCircuitVerifierAddress,
+        address teeServerPublicKeyAddress,
         uint256[] memory registerCircuitVerifierIds,
         address[] memory registerCircuitVerifierAddresses,
         uint256[] memory dscCircuitVerifierIds,
@@ -215,6 +228,7 @@ contract IdentityVerificationHubImplV1 is
         __ImplRoot_init();
         _registry = registryAddress;
         _vcAndDiscloseCircuitVerifier = vcAndDiscloseCircuitVerifierAddress;
+        _teeServerPublicKey = teeServerPublicKeyAddress;
         if (registerCircuitVerifierIds.length != registerCircuitVerifierAddresses.length) {
             revert LENGTH_MISMATCH();
         }
@@ -267,6 +281,20 @@ contract IdentityVerificationHubImplV1 is
         returns (address) 
     {
         return _vcAndDiscloseCircuitVerifier;
+    }
+
+    /**
+     * @notice Retrieves the current TEE server public key.
+     * @return The address of the TEE server public key.
+     */
+    function teeServerPublicKey()
+        external
+        virtual
+        onlyProxy
+        view
+        returns (address)
+    {
+        return _teeServerPublicKey;
     }
 
     /**
@@ -410,10 +438,12 @@ contract IdentityVerificationHubImplV1 is
     /**
      * @notice Registers a passport commitment using a register circuit proof.
      * @dev Verifies the proof and then calls the Identity Registry to register the commitment.
+     * @param signature The ECDSA signature over the concatenated proof elements (a, b, c) from TEE server.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier to use.
      * @param registerCircuitProof The register circuit proof data.
      */
     function registerPassportCommitment(
+        bytes memory signature,
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
@@ -421,7 +451,11 @@ contract IdentityVerificationHubImplV1 is
         virtual
         onlyProxy
     {
-        _verifyPassportRegisterProof(registerCircuitVerifierId, registerCircuitProof);
+        _verifyPassportRegisterProof(
+            signature,
+            registerCircuitVerifierId, 
+            registerCircuitProof
+        );
         IIdentityRegistryV1(_registry).registerCommitment(
             AttestationId.E_PASSPORT,
             registerCircuitProof.pubSignals[CircuitConstants.REGISTER_NULLIFIER_INDEX],
@@ -484,6 +518,23 @@ contract IdentityVerificationHubImplV1 is
     {
         _vcAndDiscloseCircuitVerifier = vcAndDiscloseCircuitVerifierAddress;
         emit VcAndDiscloseCircuitUpdated(vcAndDiscloseCircuitVerifierAddress);
+    }
+
+    /**
+     * @notice Updates the TEE server public key.
+     * @dev Only callable by the contract owner through a proxy.
+     * @param teeServerPublicKeyAddress The new TEE server public key.
+     */
+    function updateTeeServerPublicKey(
+        address teeServerPublicKeyAddress
+    )
+        external
+        virtual
+        onlyProxy
+        onlyOwner
+    {
+        _teeServerPublicKey = teeServerPublicKeyAddress;
+        emit TeeServerPublicKeyUpdated(teeServerPublicKeyAddress);
     }
 
     /**
@@ -648,10 +699,12 @@ contract IdentityVerificationHubImplV1 is
     /**
      * @notice Verifies the passport register circuit proof.
      * @dev Uses the register circuit verifier specified by registerCircuitVerifierId.
+     * @param signature The ECDSA signature over the concatenated proof elements (a, b, c) from TEE server.
      * @param registerCircuitVerifierId The identifier for the register circuit verifier.
      * @param registerCircuitProof The register circuit proof data.
      */
     function _verifyPassportRegisterProof(
+        bytes memory signature,
         uint256 registerCircuitVerifierId,
         IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
     ) 
@@ -665,6 +718,36 @@ contract IdentityVerificationHubImplV1 is
 
         if (!IIdentityRegistryV1(_registry).checkDscKeyCommitmentMerkleRoot(registerCircuitProof.pubSignals[CircuitConstants.REGISTER_MERKLE_ROOT_INDEX])) {
             revert INVALID_COMMITMENT_ROOT();
+        }
+
+        bytes memory message = abi.encodePacked(
+            registerCircuitProof.a[0],
+            registerCircuitProof.a[1],
+            registerCircuitProof.b[0][0],
+            registerCircuitProof.b[0][1],
+            registerCircuitProof.b[1][0],
+            registerCircuitProof.b[1][1],
+            registerCircuitProof.c[0],
+            registerCircuitProof.c[1]
+        );
+        bytes32 messageHash = keccak256(message);
+
+        if (signature.length != 65) {
+            revert INVALID_TEE_SERVER_SIGNATURE();
+        }
+
+        bytes32 r;
+        bytes32 s;
+        uint8 v;
+        assembly {
+            r := mload(add(signature, 32))
+            s := mload(add(signature, 64))
+            v := byte(0, mload(add(signature, 96)))
+        }
+
+        address recoveredAddress = ecrecover(messageHash, v, r, s);
+        if (recoveredAddress != _teeServerPublicKey) {
+            revert INVALID_TEE_SERVER_SIGNATURE();
         }
 
         if(!IRegisterCircuitVerifier(verifier).verifyProof(
