@@ -1,4 +1,4 @@
-name: Build r1c2, wasm, cpp
+name: Build r1cs, wasm, cpp
 on:
   workflow_dispatch:
   push:
