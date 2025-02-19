@@ -1,4 +1,4 @@
-name: OpenPassport CI/CD
+name: Build r1c2, wasm, cpp
 on:
   workflow_dispatch:
   push:
@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: ['self-hosted', 'org', 'ubuntu-22-04']
+    runs-on: ["self-hosted", "org", "ubuntu-22-04"]
 
     steps:
       - name: Checkout Repository
