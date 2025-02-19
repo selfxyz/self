@@ -191,7 +191,7 @@ describe('ecdsa', () => {
       await circuit.checkConstraints(witness);
       throw new Error('Test failed: Invalid signature was verified.');
     } catch (err) {
-      if (!(err as Error).message.includes('isNBits')) {
+      if (!(err as Error).message.includes('Num2Bits')) {
         throw err;
       }
     }

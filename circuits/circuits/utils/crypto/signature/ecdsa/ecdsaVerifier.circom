@@ -2,7 +2,6 @@ pragma circom 2.1.9;
 
 include "../../../passport/signatureAlgorithm.circom";
 include "../../bigInt/bigInt.circom";
-include "../../utils/isNBits.circom";
 include "ecdsa.circom";
 
 /// @title EcdsaVerifier
@@ -64,10 +63,10 @@ template EcdsaVerifier(signatureAlgorithm, n, k) {
 
     component rangeCheck[4 * k]; 
     for (var i = 0; i < k; i++) { 
-        rangeCheck[4 * i + 0] = isNBits(n);
-        rangeCheck[4 * i + 1] = isNBits(n);
-        rangeCheck[4 * i + 2] = isNBits(n);
-        rangeCheck[4 * i + 3] = isNBits(n);
+        rangeCheck[4 * i + 0] = Num2Bits(n);
+        rangeCheck[4 * i + 1] = Num2Bits(n);
+        rangeCheck[4 * i + 2] = Num2Bits(n);
+        rangeCheck[4 * i + 3] = Num2Bits(n);
 
         rangeCheck[4 * i + 0].in <== signature_r[i];
         rangeCheck[4 * i + 1].in <== signature_s[i];
