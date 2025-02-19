@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import 'react-native-get-random-values';
-import Orientation from 'react-native-orientation-locker';
 
 import { Buffer } from 'buffer';
 import { YStack } from 'tamagui';
@@ -14,14 +13,6 @@ import { ProofProvider } from './src/stores/proofProvider';
 global.Buffer = Buffer;
 
 function App(): React.JSX.Element {
-  useEffect(() => {
-    Orientation.lockToPortrait();
-    // cleanup
-    return () => {
-      Orientation.unlockAllOrientations();
-    };
-  }, []);
-
   return (
     <YStack f={1} h="100%" w="100%">
       <AuthProvider>
