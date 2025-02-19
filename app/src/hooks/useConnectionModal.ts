@@ -8,7 +8,7 @@ import { useModal } from '../hooks/useModal';
 
 const connectionModalParams = {
   titleText: 'Internet connection error',
-  bodyText: 'In order to use SELF, you must have access to internet.',
+  bodyText: 'In order to use SELF, you must have access to the internet.',
   buttonText: 'Open settings',
   onButtonPress: async () => {
     return Platform.OS === 'ios'
