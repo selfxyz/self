@@ -24,8 +24,10 @@ const analytics = () => {
     if (!segmentClient) {
       return;
     }
-    const trackMethod =
-      type === 'screen' ? segmentClient.screen : segmentClient.track;
+    const trackMethod = (e: string, p?: Record<string, any>) =>
+      type === 'screen'
+        ? segmentClient.screen(e, p)
+        : segmentClient.track(e, p);
 
     if (!properties) {
       // you may need to remove the catch when debugging
