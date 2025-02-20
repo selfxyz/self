@@ -1,5 +1,10 @@
 import React, { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import {
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+} from 'react-native';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
@@ -27,21 +32,33 @@ const RecoverWithPhraseScreen: React.FC<
   const navigation = useNavigation();
   const { restoreAccountFromMnemonic } = useAuth();
   const [mnemonic, setMnemonic] = useState<string>();
-
+  const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
     const clipboard = (await Clipboard.getString()).trim();
     if (ethers.Mnemonic.isValidMnemonic(clipboard)) {
       setMnemonic(clipboard);
+      Keyboard.dismiss();
     }
   }, []);
 
   const restoreAccount = useCallback(async () => {
-    if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+    setRestoring(true);
+    const slimMnemonic = mnemonic?.trim();
+    if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
+      console.log('Invalid mnemonic');
+      setRestoring(false);
       return;
     }
-    await restoreAccountFromMnemonic(mnemonic);
+    const result = await restoreAccountFromMnemonic(slimMnemonic);
+    if (!result) {
+      console.warn('Failed to restore account');
+      // TODO SOMETHING ELSE?
+      setRestoring(false);
+      return;
+    }
+    setRestoring(false);
     navigation.navigate('Home');
-  }, [mnemonic]);
+  }, [mnemonic, restoreAccountFromMnemonic]);
 
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>
@@ -61,6 +78,9 @@ const RecoverWithPhraseScreen: React.FC<
           minHeight={230}
           verticalAlign="top"
           value={mnemonic}
+          onKeyPress={key =>
+            key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
+          }
           onChangeText={setMnemonic}
         />
         <XStack
@@ -77,7 +97,11 @@ const RecoverWithPhraseScreen: React.FC<
           <Text style={styles.pasteText}>PASTE</Text>
         </XStack>
       </View>
-      <SecondaryButton disabled={!mnemonic} onPress={restoreAccount}>
+
+      <SecondaryButton
+        disabled={!mnemonic || restoring}
+        onPress={restoreAccount}
+      >
         Continue
       </SecondaryButton>
     </YStack>
