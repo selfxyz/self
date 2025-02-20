@@ -15,7 +15,11 @@ interface AccountRecoveryScreenProps {}
 
 const AccountRecoveryScreen: React.FC<AccountRecoveryScreenProps> = ({}) => {
   const onRestoreAccountPress = useHapticNavigation('AccountRecoveryChoice');
-  const onCreateAccountPress = useHapticNavigation('SaveRecoveryPhrase');
+  const onCreateAccountPress = useHapticNavigation('CloudBackupSettings', {
+    params: {
+      nextScreen: 'SaveRecoveryPhrase',
+    },
+  });
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
