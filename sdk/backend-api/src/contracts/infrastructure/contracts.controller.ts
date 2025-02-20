@@ -200,6 +200,43 @@ export const ContractsController = new Elysia()
       },
     },
   )
+
+  .post(
+    'updateHub',
+    async (request) => {
+      const { address } = request.body;
+      const registryContract = new RegistryContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const tx = await registryContract.updateHub(address as `0x${string}`);
+      return {
+        status: "success",
+        data: [tx.hash],
+      };
+    },
+    {
+      body: t.Object({
+        address: t.String(),
+      }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Array(t.String()),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Contracts'],
+        summary: 'update hub address in registry',
+        description: 'update hub address in registry',
+      },
+    },
+  )
   .post(
     'dev-add-dsc-key-commitment',
     async (request) => {
@@ -378,6 +415,80 @@ export const ContractsController = new Elysia()
         description: 'Retrieve the DSC Circuit Verifier address by passing id as a query parameter.',
       },
     }
+  )
+  .post(
+    'updateRegistry',
+    async (request) => {
+      const { address } = request.body;
+      const hubContract = new HubContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const tx = await hubContract.updateRegistry(address);
+
+      return {
+        status: "success",
+        data: [tx.hash],
+      };
+    },
+    {
+      body: t.Object({
+        address: t.String(),
+      }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Array(t.String()),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Hub'],
+        summary: 'Add DSC key commitment to registry contract as a dev role',
+        description: 'Add DSC key commitment to registry contract as a dev role',
+      },
+    },
+  )
+  .post(
+    'updateVcAndDiscloseCircuit',
+    async (request) => {
+      const { address } = request.body;
+      const hubContract = new HubContract(
+        getChain(process.env.NETWORK as string),
+        process.env.PRIVATE_KEY as `0x${string}`,
+        process.env.RPC_URL as string
+      );
+      const tx = await hubContract.updateVcAndDiscloseCircuit(address);
+
+      return {
+        status: "success",
+        data: [tx.hash],
+      };
+    },
+    {
+      body: t.Object({
+        address: t.String(),
+      }),
+      response: {
+        200: t.Object({
+          status: t.String(),
+          data: t.Array(t.String()),
+        }),
+        500: t.Object({
+          status: t.String(),
+          message: t.String(),
+        }),
+      },
+      detail: {
+        tags: ['Hub'],
+        summary: 'Add DSC key commitment to registry contract as a dev role',
+        description: 'Add DSC key commitment to registry contract as a dev role',
+      },
+    },
   )
   .get(
     'dsc-commitment-tree',
