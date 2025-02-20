@@ -17,7 +17,9 @@ on:
 jobs:
   build:
     runs-on: ["self-hosted", "org", "128-ram"]
-
+    concurrency:
+      group:   ${{ github.workflow }}-${{ github.head_ref || github.ref }}
+      cancel-in-progress: true
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
