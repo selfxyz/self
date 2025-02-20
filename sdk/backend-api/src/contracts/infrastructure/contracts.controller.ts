@@ -6,7 +6,6 @@ import { getDscCommitmentEvents } from '../application/getEvents';
 import { MerkleTreeService } from '../application/tree-reader/leanImtService';
 import { getContractInstanceRoot } from '../application/tree-reader/getTree';
 import { getCscaTree } from '../application/tree-reader/cscaTreeService';
-import { IMAGE_HASH } from '../../../../../common/src/constants/constants';
 import { getCSCAFromSKIApi } from '../application/skiPem';
 import { PCR0Contract } from '../application/pcr0/pcr0';
 
@@ -477,28 +476,6 @@ export const ContractsController = new Elysia()
         tags: ['CSCA'],
         summary: 'Get CSCA tree',
         description: 'Retrieve the current state of the CSCA tree'
-      }
-    }
-  )
-  .get(
-    'image-hash',
-    async () => {
-      return {
-        status: 'success',
-        data: [IMAGE_HASH]
-      };
-    },
-    {
-      response: {
-        200: t.Object({
-          status: t.String(),
-          data: t.Array(t.String()),
-        })
-      },
-      detail: {
-        tags: ['Constants'],
-        summary: 'Get image hash constant',
-        description: 'Retrieve the image hash constant used in the system'
       }
     }
   )
