@@ -82,9 +82,12 @@ for item in "${allowed_circuits[@]}"; do
     fi
 
     while [[ ${#pids[@]} -ge 5 ]]; do
-        echo "Waiting for some processes to finish..."
-        wait "${pids[@]}"
-        pids=()  # Clear the array after waiting
+        for pid in "${pids[@]}"; do
+            if ! kill -0 "$pid" 2>/dev/null; then
+                pids=("${pids[@]/$pid}")
+            fi
+        done
+        sleep 1
     done
 
     echo $filename $allowed
