@@ -142,7 +142,7 @@ function get_a(signatureAlgorithm) {
         ];
     }
 
-    if (signatureAlgorithm == 41) { //p521
+    if (signatureAlgorithm == 40 || signatureAlgorithm == 41) { //p521
         return [
             73786976294838206460,
             73786976294838206463,
@@ -233,7 +233,7 @@ function get_b(signatureAlgorithm) {
         ];
     }
 
-    if (signatureAlgorithm == 41) { //p521
+    if (signatureAlgorithm == 40 || signatureAlgorithm == 41) { //p521
         return [
             35687965819361312512,
             33244719099633405244,
@@ -324,7 +324,7 @@ function get_p(signatureAlgorithm) {
         ];
     }
 
-    if (signatureAlgorithm == 41) { //p521
+    if (signatureAlgorithm == 40 || signatureAlgorithm == 41) { //p521
         return [
             73786976294838206463,
             73786976294838206463,

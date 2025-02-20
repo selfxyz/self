@@ -1,0 +1,272 @@
+register_sha1_sha1_sha1_ecdsa_brainpoolP224r1 true
+register_sha1_sha1_sha1_rsa_65537_4096 true
+register_sha1_sha256_sha256_rsa_65537_4096 true
+register_sha224_sha224_sha224_ecdsa_brainpoolP224r1 true
+register_sha256_sha224_sha224_ecdsa_secp224r1 true
+template instances: 556
+template instances: 558
+non-linear constraints: 1881002
+linear constraints: 1041565
+public inputs: 1
+private inputs: 2605
+public outputs: 2
+wires: 2895960
+labels: 4456590
+Written successfully: output/register/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1.r1cs
+non-linear constraints: 1881002
+linear constraints: 1041569
+public inputs: 1
+private inputs: 2605
+public outputs: 2
+wires: 2895960
+labels: 4456770
+Written successfully: output/register/register_sha256_sha224_sha224_ecdsa_secp224r1.r1cs
+Written successfully: output/register/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1_cpp/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1.cpp and output/register/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1_cpp/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1.dat
+Written successfully: output/register/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha224_sha224_ecdsa_secp224r1_cpp/register_sha256_sha224_sha224_ecdsa_secp224r1.cpp and output/register/register_sha256_sha224_sha224_ecdsa_secp224r1_cpp/register_sha256_sha224_sha224_ecdsa_secp224r1.dat
+Written successfully: output/register/register_sha256_sha224_sha224_ecdsa_secp224r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+template instances: 781
+Written successfully: output/register/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1_js/register_sha224_sha224_sha224_ecdsa_brainpoolP224r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+Written successfully: output/register/register_sha256_sha224_sha224_ecdsa_secp224r1_js/register_sha256_sha224_sha224_ecdsa_secp224r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha224_sha224_sha224_ecdsa_brainpoolP224r1.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha224_sha224_ecdsa_secp224r1.cpp -std=c++11 -O3 -I.
+template instances: 813
+template instances: 814
+non-linear constraints: 713380
+linear constraints: 46967
+public inputs: 1
+private inputs: 2519
+public outputs: 2
+wires: 753487
+labels: 2283234
+Written successfully: output/register/register_sha1_sha1_sha1_rsa_65537_4096.r1cs
+Written successfully: output/register/register_sha1_sha1_sha1_rsa_65537_4096_cpp/register_sha1_sha1_sha1_rsa_65537_4096.cpp and output/register/register_sha1_sha1_sha1_rsa_65537_4096_cpp/register_sha1_sha1_sha1_rsa_65537_4096.dat
+Written successfully: output/register/register_sha1_sha1_sha1_rsa_65537_4096_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha1_sha1_sha1_rsa_65537_4096_js/register_sha1_sha1_sha1_rsa_65537_4096.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+non-linear constraints: 720210
+linear constraints: 49546
+public inputs: 1
+private inputs: 2519
+public outputs: 2
+wires: 761502
+labels: 2528885
+Written successfully: output/register/register_sha1_sha256_sha256_rsa_65537_4096.r1cs
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha1_sha1_sha1_rsa_65537_4096.cpp -std=c++11 -O3 -I.
+Written successfully: output/register/register_sha1_sha256_sha256_rsa_65537_4096_cpp/register_sha1_sha256_sha256_rsa_65537_4096.cpp and output/register/register_sha1_sha256_sha256_rsa_65537_4096_cpp/register_sha1_sha256_sha256_rsa_65537_4096.dat
+Written successfully: output/register/register_sha1_sha256_sha256_rsa_65537_4096_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha1_sha256_sha256_rsa_65537_4096_js/register_sha1_sha256_sha256_rsa_65537_4096.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha1_sha256_sha256_rsa_65537_4096.cpp -std=c++11 -O3 -I.
+non-linear constraints: 1792933
+linear constraints: 606353
+public inputs: 1
+private inputs: 2477
+public outputs: 2
+wires: 2395746
+labels: 4450815
+Written successfully: output/register/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1.r1cs
+Written successfully: output/register/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1_cpp/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1.cpp and output/register/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1_cpp/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1.dat
+Written successfully: output/register/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1_js/register_sha1_sha1_sha1_ecdsa_brainpoolP224r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha1_sha1_sha1_ecdsa_brainpoolP224r1.cpp -std=c++11 -O3 -I.
+g++ -o register_sha1_sha1_sha1_rsa_65537_4096 *.o -lgmp 
+Process 1986 finished
+register_sha256_sha256_sha256_ecdsa_brainpoolP256r1 true
+g++ -o register_sha1_sha256_sha256_rsa_65537_4096 *.o -lgmp 
+Process 1994 finished
+register_sha256_sha256_sha256_ecdsa_brainpoolP384r1 true
+g++ -o register_sha256_sha224_sha224_ecdsa_secp224r1 *.o -lgmp 
+Process 2010 finished
+register_sha256_sha256_sha256_ecdsa_secp256r1 true
+g++ -o register_sha224_sha224_sha224_ecdsa_brainpoolP224r1 *.o -lgmp 
+Process 2002 finished
+register_sha384_sha384_sha384_rsapss_65537_48_2048 true
+g++ -o register_sha1_sha1_sha1_ecdsa_brainpoolP224r1 *.o -lgmp 
+Process 1978 finished
+register_sha256_sha256_sha256_ecdsa_secp384r1 true
+template instances: 593
+template instances: 593
+non-linear constraints: 1991962
+linear constraints: 414435
+public inputs: 1
+private inputs: 2593
+public outputs: 2
+wires: 2397189
+labels: 4682000
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1.r1cs
+template instances: 464
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1_cpp/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1.cpp and output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1_cpp/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1.dat
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1_js/register_sha256_sha256_sha256_ecdsa_brainpoolP256r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_ecdsa_brainpoolP256r1.cpp -std=c++11 -O3 -I.
+template instances: 593
+non-linear constraints: 3984540
+linear constraints: 892113
+public inputs: 1
+private inputs: 2601
+public outputs: 2
+wires: 4867699
+labels: 7610816
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1.r1cs
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1_cpp/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1.cpp and output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1_cpp/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1.dat
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+non-linear constraints: 1634966
+linear constraints: 1435741
+public inputs: 1
+private inputs: 3031 (2997 belong to witness)
+public outputs: 2
+wires: 2987651
+labels: 6024019
+Written successfully: output/register/register_sha384_sha384_sha384_rsapss_65537_48_2048.r1cs
+Written successfully: output/register/register_sha384_sha384_sha384_rsapss_65537_48_2048_cpp/register_sha384_sha384_sha384_rsapss_65537_48_2048.cpp and output/register/register_sha384_sha384_sha384_rsapss_65537_48_2048_cpp/register_sha384_sha384_sha384_rsapss_65537_48_2048.dat
+Written successfully: output/register/register_sha384_sha384_sha384_rsapss_65537_48_2048_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1_js/register_sha256_sha256_sha256_ecdsa_brainpoolP384r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+Written successfully: output/register/register_sha384_sha384_sha384_rsapss_65537_48_2048_js/register_sha384_sha384_sha384_rsapss_65537_48_2048.wasm
+Everything went okay
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_ecdsa_brainpoolP384r1.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha384_sha384_sha384_rsapss_65537_48_2048.cpp -std=c++11 -O3 -I.
+non-linear constraints: 1991962
+linear constraints: 414435
+public inputs: 1
+private inputs: 2593
+public outputs: 2
+wires: 2397189
+labels: 4682000
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp256r1.r1cs
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp256r1_cpp/register_sha256_sha256_sha256_ecdsa_secp256r1.cpp and output/register/register_sha256_sha256_sha256_ecdsa_secp256r1_cpp/register_sha256_sha256_sha256_ecdsa_secp256r1.dat
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp256r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp256r1_js/register_sha256_sha256_sha256_ecdsa_secp256r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_ecdsa_secp256r1.cpp -std=c++11 -O3 -I.
+template instances: 593
+g++ -o register_sha384_sha384_sha384_rsapss_65537_48_2048 *.o -lgmp 
+Process 2820 finished
+register_sha256_sha256_sha256_rsa_3_4096 true
+non-linear constraints: 3984540
+linear constraints: 892113
+public inputs: 1
+private inputs: 2601
+public outputs: 2
+wires: 4867699
+labels: 7610816
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp384r1.r1cs
+g++ -o register_sha256_sha256_sha256_ecdsa_brainpoolP256r1 *.o -lgmp 
+Process 2703 finished
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp384r1_cpp/register_sha256_sha256_sha256_ecdsa_secp384r1.cpp and output/register/register_sha256_sha256_sha256_ecdsa_secp384r1_cpp/register_sha256_sha256_sha256_ecdsa_secp384r1.dat
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp384r1_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+register_sha256_sha256_sha256_rsa_65537_4096 true
+Written successfully: output/register/register_sha256_sha256_sha256_ecdsa_secp384r1_js/register_sha256_sha256_sha256_ecdsa_secp384r1.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_ecdsa_secp384r1.cpp -std=c++11 -O3 -I.
+g++ -o register_sha256_sha256_sha256_ecdsa_secp256r1 *.o -lgmp 
+Process 2802 finished
+register_sha256_sha256_sha256_rsapss_3_32_2048 true
+template instances: 558
+template instances: 558
+non-linear constraints: 526578
+linear constraints: 118342
+public inputs: 1
+private inputs: 2647
+public outputs: 2
+wires: 633310
+labels: 2614854
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_3_4096.r1cs
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_3_4096_cpp/register_sha256_sha256_sha256_rsa_3_4096.cpp and output/register/register_sha256_sha256_sha256_rsa_3_4096_cpp/register_sha256_sha256_sha256_rsa_3_4096.dat
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_3_4096_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_3_4096_js/register_sha256_sha256_sha256_rsa_3_4096.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_rsa_3_4096.cpp -std=c++11 -O3 -I.
+non-linear constraints: 788327
+linear constraints: 124538
+public inputs: 1
+private inputs: 2647
+public outputs: 2
+wires: 900214
+labels: 2884982
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_65537_4096.r1cs
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_65537_4096_cpp/register_sha256_sha256_sha256_rsa_65537_4096.cpp and output/register/register_sha256_sha256_sha256_rsa_65537_4096_cpp/register_sha256_sha256_sha256_rsa_65537_4096.dat
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_65537_4096_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_rsa_65537_4096_js/register_sha256_sha256_sha256_rsa_65537_4096.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_rsa_65537_4096.cpp -std=c++11 -O3 -I.
+template instances: 567
+g++ -o register_sha256_sha256_sha256_ecdsa_brainpoolP384r1 *.o -lgmp 
+Process 2722 finished
+register_sha256_sha256_sha256_rsapss_65537_32_2048 true
+non-linear constraints: 801722
+linear constraints: 454383
+public inputs: 1
+private inputs: 2647 (2613 belong to witness)
+public outputs: 2
+wires: 1225652
+labels: 3929670
+Written successfully: output/register/register_sha256_sha256_sha256_rsapss_3_32_2048.r1cs
+Written successfully: output/register/register_sha256_sha256_sha256_rsapss_3_32_2048_cpp/register_sha256_sha256_sha256_rsapss_3_32_2048.cpp and output/register/register_sha256_sha256_sha256_rsapss_3_32_2048_cpp/register_sha256_sha256_sha256_rsapss_3_32_2048.dat
+Written successfully: output/register/register_sha256_sha256_sha256_rsapss_3_32_2048_cpp/main.cpp, circom.hpp, calcwit.hpp, calcwit.cpp, fr.hpp, fr.cpp, fr.asm and Makefile
+Written successfully: output/register/register_sha256_sha256_sha256_rsapss_3_32_2048_js/register_sha256_sha256_sha256_rsapss_3_32_2048.wasm
+Everything went okay
+g++ -c main.cpp -std=c++11 -O3 -I.
+g++ -c calcwit.cpp -std=c++11 -O3 -I.
+g++ -c fr.cpp -std=c++11 -O3 -I.
+nasm -felf64 fr.asm -o fr_asm.o
+g++ -c register_sha256_sha256_sha256_rsapss_3_32_2048.cpp -std=c++11 -O3 -I.
+g++ -o register_sha256_sha256_sha256_rsa_3_4096 *.o -lgmp 
+Process 3421 finished
+register_sha256_sha256_sha256_rsapss_65537_32_3072 true
+g++ -o register_sha256_sha256_sha256_rsa_65537_4096 *.o -lgmp 
+Process 3454 finished
+register_sha384_sha384_sha384_ecdsa_brainpoolP384r1 true

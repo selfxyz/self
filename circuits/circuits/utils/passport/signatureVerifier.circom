@@ -113,10 +113,11 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 36
         || signatureAlgorithm == 37
         || signatureAlgorithm == 38
+        || signatureAlgorithm == 40
         || signatureAlgorithm == 41
         || signatureAlgorithm == 44
     ) {
-        EcdsaVerifier (signatureAlgorithm, n, k)(signature, pubKey, hash);
+        EcdsaVerifier(signatureAlgorithm, n, k)(signature, pubKey, hash);
     } else {
         assert(1==0);
     }

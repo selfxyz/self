@@ -42,7 +42,6 @@ DSC_CIRCUITS=(
     "dsc_sha256_ecdsa_brainpoolP384r1:true"
     "dsc_sha256_ecdsa_secp256r1:true"
     "dsc_sha256_ecdsa_secp384r1:true"
-    "dsc_sha256_ecdsa_secp521r1:true"
     "dsc_sha256_rsa_65537_4096:true"
     "dsc_sha256_rsapss_3_32_3072:true"
     "dsc_sha256_rsapss_65537_32_3072:true"
@@ -51,7 +50,6 @@ DSC_CIRCUITS=(
     "dsc_sha384_ecdsa_brainpoolP512r1:true"
     "dsc_sha384_ecdsa_secp384r1:true"
     "dsc_sha512_ecdsa_brainpoolP512r1:true"
-    "dsc_sha512_ecdsa_secp521r1:true"
     "dsc_sha512_rsa_65537_4096:true"
     "dsc_sha512_rsapss_65537_64_4096:true"
 )

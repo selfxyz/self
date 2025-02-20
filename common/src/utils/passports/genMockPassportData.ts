@@ -134,14 +134,6 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1_key;
       dsc = mockCertificates.mock_dsc_sha1_ecdsa_secp256r1;
       break;
-    case 'ecdsa_sha256_secp521r1_521':
-      privateKeyPem = mockCertificates.mock_dsc_sha256_ecdsa_secp521r1_key;
-      dsc = mockCertificates.mock_dsc_sha256_ecdsa_secp521r1;
-      break;
-    case 'ecdsa_sha512_secp521r1_521':
-      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1_key;
-      dsc = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1;
-      break;
     case 'ecdsa_sha384_secp384r1_384':
       privateKeyPem = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1_key;
       dsc = mockCertificates.mock_dsc_sha384_ecdsa_secp384r1;
@@ -241,10 +233,6 @@ export function genMockPassportData(
     case 'rsapss_sha512_65537_2048':
       privateKeyPem = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048_key;
       dsc = mockCertificates.mock_dsc_sha512_rsapss_64_65537_2048;
-      break;
-    case 'ecdsa_sha512_secp521r1_521':
-      privateKeyPem = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1_key;
-      dsc = mockCertificates.mock_dsc_sha512_ecdsa_secp521r1;
       break;
     case 'ecdsa_sha224_secp224r1_224':
       privateKeyPem = mockCertificates.mock_dsc_sha224_ecdsa_secp224r1_key;
