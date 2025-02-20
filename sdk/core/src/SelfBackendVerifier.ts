@@ -1,10 +1,8 @@
-import { VcAndDiscloseProof } from './types/types';
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
-import { parseSolidityCalldata } from './utils/utils';
 import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS } from './constants/contractAddresses';
 import { ethers } from 'ethers';
-import { groth16, Groth16Proof, PublicSignals } from 'snarkjs';
+import { Groth16Proof, PublicSignals } from 'snarkjs';
 import {
   countryCodes,
   countryNames,
@@ -47,7 +45,7 @@ export class SelfBackendVerifier {
   }
 
   public async verify(
-    proof: Groth16Proof,
+    proof: any,
     publicSignals: PublicSignals
   ): Promise<SelfVerificationResult> {
     const excludedCountryCodes = this.excludedCountries.value.map((country) =>
@@ -55,11 +53,7 @@ export class SelfBackendVerifier {
     );
     const forbiddenCountriesListPacked = packForbiddenCountriesList(excludedCountryCodes);
     const packedValue =
-      forbiddenCountriesListPacked.length > 0 ? forbiddenCountriesListPacked[0] : '0';
-    const solidityProof = parseSolidityCalldata(
-      await groth16.exportSolidityCallData(proof, publicSignals),
-      {} as VcAndDiscloseProof
-    );
+      forbiddenCountriesListPacked.length > 0 ? forbiddenCountriesListPacked : ['0','0','0','0'];
 
     const isValidScope =
       this.scope ===
@@ -76,10 +70,10 @@ export class SelfBackendVerifier {
       forbiddenCountriesListPacked: packedValue,
       ofacEnabled: [this.passportNoOfac, this.nameAndDobOfac, this.nameAndYobOfac],
       vcAndDiscloseProof: {
-        a: solidityProof.a,
-        b: [solidityProof.b[0], solidityProof.b[1]],
-        c: solidityProof.c,
-        pubSignals: solidityProof.pubSignals,
+        a: proof.a,
+        b: [[proof.b[0][1], proof.b[0][0]],[proof.b[1][1], proof.b[1][0]]],
+        c: proof.c,
+        pubSignals: publicSignals,
       },
     };
 
@@ -105,8 +99,30 @@ export class SelfBackendVerifier {
       timestamp = await this.registryContract.rootTimestamps(currentRoot);
     }
 
-    const result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
-    console.log('result: ', result);
+    let result: any;
+    try {
+      result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
+    } catch (error) {
+      return {
+        isValid: false,
+        isValidDetails: {
+          isValidScope: false,
+          isValidAttestationId: false,
+          isValidProof: false,
+          isValidNationality: false,
+        },
+        userId: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+        application: this.scope,
+        nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
+        credentialSubject: null,
+        proof: {
+          value: {
+            proof: proof,
+            publicSignals: publicSignals,
+          },
+        },
+      }
+    }
 
     let isValidNationality = true;
     if (this.nationality.enabled) {

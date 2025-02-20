@@ -10,7 +10,7 @@ export default function Prove() {
   
   const selfApp = new SelfAppBuilder({
     appName: "Mock App2",
-    scope: "my-scope",
+    scope: "test-scope",
     endpoint: "https://mock-app2.com",
     logoBase64: logo,
     userId,

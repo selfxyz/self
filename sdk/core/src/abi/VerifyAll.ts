@@ -166,9 +166,9 @@ export const verifyAllAbi = [
             "type": "bool"
           },
           {
-            "internalType": "uint256",
+            "internalType": "uint256[4]",
             "name": "forbiddenCountriesListPacked",
-            "type": "uint256"
+            "type": "uint256[4]"
           },
           {
             "internalType": "bool[3]",
@@ -193,9 +193,9 @@ export const verifyAllAbi = [
                 "type": "uint256[2]"
               },
               {
-                "internalType": "uint256[18]",
+                "internalType": "uint256[21]",
                 "name": "pubSignals",
-                "type": "uint256[18]"
+                "type": "uint256[21]"
               }
             ],
             "internalType": "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",

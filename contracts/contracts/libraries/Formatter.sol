@@ -7,7 +7,6 @@ pragma solidity ^0.8.28;
  */
 library Formatter {
     error InvalidDateLength();
-    error InvalidAsciiCode();
     error InvalidYearRange();
     error InvalidMonthRange();
     error InvalidDayRange();
@@ -86,12 +85,6 @@ library Formatter {
             revert InvalidDayRange();
         }
 
-        for (uint i = 0; i < 6; i++) {
-            if (dateBytes[i] < '0' || dateBytes[i] > '9') {
-                revert InvalidAsciiCode();
-            }
-        }
-
         string memory year = substring(date, 0, 2);
         string memory month = substring(date, 2, 4);
         string memory day = substring(date, 4, 6);
@@ -107,9 +100,6 @@ library Formatter {
      * @return The numeric value (0-9) corresponding to the ASCII code.
      */
     function numAsciiToUint(uint256 numAscii) internal pure returns (uint256) {
-        if (numAscii < 48 || numAscii > 57) {
-            revert InvalidAsciiCode();
-        }
         return (numAscii - 48);
     }
 
@@ -250,12 +240,6 @@ library Formatter {
             revert InvalidDayRange();
         }
 
-        for (uint i = 0; i < 6; i++) {
-            if (dateBytes[i] < '0' || dateBytes[i] > '9') {
-                revert InvalidAsciiCode();
-            }
-        }
-
         uint256 year = parseDatePart(substring(date, 0, 2)) + 2000;
         uint256 month = parseDatePart(substring(date, 2, 4));
         uint256 day = parseDatePart(substring(date, 4, 6));
@@ -301,9 +285,6 @@ library Formatter {
         uint digit;
         uint result;
         for (uint i = 0; i < tempEmptyStringTest.length; i++) {
-            if (uint8(tempEmptyStringTest[i]) < 48 || uint8(tempEmptyStringTest[i]) > 57) {
-                revert InvalidAsciiCode();
-            }
             digit = uint8(tempEmptyStringTest[i]) - 48;
             result = result * 10 + digit;
         }
