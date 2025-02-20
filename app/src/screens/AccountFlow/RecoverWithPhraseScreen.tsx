@@ -1,8 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  Keyboard,
-  StyleSheet,
-} from 'react-native';
+import { Keyboard, StyleSheet } from 'react-native';
 
 import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
