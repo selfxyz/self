@@ -6,66 +6,112 @@ import { RegisterVerifierId, DscVerifierId } from "../../common/src/constants/co
 
 dotenv.config();
 
-const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"), "utf-8"));
-const contractAbiPath = path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts");
+// Debug logs for paths and files
+console.log("Current directory:", __dirname);
+console.log("Deployed addresses path:", path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"));
+console.log("Contract ABI path:", path.join(__dirname, "../ignition/deployments/chain-42220/artifacts/DeployHub#IdentityVerificationHubImplV1.json"));
 
-function getContractAddressByPartialName(partialName: string): string | unknown {
-    for (const [key, value] of Object.entries(deployedAddresses)) {
-        if (key.includes(partialName)) {
-            return value;
-        }
-    }
-    return undefined;
-}
+// Debug logs for environment variables (redacted for security)
+console.log("CELO_RPC_URL configured:", !!process.env.CELO_RPC_URL);
+console.log("CELO_KEY configured:", !!process.env.CELO_KEY);
 
-async function main() {
+try {
+    const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"), "utf-8"));
+    console.log("Deployed addresses loaded:", deployedAddresses);
 
-    const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL as string);
-    const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
     const identityVerificationHubAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/artifacts/DeployHub#IdentityVerificationHubImplV1.json"), "utf-8");
+    console.log("ABI file loaded");
+
     const identityVerificationHubAbi = JSON.parse(identityVerificationHubAbiFile).abi;
-    const identityVerificationHub = new ethers.Contract(deployedAddresses["DeployHub#IdentityVerificationHub"], identityVerificationHubAbi, wallet);
+    console.log("ABI parsed");
 
-    const registerVerifierKeys = Object.keys(RegisterVerifierId).filter(key => isNaN(Number(key)));
-    for (const key of registerVerifierKeys) {
-        const verifierName = `Verifier_${key}`;
-        const verifierAddress = getContractAddressByPartialName(verifierName);
-        if (!verifierAddress) {
-            console.log(`Skipping ${verifierName} because no deployed address was found.`);
-            continue;
+    const contractAbiPath = path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts");
+
+    function getContractAddressByPartialName(partialName: string): string | unknown {
+        for (const [key, value] of Object.entries(deployedAddresses)) {
+            if (key.includes(partialName)) {
+                return value;
+            }
         }
-        console.log(`Updating for ${verifierName}`);
-        const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
-
-        const tx = await identityVerificationHub.updateRegisterCircuitVerifier(
-            verifierId,
-            verifierAddress
-        );
-        const receipt = await tx.wait();
-        console.log(`${verifierName} is updated wit this tx: ${receipt.hash}`)
+        return undefined;
     }
 
-    const dscKeys = Object.keys(DscVerifierId).filter(key => isNaN(Number(key)));
-    for (const key of dscKeys) {
-        const verifierName = `Verifier_${key}`;
-        const verifierAddress = getContractAddressByPartialName(verifierName);
-        if (!verifierAddress) {
-            console.log(`Skipping ${verifierName} because no deployed address was found.`);
-            continue;
-        }
-        const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
+    async function main() {
+        const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL as string);
+        console.log("Provider created");
 
-        const tx = await identityVerificationHub.updateDscVerifier(
-            verifierId,
-            verifierAddress
+        const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
+        console.log("Wallet created");
+
+        const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
+        console.log("Hub address:", hubAddress);
+
+        if (!hubAddress) {
+            throw new Error("Hub address not found in deployed_addresses.json");
+        }
+
+        const identityVerificationHub = new ethers.Contract(
+            hubAddress,
+            identityVerificationHubAbi,
+            wallet
         );
-        const receipt = await tx.wait();
-        console.log(`${verifierName} is updated wit this tx: ${receipt.hash}`);
+        console.log("Contract instance created");
+
+        // Debug verifier addresses before updating
+        const registerVerifierKeys = Object.keys(RegisterVerifierId).filter(key => isNaN(Number(key)));
+        for (const key of registerVerifierKeys) {
+            const verifierName = `Verifier_${key}`;
+            const verifierAddress = getContractAddressByPartialName(verifierName);
+            console.log(`${verifierName} address:`, verifierAddress);
+        }
+
+        for (const key of registerVerifierKeys) {
+            const verifierName = `Verifier_${key}`;
+            const verifierAddress = getContractAddressByPartialName(verifierName);
+            if (!verifierAddress) {
+                console.log(`Skipping ${verifierName} because no deployed address was found.`);
+                continue;
+            }
+            console.log(`Updating for ${verifierName}`);
+            const verifierId = RegisterVerifierId[key as keyof typeof RegisterVerifierId];
+
+            try {
+                const tx = await identityVerificationHub.updateRegisterCircuitVerifier(
+                    verifierId,
+                    verifierAddress
+                );
+                const receipt = await tx.wait();
+                console.log(`${verifierName} is updated with tx: ${receipt.hash}`);
+            } catch (error) {
+                console.error(`Error updating ${verifierName}:`, error);
+            }
+        }
+
+        const dscKeys = Object.keys(DscVerifierId).filter(key => isNaN(Number(key)));
+        for (const key of dscKeys) {
+            const verifierName = `Verifier_${key}`;
+            const verifierAddress = getContractAddressByPartialName(verifierName);
+            if (!verifierAddress) {
+                console.log(`Skipping ${verifierName} because no deployed address was found.`);
+                continue;
+            }
+            const verifierId = DscVerifierId[key as keyof typeof DscVerifierId];
+
+            const tx = await identityVerificationHub.updateDscVerifier(
+                verifierId,
+                verifierAddress
+            );
+            const receipt = await tx.wait();
+            console.log(`${verifierName} is updated wit this tx: ${receipt.hash}`);
+        }
     }
 
-}
+    main().catch((error) => {
+        console.error("Execution error:", error);
+        process.exitCode = 1;
+    });
 
-main().catch((error) => {
-    console.error(error);
+} catch (error) {
+    console.error("Initial setup error:", error);
     process.exitCode = 1;
-  });
+}
