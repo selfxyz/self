@@ -1,10 +1,10 @@
 ![Github banner (2)](https://github.com/user-attachments/assets/e182b110-94a2-47b5-9875-48e1736fa923)
 
-Monorepo for OpenPassport.
+Monorepo for Self.
 
-OpenPassport is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports.
+Self is an identity wallet that lets users generate privacy-preserving proofs from government-issued IDs such as passports.
 By scanning the NFC chip in their ID document, users can prove their validity while only revealing specific attributes such as age, nationality or simply humanity.
-Under the hood, OpenPassport uses zk-SNARKs to make sure personal data is redacted, but the document is verified.
+Under the hood, Self uses zk-SNARKs to make sure personal data is redacted, but the document is verified.
 
 Use cases unlocked include:
 - **Airdrop protection**: Protect a token distribution from bots
@@ -49,9 +49,9 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 
 ## Project Ideas
 
-- Integrate OpenPassport to Gitcoin passport or a similar system to allow better sybil resistance in quadratic funding
+- Integrate Self to Gitcoin passport or a similar system to allow better sybil resistance in quadratic funding
 - Combine with other sources of identity to provide quantified levels of uniqueness, [totem](https://github.com/0xturboblitz/totem)-style. Examples can be [anon aadhaar](https://github.com/privacy-scaling-explorations/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/)
-- Add OpenPassport as a [Zupass](https://github.com/proofcarryingdata/zupass) PCD
+- Add Self as a [Zupass](https://github.com/proofcarryingdata/zupass) PCD
 - Build a social network/anonymous message board for people from one specific country
 - Create a sybil-resistance tool to protect social networks against spambots
 - Do an airdrop farming protection tool
