@@ -1,8 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import {
   Keyboard,
-  KeyboardAvoidingView,
-  Platform,
   StyleSheet,
 } from 'react-native';
 
