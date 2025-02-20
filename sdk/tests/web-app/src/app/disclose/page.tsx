@@ -3,25 +3,19 @@
 import { SelfAppBuilder } from '../../../../../qrcode/OpenPassportQRcode';
 import OpenPassportQRcodeWrapper from '../../../../../qrcode/OpenPassportQRcode';
 import { v4 } from 'uuid';
-import {logo} from './logo';
+import { logo } from './logo';
 
 export default function Prove() {
   const userId = v4();
-  
+
   const selfApp = new SelfAppBuilder({
     appName: "Mock App2",
     scope: "my-scope",
-    endpoint: "https://mock-app2.com",
+    endpoint: "https://6885-157-131-196-195.ngrok-free.app/verify",
     logoBase64: logo,
     userId,
     disclosures: {
-      name: true,
-      nationality: true,
-      date_of_birth: true,
-      passport_number: true,
-      minimumAge: 18,
-      excludedCountries: ["ABC", "DEF"],
-      ofac: true,
+      excludedCountries: ["ITA"],
     }
   }).build();
 
