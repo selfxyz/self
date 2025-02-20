@@ -390,7 +390,6 @@ export async function checkPCR0Mapping(
       `Invalid PCR0 hash length: expected 96 hex characters, got ${imageHashHex.length}`,
     );
   }
-
   // Convert the PCR0 hash from hex to a byte array, ensuring proper "0x" prefix
   const pcr0Bytes = ethers.getBytes(`0x${imageHashHex}`);
   if (pcr0Bytes.length !== 48) {
@@ -408,9 +407,10 @@ export async function checkPCR0Mapping(
     celoProvider,
   );
 
+
   try {
     // Query the contract: isPCR0Set returns true if the given PCR0 value is set
-    return await pcr0Manager.isPCR0Set(pcr0Bytes);
+    return await pcr0Manager.isPCR0Set(ethers.encodeBytes32String(`0x${imageHashHex}`));
   } catch (error) {
     console.error('Error checking PCR0 mapping:', error);
     throw error;
