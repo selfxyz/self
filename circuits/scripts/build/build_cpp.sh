@@ -42,12 +42,10 @@ DSC_CIRCUITS=(
     "dsc_sha256_ecdsa_brainpoolP384r1:false"
     "dsc_sha256_ecdsa_secp256r1:false"
     "dsc_sha256_ecdsa_secp384r1:false"
-    "dsc_sha256_ecdsa_secp521r1:false"
     "dsc_sha384_ecdsa_brainpoolP384r1:false"
     "dsc_sha384_ecdsa_brainpoolP512r1:false"
     "dsc_sha384_ecdsa_secp384r1:false"
     "dsc_sha512_ecdsa_brainpoolP512r1:false"
-    "dsc_sha512_ecdsa_secp521r1:false"
 
     # RSA circuits
     "dsc_sha1_rsa_65537_4096:false"
