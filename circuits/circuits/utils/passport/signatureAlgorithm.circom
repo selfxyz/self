@@ -43,6 +43,7 @@ ID to Signature Algorithm
  42: rsapss_sha512_65537_2048
  43: rsapss_sha256_3_2048
  44: ecdsa_sha224_secp224r1_224
+ 45: rsapss_sha384_65537_2048
 */
 
 
@@ -131,6 +132,8 @@ function getHashLength(signatureAlgorithm) {
         return 256;
     } else if (signatureAlgorithm == 44) {
         return 224;
+    } else if (signatureAlgorithm == 45) {
+        return 384;
     } else {
         assert(1==0);
         return 0;
@@ -224,6 +227,8 @@ function getMinKeyLength(signatureAlgorithm) {
         return 2048;
     } else if (signatureAlgorithm == 44) {
         return 224;
+    } else if (signatureAlgorithm == 45) {
+        return 2048;
     } else {
         assert(1==0);
         return 0;
@@ -316,6 +321,8 @@ function getKLengthFactor(signatureAlgorithm) {
         return 1;
     } else if (signatureAlgorithm == 44) {
         return 2;
+    } else if (signatureAlgorithm == 45) {
+        return 1;
     } else {
         assert(1==0);
         return 0;
@@ -369,6 +376,8 @@ function getExponentBits(signatureAlgorithm) {
         return 17;
     } else if (signatureAlgorithm == 43) {
         return 2;
+    } else if (signatureAlgorithm == 45) {
+        return 17;
     } else {
         assert(1==0);
         return 0;
