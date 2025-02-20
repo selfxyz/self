@@ -8,7 +8,7 @@ import {generateVcAndDiscloseProof } from "../utils/generateProof";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import BalanceTree from "../utils/example/balance-tree";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
 import { formatCountriesList, reverseBytes } from '../../../common/src/utils/circuits/formatInputs';
@@ -70,7 +70,7 @@ describe("Airdrop", () => {
 
         const root = await deployedActors.registry.getIdentityCommitmentMerkleRoot();
         const timestamp = await deployedActors.registry.rootTimestamps(root);
-        countriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        countriesListPacked = splitHexFromBack(reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
 
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
@@ -587,7 +587,9 @@ describe("Airdrop", () => {
         expect(storedConfig.olderThanEnabled).to.equal(newVerificationConfig.olderThanEnabled);
         expect(storedConfig.olderThan).to.equal(newVerificationConfig.olderThan);
         expect(storedConfig.forbiddenCountriesEnabled).to.equal(newVerificationConfig.forbiddenCountriesEnabled);
-        expect(storedConfig.forbiddenCountriesListPacked).to.equal(newVerificationConfig.forbiddenCountriesListPacked);
+        for (let i = 0; i < 4; i++) {
+            expect(storedConfig.forbiddenCountriesListPacked[i]).to.equal(newVerificationConfig.forbiddenCountriesListPacked[i]);
+        }
         expect(storedConfig.ofacEnabled).to.deep.equal(newVerificationConfig.ofacEnabled);
     });
 
@@ -611,7 +613,9 @@ describe("Airdrop", () => {
         expect(config.olderThanEnabled).to.equal(true);
         expect(config.olderThan).to.equal(20);
         expect(config.forbiddenCountriesEnabled).to.equal(true);
-        expect(config.forbiddenCountriesListPacked).to.equal(countriesListPacked);
+        for (let i = 0; i < 4; i++) {
+            expect(config.forbiddenCountriesListPacked[i]).to.equal(countriesListPacked[i]);
+        }
         expect(config.ofacEnabled).to.deep.equal([true, true, true]);
     });
 

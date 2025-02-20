@@ -22,7 +22,7 @@ interface IPassportAirdropRoot {
         bool olderThanEnabled;
         uint256 olderThan;
         bool forbiddenCountriesEnabled;
-        uint256 forbiddenCountriesListPacked;
+        uint256[4] forbiddenCountriesListPacked;
         bool[3] ofacEnabled;
     }
 

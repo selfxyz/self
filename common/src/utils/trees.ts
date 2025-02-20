@@ -112,7 +112,6 @@ export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: stri
 
 export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  console.log('serialized_csca_tree', _serialized_csca_tree);
   tree.setNodes(_serialized_csca_tree);
   const index = tree.indexOf(leaf);
   if (index === -1) {

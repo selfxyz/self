@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 import { RegisterVerifierId, DscVerifierId, CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import { TransactionReceipt, ZeroAddress } from "ethers";
 import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
@@ -132,7 +132,7 @@ describe("End to End Tests", function () {
         expect(identityNullifier).to.equal(true);
 
         const forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
-        const countriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        const countriesListPacked = splitHexFromBack(reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
 
         const vcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
@@ -168,7 +168,9 @@ describe("End to End Tests", function () {
         expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
         expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
         expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
-        expect(result.forbiddenCountriesListPacked).to.equal(BigInt(countriesListPacked));
+        for (let i = 0; i < 4; i++) {
+            expect(result.forbiddenCountriesListPacked[i]).to.equal(BigInt(countriesListPacked[i]));
+        }
 
         const tokenFactory = await ethers.getContractFactory("AirdropToken");
         const token = await tokenFactory.connect(owner).deploy();

@@ -20,12 +20,12 @@ contract TestFormatter {
         return Formatter.fieldElementsToBytes(publicSignals);
     }
 
-    function testExtractForbiddenCountriesFromPacked(uint256 publicSignal) 
+    function testExtractForbiddenCountriesFromPacked(uint256[4] memory publicSignals) 
         external 
         pure 
-        returns (string[10] memory) 
+        returns (string[40] memory) 
     {
-        return Formatter.extractForbiddenCountriesFromPacked(publicSignal);
+        return Formatter.extractForbiddenCountriesFromPacked(publicSignals);
     }
 
     function testProofDateToUnixTimestamp(uint256[6] memory dateNum) external pure returns (uint256) {

@@ -47,7 +47,7 @@ interface IIdentityVerificationHubV1 {
         uint256 nullifier;
         uint256 identityCommitmentRoot;
         uint256[3] revealedDataPacked;
-        uint256 forbiddenCountriesListPacked;
+        uint256[4] forbiddenCountriesListPacked;
     }
 
     /**
@@ -91,7 +91,7 @@ interface IIdentityVerificationHubV1 {
         bool olderThanEnabled;
         uint256 olderThan;
         bool forbiddenCountriesEnabled;
-        uint256 forbiddenCountriesListPacked;
+        uint256[4] forbiddenCountriesListPacked;
         bool[3] ofacEnabled;
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof vcAndDiscloseProof;
     }
@@ -131,11 +131,11 @@ interface IIdentityVerificationHubV1 {
      * @return forbiddenCountries A fixed-size array (length defined by CircuitConstants.MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH) of strings representing forbidden countries.
      */
     function getReadableForbiddenCountries(
-        uint256 forbiddenCountriesListPacked
+        uint256[4] memory forbiddenCountriesListPacked
     )
         external
         view
-        returns (string[10] memory forbiddenCountries);
+        returns (string[40] memory forbiddenCountries);
 
     /**
      * @notice Registers a passport commitment using a register circuit proof.

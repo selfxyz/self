@@ -14,7 +14,7 @@ library Formatter {
     error InvalidFieldElement();
     error InvalidDateDigit();
 
-    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
     uint256 constant SNARK_SCALAR_FIELD = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
 
     /**
@@ -147,11 +147,11 @@ library Formatter {
      * @notice Extracts forbidden country codes from a packed uint256.
      * @dev Each forbidden country is represented by 3 bytes in the packed data.
      *      The function extracts up to MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH forbidden countries.
-     * @param publicSignal A packed uint256 containing encoded forbidden country data.
+     * @param publicSignals A packed uint256 containing encoded forbidden country data.
      * @return forbiddenCountries An array of strings representing the forbidden country codes.
      */
     function extractForbiddenCountriesFromPacked(
-        uint256 publicSignal
+        uint256[4] memory publicSignals
     )
         internal
         pure
@@ -159,20 +159,45 @@ library Formatter {
             string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries
         )
     {
-        if (publicSignal >= SNARK_SCALAR_FIELD) {
-            revert InvalidFieldElement();
+        for (uint256 i = 0; i < 4; i++) {
+            if (publicSignals[i] >= SNARK_SCALAR_FIELD) {
+                revert InvalidFieldElement();
+            }
         }
 
         for (uint256 j = 0; j < MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH; j++) {
             uint256 byteIndex = j * 3;
 
-            uint256 shift = byteIndex * 8;
-            uint256 mask = 0xFFFFFF;
-            uint256 packedData = (publicSignal >> shift) & mask;
-            forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
+            if (byteIndex + 2 < 32) {
+                uint256 shift = byteIndex * 8;
+                uint256 mask = 0xFFFFFF;
+                uint256 packedData = (publicSignals[0] >> shift) & mask;
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
+            } else if (byteIndex < 32) {
+                uint256 bytesFrom0 = 32 - byteIndex;
+                uint256 bytesTo1 = 3 - bytesFrom0;
+
+                uint256 shift0 = byteIndex * 8;
+                uint256 mask0 = (1 << (bytesFrom0 * 8)) - 1;
+                uint256 part0 = (publicSignals[0] >> shift0) & mask0;
+
+                uint256 shift1 = 0;
+                uint256 mask1 = (1 << (bytesTo1 * 8)) - 1;
+                uint256 part1 = (publicSignals[1] >> shift1) & mask1;
+
+                uint256 combined = (part1 << (bytesFrom0 * 8)) | part0;
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(combined)));
+            } else {
+                uint256 byteIndexIn1 = byteIndex - 32;
+                uint256 shift = byteIndexIn1 * 8;
+                uint256 mask = 0xFFFFFF;
+                uint256 packedData = (publicSignals[1] >> shift) & mask;
+                forbiddenCountries[j] = string(abi.encodePacked(uint24(packedData)));
+            }
         }
 
         return forbiddenCountries;
+
     }
 
     /**

@@ -168,6 +168,7 @@ export async function generateVcAndDiscloseRawProof(
         forbiddenCountriesList,
         userIdentifier
     );
+    console.log("forbiddenCountriesList: ", vcAndDiscloseCircuitInputs.forbidden_countries_list);
 
     console.log(CYAN, "=== Start generateVcAndDiscloseRawProof ===", RESET);
     const startTime = performance.now();
@@ -205,7 +206,7 @@ export async function generateVcAndDiscloseProof(
     nameAndDob_smt?: SMT,
     nameAndYob_smt?: SMT,
     selectorOfac: string | number = "1",
-    forbiddenCountriesList: string[] = ["AAA"],
+    forbiddenCountriesList: string[] = ["AAA","000","000","000","000","000","000","000","000","000","AAA","000","000","000","000","000","000","000","000","000","AAA","000","000","000","000","000","000","000","000","000","AAA","000","000","000","000","000","000","000","000","000"],
     userIdentifier: string = "0000000000000000000000000000000000000000"
 ): Promise<VcAndDiscloseProof> {
     const rawProof = await generateVcAndDiscloseRawProof(

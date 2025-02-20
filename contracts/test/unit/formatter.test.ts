@@ -2,6 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { TestFormatter } from "../../typechain-types";
 import { Formatter } from "../utils/formatter";
+import { splitHexFromBack } from "../utils/utils";
 
 describe("Formatter", function () {
     let testFormatter: TestFormatter;
@@ -171,7 +172,14 @@ describe("Formatter", function () {
     describe("extractForbiddenCountriesFromPacked", function () {
         it("should match contract and ts implementation", async function () {
             const input = "0x414141424242434343";
-            const contractResult = await testFormatter.testExtractForbiddenCountriesFromPacked(input);
+            const contractResult = await testFormatter.testExtractForbiddenCountriesFromPacked(
+                [
+                    input,
+                    0n,
+                    0n,
+                    0n,
+                ]
+            );
             const tsResult = Formatter.extractForbiddenCountriesFromPacked(BigInt(input));
             expect(contractResult).to.deep.equal(tsResult);
             expect(contractResult[0]).to.equal("CCC");
@@ -181,7 +189,14 @@ describe("Formatter", function () {
 
         it("should revert when field element is out of range", async function () {
             const input = 21888242871839275222246405745257275088548364400416034343698204186575808495617n;
-            await expect(testFormatter.testExtractForbiddenCountriesFromPacked(input))
+            
+            await expect(testFormatter.testExtractForbiddenCountriesFromPacked([
+                    input,
+                    0n,
+                    0n,
+                    0n
+                ]
+            ))
                 .to.be.revertedWithCustomError(testFormatter, "InvalidFieldElement");
         });
     });

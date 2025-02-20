@@ -9,7 +9,7 @@ import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { BigNumberish } from "ethers";
-import { generateRandomFieldElement, getStartOfDayTimestamp } from "../utils/utils";
+import { generateRandomFieldElement, getStartOfDayTimestamp, splitHexFromBack } from "../utils/utils";
 import { Formatter, CircuitAttributeHandler } from "../utils/formatter";
 import { formatCountriesList, reverseBytes, reverseCountryBytes } from '../../../common/src/utils/circuits/formatInputs';
 import fs from 'fs';
@@ -27,23 +27,32 @@ describe("VC and Disclose", () => {
 
     let forbiddenCountriesList: string[];
     let invalidForbiddenCountriesList: string[];
-    let forbiddenCountriesListPacked: string;
-    let invalidForbiddenCountriesListPacked: string;
+    let forbiddenCountriesListPacked: string[];
+    let invalidForbiddenCountriesListPacked: string[];
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+
+        await deployedActors.registry.connect(deployedActors.owner).devAddIdentityCommitment(
+            ATTESTATION_ID.E_PASSPORT,
+            nullifier,
+            commitment
+        );
+
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
         imt = new LeanIMT<bigint>(hashFunction);
         await imt.insert(BigInt(commitment));
 
-        forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
-        forbiddenCountriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        forbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'AAA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA'];
+        const wholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        forbiddenCountriesListPacked = splitHexFromBack(wholePacked);
 
         invalidForbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'CBA'];
-        invalidForbiddenCountriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
+        const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
+        invalidForbiddenCountriesListPacked = splitHexFromBack(invalidWholePacked);
 
         baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
@@ -77,12 +86,8 @@ describe("VC and Disclose", () => {
 
         it("should verify and get result successfully", async () => {
             const {hub, registry, owner} = deployedActors;
-
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
+            console.log(vcAndDiscloseProof.pubSignals);
+            // console.log("root in proof: ", vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
 
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
@@ -101,17 +106,13 @@ describe("VC and Disclose", () => {
             expect(result.attestationId).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]);
             expect(result.userIdentifier).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
             expect(result.scope).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]);
-            expect(result.forbiddenCountriesListPacked).to.equal(forbiddenCountriesListPacked);
+            for (let i = 0; i < 4; i++) {
+                expect(result.forbiddenCountriesListPacked[i]).to.equal(BigInt(forbiddenCountriesListPacked[i]));
+            }
         });
 
         it("should not call verifyVcAndDisclose with non-proxy address", async() => {
             const {hubImpl, registry, owner} = deployedActors;
-
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
 
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: false,
@@ -128,12 +129,6 @@ describe("VC and Disclose", () => {
 
         it("should fail with invalid identity commitment root", async () => {
             const {hub, registry, owner} = deployedActors;
-
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
 
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX] = generateRandomFieldElement();
             const vcAndDiscloseHubProof = {
@@ -153,11 +148,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid passport number OFAC root", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
@@ -177,11 +167,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid name and dob OFAC root", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
@@ -201,11 +186,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid name and yob OFAC root", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX] = generateRandomFieldElement();
 
             const vcAndDiscloseHubProof = {
@@ -225,11 +205,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid current date (more than + 1 day)", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             const currentBlock = await ethers.provider.getBlock('latest');
             const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60;
             
@@ -264,11 +239,6 @@ describe("VC and Disclose", () => {
         it("should not revert when current date is within + 1 day", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             const currentBlock = await ethers.provider.getBlock('latest');
 
             const oneDayAfter = getStartOfDayTimestamp(currentBlock!.timestamp) + 24 * 60 * 60 - 1;
@@ -305,12 +275,6 @@ describe("VC and Disclose", () => {
             
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-                );
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "20",
@@ -345,11 +309,6 @@ describe("VC and Disclose", () => {
         it("should not revert when current date is slightly less than - 1 day", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
             const currentBlock = await ethers.provider.getBlock('latest');
 
             const oneDayBefore = getStartOfDayTimestamp(currentBlock!.timestamp);
@@ -384,12 +343,6 @@ describe("VC and Disclose", () => {
         it("should succeed with bigger value than older than", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-                );
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "18",
@@ -407,12 +360,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid older than", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "21",
@@ -429,12 +376,6 @@ describe("VC and Disclose", () => {
 
         it("should fail with if listed in OFAC", async () => {
             const {hub, registry, owner, mockPassport} = deployedActors;
-
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
 
             const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
             const imt = new LeanIMT<bigint>(hashFunction);
@@ -478,12 +419,6 @@ describe("VC and Disclose", () => {
         it("should fail with invalid forbidden countries", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-                );
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,
                 olderThan: "20",
@@ -501,12 +436,6 @@ describe("VC and Disclose", () => {
         it("should not revert when all enablers are false", async () => {
             const {hub, registry, owner} = deployedActors;
 
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
-
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: false,
                 olderThan: "40",
@@ -523,12 +452,6 @@ describe("VC and Disclose", () => {
 
         it("should fail with invalid VC and Disclose proof", async () => {
             const {hub, registry, owner} = deployedActors;
-
-            await registry.connect(owner).devAddIdentityCommitment(
-                ATTESTATION_ID.E_PASSPORT,
-                nullifier,
-                commitment
-            );
 
             vcAndDiscloseProof.a[0] = generateRandomFieldElement();
 
@@ -758,7 +681,7 @@ describe("VC and Disclose", () => {
         it("should parse forbidden countries with CircuitAttributeHandler", async () => {
             const { hub } = deployedActors;
 
-            const forbiddenCountriesListPacked = reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+            const forbiddenCountriesListPacked = splitHexFromBack(reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
             const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
             
             expect(readableForbiddenCountries[0]).to.equal(forbiddenCountriesList[0]);
@@ -770,9 +693,9 @@ describe("VC and Disclose", () => {
             const { hub } = deployedActors;
 
             const forbiddenCountriesList = ['AAA', 'FRA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA'];
-            const forbiddenCountriesListPacked = reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+            const forbiddenCountriesListPacked = splitHexFromBack(reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
             const readableForbiddenCountries = await hub.getReadableForbiddenCountries(forbiddenCountriesListPacked);
-            expect(readableForbiddenCountries.length).to.equal(10);
+            expect(readableForbiddenCountries.length).to.equal(40);
             expect(readableForbiddenCountries[0]).to.equal(forbiddenCountriesList[0]);
             expect(readableForbiddenCountries[1]).to.equal(forbiddenCountriesList[1]);
             expect(readableForbiddenCountries[2]).to.equal(forbiddenCountriesList[2]);
@@ -788,7 +711,7 @@ describe("VC and Disclose", () => {
         it("should fail when getReadableForbiddenCountries is called by non-proxy", async () => {
             const {hubImpl} = deployedActors;
             const forbiddenCountriesList = ['AAA', 'FRA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA', 'CBA'];
-            const forbiddenCountriesListPacked = reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+            const forbiddenCountriesListPacked = splitHexFromBack(reverseCountryBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
             await expect(
                 hubImpl.getReadableForbiddenCountries(forbiddenCountriesListPacked)
             ).to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");

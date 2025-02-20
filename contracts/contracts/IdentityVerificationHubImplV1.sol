@@ -76,7 +76,7 @@ contract IdentityVerificationHubImplV1 is
 {
     using Formatter for uint256;
 
-    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+    uint256 constant MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
 
     // ====================================================
     // Events
@@ -362,7 +362,7 @@ contract IdentityVerificationHubImplV1 is
      * @return An array of strings with a maximum length of MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH.
      */
     function getReadableForbiddenCountries(
-        uint256 forbiddenCountriesListPacked
+        uint256[4] memory forbiddenCountriesListPacked
     )
         external
         virtual
@@ -395,7 +395,9 @@ contract IdentityVerificationHubImplV1 is
         for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
         }
-        result.forbiddenCountriesListPacked = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX];
+        for (uint256 i = 0; i < 4; i++) {
+            result.forbiddenCountriesListPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i];
+        }
         result.nullifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX];
         result.attestationId = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX];
         result.userIdentifier = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
@@ -632,8 +634,12 @@ contract IdentityVerificationHubImplV1 is
             }
         }
         if (proof.forbiddenCountriesEnabled) {
-            if (proof.forbiddenCountriesListPacked != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX]) {
-                revert INVALID_FORBIDDEN_COUNTRIES();
+            for (uint256 i = 0; i < 4; i++) {
+                if (
+                    proof.forbiddenCountriesListPacked[i] != proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX + i]
+                ) {
+                    revert INVALID_FORBIDDEN_COUNTRIES();
+                }
             }
         }
 

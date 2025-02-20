@@ -89,7 +89,7 @@ abstract contract PassportAirdropRoot is
         bool olderThanEnabled,
         uint256 olderThan,
         bool forbiddenCountriesEnabled,
-        uint256 forbiddenCountriesListPacked,
+        uint256[4] memory forbiddenCountriesListPacked,
         bool[3] memory ofacEnabled
     ) {
         _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);

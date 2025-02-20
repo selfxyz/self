@@ -1,5 +1,5 @@
 export class Formatter {
-    static MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 10;
+    static MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
 
     static formatName(input: string): [string, string] {
         let lastName = "";

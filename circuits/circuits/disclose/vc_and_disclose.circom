@@ -101,7 +101,7 @@ template VC_AND_DISCLOSE(
     
     // disclose optional data
     component disclose = DISCLOSE(
-        10,
+        MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH,
         passportNoTreeLevels,
         namedobTreeLevels,
         nameyobTreeLevels
@@ -142,4 +142,4 @@ component main {
         current_date,
         attestation_id
     ]
-} = VC_AND_DISCLOSE(33, 10, 64, 64, 64);
+} = VC_AND_DISCLOSE(33, 40, 64, 64, 64);

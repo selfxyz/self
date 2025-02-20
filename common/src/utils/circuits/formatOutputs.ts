@@ -78,7 +78,10 @@ export function formatAndUnpackForbiddenCountriesList(
     forbiddenCountriesList_packed: string[]
 ): string[] {
     const forbiddenCountriesList_packed_formatted = [
-        forbiddenCountriesList_packed['forbidden_countries_list_packed[0]']
+        forbiddenCountriesList_packed['forbidden_countries_list_packed[0]'],
+        forbiddenCountriesList_packed['forbidden_countries_list_packed[1]'],
+        forbiddenCountriesList_packed['forbidden_countries_list_packed[2]'],
+        forbiddenCountriesList_packed['forbidden_countries_list_packed[3]'],
     ];
     const trimmed = trimu0000(unpackReveal(forbiddenCountriesList_packed_formatted));
     const countries: string[] = [];

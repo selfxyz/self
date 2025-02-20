@@ -99,7 +99,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         bool _olderThanEnabled,
         uint256 _olderThan,
         bool _forbiddenCountriesEnabled,
-        uint256 _forbiddenCountriesListPacked,
+        uint256[4] memory _forbiddenCountriesListPacked,
         bool[3] memory _ofacEnabled
     ) 
         PassportAirdropRoot(

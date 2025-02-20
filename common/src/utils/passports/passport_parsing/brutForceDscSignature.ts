@@ -47,8 +47,10 @@ function brutforceHashAlgorithmDsc(
 ): any {
   for (const hashFunction of hashAlgos) {
     if (verifySignature(dsc, csca, signatureAlgorithm, hashFunction, saltLength)) {
+      // console.log(`✓ Success with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
       return hashFunction;
     }
+    // console.log(`✗ Failed with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
   }
   return false;
 }

@@ -2,7 +2,7 @@ import { expect } from "chai";
 import { ethers } from "hardhat";
 import { deploySystemFixtures } from "../utils/deployment";
 import { DeployedActors } from "../utils/types";
-import { generateRandomFieldElement } from "../utils/utils";
+import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { ATTESTATION_ID } from "../utils/constants";
 import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
@@ -26,11 +26,7 @@ describe("VerifyAll", () => {
     let commitment: any;
     let nullifier: any;
     let forbiddenCountriesList: string[];
-    let forbiddenCountriesListPacked: string;
-    let rawProof: {
-        proof: Groth16Proof,
-        publicSignals: PublicSignals
-    };
+    let forbiddenCountriesListPacked: string[];
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
@@ -49,7 +45,7 @@ describe("VerifyAll", () => {
         await imt.insert(BigInt(commitment));
 
         forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
-        forbiddenCountriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        forbiddenCountriesListPacked = splitHexFromBack(reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
 
         baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
