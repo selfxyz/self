@@ -25,7 +25,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
     signal input pubKey[kScaled];
     signal input signature[kScaled];
 
-    var msg_len = (HASH_LEN_BITS + n) \ n;
+    var msg_len = (HASH_LEN_BITS + n - 1) \ n;
 
     signal hashParsed[msg_len] <== HashParser(signatureAlgorithm, n, k)(hash);
    
@@ -124,7 +124,7 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
 
 template HashParser(signatureAlgorithm, n, k) {
     var HASH_LEN_BITS = getHashLength(signatureAlgorithm);
-    var msg_len = (HASH_LEN_BITS + n) \ n;
+    var msg_len = (HASH_LEN_BITS + n - 1) \ n;
 
     component hashParser[msg_len];
     signal input hash[HASH_LEN_BITS];

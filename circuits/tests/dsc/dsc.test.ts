@@ -283,6 +283,19 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       }
     });
 
+    it('should not allow tampering of raw_dsc[raw_dsc_padded_length]', async () => {
+      try {
+        const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+        const paddedLength = Number(tamperedInputs.raw_dsc_padded_length);
+        tamperedInputs.raw_dsc[paddedLength] = '255'; // or any nonzero value
+
+        await circuit.calculateWitness(tamperedInputs);
+        expect.fail('Expected an error but none was thrown.');
+      } catch (error: any) {
+        expect(error.message).to.include('Assert Failed');
+      }
+    });
+
     it('should fail if raw_csca has a signal that is longer than a byte', async function () {
       try {
         const tamperedInputs = JSON.parse(JSON.stringify(inputs));

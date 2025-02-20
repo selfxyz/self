@@ -87,7 +87,7 @@ template DSC(
     // this should guarantee the dsc commitment is unique for each commitment
     component byte_checks[MAX_DSC_LENGTH];
     for (var i = 0; i < MAX_DSC_LENGTH; i++) {
-        byte_checks[i] = GreaterThan(12);
+        byte_checks[i] = GreaterEqThan(12);
         byte_checks[i].in[0] <== i;
         byte_checks[i].in[1] <== raw_dsc_padded_length;
         
