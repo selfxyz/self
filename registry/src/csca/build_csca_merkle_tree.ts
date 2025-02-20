@@ -57,7 +57,7 @@ function processCertificate(pemContent: string, filePath: string) {
 async function buildCscaMerkleTree() {
     const tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
 
-    if (!false) {
+    if (true) {
         const path_to_pem_files = "outputs/csca/pem_masterlist";
         for (const file of fs.readdirSync(path_to_pem_files)) {
             const file_path = path.join(path_to_pem_files, file);

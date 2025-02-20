@@ -26,14 +26,11 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
     cscaSaltLength;
 
   let cscaFound = false;
-  console.log('js: dscCert ski', dscCert.subjectKeyIdentifier);
   if (dscCert.authorityKeyIdentifier) {
     try {
       csca = getCSCAFromSKI(dscCert.authorityKeyIdentifier, true);
-      console.log('js: csca', csca);
       if (csca) {
         cscaParsed = parseCertificateSimple(csca);
-        console.log('js: cscaParsed', cscaParsed);
         const details = brutforceSignatureAlgorithmDsc(dscCert, cscaParsed);
         cscaFound = true;
         cscaHashAlgorithm = details.hashAlgorithm;

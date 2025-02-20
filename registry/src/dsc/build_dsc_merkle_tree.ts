@@ -1,11 +1,9 @@
 import * as fs from 'fs';
-import { getLeafDscTreeFromDscCertificateMetadata, getLeafDscTreeFromParsedDsc } from '../../../common/src/utils/trees';
-import { DEVELOPMENT_MODE, DSC_TREE_DEPTH } from '../../../common/src/constants/constants';
-import { IMT } from '@openpassport/zk-kit-imt';
+import { getLeafDscTree } from '../../../common/src/utils/trees';
+import { DEVELOPMENT_MODE } from '../../../common/src/constants/constants';
 import { poseidon2 } from 'poseidon-lite';
 import { writeFile } from 'fs/promises';
 import * as path from 'path';
-import { parseCertificate } from '../../../common/src/utils/certificate_parsing/parseCertificate';
 import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { parseDscCertificateData } from '../../../common/src/utils/passports/passport_parsing/parseDscCertificateData';
 import { CertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA } from '../../../common/src/utils/certificate_parsing/dataStructure';
@@ -102,8 +100,8 @@ function processCertificate(pemContent: string, filePath: string) {
         dscDescriptionsExtrapolated[dscDescExt] = (dscDescriptionsExtrapolated[dscDescExt] || 0) + 1;
 
         // Final Poseidon Hash
-        const finalPoseidonHash = getLeafDscTreeFromDscCertificateMetadata(certificate, dscMetaData);
-        console.log('Leaf Value: \x1b[34m' + finalPoseidonHash + '\x1b[0m');
+        const finalPoseidonHash = getLeafDscTree(certificate, dscMetaData.cscaParsed);
+        // console.log('Leaf Value: \x1b[34m' + finalPoseidonHash + '\x1b[0m');
 
         return finalPoseidonHash.toString();
     } catch (error) {
@@ -115,7 +113,7 @@ function processCertificate(pemContent: string, filePath: string) {
 async function buildDscMerkleTree() {
     const tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
 
-    if (!DEVELOPMENT_MODE) {
+    if (true) {
         const path_to_pem_files = "outputs/dsc/pem_masterlist";
         for (const file of fs.readdirSync(path_to_pem_files)) {
             const file_path = path.join(path_to_pem_files, file);
@@ -131,7 +129,7 @@ async function buildDscMerkleTree() {
         }
     }
 
-    if (DEVELOPMENT_MODE) {
+    if (true) {
         const dev_pem_path = path.join(__dirname, '..', '..', '..', 'common', 'src', 'mock_certificates');
         const subdirectories = fs.readdirSync(dev_pem_path, { withFileTypes: true })
             .filter(item => item.isDirectory())

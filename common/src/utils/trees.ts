@@ -90,9 +90,7 @@ export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string 
 
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
   const dscLeaf = getLeaf(dsc_parsed, 'dsc');
-  console.log('dscLeaf', dscLeaf);
   const cscaLeaf = getLeaf(csca_parsed, 'csca');
-  console.log('cscaLeaf', cscaLeaf);
   return poseidon2([dscLeaf, cscaLeaf]).toString();
 }
 

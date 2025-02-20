@@ -9,6 +9,7 @@
     "build-dsc": "bash scripts/build/build_dsc_circuits.sh",
     "build-register": "bash scripts/build/build_register_circuits.sh",
     "format": "prettier --write .",
+    "nice": "prettier --write .",
     "install-circuits": "cd ../common && yarn && cd ../circuits && yarn",
     "lint": "prettier --check .",
     "test": "yarn ts-mocha --max-old-space-size=8192 'tests/**/*.test.ts' 'tests/*.test.ts' --exit",

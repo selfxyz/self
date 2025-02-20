@@ -231,8 +231,6 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
           Number(tamperedInputs.raw_dsc[tamperedInputs.raw_dsc.length - 1]) + 1
         ).toString();
 
-        console.log(JSON.stringify(Array.from(tamperedInputs.raw_dsc)));
-
         await circuit.calculateWitness(tamperedInputs);
         expect.fail('Expected an error but none was thrown.');
       } catch (error) {
@@ -283,6 +281,50 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       }
     });
 
+    if (sigAlg.startsWith('rsa') || sigAlg.startsWith('rsapss')) {
+      it('should fail if RSA public key prefix is invalid', async function () {
+        const invalidPrefixes = [
+          [0x03, 0x82, 0x01, 0x01, 0x00],
+          [0x02, 0x83, 0x01, 0x01, 0x00],
+          [0x02, 0x82, 0x02, 0x02, 0x00],
+        ];
+
+        for (const invalidPrefix of invalidPrefixes) {
+          try {
+            const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+            for (let i = 0; i < invalidPrefix.length; i++) {
+              tamperedInputs.raw_csca[
+                Number(tamperedInputs.csca_pubKey_offset) - invalidPrefix.length + i
+              ] = invalidPrefix[i].toString();
+            }
+
+            await circuit.calculateWitness(tamperedInputs);
+            expect.fail('Expected an error but none was thrown.');
+          } catch (error: any) {
+            expect(error.message).to.include('Assert Failed');
+          }
+        }
+      });
+
+      it('should pass with valid RSA prefix for the key length', async function () {
+        const keyLengthToPrefix = {
+          2048: [0x02, 0x82, 0x01, 0x01, 0x00],
+          3072: [0x02, 0x82, 0x01, 0x81, 0x00],
+          4096: [0x02, 0x82, 0x02, 0x01, 0x00],
+        };
+
+        const expectedPrefix = keyLengthToPrefix[passportData.csca_parsed.publicKeyDetails.bits];
+
+        for (let i = 0; i < 5; i++) {
+          const prefixByte = parseInt(inputs.raw_csca[Number(inputs.csca_pubKey_offset) - 5 + i]);
+          expect(prefixByte).to.equal(
+            expectedPrefix[i],
+            `Prefix byte ${i} mismatch for ${passportData.csca_parsed.publicKeyDetails.bits} bit key`
+          );
+        }
+      });
+    }
+
     it('should not allow tampering of raw_dsc[raw_dsc_padded_length]', async () => {
       try {
         const tamperedInputs = JSON.parse(JSON.stringify(inputs));
@@ -300,7 +342,6 @@ testSuite.forEach(({ sigAlg, hashFunction, domainParameter, keyLength }) => {
       try {
         const tamperedInputs = JSON.parse(JSON.stringify(inputs));
         tamperedInputs.raw_csca[0] = (parseInt(tamperedInputs.raw_csca[0], 10) + 256).toString();
-        console.log(tamperedInputs.raw_csca);
         await circuit.calculateWitness(tamperedInputs);
         expect.fail('Expected an error but none was thrown.');
       } catch (error: any) {

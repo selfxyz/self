@@ -10,6 +10,7 @@ include "../utils/crypto/bitify/splitWordsToBytes.circom";
 include "../utils/crypto/bitify/bytes.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "../utils/passport/checkPubkeysEqual.circom";
+include "../utils/passport/checkPubkeyPosition.circom";
 
 /// @title REGISTER
 /// @notice Main circuit — verifies the integrity of the passport data, the signature, and generates commitment and nullifier
@@ -58,7 +59,6 @@ template REGISTER(
     // This means the attestation is a passport
     var attestation_id = 1;
 
-    var minKeyLength = getMinKeyLength(signatureAlgorithm);
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k * kLengthFactor;
 
@@ -95,13 +95,6 @@ template REGISTER(
     // assert only bytes are used in raw_dsc
     AssertBytes(MAX_DSC_LENGTH)(raw_dsc);
 
-    // check dsc_pubKey_actual_size is at least the minimum key length
-    signal dsc_pubKey_actual_size_in_range <== GreaterEqThan(12)([
-        dsc_pubKey_actual_size,
-        minKeyLength * kLengthFactor / 8
-    ]);
-    dsc_pubKey_actual_size_in_range === 1;
-
     // check offsets refer to valid ranges
     signal dsc_pubKey_offset_in_range <== LessEqThan(12)([
         dsc_pubKey_offset + dsc_pubKey_actual_size,
@@ -116,12 +109,34 @@ template REGISTER(
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(dsc_tree_leaf, leaf_depth, path, siblings);
     merkle_root === computed_merkle_root;
 
-    // get DSC public key from the certificate
-    signal extracted_dsc_pubKey[MAX_DSC_PUBKEY_LENGTH] <== SelectSubArray(MAX_DSC_LENGTH, MAX_DSC_PUBKEY_LENGTH)(
+    var prefixLength = 33;
+    var suffixLength = kLengthFactor == 1 ? getSuffixLength(signatureAlgorithm) : 0;
+
+    // get DSC public key from the certificate, along with its prefix and suffix
+    signal pubkey_with_prefix_and_suffix[prefixLength + MAX_DSC_PUBKEY_LENGTH + suffixLength] <== SelectSubArray(
+        MAX_DSC_LENGTH,
+        prefixLength + MAX_DSC_PUBKEY_LENGTH + suffixLength
+    )(
         raw_dsc,
-        dsc_pubKey_offset,
+        dsc_pubKey_offset - prefixLength,
+        prefixLength + dsc_pubKey_actual_size + suffixLength
+    );
+
+    CheckPubkeyPosition(
+        prefixLength,
+        MAX_DSC_PUBKEY_LENGTH,
+        suffixLength,
+        signatureAlgorithm
+    )(
+        pubkey_with_prefix_and_suffix,
         dsc_pubKey_actual_size
     );
+
+    // remove the prefix from the DSC public key
+    signal extracted_dsc_pubKey[MAX_DSC_PUBKEY_LENGTH];
+    for (var i = 0; i < MAX_DSC_PUBKEY_LENGTH; i++) {
+        extracted_dsc_pubKey[i] <== pubkey_with_prefix_and_suffix[prefixLength + i];
+    }
 
     // check if the DSC public key is the same as the one in the certificate
     CheckPubkeysEqual(n, kScaled, kLengthFactor, MAX_DSC_PUBKEY_LENGTH)(

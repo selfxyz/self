@@ -12,7 +12,7 @@ export const getSubjectKeyIdentifier = (cert: Certificate): string => {
     skiValue = skiValue.replace(/^(?:3016)?(?:0414)?/, '');
     return skiValue;
   } else {
-    console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found');
+    // console.log('\x1b[31m%s\x1b[0m', 'no subject key identifier found'); // it's no big deal if this is not found
     // do a sha1 of the certificate tbs
     const hash = sha256.create();
     hash.update(cert.tbsView);
