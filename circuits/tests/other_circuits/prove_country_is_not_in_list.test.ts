@@ -38,7 +38,7 @@ describe('ProveCountryIsNotInList', function () {
     const dg1 = formatMrz(passportData.mrz);
 
     it('should succeed', async () => {
-      const forbiddenCountriesList = ['DZA'];
+      const forbiddenCountriesList = ['AAA', 'USA', 'ITA', 'ABC', 'DZA', 'USA', 'ITA', 'ABC', 'DZA', 'USA', 'ITA', 'ABC', 'DZA', 'USA', 'ITA', 'ABC', 'DZA', 'USA', 'ITA', 'ABC', 'DNK', 'USA', 'DNK', 'ABC', 'DNK', 'USA', 'DNK', 'ABC', 'DNK', 'USA', 'ITA', 'ABC', 'DZA', 'USA', 'ITA', 'XXX', 'DZA', 'USA', 'ITA', 'END'];
 
       const inputs = {
         dg1: formatInput(dg1),
@@ -46,7 +46,7 @@ describe('ProveCountryIsNotInList', function () {
       };
       const witness = await circuit.calculateWitness(inputs);
       const forbidden_countries_list_packed = await circuit.getOutput(witness, [
-        'forbidden_countries_list_packed[1]',
+        'forbidden_countries_list_packed[4]',
       ]);
       console.log(
         '\x1b[34m%s\x1b[0m',

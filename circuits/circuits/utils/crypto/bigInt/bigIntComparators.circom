@@ -24,17 +24,20 @@ template BigIntIsZero(CHUNK_SIZE, MAX_CHUNK_SIZE, CHUNK_NUMBER) {
     
     signal input in[CHUNK_NUMBER];
     
-    signal carry[CHUNK_NUMBER];
+    signal carry[CHUNK_NUMBER - 1];
+    component carryRangeChecks[CHUNK_NUMBER - 1];
     for (var i = 0; i < CHUNK_NUMBER - 1; i++){
+        carryRangeChecks[i] = Num2Bits(MAX_CHUNK_SIZE + EPSILON - CHUNK_SIZE);
         if (i == 0){
-            carry[i] <== in[i] / 2 ** CHUNK_SIZE;
+            carry[i] <== in[i] / (1 << CHUNK_SIZE);
         }
         else {
-            carry[i] <== (in[i] + carry[i - 1]) / 2 ** CHUNK_SIZE;
+            carry[i] <== (in[i] + carry[i - 1]) / (1 << CHUNK_SIZE);
         }
+        // checking carry is in the range of - 2^(m-n-1+eps), 2^(m+-n-1+eps)
+        carryRangeChecks[i].in <== carry[i] + (1 << (MAX_CHUNK_SIZE + EPSILON - CHUNK_SIZE - 1));
     }
-    component carryRangeCheck = Num2Bits(MAX_CHUNK_SIZE + EPSILON - CHUNK_SIZE);
-    carryRangeCheck.in <== carry[CHUNK_NUMBER - 2] + (1 << (MAX_CHUNK_SIZE + EPSILON - CHUNK_SIZE - 1));
+
     in[CHUNK_NUMBER - 1] + carry[CHUNK_NUMBER - 2] === 0;
 }
 

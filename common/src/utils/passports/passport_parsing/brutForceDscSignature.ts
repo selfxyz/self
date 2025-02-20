@@ -46,12 +46,11 @@ function brutforceHashAlgorithmDsc(
   saltLength?: number
 ): any {
   for (const hashFunction of hashAlgos) {
-    // console.log(`\nTrying hash function: ${hashFunction}`);
     if (verifySignature(dsc, csca, signatureAlgorithm, hashFunction, saltLength)) {
-      console.log(`✓ Success with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
+      // console.log(`✓ Success with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
       return hashFunction;
     }
-    console.log(`✗ Failed with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
+    // console.log(`✗ Failed with hash function: ${hashFunction}, signatureAlgorithm: ${signatureAlgorithm}, saltLength: ${saltLength}`);
   }
   return false;
 }

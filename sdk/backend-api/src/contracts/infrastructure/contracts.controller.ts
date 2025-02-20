@@ -1,5 +1,4 @@
 import Elysia, { t } from 'elysia';
-import { ProofVerifier } from '../../contracts/application/proofVerifier';
 import { RegistryContract } from '../../contracts/application/registryContract';
 import { HubContract } from '../application/hubContract';
 import { getChain } from '../../contracts/application/chains';
@@ -7,7 +6,6 @@ import { getDscCommitmentEvents } from '../application/getEvents';
 import { MerkleTreeService } from '../application/tree-reader/leanImtService';
 import { getContractInstanceRoot } from '../application/tree-reader/getTree';
 import { getCscaTree } from '../application/tree-reader/cscaTreeService';
-import { IMAGE_HASH } from '../../../../../common/src/constants/constants';
 import { getCSCAFromSKIApi } from '../application/skiPem';
 import { PCR0Contract } from '../application/pcr0/pcr0';
 
@@ -381,67 +379,6 @@ export const ContractsController = new Elysia()
       },
     }
   )
-  .post(
-    'verify-vc-and-disclose-proof',
-    async (request) => {
-      try {
-        const registryContract = new RegistryContract(
-          getChain(process.env.NETWORK as string),
-          process.env.PRIVATE_KEY as `0x${string}`,
-          process.env.RPC_URL as string
-        );
-
-        const identityCommitmentRoot = await registryContract.getIdentityCommitmentMerkleRoot();
-        const ofacRoot = await registryContract.getOfacRoot();
-
-        const { proof, publicSignals } = request.body;
-
-        const proofVerifier = new ProofVerifier(
-          process.env.OFAC_ENABLED === "true",
-          process.env.OLDER_THAN_ENABLED === "true",
-          process.env.EXCLUDED_COUNTRIES_ENABLED === "true",
-          ofacRoot,
-          process.env.OLDER_THAN || "18",
-          (process.env.EXCLUDED_COUNTRIES || "USA,IRN,CHN").split(','),
-          identityCommitmentRoot,
-          {}
-        );
-
-        await proofVerifier.verifyVcAndDiscloseProof(proof, publicSignals);
-
-        return {
-          status: "success",
-          data: ["Valid VC and disclose proof"],
-        };
-      } catch (error) {
-        return {
-          status: "error",
-          message: error instanceof Error ? error.message : "Unknown error",
-        };
-      }
-    },
-    {
-      body: t.Object({
-        proof: t.Any(),
-        publicSignals: t.Any(),
-      }),
-      response: {
-        200: t.Object({
-          status: t.String(),
-          data: t.Array(t.String()),
-        }),
-        500: t.Object({
-          status: t.String(),
-          message: t.String(),
-        }),
-      },
-      detail: {
-        tags: ['Contracts'],
-        summary: 'Verify a VC and disclose a proof',
-        description: 'Verify a VC and disclose a proof',
-      },
-    },
-  )
   .get(
     'dsc-commitment-tree',
     async () => {
@@ -539,28 +476,6 @@ export const ContractsController = new Elysia()
         tags: ['CSCA'],
         summary: 'Get CSCA tree',
         description: 'Retrieve the current state of the CSCA tree'
-      }
-    }
-  )
-  .get(
-    'image-hash',
-    async () => {
-      return {
-        status: 'success',
-        data: [IMAGE_HASH]
-      };
-    },
-    {
-      response: {
-        200: t.Object({
-          status: t.String(),
-          data: t.Array(t.String()),
-        })
-      },
-      detail: {
-        tags: ['Constants'],
-        summary: 'Get image hash constant',
-        description: 'Retrieve the image hash constant used in the system'
       }
     }
   )

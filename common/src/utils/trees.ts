@@ -90,9 +90,7 @@ export function getLeafDscTreeFromParsedDsc(dscParsed: CertificateData): string 
 
 export function getLeafDscTree(dsc_parsed: CertificateData, csca_parsed: CertificateData): string {
   const dscLeaf = getLeaf(dsc_parsed, 'dsc');
-  console.log('dscLeaf', dscLeaf);
   const cscaLeaf = getLeaf(csca_parsed, 'csca');
-  console.log('cscaLeaf', cscaLeaf);
   return poseidon2([dscLeaf, cscaLeaf]).toString();
 }
 
@@ -114,7 +112,6 @@ export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: stri
 
 export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: any[][]) {
   let tree = new IMT(poseidon2, CSCA_TREE_DEPTH, 0, 2);
-  console.log('serialized_csca_tree', _serialized_csca_tree);
   tree.setNodes(_serialized_csca_tree);
   const index = tree.indexOf(leaf);
   if (index === -1) {

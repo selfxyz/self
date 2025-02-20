@@ -59,45 +59,45 @@ library CircuitConstants {
     /**
      * @notice Index to access the nullifier in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_NULLIFIER_INDEX = 4;
+    uint256 constant VC_AND_DISCLOSE_NULLIFIER_INDEX = 7;
     
     /**
      * @notice Index to access the attestation ID in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_ATTESTATION_ID_INDEX = 5;
+    uint256 constant VC_AND_DISCLOSE_ATTESTATION_ID_INDEX = 8;
     
     /**
      * @notice Index to access the Merkle root in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_MERKLE_ROOT_INDEX = 6;
+    uint256 constant VC_AND_DISCLOSE_MERKLE_ROOT_INDEX = 9;
     
     /**
      * @notice Index to access the current date in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_CURRENT_DATE_INDEX = 7;
+    uint256 constant VC_AND_DISCLOSE_CURRENT_DATE_INDEX = 10;
     
     /**
      * @notice Index to access the passport number SMT root in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX = 13;
+    uint256 constant VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX = 16;
 
     /**
      * @notice Index to access the name and date of birth SMT root in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX = 14;
+    uint256 constant VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX = 17;
 
     /**
      * @notice Index to access the name and year of birth SMT root in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX = 15;
+    uint256 constant VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX = 18;
 
     /**
      * @notice Index to access the scope in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_SCOPE_INDEX = 16;
+    uint256 constant VC_AND_DISCLOSE_SCOPE_INDEX = 19;
 
     /**
      * @notice Index to access the user identifier in the VC and Disclose circuit public signals.
      */
-    uint256 constant VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX = 17;
+    uint256 constant VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX = 20;
 }

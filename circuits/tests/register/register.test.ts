@@ -39,7 +39,11 @@ testSuite.forEach(
 
       const secret = poseidon6('SECRET'.split('').map((x) => BigInt(x.charCodeAt(0)))).toString();
 
-      const inputs = generateCircuitInputsRegister(secret, passportData, serialized_dsc_tree);
+      const inputs = generateCircuitInputsRegister(
+        secret,
+        passportData,
+        serialized_dsc_tree as string
+      );
 
       before(async () => {
         circuit = await wasm_tester(
@@ -261,6 +265,50 @@ testSuite.forEach(
         expect(nullifierTampered).to.equal(nullifierValid);
         expect(commitmentTampered).to.not.be.equal(commitmentValid);
       });
+
+      if (sigAlg.startsWith('rsa') || sigAlg.startsWith('rsapss')) {
+        it('should fail if RSA public key prefix is invalid', async function () {
+          const invalidPrefixes = [
+            [0x03, 0x82, 0x01, 0x01, 0x00],
+            [0x02, 0x83, 0x01, 0x01, 0x00],
+            [0x02, 0x82, 0x02, 0x02, 0x00],
+          ];
+
+          for (const invalidPrefix of invalidPrefixes) {
+            try {
+              const tamperedInputs = JSON.parse(JSON.stringify(inputs));
+              for (let i = 0; i < invalidPrefix.length; i++) {
+                tamperedInputs.raw_dsc[
+                  Number(tamperedInputs.dsc_pubKey_offset) - invalidPrefix.length + i
+                ] = invalidPrefix[i].toString();
+              }
+
+              await circuit.calculateWitness(tamperedInputs);
+              expect.fail('Expected an error but none was thrown.');
+            } catch (error: any) {
+              expect(error.message).to.include('Assert Failed');
+            }
+          }
+        });
+
+        it('should pass with valid RSA prefix for the key length', async function () {
+          const keyLengthToPrefix = {
+            2048: [0x02, 0x82, 0x01, 0x01, 0x00],
+            3072: [0x02, 0x82, 0x01, 0x81, 0x00],
+            4096: [0x02, 0x82, 0x02, 0x01, 0x00],
+          };
+
+          const expectedPrefix = keyLengthToPrefix[keyLength];
+
+          for (let i = 0; i < 5; i++) {
+            const prefixByte = parseInt(inputs.raw_dsc[Number(inputs.dsc_pubKey_offset) - 5 + i]);
+            expect(prefixByte).to.equal(
+              expectedPrefix[i],
+              `Prefix byte ${i} mismatch for ${keyLength} bit key`
+            );
+          }
+        });
+      }
 
       it('should fail if raw_dsc has a signal that is longer than a byte', async function () {
         try {

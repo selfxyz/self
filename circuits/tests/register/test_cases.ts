@@ -1,9 +1,9 @@
 export const sigAlgs = [
   {
-    dgHashAlgo: 'sha256',
-    eContentHashAlgo: 'sha256',
-    hashFunction: 'sha256',
-    sigAlg: 'rsa',
+    dgHashAlgo: 'sha384',
+    eContentHashAlgo: 'sha384',
+    hashFunction: 'sha384',
+    sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
   },
@@ -77,6 +77,14 @@ export const fullSigAlgs = [
     keyLength: '3072',
   },
   {
+    dgHashAlgo: 'sha384',
+    eContentHashAlgo: 'sha384',
+    hashFunction: 'sha384',
+    sigAlg: 'rsapss',
+    domainParameter: '65537',
+    keyLength: '2048',
+  },
+  {
     dgHashAlgo: 'sha512',
     eContentHashAlgo: 'sha512',
     hashFunction: 'sha512',
@@ -86,6 +94,14 @@ export const fullSigAlgs = [
   },
   // ECDSA
   // brainpool
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1',
+    hashFunction: 'sha1',
+    sigAlg: 'ecdsa',
+    domainParameter: 'brainpoolP224r1',
+    keyLength: '224',
+  },
   {
     dgHashAlgo: 'sha224',
     eContentHashAlgo: 'sha224',

@@ -13,6 +13,7 @@ include "../utils/passport/checkPubkeysEqual.circom";
 include "../utils/passport/constants.circom";
 include "../utils/crypto/bitify/bytes.circom";
 include "../utils/passport/BytesToNum.circom";
+include "../utils/passport/checkPubkeyPosition.circom";
 
 /// @title DSC
 /// @notice Circuit for verifying DSC certificate signature using CSCA certificate
@@ -46,7 +47,6 @@ template DSC(
     // assert(n_csca * k_csca > max_dsc_bytes); // not sure what this is for
     assert(n_csca <= (255 \ 2));
 
-    var minKeyLength = getMinKeyLength(signatureAlgorithm);
     var kLengthFactor = getKLengthFactor(signatureAlgorithm);
     var kScaled = k_csca * kLengthFactor;
     var hashLength = getHashLength(signatureAlgorithm);
@@ -87,7 +87,7 @@ template DSC(
     // this should guarantee the dsc commitment is unique for each commitment
     component byte_checks[MAX_DSC_LENGTH];
     for (var i = 0; i < MAX_DSC_LENGTH; i++) {
-        byte_checks[i] = GreaterThan(12);
+        byte_checks[i] = GreaterEqThan(12);
         byte_checks[i].in[0] <== i;
         byte_checks[i].in[1] <== raw_dsc_padded_length;
         
@@ -95,13 +95,6 @@ template DSC(
         raw_dsc[i] * byte_checks[i].out === 0;
     }
     
-    // check csca_pubKey_actual_size is at least the minimum key length
-    signal csca_pubKey_actual_size_in_range <== GreaterEqThan(12)([
-        csca_pubKey_actual_size,
-        minKeyLength * kLengthFactor / 8
-    ]);
-    csca_pubKey_actual_size_in_range === 1;
-
     // check offsets refer to valid ranges
     signal csca_pubKey_offset_in_range <== LessEqThan(12)([
         csca_pubKey_offset + csca_pubKey_actual_size,
@@ -115,12 +108,35 @@ template DSC(
     signal computed_merkle_root <== BinaryMerkleRoot(nLevels)(csca_tree_leaf, nLevels, path, siblings);
     merkle_root === computed_merkle_root;
 
+    var prefixLength = 33;
+    var suffixLength = kLengthFactor == 1 ? getSuffixLength(signatureAlgorithm) : 0;
+    
     // get CSCA public key from the certificate
-    signal extracted_csca_pubKey[MAX_CSCA_PUBKEY_LENGTH] <== SelectSubArray(MAX_CSCA_LENGTH, MAX_CSCA_PUBKEY_LENGTH)(
+    // we also grab the prefix (previous `prefixLength` bytes)
+    signal csca_pubKey_with_prefix_and_suffix[prefixLength + MAX_CSCA_PUBKEY_LENGTH + suffixLength] <== SelectSubArray(
+        MAX_CSCA_LENGTH,
+        prefixLength + MAX_CSCA_PUBKEY_LENGTH + suffixLength
+    )(
         raw_csca,
-        csca_pubKey_offset,
+        csca_pubKey_offset - prefixLength,
+        prefixLength + csca_pubKey_actual_size + suffixLength
+    );
+
+    CheckPubkeyPosition(
+        prefixLength,
+        MAX_CSCA_PUBKEY_LENGTH,
+        suffixLength,
+        signatureAlgorithm
+    )(
+        csca_pubKey_with_prefix_and_suffix,
         csca_pubKey_actual_size
     );
+
+    // remove the prefix from the CSCA public key
+    signal extracted_csca_pubKey[MAX_CSCA_PUBKEY_LENGTH];
+    for (var i = 0; i < MAX_CSCA_PUBKEY_LENGTH; i++) {
+        extracted_csca_pubKey[i] <== csca_pubKey_with_prefix_and_suffix[prefixLength + i];
+    }
 
     // check if the CSCA public key is the same as the one in the certificate
     // If we end up adding the pubkey in the CSCA leaf, we'll be able to remove this check

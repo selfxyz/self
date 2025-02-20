@@ -110,14 +110,14 @@ generate_certificate() {
     if [ "$role" = "csca" ]; then
         # Generate a self-signed CSCA
         if [ "$sig_alg" = "ecdsa" ]; then
-            openssl ecparam -name "$exp_or_curve" -genkey -noout -out "$dir_name/$key_file"
+            openssl ecparam -name "$exp_or_curve" -genkey -noout -out "$dir_name/$key_file" -param_enc explicit
             openssl req -new -x509 \
                 -key "$dir_name/$key_file" \
                 -out "$dir_name/$crt_file" \
                 -days 3650 -sha${hash#sha} \
                 -subj "/C=FR/ST=IDF/L=Paris/O=Mock CSCA/OU=PKI/CN=MockCSCA"
         elif [ "$sig_alg" = "rsapss" ]; then
-            openssl genpkey -algorithm RSA-PSS \
+            openssl genpkey -algorithm RSA \
                 -pkeyopt rsa_keygen_bits:"$bits" \
                 -pkeyopt rsa_keygen_pubexp:"$exp_or_curve" \
                 -out "$dir_name/$key_file"
@@ -164,9 +164,9 @@ generate_certificate() {
 
         # Generate DSC key
         if [ "$sig_alg" = "ecdsa" ]; then
-            openssl ecparam -name "$exp_or_curve" -genkey -noout -out "$dir_name/$key_file"
+            openssl ecparam -name "$exp_or_curve" -genkey -noout -out "$dir_name/$key_file" -param_enc explicit
         elif [ "$sig_alg" = "rsapss" ]; then
-            openssl genpkey -algorithm RSA-PSS \
+            openssl genpkey -algorithm RSA \
                 -pkeyopt rsa_keygen_bits:"$bits" \
                 -pkeyopt rsa_keygen_pubexp:"$exp_or_curve" \
                 -out "$dir_name/$key_file"
@@ -186,11 +186,23 @@ generate_certificate() {
             -subj "/C=FR/ST=IDF/L=Paris/O=Mock DSC/OU=PKI/CN=MockDSC"
 
         # Sign with the CSCA
-        openssl x509 -req -in "$csr_file" \
-            -CA "$csca_crt" -CAkey "$csca_key" -CAcreateserial \
-            -days 3650 -sha${hash#sha} \
-            -out "$dir_name/$crt_file"
+        if [ "$sig_alg" = "rsapss" ]; then
+            # For RSAPSS, we need to specify the PSS padding mode during signing
+            openssl x509 -req -in "$csr_file" \
+                -CA "$csca_crt" -CAkey "$csca_key" -CAcreateserial \
+                -days 3650 -sha${hash#sha} \
+                -sigopt rsa_padding_mode:pss \
+                -sigopt rsa_pss_saltlen:"$salt" \
+                -out "$dir_name/$crt_file"
+        else
+            # For standard RSA or ECDSA
+            openssl x509 -req -in "$csr_file" \
+                -CA "$csca_crt" -CAkey "$csca_key" -CAcreateserial \
+                -days 3650 -sha${hash#sha} \
+                -out "$dir_name/$crt_file"
+        fi
 
+        
         # Clean up
         rm -f "$csr_file" "$signer/mock_csca.srl"
         echo "[OK] Created DSC in $dir_name => $key_file, $crt_file (signed by $signer)"

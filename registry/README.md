@@ -74,3 +74,13 @@ Build JSON files:
 ```
 ts-node src/buildJson.ts
 ```
+
+### Search sequences
+
+To run the scripts that search for specific sequences, run:
+```
+ts-node src/dsc/search_sequence_dsc.ts
+ts-node src/csca/search_sequence_csca.ts
+```
+
+Visualize certs here: [https://lapo.it/asn1js](https://lapo.it/asn1js)
