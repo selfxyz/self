@@ -48,6 +48,8 @@ export const DEPLOYED_CIRCUITS_REGISTER = [
   'register_sha384_sha384_sha384_ecdsa_brainpoolP384r1',
   'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',
   'register_sha384_sha384_sha384_ecdsa_secp384r1',
+  'register_sha384_sha384_sha384_rsapss_65537_48_2048',
+  'register_sha1_sha1_sha1_ecdsa_brainpoolP224r1',
   'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',
   'register_sha512_sha512_sha512_rsa_65537_4096',
   'register_sha512_sha512_sha512_rsapss_65537_64_2048',
