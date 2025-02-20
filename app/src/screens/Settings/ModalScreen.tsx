@@ -9,6 +9,7 @@ import { Title } from '../../components/typography/Title';
 import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
+import { confirmTap, impactLight } from '../../utils/haptic';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -36,6 +37,7 @@ interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
   const onButtonPressed = useCallback(async () => {
+    confirmTap();
     try {
       await params?.onButtonPress();
       navigation.goBack();
@@ -45,6 +47,7 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   }, []);
 
   const onClose = useCallback(() => {
+    impactLight();
     navigation.goBack();
     params?.onModalDismiss();
   }, [params]);

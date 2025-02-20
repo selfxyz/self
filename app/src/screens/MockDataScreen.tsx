@@ -109,7 +109,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     );
 
     await new Promise(resolve => setTimeout(resolve, 1000));
-    navigation.navigate('ConfirmBelongingScreen');
+    navigation.navigate('ConfirmBelongingScreen', {
+      mockPassportFlow: true,
+    });
   }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
 
   const { top, bottom } = useSafeAreaInsets();

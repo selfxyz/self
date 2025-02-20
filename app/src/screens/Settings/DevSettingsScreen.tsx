@@ -20,11 +20,10 @@ import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
 
-const items: (keyof RootStackParamList)[] = [
+const items = [
   'DevSettings',
   'Splash',
   'Launch',
-  'Start',
   'PassportOnboarding',
   'PassportCamera',
   'PassportNFCScan',
@@ -47,7 +46,7 @@ const items: (keyof RootStackParamList)[] = [
   'UnsupportedPassport',
   'PassportCameraTrouble',
   'PassportNFCTrouble',
-];
+] satisfies (keyof RootStackParamList)[];
 const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   return (

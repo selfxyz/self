@@ -1,5 +1,15 @@
-import React, { useCallback, useEffect, useMemo, useRef } from 'react';
-import { StyleSheet } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import {
+  NativeScrollEvent,
+  NativeSyntheticEvent,
+  StyleSheet,
+} from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -134,10 +144,6 @@ const ProveScreen: React.FC = () => {
   );
 
   async function sendMockPayload() {
-    if (!__DEV__) {
-      return;
-    }
-
     console.log('sendMockPayload, start by generating mockPassport data');
     const passportData = genMockPassportData(
       'sha1',
@@ -148,7 +154,7 @@ const ProveScreen: React.FC = () => {
       '300101',
     );
     const status = await sendVcAndDisclosePayload(
-      '0',
+      '0', // TODO this is thesecret when mocking... can we use the real one though?
       passportData,
       selectedApp,
     );
@@ -157,6 +163,29 @@ const ProveScreen: React.FC = () => {
       status === ProofStatusEnum.SUCCESS,
     );
   }
+
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleScroll = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      if (hasScrolledToBottom) {
+        // everything is done, no need to check
+        return;
+      }
+      const { layoutMeasurement, contentOffset, contentSize } =
+        event.nativeEvent;
+      const paddingToBottom = 10;
+      const isCloseToBottom =
+        layoutMeasurement.height + contentOffset.y >=
+        contentSize.height - paddingToBottom;
+
+      if (isCloseToBottom && !hasScrolledToBottom) {
+        setHasScrolledToBottom(true);
+      }
+    },
+    [hasScrolledToBottom],
+  );
 
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
@@ -197,7 +226,11 @@ const ProveScreen: React.FC = () => {
         backgroundColor={white}
         maxHeight={'55%'}
       >
-        <ScrollView>
+        <ScrollView
+          ref={scrollViewRef}
+          onScroll={handleScroll}
+          scrollEventThrottle={16}
+        >
           <Disclosures disclosures={disclosureOptions} />
           <View marginTop={20}>
             <Caption
@@ -206,18 +239,21 @@ const ProveScreen: React.FC = () => {
               marginBottom={20}
               marginTop={10}
               borderRadius={4}
+              paddingBottom={20}
             >
               Self will confirm that these details are accurate and none of your
               confidential info will be revealed to {selectedApp.appName}
             </Caption>
-            <HeldPrimaryButton
-              onPress={onVerify}
-              disabled={!selectedApp.sessionId}
-            >
-              Hold To Verify
-            </HeldPrimaryButton>
           </View>
         </ScrollView>
+        <HeldPrimaryButton
+          onPress={onVerify}
+          disabled={!selectedApp.sessionId || !hasScrolledToBottom}
+        >
+          {hasScrolledToBottom
+            ? 'Hold To Verify'
+            : 'Please read all disclosures'}
+        </HeldPrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

@@ -15,7 +15,11 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import { black, white } from '../../utils/colors';
-import { notificationError, notificationSuccess } from '../../utils/haptic';
+import {
+  buttonTap,
+  notificationError,
+  notificationSuccess,
+} from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
   const { selectedApp, proofVerificationResult, disclosureStatus } =
@@ -24,6 +28,7 @@ const SuccessScreen: React.FC = () => {
   const goHome = useHapticNavigation('Home');
 
   function onOkPress() {
+    buttonTap();
     goHome();
   }
 

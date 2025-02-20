@@ -82,11 +82,11 @@ android {
 
     namespace "com.proofofpassportapp"
     defaultConfig {
-        applicationId "xyz.self"
+        applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 23
-        versionName "2.2.5"
+        versionCode 28
+        versionName "2.2.9"
         externalNativeBuild {
             cmake {
                 cppFlags += "-fexceptions -frtti -std=c++11"

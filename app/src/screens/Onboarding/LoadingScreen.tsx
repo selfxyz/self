@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
@@ -17,7 +17,9 @@ import {
   registerPassport,
 } from '../../utils/proving/payload';
 
-const LoadingScreen: React.FC = () => {
+type LoadingScreenProps = StaticScreenProps<{}>;
+
+const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
   const goToErrorScreen = useHapticNavigation('ConfirmBelongingScreen');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');

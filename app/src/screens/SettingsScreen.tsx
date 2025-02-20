@@ -1,5 +1,6 @@
-import React, { PropsWithChildren, useCallback } from 'react';
+import React, { PropsWithChildren, useCallback, useMemo } from 'react';
 import { Linking, Platform, Share } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { getCountry, getLocales, getTimeZone } from 'react-native-localize';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
@@ -28,6 +29,7 @@ import ShareIcon from '../images/icons/share.svg';
 import Star from '../images/icons/star.svg';
 import Telegram from '../images/icons/telegram.svg';
 import Web from '../images/icons/webpage.svg';
+import { useSettingStore } from '../stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 
@@ -61,13 +63,17 @@ const routes = [
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
   [ShareIcon, 'Share Self app', 'share'],
-] as [React.FC<SvgProps>, string, RouteOption][];
+] satisfies [React.FC<SvgProps>, string, RouteOption][];
 
-// temporarily always show so we can release builds for testing
-if (__DEV__ || true) {
-  // @ts-expect-error
-  routes.push([Bug, 'Debug menu', 'DevSettings']);
-}
+// get the actual type of the routes so we can use in the onMenuPress function so it
+// doesnt worry about us linking to screens with required props which we dont want to go to anyway
+type RouteLinks = (typeof routes)[number][2];
+
+const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption] = [
+  Bug as React.FC<SvgProps>,
+  'Debug menu',
+  'DevSettings',
+];
 
 const social = [
   [Github, gitHubUrl],
@@ -112,9 +118,23 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
 };
 
 const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
+  const { isDevMode, setDevModeOn } = useSettingStore();
+  useSettingStore();
   const navigation = useNavigation();
+
+  const screenRoutes = useMemo(() => {
+    return isDevMode ? [...routes, DEBUG_MENU] : routes;
+  }, [isDevMode]);
+
+  const twoFingerTap = Gesture.Tap()
+    .minPointers(2)
+    .numberOfTaps(5)
+    .onStart(() => {
+      setDevModeOn();
+    });
+
   const onMenuPress = useCallback(
-    (menuRoute: RouteOption) => {
+    (menuRoute: RouteLinks) => {
       return async () => {
         impactLight();
         switch (menuRoute) {
@@ -164,60 +184,67 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
   );
   const { bottom } = useSafeAreaInsets();
   return (
-    <View backgroundColor={white}>
-      <YStack
-        bg={black}
-        gap={20}
-        jc="space-between"
-        height={'100%'}
-        padding={20}
-        borderTopLeftRadius={30}
-        borderTopRightRadius={30}
-      >
-        <ScrollView>
-          <YStack ai="flex-start" justifyContent="flex-start" width="100%">
-            {routes.map(([Icon, menuText, menuRoute]) => (
-              <MenuButton
-                key={menuRoute}
-                Icon={Icon}
-                onPress={onMenuPress(menuRoute)}
-              >
-                {menuText}
-              </MenuButton>
-            ))}
-          </YStack>
-        </ScrollView>
-        <YStack ai="center" gap={20} justifyContent="center" paddingBottom={50}>
-          <Button
-            unstyled
-            icon={<Star color={white} height={24} width={21} />}
-            width="100%"
-            padding={20}
-            backgroundColor={slate800}
-            color={white}
-            flexDirection="row"
-            jc="center"
+    <GestureDetector gesture={twoFingerTap}>
+      <View backgroundColor={white}>
+        <YStack
+          bg={black}
+          gap={20}
+          jc="space-between"
+          height={'100%'}
+          padding={20}
+          borderTopLeftRadius={30}
+          borderTopRightRadius={30}
+        >
+          <ScrollView>
+            <YStack ai="flex-start" justifyContent="flex-start" width="100%">
+              {screenRoutes.map(([Icon, menuText, menuRoute]) => (
+                <MenuButton
+                  key={menuRoute}
+                  Icon={Icon}
+                  onPress={onMenuPress(menuRoute)}
+                >
+                  {menuText}
+                </MenuButton>
+              ))}
+            </YStack>
+          </ScrollView>
+          <YStack
             ai="center"
-            gap={6}
-            borderRadius={4}
-            pressStyle={pressedStyle}
-            onPress={goToStore}
+            gap={20}
+            justifyContent="center"
+            paddingBottom={50}
           >
-            <BodyText color={white}>Leave an app store review</BodyText>
-          </Button>
-          <XStack gap={32}>
-            {social.map(([Icon, href], i) => (
-              <SocialButton key={i} Icon={Icon} href={href} />
-            ))}
-          </XStack>
-          <BodyText color={amber500} fontSize={15}>
-            SELF
-          </BodyText>
-          {/* Dont remove if not viewing on ios */}
-          <View marginBottom={bottom} />
+            <Button
+              unstyled
+              icon={<Star color={white} height={24} width={21} />}
+              width="100%"
+              padding={20}
+              backgroundColor={slate800}
+              color={white}
+              flexDirection="row"
+              jc="center"
+              ai="center"
+              gap={6}
+              borderRadius={4}
+              pressStyle={pressedStyle}
+              onPress={goToStore}
+            >
+              <BodyText color={white}>Leave an app store review</BodyText>
+            </Button>
+            <XStack gap={32}>
+              {social.map(([Icon, href], i) => (
+                <SocialButton key={i} Icon={Icon} href={href} />
+              ))}
+            </XStack>
+            <BodyText color={amber500} fontSize={15}>
+              SELF
+            </BodyText>
+            {/* Dont remove if not viewing on ios */}
+            <View marginBottom={bottom} />
+          </YStack>
         </YStack>
-      </YStack>
-    </View>
+      </View>
+    </GestureDetector>
   );
 };
 

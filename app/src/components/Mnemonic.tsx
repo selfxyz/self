@@ -12,6 +12,7 @@ import {
   teal500,
   white,
 } from '../utils/colors';
+import { confirmTap } from '../utils/haptic';
 
 interface MnemonicProps {
   words?: string[];
@@ -49,6 +50,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
   const copyToClipboardOrReveal = useCallback(async () => {
+    confirmTap();
     if (!revealWords) {
       // TODO: container jumps when words are revealed on android
       await onRevealWords?.();

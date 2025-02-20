@@ -7,6 +7,7 @@ import { Button } from 'tamagui';
 import ActivityIcon from '../images/icons/activity.svg';
 import SettingsIcon from '../images/icons/settings.svg';
 import { black, neutral400, white } from '../utils/colors';
+import { buttonTap } from '../utils/haptic';
 import { NavBar } from './NavBar';
 
 const HomeNavBar = (props: NativeStackHeaderProps) => {
@@ -31,6 +32,7 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
         }
         // disable icon click for now
         onPress={() => {
+          buttonTap();
           // props.navigation.navigate('Activity');
           return false;
         }}
@@ -51,7 +53,10 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
             }
           />
         }
-        onPress={() => props.navigation.navigate('Settings')}
+        onPress={() => {
+          buttonTap();
+          props.navigation.navigate('Settings');
+        }}
       />
     </NavBar.Container>
   );

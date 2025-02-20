@@ -10,9 +10,10 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
-const AccountVerifiedSuccessScreen: React.FC = () => {
+const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation = useNavigation();
 
   return (
@@ -45,7 +46,8 @@ const AccountVerifiedSuccessScreen: React.FC = () => {
         </YStack>
         <PrimaryButton
           onPress={() => {
-            navigation.navigate('SaveRecoveryPhrase');
+            buttonTap();
+            navigation.navigate('Home');
           }}
         >
           Continue

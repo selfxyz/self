@@ -2,11 +2,11 @@ import { createSegmentClient } from '../Segment';
 
 const segmentClient = createSegmentClient();
 
-function cleanParams(properties: Record<string, any>) {
+function cleanParams(params: Record<string, any>) {
   const newParams = {};
-  for (const key of Object.keys(properties.params)) {
-    if (typeof properties.params[key] !== 'function') {
-      (newParams as Record<string, any>)[key] = properties.params[key];
+  for (const key of Object.keys(params)) {
+    if (typeof params[key] !== 'function') {
+      (newParams as Record<string, any>)[key] = params[key];
     }
   }
   return newParams;
@@ -28,14 +28,16 @@ const analytics = () => {
       type === 'screen' ? segmentClient.screen : segmentClient.track;
 
     if (!properties) {
-      return trackMethod(eventName);
+      // you may need to remove the catch when debugging
+      return trackMethod(eventName).catch(console.info);
     }
 
     if (properties.params) {
       const newParams = cleanParams(properties.params);
       properties.params = newParams;
     }
-    trackMethod(eventName, properties);
+    // you may need to remove the catch when debugging
+    trackMethod(eventName, properties).catch(console.info);
   }
 
   return {

@@ -48,9 +48,11 @@ const SaveRecoveryPhraseScreen: React.FC<
   }, []);
 
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
-    params: { nextScreen: 'AccountVerifiedSuccess' },
+    params: { nextScreen: 'SaveRecoveryPhrase' },
   });
-  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess');
+  const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
+    action: 'confirm',
+  });
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -78,7 +80,7 @@ const SaveRecoveryPhraseScreen: React.FC<
           You can reveal your recovery phrase in settings.
         </Caption>
         <PrimaryButton onPress={onCloudBackupPress}>
-          Enable {STORAGE_NAME} backups
+          Manage {STORAGE_NAME} backups
         </PrimaryButton>
         <SecondaryButton onPress={onSkipPress}>
           {userHasSeenMnemonic ? 'Continue' : 'Skip making a backup'}
