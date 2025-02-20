@@ -58,7 +58,7 @@ interface IPassportContext {
 export const PassportContext = createContext<IPassportContext>({
   getData: () => Promise.resolve(null),
   setData: storePassportData,
-  getPassportDataAndSecret: () => Promise.resolve(null),
+  getPassportDataAndSecret: () => Promise.reject(null),
   clearPassportData: clearPassportData,
 });
 

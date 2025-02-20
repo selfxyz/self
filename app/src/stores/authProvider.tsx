@@ -122,12 +122,12 @@ interface IAuthContext {
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
   isAuthenticating: false,
-  loginWithBiometrics: () => Promise.resolve(),
+  loginWithBiometrics: () => Promise.reject(),
   _getSecurely,
-  getOrCreatePrivateKey: () => Promise.resolve(null),
-  restoreAccountFromMnemonic: () => Promise.resolve(null),
-  restoreAccountFromPrivateKey: () => Promise.resolve(null),
-  createSigningKeyPair: () => Promise.resolve(false),
+  getOrCreatePrivateKey: () => Promise.reject(null),
+  restoreAccountFromMnemonic: () => Promise.reject(null),
+  restoreAccountFromPrivateKey: () => Promise.reject(null),
+  createSigningKeyPair: () => Promise.reject(false),
 });
 
 export const AuthProvider = ({

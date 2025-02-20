@@ -16,10 +16,6 @@ const ShowRecoveryPhraseScreen: React.FC<
   const { getOrCreatePrivateKey } = useAuth();
   const [mnemonic, setMnemonic] = useState<string[]>();
 
-  const onRevealWords = useCallback(async () => {
-    await loadMnemonic();
-  }, []);
-
   const loadMnemonic = useCallback(async () => {
     const privKey = await getOrCreatePrivateKey();
     if (!privKey) {
@@ -35,7 +31,11 @@ const ShowRecoveryPhraseScreen: React.FC<
     );
 
     setMnemonic(words.trim().split(' '));
-  }, []);
+  }, [getOrCreatePrivateKey]);
+
+  const onRevealWords = useCallback(async () => {
+    await loadMnemonic();
+  }, [loadMnemonic]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor="white">

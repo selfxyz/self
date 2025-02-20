@@ -25,7 +25,7 @@ const SplashScreen: React.FC = ({}) => {
           err,
         );
       });
-  }, []);
+  }, [createSigningKeyPair]);
 
   const handleAnimationFinish = useCallback(() => {
     setTimeout(async () => {
