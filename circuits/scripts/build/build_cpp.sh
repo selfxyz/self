@@ -8,6 +8,7 @@ if [[  $1 != "register" && $1 != "dsc" && $1 != "disclose" ]]; then
 fi
 
 REGISTER_CIRCUITS=(
+    "register_sha1_sha1_sha1_ecdsa_brainpoolP224r1:true"
     "register_sha1_sha1_sha1_rsa_65537_4096:true"
     "register_sha1_sha256_sha256_rsa_65537_4096:true"
     "register_sha224_sha224_sha224_ecdsa_brainpoolP224r1:true"
