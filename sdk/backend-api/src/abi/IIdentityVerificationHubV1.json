@@ -6,17 +6,17 @@
     {
       "inputs": [
         {
-          "internalType": "uint256",
+          "internalType": "uint256[4]",
           "name": "forbiddenCountriesListPacked",
-          "type": "uint256"
+          "type": "uint256[4]"
         }
       ],
       "name": "getReadableForbiddenCountries",
       "outputs": [
         {
-          "internalType": "string[10]",
+          "internalType": "string[40]",
           "name": "forbiddenCountries",
-          "type": "string[10]"
+          "type": "string[40]"
         }
       ],
       "stateMutability": "view",
@@ -81,7 +81,17 @@
             },
             {
               "internalType": "uint256",
-              "name": "ofac",
+              "name": "passportNoOfac",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nameAndDobOfac",
+              "type": "uint256"
+            },
+            {
+              "internalType": "uint256",
+              "name": "nameAndYobOfac",
               "type": "uint256"
             }
           ],
@@ -257,14 +267,14 @@
               "type": "bool"
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint256[4]",
               "name": "forbiddenCountriesListPacked",
-              "type": "uint256"
+              "type": "uint256[4]"
             },
             {
-              "internalType": "bool",
+              "internalType": "bool[3]",
               "name": "ofacEnabled",
-              "type": "bool"
+              "type": "bool[3]"
             },
             {
               "components": [
@@ -284,9 +294,9 @@
                   "type": "uint256[2]"
                 },
                 {
-                  "internalType": "uint256[16]",
+                  "internalType": "uint256[21]",
                   "name": "pubSignals",
-                  "type": "uint256[16]"
+                  "type": "uint256[21]"
                 }
               ],
               "internalType": "struct IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof",
@@ -334,9 +344,9 @@
               "type": "uint256[3]"
             },
             {
-              "internalType": "uint256",
+              "internalType": "uint256[4]",
               "name": "forbiddenCountriesListPacked",
-              "type": "uint256"
+              "type": "uint256[4]"
             }
           ],
           "internalType": "struct IIdentityVerificationHubV1.VcAndDiscloseVerificationResult",

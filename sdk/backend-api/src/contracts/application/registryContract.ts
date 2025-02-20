@@ -64,6 +64,14 @@ export class RegistryContract {
         return { hash };
     }
 
+    public async updateHub(
+        address: `0x${string}`
+    ) {
+        const hash = await this.registry.write.updateHub([address]) as `0x${string}`;
+        await waitForTransactionReceipt(this.client, { hash });
+        return { hash };
+    }
+
     public async getIdentityCommitmentMerkleRoot() {
         const root = await this.registry.read.getIdentityCommitmentMerkleRoot();
         return root;

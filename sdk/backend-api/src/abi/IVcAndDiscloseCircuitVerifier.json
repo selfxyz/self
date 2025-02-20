@@ -21,9 +21,9 @@
           "type": "uint256[2]"
         },
         {
-          "internalType": "uint256[16]",
+          "internalType": "uint256[21]",
           "name": "pubSignals",
-          "type": "uint256[16]"
+          "type": "uint256[21]"
         }
       ],
       "name": "verifyProof",

@@ -20,6 +20,11 @@
     },
     {
       "inputs": [],
+      "name": "InvalidUserIdentifier",
+      "type": "error"
+    },
+    {
+      "inputs": [],
       "name": "RegisteredNullifier",
       "type": "error"
     },

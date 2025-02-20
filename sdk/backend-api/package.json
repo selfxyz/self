@@ -4,7 +4,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "bun run --watch src/app.ts",
-    "init": "bash scripts/copy_abi.sh && bash scripts/copy_deployedAddress.sh",
+    "init": "bash scripts/copy_abi.sh",
     "start:daemon": "bun run src/app.ts > app.log 2>&1 &",
     "stop:daemon": "pkill -f 'bun run src/app.ts'"
   },
