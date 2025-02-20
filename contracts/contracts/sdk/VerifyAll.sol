@@ -11,18 +11,18 @@ import {CircuitConstants} from "../constants/CircuitConstants.sol";
 /// @dev This contract interacts with IdentityVerificationHub and IdentityRegistry
 contract VerifyAll is Ownable {
 
-    IIdentityVerificationHubV1 public _hub;
-    IIdentityRegistryV1 public _registry;
+    IIdentityVerificationHubV1 public hub;
+    IIdentityRegistryV1 public registry;
 
     /// @notice Initializes the contract with hub and registry addresses
-    /// @param hub The address of the IdentityVerificationHub contract
-    /// @param registry The address of the IdentityRegistry contract
+    /// @param hubAddress The address of the IdentityVerificationHub contract
+    /// @param registryAddress The address of the IdentityRegistry contract
     constructor(
-        address hub,
-        address registry
+        address hubAddress,
+        address registryAddress
     ) Ownable(msg.sender) {
-        _hub = IIdentityVerificationHubV1(hub);
-        _registry = IIdentityRegistryV1(registry);
+        hub = IIdentityVerificationHubV1(hubAddress);
+        registry = IIdentityRegistryV1(registryAddress);
     }
 
     /// @notice Verifies identity proof and reveals selected data
@@ -46,7 +46,7 @@ contract VerifyAll is Ownable {
     {
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result;
-        try _hub.verifyVcAndDisclose(proof) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
+        try hub.verifyVcAndDisclose(proof) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
             result = _result;
         } catch (bytes memory lowLevelData) {
             string memory errorCode;
@@ -55,10 +55,8 @@ contract VerifyAll is Ownable {
                 assembly {
                     errorSelector := mload(add(lowLevelData, 32))
                 }
-                if (errorSelector == bytes4(keccak256("LENGTH_MISMATCH()"))) {
-                    errorCode = "LENGTH_MISMATCH";
-                } else if (errorSelector == bytes4(keccak256("NO_VERIFIER_SET()"))) {
-                    errorCode = "NO_VERIFIER_SET";
+                if (errorSelector == bytes4(keccak256("INVALID_COMMITMENT_ROOT()"))) {
+                    errorCode = "INVALID_COMMITMENT_ROOT";
                 } else if (errorSelector == bytes4(keccak256("CURRENT_DATE_NOT_IN_VALID_RANGE()"))) {
                     errorCode = "CURRENT_DATE_NOT_IN_VALID_RANGE";
                 } else if (errorSelector == bytes4(keccak256("INVALID_OLDER_THAN()"))) {
@@ -90,7 +88,7 @@ contract VerifyAll is Ownable {
         }
 
         if (targetRootTimestamp != 0) {
-            if (_registry.rootTimestamps(result.identityCommitmentRoot) != targetRootTimestamp) {
+            if (registry.rootTimestamps(result.identityCommitmentRoot) != targetRootTimestamp) {
                 IIdentityVerificationHubV1.ReadableRevealedData memory emptyData = IIdentityVerificationHubV1.ReadableRevealedData({
                     issuingState: "",
                     name: new string[](0),
@@ -109,23 +107,23 @@ contract VerifyAll is Ownable {
         }
 
         uint256[3] memory revealedDataPacked = result.revealedDataPacked;
-        IIdentityVerificationHubV1.ReadableRevealedData memory readableData = _hub.getReadableRevealedData(revealedDataPacked, types);
+        IIdentityVerificationHubV1.ReadableRevealedData memory readableData = hub.getReadableRevealedData(revealedDataPacked, types);
 
         return (readableData, true, "");
     }
 
     /// @notice Updates the hub contract address
-    /// @param hub The new hub contract address
+    /// @param hubAddress The new hub contract address
     /// @dev Only callable by the contract owner
-    function setHub(address hub) external onlyOwner {
-        _hub = IIdentityVerificationHubV1(hub);
+    function setHub(address hubAddress) external onlyOwner {
+        hub = IIdentityVerificationHubV1(hubAddress);
     }
 
     /// @notice Updates the registry contract address
-    /// @param registry The new registry contract address
+    /// @param registryAddress The new registry contract address
     /// @dev Only callable by the contract owner
-    function setRegistry(address registry) external onlyOwner {
-        _registry = IIdentityRegistryV1(registry);
+    function setRegistry(address registryAddress) external onlyOwner {
+        registry = IIdentityRegistryV1(registryAddress);
     }
 
 }
