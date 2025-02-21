@@ -18,7 +18,7 @@
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
-    "nice": "yarn fmt:fix && yarn lint:fix",
+    "nice": "yarn lint:fix && yarn fmt:fix",
     "reinstall": "yarn clean && yarn install && yarn install-app",
     "start": "watchman watch-del-all && react-native start",
     "test": "jest --passWithNoTests"

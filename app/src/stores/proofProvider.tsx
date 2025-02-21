@@ -20,22 +20,30 @@ export enum ProofStatusEnum {
 interface IProofContext {
   registrationStatus: ProofStatusEnum;
   disclosureStatus: ProofStatusEnum;
-  proofVerificationResult: unknown;
   selectedApp: SelfApp;
   setSelectedApp: (app: SelfApp) => void;
   cleanSelfApp: () => void;
-  setProofVerificationResult: (result: unknown) => void;
   resetProof: () => void;
 }
 
 const defaults: IProofContext = {
   registrationStatus: ProofStatusEnum.PENDING,
   disclosureStatus: ProofStatusEnum.PENDING,
-  proofVerificationResult: null,
-  selectedApp: {} as SelfApp,
+  selectedApp: {
+    appName: '',
+    logoBase64: '',
+    scope: '',
+    endpointType: 'https',
+    endpoint: '',
+    header: '',
+    sessionId: '',
+    userId: '',
+    userIdType: 'uuid',
+    devMode: true,
+    disclosures: {},
+  },
   setSelectedApp: (_: SelfApp) => undefined,
   cleanSelfApp: () => undefined,
-  setProofVerificationResult: (_: unknown) => undefined,
   resetProof: () => undefined,
 };
 
@@ -58,8 +66,7 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   const [disclosureStatus, setDisclosureStatus] = useState<ProofStatusEnum>(
     ProofStatusEnum.PENDING,
   );
-  const [proofVerificationResult, setProofVerificationResult] =
-    useState<unknown>(defaults.proofVerificationResult);
+
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
@@ -69,31 +76,18 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       return;
     }
     setRegistrationStatus(ProofStatusEnum.PENDING);
-    setProofVerificationResult(null);
     setSelectedAppInternal(app);
   }, []);
 
   const cleanSelfApp = useCallback(() => {
-    const emptySelfApp: SelfApp = {
-      appName: '',
-      logoBase64: '',
-      scope: '',
-      endpointType: 'https',
-      endpoint: '',
-      header: '',
-      sessionId: '',
-      userId: '',
-      userIdType: 'uuid',
-      devMode: true,
-      disclosures: {},
-    };
-    setSelectedAppInternal(emptySelfApp);
+    setSelectedAppInternal(defaults.selectedApp);
   }, []);
 
+  // why do we have both resetProof and cleanSelfApp?
+  // possible we can make resetProof only about registration status, and clean app about disclosures status
   const resetProof = useCallback(() => {
     setRegistrationStatus(ProofStatusEnum.PENDING);
     setDisclosureStatus(ProofStatusEnum.PENDING);
-    setProofVerificationResult(null);
     setSelectedAppInternal(defaults.selectedApp);
   }, []);
 
@@ -117,17 +111,14 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     () => ({
       registrationStatus,
       disclosureStatus,
-      proofVerificationResult,
       selectedApp,
       setSelectedApp,
       cleanSelfApp,
-      setProofVerificationResult,
       resetProof,
     }),
     [
       registrationStatus,
       disclosureStatus,
-      proofVerificationResult,
       selectedApp,
       setSelectedApp,
       cleanSelfApp,

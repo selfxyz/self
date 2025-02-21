@@ -73,6 +73,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
           return;
         }
 
+        // TODO (_): cleaning here makes sense, clean app should set the disclosure states to default too
         // Clean up first
         cleanSelfApp();
 
