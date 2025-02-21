@@ -13,7 +13,7 @@ import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
-import { STORAGE_NAME, useBackupPrivateKey } from '../../utils/cloudBackup';
+import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
 
 interface AccountRecoveryChoiceScreenProps {}
@@ -21,11 +21,11 @@ interface AccountRecoveryChoiceScreenProps {}
 const AccountRecoveryChoiceScreen: React.FC<
   AccountRecoveryChoiceScreenProps
 > = ({}) => {
-  const { restoreAccountFromPrivateKey } = useAuth();
+  const { restoreAccountFromMnemonic } = useAuth();
   const [restoring, setRestoring] = useState(false);
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
-  const { download } = useBackupPrivateKey();
+  const { download } = useBackupMnemonic();
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
   const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
@@ -33,8 +33,8 @@ const AccountRecoveryChoiceScreen: React.FC<
   const onRestoreFromCloudPress = useCallback(async () => {
     setRestoring(true);
     try {
-      const restoredPrivKey = await download();
-      await restoreAccountFromPrivateKey(restoredPrivKey);
+      const mnemonic = await download();
+      await restoreAccountFromMnemonic(mnemonic.phrase);
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
@@ -47,7 +47,7 @@ const AccountRecoveryChoiceScreen: React.FC<
   }, [
     cloudBackupEnabled,
     download,
-    restoreAccountFromPrivateKey,
+    restoreAccountFromMnemonic,
     onRestoreFromCloudNext,
   ]);
 
@@ -77,7 +77,8 @@ const AccountRecoveryChoiceScreen: React.FC<
               onPress={onRestoreFromCloudPress}
               disabled={restoring || !biometricsAvailable}
             >
-              Restore from {STORAGE_NAME}
+              {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
+              {restoring ? '…' : ''}
             </PrimaryButton>
             <XStack gap={64} ai="center" justifyContent="space-between">
               <Separator flexGrow={1} />

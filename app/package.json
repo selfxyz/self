@@ -68,6 +68,7 @@
     "react-native-localize": "^3.4.1",
     "react-native-nfc-manager": "^3.15.1",
     "react-native-passport-reader": "^1.0.3",
+    "react-native-quick-crypto": "^0.7.12",
     "react-native-safe-area-context": "^5.2.0",
     "react-native-screens": "^4.6.0",
     "react-native-svg": "^15.11.1",

@@ -10,6 +10,7 @@ import { TamaguiProvider, createTamagui } from 'tamagui';
 
 import App from './App';
 import { name as appName } from './app.json';
+import './src/utils/ethers';
 
 const tamaguiConfig = createTamagui(config);
 

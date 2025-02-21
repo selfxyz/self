@@ -15,7 +15,7 @@ import Cloud from '../../images/icons/logo_cloud_backup.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
 import { useSettingStore } from '../../stores/settingStore';
-import { STORAGE_NAME, useBackupPrivateKey } from '../../utils/cloudBackup';
+import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, white } from '../../utils/colors';
 import { buttonTap, confirmTap } from '../../utils/haptic';
 
@@ -32,10 +32,10 @@ interface CloudBackupScreenProps
 const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
   route: { params },
 }) => {
-  const { getOrCreatePrivateKey, loginWithBiometrics } = useAuth();
+  const { getOrCreateMnemonic, loginWithBiometrics } = useAuth();
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
-  const { upload, disableBackup } = useBackupPrivateKey();
+  const { upload, disableBackup } = useBackupMnemonic();
   const [pending, setPending] = useState(false);
 
   const { showModal } = useModal(
@@ -70,17 +70,17 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 
     setPending(true);
 
-    const privKey = await getOrCreatePrivateKey();
-    if (!privKey) {
+    const storedMnemonic = await getOrCreateMnemonic();
+    if (!storedMnemonic) {
       setPending(false);
       return;
     }
-    await upload(privKey.data);
+    await upload(storedMnemonic.data);
     toggleCloudBackupEnabled();
     setPending(false);
   }, [
     cloudBackupEnabled,
-    getOrCreatePrivateKey,
+    getOrCreateMnemonic,
     upload,
     toggleCloudBackupEnabled,
   ]);

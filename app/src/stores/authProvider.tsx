@@ -11,6 +11,10 @@ import Keychain from 'react-native-keychain';
 
 import { ethers } from 'ethers';
 
+import { Mnemonic } from '../types/mnemonic';
+
+const SERVICE_NAME = 'secret';
+
 type SignedPayload<T> = { signature: string; data: T };
 const _getSecurely = async function <T>(
   fn: () => Promise<string | false>,
@@ -69,34 +73,36 @@ async function createSigningKeyPair(): Promise<boolean> {
   }
 }
 
-export async function loadSecret() {
-  const secretCreds = await Keychain.getGenericPassword({ service: 'secret' });
-  return secretCreds === false ? false : secretCreds.password;
-}
-
 async function restoreFromMnemonic(mnemonic: string) {
+  if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+    throw new Error('Invalid mnemonic');
+  }
+
   const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
-  return restoreFromPrivateKey(restoredWallet.privateKey);
-}
-
-async function restoreFromPrivateKey(privateKey: string) {
-  await Keychain.setGenericPassword('secret', privateKey, {
-    service: 'secret',
+  const data = JSON.stringify(restoredWallet.mnemonic);
+  await Keychain.setGenericPassword('secret', data, {
+    service: SERVICE_NAME,
   });
-  return loadSecret();
+  return data;
 }
 
-export async function loadSecretOrCreateIt() {
-  const secret = await loadSecret();
-  if (secret) {
-    return secret;
+async function loadOrCreateMnemonic() {
+  const storedMnemonic = await Keychain.getGenericPassword({
+    service: SERVICE_NAME,
+  });
+  if (storedMnemonic) {
+    return storedMnemonic.password;
   }
 
   console.log('No secret found, creating one');
-  const randomWallet = ethers.Wallet.createRandom();
-  const newSecret = randomWallet.privateKey;
-  await Keychain.setGenericPassword('secret', newSecret, { service: 'secret' });
-  return newSecret;
+  const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
+    ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
+  );
+  const data = JSON.stringify(mnemonic);
+  await Keychain.setGenericPassword('secret', data, {
+    service: SERVICE_NAME,
+  });
+  return data;
 }
 
 const biometrics = new ReactNativeBiometrics({
@@ -110,13 +116,10 @@ interface IAuthContext {
   isAuthenticating: boolean;
   loginWithBiometrics: () => Promise<void>;
   _getSecurely: typeof _getSecurely;
-  getOrCreatePrivateKey: () => Promise<SignedPayload<string> | null>;
+  getOrCreateMnemonic: () => Promise<SignedPayload<Mnemonic> | null>;
   restoreAccountFromMnemonic: (
     mnemonic: string,
-  ) => Promise<SignedPayload<string> | null>;
-  restoreAccountFromPrivateKey: (
-    privKey: string,
-  ) => Promise<SignedPayload<string> | null>;
+  ) => Promise<SignedPayload<boolean> | null>;
   createSigningKeyPair: () => Promise<boolean>;
 }
 export const AuthContext = createContext<IAuthContext>({
@@ -124,9 +127,8 @@ export const AuthContext = createContext<IAuthContext>({
   isAuthenticating: false,
   loginWithBiometrics: () => Promise.resolve(),
   _getSecurely,
-  getOrCreatePrivateKey: () => Promise.resolve(null),
+  getOrCreateMnemonic: () => Promise.resolve(null),
   restoreAccountFromMnemonic: () => Promise.resolve(null),
-  restoreAccountFromPrivateKey: () => Promise.resolve(null),
   createSigningKeyPair: () => Promise.resolve(false),
 });
 
@@ -174,24 +176,16 @@ export const AuthProvider = ({
     });
   }, [isAuthenticatingPromise]);
 
-  const getOrCreatePrivateKey = useCallback(
-    () => _getSecurely<string>(loadSecretOrCreateIt, str => str),
+  const getOrCreateMnemonic = useCallback(
+    () => _getSecurely<Mnemonic>(loadOrCreateMnemonic, str => JSON.parse(str)),
     [],
   );
 
   const restoreAccountFromMnemonic = useCallback(
     (mnemonic: string) =>
-      _getSecurely<string>(
+      _getSecurely<boolean>(
         () => restoreFromMnemonic(mnemonic),
-        str => str,
-      ),
-    [],
-  );
-  const restoreAccountFromPrivateKey = useCallback(
-    (privKey: string) =>
-      _getSecurely<string>(
-        () => restoreFromPrivateKey(privKey),
-        str => str,
+        str => !!str,
       ),
     [],
   );
@@ -201,9 +195,8 @@ export const AuthProvider = ({
       isAuthenticated,
       isAuthenticating: !!isAuthenticatingPromise,
       loginWithBiometrics,
-      getOrCreatePrivateKey,
+      getOrCreateMnemonic,
       restoreAccountFromMnemonic,
-      restoreAccountFromPrivateKey,
       createSigningKeyPair,
       _getSecurely,
     }),
@@ -216,3 +209,24 @@ export const AuthProvider = ({
 export const useAuth = () => {
   return useContext(AuthContext);
 };
+
+export async function hasSecretStored() {
+  const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
+  return !!seed;
+}
+
+/**
+ * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
+ * to access both the privatekey and the passport data with the user only authenticating once
+ */
+export async function unsafe_getPrivateKey() {
+  const mnemonic = JSON.parse(await loadOrCreateMnemonic()) as Mnemonic;
+  const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase);
+  return wallet.privateKey;
+}
+
+export async function unsafe_clearSecrets() {
+  if (__DEV__) {
+    await Keychain.resetGenericPassword({ service: SERVICE_NAME });
+  }
+}

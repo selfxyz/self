@@ -45,6 +45,7 @@ const RecoverWithPhraseScreen: React.FC<
       return;
     }
     const result = await restoreAccountFromMnemonic(slimMnemonic);
+
     if (!result) {
       console.warn('Failed to restore account');
       // TODO SOMETHING ELSE?
@@ -52,7 +53,7 @@ const RecoverWithPhraseScreen: React.FC<
       return;
     }
     setRestoring(false);
-    navigation.navigate('Home');
+    navigation.navigate('AccountVerifiedSuccess');
   }, [mnemonic, restoreAccountFromMnemonic]);
 
   return (

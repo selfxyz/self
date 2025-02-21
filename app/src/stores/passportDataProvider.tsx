@@ -8,9 +8,10 @@ import React, {
 import Keychain from 'react-native-keychain';
 
 import { PassportData } from '../../../common/src/utils/types';
-import { loadSecretOrCreateIt } from '../stores/authProvider';
+import { unsafe_getPrivateKey } from '../stores/authProvider';
 import { useAuth } from './authProvider';
 
+// TODO: refactor this as it shouldnt be used directly IMHO
 export async function loadPassportData() {
   const passportDataCreds = await Keychain.getGenericPassword({
     service: 'passportData',
@@ -20,7 +21,7 @@ export async function loadPassportData() {
 
 export async function loadPassportDataAndSecret() {
   const passportData = await loadPassportData();
-  const secret = await loadSecretOrCreateIt();
+  const secret = await unsafe_getPrivateKey();
   if (!secret || !passportData) {
     return false;
   }

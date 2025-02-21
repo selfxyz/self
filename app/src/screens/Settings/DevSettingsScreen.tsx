@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import { Platform, TextInput } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import {
@@ -8,10 +9,23 @@ import {
   IterationCw,
   VenetianMask,
 } from '@tamagui/lucide-icons';
-import { Adapt, Button, Fieldset, Label, Select, Sheet, YStack } from 'tamagui';
+import {
+  Adapt,
+  Button,
+  Fieldset,
+  Label,
+  Select,
+  Sheet,
+  Text,
+  YStack,
+} from 'tamagui';
 
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
+import {
+  unsafe_clearSecrets,
+  unsafe_getPrivateKey,
+} from '../../stores/authProvider';
 import {
   storePassportData,
   usePassport,
@@ -19,6 +33,22 @@ import {
 import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
+
+function SelectableText({ children, ...props }: PropsWithChildren) {
+  if (Platform.OS === 'ios') {
+    return (
+      <TextInput multiline editable={false} {...props}>
+        {children}
+      </TextInput>
+    );
+  } else {
+    return (
+      <Text selectable {...props}>
+        {children}
+      </Text>
+    );
+  }
+}
 
 const items = [
   'DevSettings',
@@ -103,12 +133,18 @@ const ScreenSelector = ({}) => {
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const { clearPassportData } = usePassport();
+  const [privateKey, setPrivateKey] = useState('Loading private key…');
 
   const nav = useNavigation();
 
-  function handleRestart() {
-    clearPassportData();
+  async function handleRestart() {
+    await clearPassportData();
     nav.navigate('Launch');
+  }
+
+  async function deleteEverything() {
+    await unsafe_clearSecrets();
+    await handleRestart();
   }
 
   function handleGenerateMockPassportData() {
@@ -123,15 +159,14 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     storePassportData(passportData);
   }
 
+  useEffect(() => {
+    unsafe_getPrivateKey().then(setPrivateKey);
+  }, []);
+
   return (
-    <YStack gap="$2" mt="$2" ai="center">
-      <Fieldset gap="$4" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="restart"
-        >
+    <YStack gap="$3" mt="$2" ai="center">
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
           Rescan passport
         </Label>
         <Button
@@ -146,13 +181,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           <IterationCw color={textBlack} />
         </Button>
       </Fieldset>
-      <Fieldset gap="$4" horizontal>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="restart"
-        >
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
           Generate mock passport data
         </Label>
         <Button
@@ -168,13 +198,8 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
         </Button>
       </Fieldset>
 
-      <Fieldset gap="$4" mt="$1" horizontal marginBottom={30}>
-        <Label
-          color={textBlack}
-          width={200}
-          justifyContent="flex-end"
-          htmlFor="skip"
-        >
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
           Delete passport data
         </Label>
         <Button
@@ -184,17 +209,65 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           borderWidth={1.2}
           size="$3.5"
           ml="$2"
-          // onPress={}
+          onPress={clearPassportData}
+        >
+          <Eraser color={textBlack} />
+        </Button>
+      </Fieldset>
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
+          Delete keychain secrets
+        </Label>
+        <Button
+          bg="white"
+          jc="center"
+          borderColor={borderColor}
+          borderWidth={1.2}
+          size="$3.5"
+          ml="$2"
+          onPress={unsafe_clearSecrets}
         >
           <Eraser color={textBlack} />
         </Button>
       </Fieldset>
 
-      <Fieldset marginTop={30} gap="$4" mt="$1" horizontal>
-        <Label color={textBlack} justifyContent="flex-end" htmlFor="skip">
-          Shortcut
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
+          Delete everything
+        </Label>
+        <Button
+          bg="white"
+          jc="center"
+          borderColor={borderColor}
+          borderWidth={1.2}
+          size="$3.5"
+          ml="$2"
+          onPress={deleteEverything}
+        >
+          <Eraser color={textBlack} />
+        </Button>
+      </Fieldset>
+
+      <Fieldset px="$4" horizontal width="100%" justifyContent="space-between">
+        <Label color={textBlack} justifyContent="flex-end">
+          Shortcuts
         </Label>
         <ScreenSelector />
+      </Fieldset>
+
+      <Fieldset px="$4" width="100%" mt={30} justifyContent="space-between">
+        <Label color={textBlack} width={200} justifyContent="flex-end">
+          Private key
+        </Label>
+        <SelectableText
+          color={textBlack}
+          width={300}
+          justifyContent="flex-end"
+          userSelect="all"
+          style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
+        >
+          {privateKey}
+        </SelectableText>
       </Fieldset>
     </YStack>
   );
