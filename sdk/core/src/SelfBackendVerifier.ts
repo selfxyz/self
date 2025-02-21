@@ -2,7 +2,7 @@ import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
 import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS } from './constants/contractAddresses';
 import { ethers } from 'ethers';
-import { Groth16Proof, PublicSignals } from 'snarkjs';
+import { PublicSignals } from 'snarkjs';
 import {
   countryCodes,
   countryNames,
@@ -52,8 +52,6 @@ export class SelfBackendVerifier {
       getCountryCode(country)
     );
     const forbiddenCountriesListPacked = packForbiddenCountriesList(excludedCountryCodes);
-    const packedValue =
-      forbiddenCountriesListPacked.length > 0 ? forbiddenCountriesListPacked : ['0','0','0','0'];
 
     const isValidScope =
       this.scope ===
@@ -67,7 +65,7 @@ export class SelfBackendVerifier {
       olderThanEnabled: this.minimumAge.enabled,
       olderThan: this.minimumAge.value,
       forbiddenCountriesEnabled: this.excludedCountries.enabled,
-      forbiddenCountriesListPacked: packedValue,
+      forbiddenCountriesListPacked: forbiddenCountriesListPacked,
       ofacEnabled: [this.passportNoOfac, this.nameAndDobOfac, this.nameAndYobOfac],
       vcAndDiscloseProof: {
         a: proof.a,
@@ -91,13 +89,8 @@ export class SelfBackendVerifier {
       revealedDataTypes.name_and_yob_ofac,
     ];
 
-    let timestamp;
-    if (this.targetRootTimestamp.enabled) {
-      timestamp = this.targetRootTimestamp.value;
-    } else {
-      const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
-      timestamp = await this.registryContract.rootTimestamps(currentRoot);
-    }
+    const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
+    const timestamp = await this.registryContract.rootTimestamps(currentRoot);
 
     let result: any;
     try {
@@ -121,6 +114,7 @@ export class SelfBackendVerifier {
             publicSignals: publicSignals,
           },
         },
+        error: error
       }
     }
 
@@ -166,14 +160,10 @@ export class SelfBackendVerifier {
           publicSignals: publicSignals,
         },
       },
+      error: result[2]
     };
 
     return attestation;
-  }
-
-  setTargetRootTimestamp(targetRootTimestamp: number): this {
-    this.targetRootTimestamp = { enabled: true, value: targetRootTimestamp };
-    return this;
   }
 
   setMinimumAge(age: number): this {
@@ -192,12 +182,10 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  discloseNationality(): this {
-    this.setNationality('Any');
-    return this;
-  }
-
   excludeCountries(...countries: (typeof countryNames)[number][]): this {
+    if (countries.length > 40) {
+      throw new Error('Number of excluded countries cannot exceed 40');
+    }
     this.excludedCountries = { enabled: true, value: countries };
     return this;
   }

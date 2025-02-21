@@ -36,6 +36,7 @@ export interface SelfVerificationResult {
       publicSignals: PublicSignals;
     };
   };
+  error: any;
 }
 
 export function parsePublicSignalsDisclose(publicSignals) {

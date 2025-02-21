@@ -18,13 +18,12 @@ const selfBackendVerifier = new SelfBackendVerifier(
 ## Setup
 You can setup which data you want to verify in this sdk
 ```typescript
-// In default, verification will be done with latest identity commitment root, but if you have some other root in your mind, you can choose with timestamp
-selfBackendVerifier.setTargetRootTimestamp(0);
 // Set minimum age verification
 selfBackendVerifier.setMinimumAge(20);
 // Set nationality verification
 selfBackendVerifier.setNationality('France')
 // Set exclude countries verification
+// At most 40
 selfBackendVerifier.excludeCountries('Country Name1', 'Country Name2', 'Coutry Name3', 'etc...');
 // Enable if you want to do passport number ofac check
 // Default false
@@ -104,6 +103,75 @@ export interface SelfVerificationResult {
             proof: Groth16Proof;
             publicSignals: PublicSignals;
         };
+    };
+}
+```
+
+## How to return the result in your api implementation
+This backend SDK is designed to be used with APIs managed by third parties, and it communicates with Self's managed relayer to enable smooth usage of applications provided by Self.
+
+When using it:
+1. Set the endpoint of the API that imports this backend SDK in SelfAppBuilder
+```typescript
+  const selfApp = new SelfAppBuilder({
+    appName: "Application name",
+    scope: "Application id",
+    endpoint: "API endpoint which imports this backend sdk",
+    logoBase64: logo,
+    userId,
+    disclosures: {
+      name: true,
+      nationality: true,
+      date_of_birth: true,
+      passport_number: true,
+      minimumAge: 20,
+      excludedCountries: [
+        "Exclude countries which you want"
+      ],
+      ofac: true,
+    }
+  }).build();
+```
+
+2. This API needs to return values in the following format:
+```typescript
+response: {
+    200: t.Object({
+        status: t.String(),
+        result: t.Boolean(),
+    }),
+    500: t.Object({
+        status: t.String(),
+        result: t.Boolean(),
+        message: t.String(),
+    }),
+},
+```
+Bit more explanation to the values in the return value.
+
+status: Indicates that the API processing has completed successfully
+
+result: Contains the verification result from the SelfBackendVerifier
+
+message: Represents the error details when an error occurs
+
+Here is the little example to implement the api.
+
+```typescript
+try {
+    const result = await selfBackendVerifier.verify(
+        request.body.proof,
+        request.body.publicSignals
+    );
+    return {
+        status: "success",
+        result: result.isValid,
+    };
+} catch (error) {
+    return {
+        status: "error",
+        result: false,
+        message: error instanceof Error ? error.message : "Unknown error",
     };
 }
 ```
