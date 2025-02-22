@@ -68,18 +68,14 @@ describe("Airdrop", () => {
             commitment
         );
 
-        const root = await deployedActors.registry.getIdentityCommitmentMerkleRoot();
-        const timestamp = await deployedActors.registry.rootTimestamps(root);
         countriesListPacked = splitHexFromBack(reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
 
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
-            deployedActors.registry.target,
             castFromScope("test-airdrop"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            timestamp,
             true,
             20,
             true,
@@ -198,7 +194,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        const tx = await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        const tx = await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         const receipt = await tx.wait();
         
         const event = receipt?.logs.find(
@@ -227,7 +223,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).closeRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegistrationNotOpen");
     });
 
@@ -246,7 +242,7 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidScope");
     });
 
@@ -254,8 +250,8 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegisteredNullifier");
     });
 
@@ -287,7 +283,7 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
     
@@ -310,45 +306,8 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidUserIdentifier");
-    });
-
-    it("should not able to register address when rootTimestamp is different", async () => {
-        const {registry, owner, user1, mockPassport} = deployedActors;
-
-        const secondCommitment = generateCommitment(registerSecret, ATTESTATION_ID.INVALID_ATTESTATION_ID, mockPassport);
-        await registry.devAddIdentityCommitment(
-            ATTESTATION_ID.E_PASSPORT,
-            nullifier,
-            secondCommitment
-        );
-
-        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        const invalidImt = new LeanIMT<bigint>(hashFunction);
-        invalidImt.insert(BigInt(commitment));
-        invalidImt.insert(BigInt(secondCommitment));
-
-        vcAndDiscloseProof = await generateVcAndDiscloseProof(
-            registerSecret,
-            BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
-            deployedActors.mockPassport,
-            "test-airdrop",
-            new Array(88).fill("1"),
-            "1",
-            invalidImt,
-            "20",
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            forbiddenCountriesList,
-            (await deployedActors.user1.getAddress()).slice(2)
-        );
-
-        await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).registerAddress(vcAndDiscloseProof))
-            .to.be.revertedWithCustomError(airdrop, "InvalidTimestamp");
     });
 
     it("should allow registration when targetRootTimestamp is 0", async () => {
@@ -357,11 +316,9 @@ describe("Airdrop", () => {
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         const newAirdrop = await airdropFactory.connect(owner).deploy(
             hub.target,
-            registry.target,
             castFromScope("test-airdrop"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            0,
             true,
             20,
             true,
@@ -371,32 +328,8 @@ describe("Airdrop", () => {
         await newAirdrop.waitForDeployment();
 
         await newAirdrop.connect(owner).openRegistration();
-        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseProof))
+        await expect(newAirdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
             .to.not.be.reverted;
-    });
-
-    it("should revert with InvalidTimestamp when root timestamp does not match", async () => {
-        const { hub, registry, owner, user1 } = deployedActors;
-        
-        const airdropFactory = await ethers.getContractFactory("Airdrop");
-        const newAirdrop = await airdropFactory.connect(owner).deploy(
-            hub.target,
-            registry.target,
-            castFromScope("test-airdrop"),
-            ATTESTATION_ID.E_PASSPORT,
-            token.target,
-            123456789,
-            true,
-            20,
-            true,
-            countriesListPacked,
-            [true, true, true],
-        );
-        await newAirdrop.waitForDeployment();
-
-        await newAirdrop.connect(owner).openRegistration();
-        await expect(newAirdrop.connect(user1).registerAddress(vcAndDiscloseProof))
-            .to.be.revertedWithCustomError(newAirdrop, "InvalidTimestamp");
     });
 
     it("should return correct scope", async () => {
@@ -427,7 +360,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -464,7 +397,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -484,7 +417,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -504,7 +437,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -529,7 +462,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -550,7 +483,7 @@ describe("Airdrop", () => {
         const { owner, user1, user2 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([

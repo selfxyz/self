@@ -3,11 +3,12 @@ pragma solidity 0.8.28;
 
 import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
-import {PassportAirdropRoot} from "../abstract/PassportAirdropRoot.sol";
-import {IPassportAirdropRoot} from "../interfaces/IPassportAirdropRoot.sol";
+import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
+import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /**
  * @title Airdrop (Experimental)
@@ -16,7 +17,7 @@ import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
  *         **WARNING:** This contract has not been audited and is NOT intended for production use.
  * @dev Inherits from PassportAirdropRoot for registration logic and Ownable for administrative control.
  */
-contract Airdrop is PassportAirdropRoot, Ownable {
+contract Airdrop is SelfVerificationRoot, Ownable {
     using SafeERC20 for IERC20;
 
     // ====================================================
@@ -34,6 +35,9 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     /// @notice Indicates whether the claim phase is active.
     bool public isClaimOpen;
 
+    mapping(uint256 => uint256) internal _nullifiers;
+    mapping(uint256 => bool) internal _registeredUserIdentifiers;
+
     // ====================================================
     // Errors
     // ====================================================
@@ -50,6 +54,9 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     error RegistrationNotClosed();
     /// @notice Reverts when a claim is attempted while claiming is not enabled.
     error ClaimNotOpen();
+
+    error RegisteredNullifier();
+    error InvalidUserIdentifier();
 
     // ====================================================
     // Events
@@ -69,6 +76,8 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     /// @notice Emitted when the claim phase is closed.
     event ClaimClose();
 
+    event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
+
     // ====================================================
     // Constructor
     // ====================================================
@@ -78,11 +87,9 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      * @dev Initializes the airdrop parameters, zero-knowledge verification configuration,
      *      and sets the ERC20 token to be distributed.
      * @param _identityVerificationHub The address of the Identity Verification Hub.
-     * @param _identityRegistry The address of the Identity Registry.
      * @param _scope The expected proof scope for user registration.
      * @param _attestationId The expected attestation identifier required in proofs.
      * @param _token The address of the ERC20 token for airdrop.
-     * @param _targetRootTimestamp The target root timestamp for additional verification (0 to disable).
      * @param _olderThanEnabled Flag indicating if 'olderThan' verification is enabled.
      * @param _olderThan Value for 'olderThan' verification.
      * @param _forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
@@ -91,23 +98,19 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      */
     constructor(
         address _identityVerificationHub, 
-        address _identityRegistry,
         uint256 _scope, 
         uint256 _attestationId,
         address _token,
-        uint256 _targetRootTimestamp,
         bool _olderThanEnabled,
         uint256 _olderThan,
         bool _forbiddenCountriesEnabled,
         uint256[4] memory _forbiddenCountriesListPacked,
         bool[3] memory _ofacEnabled
     ) 
-        PassportAirdropRoot(
+        SelfVerificationRoot(
             _identityVerificationHub, 
-            _identityRegistry, 
             _scope, 
             _attestationId, 
-            _targetRootTimestamp,
             _olderThanEnabled,
             _olderThan,
             _forbiddenCountriesEnabled,
@@ -138,7 +141,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      * @param newVerificationConfig The new verification configuration.
      */
     function setVerificationConfig(
-        IPassportAirdropRoot.VerificationConfig memory newVerificationConfig
+        ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
         _verificationConfig = newVerificationConfig;
     }
@@ -184,13 +187,48 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      * @dev Reverts if the registration phase is not open.
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
-    function registerAddress(
+    function verifySelfProof(
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
-    ) external {
+    ) 
+        public 
+        override 
+    {
+
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
-        _registerAddress(proof);
+        
+        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
+            revert InvalidScope();
+        }
+
+        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
+            revert InvalidAttestationId();
+        }
+
+        if (_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != 0) {
+            revert RegisteredNullifier();
+        }
+        
+        if (proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX] == 0) {
+            revert InvalidUserIdentifier();
+        }
+
+        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
+            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
+                olderThanEnabled: _verificationConfig.olderThanEnabled,
+                olderThan: _verificationConfig.olderThan,
+                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
+                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
+                ofacEnabled: _verificationConfig.ofacEnabled,
+                vcAndDiscloseProof: proof
+            })
+        );
+
+        _nullifiers[result.nullifier] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
+        _registeredUserIdentifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]] = true;
+
+        emit UserIdentifierRegistered(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX], result.nullifier);
     }
 
     /**
@@ -222,7 +260,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
      * @notice Retrieves the current verification configuration.
      * @return The verification configuration used for registration.
      */
-    function getVerificationConfig() external view returns (IPassportAirdropRoot.VerificationConfig memory) {
+    function getVerificationConfig() external view returns (ISelfVerificationRoot.VerificationConfig memory) {
         return _verificationConfig;
     }
 
@@ -266,7 +304,7 @@ contract Airdrop is PassportAirdropRoot, Ownable {
         if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
 
         // Mark as claimed and transfer tokens.
-        _setClaimed(index);
+        _setClaimed();
         IERC20(token).safeTransfer(msg.sender, amount);
 
         emit Claimed(index, msg.sender, amount);
@@ -279,9 +317,8 @@ contract Airdrop is PassportAirdropRoot, Ownable {
     /**
      * @notice Internal function to mark the caller as having claimed their tokens.
      * @dev Updates the claimed mapping.
-     * @param index The index of the claim (unused in storage, provided for event consistency).
      */
-    function _setClaimed(uint256 index) internal {
+    function _setClaimed() internal {
         claimed[msg.sender] = true;
     }
 }

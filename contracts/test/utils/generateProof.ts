@@ -168,7 +168,6 @@ export async function generateVcAndDiscloseRawProof(
         forbiddenCountriesList,
         userIdentifier
     );
-    console.log("forbiddenCountriesList: ", vcAndDiscloseCircuitInputs.forbidden_countries_list);
 
     console.log(CYAN, "=== Start generateVcAndDiscloseRawProof ===", RESET);
     const startTime = performance.now();
