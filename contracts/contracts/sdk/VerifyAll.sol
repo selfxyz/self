@@ -32,6 +32,7 @@ contract VerifyAll is Ownable {
     /// @return readableData The revealed data in readable format
     /// @return success Whether the verification was successful
     function verifyAll (
+        bool devMode,
         uint256 targetRootTimestamp,
         IIdentityVerificationHubV1.VcAndDiscloseHubProof memory proof,
         IIdentityVerificationHubV1.RevealedDataType[] memory types
@@ -46,8 +47,11 @@ contract VerifyAll is Ownable {
     {
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result;
-        try hub.verifyVcAndDisclose(proof) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
-            result = _result;
+        try hub.verifyVcAndDisclose(
+                devMode,
+                proof
+            ) returns (IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory _result) {
+                result = _result;
         } catch (bytes memory lowLevelData) {
             string memory errorCode;
             if (lowLevelData.length >= 4) {
