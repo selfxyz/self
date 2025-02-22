@@ -1,7 +1,7 @@
 # Installation
 
 ```bash
-yarn add @selfxyz/sdk
+yarn add @openpassport/sdk
 ```
 
 # Generate a QR code
@@ -9,7 +9,7 @@ yarn add @selfxyz/sdk
 ### Create an AppType type object:
 
 ```typescript
-import { AppType } from '@selfxyz/sdk';
+import { AppType } from '@openpassport/sdk';
 const appName = '🤠 Cowboy App';
 const scope = 'cowboyApp';
 const userID = 'user1234';
@@ -42,7 +42,7 @@ Use the appType object defined above to generate a QR code.
 The generated QR code is an `HTML element` that you can display in your app.
 
 ```typescript
-import { QRCodeGenerator } from '@selfxyz/sdk';
+import { QRCodeGenerator } from '@openpassport/sdk';
 
 // [...]  define cowboyApp as described above
 
@@ -56,7 +56,7 @@ const qrCode: HTMLElement = await QRCodeGenerator.generateQRCode(cowboyApp);
 To use the `OpenPassportVerifier`, import and initialize it as follows:
 
 ```typescript
-import { OpenPassportVerifier } from '@selfxyz/sdk';
+import { OpenPassportVerifier } from '@openpassport/sdk';
 const verifier = new OpenPassportVerifier({
   scope: 'cowboyApp',
   requirements: [
