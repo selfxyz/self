@@ -2,13 +2,13 @@
 ## Install
 You can install with this command
 ```
-npm i @selfxyz/core
+npm i @openpassport/core
 ```
 
 ## Initialize
 You should have CELO_RPC_URL and SCOPE in your environment or somewhere in your code.
 ```typescript
-import { SelfBackendVerifier } from "@selfxyz/core";
+import { SelfBackendVerifier } from "@openpassport/core";
 
 const selfBackendVerifier = new SelfBackendVerifier(
     process.env.CELO_RPC_URL as string,
