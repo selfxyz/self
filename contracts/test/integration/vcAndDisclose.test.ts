@@ -93,12 +93,15 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
-            const result = await hub.verifyVcAndDisclose(vcAndDiscloseHubProof);
+            const result = await hub.verifyVcAndDisclose(
+                false, 
+                vcAndDiscloseHubProof
+            );
 
             expect(result.identityCommitmentRoot).to.equal(vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
             expect(result.revealedDataPacked).to.have.lengthOf(3);
@@ -118,12 +121,15 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: false,
                 olderThan: "20",
                 forbiddenCountriesEnabled: false,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
-            await expect(hubImpl.verifyVcAndDisclose(vcAndDiscloseHubProof))
+            await expect(hubImpl.verifyVcAndDisclose(
+                false,
+                vcAndDiscloseHubProof
+            ))
                 .to.be.revertedWithCustomError(hubImpl, "UUPSUnauthorizedCallContext");
         });
 
@@ -135,13 +141,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_COMMITMENT_ROOT");
         });
 
@@ -154,13 +163,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_OFAC_ROOT");
         });
 
@@ -173,13 +185,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, true, false] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_OFAC_ROOT");
         });
 
@@ -192,13 +207,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, false, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_OFAC_ROOT");
         });
 
@@ -226,13 +244,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
         });
 
@@ -261,13 +282,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
             await expect (
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.not.be.reverted;
         });
 
@@ -279,7 +303,7 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
@@ -302,7 +326,10 @@ describe("VC and Disclose", () => {
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false, 
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "CURRENT_DATE_NOT_IN_VALID_RANGE");
         });
 
@@ -330,13 +357,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.not.be.reverted;
         });
 
@@ -347,13 +377,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "18",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.not.reverted;
         });
 
@@ -364,13 +397,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "21",
                 forbiddenCountriesEnabled: false,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_OLDER_THAN");
         });
 
@@ -406,13 +442,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: false,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_OFAC");
         });
 
@@ -423,13 +462,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: true,
                 olderThan: "20",
                 forbiddenCountriesEnabled: true,
-                forbiddenCountriesListPacked: invalidForbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: invalidForbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [true, true, true] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_FORBIDDEN_COUNTRIES");
         });
 
@@ -440,13 +482,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: false,
                 olderThan: "40",
                 forbiddenCountriesEnabled: false,
-                forbiddenCountriesListPacked: invalidForbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: invalidForbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.not.be.reverted;
         });
 
@@ -459,13 +504,16 @@ describe("VC and Disclose", () => {
                 olderThanEnabled: false,
                 olderThan: "20",
                 forbiddenCountriesEnabled: false,
-                forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                forbiddenCountriesListPacked: forbiddenCountriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
                 ofacEnabled: [false, false, false] as [boolean, boolean, boolean],
                 vcAndDiscloseProof: vcAndDiscloseProof
             }
 
             await expect(
-                hub.verifyVcAndDisclose(vcAndDiscloseHubProof)
+                hub.verifyVcAndDisclose(
+                    false,
+                    vcAndDiscloseHubProof
+                )
             ).to.be.revertedWithCustomError(hub, "INVALID_VC_AND_DISCLOSE_PROOF");
         });
     });

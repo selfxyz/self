@@ -380,6 +380,7 @@ contract IdentityVerificationHubImplV1 is
      * @return result A VcAndDiscloseVerificationResult struct with the verification results.
      */
     function verifyVcAndDisclose(
+        bool devMode,
         VcAndDiscloseHubProof memory proof
     )
         external
@@ -390,7 +391,10 @@ contract IdentityVerificationHubImplV1 is
     {
         VcAndDiscloseVerificationResult memory result;
         
-        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(proof);
+        result.identityCommitmentRoot = _verifyVcAndDiscloseProof(
+            devMode,
+            proof
+        );
 
         for (uint256 i = 0; i < 3; i++) {
             result.revealedDataPacked[i] = proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX + i];
@@ -581,6 +585,7 @@ contract IdentityVerificationHubImplV1 is
      * @return identityCommitmentRoot The verified identity commitment root from the proof.
      */
     function _verifyVcAndDiscloseProof(
+        bool devMode,
         VcAndDiscloseHubProof memory proof
     ) 
         internal
@@ -588,8 +593,10 @@ contract IdentityVerificationHubImplV1 is
         returns (uint256 identityCommitmentRoot)
     {
         // verify identity commitment root
-        if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
-            revert INVALID_COMMITMENT_ROOT();
+        if (!devMode) {
+            if (!IIdentityRegistryV1(_registry).checkIdentityCommitmentRoot(proof.vcAndDiscloseProof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX])) {
+                revert INVALID_COMMITMENT_ROOT();
+            }
         }
 
         // verify current date

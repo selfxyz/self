@@ -103,6 +103,7 @@ interface IIdentityVerificationHubV1 {
      * @return result The verification result including attestationId, scope, userIdentifier, nullifier, identityCommitmentRoot, revealed data, and forbidden countries list.
      */
     function verifyVcAndDisclose(
+        bool devMode,
         VcAndDiscloseHubProof memory proof
     )
         external

@@ -135,6 +135,7 @@ abstract contract PassportAirdropRoot is
         }
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
+            false,
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
                 olderThanEnabled: _verificationConfig.olderThanEnabled,
                 olderThan: _verificationConfig.olderThan,
