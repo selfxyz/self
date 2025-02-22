@@ -1,6 +1,11 @@
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
-import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS } from './constants/contractAddresses';
+import { 
+  REGISTRY_ADDRESS, 
+  VERIFYALL_ADDRESS,
+  DEV_REGISTRY_ADDRESS,
+  DEV_VERIFYALL_ADDRESS
+} from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import {
@@ -14,6 +19,7 @@ import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/consta
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 
 export class SelfBackendVerifier {
+  protected devMode: boolean = false;
   protected scope: string;
   protected attestationId: number = 1;
   protected targetRootTimestamp: { enabled: boolean; value: number } = {
@@ -37,11 +43,15 @@ export class SelfBackendVerifier {
   protected registryContract: any;
   protected verifyAllContract: any;
 
-  constructor(rpcUrl: string, scope: string) {
+  constructor(rpcUrl: string, scope: string, devMode?: boolean) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
     this.scope = scope;
+    if (devMode == true) {
+      this.registryContract = new ethers.Contract(DEV_REGISTRY_ADDRESS, registryAbi, provider);
+      this.verifyAllContract = new ethers.Contract(DEV_VERIFYALL_ADDRESS, verifyAllAbi, provider);
+    }
   }
 
   public async verify(
@@ -94,7 +104,7 @@ export class SelfBackendVerifier {
 
     let result: any;
     try {
-      result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
+      result = await this.verifyAllContract.verifyAll(this.devMode, timestamp, vcAndDiscloseHubProof, types);
     } catch (error) {
       return {
         isValid: false,
@@ -179,6 +189,11 @@ export class SelfBackendVerifier {
 
   setNationality(country: (typeof countryNames)[number]): this {
     this.nationality = { enabled: true, value: country };
+    return this;
+  }
+
+  enableDevMode(): this {
+    this.devMode = true;
     return this;
   }
 
