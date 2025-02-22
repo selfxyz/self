@@ -144,6 +144,11 @@ export const verifyAllAbi = [
   {
     "inputs": [
       {
+        "internalType": "bool",
+        "name": "devMode",
+        "type": "bool"
+      },
+      {
         "internalType": "uint256",
         "name": "targetRootTimestamp",
         "type": "uint256"
