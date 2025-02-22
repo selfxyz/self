@@ -21,10 +21,11 @@ interface OpenPassportQRcodeProps {
   onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
+  children?: React.ReactNode;
 }
 
 // Create a wrapper component that handles client-side rendering
-const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => {
+const OpenPassportQRcodeWrapper = (props: OpenPassportQRcodeProps) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -37,12 +38,12 @@ const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => 
 };
 
 // Your existing OpenPassportQRcode component
-const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
+const OpenPassportQRcode = ({
   selfApp,
   onSuccess,
   websocketUrl = WS_DB_RELAYER,
   size = 300,
-}) => {
+}: OpenPassportQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
   const [sessionId] = useState(uuidv4());
