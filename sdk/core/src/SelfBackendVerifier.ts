@@ -21,12 +21,21 @@ export class SelfBackendVerifier {
     value: 0,
   };
 
-  protected nationality: { enabled: boolean; value: (typeof countryNames)[number] } = {
+  protected nationality: {
+    enabled: boolean;
+    value: (typeof countryNames)[number];
+  } = {
     enabled: false,
     value: '' as (typeof countryNames)[number],
   };
-  protected minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
-  protected excludedCountries: { enabled: boolean; value: (typeof countryNames)[number][] } = {
+  protected minimumAge: { enabled: boolean; value: string } = {
+    enabled: false,
+    value: '18',
+  };
+  protected excludedCountries: {
+    enabled: boolean;
+    value: (typeof countryNames)[number][];
+  } = {
     enabled: false,
     value: [],
   };
@@ -44,10 +53,7 @@ export class SelfBackendVerifier {
     this.scope = scope;
   }
 
-  public async verify(
-    proof: any,
-    publicSignals: PublicSignals
-  ): Promise<SelfVerificationResult> {
+  public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
     const excludedCountryCodes = this.excludedCountries.value.map((country) =>
       getCountryCode(country)
     );
@@ -69,7 +75,10 @@ export class SelfBackendVerifier {
       ofacEnabled: [this.passportNoOfac, this.nameAndDobOfac, this.nameAndYobOfac],
       vcAndDiscloseProof: {
         a: proof.a,
-        b: [[proof.b[0][1], proof.b[0][0]],[proof.b[1][1], proof.b[1][0]]],
+        b: [
+          [proof.b[0][1], proof.b[0][0]],
+          [proof.b[1][1], proof.b[1][0]],
+        ],
         c: proof.c,
         pubSignals: publicSignals,
       },
@@ -114,8 +123,8 @@ export class SelfBackendVerifier {
             publicSignals: publicSignals,
           },
         },
-        error: error
-      }
+        error: error,
+      };
     }
 
     let isValidNationality = true;
@@ -160,7 +169,7 @@ export class SelfBackendVerifier {
           publicSignals: publicSignals,
         },
       },
-      error: result[2]
+      error: result[2],
     };
 
     return attestation;
