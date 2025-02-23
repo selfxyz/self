@@ -9,13 +9,14 @@ import {
   getCountryCode,
 } from '../../../common/src/constants/constants';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
-import { castToScope } from '../../../common/src/utils/circuits/uuid';
+import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
+  protected user_identifier_type: UserIdType = 'uuid';
   protected targetRootTimestamp: { enabled: boolean; value: number } = {
     enabled: false,
     value: 0,
@@ -46,11 +47,16 @@ export class SelfBackendVerifier {
   protected registryContract: any;
   protected verifyAllContract: any;
 
-  constructor(rpcUrl: string, scope: string) {
+  constructor(
+    rpcUrl: string,
+    scope: string,
+    user_identifier_type: UserIdType
+  ) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
     this.scope = scope;
+    this.user_identifier_type = user_identifier_type;
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
@@ -101,6 +107,11 @@ export class SelfBackendVerifier {
     const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
     const timestamp = await this.registryContract.rootTimestamps(currentRoot);
 
+    const user_identifier = castToUserIdentifier(
+      BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
+      this.user_identifier_type
+    );
+
     let result: any;
     try {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
@@ -113,10 +124,10 @@ export class SelfBackendVerifier {
           isValidProof: false,
           isValidNationality: false,
         },
-        userId: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+        userId: user_identifier,
         application: this.scope,
         nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-        credentialSubject: null,
+        credentialSubject: {},
         proof: {
           value: {
             proof: proof,
@@ -159,7 +170,7 @@ export class SelfBackendVerifier {
         isValidProof: result[1],
         isValidNationality: isValidNationality,
       },
-      userId: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+      userId: user_identifier,
       application: this.scope,
       nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
       credentialSubject: credentialSubject,
