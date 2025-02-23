@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "repository": {
     "type": "git",
     "url": "https://github.com/celo-org/self"
@@ -21,7 +21,8 @@
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
-    "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit"
+    "test": "yarn ts-mocha -p ./tsconfig.json tests/openPassportVerifier.test.ts --exit",
+    "publish": "npm publish --access public"
   },
   "dependencies": {
     "@types/react": "^18.3.4",

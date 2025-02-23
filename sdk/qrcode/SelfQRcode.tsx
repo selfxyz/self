@@ -16,7 +16,7 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
   ssr: false,
 });
 
-interface OpenPassportQRcodeProps {
+interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;
   websocketUrl?: string;
@@ -26,7 +26,7 @@ interface OpenPassportQRcodeProps {
 }
 
 // Create a wrapper component that handles client-side rendering
-const OpenPassportQRcodeWrapper = (props: OpenPassportQRcodeProps) => {
+const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -35,17 +35,17 @@ const OpenPassportQRcodeWrapper = (props: OpenPassportQRcodeProps) => {
   if (!isClient) {
     return null;
   }
-  return <OpenPassportQRcode {...props} />;
+  return <SelfQRcode {...props} />;
 };
 
-// Your existing OpenPassportQRcode component
-const OpenPassportQRcode = ({
+// Your existing SelfQRcode component
+const SelfQRcode = ({
   selfApp,
   onSuccess,
   websocketUrl = WS_DB_RELAYER,
   size = 300,
   darkMode = false,
-}: OpenPassportQRcodeProps) => {
+}: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
   const [sessionId] = useState(uuidv4());
@@ -133,7 +133,7 @@ const OpenPassportQRcode = ({
 };
 
 // Export the wrapper component as the default export
-export default OpenPassportQRcodeWrapper;
+export default SelfQRcodeWrapper;
 
 // Also export other components/types that might be needed
-export { OpenPassportQRcode, SelfApp, SelfAppBuilder };
+export { SelfQRcode, SelfApp, SelfAppBuilder };
