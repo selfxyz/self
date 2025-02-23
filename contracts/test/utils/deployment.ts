@@ -5,7 +5,7 @@ import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
-import serialized_csca_tree from "../../../common/pubkeys/serialized_csca_tree.json";
+import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
 import {
     DeployedActors,
     VcAndDiscloseVerifier,
@@ -49,11 +49,12 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     mockPassport = genMockPassportData(
         "sha256",
         "sha256",
-        "rsa_sha256_65537_2048",
+        "rsa_sha256_65537_4096",
         "FRA",
         "940131",
         "401031"
     );
+    console.log("mockPassport: ", mockPassport.dsc);
 
     // Deploy verifiers
     const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local"

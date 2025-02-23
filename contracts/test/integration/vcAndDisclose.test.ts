@@ -86,8 +86,6 @@ describe("VC and Disclose", () => {
 
         it("should verify and get result successfully", async () => {
             const {hub, registry, owner} = deployedActors;
-            console.log(vcAndDiscloseProof.pubSignals);
-            // console.log("root in proof: ", vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
 
             const vcAndDiscloseHubProof = {
                 olderThanEnabled: true,

@@ -6,8 +6,8 @@ import { RegisterVerifierId, DscVerifierId, CIRCUIT_CONSTANTS } from "../../../c
 import { ATTESTATION_ID } from "../utils/constants";
 import { generateRegisterProof, generateDscProof, generateVcAndDiscloseProof } from "../utils/generateProof";
 import { generateRandomFieldElement, splitHexFromBack } from "../utils/utils";
-import { TransactionReceipt, ZeroAddress } from "ethers";
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import { BigNumberish, TransactionReceipt, ZeroAddress } from "ethers";
+import serialized_dsc_tree from '../utils/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
@@ -179,15 +179,13 @@ describe("End to End Tests", function () {
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         const airdrop = await airdropFactory.connect(owner).deploy(
             hub.target,
-            registry.target,
             castFromScope("test-scope"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
-            rootTimestamp,
             true,
             20,
             true,
-            countriesListPacked,
+            countriesListPacked as [BigNumberish, BigNumberish, BigNumberish, BigNumberish],
             [true, true, true],
         );
         await airdrop.waitForDeployment();
@@ -195,7 +193,7 @@ describe("End to End Tests", function () {
         await token.connect(owner).mint(airdrop.target, BigInt(1000000000000000000));
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).registerAddress(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([
