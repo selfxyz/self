@@ -18,7 +18,6 @@ import { SelfBackendVerifier } from '@openpassport/core';
 const selfBackendVerifier = new SelfBackendVerifier(
   process.env.CELO_RPC_URL as string,
   process.env.SCOPE as string,
-  "uuid"
 );
 ```
 
@@ -132,7 +131,7 @@ When using it:
 const selfApp = new SelfAppBuilder({
   appName: 'Application name',
   scope: 'Application id',
-  endpoint: 'API endpoint which imports this backend sdk',
+  endpoint: 'API endpoint which imports the backend sdk',
   logoBase64: logo,
   userId,
   disclosures: {
@@ -141,7 +140,7 @@ const selfApp = new SelfAppBuilder({
     date_of_birth: true,
     passport_number: true,
     minimumAge: 20,
-    excludedCountries: ['Exclude countries which you want'],
+    excludedCountries: ["Countries to exclude"],
     ofac: true,
   },
 }).build();
