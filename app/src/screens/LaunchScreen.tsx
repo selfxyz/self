@@ -2,15 +2,17 @@ import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
+import LottieView from 'lottie-react-native';
 import { Anchor, Text, XStack, YStack } from 'tamagui';
+import { useWindowDimensions } from 'tamagui';
 
+import onboardingAnimation from '../assets/animations/launch_onboarding.json';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
 import { privacyUrl, termsUrl } from '../consts/links';
 import useConnectionModal from '../hooks/useConnectionModal';
 import useHapticNavigation from '../hooks/useHapticNavigation';
-import GetStartedCard from '../images/card-style-2.svg';
 import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
@@ -23,6 +25,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   const onStartPress = useHapticNavigation('PassportOnboarding');
   const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
+  const { height } = useWindowDimensions();
   const twoFingerTap = Gesture.Tap()
     .minPointers(2)
     .numberOfTaps(5)
@@ -33,33 +36,38 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
-        <YStack
-          flex={1}
-          justifyContent="flex-start"
-          paddingVertical="$2"
-          gap="$4"
-        >
-          <GestureDetector gesture={twoFingerTap}>
-            <View style={styles.cardContainer}>
-              <GetStartedCard style={styles.card} />
-            </View>
-          </GestureDetector>
-          <YStack flex={1} justifyContent="flex-end">
-            <XStack
-              marginBottom="$10"
-              alignItems="center"
-              justifyContent="center"
-              gap="$4"
+        <YStack flex={1} paddingTop="$10">
+          <View style={styles.cardContainer}>
+            <GestureDetector gesture={twoFingerTap}>
+              <LottieView
+                autoPlay={true}
+                loop={false}
+                source={onboardingAnimation}
+                style={{
+                  ...styles.animation,
+                  height: height * 0.4,
+                }}
+                cacheComposition={true}
+                renderMode="HARDWARE"
+              />
+            </GestureDetector>
+          </View>
+        </YStack>
+        <YStack flex={1} justifyContent="flex-end">
+          <XStack
+            marginBottom="$10"
+            alignItems="center"
+            justifyContent="center"
+            gap="$4"
+          >
+            <Logo style={styles.logo} />
+            <Text
+              onPress={__DEV__ ? skipToHome : undefined}
+              style={styles.selfText}
             >
-              <Logo style={styles.logo} />
-              <Text
-                onPress={__DEV__ ? skipToHome : undefined}
-                style={styles.selfText}
-              >
-                Self
-              </Text>
-            </XStack>
-          </YStack>
+              Self
+            </Text>
+          </XStack>
         </YStack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
@@ -90,6 +98,9 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
 export default LaunchScreen;
 
 const styles = StyleSheet.create({
+  animation: {
+    aspectRatio: 1,
+  },
   subheader: {
     fontWeight: '500',
     fontSize: 20,
@@ -124,6 +135,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     paddingTop: 0,
+    flex: 1,
   },
   selfText: {
     fontFamily: advercase,
