@@ -105,6 +105,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         trackEvent('Passport Parsed', {
           success: true,
           data_groups: passportMetadata.dataGroups,
+          dg1_size: passportMetadata.dg1Size,
+          dg1_hash_size: passportMetadata.dg1HashSize,
           dg1_hash_function: passportMetadata.dg1HashFunction,
           dg1_hash_offset: passportMetadata.dg1HashOffset,
           dg_padding_bytes: passportMetadata.dgPaddingBytes,
