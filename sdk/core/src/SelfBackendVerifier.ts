@@ -2,9 +2,7 @@ import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
 import { 
   REGISTRY_ADDRESS, 
-  VERIFYALL_ADDRESS,
-  DEV_REGISTRY_ADDRESS,
-  DEV_VERIFYALL_ADDRESS
+  VERIFYALL_ADDRESS
 } from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
@@ -48,10 +46,6 @@ export class SelfBackendVerifier {
     this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
     this.scope = scope;
-    if (devMode == true) {
-      this.registryContract = new ethers.Contract(DEV_REGISTRY_ADDRESS, registryAbi, provider);
-      this.verifyAllContract = new ethers.Contract(DEV_VERIFYALL_ADDRESS, verifyAllAbi, provider);
-    }
   }
 
   public async verify(
