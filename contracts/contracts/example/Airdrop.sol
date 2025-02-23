@@ -188,6 +188,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
     function verifySelfProof(
+        bool devMode,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         public 
@@ -215,6 +216,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         }
 
         IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
+            devMode,
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
                 olderThanEnabled: _verificationConfig.olderThanEnabled,
                 olderThan: _verificationConfig.olderThan,

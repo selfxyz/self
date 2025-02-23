@@ -194,7 +194,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        const tx = await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        const tx = await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         const receipt = await tx.wait();
         
         const event = receipt?.logs.find(
@@ -223,7 +223,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).closeRegistration();
-        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegistrationNotOpen");
     });
 
@@ -242,7 +242,7 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidScope");
     });
 
@@ -250,8 +250,8 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
-        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
+        await expect(airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "RegisteredNullifier");
     });
 
@@ -283,7 +283,7 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidAttestationId");
     });
     
@@ -306,7 +306,7 @@ describe("Airdrop", () => {
         );
 
         await airdrop.connect(owner).openRegistration();
-        await expect(airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await expect(airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.be.revertedWithCustomError(airdrop, "InvalidUserIdentifier");
     });
 
@@ -328,7 +328,7 @@ describe("Airdrop", () => {
         await newAirdrop.waitForDeployment();
 
         await newAirdrop.connect(owner).openRegistration();
-        await expect(newAirdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))
+        await expect(newAirdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof))
             .to.not.be.reverted;
     });
 
@@ -360,7 +360,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -397,7 +397,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -417,7 +417,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
@@ -437,7 +437,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -462,7 +462,7 @@ describe("Airdrop", () => {
         const { owner, user1 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
         const tree = new BalanceTree([{ account: await user1.getAddress(), amount: BigInt(1000000000000000000) }]);
         const root = tree.getHexRoot();
@@ -483,7 +483,7 @@ describe("Airdrop", () => {
         const { owner, user1, user2 } = deployedActors;
 
         await airdrop.connect(owner).openRegistration();
-        await airdrop.connect(user1).verifySelfProof(vcAndDiscloseProof);
+        await airdrop.connect(user1).verifySelfProof(false, vcAndDiscloseProof);
         await airdrop.connect(owner).closeRegistration();
 
         const tree = new BalanceTree([

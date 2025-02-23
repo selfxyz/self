@@ -82,6 +82,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param proof The proof data for verification and disclosure
      */
     function verifySelfProof(
+        bool devMode,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) 
         public
@@ -96,6 +97,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
         }
 
         _identityVerificationHub.verifyVcAndDisclose(
+            devMode,
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
                 olderThanEnabled: _verificationConfig.olderThanEnabled,
                 olderThan: _verificationConfig.olderThan,

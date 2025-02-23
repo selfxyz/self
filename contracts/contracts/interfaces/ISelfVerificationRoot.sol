@@ -14,6 +14,7 @@ interface ISelfVerificationRoot {
     }
     
     function verifySelfProof(
+        bool devMode,
         IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
     ) external;
 
