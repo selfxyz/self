@@ -6,17 +6,18 @@ import React, {
   useState,
 } from 'react';
 import {
+  LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
+  ScrollView,
   StyleSheet,
 } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import { Image, ScrollView, Text, View, YStack } from 'tamagui';
+import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
-import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
@@ -40,11 +41,32 @@ import {
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
-  const { selectedApp } = useProofInfo();
+  const { selectedApp, resetProof } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
 
-  const isProcessingRef = useRef(false);
+  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
+  const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
+  const [scrollViewHeight, setScrollViewHeight] = useState(0);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const isContentShorterThanScrollView = useMemo(
+    () => scrollViewContentHeight <= scrollViewHeight,
+    [scrollViewContentHeight, scrollViewHeight],
+  );
+
+  /**
+   * Whenever the relationship between content height vs. scroll view height changes,
+   * reset (or enable) the button state accordingly.
+   */
+  useEffect(() => {
+    if (isContentShorterThanScrollView) {
+      setHasScrolledToBottom(true);
+    } else {
+      setHasScrolledToBottom(false);
+    }
+  }, [isContentShorterThanScrollView]);
+
   useEffect(() => {
     if (
       !selectedApp ||
@@ -84,12 +106,8 @@ const ProveScreen: React.FC = () => {
 
   const onVerify = useCallback(
     async function () {
+      resetProof();
       buttonTap();
-      if (isProcessingRef.current) {
-        return;
-      }
-      isProcessingRef.current = true;
-
       const currentApp = selectedAppRef.current;
       try {
         let timeToNavigateToStatusScreen: NodeJS.Timeout;
@@ -135,41 +153,14 @@ const ProveScreen: React.FC = () => {
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-      } finally {
-        isProcessingRef.current = false;
       }
     },
-    [navigate, getPassportDataAndSecret, handleProofVerified],
+    [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
   );
-
-  async function sendMockPayload() {
-    console.log('sendMockPayload, start by generating mockPassport data');
-    const passportData = genMockPassportData(
-      'sha1',
-      'sha256',
-      'rsa_sha256_65537_2048',
-      'FRA',
-      '000101',
-      '300101',
-    );
-    const status = await sendVcAndDisclosePayload(
-      '0', // TODO this is thesecret when mocking... can we use the real one though?
-      passportData,
-      selectedApp,
-    );
-    handleProofVerified(
-      selectedAppRef.current.sessionId,
-      status === ProofStatusEnum.SUCCESS,
-    );
-  }
-
-  const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
-  const scrollViewRef = useRef<ScrollView>(null);
 
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
-      if (hasScrolledToBottom) {
-        // everything is done, no need to check
+      if (hasScrolledToBottom || isContentShorterThanScrollView) {
         return;
       }
       const { layoutMeasurement, contentOffset, contentSize } =
@@ -178,13 +169,23 @@ const ProveScreen: React.FC = () => {
       const isCloseToBottom =
         layoutMeasurement.height + contentOffset.y >=
         contentSize.height - paddingToBottom;
-
       if (isCloseToBottom && !hasScrolledToBottom) {
         setHasScrolledToBottom(true);
       }
     },
-    [hasScrolledToBottom],
+    [hasScrolledToBottom, isContentShorterThanScrollView],
   );
+
+  const handleContentSizeChange = useCallback(
+    (contentWidth: number, contentHeight: number) => {
+      setScrollViewContentHeight(contentHeight);
+    },
+    [],
+  );
+
+  const handleScrollViewLayout = useCallback((event: LayoutChangeEvent) => {
+    setScrollViewHeight(event.nativeEvent.layout.height);
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
@@ -211,10 +212,8 @@ const ProveScreen: React.FC = () => {
                 {url}
               </BodyText>
               <BodyText fontSize={24} color={slate300} textAlign="center">
-                <Text color={white} onPress={sendMockPayload}>
-                  {selectedApp.appName}
-                </Text>{' '}
-                is requesting that you prove the following information:
+                <Text color={white}>{selectedApp.appName}</Text> is requesting
+                that you prove the following information:
               </BodyText>
             </YStack>
           )}
@@ -229,6 +228,8 @@ const ProveScreen: React.FC = () => {
           ref={scrollViewRef}
           onScroll={handleScroll}
           scrollEventThrottle={16}
+          onContentSizeChange={handleContentSizeChange}
+          onLayout={handleScrollViewLayout}
         >
           <Disclosures disclosures={disclosureOptions} />
           <View marginTop={20}>
