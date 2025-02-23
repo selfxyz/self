@@ -5,13 +5,14 @@ import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import {
   countryCodes,
-  countryNames,
   getCountryCode,
 } from '../../../common/src/constants/constants';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
+
+type CountryCode = (typeof countryCodes)[keyof typeof countryCodes];
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -24,10 +25,10 @@ export class SelfBackendVerifier {
 
   protected nationality: {
     enabled: boolean;
-    value: (typeof countryNames)[number];
+    value: CountryCode;
   } = {
     enabled: false,
-    value: '' as (typeof countryNames)[number],
+    value: '' as CountryCode,
   };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
@@ -35,7 +36,7 @@ export class SelfBackendVerifier {
   };
   protected excludedCountries: {
     enabled: boolean;
-    value: (typeof countryNames)[number][];
+    value: CountryCode[];
   } = {
     enabled: false,
     value: [],
@@ -197,12 +198,12 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  setNationality(country: (typeof countryNames)[number]): this {
+  setNationality(country: CountryCode): this {
     this.nationality = { enabled: true, value: country };
     return this;
   }
 
-  excludeCountries(...countries: (typeof countryNames)[number][]): this {
+  excludeCountries(...countries: CountryCode[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
