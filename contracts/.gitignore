@@ -11,6 +11,7 @@ artifacts
 ignition/deployed_addresses.json
 ignition/parameters.json
 ignition/deployments
+!ignition/deployments/prod
 
 #Local verifier
 contracts/verifiers/local/*
