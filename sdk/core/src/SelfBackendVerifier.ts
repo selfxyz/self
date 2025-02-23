@@ -50,7 +50,7 @@ export class SelfBackendVerifier {
   constructor(
     rpcUrl: string,
     scope: string,
-    user_identifier_type: UserIdType
+    user_identifier_type: UserIdType = 'uuid'
   ) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
