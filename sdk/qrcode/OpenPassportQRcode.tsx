@@ -21,6 +21,7 @@ interface OpenPassportQRcodeProps {
   onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
+  darkMode?: boolean;
   children?: React.ReactNode;
 }
 
@@ -43,6 +44,7 @@ const OpenPassportQRcode = ({
   onSuccess,
   websocketUrl = WS_DB_RELAYER,
   size = 300,
+  darkMode = false,
 }: OpenPassportQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
@@ -117,6 +119,8 @@ const OpenPassportQRcode = ({
                 <QRCodeSVG
                   value={generateUniversalLink()}
                   size={size}
+                  bgColor={darkMode ? '#000000' : '#ffffff'}
+                  fgColor={darkMode ? '#ffffff' : '#000000'}
                 />
               );
           }
