@@ -15,6 +15,8 @@ import { hash } from '../../hash';
 
 export interface PassportMetadata {
   dataGroups: string;
+  dg1Size: number;
+  dg1HashSize: number;
   dg1HashFunction: string;
   dg1HashOffset: number;
   dgPaddingBytes: number;
@@ -127,6 +129,8 @@ export function parsePassportData(passportData: PassportData): PassportMetadata 
         .split(',')
         .map((item) => item.replace('DG', ''))
         .join(',') || 'None',
+    dg1Size: passportData.mrz ? passportData.mrz.length : 0,
+    dg1HashSize: passportData.dg1Hash ? passportData.dg1Hash.length : 0,
     dg1HashFunction,
     dg1HashOffset,
     dgPaddingBytes,

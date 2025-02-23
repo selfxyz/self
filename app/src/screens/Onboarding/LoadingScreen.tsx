@@ -79,17 +79,16 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
           const isRegistered = await isUserRegistered(passportData, secret);
-          const isNullifierOnchain = await isPassportNullified(passportData);
           console.log('User is registered:', isRegistered);
-          console.log('Passport is nullified:', isNullifierOnchain);
           if (isRegistered) {
             console.log(
-              'Passport is registered already. Skipping to HomeScreen',
+              'Passport is registered already. Skipping to AccountVerifiedSuccess',
             );
-            // Should this go the to AccountVerified Screen too?
-            navigation.navigate('Home');
+            navigation.navigate('AccountVerifiedSuccess');
             return;
           }
+          const isNullifierOnchain = await isPassportNullified(passportData);
+          console.log('Passport is nullified:', isNullifierOnchain);
           if (isNullifierOnchain) {
             console.log(
               'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',

@@ -1,6 +1,7 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
 
 export default buildModule("DeployVerifiers", (m) => {
+ 
     const vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
     
     const registerVerifier = m.contract("Verifier_register_sha1_sha256_sha256_rsa_65537_4096");
