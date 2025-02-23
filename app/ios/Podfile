@@ -39,6 +39,9 @@ target 'Self' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
+  pod 'Sentry', :modular_headers => true
+  pod 'SentryPrivate', :modular_headers => true
+
   post_install do |installer|
     installer.generated_projects.each do |project|
       project.targets.each do |target|
