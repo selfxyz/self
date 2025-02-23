@@ -14,30 +14,39 @@ function getVerifierAddresses(deployedAddresses: any, circuits: string[]) {
     return circuits.map(circuit => deployedAddresses[`DeployVerifiers#Verifier_${circuit}`]);
 }
 
+function getAllRegisterVerifierIds(): number[] {
+    return Object.values(RegisterVerifierId)
+        .filter(value => typeof value === 'number') as number[];
+}
+
+function getAllDscVerifierIds(): number[] {
+    return Object.values(DscVerifierId)
+        .filter(value => typeof value === 'number') as number[];
+}
+
 export default buildModule("DeployHub", (m) => {
     const networkName = hre.network.config.chainId;
     const deployedAddressesPath = path.join(__dirname, `../deployments/chain-${networkName}/deployed_addresses.json`);
     const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf8"));
 
-    // 環境変数からverifierの選択を読み込む
     const useAllVerifiers = process.env.USE_ALL_VERIFIERS === 'true';
     
     const registryAddress = deployedAddresses["DeployRegistryModule#IdentityRegistry"];
     const vcAndDiscloseVerifierAddress = deployedAddresses["DeployVerifiers#Verifier_vc_and_disclose"];
 
-    let registerVerifierIds: string[];
+    let registerVerifierIds: number[];
     let registerVerifierAddresses: string[];
-    let dscVerifierIds: string[];
+    let dscVerifierIds: number[];
     let dscVerifierAddresses: string[];
 
     if (useAllVerifiers) {
-        // 全てのverifierを使用
-        registerVerifierIds = DEPLOYED_CIRCUITS_REGISTER;
-        registerVerifierAddresses = getVerifierAddresses(deployedAddresses, DEPLOYED_CIRCUITS_REGISTER);
-        dscVerifierIds = DEPLOYED_CIRCUITS_DSC;
-        dscVerifierAddresses = getVerifierAddresses(deployedAddresses, DEPLOYED_CIRCUITS_DSC);
+        registerVerifierIds = getAllRegisterVerifierIds();
+        registerVerifierAddresses = getVerifierAddresses(deployedAddresses, 
+            registerVerifierIds.map(id => `register_${id}`));
+        dscVerifierIds = getAllDscVerifierIds();
+        dscVerifierAddresses = getVerifierAddresses(deployedAddresses, 
+            dscVerifierIds.map(id => `dsc_${id}`));
     } else {
-        // デフォルトの3つのregisterVerifierと1つのdscVerifierを使用
         registerVerifierIds = [
             RegisterVerifierId.register_sha1_sha256_sha256_rsa_65537_4096,
             RegisterVerifierId.register_sha256_sha256_sha256_ecdsa_brainpoolP256r1,
