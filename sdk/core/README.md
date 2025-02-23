@@ -17,7 +17,8 @@ import { SelfBackendVerifier } from '@openpassport/core';
 
 const selfBackendVerifier = new SelfBackendVerifier(
   process.env.CELO_RPC_URL as string,
-  process.env.SCOPE as string
+  process.env.SCOPE as string,
+  "uuid"
 );
 ```
 
@@ -101,11 +102,13 @@ export interface SelfVerificationResult {
     // Result of older than
     older_than?: string;
     // Result of passport number ofac check
-    passport_no_ofac?: string;
+    // Gives true if the user passed the check (is not on the list),
+    // false if the check was not requested or if the user is in the list
+    passport_no_ofac?: boolean;
     // Result of name and date of birth ofac check
-    name_and_dob_ofac?: string;
+    name_and_dob_ofac?: boolean;
     // Result of name and year of birth ofac check
-    name_and_yob_ofac?: string;
+    name_and_yob_ofac?: boolean;
   };
   proof: {
     // Proof which is used for this verification

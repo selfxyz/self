@@ -44,8 +44,8 @@ export class SelfBackendVerifier {
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
 
-  protected registryContract: any;
-  protected verifyAllContract: any;
+  protected registryContract: ethers.Contract;
+  protected verifyAllContract: ethers.Contract;
 
   constructor(
     rpcUrl: string,
@@ -156,10 +156,10 @@ export class SelfBackendVerifier {
       date_of_birth: result[0][revealedDataTypes.date_of_birth],
       gender: result[0][revealedDataTypes.gender],
       expiry_date: result[0][revealedDataTypes.expiry_date],
-      older_than: result[0][revealedDataTypes.older_than],
-      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac],
-      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac],
-      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac],
+      older_than: result[0][revealedDataTypes.older_than].toString(),
+      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac].toString() === '1',
+      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac].toString() === '1',
+      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac].toString() === '1',
     };
 
     const attestation: SelfVerificationResult = {
