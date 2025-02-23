@@ -98,6 +98,7 @@ describe("VerifyAll", () => {
 
             const types = ['0', '1', '2']; // Example types
             const [readableData, success] = await verifyAll.verifyAll(
+                false,
                 timestamp,
                 vcAndDiscloseHubProof,
                 types
@@ -127,6 +128,7 @@ describe("VerifyAll", () => {
 
             const types = ['0', '1', '2']; // Example types
             const [readableData, success] = await verifyAll.verifyAll(
+                false,
                 0,
                 vcAndDiscloseHubProof,
                 types
@@ -158,6 +160,7 @@ describe("VerifyAll", () => {
 
             const types = ['0', '1', '2'];
             const [readableData, success] = await verifyAll.verifyAll(
+                false,
                 0,
                 vcAndDiscloseHubProof,
                 types
@@ -188,6 +191,7 @@ describe("VerifyAll", () => {
 
             const types = ['0', '1', '2'];
             const [readableData, success] = await verifyAll.verifyAll(
+                false,
                 123456,
                 vcAndDiscloseHubProof,
                 types
@@ -246,6 +250,7 @@ describe("VerifyAll", () => {
 
             const types = ["0", "1", "2"];
             const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                false,
                 0,
                 vcAndDiscloseHubProof,
                 types
@@ -277,6 +282,7 @@ describe("VerifyAll", () => {
 
             const types = ["0", "1", "2"];
             const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                false,
                 0,
                 vcAndDiscloseHubProof,
                 types
