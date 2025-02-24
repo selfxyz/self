@@ -5,17 +5,13 @@ import { SelfBackendVerifier } from "../../../../../core/src/SelfBackendVerifier
 export const ContractsController = new Elysia()
   .post(
     'verify-vc-and-disclose-proof',
-    async (request) => {
+    async (request: any) => {
       try {
         const selfBackendVerifier = new SelfBackendVerifier(
           process.env.RPC_URL as string,
           process.env.SCOPE as string,
-          process.env.REGISTRY_CONTRACT_ADDRESS as `0x${string}`,
-          process.env.VERIFY_ALL_CONTRACT_ADDRESS as `0x${string}`
         );
 
-        console.log("request.body.proof", request.body.proof);
-        console.log("request.body.publicSignals", request.body.publicSignals);
         const result = await selfBackendVerifier.verify(
           request.body.proof,
           request.body.publicSignals
