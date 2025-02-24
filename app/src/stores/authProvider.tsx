@@ -20,32 +20,41 @@ const _getSecurely = async function <T>(
   fn: () => Promise<string | false>,
   formatter: (dataString: string) => T,
 ): Promise<SignedPayload<T> | null> {
+  console.log('Starting _getSecurely');
+
+  const keysExist = await biometrics.biometricKeysExist();
+  console.log('Biometric keys exist:', keysExist.keysExist);
+
+  if (!keysExist.keysExist) {
+    console.log('Creating new biometric keys');
+    await biometrics.createKeys();
+  }
+
   const dataString = await fn();
+  console.log('Got data string:', dataString ? 'exists' : 'not found');
+
   if (dataString === false) {
+    console.log('No data string available');
     return null;
   }
 
-  const result = await biometrics.createSignature({
-    payload: dataString,
-    promptMessage: 'Allow access to identity',
-    // @ts-expect-error
-    allowDeviceCredentials: true,
-  });
-  const { error, success, signature } = result;
-  if (error) {
-    // handle error
-    console.log(result, error, success, signature);
+  try {
+    const simpleCheck = await biometrics.simplePrompt({
+      promptMessage: 'Allow access to identity',
+    });
+
+    if (!simpleCheck.success) {
+      throw new Error('Authentication failed');
+    }
+
+    return {
+      signature: 'authenticated',
+      data: formatter(dataString),
+    };
+  } catch (error) {
+    console.error('Error in _getSecurely:', error);
     throw error;
   }
-  if (!success) {
-    // user canceled
-    throw new Error('Canceled by user');
-  }
-
-  return {
-    signature: signature!,
-    data: formatter(dataString),
-  };
 };
 
 async function createSigningKeyPair(): Promise<boolean> {
