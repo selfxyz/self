@@ -37,6 +37,7 @@
     "deploy:hub:celo": "npx hardhat ignition deploy ignition/modules/deployHub.ts --network celo --verify",
     "deploy:registry:celo": "npx hardhat ignition deploy ignition/modules/deployRegistry.ts --network celo --verify",
     "deploy:verifiers:celo": "npx hardhat ignition deploy ignition/modules/deployVerifiers.ts --network celo --verify",
+    "deploy:allverifiers:celo": "npx hardhat ignition deploy ignition/modules/deployAllVerifiers.ts --network celo --verify",
     "deploy:verifyall:celo": "npx hardhat ignition deploy ignition/modules/deployVerifyAll.ts --network celo --verify",
     "upgrade:hub:celo": "npx hardhat ignition deploy ignition/modules/deployNewHubAndUpgrade.ts --network celo --verify",
     "upgrade:registry:celo": "npx hardhat ignition deploy ignition/modules/deployNewRegistryAndUpgrade.ts --network celo --verify",

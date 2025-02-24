@@ -20,7 +20,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
+contract Verifier_dsc_sha256_rsapss_3_32_3072 {
     // Scalar field size
     uint256 constant r    = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
@@ -43,17 +43,14 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
     uint256 constant deltay2 = 8495653923123431417604973247489272438418190587263600148770280649306958101930;
 
     
-    uint256 constant IC0x = 18127556278301290712062366578628386326205920874089468065881580993845270820479;
-    uint256 constant IC0y = 14579023631541524562866979272076545907668873073129521594397106900558135626577;
+    uint256 constant IC0x = 12099695564287138739769077337419118499689862567215337576548421554490471031055;
+    uint256 constant IC0y = 19577182684701347708536190582284656111775337418117253724082671208103171849921;
     
-    uint256 constant IC1x = 141913091135519541176735688105742987413473358900451577715430664041187665983;
-    uint256 constant IC1y = 221252097486914010465281867504263111174818281566735241854773392854493825392;
+    uint256 constant IC1x = 4435957882600757557960371388538431739166205230781520746447068432816704282257;
+    uint256 constant IC1y = 3446574572732902987169104702357494809883741860953212973915575997330853631868;
     
-    uint256 constant IC2x = 21013251300219055654397127544620477900342467788352934393798429140806423870892;
-    uint256 constant IC2y = 613389022608381036868782706777454256842371428979610514201071752855985059753;
-    
-    uint256 constant IC3x = 13566799124657139049624255296142128407884193885776263191320858917851144145965;
-    uint256 constant IC3y = 10389733748635157302432655621517757404283539374571469043004314970483084146084;
+    uint256 constant IC2x = 5452032721702235024076260516593412160382421877169006757611062896472484554415;
+    uint256 constant IC2y = 15273126921511771222390539446078226184951021448985202382737799750392731374540;
     
  
     // Memory data
@@ -62,7 +59,7 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
 
     uint16 constant pLastMem = 896;
 
-    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[3] calldata _pubSignals) public view returns (bool) {
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[2] calldata _pubSignals) public view returns (bool) {
         assembly {
             function checkField(v) {
                 if iszero(lt(v, r)) {
@@ -109,8 +106,6 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
                 g1_mulAccC(_pVk, IC1x, IC1y, calldataload(add(pubSignals, 0)))
                 
                 g1_mulAccC(_pVk, IC2x, IC2y, calldataload(add(pubSignals, 32)))
-                
-                g1_mulAccC(_pVk, IC3x, IC3y, calldataload(add(pubSignals, 64)))
                 
 
                 // -A
@@ -168,8 +163,6 @@ contract Verifier_register_sha1_sha256_sha256_rsa_65537_4096 {
             checkField(calldataload(add(_pubSignals, 0)))
             
             checkField(calldataload(add(_pubSignals, 32)))
-            
-            checkField(calldataload(add(_pubSignals, 64)))
             
 
             // Validate all evaluations
