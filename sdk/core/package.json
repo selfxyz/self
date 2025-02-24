@@ -32,6 +32,8 @@
     "snarkjs": "^0.7.4"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.8",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@types/chai": "^4.3.6",
     "@types/chai-as-promised": "^7.1.8",
     "@types/circomlibjs": "^0.1.6",
@@ -42,6 +44,7 @@
     "@types/pako": "^2.0.3",
     "@types/snarkjs": "^0.7.8",
     "axios": "^1.7.2",
+    "hardhat": "^2.22.18",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",
     "ts-node": "^10.9.2",

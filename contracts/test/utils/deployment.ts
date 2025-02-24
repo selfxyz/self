@@ -54,7 +54,6 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
         "940131",
         "401031"
     );
-    console.log("mockPassport: ", mockPassport.dsc);
 
     // Deploy verifiers
     const vcAndDiscloseVerifierArtifact = process.env.TEST_ENV === "local"

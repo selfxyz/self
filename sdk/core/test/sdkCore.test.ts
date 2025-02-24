@@ -1,28 +1,39 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
-import { generateRandomFieldElement } from "../utils/utils";
+import { Signer } from 'ethers';
+import { generateRandomFieldElement } from "../../../contracts/test/utils/utils";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
-import { ATTESTATION_ID } from "../utils/constants";
+import { ATTESTATION_ID } from "../../../contracts/test/utils/constants";
 import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import { poseidon2 } from "poseidon-lite";
-import { generateVcAndDiscloseRawProof, parseSolidityCalldata } from "../utils/generateProof";
-import { Formatter } from "../utils/formatter";
+import { generateVcAndDiscloseRawProof, parseSolidityCalldata } from "../../../contracts/test/utils/generateProof";
+import { Formatter } from "../../../contracts/test/utils/formatter";
 import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
-import { VerifyAll } from "../../typechain-types";
 import { SelfBackendVerifier } from "../../../sdk/core/src/SelfBackendVerifier";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
-import { VcAndDiscloseProof } from "../utils/types";
-import { hasSubscribers } from "diagnostics_channel";
+import { PassportData } from "../../../common/src/utils/types";
+import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
+import { getSMTs } from "../../../contracts/test/utils/generateProof";
+import { getCscaTreeRoot } from "../../../common/src/utils/trees";
+import serialized_csca_tree from "../../../contracts/test/utils/pubkeys/serialized_csca_tree.json";
 
 describe("VerifyAll with AttestationVerifier", () => {
+    let vcAndDiscloseVerifier: any;
+    let identityVerificationHubProxy: any;
+    let identityVerificationHubImpl: any;
+    let hub: any;
+    let identityRegistryProxy: any;
+    let identityRegistryImpl: any;
+    let registry: any;
+    let verifyAll: any;
+    let owner: Signer;
+    let user1: Signer;
+    let mockPassport: PassportData;
     let selfBackendVerifier: SelfBackendVerifier;
     let proof: Groth16Proof;
     let publicSignals: PublicSignals;
-    let deployedActors: DeployedActors;
-    let verifyAll: VerifyAll;
+
     let snapshotId: string;
     let baseVcAndDiscloseProof: any;
     let vcAndDiscloseProof: any;
@@ -42,17 +53,128 @@ describe("VerifyAll with AttestationVerifier", () => {
     };
 
     before(async () => {
+        // Import contract artifacts
+        const vcAndDiscloseArtifact = require("../deployments/local/disclose/Verifier_vc_and_disclose.json");
+        const poseidonT3Artifact = require("../deployments/PoseidonT3.json");
+        const hubArtifact = require("../deployments/prod/DeployHub#IdentityVerificationHub.json");
+        const hubImplArtifact = require("../deployments/prod/DeployHub#IdentityVerificationHubImplV1.json");
+        const registryArtifact = require("../deployments/prod/DeployRegistryModule#IdentityRegistry.json");
+        const registryImplArtifact = require("../deployments/prod/DeployRegistryModule#IdentityRegistryImplV1.json");
+        const verifyAllArtifact = require("../deployments/prod/DeployVerifyAll#VerifyAll.json");
 
-        deployedActors = await deploySystemFixtures();
-        const VerifyAllFactory = await ethers.getContractFactory("VerifyAll");
-        verifyAll = await VerifyAllFactory.deploy(
-            deployedActors.hub.getAddress(),
-            deployedActors.registry.getAddress()
+        [owner, user1] = await ethers.getSigners();
+
+        const VcAndDiscloseFactory = new ethers.ContractFactory(
+            vcAndDiscloseArtifact.abi,
+            vcAndDiscloseArtifact.bytecode,
+            owner
         );
+        const PoseidonT3Factory = new ethers.ContractFactory(
+            poseidonT3Artifact.abi,
+            poseidonT3Artifact.bytecode,
+            owner
+        );
+        const HubFactory = new ethers.ContractFactory(
+            hubArtifact.abi,
+            hubArtifact.bytecode,
+            owner
+        );
+        const HubImplFactory = new ethers.ContractFactory(
+            hubImplArtifact.abi,
+            hubImplArtifact.bytecode,
+            owner
+        );
+        const RegistryFactory = new ethers.ContractFactory(
+            registryArtifact.abi,
+            registryArtifact.bytecode,
+            owner
+        );
+        const RegistryImplFactory = new ethers.ContractFactory(
+            registryImplArtifact.abi,
+            registryImplArtifact.bytecode,
+            owner
+        );
+        const VerifyAllFactory = new ethers.ContractFactory(
+            verifyAllArtifact.abi,
+            verifyAllArtifact.bytecode,
+            owner
+        );
+
+        const newBalance = "0x" + ethers.parseEther("10000").toString(16);
+        await ethers.provider.send("hardhat_setBalance", [await owner.getAddress(), newBalance]);
+        await ethers.provider.send("hardhat_setBalance", [await user1.getAddress(), newBalance]);
+
+        mockPassport = genMockPassportData(
+            "sha256",
+            "sha256",
+            "rsa_sha256_65537_4096",
+            "FRA",
+            "940131",
+            "401031"
+        );
+
+        vcAndDiscloseVerifier = await VcAndDiscloseFactory.deploy();
+        await vcAndDiscloseVerifier.waitForDeployment();
+
+        const poseidonT3 = await PoseidonT3Factory.deploy();
+        await poseidonT3.waitForDeployment();
+
+        const identityRegistryImplFactory = await ethers.getContractFactory(
+            "IdentityRegistryImplV1",
+            {
+                libraries: {
+                    PoseidonT3: poseidonT3.target
+                }
+            },
+            owner
+        );
+        identityRegistryImpl = await identityRegistryImplFactory.deploy();
+        await identityRegistryImpl.waitForDeployment();
+
+        const temporaryHubAddress = "0x0000000000000000000000000000000000000000";
+        const registryInitData = identityRegistryImpl.interface.encodeFunctionData("initialize", [
+            temporaryHubAddress
+        ]);
+        const registryProxyFactory = await ethers.getContractFactory("IdentityRegistry", owner);
+        identityRegistryProxy = await registryProxyFactory.deploy(identityRegistryImpl.target, registryInitData);
+        await identityRegistryProxy.waitForDeployment();
+
+        const initializeData = identityVerificationHubImpl.interface.encodeFunctionData("initialize", [
+            identityRegistryProxy.target,
+            vcAndDiscloseVerifier.target,
+            [],
+            [],
+            [],
+            []
+        ]);
+        const hubFactory = await ethers.getContractFactory("IdentityVerificationHub", owner);
+        identityVerificationHubProxy = await hubFactory.deploy(identityVerificationHubImpl.target, initializeData);
+        await identityVerificationHubProxy.waitForDeployment();
+
+        const updateHubTx = await registry.updateHub(identityVerificationHubProxy.target);
+        await updateHubTx.wait();
+    
+        hub = await ethers.getContractAt(
+            "IdentityVerificationHubImplV1",
+            identityVerificationHubProxy.target
+        );
+
+        const csca_root = getCscaTreeRoot(serialized_csca_tree);
+        await registry.updateCscaRoot(csca_root, { from: owner });
+
+        const {
+            passportNo_smt,
+            nameAndDob_smt,
+            nameAndYob_smt
+        } = getSMTs();
+
+        await registry.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });
+        await registry.updateNameAndDobOfacRoot(nameAndDob_smt.root, { from: owner });
+        await registry.updateNameAndYobOfacRoot(nameAndYob_smt.root, { from: owner });
 
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
-        commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
+        commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
         
         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
         imt = new LeanIMT<bigint>(hashFunction);
@@ -64,7 +186,7 @@ describe("VerifyAll with AttestationVerifier", () => {
         baseRawProof = await generateVcAndDiscloseRawProof(
             registerSecret,
             ATTESTATION_ID.E_PASSPORT,
-            deployedActors.mockPassport,
+            mockPassport,
             "test-scope",
             new Array(88).fill("1"),
             1,
@@ -75,14 +197,12 @@ describe("VerifyAll with AttestationVerifier", () => {
             undefined,
             undefined,
             forbiddenCountriesList,
-            (await deployedActors.user1?.getAddress()).slice(2)
+            (await user1?.getAddress()).slice(2)
         );
         // Setup AttestationVerifier with the same verifyAll contract
         selfBackendVerifier = new SelfBackendVerifier(
             "http://127.0.0.1:8545", // or your test RPC URL
             "test-scope",
-            await deployedActors.registry.getAddress() as `0x${string}`,
-            await verifyAll.getAddress() as `0x${string}`,
         );
         snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
@@ -97,8 +217,6 @@ describe("VerifyAll with AttestationVerifier", () => {
     });
 
     it("should verify and get valid attestation result successfully after identity commitment is added", async () => {
-        const { registry, owner } = deployedActors;
-
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
@@ -111,7 +229,6 @@ describe("VerifyAll with AttestationVerifier", () => {
         selfBackendVerifier.enableNameAndDobOfacCheck();
         selfBackendVerifier.enableNameAndYobOfacCheck();
         selfBackendVerifier.setNationality("France");
-        selfBackendVerifier.setTargetRootTimestamp(0);
 
         const result = await selfBackendVerifier.verify(
             rawProof.proof,
@@ -145,7 +262,6 @@ describe("VerifyAll with AttestationVerifier", () => {
     });
 
     it("should fail when invalid VC and Disclose proof is provided", async () => {
-        const { registry, owner, hub } = deployedActors;
         await registry.connect(owner).devAddIdentityCommitment(
             ATTESTATION_ID.E_PASSPORT,
             nullifier,
