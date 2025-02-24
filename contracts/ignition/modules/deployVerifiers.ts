@@ -1,20 +1,31 @@
 import { buildModule } from "@nomicfoundation/hardhat-ignition/modules";
+import {
+    DEPLOYED_CIRCUITS_REGISTER,
+    DEPLOYED_CIRCUITS_DSC
+} from "../../../common/src/constants/constants";
 
 export default buildModule("DeployVerifiers", (m) => {
- 
-    const vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
-    
-    const registerVerifier = m.contract("Verifier_register_sha1_sha256_sha256_rsa_65537_4096");
-    const registerVerifier2 = m.contract("Verifier_register_sha256_sha256_sha256_ecdsa_brainpoolP256r1");
-    const registerVerifier3 = m.contract("Verifier_register_sha256_sha256_sha256_rsa_65537_4096");
+    const useAllVerifiers = process.env.USE_ALL_VERIFIERS === 'true';
+    const deployedContracts: Record<string, any> = {};
 
-    const dscVerifier = m.contract("Verifier_dsc_sha256_rsa_65537_4096");
+    deployedContracts.vcAndDiscloseVerifier = m.contract("Verifier_vc_and_disclose");
 
-    return {
-        vcAndDiscloseVerifier,
-        registerVerifier,
-        registerVerifier2,
-        registerVerifier3,
-        dscVerifier
-    };
+    if (useAllVerifiers) {
+        DEPLOYED_CIRCUITS_REGISTER.forEach(circuit => {
+            const contractName = `Verifier_${circuit}`;
+            deployedContracts[circuit] = m.contract(contractName);
+        });
+
+        DEPLOYED_CIRCUITS_DSC.forEach(circuit => {
+            const contractName = `Verifier_${circuit}`;
+            deployedContracts[circuit] = m.contract(contractName);
+        });
+    } else {
+        deployedContracts["register_sha1_sha256_sha256_rsa_65537_4096"] = m.contract("Verifier_register_sha1_sha256_sha256_rsa_65537_4096");
+        deployedContracts["sha256_sha256_sha256_ecdsa_brainpoolP256r1"] = m.contract("Verifier_register_sha256_sha256_sha256_ecdsa_brainpoolP256r1");
+        deployedContracts["register_sha256_sha256_sha256_rsa_65537_4096"] = m.contract("Verifier_register_sha256_sha256_sha256_rsa_65537_4096");
+        deployedContracts["dsc_sha256_rsa_65537_4096"] = m.contract("Verifier_dsc_sha256_rsa_65537_4096");
+    }
+
+    return deployedContracts;
 });

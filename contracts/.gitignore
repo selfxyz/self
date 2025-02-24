@@ -8,9 +8,13 @@ typechain-types
 #Hardhat files
 cache
 artifacts
-ignition/deployed_addresses.json
 ignition/parameters.json
-ignition/deployments
+ignition/deployments/*
+!ignition/deployments/prod/
+!ignition/deployments/prod/artifacts/
+!ignition/deployments/prod/artifacts/**/*
+ignition/deployments/prod/build-info
+ignition/deployments/prod/journal.jsonl
 
 #Local verifier
 contracts/verifiers/local/*

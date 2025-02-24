@@ -23,7 +23,7 @@ export const PCR0_MANAGER_ADDRESS = '0xE36d4EE5Fd3916e703A46C21Bb3837dB7680C8B8'
 
 
 // we make it global here because passing it to generateCircuitInputsRegister caused trouble
-export const DEVELOPMENT_MODE = false;
+export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];

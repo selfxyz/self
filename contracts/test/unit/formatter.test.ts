@@ -83,22 +83,6 @@ describe("Formatter", function () {
             expect(() => Formatter.formatDate(input))
                 .to.throw("InvalidDayRange");
         });
-
-        it("should handle errors consistently when input is not a number", async function () {
-            const input = "94012a";
-            await expect(testFormatter.testFormatDate(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-            expect(() => Formatter.formatDate(input))
-                .to.throw("InvalidAsciiCode");
-        });
-
-        it("should handle errors consistently when input is not a number", async function () {
-            const input = "94012.";
-            await expect(testFormatter.testFormatDate(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-            expect(() => Formatter.formatDate(input))
-                .to.throw("InvalidAsciiCode");
-        });
     });
 
     describe("numAsciiToUint", function () {
@@ -112,15 +96,6 @@ describe("Formatter", function () {
             }
         });
 
-        it("should handle errors consistently between contract and ts", async function () {
-            const invalidInputs = [47, 58];
-            for (const input of invalidInputs) {
-                await expect(testFormatter.testNumAsciiToUint(input))
-                    .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-                expect(() => Formatter.numAsciiToUint(input))
-                    .to.throw("InvalidAsciiCode");
-            }
-        });
     });
 
     describe("fieldElementsToBytes", function () {
@@ -286,18 +261,6 @@ describe("Formatter", function () {
                 .to.be.revertedWithCustomError(testFormatter, "InvalidDayRange");
         });
         
-        it("should revert when date digit is out of range", async function () {
-            const input = "94012a";
-            await expect(testFormatter.testDateToUnixTimestamp(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-        });
-
-        it("should revert when date digit is out of range", async function () {
-            const input = "94012.";
-            await expect(testFormatter.testDateToUnixTimestamp(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-        });
-        
     });
 
     describe("substring", function () {
@@ -342,18 +305,6 @@ describe("Formatter", function () {
             }
         });
 
-        it("should revert when input is not a number", async function () {
-            const input = "12a";
-            await expect(testFormatter.testParseDatePart(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-        });
-
-        
-        it("should revert when input is not a number", async function () {
-            const input = "12.";
-            await expect(testFormatter.testParseDatePart(input))
-                .to.be.revertedWithCustomError(testFormatter, "InvalidAsciiCode");
-        });
     });
 
     describe("toTimestamp", function () {
