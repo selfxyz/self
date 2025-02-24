@@ -324,7 +324,6 @@ const NavigationWithTracking = () => {
       console.log(`Screen View: ${currentRoute.name}`);
       trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
-        params: currentRoute.params,
       });
     }
   };
