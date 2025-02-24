@@ -21,7 +21,8 @@
     "install-sdk": "cd ../common && yarn && cd ../sdk && yarn",
     "lint": "prettier --check .",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish --access public"
+    "publish": "npm publish --access public",
+    "test": "npx hardhat test"
   },
   "dependencies": {
     "@types/react": "^18.3.4",
