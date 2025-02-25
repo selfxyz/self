@@ -12,6 +12,9 @@ interface SettingsState {
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
+  forceSuccessFlow: boolean;
+  setForceSuccessFlowOn: () => void;
+  setForceSuccessFlowOff: () => void;
 }
 
 /*
@@ -38,6 +41,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      forceSuccessFlow: false,
+      setForceSuccessFlowOn: () => set({ forceSuccessFlow: true }),
+      setForceSuccessFlowOff: () => set({ forceSuccessFlow: false }),
     }),
     {
       name: 'setting-storage',

@@ -1,7 +1,11 @@
 import React, { useCallback } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 
-import { useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import { View, XStack, YStack } from 'tamagui';
 
@@ -18,19 +22,38 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Bulb from '../../images/icons/passport_camera_bulb.svg';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useSettingStore } from '../../stores/settingStore';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate800, white } from '../../utils/colors';
-import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
+import { impactLight } from '../../utils/haptic';
+import {
+  checkScannedInfo,
+  formatDateToYYMMDD,
+  randomNumberFromRange,
+} from '../../utils/utils';
 
 interface PassportNFCScanScreen {}
 
 const { trackEvent } = analytics();
 
 const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
+  const { forceSuccessFlow } = useSettingStore();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
   const store = useUserStore();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (forceSuccessFlow) {
+        impactLight();
+        setTimeout(() => {
+          impactLight();
+          navigation.navigate('PassportNFCScan');
+        }, randomNumberFromRange(3000, 6000));
+      }
+    }, [forceSuccessFlow]),
+  );
 
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
     (error, result) => {

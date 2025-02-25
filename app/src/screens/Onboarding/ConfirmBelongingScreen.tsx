@@ -9,6 +9,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useSettingStore } from '../../stores/settingStore';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
@@ -23,10 +24,11 @@ type ConfirmBelongingScreenProps = StaticScreenProps<
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   route,
 }) => {
+  const { forceSuccessFlow } = useSettingStore();
   const mockPassportFlow = route.params?.mockPassportFlow;
   const onOkPress = useHapticNavigation('LoadingScreen', {
     params: {
-      mockPassportFlow,
+      mockPassportFlow: mockPassportFlow || forceSuccessFlow,
     },
   });
   useEffect(() => {

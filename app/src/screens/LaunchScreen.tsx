@@ -15,12 +15,15 @@ import useConnectionModal from '../hooks/useConnectionModal';
 import useHapticNavigation from '../hooks/useHapticNavigation';
 import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
+import { useSettingStore } from '../stores/settingStore';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
 
 interface LaunchScreenProps {}
 
 const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
+  const { forceSuccessFlow, setForceSuccessFlowOn, setForceSuccessFlowOff } =
+    useSettingStore();
   useConnectionModal();
   const onStartPress = useHapticNavigation('PassportOnboarding');
   const skipToHome = useHapticNavigation('Home');
@@ -31,6 +34,15 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
     .numberOfTaps(5)
     .onStart(() => {
       createMock();
+    });
+  const longPressGesture = Gesture.LongPress()
+    .minDuration(2500)
+    .onStart(() => {
+      if (forceSuccessFlow) {
+        setForceSuccessFlowOff();
+      } else {
+        setForceSuccessFlowOn();
+      }
     });
 
   return (
@@ -60,7 +72,9 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
             justifyContent="center"
             gap="$4"
           >
-            <Logo style={styles.logo} />
+            <GestureDetector gesture={longPressGesture}>
+              <Logo style={styles.logo} />
+            </GestureDetector>
             <Text
               onPress={__DEV__ ? skipToHome : undefined}
               style={styles.selfText}
@@ -78,7 +92,13 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
           The simplest way to verify identity for safety and trust wherever you
           are.
         </BodyText>
-        <Caption style={styles.notice} size={'small'}>
+        <Caption
+          style={[
+            styles.notice,
+            { textTransform: forceSuccessFlow ? 'lowercase' : 'none' },
+          ]}
+          size={'small'}
+        >
           By continuing, you agree to the&nbsp;
           <Anchor style={styles.link} href={termsUrl}>
             User Terms and Conditions

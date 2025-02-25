@@ -44,3 +44,7 @@ export function checkScannedInfo(
   }
   return true;
 }
+
+export function randomNumberFromRange(min: number, max: number) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}

@@ -10,12 +10,15 @@ import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import { useSettingStore } from '../../stores/settingStore';
+import { impactLight } from '../../utils/haptic';
 import {
   checkPassportSupported,
   isPassportNullified,
   isUserRegistered,
   registerPassport,
 } from '../../utils/proving/payload';
+import { randomNumberFromRange } from '../../utils/utils';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
@@ -24,6 +27,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToErrorScreen = useHapticNavigation('ConfirmBelongingScreen');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
+  const { forceSuccessFlow } = useSettingStore();
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -62,6 +66,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const processPayloadCalled = useRef(false);
 
   useEffect(() => {
+    if (forceSuccessFlow) {
+      setTimeout(() => {
+        impactLight();
+        navigation.navigate('AccountVerifiedSuccess');
+      }, randomNumberFromRange(3000, 6000));
+      return;
+    }
+
     if (!processPayloadCalled.current) {
       processPayloadCalled.current = true;
       const processPayload = async () => {

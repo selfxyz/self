@@ -26,11 +26,13 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { storePassportData } from '../../stores/passportDataProvider';
+import { useSettingStore } from '../../stores/settingStore';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { parseScanResponse, scan } from '../../utils/nfcScannerNew';
+import { randomNumberFromRange } from '../../utils/utils';
 
 const { trackEvent } = analytics();
 
@@ -48,6 +50,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
   const [isNfcSupported, setIsNfcSupported] = useState(true);
   const [isNfcEnabled, setIsNfcEnabled] = useState(true);
   const [isNfcSheetOpen, setIsNfcSheetOpen] = useState(false);
+  const { forceSuccessFlow } = useSettingStore();
 
   const animationRef = useRef<LottieView>(null);
 
@@ -76,6 +79,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 
   const onVerifyPress = useCallback(async () => {
     buttonTap();
+
+    if (forceSuccessFlow) {
+      setTimeout(() => {
+        navigation.navigate('ConfirmBelongingScreen');
+      }, randomNumberFromRange(4000, 7000));
+      return;
+    }
+
     if (isNfcEnabled) {
       setIsNfcSheetOpen(true);
 
