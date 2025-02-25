@@ -16,15 +16,16 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
   ssr: false,
 });
 
-interface OpenPassportQRcodeProps {
+interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;
   websocketUrl?: string;
   size?: number;
+  darkMode?: boolean;
+  children?: React.ReactNode;
 }
 
-// Create a wrapper component that handles client-side rendering
-const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => {
+const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -33,16 +34,16 @@ const OpenPassportQRcodeWrapper: React.FC<OpenPassportQRcodeProps> = (props) => 
   if (!isClient) {
     return null;
   }
-  return <OpenPassportQRcode {...props} />;
+  return <SelfQRcode {...props} />;
 };
 
-// Your existing OpenPassportQRcode component
-const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
+const SelfQRcode = ({
   selfApp,
   onSuccess,
   websocketUrl = WS_DB_RELAYER,
   size = 300,
-}) => {
+  darkMode = false,
+}: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
   const [sessionId] = useState(uuidv4());
@@ -116,6 +117,8 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
                 <QRCodeSVG
                   value={generateUniversalLink()}
                   size={size}
+                  bgColor={darkMode ? '#000000' : '#ffffff'}
+                  fgColor={darkMode ? '#ffffff' : '#000000'}
                 />
               );
           }
@@ -128,7 +131,7 @@ const OpenPassportQRcode: React.FC<OpenPassportQRcodeProps> = ({
 };
 
 // Export the wrapper component as the default export
-export default OpenPassportQRcodeWrapper;
+export default SelfQRcodeWrapper;
 
 // Also export other components/types that might be needed
-export { OpenPassportQRcode, SelfApp, SelfAppBuilder };
+export { SelfQRcode, SelfApp, SelfAppBuilder };

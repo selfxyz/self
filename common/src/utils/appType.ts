@@ -1,4 +1,4 @@
-import { UserIdType } from "./circuits/uuid";
+import { UserIdType, validateUserId } from "./circuits/uuid";
 
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 export type EndpointType = 'https' | 'celo';
@@ -48,17 +48,28 @@ export class SelfAppBuilder {
     if (!config.endpoint) {
       throw new Error('endpoint is required');
     }
+    if (!config.userId) {
+      throw new Error('userId is required');
+    }
     if (config.endpointType === 'https' && !config.endpoint.startsWith('https://')) {
       throw new Error('endpoint must start with https://');
     }
     if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
       throw new Error('endpoint must be a valid address');
     }
-    
+    if (config.userIdType === 'hex') {
+      if (!config.userId.startsWith('0x')) {
+        throw new Error('userId as hex must start with 0x');
+      }
+      config.userId = config.userId.slice(2);
+    }
+    if (!validateUserId(config.userId, config.userIdType ?? "uuid")) {
+      throw new Error('userId must be a valid UUID or address');
+    }
+
     this.config = {
       sessionId : v4(),
       userIdType : 'uuid',
-      userId: "",
       devMode : false,
       endpointType : 'https',
       header: "",

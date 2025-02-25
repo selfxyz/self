@@ -16,7 +16,7 @@
   "include": [
     "index.ts",
     "src/**/*",
-    "OpenPassportQRcode.tsx",
+    "SelfQRcode.tsx",
     "common/**/*",
     "circuits/**/*",
     "circuits/**/*.json",

@@ -1,7 +1,7 @@
 'use client';
 
-import { SelfAppBuilder } from '../../../../../qrcode/OpenPassportQRcode';
-import OpenPassportQRcodeWrapper from '../../../../../qrcode/OpenPassportQRcode';
+import { SelfAppBuilder } from '../../../../../qrcode/SelfQRcode';
+import SelfQRcodeWrapper from '../../../../../qrcode/SelfQRcode';
 import { v4 } from 'uuid';
 import {logo} from './logo';
 
@@ -31,7 +31,7 @@ export default function Prove() {
 
   return (
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
-      <OpenPassportQRcodeWrapper
+      <SelfQRcodeWrapper
         selfApp={selfApp}
         onSuccess={() => {
           window.location.href = '/success';

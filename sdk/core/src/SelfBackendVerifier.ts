@@ -5,28 +5,39 @@ import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import {
   countryCodes,
-  countryNames,
   getCountryCode,
 } from '../../../common/src/constants/constants';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
-import { castToScope } from '../../../common/src/utils/circuits/uuid';
+import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
+
+type CountryCode = (typeof countryCodes)[keyof typeof countryCodes];
 
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
+  protected user_identifier_type: UserIdType = 'uuid';
   protected targetRootTimestamp: { enabled: boolean; value: number } = {
     enabled: false,
     value: 0,
   };
 
-  protected nationality: { enabled: boolean; value: (typeof countryNames)[number] } = {
+  protected nationality: {
+    enabled: boolean;
+    value: CountryCode;
+  } = {
     enabled: false,
-    value: '' as (typeof countryNames)[number],
+    value: '' as CountryCode,
   };
-  protected minimumAge: { enabled: boolean; value: string } = { enabled: false, value: '18' };
-  protected excludedCountries: { enabled: boolean; value: (typeof countryNames)[number][] } = {
+  protected minimumAge: { enabled: boolean; value: string } = {
+    enabled: false,
+    value: '18',
+  };
+  protected excludedCountries: {
+    enabled: boolean;
+    value: CountryCode[];
+  } = {
     enabled: false,
     value: [],
   };
@@ -34,20 +45,22 @@ export class SelfBackendVerifier {
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
 
-  protected registryContract: any;
-  protected verifyAllContract: any;
+  protected registryContract: ethers.Contract;
+  protected verifyAllContract: ethers.Contract;
 
-  constructor(rpcUrl: string, scope: string) {
+  constructor(
+    rpcUrl: string,
+    scope: string,
+    user_identifier_type: UserIdType = 'uuid'
+  ) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
     this.scope = scope;
+    this.user_identifier_type = user_identifier_type;
   }
 
-  public async verify(
-    proof: any,
-    publicSignals: PublicSignals
-  ): Promise<SelfVerificationResult> {
+  public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
     const excludedCountryCodes = this.excludedCountries.value.map((country) =>
       getCountryCode(country)
     );
@@ -69,7 +82,10 @@ export class SelfBackendVerifier {
       ofacEnabled: [this.passportNoOfac, this.nameAndDobOfac, this.nameAndYobOfac],
       vcAndDiscloseProof: {
         a: proof.a,
-        b: [[proof.b[0][1], proof.b[0][0]],[proof.b[1][1], proof.b[1][0]]],
+        b: [
+          [proof.b[0][1], proof.b[0][0]],
+          [proof.b[1][1], proof.b[1][0]],
+        ],
         c: proof.c,
         pubSignals: publicSignals,
       },
@@ -92,6 +108,11 @@ export class SelfBackendVerifier {
     const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
     const timestamp = await this.registryContract.rootTimestamps(currentRoot);
 
+    const user_identifier = castToUserIdentifier(
+      BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
+      this.user_identifier_type
+    );
+
     let result: any;
     try {
       result = await this.verifyAllContract.verifyAll(timestamp, vcAndDiscloseHubProof, types);
@@ -104,18 +125,18 @@ export class SelfBackendVerifier {
           isValidProof: false,
           isValidNationality: false,
         },
-        userId: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+        userId: user_identifier,
         application: this.scope,
         nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
-        credentialSubject: null,
+        credentialSubject: {},
         proof: {
           value: {
             proof: proof,
             publicSignals: publicSignals,
           },
         },
-        error: error
-      }
+        error: error,
+      };
     }
 
     let isValidNationality = true;
@@ -136,10 +157,10 @@ export class SelfBackendVerifier {
       date_of_birth: result[0][revealedDataTypes.date_of_birth],
       gender: result[0][revealedDataTypes.gender],
       expiry_date: result[0][revealedDataTypes.expiry_date],
-      older_than: result[0][revealedDataTypes.older_than],
-      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac],
-      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac],
-      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac],
+      older_than: result[0][revealedDataTypes.older_than].toString(),
+      passport_no_ofac: result[0][revealedDataTypes.passport_no_ofac].toString() === '1',
+      name_and_dob_ofac: result[0][revealedDataTypes.name_and_dob_ofac].toString() === '1',
+      name_and_yob_ofac: result[0][revealedDataTypes.name_and_yob_ofac].toString() === '1',
     };
 
     const attestation: SelfVerificationResult = {
@@ -150,7 +171,7 @@ export class SelfBackendVerifier {
         isValidProof: result[1],
         isValidNationality: isValidNationality,
       },
-      userId: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+      userId: user_identifier,
       application: this.scope,
       nullifier: publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NULLIFIER_INDEX],
       credentialSubject: credentialSubject,
@@ -160,7 +181,7 @@ export class SelfBackendVerifier {
           publicSignals: publicSignals,
         },
       },
-      error: result[2]
+      error: result[2],
     };
 
     return attestation;
@@ -177,12 +198,12 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  setNationality(country: (typeof countryNames)[number]): this {
+  setNationality(country: CountryCode): this {
     this.nationality = { enabled: true, value: country };
     return this;
   }
 
-  excludeCountries(...countries: (typeof countryNames)[number][]): this {
+  excludeCountries(...countries: CountryCode[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }

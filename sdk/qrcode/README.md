@@ -1,127 +1,193 @@
-# Installation
+# @selfxyz/qrcode
+
+A React component for generating QR codes for Self passport verification.
+
+## Installation
 
 ```bash
-yarn add @selfxyz/sdk
+npm install @selfxyz/qrcode
+# or
+yarn add @selfxyz/qrcode
 ```
 
-# Generate a QR code
+## Basic Usage
 
-### Create an AppType type object:
+### 1. Import the SelfQRcodeWrapper component
 
-```typescript
-import { AppType } from '@selfxyz/sdk';
-const appName = '🤠 Cowboy App';
-const scope = 'cowboyApp';
-const userID = 'user1234';
-const sessionID = uuidv4();
+```tsx
+import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
+import { v4 as uuidv4 } from 'uuid';
+```
 
-const cowboyApp: AppType = {
-  name: appName,
-  scope,
-  userId: userID,
-  sessionId: sessionID,
-  circuit: 'prove',
-  arguments: {
-    disclosureOptions: { older_than: '18', nationality: 'France' },
+### 2. Create a SelfApp instance using SelfAppBuilder
+
+```tsx
+// Generate a unique user ID
+const userId = uuidv4();
+
+// Create a SelfApp instance using the builder pattern
+const selfApp = new SelfAppBuilder({
+  appName: "My App",
+  scope: "my-app-scope", 
+  endpoint: "https://myapp.com/api/verify",
+  logoBase64: "base64EncodedLogo", // Optional
+  userId,
+  // Optional disclosure requirements
+  disclosures: {
+    // DG1 disclosures
+    issuing_state: true,
+    name: true,
+    nationality: true,
+    date_of_birth: true,
+    passport_number: true,
+    gender: true,
+    expiry_date: true,
+    // Custom verification rules
+    minimumAge: 18,
+    excludedCountries: ["IRN", "PRK"],
+    ofac: true,
   },
-};
+}).build();
 ```
 
-| Parameter   | Optional | Description                                                   |
-| ----------- | -------- | ------------------------------------------------------------- |
-| `scope`     | M        | The scope of your application, is unique for each application |
-| `name`      | M        | Name of the application                                       |
-| `userId`    | M        | User ID                                                       |
-| `sessionId` | M        | Session ID                                                    |
-| `circuit`   | M        | Circuit to use, only `prove` is available for now             |
-| `arguments` | O        | Optional disclosure options, based on passport attributes     |
+### 3. Render the QR code component
 
-### Display the QR code
-
-Use the appType object defined above to generate a QR code.
-The generated QR code is an `HTML element` that you can display in your app.
-
-```typescript
-import { QRCodeGenerator } from '@selfxyz/sdk';
-
-// [...]  define cowboyApp as described above
-
-const qrCode: HTMLElement = await QRCodeGenerator.generateQRCode(cowboyApp);
+```tsx
+function MyComponent() {
+  return (
+    <SelfQRcodeWrapper
+      selfApp={selfApp}
+      onSuccess={() => {
+        console.log('Verification successful');
+        // Perform actions after successful verification
+      }}
+      darkMode={false} // Optional: set to true for dark mode
+      size={300} // Optional: customize QR code size (default: 300)
+    />
+  );
+}
 ```
 
-# Verify the proof
+`SelfQRcodeWrapper` wraps `SelfQRcode` to prevent server-side rendering when using nextjs. When not using nextjs, `SelfQRcode` can be used instead.
 
-## 1 Step flow
+## SelfApp Configuration
 
-To use the `OpenPassportVerifier`, import and initialize it as follows:
+The `SelfAppBuilder` allows you to configure your application's verification requirements:
 
-```typescript
-import { OpenPassportVerifier } from '@selfxyz/sdk';
-const verifier = new OpenPassportVerifier({
-  scope: 'cowboyApp',
-  requirements: [
-    ['older_than', '18'],
-    ['nationality', 'France'],
-  ],
-});
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `appName` | string | Yes | The name of your application |
+| `scope` | string | Yes | A unique identifier for your application |
+| `endpoint` | string | Yes | The endpoint that will verify the proof |
+| `logoBase64` | string | No | Base64-encoded logo to display in the Self app |
+| `userId` | string | Yes | Unique identifier for the user |
+| `disclosures` | object | No | Disclosure and verification requirements |
+
+### Disclosure Options
+
+The `disclosures` object can include the following options:
+
+| Option | Type | Description |
+|--------|------|-------------|
+| `issuing_state` | boolean | Request disclosure of passport issuing state |
+| `name` | boolean | Request disclosure of the user's name |
+| `nationality` | boolean | Request disclosure of nationality |
+| `date_of_birth` | boolean | Request disclosure of birth date |
+| `passport_number` | boolean | Request disclosure of passport number |
+| `gender` | boolean | Request disclosure of gender |
+| `expiry_date` | boolean | Request disclosure of passport expiry date |
+| `minimumAge` | number | Verify the user is at least this age |
+| `excludedCountries` | string[] | Array of country codes to exclude |
+| `ofac` | boolean | Enable OFAC compliance check |
+
+## Component Props
+
+The `SelfQRcodeWrapper` component accepts the following props:
+
+| Prop | Type | Required | Default | Description |
+|------|------|----------|---------|-------------|
+| `selfApp` | SelfApp | Yes | - | The SelfApp configuration object |
+| `onSuccess` | () => void | Yes | - | Callback function executed on successful verification |
+| `websocketUrl` | string | No | WS_DB_RELAYER | Custom WebSocket URL for verification |
+| `size` | number | No | 300 | QR code size in pixels |
+| `darkMode` | boolean | No | false | Enable dark mode styling |
+| `children` | React.ReactNode | No | - | Custom children to render |
+
+## Complete Example
+
+Here's a complete example of how to implement the Self QR code in a React application:
+
+```tsx
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import SelfQRcodeWrapper, { SelfApp, SelfAppBuilder } from '@selfxyz/qrcode';
+import { v4 as uuidv4 } from 'uuid';
+
+function VerificationPage() {
+  const [userId, setUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Generate a user ID when the component mounts
+    setUserId(uuidv4());
+  }, []);
+
+  if (!userId) return null;
+
+  // Create the SelfApp configuration
+  const selfApp = new SelfAppBuilder({
+    appName: "My Application",
+    scope: "my-application-scope",
+    endpoint: "https://myapp.com/api/verify",
+    userId,
+    disclosures: {
+      // Request passport information
+      name: true,
+      nationality: true,
+      date_of_birth: true,
+      
+      // Set verification rules
+      minimumAge: 18,
+      excludedCountries: ["IRN", "PRK", "RUS"],
+      ofac: true,
+    },
+  }).build();
+
+  return (
+    <div className="verification-container">
+      <h1>Verify Your Identity</h1>
+      <p>Scan this QR code with the Self app to verify your identity</p>
+      
+      <SelfQRcodeWrapper
+        selfApp={selfApp}
+        onSuccess={() => {
+          // Handle successful verification
+          console.log("Verification successful!");
+          // Redirect or update UI
+        }}
+        size={350}
+      />
+      
+      <p className="text-sm text-gray-500">
+        User ID: {userId.substring(0, 8)}...
+      </p>
+    </div>
+  );
+}
+
+export default VerificationPage;
 ```
 
-### Parameters for `OpenPassportVerifier`
+## Example
 
-| Parameter       | Optional | Description                                                                       |
-| --------------- | -------- | --------------------------------------------------------------------------------- |
-| `scope`         | M        | The scope of your application, is unique for each application.                    |
-| `attestationId` | O        | The ID of the attestation, defaults to `PASSPORT_ATTESTATION_ID`.                 |
-| `requirements`  | O        | An array of requirements, each an array with an attribute and its expected value. |
-| `rpcUrl`        | O        | The RPC URL to connect to the blockchain, defaults to `DEFAULT_RPC_URL`.          |
-| `dev_mode`      | O        | Allow users with generated passport to pass the verification.                     |
+For a more comprehensive and interactive example, please refer to the [playground](https://github.com/selfxyz/playground/blob/main/app/page.tsx).
 
-### Verify the proof
+## Verification Flow
 
-The function fired from the OpenPassport app will send an `OpenPassportVerifierInputs` object.
+1. Your application displays the QR code to the user
+2. The user scans the QR code with the Self app
+3. The Self app guides the user through the passport verification process
+4. The proof is generated and sent to your verification endpoint
+5. Upon successful verification, the `onSuccess` callback is triggered
 
-```typescript
-const result: OpenPassportVerifierReport = await verifier.verify(openPassportVerifierInputs);
-```
-
-From the `result` object, you can inspect the validity of any submitted attribute.
-To check the overall validity of the proof, you can inspect the `valid` attribute.
-
-```typescript
-require(result.valid);
-```
-
-Nullifier and user identifier are accessible from the `result` object.
-
-```typescript
-const nullifier: number = result.nullifier;
-const user_identifier: number = result.user_identifier;
-```
-
-## 2 Steps flow
-
-### 🚧 Work in progress 🚧
-
-# Development
-
-Install the dependencies
-
-```bash
-yarn install-sdk
-```
-
-## Tests
-
-To run the tests, you need to download the circuits and the zkey files from the AWS s3 bucket.
-This script will also compile the circuits to generate the wasm files.
-Make sure that the circuits in the circuits folder are up to date with the AWS zkey files.
-
-```bash
-yarn download-circuits
-```
-
-Then run the tests with the following command:
-
-```bash
-yarn test
-```
+The QR code component displays the current verification status with an LED indicator and changes its appearance based on the verification state.
