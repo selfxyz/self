@@ -8,7 +8,6 @@
   "license": "MIT",
   "author": "motemotech",
   "main": "dist/sdk/core/index.js",
-  "type": "module",
   "types": "dist/sdk/core/index.d.ts",
   "files": [
     "dist",
@@ -50,7 +49,7 @@
     "@types/pako": "^2.0.3",
     "@types/snarkjs": "^0.7.8",
     "axios": "^1.7.2",
-    "chai": "^5.2.0",
+    "chai": "^4.3.7",
     "hardhat": "^2.22.18",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",

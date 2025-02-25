@@ -1,7 +1,7 @@
-import chai from "chai";
-const {expect} = chai;
 import { ethers } from "hardhat";
 import { Signer } from 'ethers';
+import { expect } from "chai";
+import { Context } from "mocha";
 import { generateRandomFieldElement, splitHexFromBack } from "../../../contracts/test/utils/utils";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { ATTESTATION_ID } from "../../../contracts/test/utils/constants";
@@ -22,8 +22,11 @@ import { getCscaTreeRoot } from "../../../common/src/utils/trees";
 import serialized_csca_tree from "../../../contracts/test/utils/pubkeys/serialized_csca_tree.json";
 import { identityVerificationHubImplV1Sol } from "../../../contracts/typechain-types/contracts";
 import { verify } from "crypto";
+import { registryAbi } from "../../../sdk/core/src/abi/IdentityRegistryImplV1";
+import { verifyAllAbi } from "../../../sdk/core/src/abi/VerifyAll";
 
 describe("VerifyAll with AttestationVerifier", () => {
+
     let vcAndDiscloseVerifier: any;
     let identityVerificationHubProxy: any;
     let identityVerificationHubImpl: any;
@@ -53,15 +56,16 @@ describe("VerifyAll with AttestationVerifier", () => {
     let invalidForbiddenCountriesListPacked: string[];
 
     let baseRawProof: {
-        proof: Groth16Proof,
+        proof: any,
         publicSignals: PublicSignals
     };
     let rawProof: {
-        proof: Groth16Proof,
+        proof: any,
         publicSignals: PublicSignals
     };
 
     before(async () => {
+        const localProvider = new ethers.JsonRpcProvider("http://127.0.0.1:8545");
 
         const vcAndDiscloseArtifact = require("../deployments/local/disclose/Verifier_vc_and_disclose.json");
         const poseidonT3Artifact = require("../deployments/PoseidonT3.json");
@@ -72,6 +76,8 @@ describe("VerifyAll with AttestationVerifier", () => {
         const verifyAllArtifact = require("../deployments/prod/DeployVerifyAll#VerifyAll.json");
 
         [owner, user1] = await ethers.getSigners();
+        owner = owner.connect(localProvider);
+        user1 = user1.connect(localProvider);
 
         const newBalance = "0x" + ethers.parseEther("10000").toString(16);
         await ethers.provider.send("hardhat_setBalance", [await owner.getAddress(), newBalance]);
@@ -145,10 +151,10 @@ describe("VerifyAll with AttestationVerifier", () => {
             identityVerificationHubImpl.target,
             initializeData
         );
-        identityVerificationHubProxy.waitForDeployment();
+        await identityVerificationHubProxy.waitForDeployment();
 
         const VerifyAllFactory = new ethers.ContractFactory(
-            verifyAllArtifact.abi,
+            verifyAllAbi,
             verifyAllArtifact.bytecode,
             owner
         );
@@ -156,16 +162,17 @@ describe("VerifyAll with AttestationVerifier", () => {
             identityVerificationHubProxy.target,
             identityRegistryProxy.target
         );
-        verifyAll.waitForDeployment();
+        await verifyAll.waitForDeployment();
 
         hub = await ethers.getContractAt(
             hubImplArtifact.abi,
             identityVerificationHubProxy.target,
         );
 
-        registry = await ethers.getContractAt(
-            registryImplArtifact.abi,
-            identityRegistryProxy.target
+        registry = new ethers.Contract(
+            identityRegistryProxy.target,
+            registryAbi,
+            owner
         );
 
         mockPassport = genMockPassportData(
@@ -211,7 +218,7 @@ describe("VerifyAll with AttestationVerifier", () => {
         const wholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
         forbiddenCountriesListPacked = splitHexFromBack(wholePacked);
 
-        baseRawProof = await generateVcAndDiscloseRawProof(
+        const generatedProof = await generateVcAndDiscloseRawProof(
             registerSecret,
             ATTESTATION_ID.E_PASSPORT,
             mockPassport,
@@ -224,16 +231,26 @@ describe("VerifyAll with AttestationVerifier", () => {
             nameAndDob_smt,
             nameAndYob_smt,
             undefined,
-            forbiddenCountriesList,
+            forbiddenCountriesListPacked,
             (await user1?.getAddress()).slice(2),
             "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_js/vc_and_disclose.wasm",
             "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_final.zkey",
             "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_vkey.json"
         );
 
+        baseRawProof = {
+            "proof": {
+                a: generatedProof.proof.pi_a,
+                b: generatedProof.proof.pi_b,
+                c: generatedProof.proof.pi_c
+            },
+            "publicSignals": generatedProof.publicSignals
+        }
+
         selfBackendVerifier = new SelfBackendVerifier(
             "http://127.0.0.1:8545",
             "test-scope",
+            "hex",
             identityRegistryProxy.target,
             verifyAll.target
         );
@@ -261,9 +278,9 @@ describe("VerifyAll with AttestationVerifier", () => {
             rawProof.proof,
             rawProof.publicSignals
         );
+        console.log("result: ", result);
 
-        // Assert that the attestation verification result is valid.
-        expect(result.userId).to.equal(rawProof.publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
+        expect(result.userId.toLowerCase()).to.equal((await user1.getAddress()).toLowerCase());
         expect(result.isValid).to.be.true;
         expect(result.isValidDetails.isValidScope).to.be.true;
         expect(result.isValidDetails.isValidAttestationId).to.be.true;
