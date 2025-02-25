@@ -25,7 +25,6 @@ interface SelfQRcodeProps {
   children?: React.ReactNode;
 }
 
-// Create a wrapper component that handles client-side rendering
 const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -38,7 +37,6 @@ const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
   return <SelfQRcode {...props} />;
 };
 
-// Your existing SelfQRcode component
 const SelfQRcode = ({
   selfApp,
   onSuccess,

@@ -54,34 +54,46 @@ async function generateTeeInputsRegister(
   return { inputs, circuitName };
 }
 
-export function checkPassportSupported(passportData: PassportData) {
+export type PassportSupportStatus =
+  | 'passport_metadata_missing'
+  | 'csca_not_found'
+  | 'registration_circuit_not_supported'
+  | 'dsc_circuit_not_supported'
+  | 'passport_supported';
+export function checkPassportSupported(passportData: PassportData): {
+  status: PassportSupportStatus;
+  details: string;
+} {
   const passportMetadata = passportData.passportMetadata;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
-    return false;
+    return { status: 'passport_metadata_missing', details: passportData.dsc };
   }
   if (!passportMetadata.cscaFound) {
     console.log('CSCA not found');
-    return false;
+    return { status: 'csca_not_found', details: passportData.dsc };
   }
   const circuitNameRegister = getCircuitNameFromPassportData(
     passportData,
     'register',
   );
+  console.log('circuitNameRegister', circuitNameRegister);
   if (
     !circuitNameRegister ||
     !DEPLOYED_CIRCUITS_REGISTER.includes(circuitNameRegister)
   ) {
-    console.log('Circuit not supported:', circuitNameRegister);
-    return false;
+    return {
+      status: 'registration_circuit_not_supported',
+      details: circuitNameRegister,
+    };
   }
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
   if (!circuitNameDsc || !DEPLOYED_CIRCUITS_DSC.includes(circuitNameDsc)) {
     console.log('DSC circuit not supported:', circuitNameDsc);
-    return false;
+    return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
   console.log('Passport supported');
-  return true;
+  return { status: 'passport_supported', details: 'null' };
 }
 
 export async function sendRegisterPayload(
@@ -159,11 +171,11 @@ export async function sendDscPayload(
   if (!passportData) {
     return false;
   }
-  const isSupported = checkPassportSupported(passportData);
-  if (!isSupported) {
-    console.log('Passport not supported');
-    return false;
-  }
+  // const isSupported = checkPassportSupported(passportData);
+  // if (!isSupported) {
+  //   console.log('Passport not supported');
+  //   return false;
+  // }
   const { inputs, circuitName } = await generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
   const dscStatus = await sendPayload(

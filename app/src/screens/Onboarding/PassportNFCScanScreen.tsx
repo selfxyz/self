@@ -79,19 +79,32 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     if (isNfcEnabled) {
       setIsNfcSheetOpen(true);
 
+      // Add timestamp when scan starts
+      const scanStartTime = Date.now();
+
       try {
         const scanResponse = await scan({
           passportNumber,
           dateOfBirth,
           dateOfExpiry,
         });
-        console.log('NFC Scan Successful');
-        trackEvent('NFC Scan Successful');
 
+        const scanDurationSeconds = (
+          (Date.now() - scanStartTime) /
+          1000
+        ).toFixed(2);
+        console.log(
+          'NFC Scan Successful - Duration:',
+          scanDurationSeconds,
+          'seconds',
+        );
+        trackEvent('NFC Scan Successful', {
+          duration_seconds: parseFloat(scanDurationSeconds),
+        });
+        let passportData: PassportData | null = null;
         let parsedPassportData: PassportData | null = null;
         try {
-          const passportData = parseScanResponse(scanResponse);
-          parsedPassportData = initPassportDataParsing(passportData);
+          passportData = parseScanResponse(scanResponse);
         } catch (e: any) {
           console.error('Parsing NFC Response Unsuccessful');
           trackEvent('Parsing NFC Response Unsuccessful', {
@@ -99,44 +112,56 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           });
           return;
         }
-
-        await storePassportData(parsedPassportData);
-        const passportMetadata = parsedPassportData.passportMetadata!;
-        trackEvent('Passport Parsed', {
-          success: true,
-          data_groups: passportMetadata.dataGroups,
-          dg1_size: passportMetadata.dg1Size,
-          dg1_hash_size: passportMetadata.dg1HashSize,
-          dg1_hash_function: passportMetadata.dg1HashFunction,
-          dg1_hash_offset: passportMetadata.dg1HashOffset,
-          dg_padding_bytes: passportMetadata.dgPaddingBytes,
-          e_content_size: passportMetadata.eContentSize,
-          e_content_hash_function: passportMetadata.eContentHashFunction,
-          e_content_hash_offset: passportMetadata.eContentHashOffset,
-          signed_attr_size: passportMetadata.signedAttrSize,
-          signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
-          signature_algorithm: passportMetadata.signatureAlgorithm,
-          salt_length: passportMetadata.saltLength,
-          curve_or_exponent: passportMetadata.curveOrExponent,
-          signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
-          country_code: passportMetadata.countryCode,
-          csca_found: passportMetadata.cscaFound,
-          csca_hash_function: passportMetadata.cscaHashFunction,
-          csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
-          csca_salt_length: passportMetadata.cscaSaltLength,
-          csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
-          csca_signature_algorithm_bits:
-            passportMetadata.cscaSignatureAlgorithmBits,
-          dsc: passportMetadata.dsc,
-        });
-
-        // Feels better somehow
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        navigation.navigate('ConfirmBelongingScreen');
+        try {
+          parsedPassportData = initPassportDataParsing(passportData);
+          const passportMetadata = parsedPassportData.passportMetadata!;
+          trackEvent('Passport Parsed', {
+            success: true,
+            data_groups: passportMetadata.dataGroups,
+            dg1_size: passportMetadata.dg1Size,
+            dg1_hash_size: passportMetadata.dg1HashSize,
+            dg1_hash_function: passportMetadata.dg1HashFunction,
+            dg1_hash_offset: passportMetadata.dg1HashOffset,
+            dg_padding_bytes: passportMetadata.dgPaddingBytes,
+            e_content_size: passportMetadata.eContentSize,
+            e_content_hash_function: passportMetadata.eContentHashFunction,
+            e_content_hash_offset: passportMetadata.eContentHashOffset,
+            signed_attr_size: passportMetadata.signedAttrSize,
+            signed_attr_hash_function: passportMetadata.signedAttrHashFunction,
+            signature_algorithm: passportMetadata.signatureAlgorithm,
+            salt_length: passportMetadata.saltLength,
+            curve_or_exponent: passportMetadata.curveOrExponent,
+            signature_algorithm_bits: passportMetadata.signatureAlgorithmBits,
+            country_code: passportMetadata.countryCode,
+            csca_found: passportMetadata.cscaFound,
+            csca_hash_function: passportMetadata.cscaHashFunction,
+            csca_signature_algorithm: passportMetadata.cscaSignatureAlgorithm,
+            csca_salt_length: passportMetadata.cscaSaltLength,
+            csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
+            csca_signature_algorithm_bits:
+              passportMetadata.cscaSignatureAlgorithmBits,
+            dsc: passportMetadata.dsc,
+          });
+          await storePassportData(parsedPassportData);
+          // Feels better somehow
+          await new Promise(resolve => setTimeout(resolve, 1000));
+          navigation.navigate('ConfirmBelongingScreen');
+        } catch (e: any) {
+          console.error('Passport Parsed Failed:', e);
+          trackEvent('Passport Parsed Failed', {
+            error: e.message,
+          });
+          return;
+        }
       } catch (e: any) {
+        const scanDurationSeconds = (
+          (Date.now() - scanStartTime) /
+          1000
+        ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         trackEvent('NFC Scan Unsuccessful', {
           error: e.message,
+          duration_seconds: parseFloat(scanDurationSeconds),
         });
 
         if (e.message.includes('InvalidMRZKey')) {
@@ -152,6 +177,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         } else if (e.message.includes('UnexpectedError')) {
           // iOS
           // Timeout reached, do nothing
+        } else if (
+          e.message.includes('Error: Lost connection to chip on card')
+        ) {
+          // android
+          navigation.navigate('PassportNFCTrouble');
+        } else if (e.message.includes('Could not tranceive APDU')) {
+          // android
+          navigation.navigate('PassportNFCTrouble');
         } else {
           // TODO: Handle other error types
         }
