@@ -100,7 +100,17 @@ async function loadOrCreateMnemonic() {
     service: SERVICE_NAME,
   });
   if (storedMnemonic) {
-    return storedMnemonic.password;
+    try {
+      JSON.parse(storedMnemonic.password);
+      console.log('Stored mnemonic parsed successfully');
+      return storedMnemonic.password;
+    } catch (e) {
+      console.log(
+        'Error parsing stored mnemonic, old secret format was used',
+        e,
+      );
+      console.log('Creating a new one');
+    }
   }
 
   console.log('No secret found, creating one');
