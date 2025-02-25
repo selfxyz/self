@@ -6,8 +6,9 @@
     "url": "https://github.com/celo-org/self"
   },
   "license": "MIT",
-  "author": "turnoffthiscomputer",
+  "author": "motemotech",
   "main": "dist/sdk/core/index.js",
+  "type": "module",
   "types": "dist/sdk/core/index.d.ts",
   "files": [
     "dist",
@@ -35,6 +36,7 @@
     "snarkjs": "^0.7.4"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.8",
     "@nomicfoundation/hardhat-ethers": "^3.0.8",
     "@nomicfoundation/hardhat-toolbox": "^3.0.0",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
@@ -48,6 +50,7 @@
     "@types/pako": "^2.0.3",
     "@types/snarkjs": "^0.7.8",
     "axios": "^1.7.2",
+    "chai": "^5.2.0",
     "hardhat": "^2.22.18",
     "prettier": "^3.3.3",
     "ts-loader": "^9.5.1",

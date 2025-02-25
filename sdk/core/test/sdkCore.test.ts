@@ -1,4 +1,5 @@
-import { expect } from "chai";
+import chai from "chai";
+const {expect} = chai;
 import { ethers } from "hardhat";
 import { Signer } from 'ethers';
 import { generateRandomFieldElement, splitHexFromBack } from "../../../contracts/test/utils/utils";
@@ -20,6 +21,7 @@ import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
 import serialized_csca_tree from "../../../contracts/test/utils/pubkeys/serialized_csca_tree.json";
 import { identityVerificationHubImplV1Sol } from "../../../contracts/typechain-types/contracts";
+import { verify } from "crypto";
 
 describe("VerifyAll with AttestationVerifier", () => {
     let vcAndDiscloseVerifier: any;
@@ -218,17 +220,22 @@ describe("VerifyAll with AttestationVerifier", () => {
             1,
             imt,
             "20",
-            undefined,
-            undefined,
-            undefined,
+            passportNo_smt,
+            nameAndDob_smt,
+            nameAndYob_smt,
             undefined,
             forbiddenCountriesList,
-            (await user1?.getAddress()).slice(2)
+            (await user1?.getAddress()).slice(2),
+            "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_js/vc_and_disclose.wasm",
+            "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_final.zkey",
+            "../../circuits/build/disclose/vc_and_disclose/vc_and_disclose_vkey.json"
         );
-        
+
         selfBackendVerifier = new SelfBackendVerifier(
             "http://127.0.0.1:8545",
             "test-scope",
+            identityRegistryProxy.target,
+            verifyAll.target
         );
         snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
@@ -243,43 +250,42 @@ describe("VerifyAll with AttestationVerifier", () => {
     });
 
     it("should verify and get valid attestation result successfully after identity commitment is added", async () => {
+        selfBackendVerifier.excludeCountries("Afghanistan", "Albania");
+        selfBackendVerifier.setMinimumAge(20);
+        selfBackendVerifier.enablePassportNoOfacCheck();
+        selfBackendVerifier.enableNameAndDobOfacCheck();
+        selfBackendVerifier.enableNameAndYobOfacCheck();
+        selfBackendVerifier.setNationality("France");
 
-        // selfBackendVerifier.excludeCountries("Afghanistan", "Albania");
-        // selfBackendVerifier.setMinimumAge(20);
-        // selfBackendVerifier.enablePassportNoOfacCheck();
-        // selfBackendVerifier.enableNameAndDobOfacCheck();
-        // selfBackendVerifier.enableNameAndYobOfacCheck();
-        // selfBackendVerifier.setNationality("France");
+        const result = await selfBackendVerifier.verify(
+            rawProof.proof,
+            rawProof.publicSignals
+        );
 
-        // const result = await selfBackendVerifier.verify(
-        //     rawProof.proof,
-        //     rawProof.publicSignals
-        // );
-
-        // // Assert that the attestation verification result is valid.
-        // expect(result.userId).to.equal(rawProof.publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
-        // expect(result.isValid).to.be.true;
-        // expect(result.isValidDetails.isValidScope).to.be.true;
-        // expect(result.isValidDetails.isValidAttestationId).to.be.true;
-        // expect(result.isValidDetails.isValidProof).to.be.true;
-        // expect(result.isValidDetails.isValidNationality).to.be.true;
-        // expect(result.application).to.equal("test-scope");
-        // expect(result.credentialSubject.merkle_root).to.equal(rawProof.publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
-        // expect(result.credentialSubject.attestation_id).to.equal(BigInt(ATTESTATION_ID.E_PASSPORT));
-        // expect(result.credentialSubject.current_date?.slice(0, 16))
-        //     .to.equal(new Date().toISOString().slice(0, 16));
-        // expect(result.credentialSubject.issuing_state).to.equal("FRA");
-        // expect(result.credentialSubject.name?.[0]).to.equal("ALPHONSE HUGHUES ALBERT");
-        // expect(result.credentialSubject.name?.[1]).to.equal("DUPONT");
-        // expect(result.credentialSubject.passport_number).to.equal("15AA81234");
-        // expect(result.credentialSubject.nationality).to.equal("FRA");
-        // expect(result.credentialSubject.date_of_birth).to.equal("31-01-94");
-        // expect(result.credentialSubject.gender).to.equal("M");
-        // expect(result.credentialSubject.expiry_date).to.equal("31-10-40");
-        // expect(result.credentialSubject.older_than).to.equal("20");
-        // expect(result.credentialSubject.passport_no_ofac).to.equal("1");
-        // expect(result.credentialSubject.name_and_dob_ofac).to.equal("1");
-        // expect(result.credentialSubject.name_and_yob_ofac).to.equal("1");
+        // Assert that the attestation verification result is valid.
+        expect(result.userId).to.equal(rawProof.publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]);
+        expect(result.isValid).to.be.true;
+        expect(result.isValidDetails.isValidScope).to.be.true;
+        expect(result.isValidDetails.isValidAttestationId).to.be.true;
+        expect(result.isValidDetails.isValidProof).to.be.true;
+        expect(result.isValidDetails.isValidNationality).to.be.true;
+        expect(result.application).to.equal("test-scope");
+        expect(result.credentialSubject.merkle_root).to.equal(rawProof.publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX]);
+        expect(result.credentialSubject.attestation_id).to.equal(BigInt(ATTESTATION_ID.E_PASSPORT));
+        expect(result.credentialSubject.current_date?.slice(0, 16))
+            .to.equal(new Date().toISOString().slice(0, 16));
+        expect(result.credentialSubject.issuing_state).to.equal("FRA");
+        expect(result.credentialSubject.name?.[0]).to.equal("ALPHONSE HUGHUES ALBERT");
+        expect(result.credentialSubject.name?.[1]).to.equal("DUPONT");
+        expect(result.credentialSubject.passport_number).to.equal("15AA81234");
+        expect(result.credentialSubject.nationality).to.equal("FRA");
+        expect(result.credentialSubject.date_of_birth).to.equal("31-01-94");
+        expect(result.credentialSubject.gender).to.equal("M");
+        expect(result.credentialSubject.expiry_date).to.equal("31-10-40");
+        expect(result.credentialSubject.older_than).to.equal("20");
+        expect(result.credentialSubject.passport_no_ofac).to.equal("1");
+        expect(result.credentialSubject.name_and_dob_ofac).to.equal("1");
+        expect(result.credentialSubject.name_and_yob_ofac).to.equal("1");
     });
 
     it("should fail when invalid VC and Disclose proof is provided", async () => {

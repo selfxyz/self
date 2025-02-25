@@ -139,7 +139,10 @@ export async function generateVcAndDiscloseRawProof(
     nameAndYob_smt?: SMT,
     selectorOfac: string | number = "1",
     forbiddenCountriesList: string[] = ["AAA"],
-    userIdentifier: string = "0000000000000000000000000000000000000000"
+    userIdentifier: string = "0000000000000000000000000000000000000000",
+    wasmPath?: string,
+    zkeyPath?: string,
+    vkeyPath?: string
 ): Promise<{
     proof: Groth16Proof,
     publicSignals: PublicSignals
@@ -171,17 +174,21 @@ export async function generateVcAndDiscloseRawProof(
 
     console.log(CYAN, "=== Start generateVcAndDiscloseRawProof ===", RESET);
     const startTime = performance.now();
+    
+    const wasmPathToUse = wasmPath || vcAndDiscloseCircuits["vc_and_disclose"].wasm;
+    const zkeyPathToUse = zkeyPath || vcAndDiscloseCircuits["vc_and_disclose"].zkey;
+    
     const vcAndDiscloseProof = await groth16.fullProve(
         vcAndDiscloseCircuitInputs,
-        vcAndDiscloseCircuits["vc_and_disclose"].wasm,
-        vcAndDiscloseCircuits["vc_and_disclose"].zkey
+        wasmPathToUse,
+        zkeyPathToUse
     );
 
     const endTime = performance.now();
     console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
 
-    // Verify the proof
-    const vKey = JSON.parse(fs.readFileSync(vcAndDiscloseCircuits["vc_and_disclose"].vkey, 'utf8'));
+    const vkeyPathToUse = vkeyPath || vcAndDiscloseCircuits["vc_and_disclose"].vkey;
+    const vKey = JSON.parse(fs.readFileSync(vkeyPathToUse, 'utf8'));
     const isValid = await groth16.verify(vKey, vcAndDiscloseProof.publicSignals, vcAndDiscloseProof.proof);
     if (!isValid) {
         throw new Error("Generated VC and Disclose proof verification failed");
