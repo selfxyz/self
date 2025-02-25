@@ -51,11 +51,23 @@ export class SelfBackendVerifier {
   constructor(
     rpcUrl: string,
     scope: string,
-    user_identifier_type: UserIdType = 'uuid'
+    user_identifier_type: UserIdType = 'uuid',
+    options?: {
+      registryAddress?: string,
+      verifyAllAddress?: string
+    }
   ) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
-    this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
+    this.registryContract = new ethers.Contract(
+      options?.registryAddress || REGISTRY_ADDRESS,
+      registryAbi,
+      provider
+    );
+    this.verifyAllContract = new ethers.Contract(
+      options?.verifyAllAddress || VERIFYALL_ADDRESS,
+      verifyAllAbi,
+      provider
+    );
     this.scope = scope;
     this.user_identifier_type = user_identifier_type;
   }

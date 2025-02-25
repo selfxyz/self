@@ -1,7 +1,7 @@
 import { expect } from "chai";
 import { ethers } from "hardhat";
 import { Signer } from 'ethers';
-import { generateRandomFieldElement } from "../../../contracts/test/utils/utils";
+import { generateRandomFieldElement, splitHexFromBack } from "../../../contracts/test/utils/utils";
 import { generateCommitment } from "../../../common/src/utils/passports/passport";
 import { ATTESTATION_ID } from "../../../contracts/test/utils/constants";
 import { CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
@@ -14,9 +14,12 @@ import { SelfBackendVerifier } from "../../../sdk/core/src/SelfBackendVerifier";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
 import { PassportData } from "../../../common/src/utils/types";
 import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
-import { getSMTs } from "../../../contracts/test/utils/generateProof";
+import fs from "fs";
+import path from "path";
+import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
 import serialized_csca_tree from "../../../contracts/test/utils/pubkeys/serialized_csca_tree.json";
+import { identityVerificationHubImplV1Sol } from "../../../contracts/typechain-types/contracts";
 
 describe("VerifyAll with AttestationVerifier", () => {
     let vcAndDiscloseVerifier: any;
@@ -41,8 +44,12 @@ describe("VerifyAll with AttestationVerifier", () => {
     let imt: any;
     let commitment: any;
     let nullifier: any;
+
     let forbiddenCountriesList: string[];
-    let forbiddenCountriesListPacked: string;
+    let invalidForbiddenCountriesList: string[];
+    let forbiddenCountriesListPacked: string[];
+    let invalidForbiddenCountriesListPacked: string[];
+
     let baseRawProof: {
         proof: Groth16Proof,
         publicSignals: PublicSignals
@@ -53,7 +60,7 @@ describe("VerifyAll with AttestationVerifier", () => {
     };
 
     before(async () => {
-        // Import contract artifacts
+
         const vcAndDiscloseArtifact = require("../deployments/local/disclose/Verifier_vc_and_disclose.json");
         const poseidonT3Artifact = require("../deployments/PoseidonT3.json");
         const hubArtifact = require("../deployments/prod/DeployHub#IdentityVerificationHub.json");
@@ -64,164 +71,178 @@ describe("VerifyAll with AttestationVerifier", () => {
 
         [owner, user1] = await ethers.getSigners();
 
+        const newBalance = "0x" + ethers.parseEther("10000").toString(16);
+        await ethers.provider.send("hardhat_setBalance", [await owner.getAddress(), newBalance]);
+        await ethers.provider.send("hardhat_setBalance", [await user1.getAddress(), newBalance]);
+
         const VcAndDiscloseFactory = new ethers.ContractFactory(
             vcAndDiscloseArtifact.abi,
             vcAndDiscloseArtifact.bytecode,
             owner
         );
-        // const PoseidonT3Factory = new ethers.ContractFactory(
-        //     poseidonT3Artifact.abi,
-        //     poseidonT3Artifact.bytecode,
-        //     owner
-        // );
-        // const HubFactory = new ethers.ContractFactory(
-        //     hubArtifact.abi,
-        //     hubArtifact.bytecode,
-        //     owner
-        // );
-        // const HubImplFactory = new ethers.ContractFactory(
-        //     hubImplArtifact.abi,
-        //     hubImplArtifact.bytecode,
-        //     owner
-        // );
-        // const RegistryFactory = new ethers.ContractFactory(
-        //     registryArtifact.abi,
-        //     registryArtifact.bytecode,
-        //     owner
-        // );
-        // const RegistryImplFactory = new ethers.ContractFactory(
-        //     registryImplArtifact.abi,
-        //     registryImplArtifact.bytecode,
-        //     owner
-        // );
-        // const VerifyAllFactory = new ethers.ContractFactory(
-        //     verifyAllArtifact.abi,
-        //     verifyAllArtifact.bytecode,
-        //     owner
-        // );
+        vcAndDiscloseVerifier = await VcAndDiscloseFactory.deploy();
+        await vcAndDiscloseVerifier.waitForDeployment();
 
-        // const newBalance = "0x" + ethers.parseEther("10000").toString(16);
-        // await ethers.provider.send("hardhat_setBalance", [await owner.getAddress(), newBalance]);
-        // await ethers.provider.send("hardhat_setBalance", [await user1.getAddress(), newBalance]);
+        const PoseidonT3Factory = new ethers.ContractFactory(
+            poseidonT3Artifact.abi,
+            poseidonT3Artifact.bytecode,
+            owner
+        );
+        const poseidonT3 = await PoseidonT3Factory.deploy();
+        await poseidonT3.waitForDeployment();
 
-        // mockPassport = genMockPassportData(
-        //     "sha256",
-        //     "sha256",
-        //     "rsa_sha256_65537_4096",
-        //     "FRA",
-        //     "940131",
-        //     "401031"
-        // );
+        const libraries = {
+            PoseidonT3: await poseidonT3.getAddress()
+        };
+        const linkedBytecode = linkLibraries(registryImplArtifact.bytecode, registryImplArtifact.linkReferences, libraries);
+        const RegistryImplFactory = new ethers.ContractFactory(
+            registryImplArtifact.abi,
+            linkedBytecode,
+            owner
+        );
+        identityRegistryImpl = await RegistryImplFactory.deploy();
+        await identityRegistryImpl.waitForDeployment();
 
-        // vcAndDiscloseVerifier = await VcAndDiscloseFactory.deploy();
-        // await vcAndDiscloseVerifier.waitForDeployment();
+        const RegistryFactory = new ethers.ContractFactory(
+            registryArtifact.abi,
+            registryArtifact.bytecode,
+            owner
+        );
+        const temporaryHubAddress = "0x0000000000000000000000000000000000000000";
+        const registryInitData = identityRegistryImpl.interface.encodeFunctionData("initialize", [
+            temporaryHubAddress
+        ]);
+        identityRegistryProxy = await RegistryFactory.deploy(
+            identityRegistryImpl.target,
+            registryInitData
+        );
+        await identityRegistryProxy.waitForDeployment();
 
-        // const poseidonT3 = await PoseidonT3Factory.deploy();
-        // await poseidonT3.waitForDeployment();
+        const HubImplFactory = new ethers.ContractFactory(
+            hubImplArtifact.abi,
+            hubImplArtifact.bytecode,
+            owner
+        );
+        identityVerificationHubImpl = await HubImplFactory.deploy();
+        await identityVerificationHubImpl.waitForDeployment();
 
-        // const identityRegistryImplFactory = await ethers.getContractFactory(
-        //     "IdentityRegistryImplV1",
-        //     {
-        //         libraries: {
-        //             PoseidonT3: poseidonT3.target
-        //         }
-        //     },
-        //     owner
-        // );
-        // identityRegistryImpl = await identityRegistryImplFactory.deploy();
-        // await identityRegistryImpl.waitForDeployment();
+        const initializeData = identityVerificationHubImpl.interface.encodeFunctionData("initialize", [
+            identityRegistryProxy.target,
+            vcAndDiscloseVerifier.target,
+            [],
+            [],
+            [],
+            []
+        ]);
+        const HubFactory = new ethers.ContractFactory(
+            hubArtifact.abi,
+            hubArtifact.bytecode,
+            owner
+        );
+        identityVerificationHubProxy = await HubFactory.deploy(
+            identityVerificationHubImpl.target,
+            initializeData
+        );
+        identityVerificationHubProxy.waitForDeployment();
 
-        // const temporaryHubAddress = "0x0000000000000000000000000000000000000000";
-        // const registryInitData = identityRegistryImpl.interface.encodeFunctionData("initialize", [
-        //     temporaryHubAddress
-        // ]);
-        // const registryProxyFactory = await ethers.getContractFactory("IdentityRegistry", owner);
-        // identityRegistryProxy = await registryProxyFactory.deploy(identityRegistryImpl.target, registryInitData);
-        // await identityRegistryProxy.waitForDeployment();
+        const VerifyAllFactory = new ethers.ContractFactory(
+            verifyAllArtifact.abi,
+            verifyAllArtifact.bytecode,
+            owner
+        );
+        verifyAll = await VerifyAllFactory.deploy(
+            identityVerificationHubProxy.target,
+            identityRegistryProxy.target
+        );
+        verifyAll.waitForDeployment();
 
-        // const initializeData = identityVerificationHubImpl.interface.encodeFunctionData("initialize", [
-        //     identityRegistryProxy.target,
-        //     vcAndDiscloseVerifier.target,
-        //     [],
-        //     [],
-        //     [],
-        //     []
-        // ]);
-        // const hubFactory = await ethers.getContractFactory("IdentityVerificationHub", owner);
-        // identityVerificationHubProxy = await hubFactory.deploy(identityVerificationHubImpl.target, initializeData);
-        // await identityVerificationHubProxy.waitForDeployment();
+        hub = await ethers.getContractAt(
+            hubImplArtifact.abi,
+            identityVerificationHubProxy.target,
+        );
 
-        // const updateHubTx = await registry.updateHub(identityVerificationHubProxy.target);
-        // await updateHubTx.wait();
-    
-        // hub = await ethers.getContractAt(
-        //     "IdentityVerificationHubImplV1",
-        //     identityVerificationHubProxy.target
-        // );
+        registry = await ethers.getContractAt(
+            registryImplArtifact.abi,
+            identityRegistryProxy.target
+        );
 
-        // const csca_root = getCscaTreeRoot(serialized_csca_tree);
-        // await registry.updateCscaRoot(csca_root, { from: owner });
+        mockPassport = genMockPassportData(
+            "sha256",
+            "sha256",
+            "rsa_sha256_65537_4096",
+            "FRA",
+            "940131",
+            "401031"
+        );
 
-        // const {
-        //     passportNo_smt,
-        //     nameAndDob_smt,
-        //     nameAndYob_smt
-        // } = getSMTs();
+        const updateHubTx = await registry.updateHub(identityVerificationHubProxy.target);
+        await updateHubTx.wait();
 
-        // await registry.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });
-        // await registry.updateNameAndDobOfacRoot(nameAndDob_smt.root, { from: owner });
-        // await registry.updateNameAndYobOfacRoot(nameAndYob_smt.root, { from: owner });
+        const csca_root = getCscaTreeRoot(serialized_csca_tree);
+        await registry.updateCscaRoot(csca_root, { from: owner });
 
-        // registerSecret = generateRandomFieldElement();
-        // nullifier = generateRandomFieldElement();
-        // commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
+        const {
+            passportNo_smt,
+            nameAndDob_smt,
+            nameAndYob_smt
+        } = getSMTs();
+
+        await registry.updatePassportNoOfacRoot(passportNo_smt.root, { from: owner });
+        await registry.updateNameAndDobOfacRoot(nameAndDob_smt.root, { from: owner });
+        await registry.updateNameAndYobOfacRoot(nameAndYob_smt.root, { from: owner });
+
+        registerSecret = generateRandomFieldElement();
+        nullifier = generateRandomFieldElement();
+        commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, mockPassport);
         
-        // const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
-        // imt = new LeanIMT<bigint>(hashFunction);
-        // await imt.insert(BigInt(commitment));
+        const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
+        imt = new LeanIMT<bigint>(hashFunction);
+        await imt.insert(BigInt(commitment));
 
-        // forbiddenCountriesList = ['AFG', 'ALB'];
-        // forbiddenCountriesListPacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        await registry.connect(owner).devAddIdentityCommitment(
+            ATTESTATION_ID.E_PASSPORT,
+            nullifier,
+            commitment
+        );
 
-        // baseRawProof = await generateVcAndDiscloseRawProof(
-        //     registerSecret,
-        //     ATTESTATION_ID.E_PASSPORT,
-        //     mockPassport,
-        //     "test-scope",
-        //     new Array(88).fill("1"),
-        //     1,
-        //     imt,
-        //     "20",
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     undefined,
-        //     forbiddenCountriesList,
-        //     (await user1?.getAddress()).slice(2)
-        // );
-        // // Setup AttestationVerifier with the same verifyAll contract
-        // selfBackendVerifier = new SelfBackendVerifier(
-        //     "http://127.0.0.1:8545", // or your test RPC URL
-        //     "test-scope",
-        // );
-        // snapshotId = await ethers.provider.send("evm_snapshot", []);
+        forbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'AAA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA'];
+        const wholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        forbiddenCountriesListPacked = splitHexFromBack(wholePacked);
+
+        baseRawProof = await generateVcAndDiscloseRawProof(
+            registerSecret,
+            ATTESTATION_ID.E_PASSPORT,
+            mockPassport,
+            "test-scope",
+            new Array(88).fill("1"),
+            1,
+            imt,
+            "20",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            forbiddenCountriesList,
+            (await user1?.getAddress()).slice(2)
+        );
+        
+        selfBackendVerifier = new SelfBackendVerifier(
+            "http://127.0.0.1:8545",
+            "test-scope",
+        );
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
     });
 
-    // beforeEach(async () => {
-    //     rawProof = structuredClone(baseRawProof);
-    // });
+    beforeEach(async () => {
+        rawProof = structuredClone(baseRawProof);
+    });
 
-    // afterEach(async () => {
-    //     await ethers.provider.send("evm_revert", [snapshotId]);
-    //     snapshotId = await ethers.provider.send("evm_snapshot", []);
-    // });
+    afterEach(async () => {
+        await ethers.provider.send("evm_revert", [snapshotId]);
+        snapshotId = await ethers.provider.send("evm_snapshot", []);
+    });
 
     it("should verify and get valid attestation result successfully after identity commitment is added", async () => {
-        // await registry.connect(owner).devAddIdentityCommitment(
-        //     ATTESTATION_ID.E_PASSPORT,
-        //     nullifier,
-        //     commitment
-        // );
 
         // selfBackendVerifier.excludeCountries("Afghanistan", "Albania");
         // selfBackendVerifier.setMinimumAge(20);
@@ -307,3 +328,61 @@ describe("VerifyAll with AttestationVerifier", () => {
     //     expect(result.isValidDetails.isValidNationality).to.be.false;
     // });
 });
+
+function linkLibraries(bytecode, linkReferences, libraries) {
+    let linkedBytecode = bytecode;
+    for (const file in linkReferences) {
+      const libs = linkReferences[file];
+
+      for (const libName in libs) {
+        if (!libraries[libName]) {
+          throw new Error(`Address is not provided for this library: ${libName}`);
+        }
+
+        const libAddress = libraries[libName].replace(/^0x/, '');
+        const references = libs[libName];
+        for (const ref of references) {
+          const startPos = ref.start * 2 + 2;
+          const len = ref.length * 2;
+          let paddedAddress = libAddress;
+          while (paddedAddress.length < len) {
+            paddedAddress = '0' + paddedAddress;
+          }
+          linkedBytecode =
+            linkedBytecode.substring(0, startPos) +
+            paddedAddress +
+            linkedBytecode.substring(startPos + len);
+        }
+      }
+    }
+    return linkedBytecode;
+}
+
+export function getSMTs() {    
+    const passportNo_smt = importSMTFromJsonFile("../../common/ofacdata/outputs/passportNoAndNationalitySMT.json") as SMT;
+    const nameAndDob_smt = importSMTFromJsonFile("../../common/ofacdata/outputs/nameAndDobSMT.json") as SMT;
+    const nameAndYob_smt = importSMTFromJsonFile("../../common/ofacdata/outputs/nameAndYobSMT.json") as SMT;
+
+    return {
+        passportNo_smt,
+        nameAndDob_smt,
+        nameAndYob_smt
+    };
+}
+
+function importSMTFromJsonFile(filePath?: string): SMT | null {
+    try {
+        const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath as string), 'utf8');
+          
+        const data = JSON.parse(jsonString);
+          
+        const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
+        const smt = new SMT(hash2, true);
+        smt.import(data);
+          
+        return smt;
+    } catch (error) {
+        console.error('Failed to import SMT from JSON file:', error);
+        return null;
+    }
+}
