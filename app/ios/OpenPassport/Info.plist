@@ -39,6 +39,8 @@
 	<false />
 	<key>NSAllowsLocalNetworking</key>
 	<true />
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false />
 	<key>NSCameraUsageDescription</key>
 	<string>Needed to scan the passport MRZ.</string>
 	<key>NSFaceIDUsageDescription</key>

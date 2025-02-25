@@ -88,7 +88,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   const resetProof = useCallback(() => {
     setRegistrationStatus(ProofStatusEnum.PENDING);
     setDisclosureStatus(ProofStatusEnum.PENDING);
-    setSelectedAppInternal(defaults.selectedApp);
   }, []);
 
   useEffect(() => {

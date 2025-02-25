@@ -8,7 +8,7 @@ export const initSentry = () => {
 
   Sentry.init({
     dsn: SENTRY_DSN,
-    debug: __DEV__,
+    debug: false,
     enableAutoSessionTracking: true,
     // Performance Monitoring
     tracesSampleRate: 1.0,

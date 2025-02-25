@@ -41,7 +41,7 @@ import {
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
-  const { selectedApp, resetProof } = useProofInfo();
+  const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
 
@@ -115,6 +115,7 @@ const ProveScreen: React.FC = () => {
           (e: Error) => {
             console.error('Error getPassportDataAndSecret', e);
             globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+            cleanSelfApp();
           },
         );
 
@@ -125,6 +126,7 @@ const ProveScreen: React.FC = () => {
         if (!passportDataAndSecret) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+          cleanSelfApp();
           return;
         }
 
@@ -137,6 +139,7 @@ const ProveScreen: React.FC = () => {
             'User is not registered, sending to ConfirmBelongingScreen',
           );
           navigate('ConfirmBelongingScreen');
+          cleanSelfApp();
           return;
         }
 
@@ -150,6 +153,7 @@ const ProveScreen: React.FC = () => {
           currentApp.sessionId,
           status === ProofStatusEnum.SUCCESS,
         );
+        cleanSelfApp();
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
