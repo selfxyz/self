@@ -74,7 +74,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
-          const isSupported = checkPassportSupported(passportData);
+          const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
               reason: isSupported.status,

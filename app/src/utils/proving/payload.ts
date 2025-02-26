@@ -8,8 +8,6 @@ import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs
 import {
   API_URL,
   DEFAULT_MAJORITY,
-  DEPLOYED_CIRCUITS_DSC,
-  DEPLOYED_CIRCUITS_REGISTER,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_DSC,
   WS_RPC_URL_REGISTER,
@@ -60,10 +58,12 @@ export type PassportSupportStatus =
   | 'registration_circuit_not_supported'
   | 'dsc_circuit_not_supported'
   | 'passport_supported';
-export function checkPassportSupported(passportData: PassportData): {
+export async function checkPassportSupported(
+  passportData: PassportData,
+): Promise<{
   status: PassportSupportStatus;
   details: string;
-} {
+}> {
   const passportMetadata = passportData.passportMetadata;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
@@ -77,10 +77,11 @@ export function checkPassportSupported(passportData: PassportData): {
     passportData,
     'register',
   );
+  const deployedCircuits = await getDeployedCircuits();
   console.log('circuitNameRegister', circuitNameRegister);
   if (
     !circuitNameRegister ||
-    !DEPLOYED_CIRCUITS_REGISTER.includes(circuitNameRegister)
+    !deployedCircuits.REGISTER.includes(circuitNameRegister)
   ) {
     return {
       status: 'registration_circuit_not_supported',
@@ -88,7 +89,7 @@ export function checkPassportSupported(passportData: PassportData): {
     };
   }
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (!circuitNameDsc || !DEPLOYED_CIRCUITS_DSC.includes(circuitNameDsc)) {
+  if (!circuitNameDsc || !deployedCircuits.DSC.includes(circuitNameDsc)) {
     console.log('DSC circuit not supported:', circuitNameDsc);
     return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
@@ -334,4 +335,32 @@ export async function registerPassport(
     return;
   }
   await sendRegisterPayload(passportData, secret);
+}
+
+export async function getDeployedCircuits() {
+  console.log('Fetching deployed circuits from api');
+  const response = await fetch(`${API_URL}/deployed-circuits/`);
+  if (!response.ok) {
+    throw new Error(
+      `API server error: ${response.status} ${response.statusText}`,
+    );
+  }
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    throw new Error(
+      'API returned HTML instead of JSON - server may be down or misconfigured',
+    );
+  }
+  try {
+    const data = await response.json();
+
+    if (!data.data || !data.data.REGISTER || !data.data.DSC) {
+      throw new Error(
+        'Invalid data structure received from API: missing REGISTER or DSC fields',
+      );
+    }
+    return data.data;
+  } catch (error) {
+    throw new Error('API returned invalid JSON response - server may be down');
+  }
 }
