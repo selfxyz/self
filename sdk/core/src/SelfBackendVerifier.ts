@@ -99,11 +99,23 @@ export class SelfBackendVerifier {
       revealedDataTypes.date_of_birth,
       revealedDataTypes.gender,
       revealedDataTypes.expiry_date,
-      revealedDataTypes.older_than,
-      revealedDataTypes.passport_no_ofac,
-      revealedDataTypes.name_and_dob_ofac,
-      revealedDataTypes.name_and_yob_ofac,
     ];
+    
+    if (this.minimumAge.enabled) {
+      types.push(revealedDataTypes.older_than);
+    }
+    
+    if (this.passportNoOfac) {
+      types.push(revealedDataTypes.passport_no_ofac);
+    }
+    
+    if (this.nameAndDobOfac) {
+      types.push(revealedDataTypes.name_and_dob_ofac);
+    }
+    
+    if (this.nameAndYobOfac) {
+      types.push(revealedDataTypes.name_and_yob_ofac);
+    }
 
     const currentRoot = await this.registryContract.getIdentityCommitmentMerkleRoot();
     const timestamp = await this.registryContract.rootTimestamps(currentRoot);
