@@ -16,7 +16,7 @@ export default buildModule("DeployHub", (m) => {
     const deployedAddresses = JSON.parse(fs.readFileSync(deployedAddressesPath, "utf8"));
 
     const registryAddress = deployedAddresses["DeployRegistryModule#IdentityRegistry"];
-    const vcAndDiscloseVerifierAddress = deployedAddresses["DeployVerifiers#Verifier_vc_and_disclose"];
+    const vcAndDiscloseVerifierAddress = deployedAddresses["DeployAllVerifiers#Verifier_vc_and_disclose"];
 
     const identityVerificationHubImpl = m.contract("IdentityVerificationHubImplV1");
 

@@ -46,11 +46,11 @@ export const DEPLOYED_CIRCUITS_REGISTER = [
   'register_sha256_sha256_sha256_rsapss_65537_32_2048',
   'register_sha256_sha256_sha256_rsapss_65537_32_3072',
   'register_sha384_sha384_sha384_ecdsa_brainpoolP384r1',
-  'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',
+  //'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',//
   'register_sha384_sha384_sha384_ecdsa_secp384r1',
   'register_sha384_sha384_sha384_rsapss_65537_48_2048',
   'register_sha1_sha1_sha1_ecdsa_brainpoolP224r1',
-  'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',
+  //'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',//
   'register_sha512_sha512_sha512_rsa_65537_4096',
   'register_sha512_sha512_sha512_rsapss_65537_64_2048',
 ]
@@ -69,9 +69,9 @@ export const DEPLOYED_CIRCUITS_DSC = [
   'dsc_sha256_rsapss_65537_32_3072',
   'dsc_sha256_rsapss_65537_32_4096',
   'dsc_sha384_ecdsa_brainpoolP384r1',
-  'dsc_sha384_ecdsa_brainpoolP512r1',
+  //'dsc_sha384_ecdsa_brainpoolP512r1',
   'dsc_sha384_ecdsa_secp384r1',
-  'dsc_sha512_ecdsa_brainpoolP512r1',
+  //'dsc_sha512_ecdsa_brainpoolP512r1',
   'dsc_sha512_rsa_65537_4096',
   'dsc_sha512_rsapss_65537_64_4096',
 ]
@@ -147,7 +147,6 @@ export enum DscVerifierId {
   dsc_sha256_ecdsa_brainpoolP384r1 = 3,
   dsc_sha256_ecdsa_secp256r1 = 4,
   dsc_sha256_ecdsa_secp384r1 = 5,
-  // This is not used rn
   dsc_sha256_ecdsa_secp521r1 = 6,
   dsc_sha256_rsa_65537_4096 = 7,
   dsc_sha256_rsapss_3_32_3072 = 8,
@@ -157,11 +156,9 @@ export enum DscVerifierId {
   dsc_sha384_ecdsa_brainpoolP512r1 = 12,
   dsc_sha384_ecdsa_secp384r1 = 13,
   dsc_sha512_ecdsa_brainpoolP512r1 = 14,
-  // This is not used rn
   dsc_sha512_ecdsa_secp521r1 = 15,
   dsc_sha512_rsa_65537_4096 = 16,
   dsc_sha512_rsapss_65537_64_4096 = 17,
-  // This is not used rn
   dsc_sha256_rsapss_3_32_4096 = 18,
 };
 
