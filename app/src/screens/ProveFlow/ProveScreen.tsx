@@ -123,7 +123,6 @@ const ProveScreen: React.FC = () => {
           (e: Error) => {
             console.error('Error getPassportDataAndSecret', e);
             globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-            cleanSelfApp();
           },
         );
 
@@ -134,7 +133,6 @@ const ProveScreen: React.FC = () => {
         if (!passportDataAndSecret) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-          cleanSelfApp();
           return;
         }
 
@@ -162,7 +160,6 @@ const ProveScreen: React.FC = () => {
           currentApp.sessionId,
           status === ProofStatusEnum.SUCCESS,
         );
-        cleanSelfApp();
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);

@@ -83,7 +83,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
             ],
             selectedCountry as keyof typeof countryCodes,
-            castDate(-age),
+            // We disregard the age to stick with Arcangel's birth date
+            '541007',
             castDate(expiryYears),
             randomPassportNumber,
             'HENAO MONTOYA', // this name is on the OFAC list
@@ -199,12 +200,12 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               buttonTap();
               setAge(age - 1);
             }}
-            disabled={age <= 0}
+            disabled={age <= 0 || isInOfacList}
           >
             <Minus />
           </Button>
           <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-            {age} yo
+            {isInOfacList ? 71 : age} yo
           </Text>
           <Button
             h="$3.5"
@@ -218,6 +219,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
               buttonTap();
               setAge(age + 1);
             }}
+            disabled={isInOfacList}
           >
             <Plus />
           </Button>
