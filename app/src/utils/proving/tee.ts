@@ -161,6 +161,9 @@ export async function sendPayload(
           console.log('Truncated submit body:', truncatedBody);
           ws.send(JSON.stringify(submitBody));
         } else {
+          if (result.error) {
+            finalize(ProofStatusEnum.ERROR);
+          }
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
           console.log(result);
@@ -177,7 +180,14 @@ export async function sendPayload(
               const data =
                 typeof message === 'string' ? JSON.parse(message) : message;
               console.log('SocketIO message:', data);
-              if (data.status === 4) {
+              if (data.status === 3) {
+                console.log('Failed to generate proof');
+                socket?.disconnect();
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.close();
+                }
+                finalize(ProofStatusEnum.FAILURE);
+              } else if (data.status === 4) {
                 console.log('Proof verified');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {

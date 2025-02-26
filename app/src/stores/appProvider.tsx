@@ -47,6 +47,7 @@ const initSocket = (sessionId: string) => {
   const socket = io(socketUrl, {
     path: '/',
     transports: ['websocket'],
+    forceNew: true,
     query: {
       sessionId,
       clientType: 'mobile',

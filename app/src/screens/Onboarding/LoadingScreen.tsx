@@ -24,7 +24,7 @@ type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
-  const goToErrorScreen = useHapticNavigation('ConfirmBelongingScreen');
+  const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
 

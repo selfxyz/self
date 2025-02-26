@@ -63,7 +63,7 @@ const AccountRecoveryChoiceScreen: React.FC<
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
+            not stolen or forged.{' '}
             {biometricsAvailable && (
               <>
                 Your device doesn't support biometrics or is disabled for apps

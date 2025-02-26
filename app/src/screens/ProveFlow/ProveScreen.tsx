@@ -44,6 +44,7 @@ const ProveScreen: React.FC = () => {
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
+  const isProcessing = useRef(false);
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -106,11 +107,18 @@ const ProveScreen: React.FC = () => {
 
   const onVerify = useCallback(
     async function () {
+      if (isProcessing.current) {
+        return;
+      }
+      isProcessing.current = true;
+
       resetProof();
       buttonTap();
       const currentApp = selectedAppRef.current;
+
       try {
         let timeToNavigateToStatusScreen: NodeJS.Timeout;
+
         const passportDataAndSecret = await getPassportDataAndSecret().catch(
           (e: Error) => {
             console.error('Error getPassportDataAndSecret', e);
@@ -133,6 +141,7 @@ const ProveScreen: React.FC = () => {
         const { passportData, secret } = passportDataAndSecret.data;
         const isRegistered = await isUserRegistered(passportData, secret);
         console.log('isRegistered', isRegistered);
+
         if (!isRegistered) {
           clearTimeout(timeToNavigateToStatusScreen);
           console.log(
@@ -157,6 +166,8 @@ const ProveScreen: React.FC = () => {
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+      } finally {
+        isProcessing.current = false;
       }
     },
     [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
