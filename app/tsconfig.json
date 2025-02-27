@@ -5,5 +5,5 @@
     "typeRoots": ["./src/types", "./node_modules/@types"],
     "types": ["react-native", "jest"]
   },
-  "include": ["./*.js", "./*.ts", "./.eslintrc.js", "src/**/*"]
+  "include": ["./*.js", "./*.ts", "./*.tsx", "./.eslintrc.js", "src/**/*"]
 }

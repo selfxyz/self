@@ -25,4 +25,4 @@ const Root = (): React.JSX.Element => (
   </TamaguiProvider>
 );
 
-AppRegistry.registerComponent(appName, () => Root); 
+AppRegistry.registerComponent(appName, () => Root);
