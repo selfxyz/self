@@ -1,8 +1,8 @@
 import React, { useCallback, useState } from 'react';
 
-import Mnemonic from '../../components/Mnemonic';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import Mnemonic from '../../components/Mnemonic';
 import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';

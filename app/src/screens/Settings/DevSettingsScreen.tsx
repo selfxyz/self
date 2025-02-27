@@ -1,6 +1,3 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Platform, TextInput } from 'react-native';
-
 import { useNavigation } from '@react-navigation/native';
 import {
   Check,
@@ -9,6 +6,8 @@ import {
   IterationCw,
   VenetianMask,
 } from '@tamagui/lucide-icons';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
+import { Platform, TextInput } from 'react-native';
 import {
   Adapt,
   Button,

@@ -1,3 +1,5 @@
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Linking,
@@ -7,18 +9,15 @@ import {
   StyleSheet,
 } from 'react-native';
 import NfcManager from 'react-native-nfc-manager';
-
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { Image } from 'tamagui';
 
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
-import ButtonsContainer from '../../components/ButtonsContainer';
-import TextsContainer from '../../components/TextsContainer';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import ButtonsContainer from '../../components/ButtonsContainer';
+import TextsContainer from '../../components/TextsContainer';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
@@ -204,7 +203,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     action: 'cancel',
   });
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
   const _cancelScanIfRunning = useCallback(async () => {
     // // TODO: cancel if scanning
     // setIsNfcSheetOpen(false);

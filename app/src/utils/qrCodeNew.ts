@@ -1,7 +1,6 @@
-import { Linking } from 'react-native';
-
 import { decode } from 'msgpack-lite';
 import { inflate } from 'pako';
+import { Linking } from 'react-native';
 
 import { SelfApp } from '../../../common/src/utils/appType';
 import { loadPassportData } from '../stores/passportDataProvider';

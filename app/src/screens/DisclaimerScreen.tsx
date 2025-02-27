@@ -1,8 +1,7 @@
-import React, { useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 
 import warningAnimation from '../assets/animations/warning.json';

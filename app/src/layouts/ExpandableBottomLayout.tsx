@@ -1,7 +1,6 @@
 import React from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';

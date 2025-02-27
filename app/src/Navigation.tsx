@@ -1,14 +1,12 @@
-import React from 'react';
-import { StatusBar } from 'react-native';
-import 'react-native-gesture-handler';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
 import {
-  StaticParamList,
   createNavigationContainerRef,
   createStaticNavigation,
+  StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import DefaultNavBar from './components/DefaultNavBar';
 import HomeNavBar from './components/HomeNavBar';

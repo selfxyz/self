@@ -9,9 +9,9 @@ import {
 } from '../../../../common/src/constants/constants';
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
-  ProofStatusEnum,
   globalSetDisclosureStatus,
   globalSetRegistrationStatus,
+  ProofStatusEnum,
 } from '../../stores/proofProvider';
 import { getPublicKey, verifyAttestation } from './attest';
 

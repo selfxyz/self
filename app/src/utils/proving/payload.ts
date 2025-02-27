@@ -7,10 +7,10 @@ import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT
 import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
   API_URL,
+  attributeToPosition,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_VC_AND_DISCLOSE,
-  attributeToPosition,
 } from '../../../../common/src/constants/constants';
 import { SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
@@ -24,8 +24,8 @@ import {
   generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import {
-  getCSCATree,
   getCommitmentTree,
+  getCSCATree,
   getDSCTree,
   getLeafDscTree,
 } from '../../../../common/src/utils/trees';

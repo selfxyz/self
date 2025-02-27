@@ -1,10 +1,8 @@
+import LottieView from 'lottie-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-
-import LottieView from 'lottie-react-native';
-import { Anchor, Text, XStack, YStack } from 'tamagui';
-import { useWindowDimensions } from 'tamagui';
+import { Anchor, Text, useWindowDimensions,XStack, YStack  } from 'tamagui';
 
 import onboardingAnimation from '../assets/animations/launch_onboarding.json';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';

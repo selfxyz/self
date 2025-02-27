@@ -1,6 +1,7 @@
+import { ethers } from 'ethers';
 import React, {
-  PropsWithChildren,
   createContext,
+  PropsWithChildren,
   useCallback,
   useContext,
   useMemo,
@@ -8,8 +9,6 @@ import React, {
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
-
-import { ethers } from 'ethers';
 
 import { Mnemonic } from '../types/mnemonic';
 

@@ -1,7 +1,6 @@
-import React from 'react';
-
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import proofSuccessAnimation from '../../assets/animations/proof_success.json';

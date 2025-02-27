@@ -1,6 +1,5 @@
-import React, { useEffect } from 'react';
-
 import LottieView from 'lottie-react-native';
+import React, { useEffect } from 'react';
 
 import warnAnimation from '../../assets/animations/warning.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';

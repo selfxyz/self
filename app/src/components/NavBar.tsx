@@ -1,7 +1,6 @@
+import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
 import { StatusBar, StatusBarStyle } from 'react-native';
-
-import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import {
   Button,
   TextProps,
@@ -38,7 +37,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   onPress,
   ...props
 }) => {
-  let children: React.ReactNode = useMemo(() => {
+  const children: React.ReactNode = useMemo(() => {
     switch (component) {
       case 'back':
         return (
