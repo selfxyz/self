@@ -48,6 +48,30 @@ const REDACTED = new Array(24)
 const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
+
+  const getButtonText = (): string => {
+    if (!revealWords) {
+      return 'TAP TO REVEAL';
+    }
+    return copied ? 'COPIED TO CLIPBOARD' : 'COPY TO CLIPBOARD';
+  };
+
+  // Add these helper functions to determine button styles
+  const getButtonTextColor = (): string => {
+    if (!revealWords) {return black;}
+    return copied ? black : white;
+  };
+
+  const getButtonBorderColor = (): string => {
+    if (!revealWords) {return slate200;}
+    return copied ? teal500 : black;
+  };
+
+  const getButtonBackgroundColor = (): string => {
+    if (!revealWords) {return slate50;}
+    return copied ? teal500 : black;
+  };
+
   const copyToClipboardOrReveal = useCallback(async () => {
     confirmTap();
     if (!revealWords) {
@@ -58,7 +82,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
     Clipboard.setString(words.join(' '));
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [words, revealWords]);
+  }, [revealWords, words, onRevealWords]);
 
   return (
     <YStack position="relative" alignItems="stretch" gap={0}>
@@ -86,9 +110,9 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
       >
         <Button
           unstyled
-          color={revealWords ? (copied ? black : white) : black}
-          borderColor={revealWords ? (copied ? teal500 : black) : slate200}
-          backgroundColor={revealWords ? (copied ? teal500 : black) : slate50}
+          color={getButtonTextColor()}
+          borderColor={getButtonBorderColor()}
+          backgroundColor={getButtonBackgroundColor()}
           borderWidth="$1"
           borderTopWidth={0}
           borderBottomLeftRadius="$5"
@@ -98,9 +122,7 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
           width="100%"
           textAlign="center"
         >
-          {revealWords
-            ? `${copied ? 'COPIED' : 'COPY'} TO CLIPBOARD`
-            : 'TAP TO REVEAL'}
+          {getButtonText()}
         </Button>
       </XStack>
     </YStack>
