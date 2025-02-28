@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
 
@@ -8,11 +8,17 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const [newVersionUrl, setNewVersionUrl] = useState<string | null>(null);
   const [isModalDismissed, setIsModalDismissed] = useState(false);
 
-  checkVersion().then(version => {
-    if (version.needsUpdate) {
-      setNewVersionUrl(version.url);
-    }
-  });
+  useEffect(() => {
+    checkVersion()
+      .then(version => {
+        if (version.needsUpdate) {
+          setNewVersionUrl(version.url);
+        }
+      })
+      .catch(error => {
+        console.warn('Failed to check for app updates:', error);
+      });
+  }, []);
 
   const showAppUpdateModal = () => {
     navigation.navigate('Modal', {
