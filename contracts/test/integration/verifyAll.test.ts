@@ -96,12 +96,13 @@ describe("VerifyAll", () => {
                 vcAndDiscloseProof: vcAndDiscloseProof
             };
 
-            const types = ['0', '1', '2']; // Example types
+            const types = ['0', '1', '2', '3', '4', '5', '6', '7']; // Example types
             const [readableData, success] = await verifyAll.verifyAll(
                 timestamp,
                 vcAndDiscloseHubProof,
                 types
             );
+            console.log("readableData: ", readableData);
 
             expect(success).to.be.true;
             expect(readableData.name).to.not.be.empty;
