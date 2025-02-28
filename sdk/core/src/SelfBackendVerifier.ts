@@ -200,8 +200,8 @@ export class SelfBackendVerifier {
   }
 
   setMinimumAge(age: number): this {
-    if (age < 10) {
-      throw new Error('Minimum age must be at least 10 years old');
+    if (age <= 0) {
+      throw new Error('Minimum age must be positive');
     }
     if (age > 100) {
       throw new Error('Minimum age must be at most 100 years old');
