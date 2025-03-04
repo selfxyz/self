@@ -52,42 +52,32 @@ module.exports = {
     'import/ignore': ['react-native'],
   },
   rules: {
-    // React Rules
-    'react/react-in-jsx-scope': 'off', // Not needed in newer React versions
-    'react/prop-types': 'off', // We use TypeScript for prop validation
-    'react-native/no-inline-styles': 'warn', // Warning instead of off to encourage better practices
-    'react-hooks/exhaustive-deps': 'warn', // Warning to catch potential issues
-
-    // TypeScript Rules
-    '@typescript-eslint/no-explicit-any': 'warn',
-    '@typescript-eslint/explicit-module-boundary-types': 'off',
-    '@typescript-eslint/no-unused-vars': [
-      'warn',
-      {
-        argsIgnorePattern: '^_',
-        varsIgnorePattern: '^_',
-      },
-    ],
-
-    // General Rules
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
-    'prefer-const': 'warn',
+    // Import/Export Rules
+    'import/order': 'off',
     'no-duplicate-imports': 'error',
-
-    // Unused Imports
+    'simple-import-sort/exports': 'off',
+    'simple-import-sort/imports': 'error',
     'unused-imports/no-unused-imports': 'error',
 
-    // SonarJS Rules
-    'sonarjs/no-duplicate-string': 'warn',
-    'sonarjs/cognitive-complexity': ['warn', 20],
-    'sonarjs/no-identical-functions': 'warn',
-    'sonarjs/no-invalid-await': 'off',
-    'sonarjs/no-redundant-optional': 'off',
-    'sonarjs/prefer-read-only-props': 'warn',
-    'sonarjs/todo-tag': 'warn',
-    'sonarjs/no-unused-vars': 'off',
+    // React Core Rules
+    'react/no-unescaped-entities': 'off',
+    'react/prop-types': 'off',
+    'react/react-in-jsx-scope': 'off',
+    'react-native/no-inline-styles': 'warn',
 
-    // Additional TypeScript Strictness
+    // React Hooks Rules
+    'react-hooks/exhaustive-deps': 'warn',
+
+    // React Performance Rules
+    'react-perf/jsx-no-jsx-as-prop': 'warn',
+    'react-perf/jsx-no-new-array-as-prop': 'warn',
+    'react-perf/jsx-no-new-function-as-prop': 'warn',
+    'react-perf/jsx-no-new-object-as-prop': 'warn',
+
+    // TypeScript Core Rules
+    '@typescript-eslint/explicit-function-return-type': 'warn',
+    '@typescript-eslint/explicit-module-boundary-types': 'off',
+    '@typescript-eslint/no-explicit-any': 'warn',
     '@typescript-eslint/no-floating-promises': [
       'error',
       {
@@ -95,26 +85,30 @@ module.exports = {
         ignoreIIFE: true,
       },
     ],
-    '@typescript-eslint/explicit-function-return-type': 'warn',
-    '@typescript-eslint/strict-boolean-expressions': 'warn',
-    '@typescript-eslint/no-unnecessary-condition': 'warn',
     '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-unnecessary-condition': 'warn',
+    '@typescript-eslint/no-unused-vars': [
+      'warn',
+      {
+        argsIgnorePattern: '^_',
+        varsIgnorePattern: '^_',
+      },
+    ],
+    '@typescript-eslint/strict-boolean-expressions': 'warn',
 
-    // React Performance Rules
-    'react-perf/jsx-no-new-function-as-prop': 'warn',
-    'react-perf/jsx-no-new-object-as-prop': 'warn',
-    'react-perf/jsx-no-new-array-as-prop': 'warn',
-    'react-perf/jsx-no-jsx-as-prop': 'warn',
+    // SonarJS Rules
+    'sonarjs/cognitive-complexity': ['warn', 20],
+    'sonarjs/no-duplicate-string': 'warn',
+    'sonarjs/no-identical-functions': 'warn',
+    'sonarjs/no-invalid-await': 'off',
+    'sonarjs/no-redundant-optional': 'off',
+    'sonarjs/no-unused-vars': 'off',
+    'sonarjs/prefer-read-only-props': 'warn',
+    'sonarjs/todo-tag': 'warn',
 
-    // Import rules
-    'import/order': 'off',
-    'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'off',
-
-    // Handle empty object patterns in destructuring
+    // General JavaScript Rules
+    'no-console': ['warn', { allow: ['warn', 'error'] }],
     'no-empty-pattern': 'off',
-
-    // Escape characters in JSX
-    'react/no-unescaped-entities': 'off',
+    'prefer-const': 'warn',
   },
 };
