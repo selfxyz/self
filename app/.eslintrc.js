@@ -107,7 +107,7 @@ module.exports = {
     'sonarjs/todo-tag': 'off',
 
     // General JavaScript Rules
-    'no-console': ['warn', { allow: ['warn', 'error'] }],
+    'no-console': 'off',
     'no-empty-pattern': 'off',
     'prefer-const': 'warn',
   },
