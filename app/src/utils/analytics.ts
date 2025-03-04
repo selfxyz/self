@@ -1,3 +1,5 @@
+import { JsonMap } from '@segment/analytics-react-native';
+
 import { createSegmentClient } from '../Segment';
 
 const segmentClient = createSegmentClient();
@@ -13,14 +15,11 @@ function cleanParams(params: Record<string, unknown>): Record<string, unknown> {
 }
 
 type AnalyticsMethods = {
-  trackEvent: (
-    eventName: string,
-    properties?: Record<string, unknown>,
-  ) => Promise<void>;
+  trackEvent: (eventName: string, properties?: Record<string, unknown>) => void;
   trackScreenView: (
     screenName: string,
     properties?: Record<string, unknown>,
-  ) => Promise<void>;
+  ) => void;
 };
 
 /*
@@ -31,21 +30,22 @@ const analytics = (): AnalyticsMethods => {
     type: 'event' | 'screen',
     eventName: string,
     properties?: Record<string, unknown>,
-  ): Promise<void> | undefined {
+  ): void {
     if (!segmentClient) {
       return;
     }
-    const trackMethod = (e: string, p?: Record<string, unknown>) =>
+    const trackMethod = (
+      e: string,
+      p?: Record<string, unknown>,
+    ): Promise<void> =>
       type === 'screen'
-        ? segmentClient.screen(e, p)
-        : segmentClient.track(e, p);
+        ? segmentClient.screen(e, p as JsonMap)
+        : segmentClient.track(e, p as JsonMap);
 
     if (!properties) {
       // you may need to remove the catch when debugging
-      return trackMethod(eventName).catch(console.info);
-    }
-
-    if (Object.keys(properties).length > 0) {
+      trackMethod(eventName).catch(console.info);
+    } else if (Object.keys(properties).length > 0) {
       const newParams = cleanParams(properties);
       properties = newParams;
     }
@@ -54,17 +54,17 @@ const analytics = (): AnalyticsMethods => {
   }
 
   return {
-    trackEvent: async (
+    trackEvent: (
       eventName: string,
       properties?: Record<string, unknown>,
-    ): Promise<void> => {
-      await _track('event', eventName, properties);
+    ): void => {
+      _track('event', eventName, properties);
     },
-    trackScreenView: async (
+    trackScreenView: (
       screenName: string,
       properties?: Record<string, unknown>,
-    ): Promise<void> => {
-      await _track('screen', screenName, properties);
+    ): void => {
+      _track('screen', screenName, properties);
     },
   };
 };

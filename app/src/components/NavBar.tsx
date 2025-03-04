@@ -81,7 +81,7 @@ export const RightAction: React.FC<RightActionProps> = ({
   onPress,
   ...props
 }) => {
-  if (!component) {
+  if (component !== null) {
     return null;
   }
 
@@ -93,14 +93,14 @@ export const RightAction: React.FC<RightActionProps> = ({
 };
 
 const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, ...props }) => {
-  if (!children) {
-    return null;
+  if (children !== null) {
+    return <></>;
   }
 
   return typeof children === 'string' ? (
     <Title {...props}>{children}</Title>
   ) : (
-    children
+    <>children</>
   );
 };
 

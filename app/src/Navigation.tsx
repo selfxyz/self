@@ -321,7 +321,7 @@ const NavigationWithTracking = (): ReactElement => {
   const trackScreen = useCallback(async () => {
     if (currentRoute) {
       console.log(`Screen View: ${currentRoute.name}`);
-      await trackScreenView(`${currentRoute.name}`, {
+      trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
       });
     }

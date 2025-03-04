@@ -35,7 +35,8 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   const scanStartTimeRef = useRef(Date.now());
 
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
-    (error, result) => {
+    async (error, result) => {
+      const cameraScanFailedErrorString = 'Passport Camera Scan Failed';
       // Calculate scan duration in seconds with exactly 2 decimal places
       const scanDurationSeconds = (
         (Date.now() - scanStartTimeRef.current) /
@@ -44,7 +45,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
       if (error) {
         console.error(error);
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(cameraScanFailedErrorString, {
           error: error.message || 'Unknown error',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -54,7 +55,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
 
       if (!result) {
         console.error('No result from passport scan');
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(cameraScanFailedErrorString, {
           error: 'No result from scan',
           duration_seconds: parseFloat(scanDurationSeconds),
         });
@@ -75,7 +76,7 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
           formattedDateOfExpiry,
         )
       ) {
-        trackEvent('Passport Camera Scan Failed', {
+        trackEvent(cameraScanFailedErrorString, {
           passportNumberLength: passportNumber.length,
           dateOfBirthLength: formattedDateOfBirth.length,
           dateOfExpiryLength: formattedDateOfExpiry.length,
