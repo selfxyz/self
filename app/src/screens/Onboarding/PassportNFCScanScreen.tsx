@@ -217,7 +217,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
 
   useFocusEffect(
     useCallback(() => {
-      checkNfcSupport();
+      // TODO: clean this callbackup and await checkNfcSupport
+      // eslint-disable-next-line no-void
+      void checkNfcSupport();
 
       if (Platform.OS === 'android' && emitter) {
         const subscription = emitter.addListener(
@@ -254,7 +256,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         {isNfcSheetOpen ? (
           <>
             <TextsContainer>
-              <Title children="Ready to scan" />
+              <Title>Ready to scan</Title>
               <BodyText textAlign="center">
                 Hold your device near the NFC tag and stop moving when it
                 vibrates.
@@ -275,13 +277,11 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           <>
             <TextsContainer>
               <Title>Verify your passport</Title>
-              <Description
-                children={
-                  isNfcEnabled
-                    ? 'Open your passport to the last page to access the NFC chip. Place your phone against the page'
-                    : dialogMessage
-                }
-              />
+              <Description>
+                {isNfcEnabled
+                  ? 'Open your passport to the last page to access the NFC chip. Place your phone against the page'
+                  : dialogMessage}
+              </Description>
             </TextsContainer>
             <ButtonsContainer>
               <PrimaryButton onPress={onVerifyPress} disabled={!isNfcSupported}>

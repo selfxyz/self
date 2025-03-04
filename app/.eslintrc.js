@@ -104,7 +104,7 @@ module.exports = {
     'sonarjs/no-redundant-optional': 'off',
     'sonarjs/no-unused-vars': 'off',
     'sonarjs/prefer-read-only-props': 'warn',
-    'sonarjs/todo-tag': 'warn',
+    'sonarjs/todo-tag': 'off',
 
     // General JavaScript Rules
     'no-console': ['warn', { allow: ['warn', 'error'] }],

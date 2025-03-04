@@ -19,7 +19,7 @@ import {
 
 const { trackEvent } = analytics();
 
-type LoadingScreenProps = StaticScreenProps<{}>;
+type LoadingScreenProps = StaticScreenProps<Record<string, unknown>>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
@@ -71,7 +71,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   useEffect(() => {
     if (!processPayloadCalled.current) {
       processPayloadCalled.current = true;
-      const processPayload = async () => {
+      const processPayload = async (): Promise<void> => {
         try {
           const passportDataAndSecret = await getPassportDataAndSecret();
           if (!passportDataAndSecret) {
@@ -113,7 +113,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           setTimeout(() => resetProof(), 1000);
         }
       };
-      processPayload();
+      // eslint-disable-next-line no-void
+      void processPayload();
     }
   }, [
     clearPassportData,
