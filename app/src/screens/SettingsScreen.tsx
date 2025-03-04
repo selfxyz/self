@@ -136,46 +136,53 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
     (menuRoute: RouteLinks) => {
       return async () => {
         impactLight();
-        switch (menuRoute) {
-          case 'share':
-            await Share.share(
-              Platform.OS === 'android'
-                ? { message: `Install Self App ${storeURL}` }
-                : { url: storeURL, message: 'Install Self App' },
-            );
-            break;
 
-          case 'email_feedback':
-            const subject = 'SELF App Feedback';
-            const deviceInfo = [
-              ['device', `${Platform.OS}@${Platform.Version}`],
-              ['app', `v${version}`],
-              [
-                'locales',
-                getLocales()
-                  .map(locale => `${locale.languageCode}-${locale.countryCode}`)
-                  .join(','),
-              ],
-              ['country', getCountry()],
-              ['tz', getTimeZone()],
-              ['ts', new Date()],
-              ['origin', 'settings/feedback'],
-            ] as [string, string][];
+        if (menuRoute === 'email_feedback') {
+          const subject = 'SELF App Feedback';
+          const deviceInfo = [
+            ['device', `${Platform.OS}@${Platform.Version}`],
+            ['app', `v${version}`],
+            [
+              'locales',
+              getLocales()
+                .map(locale => `${locale.languageCode}-${locale.countryCode}`)
+                .join(','),
+            ],
+            ['country', getCountry()],
+            ['tz', getTimeZone()],
+            ['ts', new Date()],
+            ['origin', 'settings/feedback'],
+          ] as [string, string][];
 
-            const body = `
+          const body = `
 ---
 ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
 ---`;
-            await Linking.openURL(
-              `mailto:${emailFeedback}?subject=${encodeURIComponent(
-                subject,
-              )}&body=${encodeURIComponent(body)}`,
-            );
-            break;
+          await Linking.openURL(
+            `mailto:${emailFeedback}?subject=${encodeURIComponent(
+              subject,
+            )}&body=${encodeURIComponent(body)}`,
+          );
+          return;
+        }
 
-          default:
-            navigation.navigate(menuRoute);
-            break;
+        if (menuRoute === 'share') {
+          await Share.share(
+            Platform.OS === 'android'
+              ? { message: `Install Self App ${storeURL}` }
+              : { url: storeURL, message: 'Install Self App' },
+          );
+          return;
+        }
+
+        // Handle navigation routes
+        if (
+          menuRoute === 'PassportDataInfo' ||
+          menuRoute === 'ShowRecoveryPhrase' ||
+          menuRoute === 'CloudBackupSettings' ||
+          menuRoute === 'DevSettings'
+        ) {
+          navigation.navigate(menuRoute);
         }
       };
     },
@@ -200,7 +207,14 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
                 <MenuButton
                   key={menuRoute}
                   Icon={Icon}
-                  onPress={onMenuPress(menuRoute)}
+                  onPress={onMenuPress(
+                    menuRoute as
+                      | 'ShowRecoveryPhrase'
+                      | 'PassportDataInfo'
+                      | 'CloudBackupSettings'
+                      | 'share'
+                      | 'email_feedback',
+                  )}
                 >
                   {menuText}
                 </MenuButton>

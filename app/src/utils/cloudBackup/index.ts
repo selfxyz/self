@@ -46,7 +46,11 @@ async function withRetries<T>(
   );
 }
 
-export function useBackupMnemonic() {
+export function useBackupMnemonic(): {
+  upload: (mnemonic?: Mnemonic) => Promise<void>;
+  download: () => Promise<Mnemonic>;
+  disableBackup: () => Promise<void>;
+} {
   return useMemo(
     () => ({
       upload,
@@ -57,7 +61,7 @@ export function useBackupMnemonic() {
   );
 }
 
-async function addAccessTokenForGoogleDrive() {
+async function addAccessTokenForGoogleDrive(): Promise<void> {
   if (CloudStorage.getProvider() === CloudStorageProvider.GoogleDrive) {
     const response = await googleSignIn();
     if (!response) {
@@ -70,7 +74,7 @@ async function addAccessTokenForGoogleDrive() {
   }
 }
 
-async function upload(mnemonic: Mnemonic) {
+async function upload(mnemonic?: Mnemonic): Promise<void> {
   if (!mnemonic || !mnemonic.phrase) {
     throw new Error(
       'Mnemonic not set yet. Did the user see the recovery phrase?',
@@ -91,7 +95,7 @@ async function upload(mnemonic: Mnemonic) {
   );
 }
 
-async function download() {
+async function download(): Promise<Mnemonic> {
   await addAccessTokenForGoogleDrive();
   if (await CloudStorage.exists(ENCRYPTED_FILE_PATH)) {
     const mnemonicString = await withRetries(() =>
@@ -107,7 +111,8 @@ async function download() {
         throw new Error();
       }
       return mnemonic;
-    } catch (e) {
+    } catch (error) {
+      console.error(error);
       throw new Error(
         `Malformed mnemonic, expected JSON structure, got ${mnemonicString}`,
       );
@@ -118,7 +123,7 @@ async function download() {
   );
 }
 
-async function disableBackup() {
+async function disableBackup(): Promise<void> {
   await addAccessTokenForGoogleDrive();
-  withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
+  await withRetries(() => CloudStorage.rmdir(FOLDER, { recursive: true }));
 }
