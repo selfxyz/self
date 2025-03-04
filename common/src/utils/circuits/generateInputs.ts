@@ -43,7 +43,7 @@ export function generateCircuitInputsDSC(
   const dscTbsBytes = dscParsed.tbsBytes;
 
   // DSC is padded using sha padding because it will be hashed in the circuit
-  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(cscaParsed.hashAlgorithm)(
+  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(dscMetadata.cscaHashAlgorithm)(
     dscTbsBytes,
     max_dsc_bytes
   );
@@ -54,8 +54,8 @@ export function generateCircuitInputsDSC(
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
     cscaParsed,
-    cscaParsed.signatureAlgorithm,
-    cscaParsed.hashAlgorithm
+    dscMetadata.cscaSignatureAlgorithm,
+    dscMetadata.cscaHashAlgorithm
   );
 
   const signatureRaw = extractSignatureFromDSC(dscCertificate);
@@ -67,7 +67,7 @@ export function generateCircuitInputsDSC(
   );
 
   // Get start index of CSCA pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, cscaParsed.signatureAlgorithm);
+  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, dscMetadata.cscaSignatureAlgorithm);
 
 
   return {
