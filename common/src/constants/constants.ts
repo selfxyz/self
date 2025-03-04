@@ -5,8 +5,6 @@ export const COMMITMENT_TREE_DEPTH = 33;
 export const DEFAULT_USER_ID_TYPE = 'uuid';
 
 export const REDIRECT_URL = 'https://redirect.self.xyz';
-export const WS_RPC_URL_REGISTER = "ws://register.proving.self.xyz:8888/";
-export const WS_RPC_URL_DSC = "ws://dsc.proving.self.xyz:8888/";
 export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.self.xyz:8888/";
 export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
 

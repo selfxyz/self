@@ -9,8 +9,6 @@ import {
   API_URL,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
-  WS_RPC_URL_DSC,
-  WS_RPC_URL_REGISTER,
   WS_RPC_URL_VC_AND_DISCLOSE,
   attributeToPosition,
 } from '../../../../common/src/constants/constants';
@@ -100,19 +98,19 @@ export async function checkPassportSupported(
 export async function sendRegisterPayload(
   passportData: PassportData,
   secret: string,
+  circuitDNSMapping: Record<string, string>,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
     passportData,
   );
-  console.log('WS_RPC_URL_REGISTER', WS_RPC_URL_REGISTER);
   await sendPayload(
     inputs,
     'register',
     circuitName,
     'https',
     'https://self.xyz',
-    WS_RPC_URL_REGISTER,
+    circuitDNSMapping[circuitName],
     undefined,
     {
       updateGlobalOnSuccess: true,
@@ -137,8 +135,9 @@ async function generateTeeInputsDsc(passportData: PassportData) {
 
 async function checkIdPassportDscIsInTree(
   passportData: PassportData,
+  dscTree: string,
+  circuitDNSMapping: Record<string, string>,
 ): Promise<boolean> {
-  const dscTree = await getDSCTree();
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
   const leaf = getLeafDscTree(
@@ -149,7 +148,7 @@ async function checkIdPassportDscIsInTree(
   const index = tree.indexOf(BigInt(leaf));
   if (index === -1) {
     console.log('DSC is not found in the tree, sending DSC payload');
-    const dscStatus = await sendDscPayload(passportData);
+    const dscStatus = await sendDscPayload(passportData, circuitDNSMapping);
     if (dscStatus !== ProofStatusEnum.SUCCESS) {
       console.log('DSC proof failed');
       return false;
@@ -168,6 +167,7 @@ async function checkIdPassportDscIsInTree(
 
 export async function sendDscPayload(
   passportData: PassportData,
+  circuitDNSMapping: Record<string, string>,
 ): Promise<ProofStatusEnum | false> {
   if (!passportData) {
     return false;
@@ -185,7 +185,7 @@ export async function sendDscPayload(
     circuitName,
     'https',
     'https://self.xyz',
-    WS_RPC_URL_DSC,
+    circuitDNSMapping[circuitName],
     undefined,
     { updateGlobalOnSuccess: false },
   );
@@ -330,11 +330,21 @@ export async function registerPassport(
   passportData: PassportData,
   secret: string,
 ) {
-  const dscOk = await checkIdPassportDscIsInTree(passportData);
+  // First get the mapping, then use it for the check
+  const [circuitDNSMapping, dscTree] = await Promise.all([
+    getCircuitDNSMapping(),
+    getDSCTree(),
+  ]);
+  console.log('circuitDNSMapping', circuitDNSMapping);
+  const dscOk = await checkIdPassportDscIsInTree(
+    passportData,
+    dscTree,
+    circuitDNSMapping,
+  );
   if (!dscOk) {
     return;
   }
-  await sendRegisterPayload(passportData, secret);
+  await sendRegisterPayload(passportData, secret, circuitDNSMapping);
 }
 
 export async function getDeployedCircuits() {
@@ -355,6 +365,33 @@ export async function getDeployedCircuits() {
     const data = await response.json();
 
     if (!data.data || !data.data.REGISTER || !data.data.DSC) {
+      throw new Error(
+        'Invalid data structure received from API: missing REGISTER or DSC fields',
+      );
+    }
+    return data.data;
+  } catch (error) {
+    throw new Error('API returned invalid JSON response - server may be down');
+  }
+}
+export async function getCircuitDNSMapping() {
+  console.log('Fetching deployed circuits from api');
+  const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
+  if (!response.ok) {
+    throw new Error(
+      `API server error: ${response.status} ${response.statusText}`,
+    );
+  }
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    throw new Error(
+      'API returned HTML instead of JSON - server may be down or misconfigured',
+    );
+  }
+  try {
+    const data = await response.json();
+
+    if (!data.data) {
       throw new Error(
         'Invalid data structure received from API: missing REGISTER or DSC fields',
       );
