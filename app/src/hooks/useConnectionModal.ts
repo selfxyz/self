@@ -20,7 +20,9 @@ const connectionModalParams = {
   preventDismiss: true,
 } as const;
 
-export default function useConnectionModal() {
+export default function useConnectionModal(): {
+  visible: boolean;
+} {
   const { isInternetReachable } = useNetInfo();
   const { showModal, dismissModal, visible } = useModal(connectionModalParams);
 
@@ -34,7 +36,7 @@ export default function useConnectionModal() {
     } else if (visible && isInternetReachable !== false) {
       dismissModal();
     }
-  }, [isInternetReachable, dismissModal, visible, navigationRef.isReady()]);
+  }, [isInternetReachable, dismissModal, visible, showModal]);
 
   return {
     visible,

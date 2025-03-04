@@ -69,7 +69,7 @@ const RecoverWithPhraseScreen: React.FC<
 
     setRestoring(false);
     navigation.navigate('AccountVerifiedSuccess');
-  }, [mnemonic, restoreAccountFromMnemonic]);
+  }, [mnemonic, navigation, restoreAccountFromMnemonic]);
 
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>

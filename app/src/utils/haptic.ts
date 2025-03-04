@@ -25,12 +25,15 @@ const defaultOptions: HapticOptions = {
 /**
  * Haptic actions
  */
-export const impactLight = () => triggerFeedback('impactLight');
-export const impactMedium = () => triggerFeedback('impactMedium');
-export const notificationError = () => triggerFeedback('notificationError');
-export const notificationSuccess = () => triggerFeedback('notificationSuccess');
-export const notificationWarning = () => triggerFeedback('notificationWarning');
-export const selectionChange = () => triggerFeedback('selection');
+export const impactLight = (): void => triggerFeedback('impactLight');
+export const impactMedium = (): void => triggerFeedback('impactMedium');
+export const notificationError = (): void =>
+  triggerFeedback('notificationError');
+export const notificationSuccess = (): void =>
+  triggerFeedback('notificationSuccess');
+export const notificationWarning = (): void =>
+  triggerFeedback('notificationWarning');
+export const selectionChange = (): void => triggerFeedback('selection');
 export const buttonTap = impactLight;
 export const cancelTap = selectionChange;
 export const confirmTap = impactMedium;
@@ -43,7 +46,7 @@ export const confirmTap = impactMedium;
 export const triggerFeedback = (
   type: HapticType,
   options: HapticOptions = {},
-) => {
+): void => {
   const mergedOptions = { ...defaultOptions, ...options };
 
   if (Platform.OS === 'ios') {

@@ -192,7 +192,7 @@ export const AuthProvider = ({
         authenticationTimeoutinMs,
       );
     });
-  }, [isAuthenticatingPromise]);
+  }, [isAuthenticatingPromise, authenticationTimeoutinMs]);
 
   const getOrCreateMnemonic = useCallback(
     () => _getSecurely<Mnemonic>(loadOrCreateMnemonic, str => JSON.parse(str)),
@@ -230,26 +230,26 @@ export const AuthProvider = ({
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+export const useAuth = (): IAuthContext => {
   return useContext(AuthContext);
 };
 
-export async function hasSecretStored() {
+export async function hasSecretStored(): Promise<boolean> {
   const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
-  return !!seed;
+  return Boolean(seed);
 }
 
 /**
  * The only reason this is exported without being locked behind user biometrics is to allow `loadPassportDataAndSecret`
  * to access both the privatekey and the passport data with the user only authenticating once
  */
-export async function unsafe_getPrivateKey() {
+export async function unsafe_getPrivateKey(): Promise<string> {
   const mnemonic = JSON.parse(await loadOrCreateMnemonic()) as Mnemonic;
   const wallet = ethers.HDNodeWallet.fromPhrase(mnemonic.phrase);
   return wallet.privateKey;
 }
 
-export async function unsafe_clearSecrets() {
+export async function unsafe_clearSecrets(): Promise<void> {
   if (__DEV__) {
     await Keychain.resetGenericPassword({ service: SERVICE_NAME });
   }

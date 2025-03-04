@@ -10,7 +10,7 @@ export const useModal = (params: ModalParams) => {
   const showModal = useCallback(() => {
     setVisible(true);
     navigation.navigate('Modal', params);
-  }, [params]);
+  }, [params, navigation]);
 
   const dismissModal = useCallback(() => {
     setVisible(false);
@@ -19,7 +19,7 @@ export const useModal = (params: ModalParams) => {
       navigation.goBack();
     }
     params.onModalDismiss();
-  }, [params]);
+  }, [params, navigation]);
 
   return {
     showModal,

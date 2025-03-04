@@ -13,7 +13,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     params?: RootStackParamList[S];
     action?: NavigationAction;
   } = {},
-) => {
+): (() => void) => {
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
 
@@ -35,7 +35,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     }
     // it is safe to cast options.params as any because it is correct when entering the function
     navigation.navigate(screen, options.params as any);
-  }, [navigation, screen, options.action]);
+  }, [options.action, options.params, navigation, screen]);
 };
 
 export default useHapticNavigation;
