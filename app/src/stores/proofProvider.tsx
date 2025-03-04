@@ -2,6 +2,7 @@ import React, {
   createContext,
   PropsWithChildren,
   useCallback,
+  useContext,
   useEffect,
   useMemo,
   useState,
@@ -59,7 +60,9 @@ export let globalSetDisclosureStatus:
 /*
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
-export function ProofProvider({ children }: PropsWithChildren<{}>) {
+export function ProofProvider({
+  children,
+}: PropsWithChildren<Record<string, never>>): JSX.Element {
   const [registrationStatus, setRegistrationStatus] = useState<ProofStatusEnum>(
     ProofStatusEnum.PENDING,
   );
@@ -100,11 +103,20 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   }, [setRegistrationStatus, setDisclosureStatus]);
 
   useEffect(() => {
-    const universalLinkCleanup = setupUniversalLinkListener(setSelectedApp);
-    return () => {
-      universalLinkCleanup();
+    let cleanup: (() => void) | undefined;
+
+    setupUniversalLinkListener(setSelectedApp)
+      .then(cleanupFn => {
+        cleanup = cleanupFn;
+      })
+      .catch(console.error);
+
+    return (): void => {
+      if (cleanup) {
+        cleanup();
+      }
     };
-  }, []);
+  }, [setSelectedApp]);
 
   const publicApi: IProofContext = useMemo(
     () => ({
@@ -131,5 +143,5 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
 }
 
 export const useProofInfo = () => {
-  return React.useContext(ProofContext);
+  return useContext(ProofContext);
 };
