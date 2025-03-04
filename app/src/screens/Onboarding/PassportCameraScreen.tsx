@@ -1,9 +1,3 @@
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useRef } from 'react';
-import { Platform, StyleSheet } from 'react-native';
-import { View, XStack, YStack } from 'tamagui';
-
 import passportScanAnimation from '../../assets/animations/passport_scan.json';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import {
@@ -21,6 +15,11 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate800, white } from '../../utils/colors';
 import { checkScannedInfo, formatDateToYYMMDD } from '../../utils/utils';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useRef } from 'react';
+import { Platform, StyleSheet } from 'react-native';
+import { View, XStack, YStack } from 'tamagui';
 
 interface PassportNFCScanScreen {}
 

@@ -1,8 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect } from 'react';
-import { StyleSheet } from 'react-native';
-
 import splashAnimation from '../assets/animations/splash.json';
 import { useAuth } from '../stores/authProvider';
 import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
@@ -10,6 +5,10 @@ import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 import { isUserRegistered } from '../utils/proving/payload';
+import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useEffect } from 'react';
+import { StyleSheet } from 'react-native';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();

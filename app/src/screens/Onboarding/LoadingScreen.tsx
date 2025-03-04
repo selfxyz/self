@@ -1,8 +1,3 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
-
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
@@ -16,6 +11,10 @@ import {
   isUserRegistered,
   registerPassport,
 } from '../../utils/proving/payload';
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet } from 'react-native';
 
 const { trackEvent } = analytics();
 

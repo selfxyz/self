@@ -1,6 +1,5 @@
-import '@ethersproject/shims';
-
 import { SEGMENT_KEY } from '@env';
+import '@ethersproject/shims';
 import {
   createClient,
   EventPlugin,

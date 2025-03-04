@@ -1,6 +1,5 @@
-import { StyleSheet } from 'react-native';
-
 import { black } from '../../utils/colors';
+import { StyleSheet } from 'react-native';
 
 export const typography = StyleSheet.create({
   strong: {

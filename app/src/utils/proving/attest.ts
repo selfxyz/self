@@ -1,3 +1,9 @@
+import {
+  PCR0_MANAGER_ADDRESS,
+  RPC_URL,
+} from '../../../../common/src/constants/constants';
+import { AWS_ROOT_PEM } from './awsRootPem';
+import cose from './cose';
 import { X509Certificate } from '@peculiar/x509';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
@@ -6,13 +12,6 @@ import elliptic from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
-
-import {
-  PCR0_MANAGER_ADDRESS,
-  RPC_URL,
-} from '../../../../common/src/constants/constants';
-import { AWS_ROOT_PEM } from './awsRootPem';
-import cose from './cose';
 
 /**
  * @notice An array specifying the required fields for a valid attestation.

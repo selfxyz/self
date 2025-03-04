@@ -1,3 +1,4 @@
+import { Mnemonic } from '../types/mnemonic';
 import { ethers } from 'ethers';
 import React, {
   createContext,
@@ -9,8 +10,6 @@ import React, {
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
-
-import { Mnemonic } from '../types/mnemonic';
 
 const SERVICE_NAME = 'secret';
 

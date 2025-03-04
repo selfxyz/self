@@ -1,3 +1,6 @@
+import { name } from '../../../package.json';
+import { Mnemonic } from '../../types/mnemonic';
+import { googleSignIn } from './google';
 import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
@@ -6,10 +9,6 @@ import {
   CloudStorageProvider,
   CloudStorageScope,
 } from 'react-native-cloud-storage';
-
-import { name } from '../../../package.json';
-import { Mnemonic } from '../../types/mnemonic';
-import { googleSignIn } from './google';
 
 const FOLDER = `/${name}`;
 const ENCRYPTED_FILE_PATH = `/${FOLDER}/encrypted-private-key`;

@@ -1,7 +1,3 @@
-import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useState } from 'react';
-import { Button, Text, XStack, YStack } from 'tamagui';
-
 import {
   black,
   slate50,
@@ -12,6 +8,9 @@ import {
   white,
 } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
+import Clipboard from '@react-native-clipboard/clipboard';
+import React, { useCallback, useState } from 'react';
+import { Button, Text, XStack, YStack } from 'tamagui';
 
 interface MnemonicProps {
   words?: string[];
@@ -58,17 +57,23 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
 
   // Add these helper functions to determine button styles
   const getButtonTextColor = (): string => {
-    if (!revealWords) {return black;}
+    if (!revealWords) {
+      return black;
+    }
     return copied ? black : white;
   };
 
   const getButtonBorderColor = (): string => {
-    if (!revealWords) {return slate200;}
+    if (!revealWords) {
+      return slate200;
+    }
     return copied ? teal500 : black;
   };
 
   const getButtonBackgroundColor = (): string => {
-    if (!revealWords) {return slate50;}
+    if (!revealWords) {
+      return slate50;
+    }
     return copied ? teal500 : black;
   };
 

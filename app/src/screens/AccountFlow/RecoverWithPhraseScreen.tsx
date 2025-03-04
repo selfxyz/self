@@ -1,10 +1,3 @@
-import Clipboard from '@react-native-clipboard/clipboard';
-import { useNavigation } from '@react-navigation/native';
-import { ethers } from 'ethers';
-import React, { useCallback, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
-import { Text, TextArea, View, XStack, YStack } from 'tamagui';
-
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
@@ -19,6 +12,12 @@ import {
   white,
 } from '../../utils/colors';
 import { isUserRegistered } from '../../utils/proving/payload';
+import Clipboard from '@react-native-clipboard/clipboard';
+import { useNavigation } from '@react-navigation/native';
+import { ethers } from 'ethers';
+import React, { useCallback, useState } from 'react';
+import { Keyboard, StyleSheet } from 'react-native';
+import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 
 interface RecoverWithPhraseScreenProps {}
 

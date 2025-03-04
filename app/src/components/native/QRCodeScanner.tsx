@@ -1,3 +1,4 @@
+import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
 import React, { useCallback } from 'react';
 import {
   NativeSyntheticEvent,
@@ -5,8 +6,6 @@ import {
   Platform,
   requireNativeComponent,
 } from 'react-native';
-
-import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
 
 interface RCTQRCodeScannerViewProps extends RCTFragmentViewManagerProps {
   onQRData: (event: NativeSyntheticEvent<{ data: string }>) => void;

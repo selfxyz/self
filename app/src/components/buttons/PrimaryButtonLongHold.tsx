@@ -1,3 +1,5 @@
+import { ButtonProps } from './AbstractButton';
+import { PrimaryButton } from './PrimaryButton';
 import React, { useEffect, useState } from 'react';
 import {
   Animated,
@@ -5,9 +7,6 @@ import {
   StyleSheet,
   useAnimatedValue,
 } from 'react-native';
-
-import { ButtonProps } from './AbstractButton';
-import { PrimaryButton } from './PrimaryButton';
 
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 

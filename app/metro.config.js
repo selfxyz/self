@@ -1,5 +1,6 @@
 import { getDefaultConfig, mergeConfig } from '@react-native/metro-config';
 import path from 'path';
+
 const defaultConfig = getDefaultConfig(__dirname);
 const { assetExts, sourceExts } = defaultConfig.resolver;
 

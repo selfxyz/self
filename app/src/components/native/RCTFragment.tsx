@@ -1,5 +1,10 @@
 import React, { useEffect, useRef } from 'react';
-import { findNodeHandle,NativeSyntheticEvent, requireNativeComponent , UIManager } from 'react-native';
+import {
+  findNodeHandle,
+  NativeSyntheticEvent,
+  requireNativeComponent,
+  UIManager,
+} from 'react-native';
 
 export interface RCTFragmentViewManagerProps {
   RCTFragmentViewManager: ReturnType<typeof requireNativeComponent>;
