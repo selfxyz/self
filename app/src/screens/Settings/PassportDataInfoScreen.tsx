@@ -31,6 +31,8 @@ const dataKeysToLabels: Record<
   cscaCurveOrExponent: 'CSCA Curve or Exponent',
   cscaSaltLength: 'CSCA Salt Length',
   cscaSignatureAlgorithmBits: 'CSCA Signature Algorithm Bits',
+  dg1Size: '',
+  dg1HashSize: '',
 };
 
 const InfoRow: React.FC<{
@@ -69,9 +71,12 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
     setMetadata(result.data.passportMetadata!);
   }, [metadata, getData]);
 
-  useFocusEffect(() => {
-    loadData();
-  });
+  useFocusEffect(
+    useCallback(() => {
+      // eslint-disable-next-line no-void
+      void loadData();
+    }, [loadData]),
+  );
 
   return (
     <ScrollView px="$4" backgroundColor={white}>

@@ -86,7 +86,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             });
             goToUnsupportedScreen();
             console.log('Passport not supported');
-            clearPassportData();
+            await clearPassportData();
             return;
           }
           const isRegistered = await isUserRegistered(passportData, secret);
@@ -107,7 +107,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-          registerPassport(passportData, secret);
+          await registerPassport(passportData, secret);
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
@@ -115,7 +115,13 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       };
       processPayload();
     }
-  }, []);
+  }, [
+    clearPassportData,
+    getPassportDataAndSecret,
+    goToUnsupportedScreen,
+    navigation,
+    resetProof,
+  ]);
 
   return (
     <LottieView

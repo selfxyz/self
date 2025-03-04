@@ -6,7 +6,13 @@ import {
   IterationCw,
   VenetianMask,
 } from '@tamagui/lucide-icons';
-import React, { PropsWithChildren, useEffect, useState } from 'react';
+import React, {
+  PropsWithChildren,
+  ReactElement,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { Platform, TextInput } from 'react-native';
 import {
   Adapt,
@@ -33,7 +39,11 @@ import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
 
-function SelectableText({ children, ...props }: PropsWithChildren) {
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function SelectableText({
+  children,
+  ...props
+}: PropsWithChildren): ReactElement<any, any> {
   if (Platform.OS === 'ios') {
     return (
       <TextInput multiline editable={false} {...props}>
@@ -109,7 +119,7 @@ const ScreenSelector = ({}) => {
       <Select.Content zIndex={200000}>
         <Select.Viewport minWidth={200}>
           <Select.Group>
-            {React.useMemo(
+            {useMemo(
               () =>
                 items.map((item, i) => {
                   return (
@@ -121,7 +131,7 @@ const ScreenSelector = ({}) => {
                     </Select.Item>
                   );
                 }),
-              [items],
+              [],
             )}
           </Select.Group>
         </Select.Viewport>
@@ -136,17 +146,17 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
 
   const nav = useNavigation();
 
-  async function handleRestart() {
+  async function handleRestart(): Promise<void> {
     await clearPassportData();
     nav.navigate('Launch');
   }
 
-  async function deleteEverything() {
+  async function deleteEverything(): Promise<void> {
     await unsafe_clearSecrets();
     await handleRestart();
   }
 
-  function handleGenerateMockPassportData() {
+  async function handleGenerateMockPassportData(): Promise<void> {
     const passportData = genMockPassportData(
       'sha256',
       'sha256',
@@ -155,11 +165,12 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
       '000101',
       '300101',
     );
-    storePassportData(passportData);
+    await storePassportData(passportData);
   }
 
   useEffect(() => {
-    unsafe_getPrivateKey().then(setPrivateKey);
+    // eslint-disable-next-line no-void
+    void unsafe_getPrivateKey().then(setPrivateKey);
   }, []);
 
   return (

@@ -8,10 +8,10 @@ import { loadPassportData } from '../stores/passportDataProvider';
 export default async function handleQRCodeScan(
   result: string,
   setApp: (app: SelfApp) => void,
-) {
+): Promise<void> {
   try {
     const passportData = await loadPassportData();
-    if (passportData) {
+    if (passportData !== false && passportData.length > 0) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
         decodedResult.split('').map(char => char.charCodeAt(0)),
@@ -44,28 +44,36 @@ export default async function handleQRCodeScan(
   }
 }
 
-const handleUniversalLink = (url: string, setApp: (app: SelfApp) => void) => {
+const handleUniversalLink = async (
+  url: string,
+  setApp: (app: SelfApp) => void,
+): Promise<void> => {
   const encodedData = new URL(url).searchParams.get('data');
   console.log('Encoded data:', encodedData);
-  if (encodedData) {
-    handleQRCodeScan(encodedData, setApp);
+  if (encodedData !== null) {
+    await handleQRCodeScan(encodedData, setApp);
   } else {
     console.error('No data found in the Universal Link');
   }
 };
 
-export const setupUniversalLinkListener = (setApp: (app: SelfApp) => void) => {
-  Linking.getInitialURL().then(url => {
-    if (url) {
-      handleUniversalLink(url, setApp);
+export const setupUniversalLinkListener = async (
+  setApp: (app: SelfApp) => void,
+) => {
+  await Linking.getInitialURL().then(async url => {
+    if (url != null) {
+      await handleUniversalLink(url, setApp);
     }
   });
 
-  const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleUniversalLink(url, setApp);
-  });
+  const linkingEventListener = Linking.addEventListener(
+    'url',
+    async ({ url }) => {
+      await handleUniversalLink(url, setApp);
+    },
+  );
 
-  return () => {
+  return (): void => {
     linkingEventListener.remove();
   };
 };

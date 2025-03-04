@@ -72,7 +72,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       .replace(/[^a-z0-9]/gi, '')
       .toUpperCase();
     await new Promise(resolve =>
-      setTimeout(() => {
+      setTimeout(async () => {
         let mockPassportData;
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
@@ -103,7 +103,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           );
         }
 
-        setData(mockPassportData);
+        await setData(mockPassportData);
         resolve(null);
       }, 0),
     );

@@ -192,21 +192,28 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
       }
     } else if (isNfcSupported) {
       if (Platform.OS === 'ios') {
-        Linking.openURL('App-Prefs:root=General&path=About');
+        await Linking.openURL('App-Prefs:root=General&path=About');
       } else {
-        Linking.sendIntent('android.settings.NFC_SETTINGS');
+        await Linking.sendIntent('android.settings.NFC_SETTINGS');
       }
     }
-  }, [isNfcSupported, isNfcEnabled, passportNumber, dateOfBirth, dateOfExpiry]);
+  }, [
+    isNfcEnabled,
+    isNfcSupported,
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    navigation,
+  ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
     action: 'cancel',
   });
 
-  const _cancelScanIfRunning = useCallback(async () => {
-    // // TODO: cancel if scanning
-    // setIsNfcSheetOpen(false);
-  }, [isNfcSheetOpen]);
+  // const _cancelScanIfRunning = useCallback(async () => {
+  //   // TODO: cancel if scanning
+  //   setIsNfcSheetOpen(false);
+  // }, [isNfcSheetOpen]);
 
   useFocusEffect(
     useCallback(() => {

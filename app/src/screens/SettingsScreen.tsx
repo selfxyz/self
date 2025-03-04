@@ -51,9 +51,9 @@ type RouteOption = keyof RootStackParamList | 'share' | 'email_feedback';
 
 const storeURL = Platform.OS === 'ios' ? appStoreUrl : playStoreUrl;
 
-const goToStore = () => {
+const goToStore = async (): Promise<void> => {
   impactLight();
-  Linking.openURL(storeURL);
+  await Linking.openURL(storeURL);
 };
 
 const routes = [
@@ -102,10 +102,10 @@ const MenuButton: React.FC<MenuButtonProps> = ({ children, Icon, onPress }) => (
 );
 
 const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
-  const onPress = useCallback(() => {
+  const onPress = useCallback(async () => {
     impactLight();
-    Linking.openURL(href);
-  }, []);
+    await Linking.openURL(href);
+  }, [href]);
 
   return (
     <Button
