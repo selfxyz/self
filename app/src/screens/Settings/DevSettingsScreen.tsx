@@ -39,7 +39,6 @@ import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function SelectableText({
   children,
   ...props

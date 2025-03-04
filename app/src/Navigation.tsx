@@ -4,7 +4,7 @@ import {
   StaticParamList,
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { ReactElement, useCallback } from 'react';
 import { StatusBar } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -316,16 +316,16 @@ export const navigationRef = createNavigationContainerRef();
 const { trackScreenView } = analytics();
 
 const Navigation = createStaticNavigation(AppNavigation);
-const NavigationWithTracking = () => {
-  const trackScreen = () => {
-    const currentRoute = navigationRef.getCurrentRoute();
+const NavigationWithTracking = (): ReactElement => {
+  const currentRoute = navigationRef.getCurrentRoute();
+  const trackScreen = useCallback(async () => {
     if (currentRoute) {
       console.log(`Screen View: ${currentRoute.name}`);
-      trackScreenView(`${currentRoute.name}`, {
+      await trackScreenView(`${currentRoute.name}`, {
         screenName: currentRoute.name,
       });
     }
-  };
+  }, [currentRoute]);
 
   return (
     <GestureHandlerRootView>
