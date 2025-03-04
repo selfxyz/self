@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Buffer } from 'buffer';
 import { NativeModules, Platform } from 'react-native';
 import PassportReader from 'react-native-passport-reader';
@@ -11,13 +10,30 @@ interface Inputs {
   dateOfExpiry: string;
 }
 
-export const scan = async (inputs: Inputs) => {
+type ScanResponse = {
+  mrz: string;
+  eContent: string;
+  encryptedDigest: string;
+  photo: {
+    base64: string;
+  };
+  digestAlgorithm: string;
+  signerInfoDigestAlgorithm: string;
+  digestEncryptionAlgorithm: string;
+  LDSVersion: string;
+  unicodeVersion: string;
+  encapContent: string;
+  documentSigningCertificate: string;
+  dataGroupHashes: string;
+};
+
+export const scan = async (inputs: Inputs): Promise<ScanResponse> => {
   return Platform.OS === 'android'
     ? await scanAndroid(inputs)
     : await scanIOS(inputs);
 };
 
-const scanAndroid = async (inputs: Inputs) => {
+const scanAndroid = async (inputs: Inputs): Promise<ScanResponse> => {
   return await PassportReader.scan({
     documentNumber: inputs.passportNumber,
     dateOfBirth: inputs.dateOfBirth,
@@ -25,7 +41,7 @@ const scanAndroid = async (inputs: Inputs) => {
   });
 };
 
-const scanIOS = async (inputs: Inputs) => {
+const scanIOS = async (inputs: Inputs): Promise<ScanResponse> => {
   return await NativeModules.PassportReader.scanPassport(
     inputs.passportNumber,
     inputs.dateOfBirth,
@@ -33,13 +49,16 @@ const scanIOS = async (inputs: Inputs) => {
   );
 };
 
-export const parseScanResponse = (response: any) => {
+export const parseScanResponse = (
+  response: string | ScanResponse,
+): PassportData => {
+  // TODO: simplify this logic so that both handlers accept a ScanResponse type
   return Platform.OS === 'android'
-    ? handleResponseAndroid(response)
-    : handleResponseIOS(response);
+    ? handleResponseAndroid(response as ScanResponse)
+    : handleResponseIOS(response as string);
 };
 
-const handleResponseIOS = (response: any) => {
+const handleResponseIOS = (response: string): PassportData => {
   const parsed = JSON.parse(response);
   const dgHashesObj = JSON.parse(parsed?.dataGroupHashes);
   const dg1HashString = dgHashesObj?.DG1?.sodHash;
@@ -57,7 +76,7 @@ const handleResponseIOS = (response: any) => {
   const _isPACESupported = parsed?.isPACESupported;
   const _isChipAuthenticationSupported = parsed?.isChipAuthenticationSupported;
   const _residenceAddress = parsed?.residenceAddress;
-  const passportPhoto = parsed?.passportPhoto;
+  const _passportPhoto = parsed?.passportPhoto;
   const _encapsulatedContentDigestAlgorithm =
     parsed?.encapsulatedContentDigestAlgorithm;
   const documentSigningCertificate = parsed?.documentSigningCertificate;
@@ -91,17 +110,17 @@ const handleResponseIOS = (response: any) => {
   };
 };
 
-const handleResponseAndroid = (response: any) => {
+const handleResponseAndroid = (response: ScanResponse): PassportData => {
   const {
     mrz,
     eContent,
     encryptedDigest,
-    _photo,
-    _digestAlgorithm,
-    _signerInfoDigestAlgorithm,
-    _digestEncryptionAlgorithm,
-    _LDSVersion,
-    _unicodeVersion,
+    // _photo,
+    // _digestAlgorithm,
+    // _signerInfoDigestAlgorithm,
+    // _digestEncryptionAlgorithm,
+    // _LDSVersion,
+    // _unicodeVersion,
     encapContent,
     documentSigningCertificate,
     dataGroupHashes,

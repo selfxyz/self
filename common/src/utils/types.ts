@@ -13,6 +13,7 @@ export type PassportData = {
   passportMetadata?: PassportMetadata;
   dsc_parsed?: CertificateData;
   csca_parsed?: CertificateData;
+  parsed?: boolean;
 };
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
