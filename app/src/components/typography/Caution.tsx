@@ -1,7 +1,8 @@
-import { slate700 } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
+
+import { slate700 } from '../../utils/colors';
+import { dinot } from '../../utils/fonts';
 
 interface CautionProps extends TextProps {}
 

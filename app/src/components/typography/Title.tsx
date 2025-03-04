@@ -1,5 +1,6 @@
-import { advercase } from '../../utils/fonts';
 import { styled, Text } from 'tamagui';
+
+import { advercase } from '../../utils/fonts';
 
 export const Title = styled(Text, {
   fontSize: 28,

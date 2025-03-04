@@ -1,3 +1,8 @@
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { StyleSheet } from 'react-native';
+
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
@@ -11,10 +16,6 @@ import {
   isUserRegistered,
   registerPassport,
 } from '../../utils/proving/payload';
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
 
 const { trackEvent } = analytics();
 
@@ -43,7 +44,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   useEffect(() => {
     // TODO this makes sense if reset proof was only about passport registration
     resetProof();
-  }, []);
+  }, [resetProof]);
 
   useEffect(() => {
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
@@ -58,7 +59,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
-  }, [registrationStatus]);
+  }, [
+    goToErrorScreenWithDelay,
+    goToSuccessScreenWithDelay,
+    registrationStatus,
+    resetProof,
+  ]);
 
   const processPayloadCalled = useRef(false);
 

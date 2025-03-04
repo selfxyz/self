@@ -1,3 +1,8 @@
+import elliptic from 'elliptic';
+import forge from 'node-forge';
+import io, { Socket } from 'socket.io-client';
+import { v4 } from 'uuid';
+
 import {
   CIRCUIT_TYPES,
   WS_DB_RELAYER,
@@ -9,10 +14,6 @@ import {
   ProofStatusEnum,
 } from '../../stores/proofProvider';
 import { getPublicKey, verifyAttestation } from './attest';
-import elliptic from 'elliptic';
-import forge from 'node-forge';
-import io, { Socket } from 'socket.io-client';
-import { v4 } from 'uuid';
 
 const { ec: EC } = elliptic;
 

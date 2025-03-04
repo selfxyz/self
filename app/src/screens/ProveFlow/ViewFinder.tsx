@@ -1,3 +1,13 @@
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import React, { useCallback, useState } from 'react';
+import { StyleSheet } from 'react-native';
+import { View, XStack, YStack } from 'tamagui';
+
 import qrScanAnimation from '../../assets/animations/qr_scan.json';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import {
@@ -14,15 +24,6 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { useProofInfo } from '../../stores/proofProvider';
 import { black, slate800, white } from '../../utils/colors';
-import {
-  useFocusEffect,
-  useIsFocused,
-  useNavigation,
-} from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useCallback, useState } from 'react';
-import { StyleSheet } from 'react-native';
-import { View, XStack, YStack } from 'tamagui';
 
 interface QRCodeViewFinderScreenProps {}
 

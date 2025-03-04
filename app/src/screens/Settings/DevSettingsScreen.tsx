@@ -1,14 +1,3 @@
-import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
-import { RootStackParamList } from '../../Navigation';
-import {
-  unsafe_clearSecrets,
-  unsafe_getPrivateKey,
-} from '../../stores/authProvider';
-import {
-  storePassportData,
-  usePassport,
-} from '../../stores/passportDataProvider';
-import { borderColor, textBlack } from '../../utils/colors';
 import { useNavigation } from '@react-navigation/native';
 import {
   Check,
@@ -29,6 +18,18 @@ import {
   Text,
   YStack,
 } from 'tamagui';
+
+import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
+import { RootStackParamList } from '../../Navigation';
+import {
+  unsafe_clearSecrets,
+  unsafe_getPrivateKey,
+} from '../../stores/authProvider';
+import {
+  storePassportData,
+  usePassport,
+} from '../../stores/passportDataProvider';
+import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
 

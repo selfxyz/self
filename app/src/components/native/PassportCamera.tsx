@@ -1,5 +1,3 @@
-import { extractMRZInfo } from '../../utils/utils';
-import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
 import React, { useCallback } from 'react';
 import {
   NativeSyntheticEvent,
@@ -7,6 +5,9 @@ import {
   Platform,
   requireNativeComponent,
 } from 'react-native';
+
+import { extractMRZInfo } from '../../utils/utils';
+import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
 
 interface RCTPassportOCRViewManagerProps extends RCTFragmentViewManagerProps {
   onPassportRead: (

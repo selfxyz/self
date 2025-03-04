@@ -1,4 +1,3 @@
-import { Mnemonic } from '../types/mnemonic';
 import { ethers } from 'ethers';
 import React, {
   createContext,
@@ -10,6 +9,8 @@ import React, {
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
 import Keychain from 'react-native-keychain';
+
+import { Mnemonic } from '../types/mnemonic';
 
 const SERVICE_NAME = 'secret';
 
@@ -217,7 +218,13 @@ export const AuthProvider = ({
       createSigningKeyPair,
       _getSecurely,
     }),
-    [isAuthenticated, isAuthenticatingPromise, loginWithBiometrics],
+    [
+      getOrCreateMnemonic,
+      isAuthenticated,
+      isAuthenticatingPromise,
+      loginWithBiometrics,
+      restoreAccountFromMnemonic,
+    ],
   );
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;

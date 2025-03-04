@@ -1,7 +1,8 @@
-import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
-import { SelfApp } from '../../../common/src/utils/appType';
 import React, { createContext, useContext, useEffect, useRef } from 'react';
 import io, { Socket } from 'socket.io-client';
+
+import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
+import { SelfApp } from '../../../common/src/utils/appType';
 
 interface IAppContext {
   /**

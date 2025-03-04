@@ -1,5 +1,3 @@
-import { SelfApp } from '../../../common/src/utils/appType';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 import React, {
   createContext,
   PropsWithChildren,
@@ -8,6 +6,9 @@ import React, {
   useMemo,
   useState,
 } from 'react';
+
+import { SelfApp } from '../../../common/src/utils/appType';
+import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',

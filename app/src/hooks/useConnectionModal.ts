@@ -1,8 +1,9 @@
-import { navigationRef } from '../Navigation';
-import { useModal } from '../hooks/useModal';
 import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
+
+import { useModal } from '../hooks/useModal';
+import { navigationRef } from '../Navigation';
 
 const connectionModalParams = {
   titleText: 'Internet connection error',

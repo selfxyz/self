@@ -1,3 +1,9 @@
+import LottieView from 'lottie-react-native';
+import React from 'react';
+import { StyleSheet, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { Anchor, Text, useWindowDimensions, XStack, YStack } from 'tamagui';
+
 import onboardingAnimation from '../assets/animations/launch_onboarding.json';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { BodyText } from '../components/typography/BodyText';
@@ -9,11 +15,6 @@ import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
-import LottieView from 'lottie-react-native';
-import React from 'react';
-import { StyleSheet, View } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { Anchor, Text, useWindowDimensions, XStack, YStack } from 'tamagui';
 
 interface LaunchScreenProps {}
 

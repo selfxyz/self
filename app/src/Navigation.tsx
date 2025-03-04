@@ -1,3 +1,13 @@
+import {
+  createNavigationContainerRef,
+  createStaticNavigation,
+  StaticParamList,
+} from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import React from 'react';
+import { StatusBar } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 import DefaultNavBar from './components/DefaultNavBar';
 import HomeNavBar from './components/HomeNavBar';
 import AppLayout from './layouts/AppLayout';
@@ -30,15 +40,6 @@ import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
-import {
-  createNavigationContainerRef,
-  createStaticNavigation,
-  StaticParamList,
-} from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import React from 'react';
-import { StatusBar } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',

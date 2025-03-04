@@ -1,6 +1,7 @@
-import { useAuth } from '../stores/authProvider';
 import { ethers } from 'ethers';
 import { useCallback, useState } from 'react';
+
+import { useAuth } from '../stores/authProvider';
 
 export default function useMnemonic() {
   const { getOrCreateMnemonic } = useAuth();

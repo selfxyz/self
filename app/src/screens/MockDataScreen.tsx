@@ -1,8 +1,3 @@
-import { countryCodes } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { usePassport } from '../stores/passportDataProvider';
-import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
-import { buttonTap, selectionChange } from '../utils/haptic';
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
@@ -22,6 +17,12 @@ import {
   XStack,
   YStack,
 } from 'tamagui';
+
+import { countryCodes } from '../../../common/src/constants/constants';
+import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { usePassport } from '../stores/passportDataProvider';
+import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
+import { buttonTap, selectionChange } from '../utils/haptic';
 
 interface MockDataScreenProps {}
 
@@ -111,7 +112,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     navigation.navigate('ConfirmBelongingScreen', {
       mockPassportFlow: true,
     });
-  }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
+  }, [
+    navigation,
+    isInOfacList,
+    setData,
+    signatureAlgorithmToStrictSignatureAlgorithm,
+    selectedAlgorithm,
+    selectedCountry,
+    expiryYears,
+    age,
+  ]);
 
   const { top, bottom } = useSafeAreaInsets();
   return (

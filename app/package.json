@@ -88,7 +88,6 @@
     "@react-native/metro-config": "0.75.4",
     "@react-native/typescript-config": "0.75.4",
     "@tamagui/types": "1.110.0",
-    "@trivago/prettier-plugin-sort-imports": "^4.3.0",
     "@tsconfig/react-native": "^3.0.0",
     "@types/add": "^2",
     "@types/elliptic": "^6",

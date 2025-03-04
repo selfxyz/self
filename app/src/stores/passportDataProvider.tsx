@@ -1,5 +1,3 @@
-import { PassportData } from '../../../common/src/utils/types';
-import { unsafe_getPrivateKey, useAuth } from '../stores/authProvider';
 import React, {
   createContext,
   PropsWithChildren,
@@ -8,6 +6,9 @@ import React, {
   useMemo,
 } from 'react';
 import Keychain from 'react-native-keychain';
+
+import { PassportData } from '../../../common/src/utils/types';
+import { unsafe_getPrivateKey, useAuth } from '../stores/authProvider';
 
 // TODO: refactor this as it shouldnt be used directly IMHO
 export async function loadPassportData() {

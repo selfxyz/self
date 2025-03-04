@@ -1,3 +1,8 @@
+import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
+import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Button, styled, YStack } from 'tamagui';
+
 import { pressedStyle } from '../components/buttons/pressedStyle';
 import { BodyText } from '../components/typography/BodyText';
 import { Caption } from '../components/typography/Caption';
@@ -9,10 +14,6 @@ import ScanIcon from '../images/icons/qr_scan.svg';
 import WarnIcon from '../images/icons/warning.svg';
 import { useSettingStore } from '../stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '../utils/colors';
-import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
-import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, styled, YStack } from 'tamagui';
 
 const ScanButton = styled(Button, {
   borderRadius: 20,

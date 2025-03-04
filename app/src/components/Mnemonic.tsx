@@ -1,3 +1,7 @@
+import Clipboard from '@react-native-clipboard/clipboard';
+import React, { useCallback, useState } from 'react';
+import { Button, Text, XStack, YStack } from 'tamagui';
+
 import {
   black,
   slate50,
@@ -8,9 +12,6 @@ import {
   white,
 } from '../utils/colors';
 import { confirmTap } from '../utils/haptic';
-import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useState } from 'react';
-import { Button, Text, XStack, YStack } from 'tamagui';
 
 interface MnemonicProps {
   words?: string[];

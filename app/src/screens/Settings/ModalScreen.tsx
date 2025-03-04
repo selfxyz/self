@@ -1,3 +1,7 @@
+import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import React, { useCallback } from 'react';
+import { styled, View, XStack, YStack } from 'tamagui';
+
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
@@ -5,9 +9,6 @@ import ModalClose from '../../images/icons/modal_close.svg';
 import LogoInversed from '../../images/logo_inversed.svg';
 import { white } from '../../utils/colors';
 import { confirmTap, impactLight } from '../../utils/haptic';
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import React, { useCallback } from 'react';
-import { styled, View, XStack, YStack } from 'tamagui';
 
 const ModalBackDrop = styled(View, {
   display: 'flex',
@@ -42,13 +43,13 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [navigation, params]);
 
   const onClose = useCallback(() => {
     impactLight();
     navigation.goBack();
     params.onModalDismiss();
-  }, [params]);
+  }, [navigation, params]);
 
   return (
     <ModalBackDrop>

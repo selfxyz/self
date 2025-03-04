@@ -1,3 +1,7 @@
+import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
+import { Separator, View, XStack, YStack } from 'tamagui';
+
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import { Caption } from '../../components/typography/Caption';
@@ -13,9 +17,6 @@ import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
 import { isUserRegistered } from '../../utils/proving/payload';
-import { useNavigation } from '@react-navigation/native';
-import React, { useCallback, useState } from 'react';
-import { Separator, View, XStack, YStack } from 'tamagui';
 
 interface AccountRecoveryChoiceScreenProps {}
 
@@ -70,10 +71,12 @@ const AccountRecoveryChoiceScreen: React.FC<
       throw new Error('Something wrong happened during cloud recovery');
     }
   }, [
-    cloudBackupEnabled,
     download,
     restoreAccountFromMnemonic,
+    cloudBackupEnabled,
     onRestoreFromCloudNext,
+    navigation,
+    toggleCloudBackupEnabled,
   ]);
 
   return (
