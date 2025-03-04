@@ -10,17 +10,17 @@ ethers.computeHmac.register((algo, key, data) => {
   return crypto.createHmac(algo, key).update(data).digest();
 });
 
-// @ts-expect-error
+// @ts-expect-error Type mismatch between ethers and react-native-quick-crypto data types
 ethers.pbkdf2.register((passwd, salt, iter, keylen, algo) => {
   return crypto.pbkdf2Sync(passwd, salt, iter, keylen, algo);
 });
 
 ethers.sha256.register(data => {
-  // @ts-expect-error
+  // @ts-expect-error Type mismatch between ethers and react-native-quick-crypto data types
   return crypto.createHash('sha256').update(data).digest();
 });
 
 ethers.sha512.register(data => {
-  // @ts-expect-error
+  // @ts-expect-error Type mismatch between ethers and react-native-quick-crypto data types
   return crypto.createHash('sha512').update(data).digest();
 });

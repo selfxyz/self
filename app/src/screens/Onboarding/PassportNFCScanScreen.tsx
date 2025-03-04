@@ -145,43 +145,43 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
           navigation.navigate('ConfirmBelongingScreen');
-        } catch (e: any) {
-          console.error('Passport Parsed Failed:', e);
+        } catch (e: unknown) {
+          const error = e instanceof Error ? e.message : String(e);
+          console.error('Passport Parsed Failed:', error);
           trackEvent('Passport Parsed Failed', {
-            error: e.message,
+            error,
           });
           return;
         }
-      } catch (e: any) {
+      } catch (e: unknown) {
+        const error = e instanceof Error ? e.message : String(e);
         const scanDurationSeconds = (
           (Date.now() - scanStartTime) /
           1000
         ).toFixed(2);
         console.error('NFC Scan Unsuccessful:', e);
         trackEvent('NFC Scan Unsuccessful', {
-          error: e.message,
+          error,
           duration_seconds: parseFloat(scanDurationSeconds),
         });
 
-        if (e.message.includes('InvalidMRZKey')) {
+        if (error.includes('InvalidMRZKey')) {
           // iOS
           // This works and even says "MRZ key not valid for this document"
           navigation.navigate('PassportCamera');
-        } else if (e.message.includes('Tag response error / no response')) {
+        } else if (error.includes('Tag response error / no response')) {
           // iOS
           navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('UserCanceled')) {
+        } else if (error.includes('UserCanceled')) {
           // iOS
           // Do nothing
-        } else if (e.message.includes('UnexpectedError')) {
+        } else if (error.includes('UnexpectedError')) {
           // iOS
           // Timeout reached, do nothing
-        } else if (
-          e.message.includes('Error: Lost connection to chip on card')
-        ) {
+        } else if (error.includes('Error: Lost connection to chip on card')) {
           // android
           navigation.navigate('PassportNFCTrouble');
-        } else if (e.message.includes('Could not tranceive APDU')) {
+        } else if (error.includes('Could not tranceive APDU')) {
           // android
           navigation.navigate('PassportNFCTrouble');
         } else {

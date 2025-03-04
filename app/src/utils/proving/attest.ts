@@ -106,22 +106,20 @@ export const verifyAttestation = async (attestation: Array<number>) => {
     coseSign1;
 
   const attestationDoc = (await decode(payload)) as AttestationDoc;
-
   for (const field of requiredFields) {
-    //@ts-ignore
-    if (!attestationDoc[field]) {
+    if (!(field in attestationDoc)) {
       throw new Error(`Missing required field: ${field}`);
     }
   }
 
-  if (!(attestationDoc.module_id.length > 0)) {
+  if (attestationDoc.module_id.length <= 0) {
     throw new Error('Invalid module_id');
   }
-  if (!(attestationDoc.digest === 'SHA384')) {
+  if (attestationDoc.digest !== 'SHA384') {
     throw new Error('Invalid digest');
   }
 
-  if (!(attestationDoc.timestamp > 0)) {
+  if (attestationDoc.timestamp <= 0) {
     throw new Error('Invalid timestamp');
   }
 
@@ -136,7 +134,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
     }
   }
 
-  if (!(attestationDoc.cabundle.length > 0)) {
+  if (attestationDoc.cabundle.length <= 0) {
     throw new Error('Invalid cabundle');
   }
 

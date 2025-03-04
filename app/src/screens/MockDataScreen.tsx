@@ -4,6 +4,7 @@ import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
+import crypto from 'react-native-quick-crypto';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
@@ -66,7 +67,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
-    const randomPassportNumber = Math.random()
+    const randomArrayValue = new Uint32Array(1);
+    crypto.getRandomValues(randomArrayValue);
+    const randomPassportNumber = randomArrayValue[0]
       .toString(36)
       .substring(2, 11)
       .replace(/[^a-z0-9]/gi, '')

@@ -42,10 +42,16 @@ const WordPill = ({ index, word }: WordPill) => {
     </XStack>
   );
 };
+const randomArrayValue = new Uint32Array(1);
+crypto.getRandomValues(randomArrayValue);
 const REDACTED = new Array(24)
   .fill('')
-  .map(_ => '*'.repeat(Math.max(4, Math.floor(Math.random() * 10))));
-const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
+  .map(_ => '*'.repeat(Math.max(4, Math.floor(randomArrayValue[0] * 10))));
+
+const Mnemonic = ({
+  words = REDACTED,
+  onRevealWords,
+}: MnemonicProps): JSX.Element => {
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
 
