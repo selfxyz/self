@@ -8,6 +8,7 @@ import { pressedStyle } from './pressedStyle';
 export interface ButtonProps extends ViewProps {
   children: React.ReactNode;
   animatedComponent?: React.ReactNode;
+  onPress?: () => void;
 }
 
 interface AbstractButtonProps extends ButtonProps {

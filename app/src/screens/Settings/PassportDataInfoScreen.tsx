@@ -52,6 +52,21 @@ const InfoRow: React.FC<{
 
 interface PassportDataInfoScreenProps {}
 
+const getDisplayValue = (
+  key: string,
+  metadata: PassportMetadata | null,
+): string => {
+  if (!metadata) {
+    return '';
+  }
+  if (key === 'cscaFound') {
+    return metadata.cscaFound ? 'Yes' : 'No';
+  }
+  const value = metadata[key as keyof PassportMetadata];
+
+  return String(value !== '' ? value : 'None');
+};
+
 const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
   const { getData } = usePassport();
   const [metadata, setMetadata] = useState<PassportMetadata | null>(null);
@@ -85,17 +100,7 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
           <InfoRow
             key={key}
             label={label}
-            value={
-              !metadata
-                ? ''
-                : key === 'cscaFound'
-                ? metadata.cscaFound === true
-                  ? 'Yes'
-                  : 'No'
-                : (metadata[key as keyof PassportMetadata] as
-                    | string
-                    | number) || 'None'
-            }
+            value={getDisplayValue(key, metadata)}
           />
         ))}
       </YStack>

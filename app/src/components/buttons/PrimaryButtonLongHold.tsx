@@ -18,7 +18,7 @@ export function HeldPrimaryButton({
   children,
   onPress,
   ...props
-}: ButtonProps) {
+}: Readonly<ButtonProps>): JSX.Element {
   const animation = useAnimatedValue(0);
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });
@@ -67,14 +67,15 @@ export function HeldPrimaryButton({
     animation.addListener(({ value }) => {
       if (value >= 0.95 && !hasTriggered) {
         setHasTriggered(true);
-        // @ts-expect-error
-        onPress();
+        if (onPress) {
+          onPress();
+        }
       }
     });
     return () => {
       animation.removeAllListeners();
     };
-  }, [animation, hasTriggered]);
+  }, [animation, hasTriggered, onPress]);
 
   return (
     <PrimaryButton
