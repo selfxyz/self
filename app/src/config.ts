@@ -1,0 +1,14 @@
+/* eslint-disable import/no-unresolved */
+import {
+  DEFAULT_DOB as ENV_DEFAULT_DOB,
+  DEFAULT_DOE as ENV_DEFAULT_DOE,
+  DEFAULT_PNUMBER as ENV_DEFAULT_PNUMBER,
+  SEGMENT_KEY as ENV_SEGMENT_KEY,
+  SENTRY_DSN as ENV_SENTRY_DSN,
+} from '@env';
+
+export const SEGMENT_KEY = ENV_SEGMENT_KEY;
+export const SENTRY_DSN = ENV_SENTRY_DSN;
+export const DEFAULT_DOB = ENV_DEFAULT_DOB;
+export const DEFAULT_DOE = ENV_DEFAULT_DOE;
+export const DEFAULT_PNUMBER = ENV_DEFAULT_PNUMBER;

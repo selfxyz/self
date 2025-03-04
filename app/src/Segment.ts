@@ -1,12 +1,13 @@
 import '@ethersproject/shims';
 
-import { SEGMENT_KEY } from '@env';
 import {
   createClient,
   EventPlugin,
   PluginType,
   SegmentEvent,
 } from '@segment/analytics-react-native';
+
+import { SEGMENT_KEY } from './config';
 
 let segmentClient: ReturnType<typeof createClient> | null = null;
 
