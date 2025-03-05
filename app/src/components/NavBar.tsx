@@ -1,6 +1,6 @@
 import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
-import { StatusBar, StatusBarStyle } from 'react-native';
+import { StatusBar, StatusBarStyle, StyleSheet } from 'react-native';
 import {
   Button,
   TextProps,
@@ -37,25 +37,22 @@ export const LeftAction: React.FC<LeftActionProps> = ({
   onPress,
   ...props
 }) => {
+  const chevronLeft = useMemo(() => {
+    return <ChevronLeft size={30} color={color} />;
+  }, [color]);
+  const closeButton = useMemo(() => {
+    return <X size={30} color={color} />;
+  }, [color]);
+
   const children: React.ReactNode = useMemo(() => {
     switch (component) {
       case 'back':
         return (
-          <Button
-            hitSlop={100}
-            onPress={onPress}
-            unstyled
-            icon={<ChevronLeft size={30} color={color} />}
-          />
+          <Button hitSlop={100} onPress={onPress} unstyled icon={chevronLeft} />
         );
       case 'close':
         return (
-          <Button
-            hitSlop={100}
-            onPress={onPress}
-            unstyled
-            icon={<X size={30} color={color} />}
-          />
+          <Button hitSlop={100} onPress={onPress} unstyled icon={closeButton} />
         );
       case undefined:
       case null:
@@ -67,7 +64,7 @@ export const LeftAction: React.FC<LeftActionProps> = ({
           </Button>
         );
     }
-  }, [color, component, onPress]);
+  }, [chevronLeft, closeButton, component, onPress]);
 
   if (!children) {
     return null;
@@ -110,21 +107,27 @@ const Container: React.FC<NavBarProps> = ({
   barStyle,
   ...props
 }) => {
+  const containerStyle = useMemo(() => {
+    return [styles.container, backgroundColor ? { backgroundColor } : null];
+  }, [backgroundColor]);
+
   return (
     <>
       <StatusBar backgroundColor={backgroundColor} barStyle={barStyle} />
-      <XStack
-        backgroundColor={backgroundColor}
-        flexGrow={1}
-        justifyContent="flex-start"
-        alignItems="center"
-        {...props}
-      >
+      <XStack style={containerStyle} {...props}>
         {children}
       </XStack>
     </>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexGrow: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+  },
+});
 
 export const NavBar = {
   Container,

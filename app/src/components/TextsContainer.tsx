@@ -1,11 +1,11 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 interface TextsContainerProps {
   children: React.ReactNode;
 }
 
-const TextsContainer = ({ children }: TextsContainerProps) => {
+const TextsContainer = ({ children }: TextsContainerProps): ReactElement => {
   return <View style={styles.textsContainer}>{children}</View>;
 };
 
