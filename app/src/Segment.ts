@@ -38,7 +38,7 @@ class DisableTrackingPlugin extends EventPlugin {
 export const createSegmentClient = (): ReturnType<
   typeof createClient
 > | null => {
-  if (SEGMENT_KEY === undefined || SEGMENT_KEY === null || SEGMENT_KEY === '') {
+  if (!SEGMENT_KEY) {
     return null;
   }
 

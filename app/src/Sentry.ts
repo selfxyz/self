@@ -3,12 +3,8 @@ import { ComponentType } from 'react';
 
 import { SENTRY_DSN } from './config';
 
-const isSentryEnabled = (): boolean => {
-  return SENTRY_DSN !== undefined && SENTRY_DSN !== null && SENTRY_DSN !== '';
-};
-
 export const initSentry = (): typeof Sentry | null => {
-  if (!isSentryEnabled()) {
+  if (!SENTRY_DSN) {
     return null;
   }
 
@@ -39,7 +35,7 @@ export const captureException = (
   error: Error,
   context?: Record<string, unknown>,
 ): void => {
-  if (!isSentryEnabled()) {
+  if (!SENTRY_DSN) {
     return;
   }
 
@@ -52,7 +48,7 @@ export const captureMessage = (
   message: string,
   context?: Record<string, unknown>,
 ): void => {
-  if (!isSentryEnabled()) {
+  if (!SENTRY_DSN) {
     return;
   }
 
@@ -62,5 +58,5 @@ export const captureMessage = (
 };
 
 export const wrapWithSentry = (App: ComponentType): ComponentType => {
-  return isSentryEnabled() ? Sentry.wrap(App) : App;
+  return SENTRY_DSN ? Sentry.wrap(App) : App;
 };

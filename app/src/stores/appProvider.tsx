@@ -94,10 +94,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
           try {
             const appData: SelfApp =
               typeof data === 'string' ? JSON.parse(data) : data;
-            if (
-              typeof appData.sessionId !== 'string' ||
-              appData.sessionId.length === 0
-            ) {
+            if (!appData.sessionId) {
               console.error('[AppProvider] Invalid app data received');
               return;
             }
