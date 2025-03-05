@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
@@ -6,15 +6,15 @@ import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
 export interface ButtonProps extends ViewProps {
-  children: React.ReactNode;
-  animatedComponent?: React.ReactNode;
-  onPress?: () => void;
+  readonly children: React.ReactNode;
+  readonly animatedComponent?: React.ReactNode;
+  readonly onPress?: () => void;
 }
 
 interface AbstractButtonProps extends ButtonProps {
-  bgColor: string;
-  borderColor?: string;
-  color: string;
+  readonly bgColor: string;
+  readonly borderColor?: string;
+  readonly color: string;
 }
 
 /*
@@ -31,22 +31,33 @@ export default function AbstractButton({
   style,
   animatedComponent,
   ...props
-}: AbstractButtonProps) {
-  const hasBorder = borderColor ? true : false;
+}: Readonly<AbstractButtonProps>): JSX.Element {
+  const hasBorder = Boolean(borderColor);
+  const containerStyle = useMemo(
+    () => [
+      styles.container,
+      { backgroundColor: bgColor, borderColor: borderColor ?? undefined },
+      hasBorder ? styles.withBorder : {},
+      style as ViewStyle,
+    ],
+    [bgColor, borderColor, hasBorder, style],
+  );
+
+  const textStyles = useMemo(() => {
+    const textStyle = { color };
+    return [styles.text, textStyle];
+  }, [color]);
+  const pressStyleValue = animatedComponent !== undefined ? {} : pressedStyle;
+
   return (
     <Button
       unstyled
       {...props}
-      style={[
-        styles.container,
-        { backgroundColor: bgColor, borderColor: borderColor },
-        hasBorder ? styles.withBorder : {},
-        style as ViewStyle,
-      ]}
-      pressStyle={!animatedComponent ? pressedStyle : {}}
+      style={containerStyle}
+      pressStyle={pressStyleValue}
     >
       {animatedComponent}
-      <Text style={[styles.text, { color: color }]}>{children}</Text>
+      <Text style={textStyles}>{children}</Text>
     </Button>
   );
 }

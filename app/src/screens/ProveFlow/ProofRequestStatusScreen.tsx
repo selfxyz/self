@@ -1,5 +1,5 @@
-import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import LottieView, { AnimationObject } from 'lottie-react-native';
+import React, { useCallback, useEffect } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { Spinner } from 'tamagui';
 
@@ -26,11 +26,11 @@ const SuccessScreen: React.FC = () => {
   const appName = selectedApp.appName;
   const goHome = useHapticNavigation('Home');
 
-  function onOkPress() {
+  const onOkPress = useCallback(() => {
     buttonTap();
     cleanSelfApp();
     goHome();
-  }
+  }, [cleanSelfApp, goHome]);
 
   useEffect(() => {
     if (disclosureStatus === 'success') {
@@ -81,7 +81,7 @@ const SuccessScreen: React.FC = () => {
   );
 };
 
-function getAnimation(status: ProofStatusEnum) {
+const getAnimation = (status: ProofStatusEnum): AnimationObject => {
   switch (status) {
     case 'success':
       return succesAnimation;
@@ -91,9 +91,9 @@ function getAnimation(status: ProofStatusEnum) {
     default:
       return loadingAnimation;
   }
-}
+};
 
-function getTitle(status: ProofStatusEnum) {
+const getTitle = (status: ProofStatusEnum): string => {
   switch (status) {
     case 'success':
       return 'Proof Verified';
@@ -103,15 +103,15 @@ function getTitle(status: ProofStatusEnum) {
     default:
       return 'Proving';
   }
-}
+};
 
 function Info({
   status,
   appName,
-}: {
+}: Readonly<{
   status: ProofStatusEnum;
   appName: string;
-}) {
+}>): React.JSX.Element {
   if (status === 'success') {
     return (
       <Description>
