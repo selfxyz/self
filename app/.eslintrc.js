@@ -85,7 +85,7 @@ module.exports = {
         ignoreIIFE: true,
       },
     ],
-    '@typescript-eslint/no-non-null-assertion': 'warn',
+    '@typescript-eslint/no-non-null-assertion': 'off',
     '@typescript-eslint/no-unnecessary-condition': 'warn',
     '@typescript-eslint/no-unused-vars': [
       'warn',

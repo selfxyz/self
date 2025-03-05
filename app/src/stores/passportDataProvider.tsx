@@ -64,7 +64,9 @@ export const PassportContext = createContext<IPassportContext>({
   clearPassportData: clearPassportData,
 });
 
-export const PassportProvider = ({ children }: PassportProviderProps) => {
+export const PassportProvider = ({
+  children,
+}: PassportProviderProps): JSX.Element => {
   const { _getSecurely } = useAuth();
 
   const getData = useCallback(
@@ -98,6 +100,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export const usePassport = () => {
+export const usePassport = (): IPassportContext => {
   return useContext(PassportContext);
 };

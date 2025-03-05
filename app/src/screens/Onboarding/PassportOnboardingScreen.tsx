@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 
 import passportOnboardingAnimation from '../../assets/animations/passport_onboarding.json';
@@ -27,6 +27,12 @@ const PassportOnboardingScreen: React.FC<
     animationRef.current?.play();
   }, []);
 
+  const onAnimationFinish = useCallback(() => {
+    setTimeout(() => {
+      animationRef.current?.play();
+    }, 5000); // Pause 5 seconds before playing again
+  }, []);
+
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <StatusBar barStyle="light-content" backgroundColor={black} />
@@ -35,11 +41,7 @@ const PassportOnboardingScreen: React.FC<
           ref={animationRef}
           autoPlay={false}
           loop={false}
-          onAnimationFinish={() => {
-            setTimeout(() => {
-              animationRef.current?.play();
-            }, 5000); // Pause 5 seconds before playing again
-          }}
+          onAnimationFinish={onAnimationFinish}
           source={passportOnboardingAnimation}
           style={styles.animation}
           cacheComposition={true}

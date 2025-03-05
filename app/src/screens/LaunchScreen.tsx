@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Anchor, Text, useWindowDimensions, XStack, YStack } from 'tamagui';
@@ -24,6 +24,13 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
   const { height } = useWindowDimensions();
+  const animationStyle = useMemo(
+    () => ({
+      ...styles.animation,
+      height: height * 0.4,
+    }),
+    [height],
+  );
   const twoFingerTap = Gesture.Tap()
     .minPointers(2)
     .numberOfTaps(5)
@@ -41,10 +48,7 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
                 autoPlay={true}
                 loop={false}
                 source={onboardingAnimation}
-                style={{
-                  ...styles.animation,
-                  height: height * 0.4,
-                }}
+                style={animationStyle}
                 cacheComposition={true}
                 renderMode="HARDWARE"
               />

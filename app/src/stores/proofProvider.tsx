@@ -75,7 +75,7 @@ export function ProofProvider({
   );
 
   const setSelectedApp = useCallback((app: SelfApp) => {
-    if (!app || Object.keys(app).length === 0) {
+    if (Object.keys(app).length === 0) {
       return;
     }
     setRegistrationStatus(ProofStatusEnum.PENDING);
@@ -96,7 +96,7 @@ export function ProofProvider({
   useEffect(() => {
     globalSetRegistrationStatus = setRegistrationStatus;
     globalSetDisclosureStatus = setDisclosureStatus;
-    return () => {
+    return (): void => {
       globalSetRegistrationStatus = null;
       globalSetDisclosureStatus = null;
     };
@@ -142,6 +142,6 @@ export function ProofProvider({
   );
 }
 
-export const useProofInfo = () => {
+export const useProofInfo = (): IProofContext => {
   return useContext(ProofContext);
 };

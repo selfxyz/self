@@ -37,10 +37,6 @@ interface MenuButtonProps extends PropsWithChildren {
   Icon: React.FC<SvgProps>;
   onPress: () => void;
 }
-interface MenuButtonProps {
-  Icon: React.FC<SvgProps>;
-  onPress: () => void;
-}
 interface SocialButtonProps {
   Icon: React.FC<SvgProps>;
   href: string;
@@ -108,11 +104,9 @@ const SocialButton: React.FC<SocialButtonProps> = ({ Icon, href }) => {
   }, [href]);
 
   return (
-    <Button
-      unstyled
-      hitSlop={8}
-      icon={<Icon height={32} width={32} color={amber500} onPress={onPress} />}
-    />
+    <Button unstyled hitSlop={8} onPress={onPress}>
+      <Icon height={32} width={32} color={amber500} />
+    </Button>
   );
 };
 
@@ -128,13 +122,13 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const twoFingerTap = Gesture.Tap()
     .minPointers(2)
     .numberOfTaps(5)
-    .onStart(() => {
+    .onStart((): void => {
       setDevModeOn();
     });
 
   const onMenuPress = useCallback(
     (menuRoute: RouteLinks) => {
-      return async () => {
+      return async (): Promise<void> => {
         impactLight();
 
         if (menuRoute === 'email_feedback') {
@@ -176,14 +170,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
         }
 
         // Handle navigation routes
-        if (
-          menuRoute === 'PassportDataInfo' ||
-          menuRoute === 'ShowRecoveryPhrase' ||
-          menuRoute === 'CloudBackupSettings' ||
-          menuRoute === 'DevSettings'
-        ) {
-          navigation.navigate(menuRoute);
-        }
+        navigation.navigate(menuRoute);
       };
     },
     [navigation],
@@ -229,7 +216,6 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
           >
             <Button
               unstyled
-              icon={<Star color={white} height={24} width={21} />}
               width="100%"
               padding={20}
               backgroundColor={slate800}
@@ -242,6 +228,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
               pressStyle={pressedStyle}
               onPress={goToStore}
             >
+              <Star color={white} height={24} width={21} />
               <BodyText color={white}>Leave an app store review</BodyText>
             </Button>
             <XStack gap={32}>

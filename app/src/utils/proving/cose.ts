@@ -23,7 +23,7 @@ export const cose = {
       data: Buffer,
       verifier: { key: { x: string; y: string; curve: string } },
       _options: { defaultType: number },
-    ) => {
+    ): Promise<void> => {
       const decoded = decode(new Uint8Array(data));
       if (!Array.isArray(decoded) || decoded.length !== 4) {
         throw new Error('Invalid COSE_Sign1 format');
