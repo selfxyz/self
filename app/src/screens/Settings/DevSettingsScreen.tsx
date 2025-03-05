@@ -1,4 +1,4 @@
-import { useNavigation } from '@react-navigation/native';
+import { NavigationProp, useNavigation } from '@react-navigation/native';
 import {
   Check,
   ChevronDown,
@@ -7,13 +7,15 @@ import {
   VenetianMask,
 } from '@tamagui/lucide-icons';
 import React, {
+  JSXElementConstructor,
   PropsWithChildren,
   ReactElement,
+  useCallback,
   useEffect,
   useMemo,
   useState,
 } from 'react';
-import { Platform, TextInput } from 'react-native';
+import { Platform, StyleSheet, TextInput, TextInputProps } from 'react-native';
 import {
   Adapt,
   Button,
@@ -22,6 +24,7 @@ import {
   Select,
   Sheet,
   Text,
+  TextProps,
   YStack,
 } from 'tamagui';
 
@@ -42,7 +45,7 @@ interface DevSettingsScreenProps {}
 function SelectableText({
   children,
   ...props
-}: PropsWithChildren): ReactElement<any, any> {
+}: PropsWithChildren<TextInputProps & TextProps>): ReactElement<any, any> {
   if (Platform.OS === 'ios') {
     return (
       <TextInput multiline editable={false} {...props}>
@@ -85,16 +88,27 @@ const items = [
   'PassportCameraTrouble',
   'PassportNFCTrouble',
 ] satisfies (keyof RootStackParamList)[];
-const ScreenSelector = ({}) => {
-  const navigation = useNavigation();
+
+const ScreenSelector = (): ReactElement<
+  unknown,
+  string | JSXElementConstructor<unknown>
+> => {
+  const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const valueChange = useCallback(
+    (screen: keyof RootStackParamList) => {
+      // @ts-expect-error - weird typing?
+      navigation.navigate(screen);
+    },
+    [navigation],
+  );
+  const opacityValue = useMemo(() => {
+    return {
+      opacity: 0,
+    };
+  }, []);
+
   return (
-    <Select
-      onValueChange={screen => {
-        // @ts-expect-error - weird typing?
-        navigation.navigate(screen);
-      }}
-      disablePreventBodyScroll
-    >
+    <Select onValueChange={valueChange} disablePreventBodyScroll>
       <Select.Trigger width={220} iconAfter={ChevronDown}>
         <Select.Value placeholder="Select screen to debug" />
       </Select.Trigger>
@@ -109,8 +123,8 @@ const ScreenSelector = ({}) => {
           <Sheet.Overlay
             backgroundColor="$shadowColor"
             animation="lazy"
-            enterStyle={{ opacity: 0 }}
-            exitStyle={{ opacity: 0 }}
+            enterStyle={opacityValue}
+            exitStyle={opacityValue}
           />
         </Sheet>
       </Adapt>
@@ -273,7 +287,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           width={300}
           justifyContent="flex-end"
           userSelect="all"
-          style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
+          style={styles.selectableText}
         >
           {privateKey}
         </SelectableText>
@@ -281,5 +295,12 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     </YStack>
   );
 };
+
+const styles = StyleSheet.create({
+  selectableText: {
+    fontFamily: 'monospace',
+    fontWeight: 'bold',
+  },
+});
 
 export default DevSettingsScreen;

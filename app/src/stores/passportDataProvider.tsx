@@ -11,14 +11,14 @@ import { PassportData } from '../../../common/src/utils/types';
 import { unsafe_getPrivateKey, useAuth } from '../stores/authProvider';
 
 // TODO: refactor this as it shouldnt be used directly IMHO
-export async function loadPassportData() {
+export async function loadPassportData(): Promise<string | false> {
   const passportDataCreds = await Keychain.getGenericPassword({
     service: 'passportData',
   });
   return passportDataCreds === false ? false : passportDataCreds.password;
 }
 
-export async function loadPassportDataAndSecret() {
+export async function loadPassportDataAndSecret(): Promise<string | false> {
   const passportData = await loadPassportData();
   const secret = await unsafe_getPrivateKey();
   if (!secret || !passportData) {
@@ -30,7 +30,9 @@ export async function loadPassportDataAndSecret() {
   });
 }
 
-export async function storePassportData(passportData: PassportData) {
+export async function storePassportData(
+  passportData: PassportData,
+): Promise<void> {
   await Keychain.setGenericPassword(
     'passportData',
     JSON.stringify(passportData),
@@ -38,7 +40,7 @@ export async function storePassportData(passportData: PassportData) {
   );
 }
 
-export async function clearPassportData() {
+export async function clearPassportData(): Promise<void> {
   await Keychain.resetGenericPassword({ service: 'passportData' });
 }
 

@@ -2,7 +2,7 @@ import { X509Certificate } from '@peculiar/x509';
 import { decode } from '@stablelib/cbor';
 import { fromBER } from 'asn1js';
 import { Buffer } from 'buffer';
-import elliptic from 'elliptic';
+import { ec as ellipticEC } from 'elliptic';
 import { ethers } from 'ethers';
 import { sha384 } from 'js-sha512';
 import { Certificate } from 'pkijs';
@@ -12,7 +12,7 @@ import {
   RPC_URL,
 } from '../../../../common/src/constants/constants';
 import { AWS_ROOT_PEM } from './awsRootPem';
-import cose from './cose';
+import { cose } from './cose';
 
 /**
  * @notice An array specifying the required fields for a valid attestation.
@@ -95,7 +95,9 @@ export const verifyCertChain = async (
  * @return A promise that resolves to true if the attestation is verified successfully.
  * @throws Error if the attestation document is improperly formatted or missing required fields.
  */
-export const verifyAttestation = async (attestation: Array<number>) => {
+export const verifyAttestation = async (
+  attestation: Array<number>,
+): Promise<boolean> => {
   const coseSign1 = await decode(Buffer.from(attestation));
 
   if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
@@ -104,102 +106,116 @@ export const verifyAttestation = async (attestation: Array<number>) => {
 
   const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
     coseSign1;
-
   const attestationDoc = (await decode(payload)) as AttestationDoc;
-  for (const field of requiredFields) {
-    if (!(field in attestationDoc)) {
-      throw new Error(`Missing required field: ${field}`);
-    }
-  }
 
-  if (attestationDoc.module_id.length <= 0) {
-    throw new Error('Invalid module_id');
-  }
-  if (attestationDoc.digest !== 'SHA384') {
-    throw new Error('Invalid digest');
-  }
+  // Validate required fields
+  validateRequiredFields(attestationDoc);
 
-  if (attestationDoc.timestamp <= 0) {
-    throw new Error('Invalid timestamp');
-  }
+  // Validate basic fields
+  validateBasicFields(attestationDoc);
 
-  // for each key, value in pcrs
-  for (const [key, value] of Object.entries(attestationDoc.pcrs)) {
-    if (parseInt(key, 10) < 0 || parseInt(key, 10) >= 32) {
-      throw new Error('Invalid pcr index');
-    }
+  // Validate PCRs
+  validatePCRs(attestationDoc.pcrs);
 
-    if (![32, 48, 64].includes(value.length)) {
-      throw new Error('Invalid pcr value length at: ' + key);
-    }
-  }
+  // Validate cabundle
+  validateCabundle(attestationDoc.cabundle);
 
-  if (attestationDoc.cabundle.length <= 0) {
-    throw new Error('Invalid cabundle');
-  }
-
-  for (let i = 0; i < attestationDoc.cabundle.length; i++) {
-    if (!numberInRange(0, 1024, attestationDoc.cabundle[i].length)) {
-      throw new Error('Invalid cabundle');
-    }
-  }
-
-  if (attestationDoc.public_key) {
-    if (!numberInRange(0, 1024, attestationDoc.public_key.length)) {
-      throw new Error('Invalid public_key');
-    }
-  }
-
-  if (attestationDoc.user_data) {
-    if (!numberInRange(-1, 512, attestationDoc.user_data.length)) {
-      throw new Error('Invalid user_data');
-    }
-  }
-
-  if (attestationDoc.nonce) {
-    if (!numberInRange(-1, 512, attestationDoc.nonce.length)) {
-      throw new Error('Invalid nonce');
-    }
-  }
+  // Validate optional fields
+  validateOptionalFields(attestationDoc);
 
   const certChain = attestationDoc.cabundle.map((cert: Buffer) =>
     derToPem(cert),
   );
-
   const cert = derToPem(attestationDoc.certificate);
+
   const isPCR0Set = await checkPCR0Mapping(attestation);
-  console.log('isPCR0Set', isPCR0Set);
   if (!isPCR0Set) {
     throw new Error('Invalid image hash');
   }
-  console.log('TEE image hash verified');
 
   if (!(await verifyCertChain(AWS_ROOT_PEM, [...certChain, cert]))) {
     throw new Error('Invalid certificate chain');
   }
 
   const { x, y, curve } = getPublicKeyFromPem(cert);
+  const verifier = { key: { x, y, curve } };
 
-  const verifier = {
-    key: {
-      x,
-      y,
-      curve,
-    },
-  };
-  console.log('verifier', verifier);
   await cose.sign.verify(Buffer.from(attestation), verifier, {
     defaultType: 18,
   });
   return true;
 };
 
+function validateRequiredFields(attestationDoc: AttestationDoc): void {
+  for (const field of requiredFields) {
+    if (!(field in attestationDoc)) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+}
+
+function validateBasicFields(attestationDoc: AttestationDoc): void {
+  if (attestationDoc.module_id.length <= 0) {
+    throw new Error('Invalid module_id');
+  }
+  if (attestationDoc.digest !== 'SHA384') {
+    throw new Error('Invalid digest');
+  }
+  if (attestationDoc.timestamp <= 0) {
+    throw new Error('Invalid timestamp');
+  }
+}
+
+function validatePCRs(pcrs: { [key: number]: Buffer }): void {
+  for (const [key, value] of Object.entries(pcrs)) {
+    const pcrIndex = parseInt(key, 10);
+    if (pcrIndex < 0 || pcrIndex >= 32) {
+      throw new Error('Invalid pcr index');
+    }
+    if (![32, 48, 64].includes(value.length)) {
+      throw new Error('Invalid pcr value length at: ' + key);
+    }
+  }
+}
+
+function validateCabundle(cabundle: Array<Buffer>): void {
+  if (cabundle.length <= 0) {
+    throw new Error('Invalid cabundle');
+  }
+  for (let i = 0; i < cabundle.length; i++) {
+    if (!numberInRange(0, 1024, cabundle[i].length)) {
+      throw new Error('Invalid cabundle');
+    }
+  }
+}
+
+function validateOptionalFields(attestationDoc: AttestationDoc): void {
+  if (
+    attestationDoc.public_key &&
+    !numberInRange(0, 1024, attestationDoc.public_key.length)
+  ) {
+    throw new Error('Invalid public_key');
+  }
+  if (
+    attestationDoc.user_data &&
+    !numberInRange(-1, 512, attestationDoc.user_data.length)
+  ) {
+    throw new Error('Invalid user_data');
+  }
+  if (
+    attestationDoc.nonce &&
+    !numberInRange(-1, 512, attestationDoc.nonce.length)
+  ) {
+    throw new Error('Invalid nonce');
+  }
+}
+
 /**
  * @notice Extracts the public key from a TEE attestation document.
  * @param attestation An array of numbers representing the COSE_Sign1 encoded attestation document.
  * @return The public key as a string.
  */
-export function getPublicKey(attestation: Array<number>) {
+export function getPublicKey(attestation: Array<number>): string | null {
   const coseSign1 = decode(Buffer.from(attestation));
   const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
     coseSign1;
@@ -216,9 +232,13 @@ export function getPublicKey(attestation: Array<number>) {
 function derToPem(der: Buffer): string {
   try {
     const base64 = Buffer.from(der).toString('base64');
+    const chunks = base64.match(/.{1,64}/g);
+    if (!chunks) {
+      throw new Error('Failed to chunk base64 string');
+    }
     return (
       '-----BEGIN CERTIFICATE-----\n' +
-      base64.match(/.{1,64}/g)!.join('\n') +
+      chunks.join('\n') +
       '\n-----END CERTIFICATE-----'
     );
   } catch (error) {
@@ -234,7 +254,7 @@ function derToPem(der: Buffer): string {
  * @throws Error if the COSE_Sign1 format is invalid or PCR0 is missing/incorrect.
  * @see https://docs.aws.amazon.com/enclaves/latest/user/set-up-attestation.html
  */
-function getImageHash(attestation: Array<number>) {
+function getImageHash(attestation: Array<number>): string {
   const coseSign1 = decode(Buffer.from(attestation));
 
   if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
@@ -280,12 +300,16 @@ type AttestationDoc = {
  *      on the "p384" curve to derive the public key's x and y coordinates. This public key is then returned,
  *      ensuring it is padded correctly.
  */
-function getPublicKeyFromPem(pem: string) {
+function getPublicKeyFromPem(pem: string): {
+  x: string;
+  y: string;
+  curve: string;
+} {
   const cert = getCertificateFromPem(pem);
   const curve = 'p384';
   const publicKeyBuffer =
     cert.subjectPublicKeyInfo.subjectPublicKey.valueBlock.valueHexView;
-  const ec = new elliptic.ec(curve);
+  const ec = new ellipticEC(curve);
   const key = ec.keyFromPublic(publicKeyBuffer);
   const x_point = key.getPublic().getX().toString('hex');
   const y_point = key.getPublic().getY().toString('hex');
@@ -333,7 +357,7 @@ function verifyCertificateSignature(child: string, parent: string): boolean {
   const publicKeyBuffer_csca =
     publicKeyInfo_csca.subjectPublicKey.valueBlock.valueHexView;
   const curve = 'p384';
-  const ec_csca = new elliptic.ec(curve);
+  const ec_csca = new ellipticEC(curve);
   const key_csca = ec_csca.keyFromPublic(publicKeyBuffer_csca);
 
   const tbsHash = getTBSHash(child);

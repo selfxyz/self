@@ -33,10 +33,15 @@ import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
 import { sendPayload } from './tee';
 
+interface CircuitInputs {
+  inputs: Record<string, unknown>;
+  circuitName: string;
+}
+
 async function generateTeeInputsRegister(
   secret: string,
   passportData: PassportData,
-) {
+): Promise<CircuitInputs> {
   const serialized_dsc_tree = await getDSCTree();
   const inputs = generateCircuitInputsRegister(
     secret,
@@ -44,7 +49,7 @@ async function generateTeeInputsRegister(
     serialized_dsc_tree,
   );
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  if (circuitName == null) {
+  if (!circuitName) {
     throw new Error('Circuit name is null');
   }
   return { inputs, circuitName };
@@ -99,7 +104,7 @@ export async function sendRegisterPayload(
   passportData: PassportData,
   secret: string,
   circuitDNSMapping: Record<string, string>,
-) {
+): Promise<void> {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
     passportData,
@@ -120,14 +125,16 @@ export async function sendRegisterPayload(
   );
 }
 
-async function generateTeeInputsDsc(passportData: PassportData) {
+async function generateTeeInputsDsc(
+  passportData: PassportData,
+): Promise<CircuitInputs> {
   const serialized_csca_tree = await getCSCATree();
   const inputs = generateCircuitInputsDSC(
     passportData.dsc,
     serialized_csca_tree,
   );
   const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (circuitName == null) {
+  if (!circuitName) {
     throw new Error('Circuit name is null');
   }
   return { inputs, circuitName };
@@ -138,11 +145,15 @@ async function checkIdPassportDscIsInTree(
   dscTree: string,
   circuitDNSMapping: Record<string, string>,
 ): Promise<boolean> {
-  const hashFunction = (a: any, b: any) => poseidon2([a, b]);
+  const hashFunction = (a: bigint, b: bigint): bigint => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
+  if (!passportData.dsc_parsed || !passportData.csca_parsed) {
+    console.log('Missing parsed DSC or CSCA data');
+    return false;
+  }
   const leaf = getLeafDscTree(
-    passportData.dsc_parsed!,
-    passportData.csca_parsed!,
+    passportData.dsc_parsed,
+    passportData.csca_parsed,
   );
   console.log('DSC leaf:', leaf);
   const index = tree.indexOf(BigInt(leaf));
@@ -154,12 +165,6 @@ async function checkIdPassportDscIsInTree(
       return false;
     }
   } else {
-    // console.log('DSC i found in the tree, sending DSC payload for debug');
-    // const dscStatus = await sendDscPayload(passportData);
-    // if (dscStatus !== ProofStatusEnum.SUCCESS) {
-    //   console.log('DSC proof failed');
-    //   return false;
-    // }
     console.log('DSC is found in the tree, skipping DSC payload');
   }
   return true;
@@ -169,14 +174,6 @@ export async function sendDscPayload(
   passportData: PassportData,
   circuitDNSMapping: Record<string, string>,
 ): Promise<ProofStatusEnum | false> {
-  if (!passportData) {
-    return false;
-  }
-  // const isSupported = checkPassportSupported(passportData);
-  // if (!isSupported) {
-  //   console.log('Passport not supported');
-  //   return false;
-  // }
   const { inputs, circuitName } = await generateTeeInputsDsc(passportData);
   console.log('circuitName', circuitName);
   const dscStatus = await sendPayload(
@@ -194,8 +191,11 @@ export async function sendDscPayload(
 
 /*** DISCLOSURE ***/
 
-async function getOfacSMTs() {
-  // TODO: get the SMT from an endpoint
+async function getOfacSMTs(): Promise<{
+  passportNoAndNationalitySMT: SMT;
+  nameAndDobSMT: SMT;
+  nameAndYobSMT: SMT;
+}> {
   const passportNoAndNationalitySMT = new SMT(poseidon2, true);
   passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);
   const nameAndDobSMT = new SMT(poseidon2, true);
@@ -209,7 +209,7 @@ async function generateTeeInputsVCAndDisclose(
   secret: string,
   passportData: PassportData,
   selfApp: SelfApp,
-) {
+): Promise<CircuitInputs> {
   const { scope, userId, disclosures } = selfApp;
 
   const selector_dg1 = Array(88).fill('0');
@@ -235,15 +235,11 @@ async function generateTeeInputsVCAndDisclose(
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
     await getOfacSMTs();
   const serialized_tree = await getCommitmentTree();
-  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
+  const tree = LeanIMT.import(
+    (a: bigint, b: bigint): bigint => poseidon2([a, b]),
+    serialized_tree,
+  );
   console.log('tree', tree);
-  // const commitment = generateCommitment(
-  //   secret,
-  //   PASSPORT_ATTESTATION_ID,
-  //   passportData,
-  // );
-  // tree.insert(BigInt(commitment));
-  // Uncomment to add artificially the commitment to the tree
 
   const inputs = generateCircuitInputsVCandDisclose(
     secret,
@@ -268,7 +264,7 @@ export async function sendVcAndDisclosePayload(
   secret: string,
   passportData: PassportData | null,
   selfApp: SelfApp,
-) {
+): Promise<ProofStatusEnum | null> {
   if (!passportData) {
     return null;
   }
@@ -298,19 +294,24 @@ export async function sendVcAndDisclosePayload(
 export async function isUserRegistered(
   passportData: PassportData,
   secret: string,
-) {
+): Promise<boolean> {
   const commitment = generateCommitment(
     secret,
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
   const serializedTree = await getCommitmentTree();
-  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
+  const tree = LeanIMT.import(
+    (a: bigint, b: bigint): bigint => poseidon2([a, b]),
+    serializedTree,
+  );
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
 }
 
-export async function isPassportNullified(passportData: PassportData) {
+export async function isPassportNullified(
+  passportData: PassportData,
+): Promise<boolean> {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
   console.log('checking for nullifier', nullifierHex);
@@ -329,7 +330,7 @@ export async function isPassportNullified(passportData: PassportData) {
 export async function registerPassport(
   passportData: PassportData,
   secret: string,
-) {
+): Promise<void> {
   // First get the mapping, then use it for the check
   const [circuitDNSMapping, dscTree] = await Promise.all([
     getCircuitDNSMapping(),
@@ -347,7 +348,14 @@ export async function registerPassport(
   await sendRegisterPayload(passportData, secret, circuitDNSMapping);
 }
 
-export async function getDeployedCircuits() {
+interface ApiResponse<T> {
+  data: T;
+}
+
+export async function getDeployedCircuits(): Promise<{
+  REGISTER: string[];
+  DSC: string[];
+}> {
   console.log('Fetching deployed circuits from api');
   const response = await fetch(`${API_URL}/deployed-circuits/`);
   if (!response.ok) {
@@ -362,7 +370,10 @@ export async function getDeployedCircuits() {
     );
   }
   try {
-    const data = await response.json();
+    const data = (await response.json()) as ApiResponse<{
+      REGISTER: string[];
+      DSC: string[];
+    }>;
 
     if (!data.data || !data.data.REGISTER || !data.data.DSC) {
       throw new Error(
@@ -375,7 +386,8 @@ export async function getDeployedCircuits() {
     throw new Error('API returned invalid JSON response - server may be down');
   }
 }
-export async function getCircuitDNSMapping() {
+
+export async function getCircuitDNSMapping(): Promise<Record<string, string>> {
   console.log('Fetching deployed circuits from api');
   const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
   if (!response.ok) {
@@ -390,11 +402,11 @@ export async function getCircuitDNSMapping() {
     );
   }
   try {
-    const data = await response.json();
+    const data = (await response.json()) as ApiResponse<Record<string, string>>;
 
     if (!data.data) {
       throw new Error(
-        'Invalid data structure received from API: missing REGISTER or DSC fields',
+        'Invalid data structure received from API: missing data field',
       );
     }
     return data.data;
