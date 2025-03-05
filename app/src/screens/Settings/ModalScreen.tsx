@@ -22,7 +22,7 @@ const ModalBackDrop = styled(View, {
   height: '100%',
 });
 
-export interface ModalParams extends Record<string, any> {
+export interface ModalParams extends Record<string, unknown> {
   titleText: string;
   bodyText: string;
   buttonText: string;

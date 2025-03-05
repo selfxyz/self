@@ -16,7 +16,6 @@ import {
 } from 'react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
-import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
 import Disclosures from '../../components/Disclosures';
@@ -60,26 +59,18 @@ const ProveScreen: React.FC = () => {
    * reset (or enable) the button state accordingly.
    */
   useEffect(() => {
-    if (isContentShorterThanScrollView) {
-      setHasScrolledToBottom(true);
-    } else {
-      setHasScrolledToBottom(false);
-    }
+    setHasScrolledToBottom(isContentShorterThanScrollView);
   }, [isContentShorterThanScrollView]);
 
   useEffect(() => {
-    if (
-      !selectedApp ||
-      selectedAppRef.current.sessionId === selectedApp.sessionId
-    ) {
-      return; // Avoid unnecessary updates
+    if (selectedApp.sessionId !== selectedAppRef.current.sessionId) {
+      selectedAppRef.current = selectedApp;
+      console.log('[ProveScreen] Selected app updated:', selectedApp);
     }
-    selectedAppRef.current = selectedApp;
-    console.log('[ProveScreen] Selected app updated:', selectedApp);
   }, [selectedApp]);
 
   const disclosureOptions = useMemo(() => {
-    return (selectedApp.disclosures as SelfAppDisclosureConfig) || [];
+    return selectedApp.disclosures;
   }, [selectedApp.disclosures]);
 
   // Format the base64 image string correctly
@@ -116,7 +107,9 @@ const ProveScreen: React.FC = () => {
       const currentApp = selectedAppRef.current;
 
       try {
-        let timeToNavigateToStatusScreen: NodeJS.Timeout;
+        const timeToNavigateToStatusScreen = setTimeout(() => {
+          navigate('ProofRequestStatusScreen');
+        }, 1000);
 
         const passportDataAndSecret = await getPassportDataAndSecret().catch(
           (e: Error) => {
@@ -124,10 +117,6 @@ const ProveScreen: React.FC = () => {
             globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
           },
         );
-
-        timeToNavigateToStatusScreen = setTimeout(() => {
-          navigate('ProofRequestStatusScreen');
-        }, 1000);
 
         if (!passportDataAndSecret) {
           console.log('No passport data or secret');
@@ -166,7 +155,13 @@ const ProveScreen: React.FC = () => {
         isProcessing.current = false;
       }
     },
-    [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
+    [
+      resetProof,
+      getPassportDataAndSecret,
+      handleProofVerified,
+      navigate,
+      cleanSelfApp,
+    ],
   );
 
   const handleScroll = useCallback(
@@ -180,7 +175,7 @@ const ProveScreen: React.FC = () => {
       const isCloseToBottom =
         layoutMeasurement.height + contentOffset.y >=
         contentSize.height - paddingToBottom;
-      if (isCloseToBottom && !hasScrolledToBottom) {
+      if (isCloseToBottom) {
         setHasScrolledToBottom(true);
       }
     },
@@ -188,7 +183,7 @@ const ProveScreen: React.FC = () => {
   );
 
   const handleContentSizeChange = useCallback(
-    (contentWidth: number, contentHeight: number) => {
+    (_contentWidth: number, contentHeight: number) => {
       setScrollViewContentHeight(contentHeight);
     },
     [],

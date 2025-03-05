@@ -45,7 +45,9 @@ interface DevSettingsScreenProps {}
 function SelectableText({
   children,
   ...props
-}: PropsWithChildren<TextInputProps & TextProps>): ReactElement<any, any> {
+}: PropsWithChildren<TextInputProps & TextProps>): ReactElement<
+  string | JSXElementConstructor<unknown>
+> {
   if (Platform.OS === 'ios') {
     return (
       <TextInput multiline editable={false} {...props}>

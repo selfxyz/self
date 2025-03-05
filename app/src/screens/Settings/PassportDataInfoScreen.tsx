@@ -78,7 +78,7 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
 
     const result = await getData();
 
-    if (!result || !result.data) {
+    if (!result) {
       // maybe handle error instead
       return;
     }

@@ -1,5 +1,5 @@
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useMemo } from 'react';
 
 import warnAnimation from '../../assets/animations/warning.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -17,6 +17,7 @@ const UnsupportedPassportScreen: React.FC = () => {
   useEffect(() => {
     notificationError();
   }, []);
+  const descriptionStyle = useMemo(() => ({ color: black }), []);
 
   return (
     <>
@@ -33,7 +34,7 @@ const UnsupportedPassportScreen: React.FC = () => {
         </ExpandableBottomLayout.TopSection>
         <ExpandableBottomLayout.BottomSection gap={20} backgroundColor={white}>
           <Title textAlign="center">There was a problem</Title>
-          <Description textAlign="center" style={{ color: black }}>
+          <Description textAlign="center" style={descriptionStyle}>
             It looks like your passport is not currently supported by Self.
           </Description>
           <Caption size="small" textAlign="center" textBreakStrategy="balanced">
