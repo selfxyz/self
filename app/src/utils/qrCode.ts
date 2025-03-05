@@ -11,7 +11,7 @@ export default async function handleQRCodeScan(
 ): Promise<void> {
   try {
     const passportData = await loadPassportData();
-    if (passportData !== false && passportData.length > 0) {
+    if (passportData) {
       const decodedResult = atob(result);
       const uint8Array = new Uint8Array(
         decodedResult.split('').map(char => char.charCodeAt(0)),
@@ -50,7 +50,7 @@ const handleUniversalLink = async (
 ): Promise<void> => {
   const encodedData = new URL(url).searchParams.get('data');
   console.log('Encoded data:', encodedData);
-  if (encodedData !== null) {
+  if (encodedData) {
     await handleQRCodeScan(encodedData, setApp);
   } else {
     console.error('No data found in the Universal Link');
@@ -61,7 +61,7 @@ export const setupUniversalLinkListener = async (
   setApp: (app: SelfApp) => void,
 ) => {
   await Linking.getInitialURL().then(async url => {
-    if (url != null) {
+    if (url) {
       await handleUniversalLink(url, setApp);
     }
   });

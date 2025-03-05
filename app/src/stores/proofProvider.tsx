@@ -9,7 +9,7 @@ import React, {
 } from 'react';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
+import { setupUniversalLinkListener } from '../utils/qrCode';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',

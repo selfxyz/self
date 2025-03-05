@@ -81,7 +81,7 @@ export const RightAction: React.FC<RightActionProps> = ({
   onPress,
   ...props
 }) => {
-  if (component !== null) {
+  if (!component) {
     return null;
   }
 
@@ -93,7 +93,7 @@ export const RightAction: React.FC<RightActionProps> = ({
 };
 
 const NavBarTitle: React.FC<NavBarTitleProps> = ({ children, ...props }) => {
-  if (children !== null) {
+  if (!children) {
     return <></>;
   }
 

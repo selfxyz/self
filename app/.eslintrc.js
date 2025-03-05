@@ -94,7 +94,7 @@ module.exports = {
         varsIgnorePattern: '^_',
       },
     ],
-    '@typescript-eslint/strict-boolean-expressions': 'warn',
+    '@typescript-eslint/strict-boolean-expressions': 'off',
 
     // SonarJS Rules
     'sonarjs/cognitive-complexity': ['warn', 20],
