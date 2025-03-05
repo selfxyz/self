@@ -1,5 +1,12 @@
-import React, { createContext, useContext, useEffect, useRef } from 'react';
-import io, { Socket } from 'socket.io-client';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+} from 'react';
+import { default as io, Socket } from 'socket.io-client';
 
 import { WS_DB_RELAYER } from '../../../common/src/constants/constants';
 import { SelfApp } from '../../../common/src/utils/appType';
@@ -35,7 +42,7 @@ const AppContext = createContext<IAppContext>({
   handleProofVerified: () => {},
 });
 
-const initSocket = (sessionId: string) => {
+const initSocket = (sessionId: string): Socket => {
   // Ensure the URL uses the proper WebSocket scheme.
   const connectionUrl = WS_DB_RELAYER.startsWith('https')
     ? WS_DB_RELAYER.replace(/^https/, 'wss')
@@ -57,91 +64,97 @@ const initSocket = (sessionId: string) => {
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
-}) => {
+}): JSX.Element => {
   const socketRef = useRef<Socket | null>(null);
 
-  const startAppListener = (
-    sessionId: string,
-    setSelectedApp: (app: SelfApp) => void,
-  ) => {
-    console.log(
-      `[AppProvider] Initializing WS connection with sessionId: ${sessionId}`,
-    );
-    try {
-      // If a socket connection already exists, disconnect it.
-      if (socketRef.current) {
-        console.log('[AppProvider] Disconnecting existing socket');
-        socketRef.current.disconnect();
+  const startAppListener = useCallback(
+    (sessionId: string, setSelectedApp: (app: SelfApp) => void): void => {
+      console.log(
+        `[AppProvider] Initializing WS connection with sessionId: ${sessionId}`,
+      );
+      try {
+        // If a socket connection already exists, disconnect it.
+        if (socketRef.current) {
+          console.log('[AppProvider] Disconnecting existing socket');
+          socketRef.current.disconnect();
+        }
+
+        const socket = initSocket(sessionId);
+        socketRef.current = socket;
+
+        socket.on('connect', () => {
+          console.log(
+            `[AppProvider] Mobile WS connected (id: ${socket.id}) with sessionId: ${sessionId}`,
+          );
+        });
+
+        // Listen for the event only once so that duplicate self_app events are ignored.
+        socket.once('self_app', (data: SelfApp | string) => {
+          console.log('[AppProvider] Received self_app event with data:', data);
+          try {
+            const appData: SelfApp =
+              typeof data === 'string' ? JSON.parse(data) : data;
+            if (
+              typeof appData.sessionId !== 'string' ||
+              appData.sessionId.length === 0
+            ) {
+              console.error('[AppProvider] Invalid app data received');
+              return;
+            }
+            console.log(
+              '[AppProvider] Processing valid app data:',
+              JSON.stringify(appData),
+            );
+            setSelectedApp(appData);
+          } catch (error) {
+            console.error('[AppProvider] Error processing app data:', error);
+          }
+        });
+
+        socket.on('connect_error', error => {
+          console.error('[AppProvider] Mobile WS connection error:', error);
+        });
+
+        socket.on('error', error => {
+          console.error('[AppProvider] Mobile WS error:', error);
+        });
+
+        socket.on('disconnect', (reason: string) => {
+          console.log('[AppProvider] Mobile WS disconnected:', reason);
+        });
+      } catch (error) {
+        console.error('[AppProvider] Exception in startAppListener:', error);
+      }
+    },
+    [], // No dependencies needed as it only uses socketRef which is stable
+  );
+
+  const handleProofVerified = useCallback(
+    (sessionId: string, proof_verified: boolean): void => {
+      console.log(
+        '[AppProvider] handleProofVerified called with sessionId:',
+        sessionId,
+      );
+
+      if (!socketRef.current) {
+        socketRef.current = initSocket(sessionId);
       }
 
-      const socket = initSocket(sessionId);
-      socketRef.current = socket;
-
-      socket.on('connect', () => {
-        console.log(
-          `[AppProvider] Mobile WS connected (id: ${socket.id}) with sessionId: ${sessionId}`,
-        );
+      console.log('[AppProvider] Emitting proof_verified event with data:', {
+        session_id: sessionId,
+        proof_verified,
       });
 
-      // Listen for the event only once so that duplicate self_app events are ignored.
-      socket.once('self_app', (data: any) => {
-        console.log('[AppProvider] Received self_app event with data:', data);
-        try {
-          const appData: SelfApp =
-            typeof data === 'string' ? JSON.parse(data) : data;
-          if (!appData || !appData.sessionId) {
-            console.error('[AppProvider] Invalid app data received');
-            return;
-          }
-          console.log(
-            '[AppProvider] Processing valid app data:',
-            JSON.stringify(appData),
-          );
-          setSelectedApp(appData);
-        } catch (error) {
-          console.error('[AppProvider] Error processing app data:', error);
-        }
+      socketRef.current.emit('proof_verified', {
+        session_id: sessionId,
+        proof_verified,
       });
-
-      socket.on('connect_error', error => {
-        console.error('[AppProvider] Mobile WS connection error:', error);
-      });
-
-      socket.on('error', error => {
-        console.error('[AppProvider] Mobile WS error:', error);
-      });
-
-      socket.on('disconnect', (reason: string) => {
-        console.log('[AppProvider] Mobile WS disconnected:', reason);
-      });
-    } catch (error) {
-      console.error('[AppProvider] Exception in startAppListener:', error);
-    }
-  };
-
-  const handleProofVerified = (sessionId: string, proof_verified: boolean) => {
-    console.log(
-      '[AppProvider] handleProofVerified called with sessionId:',
-      sessionId,
-    );
-
-    if (!socketRef.current) {
-      socketRef.current = initSocket(sessionId);
-    }
-
-    console.log('[AppProvider] Emitting proof_verified event with data:', {
-      session_id: sessionId,
-      proof_verified,
-    });
-
-    socketRef.current.emit('proof_verified', {
-      session_id: sessionId,
-      proof_verified,
-    });
-  };
+    },
+    [], // No dependencies needed as it only uses socketRef which is stable
+  );
 
   useEffect(() => {
-    return () => {
+    return (): void => {
       if (socketRef.current) {
         console.log('[AppProvider] Cleaning up WS connection on unmount');
         socketRef.current.disconnect();
@@ -149,11 +162,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }, []);
 
+  // Memoize the context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      startAppListener,
+      handleProofVerified,
+    }),
+    [startAppListener, handleProofVerified],
+  );
+
   return (
-    <AppContext.Provider value={{ startAppListener, handleProofVerified }}>
-      {children}
-    </AppContext.Provider>
+    <AppContext.Provider value={contextValue}>{children}</AppContext.Provider>
   );
 };
 
-export const useApp = () => useContext(AppContext);
+export const useApp = (): IAppContext => useContext(AppContext);
