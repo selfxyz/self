@@ -21,23 +21,24 @@ export const useSettingStore = create<SettingsState>()(
   persist(
     (set, _get) => ({
       hasPrivacyNoteBeenDismissed: false,
-      dismissPrivacyNote: () => set({ hasPrivacyNoteBeenDismissed: true }),
+      dismissPrivacyNote: (): void =>
+        set({ hasPrivacyNoteBeenDismissed: true }),
 
       biometricsAvailable: false,
-      setBiometricsAvailable: biometricsAvailable =>
+      setBiometricsAvailable: (biometricsAvailable: boolean): void =>
         set({
           biometricsAvailable,
         }),
 
       cloudBackupEnabled: false,
-      toggleCloudBackupEnabled: () =>
+      toggleCloudBackupEnabled: (): void =>
         set(oldState => ({
           cloudBackupEnabled: !oldState.cloudBackupEnabled,
         })),
 
       isDevMode: false,
-      setDevModeOn: () => set({ isDevMode: true }),
-      setDevModeOff: () => set({ isDevMode: false }),
+      setDevModeOn: (): void => set({ isDevMode: true }),
+      setDevModeOff: (): void => set({ isDevMode: false }),
     }),
     {
       name: 'setting-storage',

@@ -2,7 +2,7 @@ import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
 import crypto from 'react-native-quick-crypto';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -27,13 +27,24 @@ import { buttonTap, selectionChange } from '../utils/haptic';
 
 interface MockDataScreenProps {}
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+const SIGNATURE_ALGORITHM_MAP = {
+  'rsa sha256': 'rsa_sha256_65537_4096',
+  'rsa sha1': 'rsa_sha1_65537_2048',
+  'rsapss sha256': 'rsapss_sha256_65537_2048',
+} as const;
+
+const COUNTRY_SHEET_SNAP_POINTS = [60];
+const ALGORITHM_SHEET_SNAP_POINTS = [40];
+const COUNTRY_LIST = Object.keys(countryCodes);
+const ALGORITHM_LIST = ['rsa sha256', 'rsa sha1', 'rsapss sha256'];
+
+const MockDataScreen: React.FC<MockDataScreenProps> = () => {
   const navigation = useNavigation();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
-  const castDate = (yearsOffset: number) => {
+  const castDate = (yearsOffset: number): string => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
     return (
@@ -49,23 +60,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
 
-  const handleCountrySelect = (countryCode: string) => {
+  const handleCountrySelect = useCallback((countryCode: string): void => {
     setSelectedCountry(countryCode);
     setCountrySheetOpen(false);
-  };
+  }, []);
 
-  const handleAlgorithmSelect = (algorithm: string) => {
+  const handleAlgorithmSelect = useCallback((algorithm: string): void => {
     setSelectedAlgorithm(algorithm);
     setAlgorithmSheetOpen(false);
-  };
+  }, []);
 
-  const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'rsa sha256': 'rsa_sha256_65537_4096',
-    'rsa sha1': 'rsa_sha1_65537_2048',
-    'rsapss sha256': 'rsapss_sha256_65537_2048',
-  } as const;
-
-  const handleGenerate = useCallback(async () => {
+  const handleGenerate = useCallback(async (): Promise<void> => {
     setIsGenerating(true);
     const randomArrayValue = new Uint32Array(1);
     crypto.getRandomValues(randomArrayValue);
@@ -81,8 +86,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           mockPassportData = genMockPassportData(
             'sha1',
             'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            SIGNATURE_ALGORITHM_MAP[
+              selectedAlgorithm as keyof typeof SIGNATURE_ALGORITHM_MAP
             ],
             selectedCountry as keyof typeof countryCodes,
             // We disregard the age to stick with Arcangel's birth date
@@ -96,8 +101,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           mockPassportData = genMockPassportData(
             'sha1',
             'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+            SIGNATURE_ALGORITHM_MAP[
+              selectedAlgorithm as keyof typeof SIGNATURE_ALGORITHM_MAP
             ],
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
@@ -119,7 +124,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     navigation,
     isInOfacList,
     setData,
-    signatureAlgorithmToStrictSignatureAlgorithm,
     selectedAlgorithm,
     selectedCountry,
     expiryYears,
@@ -127,6 +131,127 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   ]);
 
   const { top, bottom } = useSafeAreaInsets();
+
+  const ofacWarningStyle = useMemo(
+    () => ({ opacity: isInOfacList ? 1 : 0 }),
+    [isInOfacList],
+  );
+
+  const handleButtonPress = useCallback((action: () => void): void => {
+    buttonTap();
+    action();
+  }, []);
+
+  const handleSheetClose = useCallback((): void => {
+    selectionChange();
+    setCountrySheetOpen(false);
+  }, []);
+
+  const handleAlgorithmSheetClose = useCallback((): void => {
+    selectionChange();
+    setAlgorithmSheetOpen(false);
+  }, []);
+
+  const handleAgeDecrease = useCallback((): void => {
+    handleButtonPress(() => setAge(age - 1));
+  }, [age, handleButtonPress]);
+
+  const handleAgeIncrease = useCallback((): void => {
+    handleButtonPress(() => setAge(age + 1));
+  }, [age, handleButtonPress]);
+
+  const handleExpiryDecrease = useCallback((): void => {
+    handleButtonPress(() => setExpiryYears(expiryYears - 1));
+  }, [expiryYears, handleButtonPress]);
+
+  const handleExpiryIncrease = useCallback((): void => {
+    handleButtonPress(() => setExpiryYears(expiryYears + 1));
+  }, [expiryYears, handleButtonPress]);
+
+  const handleOfacToggle = useCallback((): void => {
+    handleButtonPress(() => setIsInOfacList(!isInOfacList));
+  }, [isInOfacList, handleButtonPress]);
+
+  const handleAlgorithmPress = useCallback((): void => {
+    handleButtonPress(() => setAlgorithmSheetOpen(true));
+  }, [handleButtonPress]);
+
+  const handleCountryPress = useCallback((): void => {
+    handleButtonPress(() => setCountrySheetOpen(true));
+  }, [handleButtonPress]);
+
+  const handleCountrySelectWithClose = useCallback(
+    (countryCode: string): void => {
+      buttonTap();
+      handleCountrySelect(countryCode);
+    },
+    [handleCountrySelect],
+  );
+
+  const handleAlgorithmSelectWithClose = useCallback(
+    (algorithm: string): void => {
+      buttonTap();
+      handleAlgorithmSelect(algorithm);
+    },
+    [handleAlgorithmSelect],
+  );
+
+  const getCountryPressHandler = useCallback(
+    (countryCode: string): (() => void) =>
+      () => {
+        handleCountrySelectWithClose(countryCode);
+      },
+    [handleCountrySelectWithClose],
+  );
+
+  const getAlgorithmPressHandler = useCallback(
+    (algorithm: string): (() => void) =>
+      () => {
+        handleAlgorithmSelectWithClose(algorithm);
+      },
+    [handleAlgorithmSelectWithClose],
+  );
+
+  const renderCountryItem = useCallback(
+    (countryCode: string) => (
+      <TouchableOpacity
+        key={countryCode}
+        onPress={getCountryPressHandler(countryCode)}
+      >
+        <XStack py="$3" px="$2">
+          <Text fontSize="$4">
+            {countryCodes[countryCode as keyof typeof countryCodes]}{' '}
+            {flag(getCountryISO2(countryCode))}
+          </Text>
+        </XStack>
+      </TouchableOpacity>
+    ),
+    [getCountryPressHandler],
+  );
+
+  const renderAlgorithmItem = useCallback(
+    (algorithm: string) => (
+      <TouchableOpacity
+        key={algorithm}
+        onPress={getAlgorithmPressHandler(algorithm)}
+      >
+        <XStack py="$3" px="$2">
+          <Text fontSize="$4">{algorithm}</Text>
+        </XStack>
+      </TouchableOpacity>
+    ),
+    [getAlgorithmPressHandler],
+  );
+
+  const renderCountryList = useMemo(
+    () => COUNTRY_LIST.map(renderCountryItem),
+    [renderCountryItem],
+  );
+  const renderAlgorithmList = useMemo(
+    () => ALGORITHM_LIST.map(renderAlgorithmItem),
+    [renderAlgorithmItem],
+  );
+
   return (
     <>
       <YStack
@@ -145,10 +270,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             Encryption
           </Text>
           <Button
-            onPress={() => {
-              buttonTap();
-              setAlgorithmSheetOpen(true);
-            }}
+            onPress={handleAlgorithmPress}
             p="$2"
             px="$3"
             bg="white"
@@ -167,10 +289,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             Nationality
           </Text>
           <Button
-            onPress={() => {
-              buttonTap();
-              setCountrySheetOpen(true);
-            }}
+            onPress={handleCountryPress}
             p="$2"
             px="$3"
             bg="white"
@@ -207,10 +326,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setAge(age - 1);
-            }}
+            onPress={handleAgeDecrease}
             disabled={age <= 0 || isInOfacList}
           >
             <Minus />
@@ -226,10 +342,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setAge(age + 1);
-            }}
+            onPress={handleAgeIncrease}
             disabled={isInOfacList}
           >
             <Plus />
@@ -255,10 +368,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setExpiryYears(expiryYears - 1);
-            }}
+            onPress={handleExpiryDecrease}
             disabled={expiryYears <= 0}
           >
             <Minus />
@@ -274,10 +384,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             borderColor={borderColor}
             borderWidth={1}
             borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setExpiryYears(expiryYears + 1);
-            }}
+            onPress={handleExpiryIncrease}
           >
             <Plus />
           </Button>
@@ -297,10 +404,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             <Switch
               size="$3.5"
               checked={isInOfacList}
-              onCheckedChange={() => {
-                buttonTap();
-                setIsInOfacList(!isInOfacList);
-              }}
+              onCheckedChange={handleOfacToggle}
               bg={isInOfacList ? '$green7Light' : '$gray4'}
             >
               <Switch.Thumb animation="quick" bc="white" />
@@ -311,7 +415,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             color="$red10"
             justifyContent="flex-end"
             fontSize="$3"
-            style={{ opacity: isInOfacList ? 1 : 0 }}
+            style={ofacWarningStyle}
           >
             OFAC list is a list of people who are suspected of being involved in
             terrorism or other illegal activities.
@@ -334,7 +438,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         modal
         open={isCountrySheetOpen}
         onOpenChange={setCountrySheetOpen}
-        snapPoints={[60]}
+        snapPoints={COUNTRY_SHEET_SNAP_POINTS}
         animation="medium"
         disableDrag
       >
@@ -347,35 +451,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <YStack p="$4">
             <XStack ai="center" jc="space-between" mb="$4">
               <Text fontSize="$8">Select a country</Text>
-              <XStack
-                onPress={() => {
-                  selectionChange();
-                  setCountrySheetOpen(false);
-                }}
-                p="$2"
-              >
+              <XStack onPress={handleSheetClose} p="$2">
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {Object.keys(countryCodes).map(countryCode => (
-                <TouchableOpacity
-                  key={countryCode}
-                  onPress={() => {
-                    buttonTap();
-                    handleCountrySelect(countryCode);
-                    setCountrySheetOpen(false);
-                  }}
-                >
-                  <XStack py="$3" px="$2">
-                    <Text fontSize="$4">
-                      {countryCodes[countryCode as keyof typeof countryCodes]}{' '}
-                      {flag(getCountryISO2(countryCode))}
-                    </Text>
-                  </XStack>
-                </TouchableOpacity>
-              ))}
+              {renderCountryList}
             </ScrollView>
           </YStack>
         </Sheet.Frame>
@@ -385,7 +467,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         modal
         open={isAlgorithmSheetOpen}
         onOpenChange={setAlgorithmSheetOpen}
-        snapPoints={[40]}
+        snapPoints={ALGORITHM_SHEET_SNAP_POINTS}
         animation="medium"
         disableDrag
       >
@@ -398,32 +480,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           <YStack p="$4">
             <XStack ai="center" jc="space-between" mb="$4">
               <Text fontSize="$8">Select an algorithm</Text>
-              <XStack
-                onPress={() => {
-                  selectionChange();
-                  setAlgorithmSheetOpen(false);
-                }}
-                p="$2"
-              >
+              <XStack onPress={handleAlgorithmSheetClose} p="$2">
                 <X color={borderColor} size="$1.5" mr="$2" />
               </XStack>
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {['rsa sha256', 'rsa sha1', 'rsapss sha256'].map(algorithm => (
-                <TouchableOpacity
-                  key={algorithm}
-                  onPress={() => {
-                    buttonTap();
-                    handleAlgorithmSelect(algorithm);
-                    setAlgorithmSheetOpen(false);
-                  }}
-                >
-                  <XStack py="$3" px="$2">
-                    <Text fontSize="$4">{algorithm}</Text>
-                  </XStack>
-                </TouchableOpacity>
-              ))}
+              {renderAlgorithmList}
             </ScrollView>
           </YStack>
         </Sheet.Frame>

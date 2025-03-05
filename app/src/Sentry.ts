@@ -1,9 +1,14 @@
 import * as Sentry from '@sentry/react-native';
+import { ComponentType } from 'react';
 
 import { SENTRY_DSN } from './config';
 
-export const initSentry = () => {
-  if (!SENTRY_DSN) {
+const isSentryEnabled = (): boolean => {
+  return SENTRY_DSN !== undefined && SENTRY_DSN !== null && SENTRY_DSN !== '';
+};
+
+export const initSentry = (): typeof Sentry | null => {
+  if (!isSentryEnabled()) {
     return null;
   }
 
@@ -26,16 +31,18 @@ export const initSentry = () => {
       return event;
     },
   });
+
   return Sentry;
 };
 
 export const captureException = (
   error: Error,
-  context?: Record<string, any>,
-) => {
-  if (!SENTRY_DSN) {
+  context?: Record<string, unknown>,
+): void => {
+  if (!isSentryEnabled()) {
     return;
   }
+
   Sentry.captureException(error, {
     extra: context,
   });
@@ -43,16 +50,17 @@ export const captureException = (
 
 export const captureMessage = (
   message: string,
-  context?: Record<string, any>,
-) => {
-  if (!SENTRY_DSN) {
+  context?: Record<string, unknown>,
+): void => {
+  if (!isSentryEnabled()) {
     return;
   }
+
   Sentry.captureMessage(message, {
     extra: context,
   });
 };
 
-export const wrapWithSentry = (App: React.ComponentType) => {
-  return SENTRY_DSN ? Sentry.wrap(App) : App;
+export const wrapWithSentry = (App: ComponentType): ComponentType => {
+  return isSentryEnabled() ? Sentry.wrap(App) : App;
 };
