@@ -1,6 +1,6 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import LottieView, { AnimationObject } from 'lottie-react-native';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
@@ -27,17 +27,22 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
 
-  const goToSuccessScreenWithDelay = () => {
-    setTimeout(() => {
+  const goToSuccessScreenWithDelay = useCallback(() => {
+    const timer = setTimeout(() => {
       goToSuccessScreen();
     }, 3000);
-  };
-  const goToErrorScreenWithDelay = () => {
-    setTimeout(() => {
+    return (): void => clearTimeout(timer);
+  }, [goToSuccessScreen]);
+
+  const goToErrorScreenWithDelay = useCallback(() => {
+    const timer = setTimeout(() => {
       goToErrorScreen();
     }, 3000);
-  };
-  const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
+    return (): void => clearTimeout(timer);
+  }, [goToErrorScreen]);
+
+  const [animationSource, setAnimationSource] =
+    useState<AnimationObject>(miscAnimation);
   const { registrationStatus, resetProof } = useProofInfo();
   const { getPassportDataAndSecret, clearPassportData } = usePassport();
 
@@ -49,15 +54,23 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   useEffect(() => {
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
-      goToSuccessScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
+      const cleanup = goToSuccessScreenWithDelay();
+      const resetTimer = setTimeout(() => resetProof(), 3000);
+      return (): void => {
+        cleanup();
+        clearTimeout(resetTimer);
+      };
     } else if (
       registrationStatus === ProofStatusEnum.FAILURE ||
       registrationStatus === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
-      goToErrorScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
+      const cleanup = goToErrorScreenWithDelay();
+      const resetTimer = setTimeout(() => resetProof(), 3000);
+      return (): void => {
+        cleanup();
+        clearTimeout(resetTimer);
+      };
     }
   }, [
     goToErrorScreenWithDelay,

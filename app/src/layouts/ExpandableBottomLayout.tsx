@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StatusBar, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
@@ -44,17 +44,18 @@ const TopSection: React.FC<TopSectionProps> = ({
   ...props
 }) => {
   const { top } = useSafeAreaInsets();
+  const styling = useMemo(
+    () => [
+      styles.topSection,
+      props.roundTop && styles.roundTop,
+      props.roundTop ? { marginTop: top } : { paddingTop: top },
+      { backgroundColor },
+    ],
+    [backgroundColor, props.roundTop, top],
+  );
+
   return (
-    <View
-      {...props}
-      backgroundColor={backgroundColor}
-      style={[
-        styles.topSection,
-        props.roundTop && styles.roundTop,
-        props.roundTop ? { marginTop: top } : { paddingTop: top },
-        { backgroundColor },
-      ]}
-    >
+    <View {...props} style={styling}>
       {children}
     </View>
   );
@@ -94,13 +95,14 @@ const BottomSection: React.FC<BottomSectionProps> = ({
 }) => {
   const { bottom } = useSafeAreaInsets();
   const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
-
   const totalBottom =
     typeof incomingBottom === 'number' ? bottom + incomingBottom : bottom;
+  const styling = useMemo(() => [styles.bottomSection, style], [style]);
+
   return (
     <View
       {...props}
-      style={[styles.bottomSection, style]}
+      style={styling}
       paddingBottom={totalBottom}
       backgroundColor={backgroundColor}
     >

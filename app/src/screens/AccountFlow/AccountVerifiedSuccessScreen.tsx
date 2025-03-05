@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React from 'react';
+import React, { useCallback } from 'react';
 import { YStack } from 'tamagui';
 
 import proofSuccessAnimation from '../../assets/animations/proof_success.json';
@@ -14,6 +14,10 @@ import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation = useNavigation();
+  const primaryButtonOnPress = useCallback(() => {
+    buttonTap();
+    navigation.navigate('Home');
+  }, [navigation]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -43,14 +47,7 @@ const AccountVerifiedSuccessScreen: React.FC = ({}) => {
             participating partner's QR code to prove your identity.
           </Description>
         </YStack>
-        <PrimaryButton
-          onPress={() => {
-            buttonTap();
-            navigation.navigate('Home');
-          }}
-        >
-          Continue
-        </PrimaryButton>
+        <PrimaryButton onPress={primaryButtonOnPress}>Continue</PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

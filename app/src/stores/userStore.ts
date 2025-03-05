@@ -6,7 +6,7 @@ interface UserState {
   passportNumber: string;
   dateOfBirth: string;
   dateOfExpiry: string;
-  update: (patch: any) => void;
+  update: (patch: object) => void;
   deleteMrzFields: () => void;
 }
 
@@ -15,14 +15,14 @@ const useUserStore = create<UserState>((set, get) => ({
   dateOfBirth: DEFAULT_DOB ?? '',
   dateOfExpiry: DEFAULT_DOE ?? '',
 
-  update: patch => {
+  update: (patch: object): void => {
     set({
       ...get(),
       ...patch,
     });
   },
 
-  deleteMrzFields: () =>
+  deleteMrzFields: (): void =>
     set({
       passportNumber: '',
       dateOfBirth: '',

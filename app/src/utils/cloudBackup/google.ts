@@ -1,4 +1,5 @@
 import {
+  GetTokensResponse,
   GoogleSignin,
   isErrorWithCode,
   statusCodes,
@@ -8,7 +9,7 @@ GoogleSignin.configure({
   scopes: ['https://www.googleapis.com/auth/drive.appdata'],
 });
 
-export async function googleSignIn() {
+export async function googleSignIn(): Promise<GetTokensResponse | null> {
   try {
     await GoogleSignin.hasPlayServices();
     if ((await GoogleSignin.signInSilently()).type === 'success') {

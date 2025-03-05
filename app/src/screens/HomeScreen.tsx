@@ -1,7 +1,8 @@
 import { useFocusEffect, usePreventRemove } from '@react-navigation/native';
 import React from 'react';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Button, styled, YStack } from 'tamagui';
+import { Button, YStack } from 'tamagui';
 
 import { pressedStyle } from '../components/buttons/pressedStyle';
 import { BodyText } from '../components/typography/BodyText';
@@ -14,17 +15,6 @@ import ScanIcon from '../images/icons/qr_scan.svg';
 import WarnIcon from '../images/icons/warning.svg';
 import { useSettingStore } from '../stores/settingStore';
 import { amber500, black, neutral700, slate800, white } from '../utils/colors';
-
-const ScanButton = styled(Button, {
-  borderRadius: 20,
-  width: 90,
-  height: 90,
-  borderColor: neutral700,
-  borderWidth: 1,
-  backgroundColor: '#1D1D1D',
-  alignItems: 'center',
-  justifyContent: 'center',
-});
 
 const HomeScreen: React.FC = () => {
   useConnectionModal();
@@ -49,28 +39,40 @@ const HomeScreen: React.FC = () => {
       flex={1}
       paddingHorizontal={20}
       paddingBottom={bottom}
+      style={styles.mainContainer}
     >
-      <YStack ai="center" gap={20} justifyContent="flex-start">
+      <YStack
+        ai="center"
+        gap={20}
+        justifyContent="flex-start"
+        style={styles.topSection}
+      >
         <SelfCard width="100%" />
         <Caption color={amber500} opacity={0.3} textTransform="uppercase">
           Only visible to you
         </Caption>
         <PrivacyNote />
       </YStack>
-      <YStack ai="center" gap={20} justifyContent="flex-end">
-        <ScanButton
+      <YStack
+        ai="center"
+        gap={20}
+        justifyContent="flex-end"
+        style={styles.bottomSection}
+      >
+        <Button
           onPress={onScanButtonPress}
           hitSlop={100}
-          pressStyle={pressStyle}
+          pressStyle={styles.scanButtonPressStyle}
+          style={styles.scanButton}
         >
           <ScanIcon color={amber500} />
-        </ScanButton>
+        </Button>
         <Caption
           onPress={onScanButtonPress}
           color={amber500}
           textTransform="uppercase"
           backgroundColor={black}
-          pressStyle={{ backgroundColor: 'transparent' }}
+          pressStyle={styles.captionPressStyle}
         >
           Prove your SELF
         </Caption>
@@ -79,13 +81,7 @@ const HomeScreen: React.FC = () => {
   );
 };
 
-const pressStyle = {
-  opacity: 1,
-  backgroundColor: 'transparent',
-  transform: [{ scale: 0.95 }],
-} as const;
-
-function PrivacyNote() {
+function PrivacyNote(): JSX.Element | null {
   const { hasPrivacyNoteBeenDismissed } = useSettingStore();
   const onDisclaimerPress = useHapticNavigation('Disclaimer');
 
@@ -94,24 +90,64 @@ function PrivacyNote() {
   }
 
   return (
-    <Card onPress={onDisclaimerPress} pressStyle={pressedStyle}>
+    <YStack
+      onPress={onDisclaimerPress}
+      pressStyle={pressedStyle}
+      style={styles.card}
+    >
       <WarnIcon color={white} width={24} height={33} />
       <BodyText color={white} textAlign="center" fontSize={18}>
         A note on protecting your privacy
       </BodyText>
-    </Card>
+    </YStack>
   );
 }
 
-export default HomeScreen;
-
-const Card = styled(YStack, {
-  width: '100%',
-
-  flexGrow: 0,
-  backgroundColor: slate800,
-  borderRadius: 8,
-  gap: 12,
-  alignItems: 'center',
-  padding: 20,
+const styles = StyleSheet.create({
+  captionPressStyle: {
+    backgroundColor: 'transparent',
+  },
+  scanButton: {
+    borderRadius: 20,
+    width: 90,
+    height: 90,
+    borderColor: neutral700,
+    borderWidth: 1,
+    backgroundColor: '#1D1D1D',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  scanButtonPressStyle: {
+    opacity: 1,
+    backgroundColor: 'transparent',
+    transform: [{ scale: 0.95 }],
+  },
+  mainContainer: {
+    flex: 1,
+    gap: 20,
+    justifyContent: 'space-between',
+    paddingHorizontal: 20,
+    backgroundColor: black,
+  },
+  topSection: {
+    alignItems: 'center',
+    gap: 20,
+    justifyContent: 'flex-start',
+  },
+  bottomSection: {
+    alignItems: 'center',
+    gap: 20,
+    justifyContent: 'flex-end',
+  },
+  card: {
+    width: '100%',
+    flexGrow: 0,
+    backgroundColor: slate800,
+    borderRadius: 8,
+    gap: 12,
+    alignItems: 'center',
+    padding: 20,
+  },
 });
+
+export default HomeScreen;

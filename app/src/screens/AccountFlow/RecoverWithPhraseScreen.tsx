@@ -2,7 +2,12 @@ import Clipboard from '@react-native-clipboard/clipboard';
 import { useNavigation } from '@react-navigation/native';
 import { ethers } from 'ethers';
 import React, { useCallback, useState } from 'react';
-import { Keyboard, StyleSheet } from 'react-native';
+import {
+  Keyboard,
+  NativeSyntheticEvent,
+  StyleSheet,
+  TextInputKeyPressEventData,
+} from 'react-native';
 import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -71,6 +76,15 @@ const RecoverWithPhraseScreen: React.FC<
     navigation.navigate('AccountVerifiedSuccess');
   }, [mnemonic, navigation, restoreAccountFromMnemonic]);
 
+  const onKeyPress = useCallback(
+    (event: NativeSyntheticEvent<TextInputKeyPressEventData>) => {
+      if (event.nativeEvent.key === 'Enter' && mnemonic) {
+        Keyboard.dismiss();
+      }
+    },
+    [mnemonic],
+  );
+
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>
       <Description color={slate300}>
@@ -89,9 +103,7 @@ const RecoverWithPhraseScreen: React.FC<
           minHeight={230}
           verticalAlign="top"
           value={mnemonic}
-          onKeyPress={key =>
-            key.nativeEvent.key === 'Enter' && mnemonic && Keyboard.dismiss()
-          }
+          onKeyPress={onKeyPress}
           onChangeText={setMnemonic}
         />
         <XStack

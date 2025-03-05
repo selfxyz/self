@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -31,6 +31,10 @@ const SaveRecoveryPhraseScreen: React.FC<
   const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
     action: 'confirm',
   });
+  const bottomSectionStyle = useMemo(
+    () => ({ paddingTop: 0, paddingBottom: 0 }),
+    [],
+  );
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -49,7 +53,7 @@ const SaveRecoveryPhraseScreen: React.FC<
         </Description>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection
-        style={{ paddingTop: 0 }}
+        style={bottomSectionStyle}
         gap={10}
         backgroundColor={white}
       >
