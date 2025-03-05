@@ -1,5 +1,5 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { styled, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -51,6 +51,8 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
     params.onModalDismiss();
   }, [navigation, params]);
 
+  const descriptionStyle = useMemo(() => ({ textAlign: 'left' }), []);
+
   return (
     <ModalBackDrop>
       <View backgroundColor={white} padding={20} borderRadius={10} mx={8}>
@@ -61,7 +63,8 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
           </XStack>
           <YStack gap={20}>
             <Title textAlign="left">{params.titleText}</Title>
-            <Description style={{ textAlign: 'left' }}>
+            {/* @ts-expect-error - unable to type style prop for Description */}
+            <Description style={descriptionStyle}>
               {params.bodyText}
             </Description>
           </YStack>

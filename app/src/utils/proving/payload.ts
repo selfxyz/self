@@ -352,32 +352,29 @@ interface ApiResponse<T> {
   data: T;
 }
 
-export async function getDeployedCircuits(): Promise<{
-  REGISTER: string[];
-  DSC: string[];
-}> {
-  console.log('Fetching deployed circuits from api');
-  const response = await fetch(`${API_URL}/deployed-circuits/`);
+// Refactor the API response handling into a reusable function
+async function fetchApiData<T>(endpoint: string): Promise<T> {
+  console.log(`Fetching data from ${endpoint}`);
+  const response = await fetch(`${API_URL}/${endpoint}`);
+
   if (!response.ok) {
     throw new Error(
       `API server error: ${response.status} ${response.statusText}`,
     );
   }
+
   const contentType = response.headers.get('content-type');
   if (contentType && contentType.includes('text/html')) {
     throw new Error(
       'API returned HTML instead of JSON - server may be down or misconfigured',
     );
   }
-  try {
-    const data = (await response.json()) as ApiResponse<{
-      REGISTER: string[];
-      DSC: string[];
-    }>;
 
-    if (!data.data || !data.data.REGISTER || !data.data.DSC) {
+  try {
+    const data = (await response.json()) as ApiResponse<T>;
+    if (!data.data) {
       throw new Error(
-        'Invalid data structure received from API: missing REGISTER or DSC fields',
+        `Invalid data structure received from API: missing data for ${endpoint}`,
       );
     }
     return data.data;
@@ -387,31 +384,15 @@ export async function getDeployedCircuits(): Promise<{
   }
 }
 
-export async function getCircuitDNSMapping(): Promise<Record<string, string>> {
-  console.log('Fetching deployed circuits from api');
-  const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
-  if (!response.ok) {
-    throw new Error(
-      `API server error: ${response.status} ${response.statusText}`,
-    );
-  }
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('text/html')) {
-    throw new Error(
-      'API returned HTML instead of JSON - server may be down or misconfigured',
-    );
-  }
-  try {
-    const data = (await response.json()) as ApiResponse<Record<string, string>>;
+export async function getDeployedCircuits(): Promise<{
+  REGISTER: string[];
+  DSC: string[];
+}> {
+  return fetchApiData<{ REGISTER: string[]; DSC: string[] }>(
+    'deployed-circuits/',
+  );
+}
 
-    if (!data.data) {
-      throw new Error(
-        'Invalid data structure received from API: missing data field',
-      );
-    }
-    return data.data;
-  } catch (error) {
-    console.error(error);
-    throw new Error('API returned invalid JSON response - server may be down');
-  }
+export async function getCircuitDNSMapping(): Promise<Record<string, string>> {
+  return fetchApiData<Record<string, string>>('circuit-dns-mapping/');
 }
