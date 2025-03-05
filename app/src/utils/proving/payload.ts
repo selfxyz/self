@@ -399,6 +399,7 @@ export async function getCircuitDNSMapping() {
     }
     return data.data;
   } catch (error) {
+    console.error(error);
     throw new Error('API returned invalid JSON response - server may be down');
   }
 }
