@@ -370,7 +370,6 @@ describe("Unit Tests for IdentityVerificationHub", () => {
     });
 
     describe("Upgradeabilitiy", () => {
-
         it("should preserve state after upgrade", async () => {
             const {hub, owner} = deployedActors;
 
@@ -383,23 +382,25 @@ describe("Unit Tests for IdentityVerificationHub", () => {
                 DscVerifierId.dsc_sha256_rsa_65537_4096
             );
             
-            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const HubV2Factory = await ethers.getContractFactory("testUpgradedIdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
             const hubAsImpl = await ethers.getContractAt(
-                "IdentityVerificationHubImplV1",
+                "testUpgradedIdentityVerificationHubImplV1",
                 hub.target
             );
 
             await hubAsImpl.connect(owner).upgradeToAndCall(
                 hubV2Implementation.target,
-                "0x"
+                HubV2Factory.interface.encodeFunctionData("initialize", [true])
             );
 
-            const hubV2 = await ethers.getContractAt("IdentityVerificationHubImplV1", hub.target);
-            const registryAddressAfter = await hubV2.registry();
-            expect(registryAddressAfter).to.equal(registryAddressBefore);
+            const hubV2 = await ethers.getContractAt("testUpgradedIdentityVerificationHubImplV1", hub.target);
+            
+            expect(await hubV2.isTest()).to.equal(true);
+            
+            expect(await hubV2.registry()).to.equal(registryAddressBefore);
             expect(await hubV2.vcAndDiscloseCircuitVerifier()).to.equal(vcAndDiscloseCircuitVerifierBefore);
             expect(await hubV2.sigTypeToRegisterCircuitVerifiers(
                 RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096
@@ -415,21 +416,21 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         });
 
         it("should not allow non-proxy to upgrade implementation", async() => {
-            const {hub, hubImpl, owner, user1} = deployedActors;
+            const {hub, hubImpl, owner} = deployedActors;
             
-            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const HubV2Factory = await ethers.getContractFactory("testUpgradedIdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
             const hubAsImpl = await ethers.getContractAt(
-                "IdentityVerificationHubImplV1",
+                "testUpgradedIdentityVerificationHubImplV1",
                 hub.target
             );
 
             await expect(
                 hubImpl.connect(owner).upgradeToAndCall(
                     hubV2Implementation.target,
-                    "0x"
+                    HubV2Factory.interface.encodeFunctionData("initialize", [true])
                 )
             ).to.be.revertedWithCustomError(hubAsImpl, "UUPSUnauthorizedCallContext");
         });
@@ -437,19 +438,19 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow non-owner to upgrade implementation", async () => {
             const {hub, owner, user1} = deployedActors;
             
-            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const HubV2Factory = await ethers.getContractFactory("testUpgradedIdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
             const hubAsImpl = await ethers.getContractAt(
-                "IdentityVerificationHubImplV1",
+                "testUpgradedIdentityVerificationHubImplV1",
                 hub.target
             );
 
             await expect(
                 hubAsImpl.connect(user1).upgradeToAndCall(
                     hubV2Implementation.target,
-                    "0x"
+                    HubV2Factory.interface.encodeFunctionData("initialize", [true])
                 )
             ).to.be.revertedWithCustomError(hubAsImpl, "OwnableUnauthorizedAccount");
         });
@@ -457,31 +458,24 @@ describe("Unit Tests for IdentityVerificationHub", () => {
         it("should not allow implementation contract to be initialized directly", async () => {
             const {hub, owner} = deployedActors;
             
-            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const HubV2Factory = await ethers.getContractFactory("testUpgradedIdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
             await expect(
-                hubV2Implementation.initialize(
-                    ethers.ZeroAddress,
-                    ethers.ZeroAddress,
-                    [],
-                    [],
-                    [],
-                    []
-                )
+                hubV2Implementation.initialize(true)
             ).to.be.revertedWithCustomError(hub, "InvalidInitialization");
         });
 
         it("should not allow direct calls to implementation contract", async () => {
             const {hub, owner} = deployedActors;
             
-            const HubV2Factory = await ethers.getContractFactory("IdentityVerificationHubImplV1", owner);
+            const HubV2Factory = await ethers.getContractFactory("testUpgradedIdentityVerificationHubImplV1", owner);
             const hubV2Implementation = await HubV2Factory.deploy();
             await hubV2Implementation.waitForDeployment();
 
             await expect(
-                hubV2Implementation.updateRegistry(ethers.ZeroAddress)
+                hubV2Implementation.isTest()
             ).to.be.revertedWithCustomError(hubV2Implementation, "UUPSUnauthorizedCallContext");
         });
     });

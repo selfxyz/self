@@ -7,7 +7,7 @@ import { ATTESTATION_ID } from "../utils/constants";
 import { generateRegisterProof, generateDscProof } from "../utils/generateProof";
 import { generateRandomFieldElement } from "../utils/utils";
 import { TransactionReceipt, ZeroAddress } from "ethers";
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import serialized_dsc_tree from '../utils/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
 import {poseidon2} from "poseidon-lite";
 

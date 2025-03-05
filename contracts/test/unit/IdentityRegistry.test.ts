@@ -741,30 +741,27 @@ describe("Unit Tests for IdentityRegistry", () => {
             const initialCommitmentRoot = await registry.getIdentityCommitmentMerkleRoot();
             const initialTreeSize = await registry.getIdentityCommitmentMerkleTreeSize();
 
-            const PoseidonT3Factory = await ethers.getContractFactory("PoseidonT3", owner);
-            const poseidonT3 = await PoseidonT3Factory.deploy();
-            await poseidonT3.waitForDeployment();
-
-            const IdentityRegistryImplFactory = await ethers.getContractFactory(
-                "IdentityRegistryImplV1", 
-                {
-                    libraries: {
-                        PoseidonT3: poseidonT3.target
-                    }
-                },
+            // Deploy testUpgradedIdentityRegistryImplV1 instead
+            const UpgradedRegistryFactory = await ethers.getContractFactory(
+                "testUpgradedIdentityRegistryImplV1",
                 owner
             );
 
-            const registryV2Implementation = await IdentityRegistryImplFactory.deploy();
+            const registryV2Implementation = await UpgradedRegistryFactory.deploy();
             await registryV2Implementation.waitForDeployment();
 
+            // Upgrade and initialize with isTest = true
             await registry.connect(owner).upgradeToAndCall(
                 registryV2Implementation.target,
-                "0x"
+                UpgradedRegistryFactory.interface.encodeFunctionData("initialize", [true])
             );
 
-            const registryV2 = await ethers.getContractAt("IdentityRegistryImplV1", registry.target);
+            const registryV2 = await ethers.getContractAt("testUpgradedIdentityRegistryImplV1", registry.target);
             
+            // Check new functionality
+            expect(await registryV2.isTest()).to.equal(true);
+            
+            // Check preserved state
             expect(await registryV2.hub()).to.equal(initialHub);
             expect(await registryV2.getCscaRoot()).to.equal(initialCscaRoot);
             expect(await registryV2.getPassportNoOfacRoot()).to.equal(initialPassportNoOfacRoot);

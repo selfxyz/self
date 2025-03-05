@@ -58,6 +58,7 @@
     "test:local": "TEST_ENV=local npx hardhat test",
     "test:register:local": "TEST_ENV=local npx hardhat test test/integration/commitmentRegistration.test.ts",
     "test:registry:local": "TEST_ENV=local npx hardhat test test/unit/IdentityRegistry.test.ts",
+    "test:pcr:local": "TEST_ENV=local npx hardhat test test/unit/PCR0Manager.test.ts",
     "test:unit:local": "TEST_ENV=local npx hardhat test test/unit/*",
     "test:view": "npx hardhat test test/view.ts",
     "update:cscaroot:sepolia": "npx hardhat ignition deploy ignition/modules/scripts/updateRegistryCscaRoot.ts --network sepolia",

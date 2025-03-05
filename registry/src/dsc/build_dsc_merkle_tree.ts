@@ -113,7 +113,7 @@ function processCertificate(pemContent: string, filePath: string) {
 async function buildDscMerkleTree() {
     const tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
 
-    if (true) {
+    if (!DEVELOPMENT_MODE) {
         const path_to_pem_files = "outputs/dsc/pem_masterlist";
         for (const file of fs.readdirSync(path_to_pem_files)) {
             const file_path = path.join(path_to_pem_files, file);
@@ -129,7 +129,7 @@ async function buildDscMerkleTree() {
         }
     }
 
-    if (true) {
+    if (DEVELOPMENT_MODE) {
         const dev_pem_path = path.join(__dirname, '..', '..', '..', 'common', 'src', 'mock_certificates');
         const subdirectories = fs.readdirSync(dev_pem_path, { withFileTypes: true })
             .filter(item => item.isDirectory())

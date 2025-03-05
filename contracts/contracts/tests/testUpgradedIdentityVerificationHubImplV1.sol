@@ -73,4 +73,48 @@ contract testUpgradedIdentityVerificationHubImplV1 is
         return _isTest;
     }
 
+    function registry() 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _registry;
+    }
+
+    function vcAndDiscloseCircuitVerifier() 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _vcAndDiscloseCircuitVerifier;
+    }
+    
+    function sigTypeToRegisterCircuitVerifiers(
+        uint256 typeId
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _sigTypeToRegisterCircuitVerifiers[typeId];
+    }
+
+    function sigTypeToDscCircuitVerifiers(
+        uint256 typeId
+    ) 
+        external
+        virtual
+        onlyProxy
+        view 
+        returns (address) 
+    {
+        return _sigTypeToDscCircuitVerifiers[typeId];
+    }
+
 }

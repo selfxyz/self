@@ -23,8 +23,8 @@ import {
     generateCircuitInputsDSC,
     generateCircuitInputsVCandDisclose
 } from "../../../common/src/utils/circuits/generateInputs";
-import serialized_csca_tree from '../../../common/pubkeys/serialized_csca_tree.json';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import serialized_csca_tree from './pubkeys/serialized_csca_tree.json';
+import serialized_dsc_tree from './pubkeys/serialized_dsc_tree.json';
 
 const registerCircuits: CircuitArtifacts = {
     "register_sha256_sha256_sha256_rsa_65537_4096": {
@@ -58,7 +58,7 @@ export async function generateRegisterProof(
     const registerCircuitInputs: CircuitSignals = await generateCircuitInputsRegister(
         secret,
         passportData,
-        serialized_dsc_tree
+        serialized_dsc_tree as string
     );
 
     // Generate the proof
