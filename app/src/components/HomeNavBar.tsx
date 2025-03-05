@@ -1,5 +1,6 @@
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import React, { useCallback, useMemo } from 'react';
+import React, { ReactElement, useCallback, useMemo } from 'react';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button } from 'tamagui';
 
@@ -9,7 +10,7 @@ import { black, neutral400, white } from '../utils/colors';
 import { buttonTap } from '../utils/haptic';
 import { NavBar } from './NavBar';
 
-const HomeNavBar = (props: NativeStackHeaderProps) => {
+const HomeNavBar = (props: NativeStackHeaderProps): ReactElement => {
   const insets = useSafeAreaInsets();
 
   const handleActivityPress = useCallback(() => {
@@ -43,22 +44,24 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
     [SettingsIconMemo],
   );
 
+  // Memoize the dynamic container style
+  const containerStyle = useMemo(
+    () => [styles.container, { paddingTop: Math.max(insets.top, 20) }],
+    [insets.top],
+  );
+
   return (
     <NavBar.Container
       backgroundColor={black}
       barStyle="light-content"
       padding={16}
       justifyContent="space-between"
-      style={{
-        paddingTop: Math.max(insets.top, 20),
-      }}
+      style={containerStyle}
     >
       <NavBar.LeftAction
         component={ActivityButton}
         onPress={handleActivityPress}
-        style={{
-          opacity: 0,
-        }}
+        style={styles.leftAction}
       />
       <NavBar.Title size="large" color={white}>
         {props.options.title}
@@ -70,5 +73,14 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
     </NavBar.Container>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    // Base styles for container
+  },
+  leftAction: {
+    opacity: 0,
+  },
+});
 
 export default HomeNavBar;

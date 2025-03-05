@@ -1,11 +1,13 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 interface ButtonsContainerProps {
   children: React.ReactNode;
 }
 
-const ButtonsContainer = ({ children }: ButtonsContainerProps) => {
+const ButtonsContainer = ({
+  children,
+}: ButtonsContainerProps): ReactElement => {
   return <View style={styles.buttonsContainer}>{children}</View>;
 };
 

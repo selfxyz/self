@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { XStack, YStack } from 'tamagui';
 
 import {
@@ -23,7 +23,9 @@ function listToString(list: string[]): string {
   return `${list.slice(0, -1).join(', ')} nor ${list.at(-1)}`;
 }
 
-export default function Disclosures({ disclosures }: DisclosureProps) {
+export default function Disclosures({
+  disclosures,
+}: DisclosureProps): ReactElement {
   // Define the order in which disclosures should appear.
   const ORDERED_KEYS: Array<keyof SelfAppDisclosureConfig> = [
     'issuing_state',

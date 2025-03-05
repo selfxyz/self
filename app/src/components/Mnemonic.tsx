@@ -1,5 +1,5 @@
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, { useCallback, useState } from 'react';
+import React, { ReactElement, useCallback, useState } from 'react';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
 import {
@@ -21,7 +21,7 @@ interface WordPill {
   index: number;
   word: string;
 }
-const WordPill = ({ index, word }: WordPill) => {
+const WordPill = ({ index, word }: WordPill): ReactElement => {
   return (
     <XStack
       key={index}

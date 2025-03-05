@@ -1,5 +1,5 @@
 import { NativeStackHeaderProps } from '@react-navigation/native-stack';
-import React from 'react';
+import React, { ReactElement, useCallback } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle } from 'tamagui';
 
@@ -7,11 +7,17 @@ import { white } from '../utils/colors';
 import { buttonTap } from '../utils/haptic';
 import { NavBar } from './NavBar';
 
-const DefaultNavBar = (props: NativeStackHeaderProps) => {
+const DefaultNavBar = (props: NativeStackHeaderProps): ReactElement => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
   const insets = useSafeAreaInsets();
+
+  const handleGoBack = useCallback((): void => {
+    buttonTap();
+    goBack();
+  }, [goBack]);
+
   return (
     <NavBar.Container
       gap={14}
@@ -30,10 +36,7 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
         component={
           options.headerBackTitle || (canGoBack() ? 'back' : undefined)
         }
-        onPress={() => {
-          buttonTap();
-          goBack();
-        }}
+        onPress={handleGoBack}
         {...(options.headerTitleStyle as ViewStyle)}
       />
       <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
