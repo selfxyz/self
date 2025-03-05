@@ -13,6 +13,5 @@ module.exports = {
         allowUndefined: true,
       },
     ],
-    ['transform-remove-console', { exclude: ['error', 'warn'] }],
   ],
 };
