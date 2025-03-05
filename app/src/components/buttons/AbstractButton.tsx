@@ -31,7 +31,7 @@ export default function AbstractButton({
   style,
   animatedComponent,
   ...props
-}: Readonly<AbstractButtonProps>): JSX.Element {
+}: AbstractButtonProps): JSX.Element {
   const hasBorder = Boolean(borderColor);
   const containerStyle = useMemo(
     () => [

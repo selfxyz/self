@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 import { YStack } from 'tamagui';
 
@@ -21,6 +21,12 @@ const DisclaimerScreen: React.FC = () => {
     notificationWarning();
   }, []);
 
+  const handleDismiss = useCallback(() => {
+    confirmTap();
+    dismissPrivacyNote();
+    navigation.navigate('Home');
+  }, [dismissPrivacyNote, navigation]);
+
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
@@ -33,7 +39,7 @@ const DisclaimerScreen: React.FC = () => {
           renderMode="HARDWARE"
         />
         <YStack f={1} jc="flex-end" pb="$4">
-          <SubHeader style={{ color: white }}>Caution</SubHeader>
+          <SubHeader style={styles.subHeader}>Caution</SubHeader>
         </YStack>
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
@@ -43,17 +49,10 @@ const DisclaimerScreen: React.FC = () => {
             (like passwords, Social Security numbers, or financial details)
             should be trusted only if they're secure and necessary.
           </Caution>
-          <Caution style={{ marginTop: 10 }}>
+          <Caution style={styles.secondCaution}>
             Always verify an app's legitimacy before sharing your data.
           </Caution>
-          <PrimaryButton
-            style={{ marginVertical: 30 }}
-            onPress={() => {
-              confirmTap();
-              dismissPrivacyNote();
-              navigation.navigate('Home');
-            }}
-          >
+          <PrimaryButton style={styles.dismissButton} onPress={handleDismiss}>
             Dismiss
           </PrimaryButton>
         </YStack>
@@ -69,5 +68,14 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '125%',
     height: '125%',
+  },
+  subHeader: {
+    color: white,
+  },
+  secondCaution: {
+    marginTop: 10,
+  },
+  dismissButton: {
+    marginVertical: 30,
   },
 });

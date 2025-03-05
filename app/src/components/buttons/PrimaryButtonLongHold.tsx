@@ -21,7 +21,7 @@ export function HeldPrimaryButton({
   children,
   onPress,
   ...props
-}: Readonly<ButtonProps>): JSX.Element {
+}: ButtonProps): JSX.Element {
   const animation = useAnimatedValue(0);
   const [hasTriggered, setHasTriggered] = useState(false);
   const [size, setSize] = useState({ width: 0, height: 0 });

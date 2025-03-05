@@ -1,5 +1,5 @@
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { ReactElement, useCallback, useMemo, useState } from 'react';
 import { YStack } from 'tamagui';
 
 import BackupDocumentationLink from '../../components/BackupDocumentationLink';
@@ -44,7 +44,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
         bodyText:
           'Are you sure you want to disable cloud backups, you may lose your recovery phrase.',
         buttonText: 'I understand the risks',
-        onButtonPress: async () => {
+        onButtonPress: async (): Promise<void> => {
           try {
             await loginWithBiometrics();
             await disableBackup();
@@ -53,7 +53,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             setPending(false);
           }
         },
-        onModalDismiss: () => {
+        onModalDismiss: (): void => {
           setPending(false);
         },
       }),
@@ -158,39 +158,39 @@ function BottomButton({
 }: {
   cloudBackupEnabled: boolean;
   nextScreen?: NextScreen;
-}) {
+}): ReactElement {
   const navigation = useNavigation();
 
-  const goBack = () => {
+  const goBack = useCallback((): void => {
     confirmTap();
     navigation.goBack();
-  };
+  }, [navigation]);
+
+  const handleContinue = useCallback((): void => {
+    confirmTap();
+    if (nextScreen) {
+      navigation.navigate(nextScreen);
+    }
+  }, [navigation, nextScreen]);
+
+  const handleManualBackup = useCallback((): void => {
+    confirmTap();
+    if (nextScreen) {
+      navigation.navigate(nextScreen);
+    }
+  }, [navigation, nextScreen]);
 
   if (nextScreen && cloudBackupEnabled) {
-    return (
-      <PrimaryButton
-        onPress={() => {
-          confirmTap();
-          navigation.navigate(nextScreen);
-        }}
-      >
-        Continue
-      </PrimaryButton>
-    );
+    return <PrimaryButton onPress={handleContinue}>Continue</PrimaryButton>;
   } else if (nextScreen && !cloudBackupEnabled) {
     return (
-      <SecondaryButton
-        onPress={() => {
-          confirmTap();
-          navigation.navigate(nextScreen);
-        }}
-      >
+      <SecondaryButton onPress={handleManualBackup}>
         Back up manually
       </SecondaryButton>
     );
-
-    // if no next screen probably came from settings. Go back to settings
-  } else if (cloudBackupEnabled) {
+  }
+  // if no next screen probably came from settings. Go back to settings
+  else if (cloudBackupEnabled) {
     return <PrimaryButton onPress={goBack}>Nevermind</PrimaryButton>;
   } else {
     return <SecondaryButton onPress={goBack}>Nevermind</SecondaryButton>;

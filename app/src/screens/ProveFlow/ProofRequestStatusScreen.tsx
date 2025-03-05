@@ -108,10 +108,10 @@ const getTitle = (status: ProofStatusEnum): string => {
 function Info({
   status,
   appName,
-}: Readonly<{
+}: {
   status: ProofStatusEnum;
   appName: string;
-}>): React.JSX.Element {
+}): React.JSX.Element {
   if (status === 'success') {
     return (
       <Description>

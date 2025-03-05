@@ -1,6 +1,6 @@
-import elliptic from 'elliptic';
+import { ec as EC } from 'elliptic';
 import forge from 'node-forge';
-import io, { Socket } from 'socket.io-client';
+import { io as socketIo, Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 
 import {
@@ -15,7 +15,7 @@ import {
 } from '../../stores/proofProvider';
 import { getPublicKey, verifyAttestation } from './attest';
 
-const { ec: EC } = elliptic;
+const ec = new EC('p256');
 
 /**
  * @notice Encrypts plaintext using AES-256-GCM encryption.
@@ -23,7 +23,14 @@ const { ec: EC } = elliptic;
  * @param key The encryption key as a forge ByteStringBuffer.
  * @return An object containing the nonce, cipher_text, and auth_tag as arrays of numbers.
  */
-function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
+function encryptAES256GCM(
+  plaintext: string,
+  key: forge.util.ByteStringBuffer,
+): {
+  nonce: number[];
+  cipher_text: number[];
+  auth_tag: number[];
+} {
   const iv = forge.random.getBytesSync(12);
   const cipher = forge.cipher.createCipher('AES-GCM', key);
   cipher.start({ iv: iv, tagLength: 128 });
@@ -38,7 +45,6 @@ function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
   };
 }
 
-const ec = new EC('p256');
 const key1 = ec.genKeyPair();
 const pubkey =
   key1.getPublic().getX().toString('hex').padStart(64, '0') +
@@ -54,7 +60,7 @@ const pubkey =
  * @dev This function sets up two WebSocket connections: one for RPC and one for subscription updates.
  */
 export async function sendPayload(
-  inputs: any,
+  inputs: Record<string, unknown>,
   circuit: (typeof CIRCUIT_TYPES)[number],
   circuitName: string,
   endpointType: EndpointType,
@@ -74,7 +80,7 @@ export async function sendPayload(
   };
   return new Promise(resolve => {
     let finalized = false;
-    function finalize(status: ProofStatusEnum) {
+    function finalize(status: ProofStatusEnum): void {
       if (!finalized) {
         finalized = true;
         clearTimeout(timer);
@@ -94,7 +100,15 @@ export async function sendPayload(
     const uuid = v4();
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
-    function createHelloBody(uuidString: string) {
+    function createHelloBody(uuidString: string): {
+      jsonrpc: string;
+      method: string;
+      id: number;
+      params: {
+        user_pubkey: number[];
+        uuid: string;
+      };
+    } {
       return {
         jsonrpc: '2.0',
         method: 'openpassport_hello',
@@ -168,7 +182,7 @@ export async function sendPayload(
           console.log('Received UUID:', receivedUuid);
           console.log(result);
           if (!socket) {
-            socket = io(WS_DB_RELAYER, {
+            socket = socketIo(WS_DB_RELAYER, {
               path: '/',
               transports: ['websocket'],
             });
@@ -265,12 +279,12 @@ export type TEEPayload = {
   };
 };
 export function getPayload(
-  inputs: any,
+  inputs: Record<string, unknown>,
   circuit: string,
   circuitName: string,
   endpointType: string,
   endpoint: string,
-) {
+): TEEPayloadDisclose | TEEPayload | undefined {
   if (circuit === 'vc_and_disclose') {
     const payload: TEEPayloadDisclose = {
       type: 'disclose',
@@ -294,4 +308,5 @@ export function getPayload(
     };
     return payload;
   }
+  return undefined;
 }

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import { Text, View } from 'tamagui';
 
 import { slate500 } from '../utils/colors';
@@ -9,7 +9,7 @@ export interface TipProps {
   body: string;
 }
 
-function Tip({ title, body }: TipProps) {
+function Tip({ title, body }: TipProps): ReactElement {
   return (
     <View>
       <Caption size="large" color={slate500}>
@@ -23,7 +23,7 @@ function Tip({ title, body }: TipProps) {
   );
 }
 
-export default function Tips({ items }: { items: TipProps[] }) {
+export default function Tips({ items }: { items: TipProps[] }): ReactElement {
   return (
     <View paddingVertical={20} gap={10}>
       {items.map((item, index) => (

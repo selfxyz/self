@@ -103,7 +103,7 @@ module.exports = {
     'sonarjs/no-invalid-await': 'off',
     'sonarjs/no-redundant-optional': 'off',
     'sonarjs/no-unused-vars': 'off',
-    'sonarjs/prefer-read-only-props': 'warn',
+    'sonarjs/prefer-read-only-props': 'off',
     'sonarjs/todo-tag': 'off',
 
     // General JavaScript Rules
