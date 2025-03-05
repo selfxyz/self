@@ -3,7 +3,13 @@ import { useCallback, useState } from 'react';
 
 import { ModalParams } from '../screens/Settings/ModalScreen';
 
-export const useModal = (params: ModalParams) => {
+export const useModal = (
+  params: ModalParams,
+): {
+  showModal: () => void;
+  dismissModal: () => void;
+  visible: boolean;
+} => {
   const [visible, setVisible] = useState(false);
   const navigation = useNavigation();
 

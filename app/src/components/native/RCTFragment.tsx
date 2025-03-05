@@ -31,7 +31,7 @@ function dispatchCommand(
   fragmentComponentName: string,
   viewId: number,
   command: 'create' | 'destroy',
-) {
+): void {
   try {
     UIManager.dispatchViewManagerCommand(
       viewId,

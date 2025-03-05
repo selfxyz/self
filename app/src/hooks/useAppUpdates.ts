@@ -20,7 +20,7 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       });
   }, []);
 
-  const showAppUpdateModal = () => {
+  const showAppUpdateModal = (): void => {
     navigation.navigate('Modal', {
       titleText: 'New Version Available',
       bodyText:

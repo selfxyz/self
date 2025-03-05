@@ -4,6 +4,7 @@ import {
   PixelRatio,
   Platform,
   requireNativeComponent,
+  StyleSheet,
 } from 'react-native';
 
 import { RCTFragment, RCTFragmentViewManagerProps } from './RCTFragment';
@@ -63,12 +64,10 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
   if (Platform.OS === 'ios') {
     return (
       <QRCodeNativeComponent
+        // @ts-expect-error - onQRData is not typed
         onQRData={_onQRData}
         onError={_onError}
-        style={{
-          width: '110%',
-          height: '110%',
-        }}
+        style={styles.iosScanner}
       />
     );
   } else {
@@ -79,13 +78,21 @@ export const QRCodeScannerView: React.FC<QRCodeScannerViewProps> = ({
         RCTFragmentViewManager={QRCodeNativeComponent}
         fragmentComponentName="QRCodeScannerViewManager"
         isMounted={isMounted}
-        style={{
-          height: PixelRatio.getPixelSizeForLayoutSize(800),
-          width: PixelRatio.getPixelSizeForLayoutSize(400),
-        }}
+        style={styles.androidScanner}
         onError={_onError}
         onQRData={_onQRData}
       />
     );
   }
 };
+
+const styles = StyleSheet.create({
+  iosScanner: {
+    width: '110%',
+    height: '110%',
+  },
+  androidScanner: {
+    height: PixelRatio.getPixelSizeForLayoutSize(800),
+    width: PixelRatio.getPixelSizeForLayoutSize(400),
+  },
+});

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
 
 import { slate400 } from '../../utils/colors';
@@ -6,9 +6,14 @@ import { dinot } from '../../utils/fonts';
 
 interface AdditionalProps extends TextProps {}
 
-const Additional = ({ children, style, ...props }: AdditionalProps) => {
+const Additional = ({
+  children,
+  style,
+  ...props
+}: AdditionalProps): JSX.Element => {
+  const styling = useMemo(() => [styles.additional, style], [style]);
   return (
-    <Text {...props} style={[styles.additional, style]}>
+    <Text {...props} style={styling}>
       {children}
     </Text>
   );

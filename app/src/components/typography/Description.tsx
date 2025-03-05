@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { StyleSheet } from 'react-native';
 import { Text, TextProps } from 'tamagui';
 
@@ -7,13 +7,14 @@ import { dinot } from '../../utils/fonts';
 
 interface DescriptionProps extends TextProps {}
 
-const Description = ({ children, style, ...props }: DescriptionProps) => {
+const Description = ({
+  children,
+  style,
+  ...props
+}: DescriptionProps): JSX.Element => {
+  const styling = useMemo(() => [styles.description, style], [style]);
   return (
-    <Text
-      {...props}
-      textBreakStrategy="balanced"
-      style={[styles.description, style]}
-    >
+    <Text {...props} textBreakStrategy="balanced" style={styling}>
       {children}
     </Text>
   );

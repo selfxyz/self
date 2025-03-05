@@ -22,6 +22,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
       case 'cancel':
         selectionChange();
         // it is safe to cast options.params as any because it is correct when entering the function
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         navigation.popTo(screen, options.params as any);
         return;
 
@@ -34,6 +35,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
         impactLight();
     }
     // it is safe to cast options.params as any because it is correct when entering the function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     navigation.navigate(screen, options.params as any);
   }, [options.action, options.params, navigation, screen]);
 };

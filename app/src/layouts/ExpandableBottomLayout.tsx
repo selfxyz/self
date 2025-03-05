@@ -14,11 +14,13 @@ interface TopSectionProps extends ViewProps {
   children: React.ReactNode;
   backgroundColor: string;
   roundTop?: boolean;
+  style?: StyleSheet.NamedStyles<unknown>;
 }
 
 interface BottomSectionProps extends ViewProps {
   children: React.ReactNode;
-  backgroundColor: string;
+  backgroundColor?: string;
+  style?: StyleSheet.NamedStyles<unknown>;
 }
 
 const Layout: React.FC<ExpandableBottomLayoutProps> = ({
@@ -58,7 +60,9 @@ const TopSection: React.FC<TopSectionProps> = ({
   );
 };
 
-interface FullSectionProps extends ViewProps {}
+interface FullSectionProps extends ViewProps {
+  backgroundColor?: string;
+}
 /*
  * Rather than using a top and bottom section, this component is te entire thing.
  * It leave space for the safe area insets and provides basic padding
@@ -67,7 +71,7 @@ const FullSection: React.FC<FullSectionProps> = ({
   children,
   backgroundColor,
   ...props
-}: FullSectionProps) => {
+}) => {
   const { top, bottom } = useSafeAreaInsets();
   return (
     <View
@@ -85,6 +89,7 @@ const FullSection: React.FC<FullSectionProps> = ({
 const BottomSection: React.FC<BottomSectionProps> = ({
   children,
   style,
+  backgroundColor,
   ...props
 }) => {
   const { bottom } = useSafeAreaInsets();
@@ -97,6 +102,7 @@ const BottomSection: React.FC<BottomSectionProps> = ({
       {...props}
       style={[styles.bottomSection, style]}
       paddingBottom={totalBottom}
+      backgroundColor={backgroundColor}
     >
       {children}
     </View>

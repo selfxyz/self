@@ -5,6 +5,6 @@ interface ConnectedAppLayoutProps extends PropsWithChildren {}
 
 export default function ConnectedAppLayout({
   children,
-}: ConnectedAppLayoutProps) {
+}: ConnectedAppLayoutProps): JSX.Element {
   return <SafeAreaProvider>{children}</SafeAreaProvider>;
 }

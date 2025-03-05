@@ -4,6 +4,7 @@ import {
   PixelRatio,
   Platform,
   requireNativeComponent,
+  StyleSheet,
 } from 'react-native';
 
 import { extractMRZInfo } from '../../utils/utils';
@@ -94,12 +95,10 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
   if (Platform.OS === 'ios') {
     return (
       <RCTPassportOCRViewNativeComponent
+        // @ts-expect-error - onPassportRead is not typed
         onPassportRead={_onPassportRead}
         onError={_onError}
-        style={{
-          width: '110%',
-          height: '110%',
-        }}
+        style={styles.iosCamera}
       />
     );
   } else {
@@ -110,13 +109,21 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
         RCTFragmentViewManager={RCTPassportOCRViewNativeComponent}
         fragmentComponentName="PassportOCRViewManager"
         isMounted={isMounted}
-        style={{
-          height: PixelRatio.getPixelSizeForLayoutSize(800),
-          width: PixelRatio.getPixelSizeForLayoutSize(400),
-        }}
+        style={styles.androidCamera}
         onError={_onError}
         onPassportRead={_onPassportRead}
       />
     );
   }
 };
+
+const styles = StyleSheet.create({
+  iosCamera: {
+    width: '110%',
+    height: '110%',
+  },
+  androidCamera: {
+    height: PixelRatio.getPixelSizeForLayoutSize(800),
+    width: PixelRatio.getPixelSizeForLayoutSize(400),
+  },
+});

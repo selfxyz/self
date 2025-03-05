@@ -70,18 +70,14 @@ async function createSigningKeyPair(): Promise<boolean> {
     await biometrics.createKeys();
     return true;
   } catch (e) {
-    if (available) {
-      console.error(
-        "User has biometrics but somehow it wasn't able to create keys",
-      );
-      return false;
-    } else {
-      throw e;
-    }
+    console.error(
+      "User has biometrics but somehow it wasn't able to create keys",
+    );
+    throw e;
   }
 }
 
-async function restoreFromMnemonic(mnemonic: string) {
+async function restoreFromMnemonic(mnemonic: string): Promise<string> {
   if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
     throw new Error('Invalid mnemonic');
   }
@@ -94,7 +90,7 @@ async function restoreFromMnemonic(mnemonic: string) {
   return data;
 }
 
-async function loadOrCreateMnemonic() {
+async function loadOrCreateMnemonic(): Promise<string> {
   const storedMnemonic = await Keychain.getGenericPassword({
     service: SERVICE_NAME,
   });
@@ -153,7 +149,7 @@ export const AuthContext = createContext<IAuthContext>({
 export const AuthProvider = ({
   children,
   authenticationTimeoutinMs = 15 * 60 * 1000,
-}: AuthProviderProps) => {
+}: AuthProviderProps): JSX.Element => {
   const [_, setAuthenticatedTimeout] =
     useState<ReturnType<typeof setTimeout>>();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
