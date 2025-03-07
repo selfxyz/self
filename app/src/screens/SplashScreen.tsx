@@ -21,10 +21,7 @@ const SplashScreen: React.FC = ({}) => {
     checkBiometricsAvailable()
       .then(setBiometricsAvailable)
       .catch(err => {
-        console.warn(
-          'Error checking biometrics availability',
-          err,
-        );
+        console.warn('Error checking biometrics availability', err);
       });
   }, []);
 
