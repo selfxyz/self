@@ -1,6 +1,6 @@
 {
   "name": "openpassport",
-  "version": "2.4.1",
+  "version": "2.4.9",
   "private": true,
   "scripts": {
     "analyze:android": "yarn reinstall && react-native-bundle-visualizer --platform android --dev",
