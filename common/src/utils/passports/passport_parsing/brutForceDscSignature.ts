@@ -102,14 +102,20 @@ function verifyECDSA(dsc: CertificateData, csca: CertificateData, hashAlgorithm:
 }
 function verifyRSA(dsc: CertificateData, csca: CertificateData, hashAlgorithm: string): boolean {
   try {
-    const dscCert = forge.pki.certificateFromPem(dsc.rawPem);
     const cscaCert = forge.pki.certificateFromPem(csca.rawPem);
     const tbsHash = getTBSHash(dsc.rawPem, hashAlgorithm);
     if (!tbsHash) {
       return false;
     }
     const publicKey = cscaCert.publicKey as forge.pki.rsa.PublicKey;
-    const signature = dscCert.signature;
+    const certBuffer_dsc = Buffer.from(
+      dsc.rawPem.replace(/(-----(BEGIN|END) CERTIFICATE-----|\n)/g, ''),
+      'base64'
+    );
+    const asn1Data_dsc = asn1js.fromBER(certBuffer_dsc);
+    const cert_dsc = new Certificate({ schema: asn1Data_dsc.result });
+    const signatureValue = cert_dsc.signatureValue.valueBlock.valueHexView;
+    const signature = Buffer.from(signatureValue).toString('binary');
     try {
       const verified = publicKey.verify(tbsHash, signature);
       return verified;
