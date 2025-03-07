@@ -10,4 +10,5 @@ export const gitHubUrl = 'https://github.com/selfxyz/self';
 
 export const appStoreUrl = 'https://apps.apple.com/app/self-zk/id6478563710';
 
-export const playStoreUrl = 'https://play.google.com/store/apps/details?id=com.proofofpassportapp';
+export const playStoreUrl =
+  'https://play.google.com/store/apps/details?id=com.proofofpassportapp';
