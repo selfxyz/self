@@ -22,14 +22,6 @@ const _getSecurely = async function <T>(
 ): Promise<SignedPayload<T> | null> {
   console.log('Starting _getSecurely');
 
-  const keysExist = await biometrics.biometricKeysExist();
-  console.log('Biometric keys exist:', keysExist.keysExist);
-
-  if (!keysExist.keysExist) {
-    console.log('Creating new biometric keys');
-    await biometrics.createKeys();
-  }
-
   const dataString = await fn();
   console.log('Got data string:', dataString ? 'exists' : 'not found');
 
@@ -57,28 +49,13 @@ const _getSecurely = async function <T>(
   }
 };
 
-async function createSigningKeyPair(): Promise<boolean> {
-  const { available } = await biometrics.isSensorAvailable();
-  if (!available) {
-    return false;
-  }
-
-  if ((await biometrics.biometricKeysExist()).keysExist) {
-    return true;
-  }
-  console.log('No enrolled public key. Creating a public key from biometrics');
+async function checkBiometricsAvailable(): Promise<boolean> {
   try {
-    await biometrics.createKeys();
-    return true;
-  } catch (e) {
-    if (available) {
-      console.error(
-        "User has biometrics but somehow it wasn't able to create keys",
-      );
-      return false;
-    } else {
-      throw e;
-    }
+    const { available } = await biometrics.isSensorAvailable();
+    return available;
+  } catch (error) {
+    console.error('Error checking biometric availability:', error);
+    return false;
   }
 }
 
@@ -139,7 +116,7 @@ interface IAuthContext {
   restoreAccountFromMnemonic: (
     mnemonic: string,
   ) => Promise<SignedPayload<boolean> | null>;
-  createSigningKeyPair: () => Promise<boolean>;
+  checkBiometricsAvailable: () => Promise<boolean>;
 }
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
@@ -148,7 +125,7 @@ export const AuthContext = createContext<IAuthContext>({
   _getSecurely,
   getOrCreateMnemonic: () => Promise.resolve(null),
   restoreAccountFromMnemonic: () => Promise.resolve(null),
-  createSigningKeyPair: () => Promise.resolve(false),
+  checkBiometricsAvailable: () => Promise.resolve(false),
 });
 
 export const AuthProvider = ({
@@ -216,7 +193,7 @@ export const AuthProvider = ({
       loginWithBiometrics,
       getOrCreateMnemonic,
       restoreAccountFromMnemonic,
-      createSigningKeyPair,
+      checkBiometricsAvailable,
       _getSecurely,
     }),
     [isAuthenticated, isAuthenticatingPromise, loginWithBiometrics],
