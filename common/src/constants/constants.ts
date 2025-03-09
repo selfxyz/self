@@ -7,10 +7,12 @@ export const DEFAULT_USER_ID_TYPE = 'uuid';
 export const REDIRECT_URL = 'https://redirect.self.xyz';
 export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.self.xyz:8888/";
 export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
-
+export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
 export const API_URL = 'https://api.self.xyz';
 export const CSCA_TREE_URL = 'https://tree.self.xyz/csca';
 export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
+export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
+export const DSC_TREE_URL_STAGING = 'https://tree.staging.self.xyz/dsc';
 export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"

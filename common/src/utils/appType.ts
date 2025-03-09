@@ -1,7 +1,7 @@
 import { UserIdType, validateUserId } from "./circuits/uuid";
 
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
-export type EndpointType = 'https' | 'celo';
+export type EndpointType = 'https' | 'celo' | 'staging_celo';
 
 import { v4 } from 'uuid';
 import { Country3LetterCode } from "../constants/constants";
@@ -68,10 +68,10 @@ export class SelfAppBuilder {
     }
 
     this.config = {
-      sessionId : v4(),
-      userIdType : 'uuid',
-      devMode : false,
-      endpointType : 'https',
+      sessionId: v4(),
+      userIdType: 'uuid',
+      devMode: false,
+      endpointType: 'https',
       header: "",
       logoBase64: "",
       disclosures: {},
