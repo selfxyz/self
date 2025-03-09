@@ -1,12 +1,32 @@
-export const sigAlgs = [
+// Define the interface for test cases with optional saltLength
+export interface TestCase {
+  dgHashAlgo: string;
+  eContentHashAlgo: string;
+  sigAlg: string;
+  hashFunction: string;
+  domainParameter: string;
+  keyLength: string;
+  saltLength?: string; // Optional salt length for RSA-PSS
+}
+
+export const sigAlgs: TestCase[] = [
   {
-    dgHashAlgo: 'sha384',
-    eContentHashAlgo: 'sha384',
-    hashFunction: 'sha384',
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    hashFunction: 'sha256',
     sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
+    saltLength: '64' // Denmark case
   },
+  // {
+  //   dgHashAlgo: 'sha512',
+  //   eContentHashAlgo: 'sha512',
+  //   hashFunction: 'sha512',
+  //   sigAlg: 'ecdsa',
+  //   domainParameter: 'secp521r1',
+  //   keyLength: '521',
+  // }, // same problem as other 521s
 ];
 
 export const fullSigAlgs = [

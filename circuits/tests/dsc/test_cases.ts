@@ -45,6 +45,7 @@ export const fullSigAlgs = [
   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'brainpoolP512r1', keyLength: '512' },
   { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'brainpoolP512r1', keyLength: '512' },
   //secp
+  { sigAlg: 'ecdsa', hashFunction: 'sha1', domainParameter: 'secp256r1', keyLength: '256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp384r1', keyLength: '384' },
   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'secp384r1', keyLength: '384' },
