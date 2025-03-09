@@ -29,7 +29,7 @@ export const sigAlgs: TestCase[] = [
   // }, // same problem as other 521s
 ];
 
-export const fullSigAlgs = [
+export const fullSigAlgs: TestCase[] = [
   // RSA
   {
     dgHashAlgo: 'sha1',
