@@ -63,9 +63,20 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'rsa sha256': 'rsa_sha256_65537_4096',
-    'rsa sha1': 'rsa_sha1_65537_2048',
-    'rsapss sha256': 'rsapss_sha256_65537_2048',
+    'rsa sha256': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
+    'rsa sha1': ['sha256', 'sha256', 'rsa_sha1_65537_2048'],
+    'rsapss sha256': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'],
+    'sha256 brainpoolP256r1': [
+      'sha256',
+      'sha256',
+      'ecdsa_sha384_brainpoolP256r1_256',
+    ],
+    'sha384 brainpoolP384r1': [
+      'sha384',
+      'sha384',
+      'ecdsa_sha384_brainpoolP384r1_384',
+    ],
+    'sha384 secp384r1': ['sha384', 'sha384', 'ecdsa_sha384_secp384r1_384'],
   } as const;
 
   const handleGenerate = useCallback(async () => {
@@ -78,13 +89,16 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     await new Promise(resolve =>
       setTimeout(async () => {
         let mockPassportData;
+        const [hashFunction1, hashFunction2, signatureAlgorithm] =
+          signatureAlgorithmToStrictSignatureAlgorithm[
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+          ];
+
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
-            'sha256',
-            'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
+            hashFunction1,
+            hashFunction2,
+            signatureAlgorithm,
             selectedCountry as keyof typeof countryCodes,
             // We disregard the age to stick with Arcangel's birth date
             '541007',
@@ -95,11 +109,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           );
         } else {
           mockPassportData = genMockPassportData(
-            'sha256',
-            'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
+            hashFunction1,
+            hashFunction2,
+            signatureAlgorithm,
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
             castDate(expiryYears),
@@ -375,7 +387,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {['rsa sha256', 'rsa sha1', 'rsapss sha256'].map(algorithm => (
+              {[
+                'rsa sha256',
+                'rsa sha1',
+                'rsapss sha256',
+                'sha256 brainpoolP256r1',
+                'sha384 brainpoolP384r1',
+                'sha384 secp384r1',
+              ].map(algorithm => (
                 <TouchableOpacity
                   key={algorithm}
                   onPress={() => {
