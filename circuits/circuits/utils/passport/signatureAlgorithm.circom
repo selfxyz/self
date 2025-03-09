@@ -221,9 +221,9 @@ function getMinKeyLength(signatureAlgorithm) {
     } else if (signatureAlgorithm == 39) {
         return 4096;
     } else if (signatureAlgorithm == 40) {
-        return 521;
+        return 528;
     } else if (signatureAlgorithm == 41) {
-        return 521;
+        return 528;
     } else if (signatureAlgorithm == 42) {
         return 2048;
     } else if (signatureAlgorithm == 43) {
@@ -485,6 +485,6 @@ function getValidECDSAPrefixes() {
 }
 
 function prefixIndexToECDSAKeyLength() {
-    var keyLengths[13] = [224, 224, 256, 256, 256, 256, 384, 384, 384, 384, 512, 521, 521];
+    var keyLengths[13] = [224, 224, 256, 256, 256, 256, 384, 384, 384, 384, 512, 528, 528];
     return keyLengths;
 }

@@ -17,16 +17,8 @@ export const sigAlgs: TestCase[] = [
     sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
-    saltLength: '64' // Denmark case
+    saltLength: '64' // Denmark
   },
-  // {
-  //   dgHashAlgo: 'sha512',
-  //   eContentHashAlgo: 'sha512',
-  //   hashFunction: 'sha512',
-  //   sigAlg: 'ecdsa',
-  //   domainParameter: 'secp521r1',
-  //   keyLength: '521',
-  // }, // same problem as other 521s
 ];
 
 export const fullSigAlgs: TestCase[] = [
@@ -87,6 +79,15 @@ export const fullSigAlgs: TestCase[] = [
     sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    hashFunction: 'sha256',
+    sigAlg: 'rsapss',
+    domainParameter: '65537',
+    keyLength: '2048',
+    saltLength: '64' // Denmark
   },
   {
     dgHashAlgo: 'sha256',
@@ -202,5 +203,13 @@ export const fullSigAlgs: TestCase[] = [
     sigAlg: 'ecdsa',
     domainParameter: 'secp384r1',
     keyLength: '384',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    hashFunction: 'sha512',
+    sigAlg: 'ecdsa',
+    domainParameter: 'secp521r1',
+    keyLength: '521',
   },
 ];

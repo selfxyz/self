@@ -49,4 +49,9 @@ export const fullSigAlgs = [
   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp256r1', keyLength: '256' },
   { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp384r1', keyLength: '384' },
   { sigAlg: 'ecdsa', hashFunction: 'sha384', domainParameter: 'secp384r1', keyLength: '384' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha256', domainParameter: 'secp521r1', keyLength: '521' },
+  { sigAlg: 'ecdsa', hashFunction: 'sha512', domainParameter: 'secp521r1', keyLength: '521' },
+  // this last one does not pass right now but only because of the issue
+  // of the function that selects the position of the pubkey in ecdsa certs
+  // sometimes being off by one 
 ];
