@@ -21,7 +21,15 @@ dotenv.config();
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
 testSuite.forEach(
-  ({ dgHashAlgo, eContentHashAlgo, sigAlg, hashFunction, domainParameter, keyLength, saltLength }) => {
+  ({
+    dgHashAlgo,
+    eContentHashAlgo,
+    sigAlg,
+    hashFunction,
+    domainParameter,
+    keyLength,
+    saltLength,
+  }) => {
     describe(`Register - ${dgHashAlgo.toUpperCase()} ${eContentHashAlgo.toUpperCase()} ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${
       domainParameter
     } ${keyLength}${saltLength ? ` Salt:${saltLength}` : ''}`, function () {
