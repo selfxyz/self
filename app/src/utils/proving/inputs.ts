@@ -87,7 +87,7 @@ export async function generateTeeInputsVCAndDisclose(
 
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
     await getOfacSMTs();
-  const serialized_tree = await getCommitmentTree();
+  const serialized_tree = await getCommitmentTree(passportData.documentType);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
   console.log('tree', tree);
   // const commitment = generateCommitment(

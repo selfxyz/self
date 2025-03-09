@@ -206,7 +206,7 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const serializedTree = await getCommitmentTree();
+  const serializedTree = await getCommitmentTree(passportData.documentType);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
