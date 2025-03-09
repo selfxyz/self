@@ -259,6 +259,7 @@ export function genMockPassportData(
     eContent: eContent,
     signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
+    documentType: "mock_passport"
   });
 }
 

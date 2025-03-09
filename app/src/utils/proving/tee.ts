@@ -6,6 +6,7 @@ import { v4 } from 'uuid';
 import {
   CIRCUIT_TYPES,
   WS_DB_RELAYER,
+  WS_DB_RELAYER_STAGING,
 } from '../../../../common/src/constants/constants';
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
@@ -168,7 +169,7 @@ export async function sendPayload(
           console.log('Received UUID:', receivedUuid);
           console.log(result);
           if (!socket) {
-            socket = io(WS_DB_RELAYER, {
+            socket = io(getWSDbRelayerUrl(endpointType), {
               path: '/',
               transports: ['websocket'],
             });
@@ -259,6 +260,7 @@ export type TEEPayloadDisclose = {
 export type TEEPayload = {
   type: 'register' | 'dsc';
   onchain: true;
+  endpointType: string;
   circuit: {
     name: string;
     inputs: string;
@@ -287,6 +289,7 @@ export function getPayload(
     const payload: TEEPayload = {
       type: circuit as 'register' | 'dsc',
       onchain: true,
+      endpointType: endpointType,
       circuit: {
         name: circuitName,
         inputs: JSON.stringify(inputs),
@@ -294,4 +297,10 @@ export function getPayload(
     };
     return payload;
   }
+}
+
+function getWSDbRelayerUrl(endpointType: EndpointType) {
+  return endpointType === 'celo' || endpointType === 'https'
+    ? WS_DB_RELAYER
+    : WS_DB_RELAYER_STAGING;
 }

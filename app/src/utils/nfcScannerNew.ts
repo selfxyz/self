@@ -89,7 +89,8 @@ const handleResponseIOS = (response: any) => {
     signedAttr: signedEContentArray,
     encryptedDigest: encryptedDigestArray,
     parsed: false,
-  };
+    documentType: 'passport',
+  } as PassportData;
 };
 
 const handleResponseAndroid = (response: any) => {
@@ -131,5 +132,6 @@ const handleResponseAndroid = (response: any) => {
     eContent: JSON.parse(encapContent),
     signedAttr: JSON.parse(eContent),
     encryptedDigest: JSON.parse(encryptedDigest),
+    documentType: 'passport',
   } as PassportData;
 };

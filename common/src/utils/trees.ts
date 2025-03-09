@@ -8,17 +8,19 @@ import {
 import { packBytesAndPoseidon } from './hash';
 import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, IDENTITY_TREE_URL, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import { CSCA_TREE_DEPTH, CSCA_TREE_URL_STAGING, DSC_TREE_DEPTH, DSC_TREE_URL_STAGING, IDENTITY_TREE_URL, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
 import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
 import { max_dsc_bytes } from '../constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { pad } from './passports/passport';
 import countries from "i18n-iso-countries";
 import en from "i18n-iso-countries/langs/en.json";
+import { EndpointType } from './appType';
 countries.registerLocale(en);
 
-export async function getCSCATree(): Promise<string[][]> {
-  const response = await fetch(CSCA_TREE_URL);
+export async function getCSCATree(endpointType: EndpointType): Promise<string[][]> {
+  const cscaTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? CSCA_TREE_URL : CSCA_TREE_URL_STAGING
+  const response = await fetch(cscaTreeUrl);
   const data = await response.json();
   const status = data.status ? data.status : data;
   if (status === 'error') {
@@ -30,8 +32,9 @@ export async function getCSCATree(): Promise<string[][]> {
   return tree;
 }
 
-export async function getDSCTree(): Promise<string> {
-  const response = await fetch(DSC_TREE_URL);
+export async function getDSCTree(endpointType: EndpointType): Promise<string> {
+  const dscTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? DSC_TREE_URL : DSC_TREE_URL_STAGING
+  const response = await fetch(dscTreeUrl);
   const data = await response.json();
   const status = data.status ? data.status : data;
   if (status === 'error') {
