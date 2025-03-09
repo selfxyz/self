@@ -9,7 +9,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 project 'Self.xcodeproj'
 
-platform :ios, '14.0'
+platform :ios, '15.0'
 prepare_react_native_project!
 
 
@@ -53,7 +53,7 @@ target 'Self' do
           end
         end
           target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '14.0'
+              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
               config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
           end
       end
