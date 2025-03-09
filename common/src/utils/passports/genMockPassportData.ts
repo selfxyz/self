@@ -110,6 +110,10 @@ export function genMockPassportData(
       privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048_key;
       dsc = mockCertificates.mock_dsc_sha256_rsapss_32_65537_2048;
       break;
+    case 'rsapss_sha256_65537_2048_64':
+      privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_64_65537_2048_key;
+      dsc = mockCertificates.mock_dsc_sha256_rsapss_64_65537_2048;
+      break;
     case 'rsapss_sha256_3_2048':
       privateKeyPem = mockCertificates.mock_dsc_sha256_rsapss_32_3_2048_key;
       dsc = mockCertificates.mock_dsc_sha256_rsapss_32_3_2048;
