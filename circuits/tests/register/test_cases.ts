@@ -58,6 +58,14 @@ export const fullSigAlgs: TestCase[] = [
   {
     dgHashAlgo: 'sha512',
     eContentHashAlgo: 'sha512',
+    hashFunction: 'sha256',
+    sigAlg: 'rsa',
+    domainParameter: '65537',
+    keyLength: '4096'
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
     hashFunction: 'sha512',
     sigAlg: 'rsa',
     domainParameter: '65537',
@@ -172,6 +180,14 @@ export const fullSigAlgs: TestCase[] = [
     keyLength: '512',
   },
   // secp
+  {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1', 
+    hashFunction: 'sha1',
+    sigAlg: 'ecdsa',
+    domainParameter: 'secp256r1',
+    keyLength: '256'
+  },
   {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha224',
