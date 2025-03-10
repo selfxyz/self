@@ -85,7 +85,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 40
+        versionCode 41
         versionName "2.4.9"
         externalNativeBuild {
             cmake {
