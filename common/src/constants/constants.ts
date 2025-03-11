@@ -14,6 +14,7 @@ export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
 export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
 export const DSC_TREE_URL_STAGING = 'https://tree.staging.self.xyz/dsc';
 export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
+export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
 
