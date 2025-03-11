@@ -12,6 +12,7 @@
 		<string>appclips:staging.openpassport.app</string>
 		<string>appclips:appclip.openpassport.app</string>
 		<string>applinks:proofofpassport-merkle-tree.xyz</string>
+		<string>applinks:redirect.self.xyz</string>
 	</array>
 	<key>com.apple.developer.icloud-container-identifiers</key>
 	<array>
