@@ -1,7 +1,7 @@
 import { UserIdType, validateUserId } from "./circuits/uuid";
 
 export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
-export type EndpointType = 'https' | 'celo' | 'staging_celo';
+export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 
 import { v4 } from 'uuid';
 import { Country3LetterCode } from "../constants/constants";
