@@ -241,7 +241,7 @@ generate_certificate() {
 # ------------------------------------------------------------------------------
 # RSA certificates
 generate_certificate csca sha1 rsa 65537 4096
-generate_certificate dsc sha1 rsa 65537 2048 --signer sha1_rsa_65537_4096 --force
+generate_certificate dsc sha1 rsa 65537 2048 --signer sha1_rsa_65537_4096
 generate_certificate dsc sha1 rsa 65537 4096 --signer sha1_rsa_65537_4096
 generate_certificate csca sha256 rsa 65537 4096
 generate_certificate dsc sha256 rsa 65537 2048 --signer sha256_rsa_65537_4096
