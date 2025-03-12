@@ -13,7 +13,10 @@ export type PassportData = {
   passportMetadata?: PassportMetadata;
   dsc_parsed?: CertificateData;
   csca_parsed?: CertificateData;
+  documentType: DocumentType;
 };
+
+export type DocumentType = "passport" | "mock_passport";
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
 export type SignatureAlgorithm =

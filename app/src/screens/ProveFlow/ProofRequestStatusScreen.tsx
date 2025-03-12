@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
+import { Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
@@ -22,12 +23,13 @@ import {
 } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus } = useProofInfo();
+  const { selectedApp, disclosureStatus, cleanSelfApp } = useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
 
   function onOkPress() {
     buttonTap();
+    cleanSelfApp();
     goHome();
   }
 
@@ -64,13 +66,16 @@ const SuccessScreen: React.FC = () => {
       >
         <View style={styles.content}>
           <Title size="large">{getTitle(disclosureStatus)}</Title>
-          <Info status={disclosureStatus} appName={appName} />
+          <Info
+            status={disclosureStatus}
+            appName={appName === '' ? 'The app' : appName}
+          />
         </View>
         <PrimaryButton
           disabled={disclosureStatus === 'pending'}
           onPress={onOkPress}
         >
-          OK
+          {disclosureStatus === 'pending' ? <Spinner /> : 'OK'}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
@@ -92,7 +97,7 @@ function getAnimation(status: ProofStatusEnum) {
 function getTitle(status: ProofStatusEnum) {
   switch (status) {
     case 'success':
-      return 'Identity Verified';
+      return 'Proof Verified';
     case 'failure':
     case 'error':
       return 'Proof Failed';

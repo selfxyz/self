@@ -1,6 +1,3 @@
-import { bigIntToHex, castToScope, castToUUID, UserIdType } from './circuits/uuid';
-import { formatForbiddenCountriesListFromCircuitOutput, getAttributeFromUnpackedReveal } from './circuits/formatOutputs';
-import { unpackReveal } from './circuits/formatOutputs';
 import { Groth16Proof, PublicSignals } from 'snarkjs';
 
 export interface SelfVerificationResult {
@@ -26,9 +23,9 @@ export interface SelfVerificationResult {
     gender?: string;
     expiry_date?: string;
     older_than?: string;
-    passport_no_ofac?: string;
-    name_and_dob_ofac?: string;
-    name_and_yob_ofac?: string;
+    passport_no_ofac?: boolean;
+    name_and_dob_ofac?: boolean;
+    name_and_yob_ofac?: boolean;
   };
   proof: {
     value: {

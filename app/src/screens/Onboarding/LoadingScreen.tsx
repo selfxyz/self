@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -10,6 +10,7 @@ import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import analytics from '../../utils/analytics';
 import {
   checkPassportSupported,
   isPassportNullified,
@@ -17,11 +18,13 @@ import {
   registerPassport,
 } from '../../utils/proving/payload';
 
+const { trackEvent } = analytics();
+
 type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
-  const goToErrorScreen = useHapticNavigation('ConfirmBelongingScreen');
+  const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
 
@@ -71,8 +74,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
-          const isSupported = checkPassportSupported(passportData);
-          if (!isSupported) {
+          const isSupported = await checkPassportSupported(passportData);
+          if (isSupported.status !== 'passport_supported') {
+            trackEvent('Passport not supported', {
+              reason: isSupported.status,
+              details: isSupported.details,
+            });
             goToUnsupportedScreen();
             console.log('Passport not supported');
             clearPassportData();
@@ -107,24 +114,44 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   }, []);
 
   return (
-    <LottieView
-      autoPlay
-      loop={animationSource === miscAnimation}
-      source={animationSource}
-      style={styles.animation}
-      resizeMode="cover"
-      renderMode="HARDWARE"
-    />
+    <View style={styles.container}>
+      <LottieView
+        autoPlay
+        loop={animationSource === miscAnimation}
+        source={animationSource}
+        style={styles.animation}
+        resizeMode="cover"
+        renderMode="HARDWARE"
+      />
+      <Text style={styles.warningText}>
+        This can take up to one minute, don't close the app
+      </Text>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    position: 'relative',
+  },
   animation: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
+  },
+  warningText: {
+    position: 'absolute',
+    bottom: 40,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    padding: 16,
   },
 });
 

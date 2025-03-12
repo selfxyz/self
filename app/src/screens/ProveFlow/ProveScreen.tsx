@@ -44,6 +44,7 @@ const ProveScreen: React.FC = () => {
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
+  const isProcessing = useRef(false);
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -106,16 +107,22 @@ const ProveScreen: React.FC = () => {
 
   const onVerify = useCallback(
     async function () {
+      if (isProcessing.current) {
+        return;
+      }
+      isProcessing.current = true;
+
       resetProof();
       buttonTap();
       const currentApp = selectedAppRef.current;
+
       try {
         let timeToNavigateToStatusScreen: NodeJS.Timeout;
+
         const passportDataAndSecret = await getPassportDataAndSecret().catch(
           (e: Error) => {
             console.error('Error getPassportDataAndSecret', e);
             globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-            cleanSelfApp();
           },
         );
 
@@ -126,13 +133,13 @@ const ProveScreen: React.FC = () => {
         if (!passportDataAndSecret) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-          cleanSelfApp();
           return;
         }
 
         const { passportData, secret } = passportDataAndSecret.data;
         const isRegistered = await isUserRegistered(passportData, secret);
         console.log('isRegistered', isRegistered);
+
         if (!isRegistered) {
           clearTimeout(timeToNavigateToStatusScreen);
           console.log(
@@ -153,10 +160,11 @@ const ProveScreen: React.FC = () => {
           currentApp.sessionId,
           status === ProofStatusEnum.SUCCESS,
         );
-        cleanSelfApp();
       } catch (e) {
         console.log('Error sending VC and disclose payload', e);
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+      } finally {
+        isProcessing.current = false;
       }
     },
     [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],

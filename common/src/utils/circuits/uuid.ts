@@ -1,3 +1,5 @@
+export type UserIdType = 'hex' | 'uuid';
+
 /// UUID
 function hexToBigInt(hex: string): bigint {
     return BigInt(`0x${hex}`);
@@ -35,6 +37,19 @@ export function castToUUID(bigInt: bigint): string {
     return hexToUUID(hex);
 }
 
+export function castToUserIdentifier(bigInt: bigint, user_identifier_type: UserIdType): string {
+    switch (user_identifier_type) {
+        case 'hex':
+            return castToAddress(bigInt);
+        case 'uuid':
+            return castToUUID(bigInt);
+    }
+}
+
+export function castToAddress(bigInt: bigint): string {
+    return `0x${bigInt.toString(16).padStart(40, '0')}`;
+}
+
 /// scope
 function checkStringLength(str: string) {
     if (str.length > 25) {
@@ -70,14 +85,8 @@ export function stringToAsciiBigIntArray(str: string): bigint[] {
     return asciiBigIntArray;
 }
 
-
-// custom user_identifier type validation
-export type UserIdType = 'ascii' | 'hex' | 'uuid';
-
-const validateUserId = (userId: string, type: UserIdType): boolean => {
+export function validateUserId(userId: string, type: UserIdType): boolean {
     switch (type) {
-        case 'ascii':
-            return /^[\x00-\xFF]+$/.test(userId);
         case 'hex':
             return /^[0-9A-Fa-f]+$/.test(userId);
         case 'uuid':
@@ -86,39 +95,5 @@ const validateUserId = (userId: string, type: UserIdType): boolean => {
             );
         default:
             return false;
-    }
-};
-
-const getMaxLenght = (idType: UserIdType) => {
-    switch (idType) {
-        case 'ascii':
-            return 25;
-        default:
-            return 63;
-    }
-};
-
-export const parseUIDToBigInt = (
-    user_identifier: string,
-    user_identifier_type: UserIdType
-): string => {
-    if (!validateUserId(user_identifier, user_identifier_type)) {
-        throw new Error(`User identifier of type ${user_identifier_type} is not valid`);
-    }
-
-    const maxLength = getMaxLenght(user_identifier_type);
-    if (user_identifier.length > maxLength) {
-        throw new Error(
-            `User identifier of type ${user_identifier_type} exceeds maximum length of ${maxLength} characters`
-        );
-    }
-
-    switch (user_identifier_type) {
-        case 'ascii':
-            return stringToBigInt(user_identifier).toString();
-        case 'hex':
-            return hexToBigInt(user_identifier).toString();
-        case 'uuid':
-            return uuidToBigInt(user_identifier).toString();
     }
 };

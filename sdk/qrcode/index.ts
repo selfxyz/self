@@ -1,7 +1,7 @@
-import OpenPassportQRcodeWrapper, { OpenPassportQRcode, SelfApp, SelfAppBuilder } from './OpenPassportQRcode';
+import SelfQRcodeWrapper, { SelfQRcode, SelfApp, SelfAppBuilder } from './SelfQRcode';
 import { WebAppInfo } from './utils/websocket';
 
-export default OpenPassportQRcodeWrapper;
-export { OpenPassportQRcode, SelfApp, SelfAppBuilder };
+export default SelfQRcodeWrapper;
+export { SelfQRcode, SelfApp, SelfAppBuilder };
 
 export type { WebAppInfo };

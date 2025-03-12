@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 
+import { useNavigation } from '@react-navigation/native';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -12,9 +13,11 @@ import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
+import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
+import { isUserRegistered } from '../../utils/proving/payload';
 
 interface AccountRecoveryChoiceScreenProps {}
 
@@ -26,6 +29,7 @@ const AccountRecoveryChoiceScreen: React.FC<
   const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
     useSettingStore();
   const { download } = useBackupMnemonic();
+  const navigation = useNavigation();
 
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
   const onEnterRecoveryPress = useHapticNavigation('RecoverWithPhrase');
@@ -34,11 +38,34 @@ const AccountRecoveryChoiceScreen: React.FC<
     setRestoring(true);
     try {
       const mnemonic = await download();
-      await restoreAccountFromMnemonic(mnemonic.phrase);
+      const result = await restoreAccountFromMnemonic(mnemonic.phrase);
+
+      if (!result) {
+        console.warn('Failed to restore account');
+        navigation.navigate('Launch');
+        setRestoring(false);
+        return;
+      }
+
+      const passportDataAndSecret =
+        (await loadPassportDataAndSecret()) as string;
+      const { passportData, secret } = JSON.parse(passportDataAndSecret);
+      const isRegistered = await isUserRegistered(passportData, secret);
+      console.log('User is registered:', isRegistered);
+      if (!isRegistered) {
+        console.log(
+          'Secret provided did not match a registered passport. Please try again.',
+        );
+        navigation.navigate('Launch');
+        setRestoring(false);
+        return;
+      }
+
       if (!cloudBackupEnabled) {
         toggleCloudBackupEnabled();
       }
       onRestoreFromCloudNext();
+      setRestoring(false);
     } catch (e) {
       console.error(e);
       setRestoring(false);
@@ -63,7 +90,7 @@ const AccountRecoveryChoiceScreen: React.FC<
           <Title>Restore your Self account</Title>
           <Description>
             By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
+            not stolen or forged.{' '}
             {biometricsAvailable && (
               <>
                 Your device doesn't support biometrics or is disabled for apps

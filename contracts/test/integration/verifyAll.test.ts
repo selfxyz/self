@@ -12,6 +12,7 @@ import { generateVcAndDiscloseProof, parseSolidityCalldata } from "../utils/gene
 import { Formatter } from "../utils/formatter";
 import { formatCountriesList, reverseBytes } from "../../../common/src/utils/circuits/formatInputs";
 import { VerifyAll } from "../../typechain-types";
+import { getSMTs } from "../utils/generateProof";
 import { Groth16Proof, PublicSignals, groth16 } from "snarkjs";
 import { VcAndDiscloseProof } from "../utils/types";
 
@@ -26,7 +27,9 @@ describe("VerifyAll", () => {
     let commitment: any;
     let nullifier: any;
     let forbiddenCountriesList: string[];
+    let invalidForbiddenCountriesList: string[];
     let forbiddenCountriesListPacked: string[];
+    let invalidForbiddenCountriesListPacked: string[];
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
@@ -44,8 +47,13 @@ describe("VerifyAll", () => {
         imt = new LeanIMT<bigint>(hashFunction);
         await imt.insert(BigInt(commitment));
 
-        forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
-        forbiddenCountriesListPacked = splitHexFromBack(reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList)))));
+        forbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'AAA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA','AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA', 'AAA', 'ABC', 'CBA'];
+        const wholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(forbiddenCountriesList))));
+        forbiddenCountriesListPacked = splitHexFromBack(wholePacked);
+
+        invalidForbiddenCountriesList = ['AAA', 'ABC', 'CBA', 'CBA'];
+        const invalidWholePacked = reverseBytes(Formatter.bytesToHexString(new Uint8Array(formatCountriesList(invalidForbiddenCountriesList))));
+        invalidForbiddenCountriesListPacked = splitHexFromBack(invalidWholePacked);
 
         baseVcAndDiscloseProof = await generateVcAndDiscloseProof(
             registerSecret,
@@ -195,6 +203,304 @@ describe("VerifyAll", () => {
 
             expect(success).to.be.false;
             expect(readableData.name).to.be.empty;
+        });
+
+        describe("Error Handling", () => {
+            it("should return error code 'INVALID_VC_AND_DISCLOSE_PROOF' when proof is invalid", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                vcAndDiscloseProof.a[0] = generateRandomFieldElement();
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: false,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: false,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [false, false, false],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+                
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_VC_AND_DISCLOSE_PROOF");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'CURRENT_DATE_NOT_IN_VALID_RANGE' when date is invalid", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_CURRENT_DATE_INDEX] = 0;
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [true, true, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("CURRENT_DATE_NOT_IN_VALID_RANGE");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_OLDER_THAN' when age check fails", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "21", // Higher than the age in proof
+                    forbiddenCountriesEnabled: false,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [false, false, false],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_OLDER_THAN");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_OFAC' when OFAC check fails", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                const {
+                    passportNo_smt,
+                    nameAndDob_smt,
+                    nameAndYob_smt
+                } = getSMTs();
+
+                vcAndDiscloseProof = await generateVcAndDiscloseProof(
+                    registerSecret,
+                    BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
+                    deployedActors.mockPassport,
+                    "test-scope",
+                    new Array(88).fill("1"),
+                    "1",
+                    imt,
+                    "20",
+                    passportNo_smt,
+                    nameAndDob_smt,
+                    nameAndYob_smt,
+                    "0"
+                );
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: false,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [true, true, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+                console.log("return values");
+                console.log("readable data: ", readableData);
+                console.log("success: ", success);
+                console.log("errorCode: ", errorCode);
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_OFAC");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_FORBIDDEN_COUNTRIES' when countries check fails", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: invalidForbiddenCountriesListPacked,
+                    ofacEnabled: [true, true, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_FORBIDDEN_COUNTRIES");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_TIMESTAMP' when root timestamp doesn't match", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [true, true, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    123456, // Invalid timestamp
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_TIMESTAMP");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_OFAC_ROOT' when passport number OFAC root is invalid", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX] = generateRandomFieldElement();
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [true, true, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_OFAC_ROOT");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_OFAC_ROOT' when name and dob OFAC root is invalid", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX] = generateRandomFieldElement();
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [false, true, false],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_OFAC_ROOT");
+                expect(readableData.name).to.be.empty;
+            });
+
+            it("should return error code 'INVALID_OFAC_ROOT' when name and yob OFAC root is invalid", async () => {
+                const {registry, owner} = deployedActors;
+                await registry.connect(owner).devAddIdentityCommitment(
+                    ATTESTATION_ID.E_PASSPORT,
+                    nullifier,
+                    commitment
+                );
+
+                vcAndDiscloseProof.pubSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX] = generateRandomFieldElement();
+
+                const vcAndDiscloseHubProof = {
+                    olderThanEnabled: true,
+                    olderThan: "20",
+                    forbiddenCountriesEnabled: true,
+                    forbiddenCountriesListPacked: forbiddenCountriesListPacked,
+                    ofacEnabled: [false, false, true],
+                    vcAndDiscloseProof: vcAndDiscloseProof
+                };
+
+                const types = ["0", "1", "2"];
+                const [readableData, success, errorCode] = await verifyAll.verifyAll(
+                    0,
+                    vcAndDiscloseHubProof,
+                    types
+                );
+
+                expect(success).to.be.false;
+                expect(errorCode).to.equal("INVALID_OFAC_ROOT");
+                expect(readableData.name).to.be.empty;
+            });
         });
     });
 

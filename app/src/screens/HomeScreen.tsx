@@ -111,7 +111,7 @@ const Card = styled(YStack, {
 
   flexGrow: 0,
   backgroundColor: slate800,
-  borderRadius: 4,
+  borderRadius: 8,
   gap: 12,
   alignItems: 'center',
   padding: 20,

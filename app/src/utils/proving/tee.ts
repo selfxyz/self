@@ -6,6 +6,7 @@ import { v4 } from 'uuid';
 import {
   CIRCUIT_TYPES,
   WS_DB_RELAYER,
+  WS_DB_RELAYER_STAGING,
 } from '../../../../common/src/constants/constants';
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
@@ -161,11 +162,14 @@ export async function sendPayload(
           console.log('Truncated submit body:', truncatedBody);
           ws.send(JSON.stringify(submitBody));
         } else {
+          if (result.error) {
+            finalize(ProofStatusEnum.ERROR);
+          }
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
           console.log(result);
           if (!socket) {
-            socket = io(WS_DB_RELAYER, {
+            socket = io(getWSDbRelayerUrl(endpointType), {
               path: '/',
               transports: ['websocket'],
             });
@@ -177,7 +181,14 @@ export async function sendPayload(
               const data =
                 typeof message === 'string' ? JSON.parse(message) : message;
               console.log('SocketIO message:', data);
-              if (data.status === 4) {
+              if (data.status === 3) {
+                console.log('Failed to generate proof');
+                socket?.disconnect();
+                if (ws.readyState === WebSocket.OPEN) {
+                  ws.close();
+                }
+                finalize(ProofStatusEnum.FAILURE);
+              } else if (data.status === 4) {
                 console.log('Proof verified');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
@@ -249,6 +260,7 @@ export type TEEPayloadDisclose = {
 export type TEEPayload = {
   type: 'register' | 'dsc';
   onchain: true;
+  endpointType: string;
   circuit: {
     name: string;
     inputs: string;
@@ -277,6 +289,7 @@ export function getPayload(
     const payload: TEEPayload = {
       type: circuit as 'register' | 'dsc',
       onchain: true,
+      endpointType: endpointType,
       circuit: {
         name: circuitName,
         inputs: JSON.stringify(inputs),
@@ -284,4 +297,10 @@ export function getPayload(
     };
     return payload;
   }
+}
+
+function getWSDbRelayerUrl(endpointType: EndpointType) {
+  return endpointType === 'celo' || endpointType === 'https'
+    ? WS_DB_RELAYER
+    : WS_DB_RELAYER_STAGING;
 }

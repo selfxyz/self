@@ -3,12 +3,11 @@ import { TouchableOpacity } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
-import { ChevronDown, Cpu, Minus, Plus, X } from '@tamagui/lucide-icons';
+import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
 import {
   Button,
-  Fieldset,
   ScrollView,
   Separator,
   Sheet,
@@ -21,7 +20,13 @@ import {
 
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { usePassport } from '../stores/passportDataProvider';
+import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
+import ButtonsContainer from '../components/ButtonsContainer';
+import { PrimaryButton } from '../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../components/buttons/SecondaryButton';
+import { BodyText } from '../components/typography/BodyText';
+import { Title } from '../components/typography/Title';
+import { storePassportData } from '../stores/passportDataProvider';
 import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
 
@@ -42,8 +47,6 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       date.toISOString().slice(8, 10)
     ).toString();
   };
-  const { setData } = usePassport();
-
   const [selectedCountry, setSelectedCountry] = useState('USA');
   const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa sha256');
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
@@ -60,9 +63,20 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'rsa sha256': 'rsa_sha256_65537_4096',
-    'rsa sha1': 'rsa_sha1_65537_2048',
-    'rsapss sha256': 'rsapss_sha256_65537_2048',
+    'rsa sha256': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
+    'rsa sha1': ['sha256', 'sha256', 'rsa_sha1_65537_2048'],
+    'rsapss sha256': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'],
+    'sha256 brainpoolP256r1': [
+      'sha256',
+      'sha256',
+      'ecdsa_sha384_brainpoolP256r1_256',
+    ],
+    'sha384 brainpoolP384r1': [
+      'sha384',
+      'sha384',
+      'ecdsa_sha384_brainpoolP384r1_384',
+    ],
+    'sha384 secp384r1': ['sha384', 'sha384', 'ecdsa_sha384_secp384r1_384'],
   } as const;
 
   const handleGenerate = useCallback(async () => {
@@ -73,17 +87,21 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       .replace(/[^a-z0-9]/gi, '')
       .toUpperCase();
     await new Promise(resolve =>
-      setTimeout(() => {
+      setTimeout(async () => {
         let mockPassportData;
+        const [hashFunction1, hashFunction2, signatureAlgorithm] =
+          signatureAlgorithmToStrictSignatureAlgorithm[
+            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+          ];
+
         if (isInOfacList) {
           mockPassportData = genMockPassportData(
-            'sha1',
-            'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
+            hashFunction1,
+            hashFunction2,
+            signatureAlgorithm,
             selectedCountry as keyof typeof countryCodes,
-            castDate(-age),
+            // We disregard the age to stick with Arcangel's birth date
+            '541007',
             castDate(expiryYears),
             randomPassportNumber,
             'HENAO MONTOYA', // this name is on the OFAC list
@@ -91,19 +109,17 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           );
         } else {
           mockPassportData = genMockPassportData(
-            'sha1',
-            'sha256',
-            signatureAlgorithmToStrictSignatureAlgorithm[
-              selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-            ],
+            hashFunction1,
+            hashFunction2,
+            signatureAlgorithm,
             selectedCountry as keyof typeof countryCodes,
             castDate(-age),
             castDate(expiryYears),
             randomPassportNumber,
           );
         }
-
-        setData(mockPassportData);
+        mockPassportData = initPassportDataParsing(mockPassportData);
+        await storePassportData(mockPassportData);
         resolve(null);
       }, 0),
     );
@@ -116,171 +132,144 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const { top, bottom } = useSafeAreaInsets();
   return (
-    <>
-      <YStack
-        f={1}
-        gap="$4"
-        px="$4"
-        backgroundColor={white}
-        paddingTop={top}
-        paddingBottom={bottom}
-      >
-        <Text my="$9" textAlign="center" fontSize="$9" color={textBlack}>
-          Generate passport data
-        </Text>
-        <XStack ai="center">
-          <Text f={1} fontSize="$5">
-            Encryption
-          </Text>
-          <Button
-            onPress={() => {
-              buttonTap();
-              setAlgorithmSheetOpen(true);
-            }}
-            p="$2"
-            px="$3"
-            bg="white"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$4"
-          >
-            <XStack ai="center" gap="$2">
-              <Text fontSize="$4">{selectedAlgorithm}</Text>
-              <ChevronDown size={20} />
-            </XStack>
-          </Button>
-        </XStack>
-        <XStack ai="center">
-          <Text f={1} fontSize="$5">
-            Nationality
-          </Text>
-          <Button
-            onPress={() => {
-              buttonTap();
-              setCountrySheetOpen(true);
-            }}
-            p="$2"
-            px="$3"
-            bg="white"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$4"
-          >
-            <XStack ai="center" gap="$2">
-              <Text fontSize="$4">
-                {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
-                {flag(getCountryISO2(selectedCountry))}
-              </Text>
-              <ChevronDown size={20} />
-            </XStack>
-          </Button>
-        </XStack>
+    <YStack f={1} bg={white} pt={top} pb={bottom}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        <YStack px="$4" pb="$4" gap="$5">
+          <YStack ai="center" mb={'$10'}>
+            <Title>Generate Passport Data</Title>
+            <BodyText textAlign="center">
+              Configure the passport data parameters below
+            </BodyText>
+          </YStack>
 
-        <Fieldset mt="$2" gap="$2" horizontal>
-          <Text
-            color={textBlack}
-            width={160}
-            justifyContent="flex-end"
-            fontSize="$5"
-          >
-            Age (🎂)
-          </Text>
-          <XStack f={1} />
-
-          <Button
-            h="$3.5"
-            w="$3.5"
-            bg="white"
-            jc="center"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setAge(age - 1);
-            }}
-            disabled={age <= 0}
-          >
-            <Minus />
-          </Button>
-          <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-            {age} yo
-          </Text>
-          <Button
-            h="$3.5"
-            w="$3.5"
-            bg="white"
-            jc="center"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setAge(age + 1);
-            }}
-          >
-            <Plus />
-          </Button>
-        </Fieldset>
-
-        <Fieldset gap="$2" horizontal>
-          <Text
-            color={textBlack}
-            width={160}
-            justifyContent="flex-end"
-            fontSize="$5"
-          >
-            Passport expires in
-          </Text>
-          <XStack f={1} />
-
-          <Button
-            h="$3.5"
-            w="$3.5"
-            bg="white"
-            jc="center"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setExpiryYears(expiryYears - 1);
-            }}
-            disabled={expiryYears <= 0}
-          >
-            <Minus />
-          </Button>
-          <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-            {expiryYears} years
-          </Text>
-          <Button
-            h="$3.5"
-            w="$3.5"
-            bg="white"
-            jc="center"
-            borderColor={borderColor}
-            borderWidth={1}
-            borderRadius="$10"
-            onPress={() => {
-              buttonTap();
-              setExpiryYears(expiryYears + 1);
-            }}
-          >
-            <Plus />
-          </Button>
-        </Fieldset>
-
-        <YStack>
-          <Fieldset mt="$2" gap="$2" horizontal>
-            <Text
-              color={textBlack}
-              width={160}
-              justifyContent="flex-end"
-              fontSize="$5"
+          <XStack ai="center" jc="space-between">
+            <BodyText>Encryption</BodyText>
+            <Button
+              onPress={() => {
+                buttonTap();
+                setAlgorithmSheetOpen(true);
+              }}
+              p="$2"
+              px="$3"
+              bg="white"
+              borderColor={borderColor}
+              borderWidth={1}
+              borderRadius="$4"
             >
-              Is in OFAC list
-            </Text>
-            <XStack f={1} />
+              <XStack ai="center" gap="$2">
+                <Text fontSize="$4">{selectedAlgorithm}</Text>
+                <ChevronDown size={20} />
+              </XStack>
+            </Button>
+          </XStack>
+
+          <XStack ai="center" jc="space-between">
+            <BodyText>Nationality</BodyText>
+            <Button
+              onPress={() => {
+                buttonTap();
+                setCountrySheetOpen(true);
+              }}
+              p="$2"
+              px="$3"
+              bg="white"
+              borderColor={borderColor}
+              borderWidth={1}
+              borderRadius="$4"
+            >
+              <XStack ai="center" gap="$2">
+                <Text fontSize="$4">
+                  {countryCodes[selectedCountry as keyof typeof countryCodes]}{' '}
+                  {flag(getCountryISO2(selectedCountry))}
+                </Text>
+                <ChevronDown size={20} />
+              </XStack>
+            </Button>
+          </XStack>
+
+          <XStack ai="center" jc="space-between">
+            <BodyText>Age (🎂)</BodyText>
+            <XStack ai="center" gap="$2">
+              <Button
+                h="$3.5"
+                w="$3.5"
+                bg="white"
+                jc="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$10"
+                onPress={() => {
+                  buttonTap();
+                  setAge(age - 1);
+                }}
+                disabled={age <= 0 || isInOfacList}
+              >
+                <Minus />
+              </Button>
+              <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+                {isInOfacList ? 71 : age} yo
+              </Text>
+              <Button
+                h="$3.5"
+                w="$3.5"
+                bg="white"
+                jc="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$10"
+                onPress={() => {
+                  buttonTap();
+                  setAge(age + 1);
+                }}
+                disabled={isInOfacList}
+              >
+                <Plus />
+              </Button>
+            </XStack>
+          </XStack>
+
+          <XStack ai="center" jc="space-between">
+            <BodyText>Passport expires in</BodyText>
+            <XStack ai="center" gap="$2">
+              <Button
+                h="$3.5"
+                w="$3.5"
+                bg="white"
+                jc="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$10"
+                onPress={() => {
+                  buttonTap();
+                  setExpiryYears(expiryYears - 1);
+                }}
+                disabled={expiryYears <= 0}
+              >
+                <Minus />
+              </Button>
+              <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
+                {expiryYears} years
+              </Text>
+              <Button
+                h="$3.5"
+                w="$3.5"
+                bg="white"
+                jc="center"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$10"
+                onPress={() => {
+                  buttonTap();
+                  setExpiryYears(expiryYears + 1);
+                }}
+              >
+                <Plus />
+              </Button>
+            </XStack>
+          </XStack>
+
+          <XStack ai="center" jc="space-between">
+            <BodyText>In OFAC list</BodyText>
             <Switch
               size="$3.5"
               checked={isInOfacList}
@@ -292,31 +281,32 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             >
               <Switch.Thumb animation="quick" bc="white" />
             </Switch>
-          </Fieldset>
-          <Text
-            mt="$2"
-            color="$red10"
-            justifyContent="flex-end"
-            fontSize="$3"
-            style={{ opacity: isInOfacList ? 1 : 0 }}
-          >
-            OFAC list is a list of people who are suspected of being involved in
-            terrorism or other illegal activities.
-          </Text>
-        </YStack>
+          </XStack>
 
-        <YStack f={1} />
-
-        <YStack>
-          <Text mb="$2" textAlign="center" fontSize="$4" color={textBlack}>
-            These passport data are only for testing purposes.
-          </Text>
-          <Button onPress={handleGenerate} disabled={isGenerating}>
-            {isGenerating ? <Spinner /> : <Cpu color={textBlack} />} Generate
-            passport data
-          </Button>
+          {isInOfacList && (
+            <Text color="$red10" fontSize="$3">
+              OFAC list is a list of people who are suspected of being involved
+              in terrorism or other illegal activities.
+            </Text>
+          )}
         </YStack>
+      </ScrollView>
+
+      <YStack px="$4" pb="$4">
+        <ButtonsContainer>
+          <PrimaryButton onPress={handleGenerate} disabled={isGenerating}>
+            {isGenerating ? (
+              <Spinner color="white" size="small" />
+            ) : (
+              'Generate Passport Data'
+            )}
+          </PrimaryButton>
+          <SecondaryButton onPress={() => navigation.goBack()}>
+            Cancel
+          </SecondaryButton>
+        </ButtonsContainer>
       </YStack>
+
       <Sheet
         modal
         open={isCountrySheetOpen}
@@ -397,7 +387,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {['rsa sha256', 'rsa sha1', 'rsapss sha256'].map(algorithm => (
+              {[
+                'rsa sha256',
+                'rsa sha1',
+                'rsapss sha256',
+                'sha256 brainpoolP256r1',
+                'sha384 brainpoolP384r1',
+                'sha384 secp384r1',
+              ].map(algorithm => (
                 <TouchableOpacity
                   key={algorithm}
                   onPress={() => {
@@ -415,7 +412,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           </YStack>
         </Sheet.Frame>
       </Sheet>
-    </>
+    </YStack>
   );
 };
 

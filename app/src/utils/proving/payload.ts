@@ -1,105 +1,94 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
 
-import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
   API_URL,
-  DEFAULT_MAJORITY,
-  DEPLOYED_CIRCUITS_DSC,
-  DEPLOYED_CIRCUITS_REGISTER,
   PASSPORT_ATTESTATION_ID,
-  WS_RPC_URL_DSC,
-  WS_RPC_URL_REGISTER,
   WS_RPC_URL_VC_AND_DISCLOSE,
-  attributeToPosition,
 } from '../../../../common/src/constants/constants';
-import { SelfApp } from '../../../../common/src/utils/appType';
+import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
-import {
-  generateCircuitInputsDSC,
-  generateCircuitInputsRegister,
-  generateCircuitInputsVCandDisclose,
-} from '../../../../common/src/utils/circuits/generateInputs';
 import {
   generateCommitment,
   generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import {
-  getCSCATree,
   getCommitmentTree,
   getDSCTree,
   getLeafDscTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
+import {
+  generateTeeInputsDsc,
+  generateTeeInputsRegister,
+  generateTeeInputsVCAndDisclose,
+} from './inputs';
 import { sendPayload } from './tee';
 
-async function generateTeeInputsRegister(
-  secret: string,
+export type PassportSupportStatus =
+  | 'passport_metadata_missing'
+  | 'csca_not_found'
+  | 'registration_circuit_not_supported'
+  | 'dsc_circuit_not_supported'
+  | 'passport_supported';
+export async function checkPassportSupported(
   passportData: PassportData,
-) {
-  const serialized_dsc_tree = await getDSCTree();
-  const inputs = generateCircuitInputsRegister(
-    secret,
-    passportData,
-    serialized_dsc_tree,
-  );
-  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-  }
-  return { inputs, circuitName };
-}
-
-export function checkPassportSupported(passportData: PassportData) {
+): Promise<{
+  status: PassportSupportStatus;
+  details: string;
+}> {
   const passportMetadata = passportData.passportMetadata;
   if (!passportMetadata) {
     console.log('Passport metadata is null');
-    return false;
+    return { status: 'passport_metadata_missing', details: passportData.dsc };
   }
   if (!passportMetadata.cscaFound) {
     console.log('CSCA not found');
-    return false;
+    return { status: 'csca_not_found', details: passportData.dsc };
   }
   const circuitNameRegister = getCircuitNameFromPassportData(
     passportData,
     'register',
   );
+  const deployedCircuits = await getDeployedCircuits();
+  console.log('circuitNameRegister', circuitNameRegister);
   if (
     !circuitNameRegister ||
-    !DEPLOYED_CIRCUITS_REGISTER.includes(circuitNameRegister)
+    !deployedCircuits.REGISTER.includes(circuitNameRegister)
   ) {
-    console.log('Circuit not supported:', circuitNameRegister);
-    return false;
+    return {
+      status: 'registration_circuit_not_supported',
+      details: circuitNameRegister,
+    };
   }
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (!circuitNameDsc || !DEPLOYED_CIRCUITS_DSC.includes(circuitNameDsc)) {
+  if (!circuitNameDsc || !deployedCircuits.DSC.includes(circuitNameDsc)) {
     console.log('DSC circuit not supported:', circuitNameDsc);
-    return false;
+    return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
   console.log('Passport supported');
-  return true;
+  return { status: 'passport_supported', details: 'null' };
 }
 
 export async function sendRegisterPayload(
   passportData: PassportData,
   secret: string,
+  circuitDNSMapping: Record<string, string>,
+  endpointType: EndpointType,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
     passportData,
+    endpointType,
   );
-  console.log('WS_RPC_URL_REGISTER', WS_RPC_URL_REGISTER);
   await sendPayload(
     inputs,
     'register',
     circuitName,
-    'https',
+    endpointType,
     'https://self.xyz',
-    WS_RPC_URL_REGISTER,
+    (circuitDNSMapping as any).REGISTER[circuitName],
     undefined,
     {
       updateGlobalOnSuccess: true,
@@ -109,23 +98,12 @@ export async function sendRegisterPayload(
   );
 }
 
-async function generateTeeInputsDsc(passportData: PassportData) {
-  const serialized_csca_tree = await getCSCATree();
-  const inputs = generateCircuitInputsDSC(
-    passportData.dsc,
-    serialized_csca_tree,
-  );
-  const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-  }
-  return { inputs, circuitName };
-}
-
 async function checkIdPassportDscIsInTree(
   passportData: PassportData,
+  dscTree: string,
+  circuitDNSMapping: Record<string, string>,
+  endpointType: EndpointType,
 ): Promise<boolean> {
-  const dscTree = await getDSCTree();
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
   const leaf = getLeafDscTree(
@@ -136,7 +114,11 @@ async function checkIdPassportDscIsInTree(
   const index = tree.indexOf(BigInt(leaf));
   if (index === -1) {
     console.log('DSC is not found in the tree, sending DSC payload');
-    const dscStatus = await sendDscPayload(passportData);
+    const dscStatus = await sendDscPayload(
+      passportData,
+      circuitDNSMapping,
+      endpointType,
+    );
     if (dscStatus !== ProofStatusEnum.SUCCESS) {
       console.log('DSC proof failed');
       return false;
@@ -155,100 +137,33 @@ async function checkIdPassportDscIsInTree(
 
 export async function sendDscPayload(
   passportData: PassportData,
+  circuitDNSMapping: Record<string, string>,
+  endpointType: EndpointType,
 ): Promise<ProofStatusEnum | false> {
   if (!passportData) {
     return false;
   }
-  const isSupported = checkPassportSupported(passportData);
-  if (!isSupported) {
-    console.log('Passport not supported');
-    return false;
-  }
-  const { inputs, circuitName } = await generateTeeInputsDsc(passportData);
-  console.log('circuitName', circuitName);
+  // const isSupported = checkPassportSupported(passportData);
+  // if (!isSupported) {
+  //   console.log('Passport not supported');
+  //   return false;
+  // }
+  const { inputs, circuitName } = await generateTeeInputsDsc(
+    passportData,
+    endpointType,
+  );
+
   const dscStatus = await sendPayload(
     inputs,
     'dsc',
     circuitName,
-    'https',
+    endpointType,
     'https://self.xyz',
-    WS_RPC_URL_DSC,
+    (circuitDNSMapping.DSC as any)[circuitName],
     undefined,
     { updateGlobalOnSuccess: false },
   );
   return dscStatus;
-}
-
-/*** DISCLOSURE ***/
-
-async function getOfacSMTs() {
-  // TODO: get the SMT from an endpoint
-  const passportNoAndNationalitySMT = new SMT(poseidon2, true);
-  passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);
-  const nameAndDobSMT = new SMT(poseidon2, true);
-  nameAndDobSMT.import(nameAndDobSMTData);
-  const nameAndYobSMT = new SMT(poseidon2, true);
-  nameAndYobSMT.import(nameAndYobSMTData);
-  return { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT };
-}
-
-async function generateTeeInputsVCAndDisclose(
-  secret: string,
-  passportData: PassportData,
-  selfApp: SelfApp,
-) {
-  const { scope, userId, disclosures } = selfApp;
-
-  const selector_dg1 = Array(88).fill('0');
-
-  Object.entries(disclosures).forEach(([attribute, reveal]) => {
-    if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
-      return;
-    }
-    if (reveal) {
-      const [start, end] =
-        attributeToPosition[attribute as keyof typeof attributeToPosition];
-      selector_dg1.fill('1', start, end + 1);
-    }
-  });
-
-  const majority = disclosures.minimumAge
-    ? disclosures.minimumAge.toString()
-    : DEFAULT_MAJORITY;
-  const selector_older_than = disclosures.minimumAge ? '1' : '0';
-
-  const selector_ofac = disclosures.ofac ? 1 : 0;
-
-  const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
-    await getOfacSMTs();
-  const serialized_tree = await getCommitmentTree();
-  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
-  console.log('tree', tree);
-  // const commitment = generateCommitment(
-  //   secret,
-  //   PASSPORT_ATTESTATION_ID,
-  //   passportData,
-  // );
-  // tree.insert(BigInt(commitment));
-  // Uncomment to add artificially the commitment to the tree
-
-  const inputs = generateCircuitInputsVCandDisclose(
-    secret,
-    PASSPORT_ATTESTATION_ID,
-    passportData,
-    scope,
-    selector_dg1,
-    selector_older_than,
-    tree,
-    majority,
-    passportNoAndNationalitySMT,
-    nameAndDobSMT,
-    nameAndYobSMT,
-    selector_ofac,
-    disclosures.excludedCountries ?? [],
-    userId,
-  );
-  return { inputs, circuitName: 'vc_and_disclose' };
 }
 
 export async function sendVcAndDisclosePayload(
@@ -286,12 +201,15 @@ export async function isUserRegistered(
   passportData: PassportData,
   secret: string,
 ) {
+  if (!passportData) {
+    return false;
+  }
   const commitment = generateCommitment(
     secret,
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const serializedTree = await getCommitmentTree();
+  const serializedTree = await getCommitmentTree(passportData.documentType);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
@@ -317,9 +235,84 @@ export async function registerPassport(
   passportData: PassportData,
   secret: string,
 ) {
-  const dscOk = await checkIdPassportDscIsInTree(passportData);
+  // First get the mapping, then use it for the check
+  const endpointType =
+    passportData.documentType && passportData.documentType === 'mock_passport'
+      ? 'staging_celo'
+      : 'celo';
+  const [circuitDNSMapping, dscTree] = await Promise.all([
+    getCircuitDNSMapping(),
+    getDSCTree(endpointType),
+  ]);
+  console.log('circuitDNSMapping', circuitDNSMapping);
+  const dscOk = await checkIdPassportDscIsInTree(
+    passportData,
+    dscTree,
+    circuitDNSMapping,
+    endpointType,
+  );
   if (!dscOk) {
     return;
   }
-  await sendRegisterPayload(passportData, secret);
+  await sendRegisterPayload(
+    passportData,
+    secret,
+    circuitDNSMapping,
+    endpointType,
+  );
+}
+
+export async function getDeployedCircuits() {
+  console.log('Fetching deployed circuits from api');
+  const response = await fetch(`${API_URL}/deployed-circuits/`);
+  if (!response.ok) {
+    throw new Error(
+      `API server error: ${response.status} ${response.statusText}`,
+    );
+  }
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    throw new Error(
+      'API returned HTML instead of JSON - server may be down or misconfigured',
+    );
+  }
+  try {
+    const data = await response.json();
+
+    if (!data.data || !data.data.REGISTER || !data.data.DSC) {
+      throw new Error(
+        'Invalid data structure received from API: missing REGISTER or DSC fields',
+      );
+    }
+    return data.data;
+  } catch (error) {
+    throw new Error('API returned invalid JSON response - server may be down');
+  }
+}
+export async function getCircuitDNSMapping() {
+  console.log('Fetching deployed circuits from api');
+  const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
+  if (!response.ok) {
+    throw new Error(
+      `API server error: ${response.status} ${response.statusText}`,
+    );
+  }
+  const contentType = response.headers.get('content-type');
+  if (contentType && contentType.includes('text/html')) {
+    throw new Error(
+      'API returned HTML instead of JSON - server may be down or misconfigured',
+    );
+  }
+  try {
+    const data = await response.json();
+
+    if (!data.data) {
+      throw new Error(
+        'Invalid data structure received from API: missing REGISTER or DSC fields',
+      );
+    }
+    return data.data;
+  } catch (error) {
+    throw new Error('API returned invalid JSON response - server may be down');
+  }
 }
