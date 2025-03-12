@@ -1,4 +1,4 @@
-![Github banner (2)](https://github.com/user-attachments/assets/e182b110-94a2-47b5-9875-48e1736fa923)
+![Self Developers horizontal](https://github.com/user-attachments/assets/14c33806-9549-4eee-a2b2-bcfcf873ae80)
 
 Monorepo for Self.
 
@@ -17,7 +17,7 @@ Use cases unlocked include:
 
 #### Is my passport supported?
 
-Checkout our [coverage map here](https://map.openpassport.app/)
+Checkout our [coverage map here](http://map.self.xyz/)
 
 #### What exactly is being signed ?
 
@@ -33,7 +33,7 @@ When a country issues a passport, they sign datagroups that include at least:
 
 #### What is the signature algorithm ?
 
-Countries use different signature algorithms to sign passports. Check out our [coverage map](https://map.openpassport.app/) to see which~
+Countries use different signature algorithms to sign passports. Check out our [coverage map](http://map.self.xyz/) to see which
 
 #### I just read my passport but it says my signature algorithm is not implemented. What do I do ?
 
@@ -69,7 +69,7 @@ Everything we write is MIT licensed. Circom and circomlib are GPL tho.
 
 ## Contributing
 
-We are actively looking for contributors. Please check the [open issues](https://github.com/zk-passport/openpassport/issues) if you don't know were to start! We will offer bounties from $100 to $1000 for any significant progress on these, depending on difficulty.
+We are actively looking for contributors. Please check the [open issues](https://github.com/selfxyz/self/issues) if you don't know were to start! We offer bounties for any significant contribution.
 
 ## Contact us
 
