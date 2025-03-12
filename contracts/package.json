@@ -42,6 +42,7 @@
     "upgrade:registry:celo": "npx hardhat ignition deploy ignition/modules/deployNewRegistryAndUpgrade.ts --network celo --verify",
     "deploy_all": "npx hardhat ignition deploy ignition/modules/Deploy_All.ts --network optimism --verify",
     "publish": "npm publish --access public",
+    "export-prod": "bash ./scripts/prod.sh",
     "test": "npx hardhat test",
     "test:airdrop:local": "TEST_ENV=local npx hardhat test test/example/airdrop.test.ts",
     "test:attribute:local": "TEST_ENV=local npx hardhat test test/unit/CircuitAttributeHandler.test.ts",
