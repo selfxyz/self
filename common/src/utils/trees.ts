@@ -47,7 +47,7 @@ export async function getDSCTree(endpointType: EndpointType): Promise<string> {
 }
 
 export async function getCommitmentTree(documentType: DocumentType | null): Promise<string> {
-  const identityTreeUrl = documentType === null || documentType === 'passport' ? IDENTITY_TREE_URL : IDENTITY_TREE_URL_STAGING;
+  const identityTreeUrl = !documentType || typeof documentType !== 'string' || documentType === 'passport' ? IDENTITY_TREE_URL : IDENTITY_TREE_URL_STAGING;
   const response = await fetch(identityTreeUrl);
   return await response.json().then(data => data.data ? data.data : data);
 }
