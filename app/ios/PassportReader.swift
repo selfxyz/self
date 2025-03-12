@@ -100,7 +100,7 @@ class PassportReader: NSObject{
         let passport = try await passportReader.readPassport( mrzKey: mrzKey, tags: [.COM, .DG1, .SOD], customDisplayMessage: customMessageHandler)
 
         var ret = [String:String]()
-        print("documentType", passport.documentType)
+        //print("documentType", passport.documentType)
 
         ret["documentType"] = passport.documentType
         ret["documentSubType"] = passport.documentSubType
@@ -136,26 +136,26 @@ class PassportReader: NSObject{
         if let serializedCountrySigningCertificate = serializeX509Wrapper(passport.countrySigningCertificate) {
           ret["countrySigningCertificate"] = serializedCountrySigningCertificate
         }
-        print("passport.documentSigningCertificate", passport.documentSigningCertificate)
-        print("passport.countrySigningCertificate", passport.countrySigningCertificate)
+        //print("passport.documentSigningCertificate", passport.documentSigningCertificate)
+        //print("passport.countrySigningCertificate", passport.countrySigningCertificate)
 
         ret["LDSVersion"] = passport.LDSVersion
         ret["dataGroupsPresent"] = passport.dataGroupsPresent.joined(separator: ", ")
 
-        print("passport.LDSVersion", passport.LDSVersion)
+        //print("passport.LDSVersion", passport.LDSVersion)
 
         // ret["dataGroupsAvailable"] = passport.dataGroupsAvailable.map(dataGroupIdToString)
 
-        print("passport.dataGroupsAvailable", passport.dataGroupsAvailable)
-        print("passport.dataGroupsRead", passport.dataGroupsRead)
-        print("passport.dataGroupHashes", passport.dataGroupHashes)
+        //print("passport.dataGroupsAvailable", passport.dataGroupsAvailable)
+        //print("passport.dataGroupsRead", passport.dataGroupsRead)
+        //print("passport.dataGroupHashes", passport.dataGroupHashes)
 
         // do {
         //   let dataGroupsReadData = try JSONSerialization.data(withJSONObject: passport.dataGroupsRead.mapValues { self.convertDataGroupToSerializableFormat($0) }, options: [])
         //   let dataGroupsReadJsonString = String(data: dataGroupsReadData, encoding: .utf8) ?? ""
         //   ret["dataGroupsRead"] = dataGroupsReadJsonString
         // } catch {
-        //   print("Error serializing dataGroupsRead: \(error)")
+        //   //print("Error serializing dataGroupsRead: \(error)")
         // }
 
         // ret["dataGroupsRead"] = passport.dataGroupsRead.mapValues { convertDataGroupToSerializableFormat($0) }
@@ -166,7 +166,7 @@ class PassportReader: NSObject{
             let dataGroupHashesJsonString = String(data: dataGroupHashesData, encoding: .utf8) ?? ""
             ret["dataGroupHashes"] = dataGroupHashesJsonString
         } catch {
-            print("Error serializing dataGroupHashes: \(error)")
+            //print("Error serializing dataGroupHashes: \(error)")
         }
 
 
@@ -190,7 +190,7 @@ class PassportReader: NSObject{
 
         // activeAuthenticationSupported
 
-        print("passport.certificateSigningGroups", passport.certificateSigningGroups)
+        //print("passport.certificateSigningGroups", passport.certificateSigningGroups)
 
         // ret["certificateSigningGroups"] = passport.certificateSigningGroups.mapKeys(certificateTypeToString).mapValues(encodeX509WrapperToJsonString)
         // if let passportDataElements = passport.passportDataElements {
@@ -210,7 +210,7 @@ class PassportReader: NSObject{
           
           let messageDigestFromSignedAttributes = try sod.getMessageDigestFromSignedAttributes()
           let signedAttributes = try sod.getSignedAttributes()
-          print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
+          //print("messageDigestFromSignedAttributes", messageDigestFromSignedAttributes)
 
           ret["signedAttributes"] = signedAttributes.base64EncodedString()
           // if let pubKey = convertOpaquePointerToSecKey(opaquePointer: sod.pubKey),
@@ -225,7 +225,7 @@ class PassportReader: NSObject{
           }
 
         } catch {
-          print("Error serializing SOD data: \(error)")
+          //print("Error serializing SOD data: \(error)")
           reject("E_PASSPORT_READ", error.localizedDescription, error)
         }
 
@@ -260,7 +260,7 @@ class PassportReader: NSObject{
 //     let secKey = SecKeyCreateWithData(keyData as CFData, attributes as CFDictionary, &error)
 
 //     if let error = error {
-//         print("Error creating SecKey: \(error.takeRetainedValue())")
+//         //print("Error creating SecKey: \(error.takeRetainedValue())")
 //         return nil
 //     }
 
@@ -270,7 +270,7 @@ class PassportReader: NSObject{
 func serializePublicKey(_ publicKey: SecKey) -> String? {
     var error: Unmanaged<CFError>?
     guard let publicKeyData = SecKeyCopyExternalRepresentation(publicKey, &error) as Data? else {
-        print("Error serializing public key: \(error!.takeRetainedValue() as Error)")
+        //print("Error serializing public key: \(error!.takeRetainedValue() as Error)")
         return nil
     }
     return publicKeyData.base64EncodedString()
@@ -281,7 +281,7 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
       let signature = try sod.getSignature()
       return signature.base64EncodedString()
     } catch {
-      print("Error extracting signature: \(error)")
+      //print("Error extracting signature: \(error)")
       return nil
     }
   }
@@ -305,7 +305,7 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
       let jsonData = try JSONSerialization.data(withJSONObject: certInfoStringKeys, options: [])
       return String(data: jsonData, encoding: .utf8)
     } catch {
-      print("Error serializing X509Wrapper: \(error)")
+      //print("Error serializing X509Wrapper: \(error)")
       return nil
     }
   }
@@ -319,7 +319,7 @@ func serializePublicKey(_ publicKey: SecKey) -> String? {
       let jsonData = try JSONSerialization.data(withJSONObject: certificateItems, options: [])
       return String(data: jsonData, encoding: .utf8)
     } catch {
-      print("Error serializing certificate items to JSON: \(error)")
+      //print("Error serializing certificate items to JSON: \(error)")
       return nil
     }
   }
