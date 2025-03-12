@@ -63,13 +63,13 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'rsa sha256': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
-    'rsa sha1': ['sha256', 'sha256', 'rsa_sha1_65537_2048'],
-    'rsapss sha256': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'],
+    'sha256 rsa 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
+    'sha1 rsa 2048': ['sha1', 'sha1', 'rsa_sha1_65537_2048'],
+    'sha256 rsapss 2048': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'],
     'sha256 brainpoolP256r1': [
       'sha256',
       'sha256',
-      'ecdsa_sha384_brainpoolP256r1_256',
+      'ecdsa_sha256_brainpoolP256r1_256',
     ],
     'sha384 brainpoolP384r1': [
       'sha384',
@@ -77,6 +77,77 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       'ecdsa_sha384_brainpoolP384r1_384',
     ],
     'sha384 secp384r1': ['sha384', 'sha384', 'ecdsa_sha384_secp384r1_384'],
+    'sha256 rsa 65537 2048': ['sha256', 'sha256', 'rsa_sha256_65537_2048'],
+    'sha256 rsa 3 2048': ['sha256', 'sha256', 'rsa_sha256_3_2048'],
+    'sha256 rsa 65537 3072': ['sha256', 'sha256', 'rsa_sha256_65537_3072'],
+    'sha256 rsa 3 4096': ['sha256', 'sha256', 'rsa_sha256_3_4096'],
+    'sha384 rsa 65537 4096': ['sha384', 'sha384', 'rsa_sha384_65537_4096'],
+    'sha512 rsa 65537 2048': ['sha512', 'sha512', 'rsa_sha512_65537_2048'],
+    'sha512 rsa 65537 4096': ['sha512', 'sha512', 'rsa_sha512_65537_4096'],
+    'sha1 rsa 65537 4096': ['sha1', 'sha1', 'rsa_sha1_65537_4096'],
+    'sha256 rsapss 3 2048': ['sha256', 'sha256', 'rsapss_sha256_3_2048'],
+    'sha256 rsapss 3 3072': ['sha256', 'sha256', 'rsapss_sha256_3_3072'],
+    'sha256 rsapss 65537 3072': [
+      'sha256',
+      'sha256',
+      'rsapss_sha256_65537_3072',
+    ],
+    'sha256 rsapss 65537 4096': [
+      'sha256',
+      'sha256',
+      'rsapss_sha256_65537_4096',
+    ],
+    'sha384 rsapss 65537 2048': [
+      'sha384',
+      'sha384',
+      'rsapss_sha384_65537_2048',
+    ],
+    'sha384 rsapss 65537 3072': [
+      'sha384',
+      'sha384',
+      'rsapss_sha384_65537_3072',
+    ],
+    'sha512 rsapss 65537 2048': [
+      'sha512',
+      'sha512',
+      'rsapss_sha512_65537_2048',
+    ],
+    'sha512 rsapss 65537 4096': [
+      'sha512',
+      'sha512',
+      'rsapss_sha512_65537_4096',
+    ],
+    'sha1 secp256r1': ['sha1', 'sha1', 'ecdsa_sha1_secp256r1_256'],
+    'sha224 secp224r1': ['sha224', 'sha224', 'ecdsa_sha224_secp224r1_224'],
+    'sha256 secp256r1': ['sha256', 'sha256', 'ecdsa_sha256_secp256r1_256'],
+    'sha256 secp384r1': ['sha256', 'sha256', 'ecdsa_sha256_secp384r1_384'],
+    'sha1 brainpoolP224r1': ['sha1', 'sha1', 'ecdsa_sha1_brainpoolP224r1_224'],
+    'sha1 brainpoolP256r1': ['sha1', 'sha1', 'ecdsa_sha1_brainpoolP256r1_256'],
+    'sha224 brainpoolP224r1': [
+      'sha224',
+      'sha224',
+      'ecdsa_sha224_brainpoolP224r1_224',
+    ],
+    'sha256 brainpoolP224r1': [
+      'sha256',
+      'sha256',
+      'ecdsa_sha256_brainpoolP224r1_224',
+    ],
+    'sha384 brainpoolP256r1': [
+      'sha384',
+      'sha384',
+      'ecdsa_sha384_brainpoolP256r1_256',
+    ],
+    'sha512 brainpoolP256r1': [
+      'sha512',
+      'sha512',
+      'ecdsa_sha512_brainpoolP256r1_256',
+    ],
+    'sha512 brainpoolP384r1': [
+      'sha512',
+      'sha512',
+      'ecdsa_sha512_brainpoolP384r1_384',
+    ],
   } as const;
 
   const handleGenerate = useCallback(async () => {
@@ -296,7 +367,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         <ButtonsContainer>
           <PrimaryButton onPress={handleGenerate} disabled={isGenerating}>
             {isGenerating ? (
-              <Spinner color="white" size="small" />
+              <Spinner color="gray" size="small" />
             ) : (
               'Generate Passport Data'
             )}
@@ -362,7 +433,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         modal
         open={isAlgorithmSheetOpen}
         onOpenChange={setAlgorithmSheetOpen}
-        snapPoints={[40]}
+        snapPoints={[70]}
         animation="medium"
         disableDrag
       >
@@ -387,27 +458,24 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             </XStack>
             <Separator borderColor={separatorColor} mb="$4" />
             <ScrollView showsVerticalScrollIndicator={false}>
-              {[
-                'rsa sha256',
-                'rsa sha1',
-                'rsapss sha256',
-                'sha256 brainpoolP256r1',
-                'sha384 brainpoolP384r1',
-                'sha384 secp384r1',
-              ].map(algorithm => (
-                <TouchableOpacity
-                  key={algorithm}
-                  onPress={() => {
-                    buttonTap();
-                    handleAlgorithmSelect(algorithm);
-                    setAlgorithmSheetOpen(false);
-                  }}
-                >
-                  <XStack py="$3" px="$2">
-                    <Text fontSize="$4">{algorithm}</Text>
-                  </XStack>
-                </TouchableOpacity>
-              ))}
+              <YStack pb="$10">
+                {Object.keys(signatureAlgorithmToStrictSignatureAlgorithm).map(
+                  algorithm => (
+                    <TouchableOpacity
+                      key={algorithm}
+                      onPress={() => {
+                        buttonTap();
+                        handleAlgorithmSelect(algorithm);
+                        setAlgorithmSheetOpen(false);
+                      }}
+                    >
+                      <XStack py="$3" px="$2">
+                        <Text fontSize="$4">{algorithm}</Text>
+                      </XStack>
+                    </TouchableOpacity>
+                  ),
+                )}
+              </YStack>
             </ScrollView>
           </YStack>
         </Sheet.Frame>
