@@ -1,9 +1,9 @@
 {
   "name": "@selfxyz/qrcode",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "repository": {
     "type": "git",
-    "url": "https://github.com/celo-org/self"
+    "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "turnoffthiscomputer",

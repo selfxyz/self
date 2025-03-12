@@ -1,9 +1,9 @@
 {
   "name": "@selfxyz/core",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "repository": {
     "type": "git",
-    "url": "https://github.com/celo-org/self"
+    "url": "https://github.com/selfxyz/self"
   },
   "license": "MIT",
   "author": "motemotech",
