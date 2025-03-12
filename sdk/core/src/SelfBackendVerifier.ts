@@ -1,6 +1,6 @@
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
-import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS } from './constants/contractAddresses';
+import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS, REGISTRY_ADDRESS_STAGING, VERIFYALL_ADDRESS_STAGING } from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import {
@@ -27,9 +27,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: CountryCode;
   } = {
-    enabled: false,
-    value: '' as CountryCode,
-  };
+      enabled: false,
+      value: '' as CountryCode,
+    };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
     value: '18',
@@ -38,26 +38,31 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: CountryCode[];
   } = {
-    enabled: false,
-    value: [],
-  };
+      enabled: false,
+      value: [],
+    };
   protected passportNoOfac: boolean = false;
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
 
   protected registryContract: ethers.Contract;
   protected verifyAllContract: ethers.Contract;
+  protected mockPassport: boolean;
 
   constructor(
     rpcUrl: string,
     scope: string,
-    user_identifier_type: UserIdType = 'uuid'
+    user_identifier_type: UserIdType = 'uuid',
+    mockPassport: boolean = false
   ) {
     const provider = new ethers.JsonRpcProvider(rpcUrl);
-    this.registryContract = new ethers.Contract(REGISTRY_ADDRESS, registryAbi, provider);
-    this.verifyAllContract = new ethers.Contract(VERIFYALL_ADDRESS, verifyAllAbi, provider);
+    const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
+    const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
+    this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
+    this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
     this.scope = scope;
     this.user_identifier_type = user_identifier_type;
+    this.mockPassport = mockPassport;
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
@@ -100,19 +105,19 @@ export class SelfBackendVerifier {
       revealedDataTypes.gender,
       revealedDataTypes.expiry_date,
     ];
-    
+
     if (this.minimumAge.enabled) {
       types.push(revealedDataTypes.older_than);
     }
-    
+
     if (this.passportNoOfac) {
       types.push(revealedDataTypes.passport_no_ofac);
     }
-    
+
     if (this.nameAndDobOfac) {
       types.push(revealedDataTypes.name_and_dob_ofac);
     }
-    
+
     if (this.nameAndYobOfac) {
       types.push(revealedDataTypes.name_and_yob_ofac);
     }
