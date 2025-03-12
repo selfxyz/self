@@ -19,6 +19,8 @@ ignition/deployments/prod/*
 ignition/deployments/prod/artifacts/*
 !ignition/deployments/prod/artifacts/*.json
 !ignition/deployments/prod/artifacts/**/*.json
+ignition/deployments/prod/artifacts/**/dbg.json
+ignition/deployments/prod/artifacts/dbg.json
 
 #Local verifier
 contracts/verifiers/local/*
