@@ -39,7 +39,7 @@
                 <data
                     android:scheme="https"
                     android:host="redirect.self.xyz"
-                    android:pathPrefix="/" />
+                    android:pathPrefix="/self.*" />
         </intent-filter>
 
       <meta-data
