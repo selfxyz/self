@@ -121,7 +121,7 @@ const ProveScreen: React.FC = () => {
 
         const passportDataAndSecret = await getPassportDataAndSecret().catch(
           (e: Error) => {
-            console.error('Error getPassportDataAndSecret', e);
+            console.error('Error getting passport data', e);
             globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
           },
         );
@@ -161,7 +161,7 @@ const ProveScreen: React.FC = () => {
           status === ProofStatusEnum.SUCCESS,
         );
       } catch (e) {
-        console.log('Error sending VC and disclose payload', e);
+        console.log('Error in verification process');
         globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
       } finally {
         isProcessing.current = false;

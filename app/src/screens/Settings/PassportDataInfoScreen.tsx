@@ -14,6 +14,8 @@ const dataKeysToLabels: Record<
   string
 > = {
   dataGroups: 'Data Groups',
+  dg1Size: 'DG1 Size',
+  dg1HashSize: 'DG1 Hash Size',
   dg1HashFunction: 'DG1 Hash Function',
   dg1HashOffset: 'DG1 Hash Offset',
   dgPaddingBytes: 'DG Padding Bytes',
