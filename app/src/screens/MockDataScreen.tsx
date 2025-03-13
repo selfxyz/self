@@ -48,7 +48,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     ).toString();
   };
   const [selectedCountry, setSelectedCountry] = useState('USA');
-  const [selectedAlgorithm, setSelectedAlgorithm] = useState('rsa sha256');
+  const [selectedAlgorithm, setSelectedAlgorithm] = useState('sha256 rsa 65537 2048');
   const [isCountrySheetOpen, setCountrySheetOpen] = useState(false);
   const [isAlgorithmSheetOpen, setAlgorithmSheetOpen] = useState(false);
 
