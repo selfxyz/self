@@ -21,7 +21,8 @@ export const fullSigAlgs = [
   //   saltLen: '32',
   //   domainParameter: '65537',
   //   keyLength: '4096',
-  // }, // signed by CSCA using dsc_sha256_rsapss_65537_32_2048.circom, which was removed because not needed.
+  // }, // DSC signed by CSCA using dsc_sha256_rsapss_65537_32_2048.circom, which was removed because not needed.
+  // TODO: sign the DSC with a new CSCA
   {
     sigAlg: 'rsapss',
     hashFunction: 'sha512',
