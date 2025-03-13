@@ -63,9 +63,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   };
 
   const signatureAlgorithmToStrictSignatureAlgorithm = {
-    'sha256 rsa 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
-    'sha1 rsa 2048': ['sha1', 'sha1', 'rsa_sha1_65537_2048'],
-    'sha256 rsapss 2048': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'],
+    'sha256 rsa 65537 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
+    'sha1 rsa 65537 2048': ['sha1', 'sha1', 'rsa_sha1_65537_2048'],
+    // 'sha256 rsapss 65537 2048': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'], // DSC was signed by a CSCA we don't need to support anymore, TODO sign it with another CSCA
     'sha256 brainpoolP256r1': [
       'sha256',
       'sha256',
