@@ -47,6 +47,12 @@ export const triggerFeedback = (
   const mergedOptions = { ...defaultOptions, ...options };
 
   if (Platform.OS === 'ios') {
+    // increase feedback intensity for iOS
+    if (type === 'impactLight') {
+      type = 'impactMedium';
+    } else if (type === 'impactMedium') {
+      type = 'impactHeavy';
+    }
     ReactNativeHapticFeedback.trigger(type, {
       enableVibrateFallback: mergedOptions.enableVibrateFallback,
       ignoreAndroidSystemSettings: mergedOptions.ignoreAndroidSystemSettings,
