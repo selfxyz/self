@@ -169,7 +169,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     width: '130%',
     height: '130%',
-    backgroundColor: 'black',
   },
   subheader: {
     color: slate800,
