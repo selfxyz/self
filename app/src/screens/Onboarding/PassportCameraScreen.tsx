@@ -167,8 +167,8 @@ export default PassportCameraScreen;
 const styles = StyleSheet.create({
   animation: {
     position: 'absolute',
-    width: '115%',
-    height: '115%',
+    width: '130%',
+    height: '130%',
     backgroundColor: 'black',
   },
   subheader: {
