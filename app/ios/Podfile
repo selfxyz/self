@@ -94,5 +94,16 @@ target 'Self' do
         end
       end
     end
+
+    # update QKCutoutView.swift to hide OCR border
+    qkCutoutView = 'Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift'
+    if File.exist?(qkCutoutView)
+      text = File.read(qkCutoutView)
+      # Comment out the line containing "addBorderAroundCutout()"
+      new_text = text.gsub(/^(\s*addBorderAroundCutout\s*\(\s*\))/, '// \1')
+      File.open(qkCutoutView, "w") { |file| file.puts new_text }
+    else
+      puts "Warning: Could not find QKCutoutView.swift at #{qkCutoutView}"
+    end
   end
 end
