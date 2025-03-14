@@ -1,0 +1,9 @@
+app_identifier("com.yourcompany.yourapp") # The bundle identifier of your app
+apple_id("your@email.com") # Your Apple email address
+
+# For more information about the Appfile, see:
+#     https://docs.fastlane.tools/advanced/#appfile
+
+# Android configuration
+json_key_file("path/to/play-store-key.json") # Path to the json secret file - Follow https://docs.fastlane.tools/actions/supply/#setup to get one
+package_name("com.yourcompany.yourapp") # e.g. com.krausefx.app 
