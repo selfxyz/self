@@ -1,0 +1,94 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sdk/core/package.json'
+      - 'sdk/qrcode/package.json'
+
+jobs:
+  detect-changes:
+    runs-on: ubuntu-latest
+    outputs:
+      core_changed: ${{ steps.check-version.outputs.core_changed }}
+      qrcode_changed: ${{ steps.check-version.outputs.qrcode_changed }}
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 2
+      
+      - name: Check for version changes
+        id: check-version
+        run: |
+          git diff HEAD^ HEAD --name-only | grep -q "sdk/core/package.json" && echo "core_changed=true" >> $GITHUB_OUTPUT || echo "core_changed=false" >> $GITHUB_OUTPUT
+          git diff HEAD^ HEAD --name-only | grep -q "sdk/qrcode/package.json" && echo "qrcode_changed=true" >> $GITHUB_OUTPUT || echo "qrcode_changed=false" >> $GITHUB_OUTPUT
+          
+          if git diff HEAD^ HEAD -- sdk/core/package.json | grep -q '"version":'; then
+            echo "core_changed=true" >> $GITHUB_OUTPUT
+          fi
+          
+          if git diff HEAD^ HEAD -- sdk/qrcode/package.json | grep -q '"version":'; then
+            echo "qrcode_changed=true" >> $GITHUB_OUTPUT
+          fi
+
+  publish-core:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.core_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: |
+          cd sdk/core
+          yarn install --frozen-lockfile
+      
+      - name: Build package
+        run: |
+          cd sdk/core
+          yarn build
+      
+      - name: Publish to npm
+        run: |
+          cd sdk/core
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+  publish-qrcode:
+    needs: detect-changes
+    if: needs.detect-changes.outputs.qrcode_changed == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          registry-url: 'https://registry.npmjs.org'
+      
+      - name: Install dependencies
+        run: |
+          cd sdk/qrcode
+          yarn install --frozen-lockfile
+      
+      - name: Build package
+        run: |
+          cd sdk/qrcode
+          yarn build
+      
+      - name: Publish to npm
+        run: |
+          cd sdk/qrcode
+          npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
