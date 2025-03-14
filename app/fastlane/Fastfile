@@ -1,0 +1,78 @@
+# This file contains the fastlane.tools configuration
+# You can find the documentation at https://docs.fastlane.tools
+#
+# For a list of all available actions, check out
+#     https://docs.fastlane.tools/actions
+#
+
+default_platform(:ios)
+
+platform :ios do
+  desc "Push a new build to TestFlight Internal Testing"
+  lane :internal_test do
+    setup_ci if ENV['CI']
+    
+    # Update app version and build number if needed
+    # increment_build_number(xcodeproj: "ios/YourApp.xcodeproj")
+    
+    # Install cocoapods dependencies
+    cocoapods(podfile: "ios/Podfile")
+    
+    # Build the app
+    build_app(
+      workspace: "ios/YourApp.xcworkspace", # Update with your app name
+      scheme: "YourApp", # Update with your app scheme
+      export_method: "app-store",
+      output_directory: "build",
+      silent: true,
+      clean: true
+    )
+    
+    # Upload to TestFlight
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+      duration: 1200,
+      in_house: false
+    )
+    
+    upload_to_testflight(
+      api_key: api_key,
+      skip_waiting_for_build_processing: true
+    )
+  end
+end
+
+platform :android do
+  desc "Push a new build to Google Play Internal Testing"
+  lane :internal_test do
+    # Update version code if needed
+    # increment_version_code(
+    #   gradle_file_path: "android/app/build.gradle"
+    # )
+    
+    # Build the Android app
+    gradle(
+      task: "clean assembleRelease",
+      project_dir: "android/",
+      properties: {
+        "android.injected.signing.store.file" => "app/upload-keystore.jks",
+        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+      }
+    )
+    
+    # Upload to Google Play
+    upload_to_play_store(
+      track: "internal",
+      json_key: ENV["PLAY_STORE_JSON_KEY"],
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "completed",
+      aab: "android/app/build/outputs/bundle/release/app-release.aab"
+    )
+  end
+end 
