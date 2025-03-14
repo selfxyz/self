@@ -49,9 +49,9 @@ jobs:
       - name: Install dependencies (common first)
         run: |
           cd common
-          yarn install --frozen-lockfile
+          yarn install 
           cd ../sdk/core
-          yarn install --frozen-lockfile
+          yarn install 
       
       - name: Build package
         run: |
@@ -81,9 +81,9 @@ jobs:
       - name: Install dependencies (common first)
         run: |
           cd common
-          yarn install --frozen-lockfile
+          yarn install 
           cd ../sdk/qrcode
-          yarn install --frozen-lockfile
+          yarn install 
       
       - name: Build package
         run: |
