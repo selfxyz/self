@@ -3,28 +3,19 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from 'react';
 import ReactNativeBiometrics from 'react-native-biometrics';
 
-async function createSigningKeyPair(): Promise<void> {
-  const { available } = await biometrics.isSensorAvailable();
-  if (!available) {
-    return;
-  }
-
-  if ((await biometrics.biometricKeysExist()).keysExist) {
-    return;
-  }
-  console.log('No enrolled public key. Creating a public key from biometrics');
+async function fetchBiometricAvailablity(): Promise<boolean> {
   try {
-    await biometrics.createKeys();
-  } catch (e) {
-    console.error(
-      "User has biometrics but somehow it wasn't able to create keys",
-    );
-    throw e;
+    const { available } = await biometrics.isSensorAvailable();
+    return available;
+  } catch (error) {
+    console.error('Error checking biometric availability:', error);
+    return false;
   }
 }
 
@@ -35,17 +26,23 @@ const biometrics = new ReactNativeBiometrics({
 interface AuthProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
+type BiometricAvailablity =
+  | 'unknown'
+  | 'checking'
+  | 'available'
+  | 'unavailable';
+
 interface IAuthContext {
   isAuthenticated: boolean;
   isAuthenticating: boolean;
   loginWithBiometrics: () => Promise<void>;
-  createSigningKeyPair: () => Promise<void>;
+  biometricAvailablity: BiometricAvailablity;
 }
 export const AuthContext = createContext<IAuthContext>({
   isAuthenticated: false,
   isAuthenticating: false,
   loginWithBiometrics: () => Promise.resolve(),
-  createSigningKeyPair: () => Promise.resolve(),
+  biometricAvailablity: 'unknown',
 });
 
 export const AuthProvider = ({
@@ -55,34 +52,31 @@ export const AuthProvider = ({
   const [_, setAuthenticatedTimeout] =
     useState<ReturnType<typeof setTimeout>>();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isAuthenticatingPromise, setIsAuthenticatingPromise] =
-    useState<Promise<{ success: boolean; error?: string }> | null>(null);
+  const [biometricAvailablity, setBiometricAvailablity] =
+    useState<BiometricAvailablity>('unknown');
+
   const [isAuthenticating, setIsAuthenticating] = useState(false);
+
+  useEffect(() => {
+    fetchBiometricAvailablity();
+  }, []);
 
   const loginWithBiometrics = useCallback(async () => {
     setIsAuthenticating(true);
     try {
-      if (isAuthenticatingPromise) {
-        await isAuthenticatingPromise;
-        return;
-      }
-
-      const promise = biometrics.simplePrompt({
+      const { success, error } = await biometrics.simplePrompt({
         promptMessage: 'Confirm your identity to access the stored secret',
       });
-      setIsAuthenticatingPromise(promise);
-      const { success, error } = await promise;
       if (error) {
-        setIsAuthenticatingPromise(null);
         // handle error
         throw error;
       }
+      setBiometricAvailablity('available');
       if (!success) {
         // user canceled
         throw new Error('Canceled by user');
       }
 
-      setIsAuthenticatingPromise(null);
       setIsAuthenticated(true);
       setAuthenticatedTimeout(previousTimeout => {
         if (previousTimeout) {
@@ -96,16 +90,21 @@ export const AuthProvider = ({
     } finally {
       setIsAuthenticating(false);
     }
-  }, [isAuthenticatingPromise, authenticationTimeoutinMs]);
+  }, [authenticationTimeoutinMs]);
 
   const state: IAuthContext = useMemo(
     () => ({
       isAuthenticated,
       isAuthenticating,
       loginWithBiometrics,
-      createSigningKeyPair,
+      biometricAvailablity,
     }),
-    [isAuthenticated, isAuthenticating, loginWithBiometrics],
+    [
+      isAuthenticated,
+      isAuthenticating,
+      loginWithBiometrics,
+      biometricAvailablity,
+    ],
   );
 
   return <AuthContext.Provider value={state}>{children}</AuthContext.Provider>;

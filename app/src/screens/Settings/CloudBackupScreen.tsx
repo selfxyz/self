@@ -35,8 +35,9 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
 }) => {
   const { loginWithBiometrics } = useAuth();
   const { secret, status } = usePassport();
-  const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
-    useSettingStore();
+  const { cloudBackupEnabled, toggleCloudBackupEnabled } = useSettingStore();
+  const { biometricAvailablity } = useAuth();
+
   const { upload, disableBackup } = useBackupMnemonic();
   const [pending, setPending] = useState(false);
 
@@ -108,7 +109,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
               : `Your account will be end-to-end encrypted backed up to ${STORAGE_NAME} so you can easily restore it if you ever get a new phone.`}
           </Description>
           <Caption>
-            {biometricsAvailable ? (
+            {biometricAvailablity === 'available' ? (
               <>
                 Learn more about <BackupDocumentationLink />
               </>
@@ -124,7 +125,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             {cloudBackupEnabled ? (
               <SecondaryButton
                 onPress={disableCloudBackups}
-                disabled={pending || !biometricsAvailable}
+                disabled={pending || biometricAvailablity !== 'available'}
               >
                 {pending ? 'Disabling' : 'Disable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}
@@ -132,7 +133,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
             ) : (
               <PrimaryButton
                 onPress={enableCloudBackups}
-                disabled={pending || !biometricsAvailable}
+                disabled={pending || biometricAvailablity !== 'available'}
               >
                 {pending ? 'Enabling' : 'Enable'} {STORAGE_NAME} backups
                 {pending ? '…' : ''}

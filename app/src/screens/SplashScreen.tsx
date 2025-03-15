@@ -1,13 +1,11 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import splashAnimation from '../assets/animations/splash.json';
-import { useAuth } from '../stores/authProvider';
 import { usePassport } from '../stores/passportDataProvider';
-import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 import { isUserRegistered } from '../utils/proving/payload';
@@ -15,19 +13,6 @@ import { isUserRegistered } from '../utils/proving/payload';
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { passportData, secret, status } = usePassport(false);
-  const { createSigningKeyPair } = useAuth();
-  const { setBiometricsAvailable } = useSettingStore();
-
-  useEffect(() => {
-    createSigningKeyPair()
-      .then(() => setBiometricsAvailable(true))
-      .catch(err => {
-        console.warn(
-          'Something ELSE and totally unexpected went wrong during keypair creation',
-          err,
-        );
-      });
-  }, []);
 
   const handleAnimationFinish = useCallback(() => {
     setTimeout(async () => {

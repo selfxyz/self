@@ -12,6 +12,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Keyboard from '../../images/icons/keyboard.svg';
 import RestoreAccountSvg from '../../images/icons/restore_account.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useAuth } from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
@@ -25,8 +26,8 @@ const AccountRecoveryChoiceScreen: React.FC<
 > = ({}) => {
   const { passportData, restorefromSecret, status } = usePassport();
   const [restoring, setRestoring] = useState(false);
-  const { cloudBackupEnabled, toggleCloudBackupEnabled, biometricsAvailable } =
-    useSettingStore();
+  const { cloudBackupEnabled, toggleCloudBackupEnabled } = useSettingStore();
+  const { biometricAvailablity } = useAuth();
   const { download } = useBackupMnemonic();
   const navigation = useNavigation();
   const onRestoreFromCloudNext = useHapticNavigation('AccountVerifiedSuccess');
@@ -102,7 +103,7 @@ const AccountRecoveryChoiceScreen: React.FC<
           <Description>
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.{' '}
-            {biometricsAvailable && (
+            {biometricAvailablity === 'available' && (
               <>
                 Your device doesn't support biometrics or is disabled for apps
                 and is required for cloud storage.
@@ -113,7 +114,7 @@ const AccountRecoveryChoiceScreen: React.FC<
           <YStack gap="$2.5" width="100%" pt="$6">
             <PrimaryButton
               onPress={onRestoreFromCloudPress}
-              disabled={restoring || !biometricsAvailable}
+              disabled={restoring || biometricAvailablity !== 'available'}
             >
               {restoring ? 'Restoring' : 'Restore'} from {STORAGE_NAME}
               {restoring ? '…' : ''}
