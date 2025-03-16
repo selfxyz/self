@@ -47,10 +47,10 @@ jobs:
 
       - name: Download Circom Binary v2.1.9
         run: |
-          mkdir -p /home/runner/work
-          wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
-          chmod +x /home/runner/work/circom
-          sudo mv /home/runner/work/circom /bin/circom
+          # mkdir -p /home/runner/work
+          # wget -qO /home/runner/work/circom https://github.com/iden3/circom/releases/download/v2.1.9/circom-linux-amd64
+          # chmod +x /home/runner/work/circom
+          # sudo mv /home/runner/work/circom /bin/circom
 
       - name: Print Circom version
         run: circom --version
