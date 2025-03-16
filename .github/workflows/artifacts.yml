@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: ["self-hosted", "selfxyz-org", "ubuntu-22-04"]
+    runs-on: ["build-circuits"]
 
     steps:
       - name: Checkout Repository
@@ -24,14 +24,14 @@ jobs:
 
       - name: Install cpp dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install --yes \
-            build-essential \
-            libgmp-dev \
-            libsodium-dev \
-            nasm \
-            nlohmann-json3-dev \
-            wget
+          # sudo apt-get update
+          # sudo apt-get install --yes \
+          #   build-essential \
+          #   libgmp-dev \
+          #   libsodium-dev \
+          #   nasm \
+          #   nlohmann-json3-dev \
+          #   wget
 
       # TODO(): Use caching
       - uses: actions/setup-node@v4
