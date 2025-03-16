@@ -88,6 +88,19 @@ for item in "${allowed_circuits[@]}"; do
         continue
     fi
 
+    while [[ ${#pids[@]} -ge 5 ]]; do
+        new_pids=() 
+        for pid in "${pids[@]}"; do
+            if kill -0 "$pid" 2>/dev/null; then
+                new_pids+=("$pid")
+            else
+                echo "Process $pid finished"
+            fi
+        done
+        pids=("${new_pids[@]}")
+        sleep 1
+    done
+
     echo $filename $allowed
     filepath=${basepath}/${filename}.circom
     circom_pid=$!
