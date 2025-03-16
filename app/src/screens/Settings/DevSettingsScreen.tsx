@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useState } from 'react';
+import React, { PropsWithChildren } from 'react';
 import { Platform, TextInput } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -22,10 +22,6 @@ import {
 
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
-import {
-  unsafe_clearSecrets,
-  unsafe_getPrivateKey,
-} from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
@@ -129,8 +125,13 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const { clearPassportData, setPassportData, status } = usePassport();
-  const [privateKey, setPrivateKey] = useState('Loading private key…');
+  const {
+    clearPassportData,
+    setPassportData,
+    status,
+    unsafe_clearSecrets,
+    unsafe_secret_privateKey,
+  } = usePassport();
 
   const nav = useNavigation();
 
@@ -143,7 +144,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   }
 
   async function deleteEverything() {
-    await unsafe_clearSecrets();
+    await clearPassportData();
     await handleRestart();
   }
 
@@ -158,10 +159,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     );
     setPassportData(passportData);
   }
-
-  useEffect(() => {
-    unsafe_getPrivateKey().then(setPrivateKey);
-  }, []);
 
   return (
     <YStack gap="$3" mt="$2" ai="center">
@@ -266,7 +263,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           userSelect="all"
           style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
         >
-          {privateKey}
+          {unsafe_secret_privateKey ?? ''}
         </SelectableText>
       </Fieldset>
     </YStack>
