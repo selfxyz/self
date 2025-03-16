@@ -16,7 +16,7 @@ on:
 
 jobs:
   build:
-    runs-on: ['self-hosted', 'selfxyz-org', 'ubuntu-22-04']
+    runs-on: ["build-circuits"]
 
     steps:
       - name: Checkout Repository
