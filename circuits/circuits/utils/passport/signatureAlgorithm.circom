@@ -44,6 +44,7 @@ ID to Signature Algorithm
  43: rsapss_sha256_3_2048
  44: ecdsa_sha224_secp224r1_224
  45: rsapss_sha384_65537_2048
+ 46: rsapss_sha256_65537_2048 salt 64
 */
 
 
@@ -134,6 +135,8 @@ function getHashLength(signatureAlgorithm) {
         return 224;
     } else if (signatureAlgorithm == 45) {
         return 384;
+    } else if (signatureAlgorithm == 46) {
+        return 256;
     } else {
         assert(1==0);
         return 0;
@@ -218,9 +221,9 @@ function getMinKeyLength(signatureAlgorithm) {
     } else if (signatureAlgorithm == 39) {
         return 4096;
     } else if (signatureAlgorithm == 40) {
-        return 521;
+        return 528;
     } else if (signatureAlgorithm == 41) {
-        return 521;
+        return 528;
     } else if (signatureAlgorithm == 42) {
         return 2048;
     } else if (signatureAlgorithm == 43) {
@@ -228,6 +231,8 @@ function getMinKeyLength(signatureAlgorithm) {
     } else if (signatureAlgorithm == 44) {
         return 224;
     } else if (signatureAlgorithm == 45) {
+        return 2048;
+    } else if (signatureAlgorithm == 46) {
         return 2048;
     } else {
         assert(1==0);
@@ -323,6 +328,8 @@ function getKLengthFactor(signatureAlgorithm) {
         return 2;
     } else if (signatureAlgorithm == 45) {
         return 1;
+    } else if (signatureAlgorithm == 46) {
+        return 1;
     } else {
         assert(1==0);
         return 0;
@@ -377,6 +384,8 @@ function getExponentBits(signatureAlgorithm) {
     } else if (signatureAlgorithm == 43) {
         return 2;
     } else if (signatureAlgorithm == 45) {
+        return 17;
+    } else if (signatureAlgorithm == 46) {
         return 17;
     } else {
         assert(1==0);
@@ -442,7 +451,6 @@ function prefixIndexToRSAKeyLength() {
     return keyLengths;
 }
 
-
 function getValidECDSAPrefixes() {
     var prefixes[13][33];
 
@@ -477,6 +485,6 @@ function getValidECDSAPrefixes() {
 }
 
 function prefixIndexToECDSAKeyLength() {
-    var keyLengths[13] = [224, 224, 256, 256, 256, 256, 384, 384, 384, 384, 512, 521, 521];
+    var keyLengths[13] = [224, 224, 256, 256, 256, 256, 384, 384, 384, 384, 512, 528, 528];
     return keyLengths;
 }

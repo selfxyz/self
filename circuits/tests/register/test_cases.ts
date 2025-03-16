@@ -1,15 +1,27 @@
-export const sigAlgs = [
+// Define the interface for test cases with optional saltLength
+export interface TestCase {
+  dgHashAlgo: string;
+  eContentHashAlgo: string;
+  sigAlg: string;
+  hashFunction: string;
+  domainParameter: string;
+  keyLength: string;
+  saltLength?: string; // Optional salt length for RSA-PSS
+}
+
+export const sigAlgs: TestCase[] = [
   {
-    dgHashAlgo: 'sha384',
-    eContentHashAlgo: 'sha384',
-    hashFunction: 'sha384',
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    hashFunction: 'sha256',
     sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
+    saltLength: '64', // Denmark
   },
 ];
 
-export const fullSigAlgs = [
+export const fullSigAlgs: TestCase[] = [
   // RSA
   {
     dgHashAlgo: 'sha1',
@@ -46,6 +58,14 @@ export const fullSigAlgs = [
   {
     dgHashAlgo: 'sha512',
     eContentHashAlgo: 'sha512',
+    hashFunction: 'sha256',
+    sigAlg: 'rsa',
+    domainParameter: '65537',
+    keyLength: '4096',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
     hashFunction: 'sha512',
     sigAlg: 'rsa',
     domainParameter: '65537',
@@ -67,6 +87,15 @@ export const fullSigAlgs = [
     sigAlg: 'rsapss',
     domainParameter: '65537',
     keyLength: '2048',
+  },
+  {
+    dgHashAlgo: 'sha256',
+    eContentHashAlgo: 'sha256',
+    hashFunction: 'sha256',
+    sigAlg: 'rsapss',
+    domainParameter: '65537',
+    keyLength: '2048',
+    saltLength: '64', // Denmark
   },
   {
     dgHashAlgo: 'sha256',
@@ -152,6 +181,14 @@ export const fullSigAlgs = [
   },
   // secp
   {
+    dgHashAlgo: 'sha1',
+    eContentHashAlgo: 'sha1',
+    hashFunction: 'sha1',
+    sigAlg: 'ecdsa',
+    domainParameter: 'secp256r1',
+    keyLength: '256',
+  },
+  {
     dgHashAlgo: 'sha256',
     eContentHashAlgo: 'sha224',
     hashFunction: 'sha224',
@@ -182,5 +219,13 @@ export const fullSigAlgs = [
     sigAlg: 'ecdsa',
     domainParameter: 'secp384r1',
     keyLength: '384',
+  },
+  {
+    dgHashAlgo: 'sha512',
+    eContentHashAlgo: 'sha512',
+    hashFunction: 'sha512',
+    sigAlg: 'ecdsa',
+    domainParameter: 'secp521r1',
+    keyLength: '521',
   },
 ];
