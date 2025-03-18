@@ -10,6 +10,7 @@ on:
 
 jobs:
   build-ios:
+    if: false # skip for now
     runs-on: macos-latest
     steps:
       - name: Checkout repository
