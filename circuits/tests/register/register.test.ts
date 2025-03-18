@@ -21,17 +21,25 @@ dotenv.config();
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 
 testSuite.forEach(
-  ({ dgHashAlgo, eContentHashAlgo, sigAlg, hashFunction, domainParameter, keyLength }) => {
+  ({
+    dgHashAlgo,
+    eContentHashAlgo,
+    sigAlg,
+    hashFunction,
+    domainParameter,
+    keyLength,
+    saltLength,
+  }) => {
     describe(`Register - ${dgHashAlgo.toUpperCase()} ${eContentHashAlgo.toUpperCase()} ${hashFunction.toUpperCase()} ${sigAlg.toUpperCase()} ${
       domainParameter
-    } ${keyLength}`, function () {
+    } ${keyLength}${saltLength ? ` Salt:${saltLength}` : ''}`, function () {
       this.timeout(0);
       let circuit: any;
 
       const passportData = genMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
-        `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}` as SignatureAlgorithm,
+        `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}${saltLength ? `_${saltLength}` : ''}` as SignatureAlgorithm,
         'FRA',
         '000101',
         '300101'

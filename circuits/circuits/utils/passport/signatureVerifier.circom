@@ -72,9 +72,11 @@ template SignatureVerifier(signatureAlgorithm, n, k) {
         || signatureAlgorithm == 39
         || signatureAlgorithm == 42
         || signatureAlgorithm == 45
+        || signatureAlgorithm == 46
     ) {
         var pubKeyBitsLength = getMinKeyLength(signatureAlgorithm);
-        var SALT_LEN = HASH_LEN_BITS / 8;
+        // Handle Denmark when salt length is 64 but sha256 is used
+        var SALT_LEN = signatureAlgorithm == 46 ? 64 : HASH_LEN_BITS / 8;
         var E_BITS = getExponentBits(signatureAlgorithm);
         component rsaPss65537ShaVerification = VerifyRsaPss65537Sig(n, k, SALT_LEN, HASH_LEN_BITS, pubKeyBitsLength);
         rsaPss65537ShaVerification.pubkey <== pubKey;

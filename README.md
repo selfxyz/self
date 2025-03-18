@@ -50,7 +50,7 @@ The International Civil Aviation Organization (ICAO) is a specialized agency of 
 ## Project Ideas
 
 - Integrate Self to Gitcoin passport or a similar system to allow better sybil resistance in quadratic funding
-- Combine with other sources of identity to provide quantified levels of uniqueness, [totem](https://github.com/0xturboblitz/totem)-style. Examples can be [anon aadhaar](https://github.com/privacy-scaling-explorations/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/)
+- Combine with other sources of identity to provide quantified levels of uniqueness, [totem](https://github.com/0xturboblitz/totem)-style. Examples can be [anon aadhaar](https://github.com/anon-aadhaar), [Japan's my number cards](https://github.com/MynaWallet/monorepo) or [Taiwan DID](https://github.com/tw-did/tw-did/)
 - Add Self as a [Zupass](https://github.com/proofcarryingdata/zupass) PCD
 - Build a social network/anonymous message board for people from one specific country
 - Create a sybil-resistance tool to protect social networks against spambots
