@@ -42,6 +42,7 @@ import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
+import { DevModeLayout } from './components/DevModeLayout';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
@@ -330,7 +331,9 @@ const NavigationWithTracking = () => {
 
   return (
     <GestureHandlerRootView>
-      <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      <DevModeLayout>
+        <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      </DevModeLayout>
     </GestureHandlerRootView>
   );
 };
