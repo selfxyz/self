@@ -62,3 +62,7 @@ To test the lanes locally before pushing to GitHub:
 
 1. Set up the required environment variables
 2. Run the lanes manually using the commands above
+
+```bash
+act --container-architecture linux/amd64 --secret-file .secrets -j build-android
+```
