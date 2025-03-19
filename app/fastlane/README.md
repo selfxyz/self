@@ -64,5 +64,5 @@ To test the lanes locally before pushing to GitHub:
 2. Run the lanes manually using the commands above
 
 ```bash
-act --container-architecture linux/amd64 --secret-file .secrets -j build-android
+act --container-architecture linux/amd64 -P macos-latest=catthehacker/ubuntu:act-latest --secret-file .secrets -j build-android
 ```
