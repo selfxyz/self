@@ -55,7 +55,7 @@ platform :android do
     
     # Build the Android app
     gradle(
-      task: "clean assembleRelease",
+      task: "clean bundleRelease",
       project_dir: "android/",
       properties: {
         "android.injected.signing.store.file" => "app/upload-keystore.jks",
