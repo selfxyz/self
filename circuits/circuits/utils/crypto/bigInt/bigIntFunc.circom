@@ -1,5 +1,6 @@
 pragma circom 2.1.6;
 include "circom-bigint/circuits/bigint_func.circom";
+include "@openpassport/zk-email-circuits/lib/bigint-func.circom";
 include "./shouldUseKaratsuba.circom";
 
 
@@ -98,21 +99,27 @@ function long_sub_dl(n, k, a, b) {
     var borrow[200];
     for (var i = 0; i < k; i++) {
         if (i == 0) {
-            if (a[i] >= b[i]) {
-                diff[i] = a[i] - b[i];
-                borrow[i] = 0;
-            } else {
-                diff[i] = a[i] - b[i] + (1 << n);
-                borrow[i] = 1;
-            }
+            var cond = a[i] >= b[i];
+            diff[i] = cond ? a[i] - b[i] : a[i] - b[i] + (1 << n);
+            borrow[i] = cond ? 0 : 1;
+            // if (a[i] >= b[i]) {
+            //     diff[i] = a[i] - b[i];
+            //     borrow[i] = 0;
+            // } else {
+            //     diff[i] = a[i] - b[i] + (1 << n);
+            //     borrow[i] = 1;
+            // }
         } else {
-            if (a[i] >= b[i] + borrow[i - 1]) {
-                diff[i] = a[i] - b[i] - borrow[i - 1];
-                borrow[i] = 0;
-            } else {
-                diff[i] = (1 << n) + a[i] - b[i] - borrow[i - 1];
-                borrow[i] = 1;
-            }
+            var cond = a[i] >= b[i] + borrow[i - 1];
+            diff[i] = cond ? a[i] - b[i] - borrow[i - 1] : (1 << n) + a[i] - b[i] - borrow[i - 1];
+            borrow[i] = cond ? 0 : 1;
+            // if (a[i] >= b[i] + borrow[i - 1]) {
+            //     diff[i] = a[i] - b[i] - borrow[i - 1];
+            //     borrow[i] = 0;
+            // } else {
+            //     diff[i] = (1 << n) + a[i] - b[i] - borrow[i - 1];
+            //     borrow[i] = 1;
+            // }
         }
     }
     return diff;
@@ -152,16 +159,18 @@ function long_div_dl(n, k, m, a, b){
     var mult[200];
     var dividend[200];
     for (var i = m; i >= 0; i--) {
-        if (i == m) {
-            dividend[k] = 0;
-            for (var j = k - 1; j >= 0; j--) {
-                dividend[j] = remainder[j + m];
-            }
-        } else {
-            for (var j = k; j >= 0; j--) {
-                dividend[j] = remainder[j + i];
-            }
-        }
+        var cond = i == m;
+
+        // if (i == m) {
+        //     dividend[k] = 0;
+        //     for (var j = k - 1; j >= 0; j--) {
+        //         dividend[j] = remainder[j + m];
+        //     }
+        // } else {
+        //     for (var j = k; j >= 0; j--) {
+        //         dividend[j] = remainder[j + i];
+        //     }
+        // }
         
         out[0][i] = short_div_dl(n, k, dividend, b);
         
@@ -185,56 +194,56 @@ function long_div_dl(n, k, m, a, b){
     return out;
 }
 
-function long_div_non_strict_dl(n, k, m, a, b){
-    var out[2][100];
-    m += k;
-    while (b[k - 1] == 0) {
-        out[1][k] = 0;
-        k--;
-        assert(k > 0);
-    }
-    m -= k;
+// function long_div_non_strict_dl(n, k, m, a, b){
+//     var out[2][100];
+//     m += k;
+//     while (b[k - 1] == 0) {
+//         out[1][k] = 0;
+//         k--;
+//         assert(k > 0);
+//     }
+//     m -= k;
     
-    var remainder[200];
-    for (var i = 0; i < m + k; i++) {
-        remainder[i] = a[i];
-    }
+//     var remainder[200];
+//     for (var i = 0; i < m + k; i++) {
+//         remainder[i] = a[i];
+//     }
     
-    var mult[200];
-    var dividend[200];
-    for (var i = m; i >= 0; i--) {
-        if (i == m) {
-            dividend[k] = 0;
-            for (var j = k - 1; j >= 0; j--) {
-                dividend[j] = remainder[j + m];
-            }
-        } else {
-            for (var j = k; j >= 0; j--) {
-                dividend[j] = remainder[j + i];
-            }
-        }
+//     var mult[200];
+//     var dividend[200];
+//     for (var i = m; i >= 0; i--) {
+//         if (i == m) {
+//             dividend[k] = 0;
+//             for (var j = k - 1; j >= 0; j--) {
+//                 dividend[j] = remainder[j + m];
+//             }
+//         } else {
+//             for (var j = k; j >= 0; j--) {
+//                 dividend[j] = remainder[j + i];
+//             }
+//         }
         
-        out[0][i] = short_div_dl(n, k, dividend, b);
+//         out[0][i] = short_div_dl(n, k, dividend, b);
         
-        var mult_shift[200] = long_scalar_mult_dl(n, k, out[0][i], b);
-        var subtrahend[200];
-        for (var j = 0; j < m + k; j++) {
-            subtrahend[j] = 0;
-        }
-        for (var j = 0; j <= k; j++) {
-            if (i + j < m + k) {
-                subtrahend[i + j] = mult_shift[j];
-            }
-        }
-        remainder = long_sub_dl(n, m + k, remainder, subtrahend);
-    }
-    for (var i = 0; i < k; i++) {
-        out[1][i] = remainder[i];
-    }
-    out[1][k] = 0;
+//         var mult_shift[200] = long_scalar_mult_dl(n, k, out[0][i], b);
+//         var subtrahend[200];
+//         for (var j = 0; j < m + k; j++) {
+//             subtrahend[j] = 0;
+//         }
+//         for (var j = 0; j <= k; j++) {
+//             if (i + j < m + k) {
+//                 subtrahend[i + j] = mult_shift[j];
+//             }
+//         }
+//         remainder = long_sub_dl(n, m + k, remainder, subtrahend);
+//     }
+//     for (var i = 0; i < k; i++) {
+//         out[1][i] = remainder[i];
+//     }
+//     out[1][k] = 0;
     
-    return out;
-}
+//     return out;
+// }
 
 // n bits per register
 // a has k + 1 registers
@@ -243,21 +252,26 @@ function long_div_non_strict_dl(n, k, m, a, b){
 // 0 <= a < (2**n) * b
 function short_div_norm_dl(n, k, a, b) {
     var qhat = (a[k] * (1 << n) + a[k - 1]) \ b[k - 1];
-    if (qhat > (1 << n) - 1) {
-        qhat = (1 << n) - 1;
-    }
+    var v = qhat > (1 << n) - 1; 
+    qhat = qhat > v ? v : qhat;
     
     var mult[200] = long_scalar_mult_dl(n, k, qhat, b);
-    if (long_gt(n, k + 1, mult, a) == 1) {
-        mult = long_sub_dl(n, k + 1, mult, b);
-        if (long_gt(n, k + 1, mult, a) == 1) {
-            return qhat - 2;
-        } else {
-            return qhat - 1;
-        }
-    } else {
-        return qhat;
-    }
+    var first_gt = long_gt_zkemail(n, k + 1, mult, a);
+    var second_gt = long_gt_zkemail(n, k + 1, long_sub_dl(n, k + 1, mult, b), a);
+    var temp_result = second_gt == 1 ? qhat - 2 : qhat - 1;
+    var result = first_gt == 1 ? temp_result : qhat;
+    return result;
+
+    // if (long_gt(n, k + 1, mult, a) == 1) {
+    //     mult = long_sub_dl(n, k + 1, mult, b);
+    //     if (long_gt(n, k + 1, mult, a) == 1) {
+    //         return qhat - 2;
+    //     } else {
+    //         return qhat - 1;
+    //     }
+    // } else {
+    //     return qhat;
+    // }
 }
 
 // n bits per register
@@ -274,11 +288,15 @@ function short_div_dl(n, k, a, b) {
     var norm_b[200] = long_scalar_mult_dl(n, k, scale, b);
     
     var ret;
-    if (norm_b[k] != 0) {
-        ret = short_div_norm_dl(n, k + 1, norm_a, norm_b);
-    } else {
-        ret = short_div_norm_dl(n, k, norm_a, norm_b);
-    }
+    var cond = norm_b[k] != 0;
+
+    ret = cond ? short_div_norm_dl(n, k + 1, norm_a, norm_b) : short_div_norm_dl(n, k, norm_a, norm_b);
+
+    // if (norm_b[k] != 0) {
+    //     ret = short_div_norm_dl(n, k + 1, norm_a, norm_b);
+    // } else {
+    //     ret = short_div_norm_dl(n, k, norm_a, norm_b);
+    // }
     return ret;
 }
 
@@ -291,15 +309,23 @@ function prod_dl(n, k, a, b) {
     var prod_val[200];
     for (var i = 0; i < 2 * k - 1; i++) {
         prod_val[i] = 0;
-        if (i < k) {
-            for (var a_idx = 0; a_idx <= i; a_idx++) {
-                prod_val[i] = prod_val[i] + a[a_idx] * b[i - a_idx];
-            }
-        } else {
-            for (var a_idx = i - k + 1; a_idx < k; a_idx++) {
-                prod_val[i] = prod_val[i] + a[a_idx] * b[i - a_idx];
-            }
+        var cond = i < k;
+        var start = cond ? 0 : i - k + 1;
+        var end = cond ? i + 1 : k;
+
+        for (var a_idx = start; a_idx < end; a_idx++) {
+            prod_val[i] = prod_val[i] + a[a_idx] * b[i - a_idx];
         }
+
+        // if (i < k) {
+        //     for (var a_idx = 0; a_idx <= i; a_idx++) {
+        //         prod_val[i] = prod_val[i] + a[a_idx] * b[i - a_idx];
+        //     }
+        // } else {
+        //     for (var a_idx = i - k + 1; a_idx < k; a_idx++) {
+        //         prod_val[i] = prod_val[i] + a[a_idx] * b[i - a_idx];
+        //     }
+        // }
     }
     
     // now do a bunch of carrying to make sure registers not overflowed. taken from LongToShortNoEndCarry2
@@ -313,19 +339,29 @@ function prod_dl(n, k, a, b) {
     var carry[200];
     carry[0] = 0;
     out[0] = split[0][0];
-    if (2 * k - 1 > 1) {
-        var sumAndCarry[2] = SplitFn(split[0][1] + split[1][0], n, n);
-        out[1] = sumAndCarry[0];
-        carry[1] = sumAndCarry[1];
+
+    var cond = 2 * k - 1 > 1;
+    var sumAndCarry[2];
+    sumAndCarry = cond ? SplitFn(split[0][1] + split[1][0], n, n) : sumAndCarry;
+    out[1] = cond ? sumAndCarry[0] : out[1];
+    carry[1] = cond ? sumAndCarry[1] : carry[1];
+
+
+    // if (2 * k - 1 > 1) {
+    //     var sumAndCarry[2] = SplitFn(split[0][1] + split[1][0], n, n);
+    //     out[1] = sumAndCarry[0];
+    //     carry[1] = sumAndCarry[1];
+    // }
+    // if (2 * k - 1 > 2) {
+    var cond2 = 2 * k - 1 > 2;
+    for (var i = 2; i < 2 * k - 1; i++) {
+        var sumAndCarry2[2];
+        sumAndCarry2 = cond2 ? SplitFn(split[i][0] + split[i - 1][1] + split[i - 2][2] + carry[i - 1], n, n) : sumAndCarry2;
+        out[i] = cond2 ? sumAndCarry2[0] : out[i];
+        carry[i] = cond2 ? sumAndCarry2[1] : carry[i];
     }
-    if (2 * k - 1 > 2) {
-        for (var i = 2; i < 2 * k - 1; i++) {
-            var sumAndCarry[2] = SplitFn(split[i][0] + split[i - 1][1] + split[i - 2][2] + carry[i - 1], n, n);
-            out[i] = sumAndCarry[0];
-            carry[i] = sumAndCarry[1];
-        }
-        out[2 * k - 1] = split[2 * k - 2][1] + split[2 * k - 3][2] + carry[2 * k - 2];
-    }
+    out[2 * k - 1] = cond2 ? split[2 * k - 2][1] + split[2 * k - 3][2] + carry[2 * k - 2] : out[2 * k - 1];
+    // }
     return out;
 }
 
@@ -353,21 +389,28 @@ function mod_exp_dl(n, k, a, p, e) {
     // repeated squaring
     for (var i = k * n - 1; i >= 0; i--) {
         // multiply by a if bit is 0
-        if (eBits[i] == 1) {
-            var temp[200];
-            temp = prod_dl(n, k, out, a);
-            var temp2[2][200];
-            temp2 = long_div_dl(n, k, k, temp, p);
-            out = temp2[1];
-        }
+        // if (eBits[i] == 1) {
+        //     var temp[200];
+        //     temp = prod_dl(n, k, out, a);
+        //     var temp2[2][200];
+        //     temp2 = long_div_dl(n, k, k, temp, p);
+        //     out = temp2[1];
+        // }
+        var cond = eBits[i] == 1;
+        var temp[200];
+        var temp2[2][200];
+        temp = cond ? prod_dl(n, k, out, a) : temp;
+        temp2 = cond ? long_div_dl(n, k, k, temp, p) : temp2;
+        out = cond ? temp2[1] : out;
+
         
         // square, unless we're at the end
         if (i > 0) {
-            var temp[200];
-            temp = prod_dl(n, k, out, out);
-            var temp2[2][200];
-            temp2 = long_div_dl(n, k, k, temp, p);
-            out = temp2[1];
+            var temp3[200];
+            temp3 = prod_dl(n, k, out, out);
+            var temp4[2][200];
+            temp4 = long_div_dl(n, k, k, temp3, p);
+            out = temp4[1];
         }
         
     }
@@ -384,25 +427,16 @@ function mod_exp_dl(n, k, a, p, e) {
 function mod_inv_dl(n, k, a, p) {
     var isZero = 1;
     for (var i = 0; i < k; i++) {
-        if (a[i] != 0) {
-            isZero = 0;
-        }
+        isZero = a[i] != 0 ? 0 : isZero;
     }
-    if (isZero == 1) {
-        var ret[200];
-        for (var i = 0; i < k; i++) {
-            ret[i] = 0;
-        }
-        return ret;
+    var ret[200];
+    for (var i = 0; i < k; i++) {
+        ret[i] = 0;
     }
     
     var pCopy[200];
     for (var i = 0; i < 200; i++) {
-        if (i < k) {
-            pCopy[i] = p[i];
-        } else {
-            pCopy[i] = 0;
-        }
+        pCopy[i] = (i < k) ? p[i] : 0;
     }
     
     var two[200];
@@ -414,13 +448,14 @@ function mod_inv_dl(n, k, a, p) {
     var pMinusTwo[200];
     pMinusTwo = long_sub_dl(n, k, pCopy, two);
     var out[200];
-    out = mod_exp_dl(n, k, a, pCopy, pMinusTwo);
+    out = isZero ? ret : mod_exp_dl(n, k, a, pCopy, pMinusTwo);
+    
     return out;
 }
 
 // a, b and out are all n bits k registers
 function long_sub_mod_p_dl(n, k, a, b, p){
-    var gt = long_gt(n, k, a, b);
+    var gt = long_gt_zkemail(n, k, a, b);
     var tmp[200];
     if (gt){
         tmp = long_sub_dl(n, k, a, b);
@@ -468,7 +503,7 @@ function long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B){
 
 
 function long_sub_mod_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B, P) {
-    if (long_gt(CHUNK_SIZE, CHUNK_NUMBER, B, A) == 1){
+    if (long_gt_zkemail(CHUNK_SIZE, CHUNK_NUMBER, B, A) == 1){
         return long_add_dl(CHUNK_SIZE, CHUNK_NUMBER, A, long_sub_dl(CHUNK_SIZE,CHUNK_NUMBER,P,B));
     } else {
         return long_sub_dl(CHUNK_SIZE, CHUNK_NUMBER, A, B);
