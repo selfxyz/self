@@ -55,27 +55,41 @@ jobs:
       - name: Setup Ruby
         uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0
-          
-      - name: Install dependencies
+          ruby-version: 3.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Create workspace and copy repository
         run: |
-          gem install bundler
-          bundle install
+          mkdir -p /github/workspace
+          cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} /github/workspace/
+          cd /github/workspace
+          
+      - name: Create non-root user # bundle install complains when running as root
+        run: |
+          useradd -m -s /bin/bash runner
+          chown -R runner:runner /opt/acttoolcache/ /opt/hostedtoolcache/ /github/workspace
           
       - name: Install app dependencies
         run: |
-          cd app
+          su - runner -c "export PATH=/opt/hostedtoolcache/Ruby/3.2.7/x64/bin:$PATH && cd /github/workspace/self/app && bundle install"
+          cd /github/workspace/self/app
+          npm install -g yarn
           yarn install
 
-      - name: Decode Keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/android/app/upload-keystore.jks
 
-      - name: Build and upload to Google Play Internal Testing
-        env:
-          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
-          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-        run: |
-          cd app
-          bundle exec fastlane android internal_test 
+      # - name: Decode Keystore
+      #   run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/android/app/upload-keystore.jks
+
+      # - name: Build and upload to Google Play Internal Testing
+      #   env:
+      #     PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+      #     ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+      #     ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      #     ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      #   run: |
+      #     cd app
+      #     bundle exec fastlane android internal_test 
