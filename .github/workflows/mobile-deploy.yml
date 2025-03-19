@@ -71,25 +71,25 @@ jobs:
       - name: Create non-root user # bundle install complains when running as root
         run: |
           useradd -m -s /bin/bash runner
-          chown -R runner:runner /opt/acttoolcache/ /opt/hostedtoolcache/ /github/workspace
+          chown -R runner:runner /opt/acttoolcache/
+          chown -R runner:runner /opt/hostedtoolcache/ /github/workspace
           
       - name: Install app dependencies
         run: |
           su - runner -c "export PATH=/opt/hostedtoolcache/Ruby/3.2.7/x64/bin:$PATH && cd /github/workspace/self/app && bundle install"
           cd /github/workspace/self/app
-          npm install -g yarn
+          corepack enable
           yarn install
 
+      - name: Decode Keystore
+        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/android/app/upload-keystore.jks
 
-      # - name: Decode Keystore
-      #   run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > app/android/app/upload-keystore.jks
-
-      # - name: Build and upload to Google Play Internal Testing
-      #   env:
-      #     PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
-      #     ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-      #     ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      #     ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      #   run: |
-      #     cd app
-      #     bundle exec fastlane android internal_test 
+      - name: Build and upload to Google Play Internal Testing
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          cd app
+          bundle exec fastlane android internal_test 
