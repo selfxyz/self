@@ -2,67 +2,28 @@ name: Deploy to Internal Testers
 
 env:
   RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64
-  WORKSPACE: /github/workspace
   RUNNER_PROFILE: /home/runner/.profile
+  WORKSPACE: /github/workspace
 
 on:
   push:
     branches:
-      - staging  # Runs when staging is updated
+      - staging # Runs when staging is updated
     paths:
-      - "app/**"  # Only run when app files change
+      - "app/**" # Only run when app files change
       - ".github/workflows/mobile-deploy.yml"
 
 jobs:
   build-ios:
     runs-on: macos-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
         with:
-          distribution: 'temurin'
-          java-version: 17
-
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Create workspace and copy repository
-        run: |
-          mkdir -p ${WORKSPACE}
-          cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${WORKSPACE}
-          cd ${WORKSPACE}
-          
-      - name: Create non-root user # bundle install complains when running as root
-        run: |
-          useradd -m -s /bin/bash runner
-          chown -R runner:runner /opt/acttoolcache/
-          chown -R runner:runner /opt/hostedtoolcache/ ${WORKSPACE}
-          # Add permission for gradle cache directory
-          mkdir -p /home/runner/.gradle
-          chown -R runner:runner /home/runner/.gradle
-          # create environment variables
-          echo 'export RUBY_HOME=${{ env.RUBY_HOME }}' >> ${RUNNER_PROFILE}
-          echo 'export LANG=en_US.UTF-8' >> ${RUNNER_PROFILE}
-          echo 'export JAVA_HOME=${{ env.JAVA_HOME }}' >> ${RUNNER_PROFILE}
-          echo 'export PATH=$RUBY_HOME/bin:$JAVA_HOME/bin:$PATH' >> ${RUNNER_PROFILE}
-          su - runner -c "source ${RUNNER_PROFILE}"
-          
-      - name: Install app dependencies
-        run: |
-          su - runner -c "cd ${WORKSPACE}/self/app && bundle install"
-          cd ${WORKSPACE}/self/app
-          corepack enable
-          yarn install
+          ruby_home: ${{ env.RUBY_HOME }}
+          runner_profile: ${{ env.RUNNER_PROFILE }}
+          workspace: ${{ env.WORKSPACE }}
 
       - name: Build and upload to TestFlight (Internal)
         env:
@@ -76,52 +37,13 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
-      - name: Set up Java
-        uses: actions/setup-java@v3
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
         with:
-          distribution: 'temurin'
-          java-version: 17
-          
-      - name: Setup Ruby
-        uses: ruby/setup-ruby@v1
-        with:
-          ruby-version: 3.2
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: '18'
-
-      - name: Create workspace and copy repository
-        run: |
-          mkdir -p ${WORKSPACE}
-          cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${WORKSPACE}
-          cd ${WORKSPACE}
-          
-      - name: Create non-root user # bundle install complains when running as root
-        run: |
-          useradd -m -s /bin/bash runner
-          chown -R runner:runner /opt/acttoolcache/
-          chown -R runner:runner /opt/hostedtoolcache/ ${WORKSPACE}
-          # Add permission for gradle cache directory
-          mkdir -p /home/runner/.gradle
-          chown -R runner:runner /home/runner/.gradle
-          # create environment variables
-          echo 'export RUBY_HOME=${{ env.RUBY_HOME }}' >> ${RUNNER_PROFILE}
-          echo 'export LANG=en_US.UTF-8' >> ${RUNNER_PROFILE}
-          echo 'export JAVA_HOME=${{ env.JAVA_HOME }}' >> ${RUNNER_PROFILE}
-          echo 'export PATH=$RUBY_HOME/bin:$JAVA_HOME/bin:$PATH' >> ${RUNNER_PROFILE}
-          su - runner -c "source ${RUNNER_PROFILE}"
-          
-      - name: Install app dependencies
-        run: |
-          su - runner -c "cd ${WORKSPACE}/self/app && bundle install"
-          cd ${WORKSPACE}/self/app
-          corepack enable
-          yarn install
+          ruby_home: ${{ env.RUBY_HOME }}
+          runner_profile: ${{ env.RUNNER_PROFILE }}
+          workspace: ${{ env.WORKSPACE }}
 
       - name: Decode Keystore
         run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${WORKSPACE}/self/app/android/app/upload-keystore.jks
