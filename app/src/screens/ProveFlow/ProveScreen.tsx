@@ -122,7 +122,7 @@ const ProveScreen: React.FC = () => {
 
         timeToNavigateToStatusScreen = setTimeout(() => {
           navigate('ProofRequestStatusScreen');
-        }, 1000);
+        }, 200);
 
         if (!passportData || !secret) {
           console.log('No passport data or secret');
@@ -186,6 +186,7 @@ const ProveScreen: React.FC = () => {
         contentSize.height - paddingToBottom;
       if (isCloseToBottom && !hasScrolledToBottom) {
         setHasScrolledToBottom(true);
+        buttonTap();
       }
     },
     [hasScrolledToBottom, isContentShorterThanScrollView],
