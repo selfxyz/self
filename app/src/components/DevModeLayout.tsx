@@ -1,5 +1,7 @@
 import React from 'react';
-import { YStack, Text } from 'tamagui';
+
+import { Text, YStack } from 'tamagui';
+
 import useUserStore from '../stores/userStore';
 
 interface DevModeLayoutProps {

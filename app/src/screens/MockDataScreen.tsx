@@ -27,9 +27,9 @@ import { SecondaryButton } from '../components/buttons/SecondaryButton';
 import { BodyText } from '../components/typography/BodyText';
 import { Title } from '../components/typography/Title';
 import { storePassportData } from '../stores/passportDataProvider';
+import useUserStore from '../stores/userStore';
 import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
-import useUserStore from '../stores/userStore';
 
 interface MockDataScreenProps {}
 

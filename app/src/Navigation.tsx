@@ -11,6 +11,7 @@ import {
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import DefaultNavBar from './components/DefaultNavBar';
+import { DevModeLayout } from './components/DevModeLayout';
 import HomeNavBar from './components/HomeNavBar';
 import AppLayout from './layouts/AppLayout';
 import AccountRecoveryChoiceScreen from './screens/AccountFlow/AccountRecoveryChoiceScreen';
@@ -42,7 +43,6 @@ import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
 import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
-import { DevModeLayout } from './components/DevModeLayout';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
