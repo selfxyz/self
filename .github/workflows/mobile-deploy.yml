@@ -1,6 +1,7 @@
 name: Deploy to Internal Testers
 
 env:
+  # TODO: 3.2.7 may increment on it's own, need to find a dynamic way to set this
   RUBY_VERSION: 3.2
   RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
   RUNNER_PROFILE: /home/runner/.profile
@@ -66,7 +67,7 @@ jobs:
             export APP_STORE_CONNECT_API_KEY=${{ secrets.APP_STORE_CONNECT_API_KEY }}
             export APP_STORE_CONNECT_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
             export APP_STORE_CONNECT_KEY_ID=${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-            cd ${{ env.WORKSPACE }}/self/app && fastlane ios internal_test
+            cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane ios internal_test
           "
 
   build-android:
@@ -87,47 +88,31 @@ jobs:
 
       - name: Verify Android Secrets
         run: |
-          # Set common variables
-          KEYSTORE="${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks"
-          STOREPASS="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
-          ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}"
-          KEYPASS="${{ secrets.ANDROID_KEY_PASSWORD }}"
-
           # Verify keystore file exists and is valid
-          if [ ! -f "$KEYSTORE" ]; then
+          if [ ! -f "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" ]; then
             echo "❌ Error: Keystore file was not created successfully"
             exit 1
           fi
-
-          # Verify keystore and credentials
-          keytool_verify() {
-            keytool -list -v -keystore "$KEYSTORE" "$@" 2>/dev/null | grep -q "Certificate fingerprints:"
-          }
-
-          # Verify keystore password
-          if ! keytool_verify -storepass "$STOREPASS"; then
+          # Try to verify the keystore with the provided password
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" 2>/dev/null; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
-
-          # Verify key alias exists
-          if ! keytool_verify -storepass "$STOREPASS" -alias "$ALIAS" | grep -q "Alias name:"; then
-            echo "❌ Error: Key alias '$ALIAS' not found in keystore"
+          # Verify the key alias exists
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" 2>/dev/null; then
+            echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
             exit 1
           fi
-
-          # Verify key password
-          if ! keytool_verify -storepass "$STOREPASS" -alias "$ALIAS" -keypass "$KEYPASS"; then
+          # Verify the key password
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" 2>/dev/null; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
-
           # Verify Play Store JSON key is valid JSON
           if ! echo "${{ secrets.PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
             echo "❌ Error: Invalid Play Store JSON key format"
             exit 1
           fi
-
           echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
@@ -137,5 +122,5 @@ jobs:
             export ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
             export ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
             export ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
-            cd ${{ env.WORKSPACE }}/self/app && fastlane android internal_test
+            cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane android internal_test
           "
