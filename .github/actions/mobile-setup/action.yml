@@ -6,6 +6,9 @@ inputs:
   workspace:
     description: "Workspace directory path"
     required: true
+  ruby_version:
+    description: "Ruby version"
+    required: true
   ruby_home:
     description: "Ruby installation path"
     required: true
@@ -36,7 +39,7 @@ runs:
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
       with:
-        ruby-version: 3.2
+        ruby-version: ${{ inputs.ruby_version }}
 
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
