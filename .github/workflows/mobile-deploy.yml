@@ -1,7 +1,7 @@
 name: Deploy to Internal Testers
 
 env:
-  RUBY_VERSION: 3.2.7
+  RUBY_VERSION: 3.2
   RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
   RUNNER_PROFILE: /home/runner/.profile
   WORKSPACE: /github/workspace
@@ -29,26 +29,31 @@ jobs:
 
       - name: Verify iOS Secrets
         run: |
+          # Set common variables
+          API_KEY="${{ secrets.APP_STORE_CONNECT_API_KEY }}"
+          ISSUER_ID="${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
+          KEY_ID="${{ secrets.APP_STORE_CONNECT_KEY_ID }}"
+
           # Verify App Store Connect API Key exists and is valid base64
-          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 -d >/dev/null 2>&1; then
+          if ! echo "$API_KEY" | base64 -d >/dev/null 2>&1; then
             echo "❌ Error: Invalid App Store Connect API Key format (should be base64 encoded)"
             exit 1
           fi
 
           # Verify Issuer ID is in correct format (UUID)
-          if ! echo "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+          if ! echo "$ISSUER_ID" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
             exit 1
           fi
 
           # Verify Key ID is in correct format (alphanumeric)
-          if ! echo "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+          if ! echo "$KEY_ID" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Key ID format"
             exit 1
           fi
 
           # Try to authenticate with App Store Connect API
-          if ! fastlane spaceauth -u "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" -k "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" -i "${{ secrets.APP_STORE_CONNECT_API_KEY }}" --silent >/dev/null 2>&1; then
+          if ! fastlane spaceauth -u "$ISSUER_ID" -k "$KEY_ID" -i "$API_KEY" --silent >/dev/null 2>&1; then
             echo "❌ Error: Failed to authenticate with App Store Connect API"
             exit 1
           fi
@@ -56,15 +61,13 @@ jobs:
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Build and upload to TestFlight (Internal)
-        env:
-          LANG: en_US.UTF-8
-          LANGUAGE: en_US.UTF-8
-          LC_ALL: en_US.UTF-8
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         run: |
-          su - runner -c "cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane ios internal_test"
+          su - runner -c "
+            export APP_STORE_CONNECT_API_KEY=${{ secrets.APP_STORE_CONNECT_API_KEY }}
+            export APP_STORE_CONNECT_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+            export APP_STORE_CONNECT_KEY_ID=${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+            cd ${{ env.WORKSPACE }}/self/app && fastlane ios internal_test
+          "
 
   build-android:
     runs-on: ubuntu-latest
@@ -84,26 +87,37 @@ jobs:
 
       - name: Verify Android Secrets
         run: |
+          # Set common variables
+          KEYSTORE="${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks"
+          STOREPASS="${{ secrets.ANDROID_KEYSTORE_PASSWORD }}"
+          ALIAS="${{ secrets.ANDROID_KEY_ALIAS }}"
+          KEYPASS="${{ secrets.ANDROID_KEY_PASSWORD }}"
+
           # Verify keystore file exists and is valid
-          if [ ! -f "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" ]; then
+          if [ ! -f "$KEYSTORE" ]; then
             echo "❌ Error: Keystore file was not created successfully"
             exit 1
           fi
 
-          # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" 2>/dev/null | grep -q "Certificate fingerprints:"; then
+          # Verify keystore and credentials
+          keytool_verify() {
+            keytool -list -v -keystore "$KEYSTORE" "$@" 2>/dev/null | grep -q "Certificate fingerprints:"
+          }
+
+          # Verify keystore password
+          if ! keytool_verify -storepass "$STOREPASS"; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
 
-          # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" 2>/dev/null | grep -q "Alias name:"; then
-            echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
+          # Verify key alias exists
+          if ! keytool_verify -storepass "$STOREPASS" -alias "$ALIAS" | grep -q "Alias name:"; then
+            echo "❌ Error: Key alias '$ALIAS' not found in keystore"
             exit 1
           fi
 
-          # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" 2>/dev/null | grep -q "Certificate fingerprints:"; then
+          # Verify key password
+          if ! keytool_verify -storepass "$STOREPASS" -alias "$ALIAS" -keypass "$KEYPASS"; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
