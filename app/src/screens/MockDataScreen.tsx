@@ -29,11 +29,13 @@ import { Title } from '../components/typography/Title';
 import { storePassportData } from '../stores/passportDataProvider';
 import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
+import useUserStore from '../stores/userStore';
 
 interface MockDataScreenProps {}
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
+  const userStore = useUserStore();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -193,6 +195,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         }
         mockPassportData = initPassportDataParsing(mockPassportData);
         await storePassportData(mockPassportData);
+        userStore.update({ documentType: 'mock_passport' });
         resolve(null);
       }, 0),
     );

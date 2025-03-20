@@ -11,9 +11,11 @@ import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 import { isUserRegistered } from '../utils/proving/payload';
+import useUserStore from '../stores/userStore';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
+  const userStore = useUserStore();
   const { createSigningKeyPair } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
 
@@ -39,6 +41,10 @@ const SplashScreen: React.FC = ({}) => {
       }
 
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
+
+      userStore.update({
+        documentType: passportData.documentType,
+      });
 
       const isRegistered = await isUserRegistered(passportData, secret);
       console.log('User is registered:', isRegistered);
