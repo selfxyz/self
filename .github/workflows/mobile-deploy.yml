@@ -1,6 +1,7 @@
 name: Deploy to Internal Testers
 
 env:
+  # TODO: add beta lane, act on new numeric version tag
   # TODO: 3.2.7 may increment on it's own, need to find a dynamic way to set this
   RUBY_VERSION: 3.2
   RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
