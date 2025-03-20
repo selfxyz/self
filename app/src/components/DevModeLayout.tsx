@@ -1,12 +1,14 @@
 import React from 'react';
 import { YStack, Text } from 'tamagui';
+import useUserStore from '../stores/userStore';
 
 interface DevModeLayoutProps {
   children: React.ReactNode;
 }
 
 export const DevModeLayout: React.FC<DevModeLayoutProps> = ({ children }) => {
-  const isDevMode = true;
+  const store = useUserStore();
+  const isDevMode = store.documentType === 'mock_passport';
 
   return (
     <YStack flex={1}>
