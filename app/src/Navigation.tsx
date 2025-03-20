@@ -68,6 +68,7 @@ const AppNavigation = createNativeStackNavigator({
       screen: LaunchScreen,
       options: {
         headerShown: false,
+        gestureEnabled: false,
       },
     },
     Modal: {
