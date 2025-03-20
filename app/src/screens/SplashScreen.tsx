@@ -8,10 +8,10 @@ import splashAnimation from '../assets/animations/splash.json';
 import { useAuth } from '../stores/authProvider';
 import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
 import { useSettingStore } from '../stores/settingStore';
+import useUserStore from '../stores/userStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 import { isUserRegistered } from '../utils/proving/payload';
-import useUserStore from '../stores/userStore';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();

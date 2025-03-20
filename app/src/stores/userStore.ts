@@ -1,5 +1,6 @@
 import { DEFAULT_DOB, DEFAULT_DOE, DEFAULT_PNUMBER } from '@env';
 import { create } from 'zustand';
+
 import { DocumentType } from '../../../common/src/utils/types';
 
 interface UserState {
