@@ -10,8 +10,7 @@ import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import dynamic from 'next/dynamic';
 import { initWebSocket } from './utils/websocket';
-import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
-
+import { getUniversalLink, SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
 const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
   ssr: false,
 });
@@ -19,6 +18,7 @@ const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeS
 interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;
+  type?: 'websocket' | 'deeplink';
   websocketUrl?: string;
   size?: number;
   darkMode?: boolean;
@@ -40,6 +40,7 @@ const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
 const SelfQRcode = ({
   selfApp,
   onSuccess,
+  type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
   darkMode = false,
@@ -70,12 +71,10 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [websocketUrl, sessionId, selfApp, onSuccess]);
+  }, [type, websocketUrl, sessionId, selfApp, onSuccess]);
 
-  const generateUniversalLink = () => {
-    const baseUrl = REDIRECT_URL;
-    return `${baseUrl}?sessionId=${sessionId}`;
-  };
+
+
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
@@ -115,7 +114,7 @@ const SelfQRcode = ({
             default:
               return (
                 <QRCodeSVG
-                  value={generateUniversalLink()}
+                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${sessionId}` : getUniversalLink(selfApp)}
                   size={size}
                   bgColor={darkMode ? '#000000' : '#ffffff'}
                   fgColor={darkMode ? '#ffffff' : '#000000'}
@@ -129,7 +128,6 @@ const SelfQRcode = ({
 
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
-
 // Export the wrapper component as the default export
 export default SelfQRcodeWrapper;
 

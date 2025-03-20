@@ -28,7 +28,8 @@
     "@types/uuid": "^10.0.0",
     "ethers": "^6.13.5",
     "next": "^14.2.8",
-    "snarkjs": "^0.7.4"
+    "snarkjs": "^0.7.4",
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "@types/chai": "^4.3.6",

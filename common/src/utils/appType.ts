@@ -4,7 +4,7 @@ export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 
 import { v4 } from 'uuid';
-import { Country3LetterCode } from "../constants/constants";
+import { Country3LetterCode, REDIRECT_URL } from "../constants/constants";
 
 export interface SelfApp {
   appName: string;
@@ -82,4 +82,8 @@ export class SelfAppBuilder {
   build(): SelfApp {
     return this.config;
   }
+}
+
+export function getUniversalLink(selfApp: SelfApp): string {
+  return `${REDIRECT_URL}?selfApp=${encodeURIComponent(JSON.stringify(selfApp))}`;
 }
