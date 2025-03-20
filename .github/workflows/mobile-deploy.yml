@@ -86,17 +86,17 @@ jobs:
             exit 1
           fi
           # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
           # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
             echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
             exit 1
           fi
           # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
