@@ -30,35 +30,26 @@ jobs:
 
       - name: Verify iOS Secrets
         run: |
-          # Set common variables
-          API_KEY="${{ secrets.APP_STORE_CONNECT_API_KEY }}"
-          ISSUER_ID="${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}"
-          KEY_ID="${{ secrets.APP_STORE_CONNECT_KEY_ID }}"
-
           # Verify App Store Connect API Key exists and is valid base64
-          if ! echo "$API_KEY" | base64 -d >/dev/null 2>&1; then
+          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 -d >/dev/null 2>&1; then
             echo "❌ Error: Invalid App Store Connect API Key format (should be base64 encoded)"
             exit 1
           fi
-
           # Verify Issuer ID is in correct format (UUID)
-          if ! echo "$ISSUER_ID" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+          if ! echo "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
             exit 1
           fi
-
           # Verify Key ID is in correct format (alphanumeric)
-          if ! echo "$KEY_ID" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+          if ! echo "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Key ID format"
             exit 1
           fi
-
           # Try to authenticate with App Store Connect API
-          if ! fastlane spaceauth -u "$ISSUER_ID" -k "$KEY_ID" -i "$API_KEY" --silent >/dev/null 2>&1; then
+          if ! fastlane spaceauth -u "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" -k "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" -i "${{ secrets.APP_STORE_CONNECT_API_KEY }}" --silent >/dev/null 2>&1; then
             echo "❌ Error: Failed to authenticate with App Store Connect API"
             exit 1
           fi
-
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Build and upload to TestFlight (Internal)
