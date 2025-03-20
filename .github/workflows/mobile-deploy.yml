@@ -27,12 +27,14 @@ jobs:
 
       - name: Build and upload to TestFlight (Internal)
         env:
+          LANG: en_US.UTF-8
+          LANGUAGE: en_US.UTF-8
+          LC_ALL: en_US.UTF-8
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         run: |
-          cd app
-          bundle exec fastlane ios internal_test
+          su - runner -c "cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane ios internal_test"
 
   build-android:
     runs-on: ubuntu-latest
@@ -46,7 +48,8 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
 
       - name: Decode Keystore
-        run: echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${WORKSPACE}/self/app/android/app/upload-keystore.jks
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks
 
       - name: Build and upload to Google Play Internal Testing
         env:
@@ -55,4 +58,4 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          su - runner -c "cd ${WORKSPACE}/self/app && bundle exec fastlane android internal_test"
+          su - runner -c "cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane android internal_test"
