@@ -1,7 +1,8 @@
 name: Deploy to Internal Testers
 
 env:
-  RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64
+  RUBY_VERSION: 3.2.7
+  RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
   RUNNER_PROFILE: /home/runner/.profile
   WORKSPACE: /github/workspace
 
@@ -21,9 +22,38 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          ruby_version: ${{ env.RUBY_VERSION }}
           ruby_home: ${{ env.RUBY_HOME }}
           runner_profile: ${{ env.RUNNER_PROFILE }}
           workspace: ${{ env.WORKSPACE }}
+
+      - name: Verify iOS Secrets
+        run: |
+          # Verify App Store Connect API Key exists and is valid base64
+          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 -d >/dev/null 2>&1; then
+            echo "❌ Error: Invalid App Store Connect API Key format (should be base64 encoded)"
+            exit 1
+          fi
+
+          # Verify Issuer ID is in correct format (UUID)
+          if ! echo "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
+            exit 1
+          fi
+
+          # Verify Key ID is in correct format (alphanumeric)
+          if ! echo "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Key ID format"
+            exit 1
+          fi
+
+          # Try to authenticate with App Store Connect API
+          if ! fastlane spaceauth -u "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" -k "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" -i "${{ secrets.APP_STORE_CONNECT_API_KEY }}" --silent >/dev/null 2>&1; then
+            echo "❌ Error: Failed to authenticate with App Store Connect API"
+            exit 1
+          fi
+
+          echo "✅ All iOS secrets verified successfully!"
 
       - name: Build and upload to TestFlight (Internal)
         env:
@@ -43,6 +73,7 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          ruby_version: ${{ env.RUBY_VERSION }}
           ruby_home: ${{ env.RUBY_HOME }}
           runner_profile: ${{ env.RUNNER_PROFILE }}
           workspace: ${{ env.WORKSPACE }}
@@ -60,19 +91,19 @@ jobs:
           fi
 
           # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" 2>/dev/null | grep -q "Certificate fingerprints:"; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
 
           # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" 2>/dev/null | grep -q "Alias name:"; then
             echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
             exit 1
           fi
 
           # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" 2>/dev/null; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" 2>/dev/null | grep -q "Certificate fingerprints:"; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
