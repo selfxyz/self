@@ -1,57 +1,63 @@
-name: Mobile Setup
+name: Setup Mobile Environment
 
-description: Sets up the environment for mobile app builds
+description: "Sets up the environment for mobile app builds"
 
 inputs:
+  workspace:
+    description: "Workspace directory path"
+    required: true
   ruby_home:
-    description: The path to the Ruby installation.
+    description: "Ruby installation path"
     required: true
   runner_profile:
-    description: The path to the runner profile.
-    required: true
-  workspace:
-    description: The directory to install dependencies in.
+    description: "Profile file path for environment variables"
     required: true
 
 runs:
   using: "composite"
   steps:
+    - name: Install environemnt packages
+      shell: bash
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y locales
+        sudo locale-gen en_US.UTF-8
+        sudo update-locale LANG=en_US.UTF-8
+
     - name: Checkout repository
       uses: actions/checkout@v3
 
-    - name: Set up Java
+    - name: Setup Java environment
       uses: actions/setup-java@v3
       with:
         distribution: "temurin"
         java-version: 17
 
-    - name: Setup Ruby
+    - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: 3.2
 
-    - name: Setup Node.js
+    - name: Setup Node.js environment
       uses: actions/setup-node@v3
       with:
         node-version: "18"
 
-    - name: Create workspace and copy repository
+    - name: Prepare workspace directory
       shell: bash
       run: |
         mkdir -p ${{ inputs.workspace }}
         cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${{ inputs.workspace }}
         cd ${{ inputs.workspace }}
 
-    - name: Create non-root user # bundle install complains when running as root
+    - name: Configure non-root user and environment
       shell: bash
       run: |
         useradd -m -s /bin/bash runner
         chown -R runner:runner /opt/acttoolcache/
         chown -R runner:runner /opt/hostedtoolcache/ ${{ inputs.workspace }}
-        # Add permission for gradle cache directory
         mkdir -p /home/runner/.gradle
         chown -R runner:runner /home/runner/.gradle
-        # create environment variables
         echo 'export RUBY_HOME=${{ inputs.ruby_home }}' >> ${{ inputs.runner_profile }}
         echo 'export LANG=en_US.UTF-8' >> ${{ inputs.runner_profile }}
         echo 'export JAVA_HOME=${{ env.JAVA_HOME }}' >> ${{ inputs.runner_profile }}
