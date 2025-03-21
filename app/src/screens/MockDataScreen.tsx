@@ -1,5 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { TouchableOpacity } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useNavigation } from '@react-navigation/native';
@@ -38,6 +39,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
+  const [advancedMode, setAdvancedMode] = useState(false);
   const castDate = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -203,38 +205,51 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     });
   }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
 
+  // Add gesture for advanced mode
+  const twoFingerTripleTap = Gesture.Tap()
+    .minPointers(2)
+    .numberOfTaps(3)
+    .onStart(() => {
+      setAdvancedMode(true);
+      buttonTap(); // Provide haptic feedback
+    });
+
   const { top, bottom } = useSafeAreaInsets();
   return (
     <YStack f={1} bg={white} pt={top} pb={bottom}>
       <ScrollView showsVerticalScrollIndicator={false}>
         <YStack px="$4" pb="$4" gap="$5">
-          <YStack ai="center" mb={'$10'}>
-            <Title>Generate Passport Data</Title>
-            <BodyText textAlign="center">
-              Configure the passport data parameters below
-            </BodyText>
-          </YStack>
+          <GestureDetector gesture={twoFingerTripleTap}>
+            <YStack ai="center" mb={'$10'}>
+              <Title>Generate Passport Data</Title>
+              <BodyText textAlign="center">
+                Configure the passport data parameters below
+              </BodyText>
+            </YStack>
+          </GestureDetector>
 
-          <XStack ai="center" jc="space-between">
-            <BodyText>Encryption</BodyText>
-            <Button
-              onPress={() => {
-                buttonTap();
-                setAlgorithmSheetOpen(true);
-              }}
-              p="$2"
-              px="$3"
-              bg="white"
-              borderColor={borderColor}
-              borderWidth={1}
-              borderRadius="$4"
-            >
-              <XStack ai="center" gap="$2">
-                <Text fontSize="$4">{selectedAlgorithm}</Text>
-                <ChevronDown size={20} />
-              </XStack>
-            </Button>
-          </XStack>
+          {advancedMode && (
+            <XStack ai="center" jc="space-between">
+              <BodyText>Encryption</BodyText>
+              <Button
+                onPress={() => {
+                  buttonTap();
+                  setAlgorithmSheetOpen(true);
+                }}
+                p="$2"
+                px="$3"
+                bg="white"
+                borderColor={borderColor}
+                borderWidth={1}
+                borderRadius="$4"
+              >
+                <XStack ai="center" gap="$2">
+                  <Text fontSize="$4">{selectedAlgorithm}</Text>
+                  <ChevronDown size={20} />
+                </XStack>
+              </Button>
+            </XStack>
+          )}
 
           <XStack ai="center" jc="space-between">
             <BodyText>Nationality</BodyText>
