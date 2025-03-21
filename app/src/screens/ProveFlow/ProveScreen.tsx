@@ -25,6 +25,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
+import { useAuth } from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import {
   ProofStatusEnum,
@@ -40,9 +41,10 @@ import {
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const { passportData, secret, status: passportStatus } = usePassport();
+  const { passportData, secret, status: passportStatus } = usePassport(false);
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
+  const { loginWithBiometrics } = useAuth();
   const selectedAppRef = useRef(selectedApp);
   const isProcessing = useRef(false);
 
@@ -125,8 +127,8 @@ const ProveScreen: React.FC = () => {
       resetProof();
       buttonTap();
       const currentApp = selectedAppRef.current;
-
       try {
+        await loginWithBiometrics();
         let timeToNavigateToStatusScreen: NodeJS.Timeout;
 
         timeToNavigateToStatusScreen = setTimeout(() => {
@@ -182,6 +184,7 @@ const ProveScreen: React.FC = () => {
       cleanSelfApp,
       passportData,
       secret,
+      loginWithBiometrics,
     ],
   );
 
