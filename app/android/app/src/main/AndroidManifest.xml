@@ -36,10 +36,10 @@
             <action android:name="android.nfc.action.TAG_DISCOVERED"/>
             <category android:name="android.intent.category.DEFAULT"/>
             <category android:name="android.intent.category.BROWSABLE" />
-                <data
-                    android:scheme="https"
-                    android:host="redirect.self.xyz"
-                    android:pathPrefix="/self.*" />
+            <data
+                android:scheme="https"
+                android:host="redirect.self.xyz"
+                android:pathPrefix="/" />
         </intent-filter>
 
       <meta-data
