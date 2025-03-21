@@ -8,13 +8,9 @@ import { REDIRECT_URL, WS_DB_RELAYER } from '../../common/src/constants/constant
 import { v4 as uuidv4 } from 'uuid';
 import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
-import dynamic from 'next/dynamic';
+import { QRCodeSVG } from 'qrcode.react';
 import { initWebSocket } from './utils/websocket';
 import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
-
-const QRCodeSVG = dynamic(() => import('qrcode.react').then((mod) => mod.QRCodeSVG), {
-  ssr: false,
-});
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;
