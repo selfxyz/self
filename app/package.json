@@ -16,11 +16,13 @@
     "fmt:fix": "prettier --write .",
     "ia": "yarn install-app",
     "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd .. && yarn clean:xcode-env-local",
+    "install-app-no-ios": "cd ../common && yarn && cd ../app && yarn",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "nice": "yarn lint:fix && yarn fmt:fix",
     "reinstall": "yarn clean && yarn install && yarn install-app",
+    "reinstall-test-fastlane": "yarn clean && yarn install && yarn install-app-no-ios",
     "start": "watchman watch-del-all && react-native start",
     "test": "jest --passWithNoTests"
   },
