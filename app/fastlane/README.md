@@ -1,68 +1,45 @@
-# Fastlane Setup for Mobile Deployment
+fastlane documentation
+----
 
-This directory contains the Fastlane configuration for automating the build and deployment process for both iOS and Android platforms.
+# Installation
 
-## Prerequisites
+Make sure you have the latest version of the Xcode command line tools installed:
 
-- Ruby 3.0 or higher
-- Bundler (`gem install bundler`)
-- Fastlane (`bundle install`)
-
-## GitHub Secrets Required
-
-### iOS
-
-- `APP_STORE_CONNECT_API_KEY`: The App Store Connect API key (base64 encoded)
-- `APP_STORE_CONNECT_ISSUER_ID`: The issuer ID for the App Store Connect API key
-- `APP_STORE_CONNECT_KEY_ID`: The key ID for the App Store Connect API key
-
-### Android
-
-- `ANDROID_KEYSTORE`: Base64 encoded Android keystore file
-- `ANDROID_KEYSTORE_PASSWORD`: Password for the Android keystore
-- `ANDROID_KEY_ALIAS`: Key alias for the Android signing key
-- `ANDROID_KEY_PASSWORD`: Password for the Android signing key
-- `PLAY_STORE_JSON_KEY`: Google Play Store service account JSON key (base64 encoded)
-
-## Available Lanes
-
-### iOS
-
-```bash
-bundle exec fastlane ios internal_test
+```sh
+xcode-select --install
 ```
 
-This lane builds the iOS app and uploads it to TestFlight for internal testing.
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
 
-### Android
+# Available Actions
 
-```bash
-bundle exec fastlane android internal_test
+## iOS
+
+### ios internal_test
+
+```sh
+[bundle exec] fastlane ios internal_test
 ```
 
-This lane builds the Android app and uploads it to Google Play Store for internal testing.
+Push a new build to TestFlight Internal Testing
 
-## Customization
+----
 
-Before using this setup, make sure to update the following:
 
-1. In `Appfile`:
+## Android
 
-   - Update `app_identifier` with your iOS app bundle identifier
-   - Update `apple_id` with your Apple developer email
-   - Update `package_name` with your Android package name
+### android internal_test
 
-2. In `Fastfile`:
-   - Update iOS workspace and scheme names
-   - Adjust any build settings as needed for your project
-
-## Manual Testing
-
-To test the lanes locally before pushing to GitHub:
-
-1. Set up the required environment variables
-2. Run the lanes manually using the commands above
-
-```bash
-act --container-architecture linux/amd64 -P macos-latest=catthehacker/ubuntu:act-latest --secret-file .secrets -j build-android
+```sh
+[bundle exec] fastlane android internal_test
 ```
+
+Push a new build to Google Play Internal Testing
+
+----
+
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
+
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
+
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).
