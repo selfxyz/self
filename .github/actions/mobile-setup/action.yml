@@ -12,9 +12,6 @@ inputs:
   ruby_home:
     description: "Ruby installation path"
     required: true
-  runner_profile:
-    description: "Profile file path for environment variables"
-    required: true
 
 runs:
   using: "composite"
@@ -23,7 +20,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y locales
+        sudo apt-get install -y locales dialog
         sudo locale-gen en_US.UTF-8
         sudo update-locale LANG=en_US.UTF-8
 
@@ -53,24 +50,10 @@ runs:
         cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${{ inputs.workspace }}
         cd ${{ inputs.workspace }}
 
-    - name: Configure non-root user and environment
-      shell: bash
-      run: |
-        useradd -m -s /bin/bash runner
-        chown -R runner:runner /opt/acttoolcache/
-        chown -R runner:runner /opt/hostedtoolcache/ ${{ inputs.workspace }}
-        mkdir -p /home/runner/.gradle
-        chown -R runner:runner /home/runner/.gradle
-        echo 'export RUBY_HOME=${{ inputs.ruby_home }}' >> ${{ inputs.runner_profile }}
-        echo 'export LANG=en_US.UTF-8' >> ${{ inputs.runner_profile }}
-        echo 'export JAVA_HOME=${{ env.JAVA_HOME }}' >> ${{ inputs.runner_profile }}
-        echo 'export PATH=$RUBY_HOME/bin:$JAVA_HOME/bin:$PATH' >> ${{ inputs.runner_profile }}
-        su - runner -c "source ${{ inputs.runner_profile }}"
-
     - name: Install app dependencies
       shell: bash
       run: |
-        su - runner -c "cd ${{ inputs.workspace }}/self/app && bundle install"
         cd ${{ inputs.workspace }}/self/app
+        bundle install
         corepack enable
         yarn install

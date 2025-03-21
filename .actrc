@@ -1,3 +1,3 @@
 --container-architecture linux/amd64
---platform macos-latest=catthehacker/ubuntu:act-latest
+--platform macos-latest=catthehacker/ubuntu:runner-latest
 --secret-file .secrets

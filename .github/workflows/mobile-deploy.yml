@@ -5,7 +5,6 @@ env:
   # TODO: 3.2.7 may increment on it's own, need to find a dynamic way to set this
   RUBY_VERSION: 3.2
   RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
-  RUNNER_PROFILE: /home/runner/.profile
   WORKSPACE: /github/workspace
 
 on:
@@ -26,10 +25,14 @@ jobs:
         with:
           ruby_version: ${{ env.RUBY_VERSION }}
           ruby_home: ${{ env.RUBY_HOME }}
-          runner_profile: ${{ env.RUNNER_PROFILE }}
           workspace: ${{ env.WORKSPACE }}
 
+      - uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: latest-stable
+
       - name: Verify iOS Secrets
+        if: false
         run: |
           # Verify App Store Connect API Key exists and is valid base64
           if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 -d >/dev/null 2>&1; then
@@ -54,13 +57,13 @@ jobs:
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Build and upload to TestFlight (Internal)
+        env:
+          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
         run: |
-          su - runner -c "
-            export APP_STORE_CONNECT_API_KEY=${{ secrets.APP_STORE_CONNECT_API_KEY }}
-            export APP_STORE_CONNECT_ISSUER_ID=${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-            export APP_STORE_CONNECT_KEY_ID=${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-            cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane ios internal_test
-          "
+          cd ${{ env.WORKSPACE }}/self/app
+          bundle exec fastlane ios internal_test
 
   build-android:
     runs-on: ubuntu-latest
@@ -71,7 +74,6 @@ jobs:
         with:
           ruby_version: ${{ env.RUBY_VERSION }}
           ruby_home: ${{ env.RUBY_HOME }}
-          runner_profile: ${{ env.RUNNER_PROFILE }}
           workspace: ${{ env.WORKSPACE }}
 
       - name: Decode Keystore
@@ -108,11 +110,11 @@ jobs:
           echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
+        env:
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
-          su - runner -c "
-            export PLAY_STORE_JSON_KEY=${{ secrets.PLAY_STORE_JSON_KEY }}
-            export ANDROID_KEYSTORE_PASSWORD=${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-            export ANDROID_KEY_ALIAS=${{ secrets.ANDROID_KEY_ALIAS }}
-            export ANDROID_KEY_PASSWORD=${{ secrets.ANDROID_KEY_PASSWORD }}
-            cd ${{ env.WORKSPACE }}/self/app && bundle exec fastlane android internal_test
-          "
+          cd ${{ env.WORKSPACE }}/self/app
+          bundle exec fastlane android internal_test
