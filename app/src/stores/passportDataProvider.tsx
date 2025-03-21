@@ -3,91 +3,184 @@ import React, {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
+  useState,
 } from 'react';
 import Keychain from 'react-native-keychain';
 
-import { PassportData } from '../../../common/src/utils/types';
-import { unsafe_getPrivateKey } from '../stores/authProvider';
-import { useAuth } from './authProvider';
+import { type Mnemonic, ethers } from 'ethers';
 
-// TODO: refactor this as it shouldnt be used directly IMHO
-export async function loadPassportData() {
-  const passportDataCreds = await Keychain.getGenericPassword({
+import type { PassportData } from '../../../common/src/utils/types';
+import { useAuth } from '../stores/authProvider';
+
+const password = 'passportData';
+const SERVICE_NAME = 'secret';
+
+export async function hasSecretStored() {
+  const seed = await Keychain.getGenericPassword({ service: SERVICE_NAME });
+  return !!seed;
+}
+
+async function storePassportDataInKeychain(passportData: PassportData) {
+  await Keychain.setGenericPassword(password, JSON.stringify(passportData), {
     service: 'passportData',
   });
-  return passportDataCreds === false ? false : passportDataCreds.password;
 }
 
-export async function loadPassportDataAndSecret() {
-  const passportData = await loadPassportData();
-  const secret = await unsafe_getPrivateKey();
-  if (!secret || !passportData) {
-    return false;
-  }
-  return JSON.stringify({
-    secret,
-    passportData: JSON.parse(passportData),
-  });
-}
-
-export async function storePassportData(passportData: PassportData) {
-  await Keychain.setGenericPassword(
-    'passportData',
-    JSON.stringify(passportData),
-    { service: 'passportData' },
-  );
-}
-
-export async function clearPassportData() {
+async function clearPassportDataFromKeychain() {
   await Keychain.resetGenericPassword({ service: 'passportData' });
+}
+
+async function restoreFromMnemonic(mnemonic: string) {
+  if (!mnemonic || !ethers.Mnemonic.isValidMnemonic(mnemonic)) {
+    throw new Error('Invalid mnemonic');
+  }
+
+  const restoredWallet = ethers.Wallet.fromPhrase(mnemonic);
+  const data = JSON.stringify(restoredWallet.mnemonic);
+  await Keychain.setGenericPassword('secret', data, {
+    service: SERVICE_NAME,
+  });
+  return restoredWallet.mnemonic;
+}
+async function unsafe_clearSecrets() {
+  if (__DEV__) {
+    await Keychain.resetGenericPassword({ service: SERVICE_NAME });
+  }
 }
 
 interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
+
+type Status = 'idle' | 'initializing' | 'updating' | 'error' | 'success';
 interface IPassportContext {
-  getData: () => Promise<{ signature: string; data: PassportData } | null>;
-  setData: (data: PassportData) => Promise<void>;
-  getPassportDataAndSecret: () => Promise<{
-    data: { passportData: PassportData; secret: string };
-    signature: string;
-  } | null>;
+  passportData: PassportData | null;
+  secret: Mnemonic | null;
+  status: Status;
+  unsafe_secret_privateKey?: string;
+  setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
+  setSecret: () => Promise<Mnemonic | null>;
+  restorefromSecret: (mnemonic: string) => Promise<Mnemonic | null>;
+  unsafe_clearSecrets: () => Promise<void>;
 }
 
-export const PassportContext = createContext<IPassportContext>({
-  getData: () => Promise.resolve(null),
-  setData: storePassportData,
-  getPassportDataAndSecret: () => Promise.resolve(null),
-  clearPassportData: clearPassportData,
+const PassportContext = createContext<IPassportContext>({
+  passportData: null,
+  secret: null,
+  status: 'idle',
+  setPassportData: () => Promise.resolve(),
+  clearPassportData: () => Promise.resolve(),
+  setSecret: () => Promise.resolve(null),
+  restorefromSecret: () => Promise.resolve(null),
+  unsafe_clearSecrets: () => Promise.resolve(),
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
-  const { _getSecurely } = useAuth();
+  const [status, setStatus] = useState<Status>('idle');
+  const [passportCache, setPasspotCache] = useState<PassportData | null>(null);
+  const [secretCache, setSecretCache] = useState<Mnemonic | null>(null);
+  const [unsafePrivateKey, setUnsafePrivateKey] = useState<string>();
+  const getPassportDataFromKeychain = useCallback(async () => {
+    const passportDataCreds = await Keychain.getGenericPassword({
+      service: 'passportData',
+    });
+    if (!passportDataCreds) {
+      return false;
+    }
+    return JSON.parse(passportDataCreds.password);
+  }, []);
 
-  const getData = useCallback(
-    () => _getSecurely<PassportData>(loadPassportData, str => JSON.parse(str)),
-    [_getSecurely],
-  );
+  const getSecretDataFromKeyChain = useCallback(async () => {
+    const storedMnemonic = await Keychain.getGenericPassword({
+      service: SERVICE_NAME,
+    });
+    if (storedMnemonic) {
+      const parsed = JSON.parse(storedMnemonic.password);
+      console.log('Stored mnemonic parsed successfully');
+      return parsed as Mnemonic;
+    }
+  }, []);
 
-  const getPassportDataAndSecret = useCallback(
-    () =>
-      _getSecurely<{ passportData: PassportData; secret: string }>(
-        loadPassportDataAndSecret,
-        str => JSON.parse(str),
-      ),
-    [_getSecurely],
-  );
+  const isPassportNull = useMemo(() => !passportCache, [passportCache]);
+
+  useEffect(() => {
+    (async () => {
+      setStatus(isPassportNull ? 'initializing' : 'updating');
+      try {
+        const passportData = await getPassportDataFromKeychain();
+        if (passportData) {
+          setPasspotCache(passportData);
+        }
+        const secret =
+          (await getSecretDataFromKeyChain()) || (await setSecret());
+        if (secret) {
+          setSecretCache(secret);
+        }
+        setStatus('success');
+      } catch (error) {
+        console.error(
+          'Error fetching passport data or secret from keychain:',
+          error,
+        );
+        setStatus('error');
+      }
+    })();
+  }, [getPassportDataFromKeychain, getSecretDataFromKeyChain, isPassportNull]);
+
+  const setPassportData = useCallback(async (data: PassportData) => {
+    await storePassportDataInKeychain(data);
+    setPasspotCache(data);
+  }, []);
+
+  const setSecret = useCallback(async () => {
+    const { mnemonic, privateKey } = ethers.HDNodeWallet.fromMnemonic(
+      ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
+    );
+    setUnsafePrivateKey(privateKey);
+    const data = JSON.stringify(mnemonic);
+    await Keychain.setGenericPassword('secret', data, {
+      service: SERVICE_NAME,
+    });
+    setSecretCache(mnemonic);
+    return mnemonic;
+  }, []);
+
+  const clearPassportData = useCallback(async () => {
+    await clearPassportDataFromKeychain();
+    setPasspotCache(null);
+  }, []);
+
+  const restorefromSecret = useCallback(async (mnemonic: string) => {
+    const data = await restoreFromMnemonic(mnemonic);
+    setSecretCache(data);
+    return data;
+  }, []);
 
   const state: IPassportContext = useMemo(
     () => ({
-      getData,
-      setData: storePassportData,
-      getPassportDataAndSecret,
-      clearPassportData: clearPassportData,
+      passportData: passportCache,
+      secret: secretCache,
+      status,
+      setPassportData,
+      clearPassportData,
+      restorefromSecret,
+      setSecret,
+      unsafe_clearSecrets,
+      unsafe_secret_privateKey: unsafePrivateKey,
     }),
-    [getData, getPassportDataAndSecret],
+    [
+      passportCache,
+      secretCache,
+      status,
+      setPassportData,
+      clearPassportData,
+      restorefromSecret,
+      setSecret,
+      unsafePrivateKey,
+    ],
   );
 
   return (
@@ -97,6 +190,18 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export const usePassport = () => {
-  return useContext(PassportContext);
+export const usePassport = (auth = true) => {
+  const c = useContext(PassportContext);
+  if (!c) {
+    throw new Error('usePassport must be used within a PassportProvider');
+  }
+
+  const { isAuthenticated, isAuthenticating, loginWithBiometrics } = useAuth();
+  useEffect(() => {
+    if (!isAuthenticated && !isAuthenticating && auth) {
+      loginWithBiometrics();
+    }
+  }, [isAuthenticated, loginWithBiometrics, auth, isAuthenticating]);
+
+  return c;
 };

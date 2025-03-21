@@ -9,8 +9,7 @@ import { Text, TextArea, View, XStack, YStack } from 'tamagui';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
-import { useAuth } from '../../stores/authProvider';
-import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
+import { usePassport } from '../../stores/passportDataProvider';
 import {
   black,
   slate300,
@@ -27,7 +26,7 @@ const RecoverWithPhraseScreen: React.FC<
   RecoverWithPhraseScreenProps
 > = ({}) => {
   const navigation = useNavigation();
-  const { restoreAccountFromMnemonic } = useAuth();
+  const { restorefromSecret, passportData, status } = usePassport();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
@@ -39,6 +38,9 @@ const RecoverWithPhraseScreen: React.FC<
   }, []);
 
   const restoreAccount = useCallback(async () => {
+    if (status !== 'success') {
+      return;
+    }
     setRestoring(true);
     const slimMnemonic = mnemonic?.trim();
     if (!slimMnemonic || !ethers.Mnemonic.isValidMnemonic(slimMnemonic)) {
@@ -46,31 +48,39 @@ const RecoverWithPhraseScreen: React.FC<
       setRestoring(false);
       return;
     }
-    const result = await restoreAccountFromMnemonic(slimMnemonic);
 
-    if (!result) {
+    try {
+      const secret = await restorefromSecret(slimMnemonic);
+      if (!passportData || !secret) {
+        console.warn('Secret or passport data is missing');
+        navigation.navigate('Launch');
+        setRestoring(false);
+        return;
+      }
+
+      const isRegistered = await isUserRegistered(
+        passportData,
+        secret.password,
+      );
+      console.log('User is registered:', isRegistered);
+      if (!isRegistered) {
+        console.log(
+          'Secret provided did not match a registered passport. Please try again.',
+        );
+        navigation.navigate('Launch');
+        setRestoring(false);
+        return;
+      }
+
+      setRestoring(false);
+      navigation.navigate('AccountVerifiedSuccess');
+    } catch (error) {
       console.warn('Failed to restore account');
       navigation.navigate('Launch');
       setRestoring(false);
       return;
     }
-
-    const passportDataAndSecret = (await loadPassportDataAndSecret()) as string;
-    const { passportData, secret } = JSON.parse(passportDataAndSecret);
-    const isRegistered = await isUserRegistered(passportData, secret);
-    console.log('User is registered:', isRegistered);
-    if (!isRegistered) {
-      console.log(
-        'Secret provided did not match a registered passport. Please try again.',
-      );
-      navigation.navigate('Launch');
-      setRestoring(false);
-      return;
-    }
-
-    setRestoring(false);
-    navigation.navigate('AccountVerifiedSuccess');
-  }, [mnemonic, restoreAccountFromMnemonic]);
+  }, [mnemonic, restorefromSecret, navigation, passportData, status]);
 
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>

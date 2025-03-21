@@ -7,7 +7,6 @@ import { Caption } from '../../components/typography/Caption';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { STORAGE_NAME } from '../../utils/cloudBackup';
 import { black, slate400, white } from '../../utils/colors';
@@ -18,12 +17,6 @@ const SaveRecoveryPhraseScreen: React.FC<
   SaveRecoveryPhraseScreenProps
 > = ({}) => {
   const [userHasSeenMnemonic, setUserHasSeenMnemonic] = useState(false);
-  const { mnemonic, loadMnemonic } = useMnemonic();
-
-  const onRevealWords = useCallback(async () => {
-    await loadMnemonic();
-    setUserHasSeenMnemonic(true);
-  }, []);
 
   const onCloudBackupPress = useHapticNavigation('CloudBackupSettings', {
     params: { nextScreen: 'SaveRecoveryPhrase' },
@@ -31,6 +24,11 @@ const SaveRecoveryPhraseScreen: React.FC<
   const onSkipPress = useHapticNavigation('AccountVerifiedSuccess', {
     action: 'confirm',
   });
+  const onRevealWords = useCallback(() => {
+    () => {
+      setUserHasSeenMnemonic(true);
+    };
+  }, []);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
@@ -53,7 +51,7 @@ const SaveRecoveryPhraseScreen: React.FC<
         gap={10}
         backgroundColor={white}
       >
-        <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+        <Mnemonic onRevealWords={onRevealWords} />
         <Caption color={slate400}>
           You can reveal your recovery phrase in settings.
         </Caption>

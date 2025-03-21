@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
+import { usePassport } from '../stores/passportDataProvider';
 import {
   black,
   slate50,
@@ -15,8 +16,7 @@ import {
 import { confirmTap } from '../utils/haptic';
 
 interface MnemonicProps {
-  words?: string[];
-  onRevealWords?: () => Promise<void>;
+  onRevealWords?: () => void;
 }
 interface WordPill {
   index: number;
@@ -46,20 +46,20 @@ const WordPill = ({ index, word }: WordPill) => {
 const REDACTED = new Array(24)
   .fill('')
   .map(_ => '*'.repeat(Math.max(4, Math.floor(Math.random() * 10))));
-const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
+const Mnemonic = ({ onRevealWords }: MnemonicProps) => {
+  const { secret } = usePassport();
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
   const copyToClipboardOrReveal = useCallback(async () => {
     confirmTap();
     if (!revealWords) {
-      // TODO: container jumps when words are revealed on android
-      await onRevealWords?.();
+      onRevealWords?.();
       return setRevealWords(previous => !previous);
     }
-    Clipboard.setString(words.join(' '));
+    Clipboard.setString(secret?.phrase || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [words, revealWords]);
+  }, [secret, revealWords, onRevealWords]);
 
   return (
     <YStack position="relative" alignItems="stretch" gap={0}>
@@ -75,9 +75,11 @@ const Mnemonic = ({ words = REDACTED, onRevealWords }: MnemonicProps) => {
         paddingVertical={28}
         flexWrap="wrap"
       >
-        {(revealWords ? words : REDACTED).map((word, i) => (
-          <WordPill key={i} word={word} index={i} />
-        ))}
+        {(revealWords && secret ? secret.phrase.split(' ') : REDACTED).map(
+          (word, i) => (
+            <WordPill key={i + word} word={word} index={i} />
+          ),
+        )}
       </XStack>
       <XStack
         borderTopColor={slate200}

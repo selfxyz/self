@@ -4,36 +4,27 @@ import { decode } from 'msgpack-lite';
 import { inflate } from 'pako';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { loadPassportData } from '../stores/passportDataProvider';
 
 export default async function handleQRCodeScan(
   result: string,
   setApp: (app: SelfApp) => void,
 ) {
   try {
-    const passportData = await loadPassportData();
-    if (passportData) {
-      const decodedResult = atob(result);
-      const uint8Array = new Uint8Array(
-        decodedResult.split('').map(char => char.charCodeAt(0)),
-      );
-      const decompressedData = inflate(uint8Array);
-      const unpackedData = decode(decompressedData);
-      const openPassportApp: SelfApp = unpackedData;
+    const decodedResult = atob(result);
+    const uint8Array = new Uint8Array(
+      decodedResult.split('').map(char => char.charCodeAt(0)),
+    );
+    const decompressedData = inflate(uint8Array);
+    const unpackedData = decode(decompressedData);
+    const openPassportApp: SelfApp = unpackedData;
 
-      setApp(openPassportApp);
-      console.log('✅', {
-        message: 'QR code scanned',
-        customData: {
-          type: 'success',
-        },
-      });
-    } else {
-      console.log('Welcome', {
-        message: 'Please register your passport first',
-        type: 'info',
-      });
-    }
+    setApp(openPassportApp);
+    console.log('✅', {
+      message: 'QR code scanned',
+      customData: {
+        type: 'success',
+      },
+    });
   } catch (error) {
     console.error('Error parsing QR code result:', error);
     console.log('Try again', {

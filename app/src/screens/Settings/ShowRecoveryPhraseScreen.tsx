@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react';
+import React from 'react';
 
 import Mnemonic from '../../components/Mnemonic';
 import Description from '../../components/typography/Description';
-import useMnemonic from '../../hooks/useMnemonic';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 
 interface ShowRecoveryPhraseScreenProps {}
@@ -10,12 +9,6 @@ interface ShowRecoveryPhraseScreenProps {}
 const ShowRecoveryPhraseScreen: React.FC<
   ShowRecoveryPhraseScreenProps
 > = ({}) => {
-  const { mnemonic, loadMnemonic } = useMnemonic();
-
-  const onRevealWords = useCallback(async () => {
-    await loadMnemonic();
-  }, []);
-
   return (
     <ExpandableBottomLayout.Layout backgroundColor="white">
       <ExpandableBottomLayout.BottomSection
@@ -23,7 +16,7 @@ const ShowRecoveryPhraseScreen: React.FC<
         justifyContent="center"
         gap={20}
       >
-        <Mnemonic words={mnemonic} onRevealWords={onRevealWords} />
+        <Mnemonic />
         <Description>
           This phrase is the only way to recover your account. Keep it secret,
           keep it safe.

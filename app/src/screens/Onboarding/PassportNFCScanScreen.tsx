@@ -25,7 +25,7 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import NFC_IMAGE from '../../images/nfc.png';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { storePassportData } from '../../stores/passportDataProvider';
+import { usePassport } from '../../stores/passportDataProvider';
 import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
@@ -42,6 +42,7 @@ const emitter =
     : null;
 
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
+  const { setPassportData } = usePassport();
   const navigation = useNavigation();
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
   const [dialogMessage, setDialogMessage] = useState('');
@@ -142,7 +143,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
               passportMetadata.cscaSignatureAlgorithmBits,
             dsc: passportMetadata.dsc,
           });
-          await storePassportData(parsedPassportData);
+          await setPassportData(parsedPassportData);
           // Feels better somehow
           await new Promise(resolve => setTimeout(resolve, 1000));
           navigation.navigate('ConfirmBelongingScreen');
