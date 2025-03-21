@@ -8,10 +8,6 @@ import React, {
 } from 'react';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { navigationRef } from '../Navigation';
-import { useApp } from '../stores/appProvider';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
-import { usePassport } from './passportDataProvider';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',
@@ -63,7 +59,6 @@ export let globalSetDisclosureStatus:
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
 export function ProofProvider({ children }: PropsWithChildren<{}>) {
-  const { passportData, secret } = usePassport(false);
   const [registrationStatus, setRegistrationStatus] = useState<ProofStatusEnum>(
     ProofStatusEnum.PENDING,
   );
@@ -74,8 +69,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
-
-  const { startAppListener } = useApp();
 
   const setSelectedApp = useCallback((app: SelfApp) => {
     if (!app || Object.keys(app).length === 0) {
@@ -96,24 +89,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     setDisclosureStatus(ProofStatusEnum.PENDING);
   }, []);
 
-  const handleNavigateToProveScreen = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate('ProveScreen');
-    } else {
-      console.log("Navigation not ready yet, couldn't navigate to ProveScreen");
-    }
-  }, []);
-
-  const handleNavigateToQRCodeTrouble = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate('QRCodeTrouble');
-    } else {
-      console.log(
-        "Navigation not ready yet, couldn't navigate to QRCodeTrouble",
-      );
-    }
-  }, []);
-
   useEffect(() => {
     globalSetRegistrationStatus = setRegistrationStatus;
     globalSetDisclosureStatus = setDisclosureStatus;
@@ -122,27 +97,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       globalSetDisclosureStatus = null;
     };
   }, []);
-
-  useEffect(() => {
-    if (passportData && secret) {
-      const universalLinkCleanup = setupUniversalLinkListener(
-        setSelectedApp,
-        cleanSelfApp,
-        startAppListener,
-        handleNavigateToProveScreen,
-        handleNavigateToQRCodeTrouble,
-      );
-      return () => {
-        universalLinkCleanup();
-      };
-    }
-  }, [
-    setSelectedApp,
-    cleanSelfApp,
-    startAppListener,
-    handleNavigateToProveScreen,
-    handleNavigateToQRCodeTrouble,
-  ]);
 
   const publicApi: IProofContext = useMemo(
     () => ({

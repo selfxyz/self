@@ -67,35 +67,39 @@ const handleQRCodeData = (
   }
 };
 
-export const setupUniversalLinkListener = (
+export const setupUniversalLinkListenerInNavigation = (
+  navigation: any,
   setApp: (app: SelfApp) => void,
   cleanSelfApp: () => void,
   startAppListener: (sessionId: string, setApp: (app: SelfApp) => void) => void,
-  onNavigationNeeded?: () => void,
-  onErrorCallback?: () => void,
 ) => {
-  Linking.getInitialURL().then(url => {
-    if (url) {
-      handleQRCodeData(
-        url,
-        setApp,
-        cleanSelfApp,
-        startAppListener,
-        onNavigationNeeded,
-        onErrorCallback,
-      );
-    }
-  });
-
-  const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
+  const handleNavigation = (url: string) => {
     handleQRCodeData(
       url,
       setApp,
       cleanSelfApp,
       startAppListener,
-      onNavigationNeeded,
-      onErrorCallback,
+      () => {
+        if (navigation.isReady()) {
+          navigation.navigate('ProveScreen');
+        }
+      },
+      () => {
+        if (navigation.isReady()) {
+          navigation.navigate('QRCodeTrouble');
+        }
+      },
     );
+  };
+
+  Linking.getInitialURL().then(url => {
+    if (url) {
+      handleNavigation(url);
+    }
+  });
+
+  const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
+    handleNavigation(url);
   });
 
   return () => {
