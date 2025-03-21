@@ -47,8 +47,10 @@ const SelfQRcode = ({
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [sessionId] = useState(uuidv4());
-  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
+  const [internalSelfApp] = useState(() => ({
+    ...selfApp,
+    sessionId: uuidv4()
+  }));
 
   useEffect(() => {
     // Only initialize if we don't have a socket already
@@ -56,8 +58,8 @@ const SelfQRcode = ({
       console.log('[QRCode] Initializing new WebSocket connection');
       socketRef.current = initWebSocket(
         websocketUrl,
-        sessionId,
-        selfApp,
+        internalSelfApp,
+        type,
         setProofStep,
         setProofVerified,
         onSuccess
@@ -71,10 +73,9 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [type, websocketUrl, sessionId, selfApp, onSuccess]);
+  }, [type, websocketUrl, internalSelfApp, onSuccess]);
 
-
-
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
@@ -114,7 +115,7 @@ const SelfQRcode = ({
             default:
               return (
                 <QRCodeSVG
-                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${sessionId}` : getUniversalLink(selfApp)}
+                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${internalSelfApp.sessionId}` : getUniversalLink(internalSelfApp)}
                   size={size}
                   bgColor={darkMode ? '#000000' : '#ffffff'}
                   fgColor={darkMode ? '#ffffff' : '#000000'}
