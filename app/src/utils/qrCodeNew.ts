@@ -1,60 +1,101 @@
 import { Linking } from 'react-native';
 
-import { decode } from 'msgpack-lite';
-import { inflate } from 'pako';
+import queryString from 'query-string';
 
 import { SelfApp } from '../../../common/src/utils/appType';
 
-export default async function handleQRCodeScan(
-  result: string,
-  setApp: (app: SelfApp) => void,
-) {
+/**
+ * Decodes a URL-encoded string.
+ * @param {string} encodedUrl
+ * @returns {string}
+ */
+const decodeUrl = (encodedUrl: string): string => {
   try {
-    const decodedResult = atob(result);
-    const uint8Array = new Uint8Array(
-      decodedResult.split('').map(char => char.charCodeAt(0)),
-    );
-    const decompressedData = inflate(uint8Array);
-    const unpackedData = decode(decompressedData);
-    const openPassportApp: SelfApp = unpackedData;
-
-    setApp(openPassportApp);
-    console.log('✅', {
-      message: 'QR code scanned',
-      customData: {
-        type: 'success',
-      },
-    });
+    return decodeURIComponent(encodedUrl);
   } catch (error) {
-    console.error('Error parsing QR code result:', error);
-    console.log('Try again', {
-      message: 'Error reading QR code: ' + (error as Error).message,
-      customData: {
-        type: 'error',
-      },
-    });
-  }
-}
-
-const handleUniversalLink = (url: string, setApp: (app: SelfApp) => void) => {
-  const encodedData = new URL(url).searchParams.get('data');
-  console.log('Encoded data:', encodedData);
-  if (encodedData) {
-    handleQRCodeScan(encodedData, setApp);
-  } else {
-    console.error('No data found in the Universal Link');
+    console.error('Error decoding URL:', error);
+    return encodedUrl;
   }
 };
 
-export const setupUniversalLinkListener = (setApp: (app: SelfApp) => void) => {
+const handleQRCodeData = (
+  uri: string,
+  setApp: (app: SelfApp) => void,
+  cleanSelfApp: () => void,
+  startAppListener: (sessionId: string, setApp: (app: SelfApp) => void) => void,
+  onNavigationNeeded?: () => void,
+  onErrorCallback?: () => void,
+) => {
+  const decodedUri = decodeUrl(uri);
+  const encodedData = queryString.parseUrl(decodedUri).query;
+  const sessionId = encodedData.sessionId;
+  const selfAppStr = encodedData.selfApp as string | undefined;
+
+  if (selfAppStr) {
+    try {
+      const selfAppJson = JSON.parse(selfAppStr);
+      setApp(selfAppJson);
+
+      if (onNavigationNeeded) {
+        setTimeout(() => {
+          onNavigationNeeded();
+        }, 100);
+      }
+      return;
+    } catch (error) {
+      console.error('Error parsing selfApp:', error);
+      if (onErrorCallback) {
+        onErrorCallback();
+      }
+    }
+  }
+
+  if (sessionId && typeof sessionId === 'string') {
+    cleanSelfApp();
+    startAppListener(sessionId, setApp);
+
+    if (onNavigationNeeded) {
+      setTimeout(() => {
+        onNavigationNeeded();
+      }, 100);
+    }
+  } else {
+    console.error('No sessionId or selfApp found in the data');
+    if (onErrorCallback) {
+      onErrorCallback();
+    }
+  }
+};
+
+export const setupUniversalLinkListener = (
+  setApp: (app: SelfApp) => void,
+  cleanSelfApp: () => void,
+  startAppListener: (sessionId: string, setApp: (app: SelfApp) => void) => void,
+  onNavigationNeeded?: () => void,
+  onErrorCallback?: () => void,
+) => {
   Linking.getInitialURL().then(url => {
     if (url) {
-      handleUniversalLink(url, setApp);
+      handleQRCodeData(
+        url,
+        setApp,
+        cleanSelfApp,
+        startAppListener,
+        onNavigationNeeded,
+        onErrorCallback,
+      );
     }
   });
 
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleUniversalLink(url, setApp);
+    handleQRCodeData(
+      url,
+      setApp,
+      cleanSelfApp,
+      startAppListener,
+      onNavigationNeeded,
+      onErrorCallback,
+    );
   });
 
   return () => {

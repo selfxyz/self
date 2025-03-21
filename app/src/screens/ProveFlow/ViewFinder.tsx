@@ -49,6 +49,8 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const { setSelectedApp, cleanSelfApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
   const { startAppListener } = useApp();
+  const navigateToProveScreen = useHapticNavigation('ProveScreen');
+  const onCancelPress = useHapticNavigation('Home');
 
   // This resets to the default state when we navigate back to this screen
   useFocusEffect(
@@ -64,26 +66,31 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
       }
       if (error) {
         console.error(error);
+        navigation.navigate('QRCodeTrouble');
       } else {
         setDoneScanningQR(true);
         const encodedData = parseUrlParams(uri!);
         const sessionId = encodedData.get('sessionId');
-        if (!sessionId) {
-          console.error('No sessionId found in QR code');
+        const selfApp = encodedData.get('selfApp');
+        if (selfApp) {
+          const selfAppJson = JSON.parse(selfApp);
+          setSelectedApp(selfAppJson);
+          startAppListener(selfAppJson.sessionId, setSelectedApp);
+          setTimeout(() => {
+            navigateToProveScreen();
+          }, 100);
+        } else if (sessionId) {
+          cleanSelfApp();
+          startAppListener(sessionId, setSelectedApp);
+          setTimeout(() => {
+            navigateToProveScreen();
+          }, 100);
+        } else {
+          console.error('No sessionId or selfApp found in QR code');
+          setDoneScanningQR(false); // Reset to allow another scan attempt
+          navigation.navigate('QRCodeTrouble');
           return;
         }
-
-        // TODO (_): cleaning here makes sense, clean app should set the disclosure states to default too
-        // Clean up first
-        cleanSelfApp();
-
-        // Start the app listener and wait a moment for the connection
-        startAppListener(sessionId, setSelectedApp);
-
-        // Small delay to ensure the websocket connection is established
-        setTimeout(() => {
-          navigation.navigate('ProveScreen');
-        }, 100);
       }
     },
     [
@@ -92,9 +99,9 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
       startAppListener,
       cleanSelfApp,
       setSelectedApp,
+      navigateToProveScreen,
     ],
   );
-  const onCancelPress = useHapticNavigation('Home', { action: 'cancel' });
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
 

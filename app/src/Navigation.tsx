@@ -26,12 +26,14 @@ import ConfirmBelongingScreen from './screens/Onboarding/ConfirmBelongingScreen'
 import LoadingScreen from './screens/Onboarding/LoadingScreen';
 import PassportCameraScreen from './screens/Onboarding/PassportCameraScreen';
 import PassportCameraTrouble from './screens/Onboarding/PassportCameraTrouble';
+import PassportDataNotFound from './screens/Onboarding/PassportDataNotFound';
 import PassportNFCScanScreen from './screens/Onboarding/PassportNFCScanScreen';
 import PassportNFCTrouble from './screens/Onboarding/PassportNFCTrouble';
 import PassportOnboardingScreen from './screens/Onboarding/PassportOnboardingScreen';
 import UnsupportedPassportScreen from './screens/Onboarding/UnsupportedPassport';
 import ProofRequestStatusScreen from './screens/ProveFlow/ProofRequestStatusScreen';
 import ProveScreen from './screens/ProveFlow/ProveScreen';
+import QRCodeTroubleScreen from './screens/ProveFlow/QRCodeTrouble';
 import QRCodeViewFinderScreen from './screens/ProveFlow/ViewFinder';
 import CloudBackupScreen from './screens/Settings/CloudBackupScreen';
 import DevSettingsScreen from './screens/Settings/DevSettingsScreen';
@@ -40,6 +42,7 @@ import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
+import { ProofProvider } from './stores/proofProvider';
 import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
 
@@ -68,6 +71,7 @@ const AppNavigation = createNativeStackNavigator({
       screen: LaunchScreen,
       options: {
         headerShown: false,
+        gestureEnabled: false,
       },
     },
     Modal: {
@@ -175,6 +179,23 @@ const AppNavigation = createNativeStackNavigator({
       screen: QRCodeViewFinderScreen,
       options: {
         headerShown: false,
+        animation: 'slide_from_bottom',
+        // presentation: 'modal',
+      },
+    },
+    QRCodeTrouble: {
+      screen: QRCodeTroubleScreen,
+      options: {
+        headerShown: false,
+        animation: 'slide_from_bottom',
+        presentation: 'modal',
+      },
+    },
+    PassportDataNotFound: {
+      screen: PassportDataNotFound,
+      options: {
+        headerShown: false,
+        gestureEnabled: false,
         animation: 'slide_from_bottom',
         // presentation: 'modal',
       },
@@ -330,7 +351,9 @@ const NavigationWithTracking = () => {
 
   return (
     <GestureHandlerRootView>
-      <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      <ProofProvider>
+        <Navigation ref={navigationRef} onStateChange={trackScreen} />
+      </ProofProvider>
     </GestureHandlerRootView>
   );
 };

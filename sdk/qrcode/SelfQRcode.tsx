@@ -10,11 +10,12 @@ import { QRcodeSteps } from './utils/utils';
 import { containerStyle, ledContainerStyle, qrContainerStyle } from './utils/styles';
 import { QRCodeSVG } from 'qrcode.react';
 import { initWebSocket } from './utils/websocket';
-import { SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
+import { getUniversalLink, SelfApp, SelfAppBuilder } from '../../common/src/utils/appType';
 
 interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;
+  type?: 'websocket' | 'deeplink';
   websocketUrl?: string;
   size?: number;
   darkMode?: boolean;
@@ -36,14 +37,17 @@ const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
 const SelfQRcode = ({
   selfApp,
   onSuccess,
+  type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
   darkMode = false,
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [sessionId] = useState(uuidv4());
-  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
+  const [internalSelfApp] = useState(() => ({
+    ...selfApp,
+    sessionId: uuidv4()
+  }));
 
   useEffect(() => {
     // Only initialize if we don't have a socket already
@@ -51,8 +55,8 @@ const SelfQRcode = ({
       console.log('[QRCode] Initializing new WebSocket connection');
       socketRef.current = initWebSocket(
         websocketUrl,
-        sessionId,
-        selfApp,
+        internalSelfApp,
+        type,
         setProofStep,
         setProofVerified,
         onSuccess
@@ -66,12 +70,9 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [websocketUrl, sessionId, selfApp, onSuccess]);
+  }, [type, websocketUrl, internalSelfApp, onSuccess]);
 
-  const generateUniversalLink = () => {
-    const baseUrl = REDIRECT_URL;
-    return `${baseUrl}?sessionId=${sessionId}`;
-  };
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
@@ -111,7 +112,7 @@ const SelfQRcode = ({
             default:
               return (
                 <QRCodeSVG
-                  value={generateUniversalLink()}
+                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${internalSelfApp.sessionId}` : getUniversalLink(internalSelfApp)}
                   size={size}
                   bgColor={darkMode ? '#000000' : '#ffffff'}
                   fgColor={darkMode ? '#ffffff' : '#000000'}
@@ -125,7 +126,6 @@ const SelfQRcode = ({
 
   return <div style={containerStyle}>{renderProofStatus()}</div>;
 };
-
 // Export the wrapper component as the default export
 export default SelfQRcodeWrapper;
 

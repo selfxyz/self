@@ -83,12 +83,21 @@ const ProveScreen: React.FC = () => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
   }, [selectedApp?.disclosures]);
 
-  // Format the base64 image string correctly
+  // Format the logo source based on whether it's a URL or base64 string
   const logoSource = useMemo(() => {
     if (!selectedApp?.logoBase64) {
       return null;
     }
-    // Ensure the base64 string has the correct data URI prefix
+
+    // Check if the logo is already a URL
+    if (
+      selectedApp.logoBase64.startsWith('http://') ||
+      selectedApp.logoBase64.startsWith('https://')
+    ) {
+      return { uri: selectedApp.logoBase64 };
+    }
+
+    // Otherwise handle as base64 as before
     const base64String = selectedApp.logoBase64.startsWith('data:image')
       ? selectedApp.logoBase64
       : `data:image/png;base64,${selectedApp.logoBase64}`;
@@ -122,11 +131,14 @@ const ProveScreen: React.FC = () => {
 
         timeToNavigateToStatusScreen = setTimeout(() => {
           navigate('ProofRequestStatusScreen');
-        }, 1000);
+        }, 200);
 
         if (!passportData || !secret) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+          setTimeout(() => {
+            navigate('PassportDataNotFound');
+          }, 3000);
           return;
         }
 
@@ -186,6 +198,7 @@ const ProveScreen: React.FC = () => {
         contentSize.height - paddingToBottom;
       if (isCloseToBottom && !hasScrolledToBottom) {
         setHasScrolledToBottom(true);
+        buttonTap();
       }
     },
     [hasScrolledToBottom, isContentShorterThanScrollView],
@@ -221,7 +234,13 @@ const ProveScreen: React.FC = () => {
           ) : (
             <YStack alignItems="center" justifyContent="center">
               {logoSource && (
-                <Image mb={20} source={logoSource} width={100} height={100} />
+                <Image
+                  mb={20}
+                  source={logoSource}
+                  width={100}
+                  height={100}
+                  objectFit="contain"
+                />
               )}
               <BodyText fontSize={12} color={slate300} mb={20}>
                 {url}
