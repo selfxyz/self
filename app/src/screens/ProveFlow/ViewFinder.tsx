@@ -75,6 +75,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         if (selfApp) {
           const selfAppJson = JSON.parse(selfApp);
           setSelectedApp(selfAppJson);
+          startAppListener(selfAppJson.sessionId, setSelectedApp);
           setTimeout(() => {
             navigateToProveScreen();
           }, 100);
