@@ -4,7 +4,7 @@ export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 
 import { v4 } from 'uuid';
-import { Country3LetterCode } from "../constants/constants";
+import { CapitalCommonCountryName, Country3LetterCode } from "../constants/constants";
 
 export interface SelfApp {
   appName: string;
@@ -31,7 +31,7 @@ export interface SelfAppDisclosureConfig {
   expiry_date?: boolean;
   // custom checks
   ofac?: boolean;
-  excludedCountries?: Country3LetterCode[];
+  excludedCountries?: CapitalCommonCountryName[];
   minimumAge?: number;
 }
 
