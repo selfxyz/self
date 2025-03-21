@@ -16,7 +16,7 @@
     "fmt": "prettier --check .",
     "fmt:fix": "prettier --write .",
     "ia": "yarn install-app",
-    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd .. && yarn clean:xcode-env-local",
+    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && bundle exec pod install && cd .. && yarn clean:xcode-env-local",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",

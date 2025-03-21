@@ -57,5 +57,3 @@ runs:
         bundle install
         corepack enable
         yarn install
-        cd ${{ inputs.workspace }}/self/app/fastlane
-        bundle install
