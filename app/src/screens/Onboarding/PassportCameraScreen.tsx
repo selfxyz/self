@@ -91,11 +91,6 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
         dateOfBirth: formattedDateOfBirth,
         dateOfExpiry: formattedDateOfExpiry,
       });
-      console.log('Updated store with:', {
-        passportNumber,
-        dateOfBirth: formattedDateOfBirth,
-        dateOfExpiry: formattedDateOfExpiry,
-      });
 
       trackEvent('Passport Camera Scan Successful', {
         duration_seconds: parseFloat(scanDurationSeconds),
@@ -172,8 +167,8 @@ export default PassportCameraScreen;
 const styles = StyleSheet.create({
   animation: {
     position: 'absolute',
-    width: '115%',
-    height: '115%',
+    width: '130%',
+    height: '130%',
   },
   subheader: {
     color: slate800,

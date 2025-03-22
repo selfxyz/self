@@ -26,6 +26,7 @@ const handleWebSocketMessage =
     socket: Socket,
     sessionId: string,
     selfApp: SelfApp,
+    type: 'websocket' | 'deeplink',
     setProofStep: (step: number) => void,
     setProofVerified: (proofVerified: boolean) => void,
     onSuccess: () => void
@@ -36,7 +37,9 @@ const handleWebSocketMessage =
         case 'mobile_connected':
           console.log('[WebSocket] Mobile device connected. Emitting self_app event with payload:', selfApp);
           setProofStep(QRcodeSteps.MOBILE_CONNECTED);
-          socket.emit('self_app', { ...selfApp, sessionId });
+          if (type === 'websocket') {
+            socket.emit('self_app', { ...selfApp, sessionId });
+          }
           break;
         case 'mobile_disconnected':
           console.log('[WebSocket] Mobile device disconnected.');
@@ -59,6 +62,7 @@ const handleWebSocketMessage =
           console.log('[WebSocket] Proof verified.');
           setProofVerified(true);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
+          onSuccess();
           break;
         default:
           console.log('[WebSocket] Unhandled mobile status:', data.status);
@@ -68,12 +72,13 @@ const handleWebSocketMessage =
 
 export function initWebSocket(
   websocketUrl: string,
-  sessionId: string,
   selfApp: SelfApp,
+  type: 'websocket' | 'deeplink',
   setProofStep: (step: number) => void,
   setProofVerified: (proofVerified: boolean) => void,
   onSuccess: () => void
 ) {
+  const sessionId = selfApp.sessionId;
   console.log(`[WebSocket] Initializing WebSocket connection for sessionId: ${sessionId}`);
   const socket = newSocket(websocketUrl, sessionId);
 
@@ -91,6 +96,7 @@ export function initWebSocket(
       socket,
       sessionId,
       selfApp,
+      type,
       setProofStep,
       setProofVerified,
       onSuccess

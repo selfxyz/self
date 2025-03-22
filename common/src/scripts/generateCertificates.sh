@@ -190,6 +190,7 @@ generate_certificate() {
             # For RSAPSS, we need to specify the PSS padding mode during signing
             openssl x509 -req -in "$csr_file" \
                 -CA "$csca_crt" -CAkey "$csca_key" -CAcreateserial \
+                -extfile src/scripts/extensions.cnf \
                 -days 3650 -sha${hash#sha} \
                 -sigopt rsa_padding_mode:pss \
                 -sigopt rsa_pss_saltlen:"$salt" \
@@ -198,6 +199,7 @@ generate_certificate() {
             # For standard RSA or ECDSA
             openssl x509 -req -in "$csr_file" \
                 -CA "$csca_crt" -CAkey "$csca_key" -CAcreateserial \
+                -extfile src/scripts/extensions.cnf \
                 -days 3650 -sha${hash#sha} \
                 -out "$dir_name/$crt_file"
         fi
@@ -262,6 +264,7 @@ generate_certificate csca sha256 rsapss 32 65537 2048
 generate_certificate csca sha256 rsapss 32 65537 3072
 generate_certificate dsc sha256 rsapss 32 65537 4096 --signer sha256_rsapss_32_65537_4096
 generate_certificate dsc sha256 rsapss 32 65537 2048 --signer sha256_rsapss_32_65537_2048
+generate_certificate dsc sha256 rsapss 64 65537 2048 --signer sha256_rsapss_32_65537_2048 # DMK
 generate_certificate dsc sha256 rsapss 32 65537 3072 --signer sha256_rsapss_32_65537_3072
 generate_certificate csca sha256 rsapss 32 3 4096
 generate_certificate csca sha256 rsapss 32 3 3072

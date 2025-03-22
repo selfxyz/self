@@ -8,7 +8,7 @@ import {
 import { PassportData } from '../types';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { getCountryLeaf, getNameDobLeaf, getPassportNumberAndNationalityLeaf, getLeafCscaTree, getLeafDscTree, getNameYobLeaf } from '../trees';
-import { getCSCATree, getCscaTreeInclusionProof, getDSCTree, getDscTreeInclusionProof } from '../trees';
+import { getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../trees';
 import { SMT } from '@openpassport/zk-kit-smt';
 import {
   extractSignatureFromDSC,

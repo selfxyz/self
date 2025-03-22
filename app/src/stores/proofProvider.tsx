@@ -8,7 +8,8 @@ import React, {
 } from 'react';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
+import { navigationRef } from '../Navigation';
+import { useApp } from '../stores/appProvider';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',
@@ -71,6 +72,8 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     defaults.selectedApp,
   );
 
+  const { startAppListener } = useApp();
+
   const setSelectedApp = useCallback((app: SelfApp) => {
     if (!app || Object.keys(app).length === 0) {
       return;
@@ -90,6 +93,24 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     setDisclosureStatus(ProofStatusEnum.PENDING);
   }, []);
 
+  const handleNavigateToProveScreen = useCallback(() => {
+    if (navigationRef.isReady()) {
+      navigationRef.navigate('ProveScreen');
+    } else {
+      console.log("Navigation not ready yet, couldn't navigate to ProveScreen");
+    }
+  }, []);
+
+  const handleNavigateToQRCodeTrouble = useCallback(() => {
+    if (navigationRef.isReady()) {
+      navigationRef.navigate('QRCodeTrouble');
+    } else {
+      console.log(
+        "Navigation not ready yet, couldn't navigate to QRCodeTrouble",
+      );
+    }
+  }, []);
+
   useEffect(() => {
     globalSetRegistrationStatus = setRegistrationStatus;
     globalSetDisclosureStatus = setDisclosureStatus;
@@ -98,13 +119,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       globalSetDisclosureStatus = null;
     };
   }, [setRegistrationStatus, setDisclosureStatus]);
-
-  useEffect(() => {
-    const universalLinkCleanup = setupUniversalLinkListener(setSelectedApp);
-    return () => {
-      universalLinkCleanup();
-    };
-  }, []);
 
   const publicApi: IProofContext = useMemo(
     () => ({

@@ -98,8 +98,8 @@ export const PassportCamera: React.FC<PassportCameraProps> = ({
         onPassportRead={_onPassportRead}
         onError={_onError}
         style={{
-          width: '110%',
-          height: '110%',
+          width: '130%',
+          height: '130%',
         }}
       />
     );

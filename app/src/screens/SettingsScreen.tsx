@@ -67,12 +67,11 @@ const routes = [
 
 // get the actual type of the routes so we can use in the onMenuPress function so it
 // doesnt worry about us linking to screens with required props which we dont want to go to anyway
-type RouteLinks = (typeof routes)[number][2];
+type RouteLinks = (typeof routes)[number][2] | (typeof DEBUG_MENU)[number][2];
 
-const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption] = [
-  Bug as React.FC<SvgProps>,
-  'Debug menu',
-  'DevSettings',
+const DEBUG_MENU: [React.FC<SvgProps>, string, RouteOption][] = [
+  [Data as React.FC<SvgProps>, 'Gen Mock Passport Data', 'CreateMock'],
+  [Bug as React.FC<SvgProps>, 'Debug menu', 'DevSettings'],
 ];
 
 const social = [
@@ -123,7 +122,7 @@ const SettingsScreen: React.FC<SettingsScreenProps> = ({}) => {
   const navigation = useNavigation();
 
   const screenRoutes = useMemo(() => {
-    return isDevMode ? [...routes, DEBUG_MENU] : routes;
+    return isDevMode ? [...routes, ...DEBUG_MENU] : routes;
   }, [isDevMode]);
 
   const twoFingerTap = Gesture.Tap()
@@ -175,7 +174,7 @@ ${deviceInfo.map(([k, v]) => `${k}=${v}`).join('; ')}
             break;
 
           default:
-            navigation.navigate(menuRoute);
+            navigation.navigate(menuRoute as any);
             break;
         }
       };
