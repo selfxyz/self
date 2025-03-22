@@ -40,7 +40,7 @@ import {
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const { passportData, secret, status: passportStatus } = usePassport();
+  const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
@@ -116,10 +116,9 @@ const ProveScreen: React.FC = () => {
 
   const onVerify = useCallback(
     async function () {
-      if (passportStatus !== 'success' || isProcessing.current) {
+      if (isProcessing.current) {
         return;
       }
-
       isProcessing.current = true;
 
       resetProof();
@@ -129,11 +128,18 @@ const ProveScreen: React.FC = () => {
       try {
         let timeToNavigateToStatusScreen: NodeJS.Timeout;
 
+        const passportDataAndSecret = await getPassportDataAndSecret().catch(
+          (e: Error) => {
+            console.error('Error getting passport data', e);
+            globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+          },
+        );
+
         timeToNavigateToStatusScreen = setTimeout(() => {
           navigate('ProofRequestStatusScreen');
         }, 200);
 
-        if (!passportData || !secret) {
+        if (!passportDataAndSecret) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
           setTimeout(() => {
@@ -142,10 +148,8 @@ const ProveScreen: React.FC = () => {
           return;
         }
 
-        const isRegistered = await isUserRegistered(
-          passportData,
-          secret.password,
-        );
+        const { passportData, secret } = passportDataAndSecret.data;
+        const isRegistered = await isUserRegistered(passportData, secret);
         console.log('isRegistered', isRegistered);
 
         if (!isRegistered) {
@@ -160,7 +164,7 @@ const ProveScreen: React.FC = () => {
 
         console.log('currentApp', currentApp);
         const status = await sendVcAndDisclosePayload(
-          secret.password,
+          secret,
           passportData,
           currentApp,
         );
@@ -175,14 +179,7 @@ const ProveScreen: React.FC = () => {
         isProcessing.current = false;
       }
     },
-    [
-      navigate,
-      handleProofVerified,
-      resetProof,
-      cleanSelfApp,
-      passportData,
-      secret,
-    ],
+    [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
   );
 
   const handleScroll = useCallback(

@@ -40,7 +40,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { registrationStatus, resetProof } = useProofInfo();
-  const { passportData, clearPassportData, secret, status } = usePassport();
+  const { getPassportDataAndSecret, clearPassportData } = usePassport();
 
   useEffect(() => {
     // TODO this makes sense if reset proof was only about passport registration
@@ -63,20 +63,17 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   }, [registrationStatus]);
 
   const processPayloadCalled = useRef(false);
+
   useEffect(() => {
     if (!processPayloadCalled.current) {
       processPayloadCalled.current = true;
       const processPayload = async () => {
         try {
-          if (status !== 'success') {
+          const passportDataAndSecret = await getPassportDataAndSecret();
+          if (!passportDataAndSecret) {
             return;
           }
-
-          if (!passportData || !secret) {
-            console.warn('no passportData or secret');
-            navigation.navigate('Launch');
-            return;
-          }
+          const { passportData, secret } = passportDataAndSecret.data;
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
@@ -88,10 +85,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             clearPassportData();
             return;
           }
-          const isRegistered = await isUserRegistered(
-            passportData,
-            secret.password,
-          );
+          const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
             console.log(
@@ -109,7 +103,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-          registerPassport(passportData, secret.password);
+          registerPassport(passportData, secret);
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
@@ -117,15 +111,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       };
       processPayload();
     }
-  }, [
-    clearPassportData,
-    goToUnsupportedScreen,
-    passportData,
-    secret,
-    navigation.navigate,
-    resetProof,
-    status,
-  ]);
+  }, []);
 
   return (
     <View style={styles.container}>

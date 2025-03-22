@@ -10,8 +10,6 @@ import React, {
 import { SelfApp } from '../../../common/src/utils/appType';
 import { navigationRef } from '../Navigation';
 import { useApp } from '../stores/appProvider';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
-import { usePassport } from './passportDataProvider';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',
@@ -63,7 +61,6 @@ export let globalSetDisclosureStatus:
  store to manage the proof verification process, including app the is requesting, intemidiate status and final result
  */
 export function ProofProvider({ children }: PropsWithChildren<{}>) {
-  const { passportData, secret } = usePassport(false);
   const [registrationStatus, setRegistrationStatus] = useState<ProofStatusEnum>(
     ProofStatusEnum.PENDING,
   );
@@ -121,28 +118,7 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       globalSetRegistrationStatus = null;
       globalSetDisclosureStatus = null;
     };
-  }, []);
-
-  useEffect(() => {
-    if (passportData && secret) {
-      const universalLinkCleanup = setupUniversalLinkListener(
-        setSelectedApp,
-        cleanSelfApp,
-        startAppListener,
-        handleNavigateToProveScreen,
-        handleNavigateToQRCodeTrouble,
-      );
-      return () => {
-        universalLinkCleanup();
-      };
-    }
-  }, [
-    setSelectedApp,
-    cleanSelfApp,
-    startAppListener,
-    handleNavigateToProveScreen,
-    handleNavigateToQRCodeTrouble,
-  ]);
+  }, [setRegistrationStatus, setDisclosureStatus]);
 
   const publicApi: IProofContext = useMemo(
     () => ({
