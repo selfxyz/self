@@ -61,6 +61,5 @@ runs:
       shell: bash
       run: |
         cd ${{ inputs.workspace }}/self/app
-        bundle install
         corepack enable
         yarn install

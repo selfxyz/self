@@ -32,11 +32,6 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
-      - uses: maxim-lobanov/setup-xcode@v1
-        if: ${{ env.CI }} && ${{ !env.ACT }} # for local development
-        with:
-          xcode-version: latest-stable
-
       - name: Verify iOS Secrets
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
