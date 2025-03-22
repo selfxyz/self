@@ -19,13 +19,18 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install environemnt packages
+    - name: Install environment packages
       shell: bash
       run: |
-        sudo apt-get update
-        sudo apt-get install -y locales dialog
-        sudo locale-gen en_US.UTF-8
-        sudo update-locale LANG=en_US.UTF-8
+        if [[ "$RUNNER_OS" == "Linux" ]]; then
+          apt-get update
+          apt-get install -y locales
+          locale-gen en_US.UTF-8
+          echo "LANG=en_US.UTF-8" >> $GITHUB_ENV
+        elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          # macOS already has UTF-8 locale by default
+          echo "No additional packages needed for macOS"
+        fi
 
     - name: Checkout repository
       uses: actions/checkout@v3
