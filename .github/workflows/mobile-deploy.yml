@@ -87,11 +87,9 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
       
       - name: Setup Android SDK
-        if: ${{ !env.ACT }}
         uses: android-actions/setup-android@v3
 
       - name: Install NDK
-        if: ${{ !env.ACT }}
         run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
 
       - name: Decode Keystore
