@@ -22,7 +22,6 @@ default_platform(:ios)
 platform :ios do
   desc "Push a new build to TestFlight Internal Testing"
   lane :internal_test do
-    
     if is_ci
       setup_ci
 
@@ -49,14 +48,14 @@ platform :ios do
       scheme: "OpenPassport",
       export_method: "app-store",
       output_directory: "build",
-      clean: true,
+      clean: true
     )
     
     # Upload to TestFlight
     api_key = app_store_connect_api_key(
       key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY"]
     )
     
     unless is_ci
@@ -67,10 +66,9 @@ platform :ios do
     upload_to_testflight(
       apple_id: ENV["APP_STORE_APPLE_ID"],
       team_id: ENV["APP_STORE_TEAM_ID"],
-      # disable uploads if not in CI
       api_key: api_key,
       distribute_external: true,
-      groups: ["Self external testers"],  
+      groups: ["Self external testers"],
       changelog: ""
     )
   end
@@ -79,7 +77,6 @@ end
 platform :android do
   desc "Push a new build to Google Play Internal Testing"
   lane :internal_test do
-
     if is_ci
       setup_ci
       # Update app version and build number if needed
@@ -87,7 +84,7 @@ platform :android do
         gradle_file_path: "android/app/build.gradle"
       )
     else
-      verify_env_vars([
+      Helpers.verify_env_vars([
         "ANDROID_KEYSTORE_PASSWORD",
         "ANDROID_KEY_ALIAS",
         "ANDROID_KEY_PASSWORD",
@@ -103,8 +100,8 @@ platform :android do
         "android.injected.signing.store.file" => "app/upload-keystore.jks",
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
-        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
-      },
+        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
+      }
     )
     
     # Upload to Google Play

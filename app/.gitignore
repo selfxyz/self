@@ -37,6 +37,7 @@ local.properties
 # debug bundled builds
 android/app/src/main/assets/*android.bundle
 android/app/src/main/res/*/node_modules*
+android/.kotlin/
 
 # node.js
 #
