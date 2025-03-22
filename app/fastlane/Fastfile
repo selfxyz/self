@@ -48,7 +48,8 @@ platform :ios do
       scheme: "OpenPassport",
       export_method: "app-store",
       output_directory: "build",
-      clean: true
+      clean: true,
+      xcargs: "-allowProvisioningUpdates"
     )
     
     # Upload to TestFlight
@@ -135,7 +136,7 @@ end
 
 # for local development
 def verify_env_vars(required_vars)
-  missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].empty? }
+  missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].to_s.strip.empty? }
   
   if missing_vars.any?
     report_error(
