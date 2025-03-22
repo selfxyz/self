@@ -24,12 +24,8 @@ runs:
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           # for fastlane
-          sudo apt-get update
-          sudo apt-get install -y locales
-          locale-gen en_US.UTF-8
-          echo "LANG=en_US.UTF-8" >> $GITHUB_ENV
-          echo "LC_ALL=en_US.UTF-8" >> $GITHUB_ENV
-          echo "LANGUAGE=en_US" >> $GITHUB_ENV
+          sudo locale-gen en_US.UTF-8
+          sudo update-locale LANG=en_US.UTF-8
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
           # macOS already has UTF-8 locale by default
           echo "No additional packages needed for macOS"
