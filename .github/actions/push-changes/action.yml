@@ -10,7 +10,7 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Commit updated build number
+    - name: Create commit
       shell: bash
       run: |
         git config --global user.email "action@github.com"
