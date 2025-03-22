@@ -2,6 +2,7 @@ name: Deploy to Internal Testers
 
 env:
   # TODO: add beta lane, act on new numeric version tag
+  ANDROID_NDK_VERSION: 26.1.10909125
   JAVA_VERSION: 17
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
@@ -80,6 +81,15 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
+      # android specific steps
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v2
+
+      - name: Install Android NDK
+        uses: android-actions/setup-ndk@v1
+        with:
+          version: ${{ env.ANDROID_NDK_VERSION }}
+
       - name: Decode Keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks
@@ -107,6 +117,7 @@ jobs:
             echo "❌ Error: Invalid key password"
             exit 1
           fi
+          # TODO: uncomment this when we have a way to test the Play Store JSON key
           # Verify Play Store JSON key is valid JSON
           # if ! echo "${{ secrets.PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
           #   echo "❌ Error: Invalid Play Store JSON key format"
