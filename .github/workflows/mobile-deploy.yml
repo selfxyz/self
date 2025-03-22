@@ -52,12 +52,10 @@ jobs:
 
       - name: Build and upload to TestFlight (Internal)
         env:
-          APP_STORE_APPLE_ID: ${{ secrets.APP_STORE_APPLE_ID }}
           APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_TEAM_ID: ${{ secrets.APP_STORE_TEAM_ID }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
           bundle exec fastlane ios internal_test --verbose
