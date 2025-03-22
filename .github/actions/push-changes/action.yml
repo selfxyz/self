@@ -1,0 +1,23 @@
+name: Setup Mobile Environment
+
+description: "Sets up the environment for mobile app builds"
+
+inputs:
+  commit_message:
+    description: "Commit message"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Commit updated build number
+      shell: bash
+      run: |
+        git config --global user.email "action@github.com"
+        git config --global user.name "GitHub Action"
+        git add .
+        git commit -m "chore: ${{ inputs.commit_message }} [skip ci]" || echo "No changes to commit"
+
+    - name: Push changes
+      shell: bash
+      run: git push origin HEAD
