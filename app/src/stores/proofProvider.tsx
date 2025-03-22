@@ -8,8 +8,6 @@ import React, {
 } from 'react';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { navigationRef } from '../Navigation';
-import { useApp } from '../stores/appProvider';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',
@@ -72,8 +70,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     defaults.selectedApp,
   );
 
-  const { startAppListener } = useApp();
-
   const setSelectedApp = useCallback((app: SelfApp) => {
     if (!app || Object.keys(app).length === 0) {
       return;
@@ -91,24 +87,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   const resetProof = useCallback(() => {
     setRegistrationStatus(ProofStatusEnum.PENDING);
     setDisclosureStatus(ProofStatusEnum.PENDING);
-  }, []);
-
-  const handleNavigateToProveScreen = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate('ProveScreen');
-    } else {
-      console.log("Navigation not ready yet, couldn't navigate to ProveScreen");
-    }
-  }, []);
-
-  const handleNavigateToQRCodeTrouble = useCallback(() => {
-    if (navigationRef.isReady()) {
-      navigationRef.navigate('QRCodeTrouble');
-    } else {
-      console.log(
-        "Navigation not ready yet, couldn't navigate to QRCodeTrouble",
-      );
-    }
   }, []);
 
   useEffect(() => {

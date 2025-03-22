@@ -42,9 +42,11 @@ import PassportDataInfoScreen from './screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from './screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from './screens/SettingsScreen';
 import SplashScreen from './screens/SplashScreen';
-import { ProofProvider } from './stores/proofProvider';
+import { useApp } from './stores/appProvider';
+import { useProofInfo } from './stores/proofProvider';
 import analytics from './utils/analytics';
 import { black, slate300, white } from './utils/colors';
+import { setupUniversalLinkListenerInNavigation } from './utils/qrCodeNew';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
@@ -349,11 +351,27 @@ const NavigationWithTracking = () => {
     }
   };
 
+  // Add these hooks to get access to the necessary functions
+  const { setSelectedApp, cleanSelfApp } = useProofInfo();
+  const { startAppListener } = useApp();
+
+  // Setup universal link handling at the navigation level
+  React.useEffect(() => {
+    const cleanup = setupUniversalLinkListenerInNavigation(
+      navigationRef,
+      setSelectedApp,
+      cleanSelfApp,
+      startAppListener,
+    );
+
+    return () => {
+      cleanup();
+    };
+  }, [setSelectedApp, cleanSelfApp, startAppListener]);
+
   return (
     <GestureHandlerRootView>
-      <ProofProvider>
-        <Navigation ref={navigationRef} onStateChange={trackScreen} />
-      </ProofProvider>
+      <Navigation ref={navigationRef} onStateChange={trackScreen} />
     </GestureHandlerRootView>
   );
 };
