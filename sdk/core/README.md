@@ -37,7 +37,15 @@ selfBackendVerifier.setMinimumAge(20);
 selfBackendVerifier.setNationality('France');
 
 // Set excluded countries verification (max 40 countries)
+// You can use either country names directly or countryCodes
 selfBackendVerifier.excludeCountries('Iran', 'North Korea', 'Russia', 'Syria');
+// OR using countryCodes
+selfBackendVerifier.excludeCountries(
+  countryCodes.IRN,   // Iran
+  countryCodes.PRK,   // North Korea
+  countryCodes.RUS,   // Russia
+  countryCodes.SYR    // Syria
+);
 
 // Enable passport number OFAC check (default: false)
 selfBackendVerifier.enablePassportNoOfacCheck();
@@ -195,32 +203,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 }
 ```
-
-## Working with Country Codes
-
-The SDK provides a `countryCodes` object for referencing ISO country codes:
-
-```typescript
-import { countryCodes } from '@selfxyz/core';
-
-// Examples of usage
-const iranCode = countryCodes.IRN;  // "Iran"
-const northKoreaCode = countryCodes.PRK;  // "North Korea"
-
-// Use in excludeCountries
-selfBackendVerifier.excludeCountries(
-  countryCodes.IRN,
-  countryCodes.PRK,
-  countryCodes.SYR
-);
-```
-
 ## Integration with SelfQRcode
 
 This backend SDK is designed to work with the `@selfxyz/qrcode` package. When configuring your QR code, set the verification endpoint to point to your API that uses this SDK:
 
 ```typescript
 import { SelfAppBuilder } from '@selfxyz/qrcode';
+import { countryCodes } from '@selfxyz/core';
 
 const selfApp = new SelfAppBuilder({
   appName: 'My Application',
@@ -234,7 +223,7 @@ const selfApp = new SelfAppBuilder({
     date_of_birth: true,
     passport_number: true,
     minimumAge: 20,
-    excludedCountries: ["IRN", "PRK"],
+    excludedCountries: [countryCodes.IRN, countryCodes.PRK],
     ofac: true,
   },
 }).build();

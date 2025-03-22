@@ -11,8 +11,7 @@ import type { SelfVerificationResult } from '../../../common/src/utils/selfAttes
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-
-type CountryCode = (typeof countryCodes)[keyof typeof countryCodes];
+import { CapitalCommonCountryName, Country3LetterCode, countries } from '../../../common/src/constants/constants';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -25,10 +24,10 @@ export class SelfBackendVerifier {
 
   protected nationality: {
     enabled: boolean;
-    value: CountryCode;
+    value: Country3LetterCode;
   } = {
       enabled: false,
-      value: '' as CountryCode,
+      value: '' as Country3LetterCode,
     };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
@@ -36,7 +35,7 @@ export class SelfBackendVerifier {
   };
   protected excludedCountries: {
     enabled: boolean;
-    value: CountryCode[];
+    value: Country3LetterCode[];
   } = {
       enabled: false,
       value: [],
@@ -204,6 +203,18 @@ export class SelfBackendVerifier {
     return attestation;
   }
 
+  private getCountryCodeFromCapitalName(countryName: CapitalCommonCountryName): Country3LetterCode {
+    const entry = Object.entries(countries).find(
+      ([_, value]) => value === countryName
+    );
+    
+    if (!entry) {
+      throw new Error(`Country not found: ${countryName}`);
+    }
+    
+    return entry[0] as Country3LetterCode;
+  }
+
   setMinimumAge(age: number): this {
     if (age <= 0) {
       throw new Error('Minimum age must be positive');
@@ -215,16 +226,22 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  setNationality(country: CountryCode): this {
-    this.nationality = { enabled: true, value: country };
+  setNationality(country: CapitalCommonCountryName): this {
+    const countryCode = this.getCountryCodeFromCapitalName(country);
+    this.nationality = { enabled: true, value: countryCode };
     return this;
   }
 
-  excludeCountries(...countries: CountryCode[]): this {
+  excludeCountries(...countries: CapitalCommonCountryName[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
-    this.excludedCountries = { enabled: true, value: countries };
+    
+    const countryCodes = countries.map(country => 
+      this.getCountryCodeFromCapitalName(country)
+    );
+    
+    this.excludedCountries = { enabled: true, value: countryCodes };
     return this;
   }
 
