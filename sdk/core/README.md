@@ -37,15 +37,29 @@ selfBackendVerifier.setMinimumAge(20);
 selfBackendVerifier.setNationality('France');
 
 // Set excluded countries verification (max 40 countries)
-// You can use either country names directly or countryCodes
-selfBackendVerifier.excludeCountries('Iran', 'North Korea', 'Russia', 'Syria');
-// OR using countryCodes
+// You can use either common country names or 3-letter country codes
+
+// Import countries and countryCodes from constants
+import { countries, countryCodes } from '@selfxyz/core';
+
+// Using common country names with the imported constants (recommended for better readability)
+selfBackendVerifier.excludeCountries(
+  countries.IRAN, 
+  countries.NORTH_KOREA, 
+  countries.RUSSIA,
+  countries.SYRIA
+);
+// OR using 3-letter country codes
 selfBackendVerifier.excludeCountries(
   countryCodes.IRN,   // Iran
   countryCodes.PRK,   // North Korea
   countryCodes.RUS,   // Russia
   countryCodes.SYR    // Syria
 );
+
+// We recommend using common country names with the imported constants when possible as they are 
+// more readable and make your code more maintainable. The SDK will internally convert these to
+// the appropriate 3-letter codes required by the verification system.
 
 // Enable passport number OFAC check (default: false)
 selfBackendVerifier.enablePassportNoOfacCheck();
@@ -209,7 +223,7 @@ This backend SDK is designed to work with the `@selfxyz/qrcode` package. When co
 
 ```typescript
 import { SelfAppBuilder } from '@selfxyz/qrcode';
-import { countryCodes } from '@selfxyz/core';
+import { countries, countryCodes } from '@selfxyz/core';
 
 const selfApp = new SelfAppBuilder({
   appName: 'My Application',
@@ -223,7 +237,15 @@ const selfApp = new SelfAppBuilder({
     date_of_birth: true,
     passport_number: true,
     minimumAge: 20,
-    excludedCountries: [countryCodes.IRN, countryCodes.PRK],
+    // You can specify excluded countries using imported constants for better readability
+    excludedCountries: [
+      countries.IRAN, 
+      countries.NORTH_KOREA, 
+      countries.RUSSIA,
+      countries.SYRIA
+    ],
+    // OR using the predefined country codes
+    // excludedCountries: [countryCodes.IRN, countryCodes.PRK, countryCodes.RUS, countryCodes.SYR],
     ofac: true,
   },
 }).build();

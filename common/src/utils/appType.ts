@@ -20,7 +20,7 @@ export interface SelfApp {
   disclosures: SelfAppDisclosureConfig;
 }
 
-interface SelfAppDisclosureConfig {
+export interface SelfAppDisclosureConfig {
   // dg1
   issuing_state?: boolean;
   name?: boolean;
