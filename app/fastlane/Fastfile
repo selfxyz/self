@@ -55,10 +55,10 @@ platform :ios do
       key_content: ENV["APP_STORE_CONNECT_API_KEY"]
     )
     
-    # unless is_ci
-    #   puts "Skipping upload to TestFlight because CI is false"
-    #   return
-    # end
+    unless is_ci
+      puts "Skipping upload to TestFlight because CI is false"
+      return
+    end
     
     upload_to_testflight(
       api_key: api_key,
@@ -101,6 +101,11 @@ platform :android do
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
       }
     )
+
+    # unless is_ci
+    #   puts "Skipping upload to Google Play because CI is false"
+    #   return
+    # end
     
     # Upload to Google Play
     upload_to_play_store(
