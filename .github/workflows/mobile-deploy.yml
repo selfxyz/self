@@ -28,7 +28,6 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
-          java_version: ${{ env.JAVA_VERSION }}
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
@@ -76,12 +75,17 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
-          java_version: ${{ env.JAVA_VERSION }}
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
       # android specific steps
+      - name: Setup Java environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+      
       - name: Setup Android SDK
         if: ${{ !env.ACT }}
         uses: android-actions/setup-android@v3

@@ -3,9 +3,6 @@ name: Setup Mobile Environment
 description: "Sets up the environment for mobile app builds"
 
 inputs:
-  java_version:
-    description: "Java version"
-    required: true
   node_version:
     description: "Node version"
     required: true
@@ -40,12 +37,6 @@ runs:
 
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Setup Java environment
-      uses: actions/setup-java@v3
-      with:
-        distribution: "temurin"
-        java-version: ${{ inputs.java_version }}
 
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
