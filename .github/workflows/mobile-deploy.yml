@@ -23,6 +23,8 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          java_version: ${{ env.JAVA_VERSION }}
+          node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
@@ -72,6 +74,8 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          java_version: ${{ env.JAVA_VERSION }}
+          node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 

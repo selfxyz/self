@@ -88,6 +88,9 @@ platform :android do
       ])
     end
     
+    # Verify version code before building
+    verify_android_version_code
+    
     keystore_path = create_android_keystore
 
     # Build the Android app
@@ -125,12 +128,25 @@ def verify_env_vars(required_vars)
   missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].empty? }
   
   if missing_vars.any?
-    UI.error("❌ Missing required environment variables: #{missing_vars.join(', ')}")
-    UI.error("Please check your .env.secrets file")
-    UI.abort_with_message!("Environment verification failed")
+    report_error(
+      "Missing required environment variables: #{missing_vars.join(', ')}",
+      "Please check your .env.secrets file",
+      "Environment verification failed"
+    )
   else
-    UI.success("✅ All required environment variables are present")
+    report_success("All required environment variables are present")
   end
+end
+
+# Helper methods for consistent error and success reporting
+def report_error(message, suggestion = nil, abort_message = nil)
+  UI.error("❌ #{message}")
+  UI.error(suggestion) if suggestion
+  UI.abort_with_message!(abort_message || message)
+end
+
+def report_success(message)
+  UI.success("✅ #{message}")
 end
 
 # Verify build number against App Store Connect
@@ -152,13 +168,38 @@ def verify_ios_app_store_build_number
   current_build = target.build_configurations.first.build_settings["CURRENT_PROJECT_VERSION"]
   
   if current_build.to_i <= latest_build.to_i
-    UI.error("❌ Build number must be greater than latest TestFlight build!")
-    UI.error("Latest TestFlight build: #{latest_build}")
-    UI.error("Current build: #{current_build}")
-    UI.error("Please increment the build number in the project settings")
-    UI.abort_with_message!("Build number verification failed")
+    report_error(
+      "Build number must be greater than latest TestFlight build!",
+      "Latest TestFlight build: #{latest_build}\nCurrent build: #{current_build}\nPlease increment the build number in the project settings",
+      "Build number verification failed"
+    )
   else
-    UI.success("✅ Build number verified (Current: #{current_build}, Latest TestFlight: #{latest_build})")
+    report_success("Build number verified (Current: #{current_build}, Latest TestFlight: #{latest_build})")
+  end
+end
+
+# Verify version code against Google Play Console
+# Because the Play Store API will auto increment the version code
+def verify_android_version_code
+  # Get the latest version code from Google Play Console
+  latest_version = google_play_track_version_codes(
+    track: "internal",
+    json_key_data: ENV["PLAY_STORE_JSON_KEY"]
+  ).first
+
+  # Read current version code from build.gradle
+  gradle_file = "../android/app/build.gradle"
+  version_code_line = File.readlines(gradle_file).find { |line| line.include?("versionCode") }
+  current_version = version_code_line.match(/versionCode\s+(\d+)/)[1].to_i
+
+  if current_version <= latest_version
+    report_error(
+      "Version code must be greater than latest Play Store version!",
+      "Latest Play Store version: #{latest_version}\nCurrent version: #{current_version}\nPlease increment the version code in android/app/build.gradle",
+      "Version code verification failed"
+    )
+  else
+    report_success("Version code verified (Current: #{current_version}, Latest Play Store: #{latest_version})")
   end
 end
 
