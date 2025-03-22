@@ -68,7 +68,7 @@ jobs:
           bundle exec fastlane ios internal_test --verbose
 
       - uses: actions/checkout@v4
-      - name: Update build number
+      - name: Commit updated build number
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump ios build number"
@@ -131,7 +131,7 @@ jobs:
           bundle exec fastlane android internal_test --verbose
 
       - uses: actions/checkout@v4
-      - name: Update build number
+      - name: Commit updated build version
         uses: ./.github/actions/push-changes
         with:
-          commit_message: "bump android build number"
+          commit_message: "bump android build version"
