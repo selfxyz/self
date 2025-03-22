@@ -5,7 +5,7 @@ env:
   JAVA_VERSION: 17
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
-  WORKSPACE: /github/workspace
+  WORKSPACE: /tmp/workspace
 
 on:
   push:

@@ -23,10 +23,10 @@ runs:
       shell: bash
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then
-          apt-get update
-          apt-get install -y locales
-          locale-gen en_US.UTF-8
+          # Set locale without requiring sudo
           echo "LANG=en_US.UTF-8" >> $GITHUB_ENV
+          echo "LC_ALL=en_US.UTF-8" >> $GITHUB_ENV
+          echo "LANGUAGE=en_US" >> $GITHUB_ENV
         elif [[ "$RUNNER_OS" == "macOS" ]]; then
           # macOS already has UTF-8 locale by default
           echo "No additional packages needed for macOS"
