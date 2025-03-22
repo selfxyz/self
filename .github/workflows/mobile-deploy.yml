@@ -58,12 +58,14 @@ jobs:
 
       - name: Build and upload to TestFlight (Internal)
         env:
+          APP_STORE_APPLE_ID: ${{ secrets.APP_STORE_APPLE_ID }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
+          APP_STORE_TEAM_ID: ${{ secrets.APP_STORE_TEAM_ID }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
-          bundle exec fastlane ios internal_test
+          bundle exec fastlane ios internal_test --verbose
 
   build-android:
     runs-on: ubuntu-latest
@@ -117,4 +119,4 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
-          bundle exec fastlane android internal_test
+          bundle exec fastlane android internal_test --verbose
