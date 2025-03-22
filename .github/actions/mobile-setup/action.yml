@@ -23,7 +23,10 @@ runs:
       shell: bash
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then
-          # Set locale without requiring sudo
+          # for fastlane
+          apt-get update
+          apt-get install -y locales
+          locale-gen en_US.UTF-8
           echo "LANG=en_US.UTF-8" >> $GITHUB_ENV
           echo "LC_ALL=en_US.UTF-8" >> $GITHUB_ENV
           echo "LANGUAGE=en_US" >> $GITHUB_ENV
