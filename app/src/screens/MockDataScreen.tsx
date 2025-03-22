@@ -34,7 +34,7 @@ import { buttonTap, selectionChange } from '../utils/haptic';
 interface MockDataScreenProps {}
 
 const MockDataScreen: React.FC<MockDataScreenProps> = () => {
-  const { setPassportData } = usePassport(false);
+  const { setPassportData } = usePassport();
   const navigation = useNavigation();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);

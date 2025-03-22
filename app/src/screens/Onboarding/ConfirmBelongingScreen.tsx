@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -9,6 +9,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useAuth } from '../../stores/authProvider';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
@@ -23,12 +24,18 @@ type ConfirmBelongingScreenProps = StaticScreenProps<
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   route,
 }) => {
+  const { loginWithBiometrics } = useAuth();
   const mockPassportFlow = route.params?.mockPassportFlow;
-  const onOkPress = useHapticNavigation('LoadingScreen', {
+  const goToLoadingScreen = useHapticNavigation('LoadingScreen', {
     params: {
       mockPassportFlow,
     },
   });
+  const onOkPress = useCallback(async () => {
+    await loginWithBiometrics();
+    goToLoadingScreen();
+  }, [loginWithBiometrics, goToLoadingScreen]);
+
   useEffect(() => {
     notificationSuccess();
   }, []);

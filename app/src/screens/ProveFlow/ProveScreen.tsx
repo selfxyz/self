@@ -25,6 +25,7 @@ import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
+import { useAuth } from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import {
   ProofStatusEnum,
@@ -40,7 +41,8 @@ import {
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const { passportData, secret, status: passportStatus } = usePassport();
+  const { passportData, privateKey, status: passportStatus } = usePassport();
+  const { loginWithBiometrics } = useAuth();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
@@ -119,8 +121,9 @@ const ProveScreen: React.FC = () => {
       if (passportStatus !== 'success' || isProcessing.current) {
         return;
       }
-
       isProcessing.current = true;
+
+      await loginWithBiometrics();
 
       resetProof();
       buttonTap();
@@ -133,7 +136,7 @@ const ProveScreen: React.FC = () => {
           navigate('ProofRequestStatusScreen');
         }, 200);
 
-        if (!passportData || !secret || !privateKey) {
+        if (!passportData || !privateKey) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
           setTimeout(() => {
@@ -178,7 +181,9 @@ const ProveScreen: React.FC = () => {
       resetProof,
       cleanSelfApp,
       passportData,
-      secret,
+      privateKey,
+      loginWithBiometrics,
+      passportStatus,
     ],
   );
 

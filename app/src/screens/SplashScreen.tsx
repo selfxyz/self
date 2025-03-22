@@ -12,7 +12,7 @@ import { isUserRegistered } from '../utils/proving/payload';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
-  const { passportData, privateKey, status } = usePassport(false);
+  const { passportData, privateKey, status } = usePassport();
 
   const handleAnimationFinish = useCallback(() => {
     setTimeout(async () => {

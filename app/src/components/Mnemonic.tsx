@@ -3,6 +3,7 @@ import React, { useCallback, useState } from 'react';
 import Clipboard from '@react-native-clipboard/clipboard';
 import { Button, Text, XStack, YStack } from 'tamagui';
 
+import { useAuth } from '../stores/authProvider';
 import { usePassport } from '../stores/passportDataProvider';
 import {
   black,
@@ -48,18 +49,20 @@ const REDACTED = new Array(24)
   .map(_ => '*'.repeat(Math.max(4, Math.floor(Math.random() * 10))));
 const Mnemonic = ({ onRevealWords }: MnemonicProps) => {
   const { secret } = usePassport();
+  const { loginWithBiometrics } = useAuth();
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
   const copyToClipboardOrReveal = useCallback(async () => {
     confirmTap();
     if (!revealWords) {
+      await loginWithBiometrics();
       onRevealWords?.();
       return setRevealWords(previous => !previous);
     }
     Clipboard.setString(secret?.phrase || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [secret, revealWords, onRevealWords]);
+  }, [secret, revealWords, onRevealWords, loginWithBiometrics]);
 
   return (
     <YStack position="relative" alignItems="stretch" gap={0}>

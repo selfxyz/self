@@ -12,7 +12,6 @@ import Keychain from 'react-native-keychain';
 import { type Mnemonic, ethers } from 'ethers';
 
 import type { PassportData } from '../../../common/src/utils/types';
-import { useAuth } from '../stores/authProvider';
 
 const password = 'passportData';
 const SERVICE_NAME = 'secret';
@@ -196,18 +195,10 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   );
 };
 
-export const usePassport = (auth = true) => {
+export const usePassport = () => {
   const c = useContext(PassportContext);
   if (!c) {
     throw new Error('usePassport must be used within a PassportProvider');
   }
-
-  const { isAuthenticated, isAuthenticating, loginWithBiometrics } = useAuth();
-  useEffect(() => {
-    if (!isAuthenticated && !isAuthenticating && auth) {
-      loginWithBiometrics();
-    }
-  }, [isAuthenticated, loginWithBiometrics, auth, isAuthenticating]);
-
   return c;
 };
