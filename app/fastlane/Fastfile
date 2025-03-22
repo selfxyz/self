@@ -27,15 +27,15 @@ platform :ios do
       setup_ci
       # Update app version and build number if needed
       increment_build_number(xcodeproj: "ios/Self.xcodeproj")
-    else
-      verify_env_vars([
-        "APP_STORE_APP_IDENTIFIER",
-        "APP_STORE_CONNECT_KEY_ID",
-        "APP_STORE_CONNECT_ISSUER_ID",
-        "APP_STORE_CONNECT_API_KEY",
-        "APP_STORE_TESTFLIGHT_GROUPS"
-      ])
     end
+
+    verify_env_vars([
+      "APP_STORE_APP_IDENTIFIER",
+      "APP_STORE_CONNECT_KEY_ID",
+      "APP_STORE_CONNECT_ISSUER_ID",
+      "APP_STORE_CONNECT_API_KEY",
+      "APP_STORE_TESTFLIGHT_GROUPS"
+    ])
 
     verify_ios_app_store_build_number
 
@@ -84,15 +84,15 @@ platform :android do
       increment_version_code(
         gradle_file_path: "android/app/build.gradle"
       )
-    else
-      verify_env_vars([
-        "ANDROID_KEYSTORE",
-        "ANDROID_KEYSTORE_PASSWORD",
-        "ANDROID_KEY_ALIAS",
-        "ANDROID_KEY_PASSWORD",
-        "PLAY_STORE_JSON_KEY"
-      ])
     end
+
+    verify_env_vars([
+      "ANDROID_KEYSTORE",
+      "ANDROID_KEYSTORE_PASSWORD",
+      "ANDROID_KEY_ALIAS",
+      "ANDROID_KEY_PASSWORD",
+      "PLAY_STORE_JSON_KEY"
+    ])
     
     # Verify version code before building 
     # TODO: uncomment this when we have a way to test the version code
