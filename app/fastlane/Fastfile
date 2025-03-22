@@ -25,7 +25,6 @@ platform :ios do
   lane :internal_test do
     if is_ci
       setup_ci
-      # Update app version and build number if needed
       increment_build_number(xcodeproj: "ios/Self.xcodeproj")
     end
 
@@ -80,8 +79,6 @@ platform :android do
   desc "Push a new build to Google Play Internal Testing"
   lane :internal_test do
     if is_ci
-      setup_ci
-      # Update app version and build number if needed
       increment_version_code(
         gradle_file_path: "android/app/build.gradle"
       )
