@@ -2,7 +2,7 @@ name: Deploy to Internal Testers
 
 env:
   # TODO: add beta lane, act on new numeric version tag
-  ANDROID_NDK_VERSION: 26.1.10909125
+  ANDROID_NDK_VERSION: r26d
   JAVA_VERSION: 17
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
