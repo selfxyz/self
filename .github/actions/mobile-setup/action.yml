@@ -19,23 +19,23 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Install locales and dialog
+    - name: Install locales and dialog for local development
       if: ${{ env.ACT }}
       shell: bash
       run: |
         apt-get update
         apt-get install -y locales dialog
+        locale-gen en_US.UTF-8
+        update-locale LANG=en_US.UTF-8
 
-    - name: Install environment packages
+    - name: Install locales and dialog
       shell: bash
+      if: ${{ !env.ACT }}
       run: |
         if [[ "$RUNNER_OS" == "Linux" ]]; then
           # for fastlane
-          locale-gen en_US.UTF-8
-          update-locale LANG=en_US.UTF-8
-        elif [[ "$RUNNER_OS" == "macOS" ]]; then
-          # macOS already has UTF-8 locale by default
-          echo "No additional packages needed for macOS"
+          sudo locale-gen en_US.UTF-8
+          sudo update-locale LANG=en_US.UTF-8
         fi
 
     - name: Checkout repository
