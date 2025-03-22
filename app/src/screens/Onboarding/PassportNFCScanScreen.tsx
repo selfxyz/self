@@ -42,7 +42,7 @@ const emitter =
     : null;
 
 const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
-  const { setPassportData } = usePassport();
+  const { setPassportData } = usePassport(false);
   const navigation = useNavigation();
   const { passportNumber, dateOfBirth, dateOfExpiry } = useUserStore();
   const [dialogMessage, setDialogMessage] = useState('');

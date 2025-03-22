@@ -41,7 +41,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { registrationStatus, resetProof } = useProofInfo();
   const { passportData, clearPassportData, secret, status, privateKey } =
-    usePassport();
+    usePassport(false);
 
   useEffect(() => {
     // TODO this makes sense if reset proof was only about passport registration
