@@ -5,28 +5,49 @@
 #     https://docs.fastlane.tools/actions
 #
 
+require_relative 'helpers'
+
+is_ci = ENV['CI']
+
+# for local development
+unless is_ci
+  require 'dotenv'
+  Dotenv.load('.env.secrets')
+end
+
 opt_out_usage
 default_platform(:ios)
 
 platform :ios do
   desc "Push a new build to TestFlight Internal Testing"
   lane :internal_test do
-    setup_ci if ENV['CI']
     
-    # Update app version and build number if needed
-    # increment_build_number(xcodeproj: "ios/YourApp.xcodeproj")
-    
-    # Install cocoapods dependencies
+    if is_ci
+      setup_ci
+      # Update app version and build number if needed
+      increment_build_number(xcodeproj: "ios/Self.xcodeproj")
+    else
+      Helpers.verify_env_vars([
+        "APP_STORE_APP_IDENTIFIER",
+        "APP_STORE_APPLE_ID",
+        "APP_STORE_CONNECT_KEY_ID",
+        "APP_STORE_CONNECT_ISSUER_ID",
+        "APP_STORE_CONNECT_API_KEY",
+        "APP_STORE_TEAM_ID"
+      ])
+    end
+
+    Helpers.verify_ios_app_store_build_number
+
     cocoapods(podfile: "ios/Podfile")
     
     # Build the app
     build_app(
-      workspace: "ios/YourApp.xcworkspace", # Update with your app name
-      scheme: "YourApp", # Update with your app scheme
+      workspace: "ios/Self.xcworkspace",
+      scheme: "OpenPassport",
       export_method: "app-store",
       output_directory: "build",
-      silent: true,
-      clean: true
+      clean: true,
     )
     
     # Upload to TestFlight
@@ -34,13 +55,21 @@ platform :ios do
       key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
       issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
       key_content: ENV["APP_STORE_CONNECT_API_KEY"],
-      duration: 1200,
-      in_house: false
     )
     
+    unless is_ci
+      puts "Skipping upload to TestFlight because CI is false"
+      return
+    end
+    
     upload_to_testflight(
+      apple_id: ENV["APP_STORE_APPLE_ID"],
+      team_id: ENV["APP_STORE_TEAM_ID"],
+      # disable uploads if not in CI
       api_key: api_key,
-      skip_waiting_for_build_processing: true
+      distribute_external: true,
+      groups: ["Self external testers"],  
+      changelog: ""
     )
   end
 end
@@ -48,10 +77,21 @@ end
 platform :android do
   desc "Push a new build to Google Play Internal Testing"
   lane :internal_test do
-    # Update version code if needed
-    # increment_version_code(
-    #   gradle_file_path: "android/app/build.gradle"
-    # )
+
+    if is_ci
+      setup_ci
+      # Update app version and build number if needed
+      increment_version_code(
+        gradle_file_path: "android/app/build.gradle"
+      )
+    else
+      verify_env_vars([
+        "ANDROID_KEYSTORE_PASSWORD",
+        "ANDROID_KEY_ALIAS",
+        "ANDROID_KEY_PASSWORD",
+        "PLAY_STORE_JSON_KEY"
+      ])
+    end
     
     # Build the Android app
     gradle(
@@ -62,7 +102,7 @@ platform :android do
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
-      }
+      },
     )
     
     # Upload to Google Play
