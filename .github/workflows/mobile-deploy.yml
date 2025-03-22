@@ -83,7 +83,7 @@ jobs:
 
       # android specific steps
       - name: Setup Android SDK
-        uses: google-github-actions/setup-android@v2
+        uses: android-actions/setup-android@v3
 
       - uses: actions/checkout@v3
       - uses: nttld/setup-ndk@v1
