@@ -13,6 +13,7 @@ is_ci = ENV['CI']
 
 # for local development
 unless is_ci
+  puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('.env.secrets')
 end
@@ -85,6 +86,7 @@ platform :android do
       )
     else
       Helpers.verify_env_vars([
+        "ANDROID_KEYSTORE",
         "ANDROID_KEYSTORE_PASSWORD",
         "ANDROID_KEY_ALIAS",
         "ANDROID_KEY_PASSWORD",
@@ -92,12 +94,14 @@ platform :android do
       ])
     end
     
+    keystore_path = Helpers.create_android_keystore
+
     # Build the Android app
     gradle(
       task: "clean bundleRelease",
       project_dir: "android/",
       properties: {
-        "android.injected.signing.store.file" => "app/upload-keystore.jks",
+        "android.injected.signing.store.file" => keystore_path,
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]

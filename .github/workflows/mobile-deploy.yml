@@ -84,6 +84,7 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks
 
       - name: Verify Android Secrets
+        if: false
         run: |
           # Verify keystore file exists and is valid
           if [ ! -f "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" ]; then
@@ -114,10 +115,11 @@ jobs:
 
       - name: Build and upload to Google Play Internal Testing
         env:
-          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
           bundle exec fastlane android internal_test --verbose

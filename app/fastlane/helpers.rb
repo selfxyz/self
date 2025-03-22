@@ -1,3 +1,4 @@
+require 'base64'
 require 'fastlane_core/ui/ui'
 
 module Helpers
@@ -43,4 +44,16 @@ module Helpers
       FastlaneCore::UI.success("✅ Build number verified (Current: #{current_build}, Latest TestFlight: #{latest_build})")
     end
   end
+
+  def self.create_android_keystore
+    keystore_path = "../android/app/upload-keystore.jks"
+    if ENV["ANDROID_KEYSTORE"]
+      puts "Decoding Android keystore..."
+      FileUtils.mkdir_p(File.dirname(keystore_path))
+      File.write(keystore_path, Base64.decode64(ENV["ANDROID_KEYSTORE"]))
+    end
+
+    File.realpath(keystore_path)
+  end
+  
 end 

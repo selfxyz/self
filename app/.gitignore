@@ -38,6 +38,7 @@ local.properties
 android/app/src/main/assets/*android.bundle
 android/app/src/main/res/*/node_modules*
 android/.kotlin/
+android/app/upload-keystore.jks
 
 # node.js
 #
