@@ -82,6 +82,9 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
 
       # android specific steps
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
       - uses: actions/checkout@v3
       - uses: nttld/setup-ndk@v1
         id: setup-ndk
