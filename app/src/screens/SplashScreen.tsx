@@ -6,18 +6,19 @@ import LottieView from 'lottie-react-native';
 
 import splashAnimation from '../assets/animations/splash.json';
 import { usePassport } from '../stores/passportDataProvider';
+import { usePassportProcessing } from '../stores/passportProcessingProvider';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
-import { isUserRegistered } from '../utils/proving/payload';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
-  const { passportData, privateKey, status } = usePassport();
+  const { passportData, privateKey, passportAndSecretStatus } = usePassport();
+  const { isRegistered } = usePassportProcessing();
 
   const handleAnimationFinish = useCallback(() => {
     setTimeout(async () => {
       impactLight();
-      if (status !== 'success') {
+      if (passportAndSecretStatus !== 'success') {
         return;
       }
 
@@ -26,7 +27,6 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
-      const isRegistered = await isUserRegistered(passportData, privateKey);
       console.log('User is registered:', isRegistered);
       if (isRegistered) {
         console.log('Passport is registered already. Skipping to HomeScreen');
@@ -42,7 +42,7 @@ const SplashScreen: React.FC = ({}) => {
       // Rest of the time, keep the LaunchScreen flow
       navigation.navigate('Launch');
     }, 1000);
-  }, [navigation, passportData, privateKey, status]);
+  }, [navigation, passportData, privateKey, passportAndSecretStatus]);
 
   return (
     <LottieView

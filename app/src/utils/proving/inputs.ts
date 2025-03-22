@@ -11,7 +11,6 @@ import {
   attributeToPosition,
 } from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
-import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
   generateCircuitInputsRegister,
@@ -20,42 +19,35 @@ import {
 import {
   getCSCATree,
   getCommitmentTree,
-  getDSCTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 
 export async function generateTeeInputsRegister(
   secret: string,
   passportData: PassportData,
-  endpointType: EndpointType,
+  circuitName: string,
+  dscTree: string,
 ) {
-  const serialized_dsc_tree = await getDSCTree(endpointType);
-  const inputs = generateCircuitInputsRegister(
-    secret,
-    passportData,
-    serialized_dsc_tree,
-  );
-  const circuitName = getCircuitNameFromPassportData(passportData, 'register');
+  const inputs = generateCircuitInputsRegister(secret, passportData, dscTree);
   if (circuitName == null) {
     throw new Error('Circuit name is null');
   }
-  return { inputs, circuitName };
+  return inputs;
 }
 
 export async function generateTeeInputsDsc(
   passportData: PassportData,
   endpointType: EndpointType,
+  dscCircuitName: string,
 ) {
+  console.log('generateTeeInputsDsc', { endpointType, dsc: passportData.dsc });
   const serialized_csca_tree = await getCSCATree(endpointType);
+  console.log({ serialized_csca_tree });
   const inputs = generateCircuitInputsDSC(
     passportData.dsc,
     serialized_csca_tree,
   );
-  const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-  }
-  return { inputs, circuitName };
+  return { inputs, circuitName: dscCircuitName };
 }
 
 export async function generateTeeInputsVCAndDisclose(

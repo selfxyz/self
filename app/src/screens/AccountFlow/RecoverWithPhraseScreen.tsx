@@ -10,6 +10,7 @@ import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Description from '../../components/typography/Description';
 import Paste from '../../images/icons/paste.svg';
 import { usePassport } from '../../stores/passportDataProvider';
+import { usePassportProcessing } from '../../stores/passportProcessingProvider';
 import {
   black,
   slate300,
@@ -18,7 +19,6 @@ import {
   slate700,
   white,
 } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/payload';
 
 interface RecoverWithPhraseScreenProps {}
 
@@ -26,7 +26,9 @@ const RecoverWithPhraseScreen: React.FC<
   RecoverWithPhraseScreenProps
 > = ({}) => {
   const navigation = useNavigation();
-  const { restorefromSecret, passportData, status, privateKey } = usePassport();
+  const { restorefromSecret, passportData, passportAndSecretStatus } =
+    usePassport();
+  const { isRegistered } = usePassportProcessing();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
@@ -38,7 +40,7 @@ const RecoverWithPhraseScreen: React.FC<
   }, []);
 
   const restoreAccount = useCallback(async () => {
-    if (status !== 'success') {
+    if (passportAndSecretStatus !== 'success') {
       return;
     }
     setRestoring(true);
@@ -51,14 +53,13 @@ const RecoverWithPhraseScreen: React.FC<
 
     try {
       const secret = await restorefromSecret(slimMnemonic);
-      if (!passportData || !secret || !privateKey) {
+      if (!passportData || !secret) {
         console.warn('Secret or passport data is missing');
         navigation.navigate('Launch');
         setRestoring(false);
         return;
       }
 
-      const isRegistered = await isUserRegistered(passportData, privateKey);
       console.log('User is registered:', isRegistered);
       if (!isRegistered) {
         console.log(
@@ -82,8 +83,8 @@ const RecoverWithPhraseScreen: React.FC<
     restorefromSecret,
     navigation,
     passportData,
-    status,
-    privateKey,
+    passportAndSecretStatus,
+    isRegistered,
   ]);
 
   return (

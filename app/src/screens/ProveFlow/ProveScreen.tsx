@@ -27,6 +27,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { useAuth } from '../../stores/authProvider';
 import { usePassport } from '../../stores/passportDataProvider';
+import { usePassportProcessing } from '../../stores/passportProcessingProvider';
 import {
   ProofStatusEnum,
   globalSetDisclosureStatus,
@@ -34,19 +35,18 @@ import {
 } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import {
-  isUserRegistered,
-  sendVcAndDisclosePayload,
-} from '../../utils/proving/payload';
+import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
-  const { passportData, privateKey, status: passportStatus } = usePassport();
   const { loginWithBiometrics } = useAuth();
+  const { passportData, secret, passportAndSecretStatus, privateKey } =
+    usePassport();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
   const isProcessing = useRef(false);
+  const { isRegistered } = usePassportProcessing();
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -116,76 +116,74 @@ const ProveScreen: React.FC = () => {
     return urlFormatted;
   }, [selectedApp?.endpoint]);
 
-  const onVerify = useCallback(
-    async function () {
-      if (passportStatus !== 'success' || isProcessing.current) {
+  const onVerify = useCallback(async () => {
+    if (passportAndSecretStatus !== 'success' || isProcessing.current) {
+      return;
+    }
+
+    isProcessing.current = true;
+
+    resetProof();
+    buttonTap();
+
+    await loginWithBiometrics();
+
+    const currentApp = selectedAppRef.current;
+
+    try {
+      let timeToNavigateToStatusScreen: NodeJS.Timeout;
+
+      timeToNavigateToStatusScreen = setTimeout(() => {
+        navigate('ProofRequestStatusScreen');
+      }, 200);
+
+      if (!passportData || !secret || !privateKey) {
+        console.log('No passport data or secret');
+        globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+        setTimeout(() => {
+          navigate('PassportDataNotFound');
+        }, 3000);
         return;
       }
-      isProcessing.current = true;
 
-      await loginWithBiometrics();
-
-      resetProof();
-      buttonTap();
-      const currentApp = selectedAppRef.current;
-
-      try {
-        let timeToNavigateToStatusScreen: NodeJS.Timeout;
-
-        timeToNavigateToStatusScreen = setTimeout(() => {
-          navigate('ProofRequestStatusScreen');
-        }, 200);
-
-        if (!passportData || !privateKey) {
-          console.log('No passport data or secret');
-          globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-          setTimeout(() => {
-            navigate('PassportDataNotFound');
-          }, 3000);
-          return;
-        }
-
-        const isRegistered = await isUserRegistered(passportData, privateKey);
-        console.log('isRegistered', isRegistered);
-
-        if (!isRegistered) {
-          clearTimeout(timeToNavigateToStatusScreen);
-          console.log(
-            'User is not registered, sending to ConfirmBelongingScreen',
-          );
-          navigate('ConfirmBelongingScreen');
-          cleanSelfApp();
-          return;
-        }
-
-        console.log('currentApp', currentApp);
-        const status = await sendVcAndDisclosePayload(
-          privateKey,
-          passportData,
-          currentApp,
+      if (!isRegistered) {
+        clearTimeout(timeToNavigateToStatusScreen);
+        console.log(
+          'User is not registered, sending to ConfirmBelongingScreen',
         );
-        handleProofVerified(
-          currentApp.sessionId,
-          status === ProofStatusEnum.SUCCESS,
-        );
-      } catch (e) {
-        console.log('Error in verification process');
-        globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-      } finally {
-        isProcessing.current = false;
+        navigate('ConfirmBelongingScreen');
+        cleanSelfApp();
+        return;
       }
-    },
-    [
-      navigate,
-      handleProofVerified,
-      resetProof,
-      cleanSelfApp,
-      passportData,
-      privateKey,
-      loginWithBiometrics,
-      passportStatus,
-    ],
-  );
+
+      console.log('currentApp', currentApp);
+      const status = await sendVcAndDisclosePayload(
+        privateKey,
+        passportData,
+        currentApp,
+      );
+      handleProofVerified(
+        currentApp.sessionId,
+        status === ProofStatusEnum.SUCCESS,
+      );
+    } catch (e) {
+      console.log('Error in verification process');
+      globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+    } finally {
+      isProcessing.current = false;
+    }
+  }, [
+    navigate,
+    handleProofVerified,
+    resetProof,
+    cleanSelfApp,
+    passportData,
+    secret,
+    passportAndSecretStatus,
+    isRegistered,
+    privateKey,
+    loginWithBiometrics,
+  ]);
 
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {

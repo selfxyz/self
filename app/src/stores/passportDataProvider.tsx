@@ -1,5 +1,5 @@
 import React, {
-  PropsWithChildren,
+  type PropsWithChildren,
   createContext,
   useCallback,
   useContext,
@@ -43,6 +43,7 @@ async function restoreFromMnemonic(mnemonic: string) {
   });
   return restoredWallet.mnemonic;
 }
+
 async function unsafe_clearSecrets() {
   if (__DEV__) {
     await Keychain.resetGenericPassword({ service: SERVICE_NAME });
@@ -53,11 +54,17 @@ interface PassportProviderProps extends PropsWithChildren {
   authenticationTimeoutinMs?: number;
 }
 
-type Status = 'idle' | 'initializing' | 'updating' | 'error' | 'success';
+type PassportAndSecretStatus =
+  | 'idle'
+  | 'initializing'
+  | 'updating'
+  | 'error'
+  | 'success';
+
 interface IPassportContext {
   passportData: PassportData | null;
   secret: Mnemonic | null;
-  status: Status;
+  passportAndSecretStatus: PassportAndSecretStatus;
   privateKey: string | null;
   setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
@@ -69,7 +76,7 @@ interface IPassportContext {
 const PassportContext = createContext<IPassportContext>({
   passportData: null,
   secret: null,
-  status: 'idle',
+  passportAndSecretStatus: 'idle',
   privateKey: null,
   setPassportData: () => Promise.resolve(),
   clearPassportData: () => Promise.resolve(),
@@ -79,9 +86,11 @@ const PassportContext = createContext<IPassportContext>({
 });
 
 export const PassportProvider = ({ children }: PassportProviderProps) => {
-  const [status, setStatus] = useState<Status>('idle');
+  const [passportAndSecretStatus, setPassportAndSecretStatus] =
+    useState<PassportAndSecretStatus>('idle');
   const [passportCache, setPasspotCache] = useState<PassportData | null>(null);
   const [secretCache, setSecretCache] = useState<Mnemonic | null>(null);
+
   const getPassportDataFromKeychain = useCallback(async () => {
     const passportDataCreds = await Keychain.getGenericPassword({
       service: 'passportData',
@@ -112,35 +121,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 
   const isPassportNull = useMemo(() => !passportCache, [passportCache]);
 
-  useEffect(() => {
-    (async () => {
-      setStatus(isPassportNull ? 'initializing' : 'updating');
-      try {
-        const passportData = await getPassportDataFromKeychain();
-        if (passportData) {
-          setPasspotCache(passportData);
-        }
-        const secret =
-          (await getSecretDataFromKeyChain()) || (await setSecret());
-        if (secret) {
-          setSecretCache(secret);
-        }
-        setStatus('success');
-      } catch (error) {
-        console.error(
-          'Error fetching passport data or secret from keychain:',
-          error,
-        );
-        setStatus('error');
-      }
-    })();
-  }, [getPassportDataFromKeychain, getSecretDataFromKeyChain, isPassportNull]);
-
-  const setPassportData = useCallback(async (data: PassportData) => {
-    await storePassportDataInKeychain(data);
-    setPasspotCache(data);
-  }, []);
-
   const setSecret = useCallback(async () => {
     const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
       ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
@@ -151,6 +131,41 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     });
     setSecretCache(mnemonic);
     return mnemonic;
+  }, []);
+
+  useEffect(() => {
+    (async () => {
+      setPassportAndSecretStatus(isPassportNull ? 'initializing' : 'updating');
+      try {
+        const passportData = await getPassportDataFromKeychain();
+        if (passportData) {
+          setPasspotCache(passportData);
+        }
+        const secret =
+          (await getSecretDataFromKeyChain()) || (await setSecret());
+        if (secret) {
+          setSecretCache(secret);
+        }
+
+        setPassportAndSecretStatus('success');
+      } catch (error) {
+        console.error(
+          'Error fetching passport data or secret from keychain:',
+          error,
+        );
+        setPassportAndSecretStatus('error');
+      }
+    })();
+  }, [
+    getPassportDataFromKeychain,
+    getSecretDataFromKeyChain,
+    isPassportNull,
+    setSecret,
+  ]);
+
+  const setPassportData = useCallback(async (data: PassportData) => {
+    await storePassportDataInKeychain(data);
+    setPasspotCache(data);
   }, []);
 
   const clearPassportData = useCallback(async () => {
@@ -168,22 +183,22 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     () => ({
       passportData: passportCache,
       secret: secretCache,
-      status,
-      setPassportData,
-      clearPassportData,
       restorefromSecret,
-      setSecret,
-      unsafe_clearSecrets,
+      passportAndSecretStatus,
       privateKey,
+      setPassportData,
+      setSecret,
+      clearPassportData,
+      unsafe_clearSecrets,
     }),
     [
       passportCache,
       secretCache,
-      status,
       setPassportData,
       clearPassportData,
       restorefromSecret,
       setSecret,
+      passportAndSecretStatus,
       privateKey,
     ],
   );

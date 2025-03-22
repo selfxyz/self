@@ -1,32 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import { StaticScreenProps } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { usePassport } from '../../stores/passportDataProvider';
+import type { PassportProcessingStatus } from '../../stores/passportProcessingProvider';
+import { usePassportProcessing } from '../../stores/passportProcessingProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import analytics from '../../utils/analytics';
-import {
-  checkPassportSupported,
-  isPassportNullified,
-  isUserRegistered,
-  registerPassport,
-} from '../../utils/proving/payload';
-
-const { trackEvent } = analytics();
+import { red500 } from '../../utils/colors';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
   const goToErrorScreen = useHapticNavigation('Launch');
-  const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
-  const navigation = useNavigation();
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -40,8 +31,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { registrationStatus, resetProof } = useProofInfo();
-  const { passportData, clearPassportData, secret, status, privateKey } =
-    usePassport();
+  const { error, registerValidPassport, processingStatus } =
+    usePassportProcessing();
 
   useEffect(() => {
     // TODO this makes sense if reset proof was only about passport registration
@@ -68,63 +59,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   useEffect(() => {
     if (!processPayloadCalled.current) {
       processPayloadCalled.current = true;
-      const processPayload = async () => {
-        try {
-          if (status !== 'success') {
-            return;
-          }
-
-          if (!passportData || !secret || !privateKey) {
-            console.warn('no passportData or secret');
-            navigation.navigate('Launch');
-            return;
-          }
-          const isSupported = await checkPassportSupported(passportData);
-          if (isSupported.status !== 'passport_supported') {
-            trackEvent('Passport not supported', {
-              reason: isSupported.status,
-              details: isSupported.details,
-            });
-            goToUnsupportedScreen();
-            console.log('Passport not supported');
-            clearPassportData();
-            return;
-          }
-          const isRegistered = await isUserRegistered(passportData, privateKey);
-          console.log('User is registered:', isRegistered);
-          if (isRegistered) {
-            console.log(
-              'Passport is registered already. Skipping to AccountVerifiedSuccess',
-            );
-            navigation.navigate('AccountVerifiedSuccess');
-            return;
-          }
-          const isNullifierOnchain = await isPassportNullified(passportData);
-          console.log('Passport is nullified:', isNullifierOnchain);
-          if (isNullifierOnchain) {
-            console.log(
-              'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
-            );
-            navigation.navigate('AccountRecoveryChoice');
-            return;
-          }
-          registerPassport(passportData, privateKey);
-        } catch (error) {
-          console.error('Error processing payload:', error);
-          setTimeout(() => resetProof(), 1000);
-        }
-      };
-      processPayload();
+      if (processingStatus === 'final') {
+        registerValidPassport();
+      }
     }
-  }, [
-    clearPassportData,
-    goToUnsupportedScreen,
-    passportData,
-    secret,
-    navigation.navigate,
-    resetProof,
-    status,
-  ]);
+  }, [registerValidPassport, processingStatus]);
 
   return (
     <View style={styles.container}>
@@ -136,8 +75,36 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         resizeMode="cover"
         renderMode="HARDWARE"
       />
-      <Text style={styles.warningText}>
-        This can take up to one minute, don't close the app
+      <Text style={styles.warningContainer}>
+        <Text style={styles.warningText}>
+          This can take up to one minute, don't close the app.
+        </Text>{' '}
+        {processingStatus !== 'final' && (
+          <Text>
+            Current processing status:
+            <Text
+              style={
+                processingStatus === 'error'
+                  ? styles.errorText
+                  : styles.statusText
+              }
+            >
+              {' '}
+              {getProcessingStatusTranslation(processingStatus)}{' '}
+            </Text>
+            {error && processingStatus === 'error' ? (
+              <Text style={styles.errorDescription}>
+                {typeof error === 'object' &&
+                'message' in error &&
+                typeof error.message === 'string'
+                  ? error.message
+                  : __DEV__
+                  ? JSON.stringify(error)
+                  : 'There was an error during processing the passport.'}
+              </Text>
+            ) : null}
+          </Text>
+        )}
       </Text>
     </View>
   );
@@ -155,17 +122,51 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  warningText: {
+  warningContainer: {
     position: 'absolute',
     bottom: 40,
     left: 0,
     right: 0,
     textAlign: 'center',
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
     padding: 16,
   },
+  warningText: {
+    color: 'white',
+    fontWeight: '500',
+    fontSize: 16,
+  },
+  statusText: {
+    color: 'white',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  errorText: {
+    color: red500,
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  errorDescription: {
+    color: red500,
+    fontSize: 12,
+    opacity: 0.8,
+  },
 });
+
+function getProcessingStatusTranslation(status: PassportProcessingStatus) {
+  switch (status) {
+    case 'checking-support':
+      return 'Checking support';
+    case 'checking-registration':
+      return 'Checking registration';
+    case 'fetching-circuit-data':
+      return 'Fetching circut data';
+    case 'final':
+      return 'Success';
+    case 'error':
+      return 'Error';
+    default:
+      return 'Not started';
+  }
+}
 
 export default LoadingScreen;
