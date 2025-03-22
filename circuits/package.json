@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@noble/curves": "^1.4.2",
-    "@openpassport/zk-email-circuits": "^6.1.2",
+    "@openpassport/zk-email-circuits": "https://github.com/zk-passport/zk-email-verify.git#feat/graph",
     "@openpassport/zk-kit-imt": "^0.0.4",
     "@openpassport/zk-kit-lean-imt": "^0.0.4",
     "@openpassport/zk-kit-smt": "^0.0.1",

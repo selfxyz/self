@@ -430,13 +430,9 @@
     "@nodelib/fs.scandir" "2.1.5"
     fastq "^1.6.0"
 
-"@openpassport/zk-email-circuits@^6.1.2":
-  version "6.1.2"
-  resolved "https://registry.yarnpkg.com/@openpassport/zk-email-circuits/-/zk-email-circuits-6.1.2.tgz#8e239d2e1f0b3b6a89af72107c2204bc111f0454"
-  integrity sha512-wpp/HG9mZqAtrAQRaS1PUs216gu0SNtRCo7SkSXG95Na6T0V4mcEHnBnnbc7E/UXXb1WVxwVMXiV8pSXd5Enxw==
-  dependencies:
-    "@zk-email/zk-regex-circom" "^2.1.0"
-    circomlib "^2.0.5"
+"@openpassport/zk-email-circuits@https://github.com/zk-passport/zk-email-verify.git#feat/graph":
+  version "6.1.1"
+  resolved "https://github.com/zk-passport/zk-email-verify.git#6164d9b6364b795eb9b5974445857444231ce726"
 
 "@openpassport/zk-kit-imt@^0.0.4":
   version "0.0.4"
@@ -570,16 +566,16 @@
     "@types/node" "*"
 
 "@types/node@*":
-  version "22.13.10"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.10.tgz#df9ea358c5ed991266becc3109dc2dc9125d77e4"
-  integrity sha512-I6LPUvlRH+O6VRUqYOcMudhaIdUVWfsjnZavnsraHvpBwaEyMN29ry+0UVJhImYL16xsscu0aske3yA+uPOWfw==
+  version "22.13.11"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.13.11.tgz#f0ed6b302dcf0f4229d44ea707e77484ad46d234"
+  integrity sha512-iEUCUJoU0i3VnrCmgoWCXttklWcvoCIx4jzcP22fioIVSdTmjgoEvmAO/QPw6TcS9k5FrNgn4w7q5lGOd1CT5g==
   dependencies:
     undici-types "~6.20.0"
 
 "@types/node@^20.11.19":
-  version "20.17.24"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.17.24.tgz#2325476954e6fc8c2f11b9c61e26ba6eb7d3f5b6"
-  integrity sha512-d7fGCyB96w9BnWQrOsJtpyiSaBcAYYr75bnK6ZRjDbql2cGLj/3GsL5OYmLPNq76l7Gf2q4Rv9J2o6h5CrD9sA==
+  version "20.17.25"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.17.25.tgz#3135ad0af2b46a7689aa5ffb3ecafe1f50171a29"
+  integrity sha512-bT+r2haIlplJUYtlZrEanFHdPIZTeiMeh/fSOEbOOfWf9uTn+lg8g0KU6Q3iMgjd9FLuuMAgfCNSkjUbxL6E3Q==
   dependencies:
     undici-types "~6.19.2"
 
@@ -715,7 +711,7 @@
     commander "^11.0.0"
     snarkjs "^0.7.0"
 
-"@zk-email/zk-regex-circom@^2.1.0", "@zk-email/zk-regex-circom@^2.3.1":
+"@zk-email/zk-regex-circom@^2.3.1":
   version "2.3.2"
   resolved "https://registry.yarnpkg.com/@zk-email/zk-regex-circom/-/zk-regex-circom-2.3.2.tgz#d3ad819ea0de3ce7612aa9ecde0497c3fac514fc"
   integrity sha512-GXp4Z/93iF54hfJwlWl52HFiqpmLCeSHFc4HlYpxj5EWHQK6ibFQMLUWTJsdA3eh/erjO4UX+HlEIJ/gHhLg9g==
