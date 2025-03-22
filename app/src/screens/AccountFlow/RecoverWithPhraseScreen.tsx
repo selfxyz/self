@@ -26,7 +26,7 @@ const RecoverWithPhraseScreen: React.FC<
   RecoverWithPhraseScreenProps
 > = ({}) => {
   const navigation = useNavigation();
-  const { restorefromSecret, passportData, status } = usePassport();
+  const { restorefromSecret, passportData, status, privateKey } = usePassport();
   const [mnemonic, setMnemonic] = useState<string>();
   const [restoring, setRestoring] = useState(false);
   const onPaste = useCallback(async () => {
@@ -51,17 +51,14 @@ const RecoverWithPhraseScreen: React.FC<
 
     try {
       const secret = await restorefromSecret(slimMnemonic);
-      if (!passportData || !secret) {
+      if (!passportData || !secret || !privateKey) {
         console.warn('Secret or passport data is missing');
         navigation.navigate('Launch');
         setRestoring(false);
         return;
       }
 
-      const isRegistered = await isUserRegistered(
-        passportData,
-        secret.password,
-      );
+      const isRegistered = await isUserRegistered(passportData, privateKey);
       console.log('User is registered:', isRegistered);
       if (!isRegistered) {
         console.log(
@@ -80,7 +77,14 @@ const RecoverWithPhraseScreen: React.FC<
       setRestoring(false);
       return;
     }
-  }, [mnemonic, restorefromSecret, navigation, passportData, status]);
+  }, [
+    mnemonic,
+    restorefromSecret,
+    navigation,
+    passportData,
+    status,
+    privateKey,
+  ]);
 
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>

@@ -59,7 +59,7 @@ interface IPassportContext {
   passportData: PassportData | null;
   secret: Mnemonic | null;
   status: Status;
-  unsafe_secret_privateKey?: string;
+  privateKey: string | null;
   setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
   setSecret: () => Promise<Mnemonic | null>;
@@ -71,6 +71,7 @@ const PassportContext = createContext<IPassportContext>({
   passportData: null,
   secret: null,
   status: 'idle',
+  privateKey: null,
   setPassportData: () => Promise.resolve(),
   clearPassportData: () => Promise.resolve(),
   setSecret: () => Promise.resolve(null),
@@ -82,7 +83,6 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   const [status, setStatus] = useState<Status>('idle');
   const [passportCache, setPasspotCache] = useState<PassportData | null>(null);
   const [secretCache, setSecretCache] = useState<Mnemonic | null>(null);
-  const [unsafePrivateKey, setUnsafePrivateKey] = useState<string>();
   const getPassportDataFromKeychain = useCallback(async () => {
     const passportDataCreds = await Keychain.getGenericPassword({
       service: 'passportData',
@@ -92,6 +92,13 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     }
     return JSON.parse(passportDataCreds.password);
   }, []);
+
+  const privateKey = useMemo(() => {
+    if (secretCache) {
+      return ethers.HDNodeWallet.fromPhrase(secretCache.phrase).privateKey;
+    }
+    return null;
+  }, [secretCache]);
 
   const getSecretDataFromKeyChain = useCallback(async () => {
     const storedMnemonic = await Keychain.getGenericPassword({
@@ -136,10 +143,9 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
   }, []);
 
   const setSecret = useCallback(async () => {
-    const { mnemonic, privateKey } = ethers.HDNodeWallet.fromMnemonic(
+    const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
       ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
     );
-    setUnsafePrivateKey(privateKey);
     const data = JSON.stringify(mnemonic);
     await Keychain.setGenericPassword('secret', data, {
       service: SERVICE_NAME,
@@ -169,7 +175,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       restorefromSecret,
       setSecret,
       unsafe_clearSecrets,
-      unsafe_secret_privateKey: unsafePrivateKey,
+      privateKey,
     }),
     [
       passportCache,
@@ -179,7 +185,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
       clearPassportData,
       restorefromSecret,
       setSecret,
-      unsafePrivateKey,
+      privateKey,
     ],
   );
 

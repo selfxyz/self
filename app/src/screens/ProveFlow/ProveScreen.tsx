@@ -124,16 +124,13 @@ const ProveScreen: React.FC = () => {
           navigate('ProofRequestStatusScreen');
         }, 1000);
 
-        if (!passportData || !secret) {
+        if (!passportData || !secret || !privateKey) {
           console.log('No passport data or secret');
           globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
           return;
         }
 
-        const isRegistered = await isUserRegistered(
-          passportData,
-          secret.password,
-        );
+        const isRegistered = await isUserRegistered(passportData, privateKey);
         console.log('isRegistered', isRegistered);
 
         if (!isRegistered) {
@@ -148,7 +145,7 @@ const ProveScreen: React.FC = () => {
 
         console.log('currentApp', currentApp);
         const status = await sendVcAndDisclosePayload(
-          secret.password,
+          privateKey,
           passportData,
           currentApp,
         );
