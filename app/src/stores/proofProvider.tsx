@@ -96,7 +96,7 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       globalSetRegistrationStatus = null;
       globalSetDisclosureStatus = null;
     };
-  }, []);
+  }, [setRegistrationStatus, setDisclosureStatus]);
 
   const publicApi: IProofContext = useMemo(
     () => ({

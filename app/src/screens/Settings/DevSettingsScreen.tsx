@@ -1,4 +1,4 @@
-import React, { PropsWithChildren } from 'react';
+import React, { PropsWithChildren, useEffect, useState } from 'react';
 import { Platform, TextInput } from 'react-native';
 
 import { useNavigation } from '@react-navigation/native';
@@ -22,7 +22,14 @@ import {
 
 import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
-import { usePassport } from '../../stores/passportDataProvider';
+import {
+  unsafe_clearSecrets,
+  unsafe_getPrivateKey,
+} from '../../stores/authProvider';
+import {
+  storePassportData,
+  usePassport,
+} from '../../stores/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
 interface DevSettingsScreenProps {}
@@ -125,26 +132,18 @@ const ScreenSelector = ({}) => {
 };
 
 const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
-  const {
-    clearPassportData,
-    setPassportData,
-    status,
-    unsafe_clearSecrets,
-    unsafe_secret_privateKey,
-  } = usePassport();
+  const { clearPassportData } = usePassport();
+  const [privateKey, setPrivateKey] = useState('Loading private key…');
 
   const nav = useNavigation();
 
   async function handleRestart() {
-    if (status !== 'success') {
-      return;
-    }
     await clearPassportData();
     nav.navigate('Launch');
   }
 
   async function deleteEverything() {
-    await clearPassportData();
+    await unsafe_clearSecrets();
     await handleRestart();
   }
 
@@ -157,8 +156,12 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
       '000101',
       '300101',
     );
-    setPassportData(passportData);
+    storePassportData(passportData);
   }
+
+  useEffect(() => {
+    unsafe_getPrivateKey().then(setPrivateKey);
+  }, []);
 
   return (
     <YStack gap="$3" mt="$2" ai="center">
@@ -263,7 +266,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           userSelect="all"
           style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
         >
-          {unsafe_secret_privateKey ?? ''}
+          {privateKey}
         </SelectableText>
       </Fieldset>
     </YStack>
