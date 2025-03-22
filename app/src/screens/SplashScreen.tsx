@@ -14,17 +14,14 @@ import { isUserRegistered } from '../utils/proving/payload';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
-  const { createSigningKeyPair } = useAuth();
+  const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
 
   useEffect(() => {
-    createSigningKeyPair()
+    checkBiometricsAvailable()
       .then(setBiometricsAvailable)
       .catch(err => {
-        console.warn(
-          'Something ELSE and totally unexpected went wrong during keypair creation',
-          err,
-        );
+        console.warn('Error checking biometrics availability', err);
       });
   }, []);
 
