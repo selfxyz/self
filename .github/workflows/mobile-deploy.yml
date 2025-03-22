@@ -82,13 +82,12 @@ jobs:
           workspace: ${{ env.WORKSPACE }}
 
       # android specific steps
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v2
-
-      - name: Install Android NDK
-        uses: android-actions/setup-ndk@v1
+      - uses: actions/checkout@v3
+      - uses: nttld/setup-ndk@v1
+        id: setup-ndk
         with:
-          version: ${{ env.ANDROID_NDK_VERSION }}
+          ndk-version: ${{ env.ANDROID_NDK_VERSION }}
+          link-to-sdk: true
 
       - name: Decode Keystore
         run: |
