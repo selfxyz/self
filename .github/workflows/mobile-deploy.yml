@@ -2,9 +2,9 @@ name: Deploy to Internal Testers
 
 env:
   # TODO: add beta lane, act on new numeric version tag
-  # TODO: 3.2.7 may increment on it's own, need to find a dynamic way to set this
+  JAVA_VERSION: 17
+  NODE_VERSION: 18
   RUBY_VERSION: 3.2
-  RUBY_HOME: /opt/hostedtoolcache/Ruby/3.2.7/x64 # keep in sync with RUBY_VERSION
   WORKSPACE: /github/workspace
 
 on:
@@ -24,7 +24,6 @@ jobs:
         uses: ./.github/actions/mobile-setup
         with:
           ruby_version: ${{ env.RUBY_VERSION }}
-          ruby_home: ${{ env.RUBY_HOME }}
           workspace: ${{ env.WORKSPACE }}
 
       - uses: maxim-lobanov/setup-xcode@v1
@@ -74,7 +73,6 @@ jobs:
         uses: ./.github/actions/mobile-setup
         with:
           ruby_version: ${{ env.RUBY_VERSION }}
-          ruby_home: ${{ env.RUBY_HOME }}
           workspace: ${{ env.WORKSPACE }}
 
       - name: Decode Keystore

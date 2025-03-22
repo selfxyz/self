@@ -3,14 +3,17 @@ name: Setup Mobile Environment
 description: "Sets up the environment for mobile app builds"
 
 inputs:
-  workspace:
-    description: "Workspace directory path"
+  java_version:
+    description: "Java version"
+    required: true
+  node_version:
+    description: "Node version"
     required: true
   ruby_version:
     description: "Ruby version"
     required: true
-  ruby_home:
-    description: "Ruby installation path"
+  workspace:
+    description: "Workspace directory path"
     required: true
 
 runs:
@@ -31,7 +34,7 @@ runs:
       uses: actions/setup-java@v3
       with:
         distribution: "temurin"
-        java-version: 17
+        java-version: ${{ inputs.java_version }}
 
     - name: Setup Ruby environment
       uses: ruby/setup-ruby@v1
@@ -41,7 +44,7 @@ runs:
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
       with:
-        node-version: "18"
+        node-version: ${{ inputs.node_version }}
 
     - name: Prepare workspace directory
       shell: bash
