@@ -232,14 +232,22 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  excludeCountries(...countries: CapitalCommonCountryName[]): this {
+  excludeCountries(...countries: (CapitalCommonCountryName | Country3LetterCode)[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
     
-    const countryCodes = countries.map(country => 
-      this.getCountryCodeFromCapitalName(country)
-    );
+    const countryCodes = countries.map(country => {
+      if (typeof country === 'string' && country.length === 3) {
+        if (Object.keys(countries).includes(country)) {
+          return country as Country3LetterCode;
+        } else {
+          throw new Error(`Invalid country code: ${country}`);
+        }
+      } else {
+        return this.getCountryCodeFromCapitalName(country as CapitalCommonCountryName);
+      }
+    });
     
     this.excludedCountries = { enabled: true, value: countryCodes };
     return this;

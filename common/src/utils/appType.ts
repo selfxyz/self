@@ -20,7 +20,7 @@ export interface SelfApp {
   disclosures: SelfAppDisclosureConfig;
 }
 
-export interface SelfAppDisclosureConfig {
+interface SelfAppDisclosureConfig {
   // dg1
   issuing_state?: boolean;
   name?: boolean;
@@ -31,14 +31,39 @@ export interface SelfAppDisclosureConfig {
   expiry_date?: boolean;
   // custom checks
   ofac?: boolean;
-  excludedCountries?: CapitalCommonCountryName[];
+  excludedCountries?: Country3LetterCode[];
   minimumAge?: number;
+}
+
+export interface SelfAppDisclosureConfigInput {
+  // dg1
+  issuing_state?: boolean;
+  name?: boolean;
+  passport_number?: boolean;
+  nationality?: boolean;
+  date_of_birth?: boolean;
+  gender?: boolean;
+  expiry_date?: boolean;
+  // custom checks
+  ofac?: boolean;
+  excludedCountries?: CapitalCommonCountryName[] | Country3LetterCode[];
+  minimumAge?: number;
+}
+
+function convertToCountry3LetterCode(countries: CapitalCommonCountryName[] | Country3LetterCode[]): Country3LetterCode[] {
+  if (!countries || countries.length === 0) return [];
+  
+  if (countries.every(country => typeof country === 'string' && country.length === 3)) {
+    return countries as Country3LetterCode[];
+  }
+
+  throw new Error('There is no related country code');
 }
 
 export class SelfAppBuilder {
   private config: SelfApp;
 
-  constructor(config: Partial<SelfApp>) {
+  constructor(config: Partial<SelfApp> & { disclosures?: SelfAppDisclosureConfigInput }) {
     if (!config.appName) {
       throw new Error('appName is required');
     }
@@ -67,6 +92,12 @@ export class SelfAppBuilder {
       throw new Error('userId must be a valid UUID or address');
     }
 
+    let disclosures: SelfAppDisclosureConfig = { ...config.disclosures };
+    
+    if (config.disclosures?.excludedCountries) {
+      disclosures.excludedCountries = convertToCountry3LetterCode(config.disclosures.excludedCountries);
+    }
+
     this.config = {
       sessionId: v4(),
       userIdType: 'uuid',
@@ -74,7 +105,7 @@ export class SelfAppBuilder {
       endpointType: 'https',
       header: "",
       logoBase64: "",
-      disclosures: {},
+      disclosures: disclosures || {},
       ...config,
     } as SelfApp;
   }
