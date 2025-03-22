@@ -12,5 +12,6 @@ gem 'fastlane', '~> 2.227.0'
 
 group :development do
   gem "dotenv"
-  gem "nokogiri", "~> 1.18", platform: :ruby
+  # Exclude nokogiri for GitHub Actions and Act
+  gem "nokogiri", "~> 1.18", platform: :ruby unless ENV['GITHUB_ACTIONS'] || ENV['ACT']
 end

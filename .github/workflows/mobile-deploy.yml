@@ -32,11 +32,10 @@ jobs:
           xcode-version: latest-stable
 
       - name: Verify iOS Secrets
-        if: false
         run: |
-          # Verify App Store Connect API Key exists and is valid base64
-          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | base64 -d >/dev/null 2>&1; then
-            echo "❌ Error: Invalid App Store Connect API Key format (should be base64 encoded)"
+          # Verify App Store Connect API Key exists and contains PEM header
+          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
             exit 1
           fi
           # Verify Issuer ID is in correct format (UUID)
@@ -49,16 +48,12 @@ jobs:
             echo "❌ Error: Invalid App Store Connect Key ID format"
             exit 1
           fi
-          # Try to authenticate with App Store Connect API
-          if ! fastlane spaceauth -u "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" -k "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" -i "${{ secrets.APP_STORE_CONNECT_API_KEY }}" --silent >/dev/null 2>&1; then
-            echo "❌ Error: Failed to authenticate with App Store Connect API"
-            exit 1
-          fi
           echo "✅ All iOS secrets verified successfully!"
 
       - name: Build and upload to TestFlight (Internal)
         env:
           APP_STORE_APPLE_ID: ${{ secrets.APP_STORE_APPLE_ID }}
+          APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
           APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
