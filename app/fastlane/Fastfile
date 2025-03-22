@@ -32,6 +32,7 @@ platform :ios do
         "APP_STORE_CONNECT_KEY_ID",
         "APP_STORE_CONNECT_ISSUER_ID",
         "APP_STORE_CONNECT_API_KEY",
+        "APP_STORE_TESTFLIGHT_GROUPS"
       ])
     end
 
@@ -63,7 +64,7 @@ platform :ios do
     upload_to_testflight(
       api_key: api_key,
       distribute_external: true,
-      groups: ["Self external testers"],
+      groups: ENV["APP_STORE_TESTFLIGHT_GROUPS"].split(","),
       changelog: ""
     )
   end
