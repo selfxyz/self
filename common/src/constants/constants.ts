@@ -9,6 +9,7 @@ export const WS_RPC_URL_VC_AND_DISCLOSE = "ws://disclose.proving.self.xyz:8888/"
 export const WS_DB_RELAYER = 'wss://websocket.self.xyz';
 export const WS_DB_RELAYER_STAGING = 'wss://websocket.staging.self.xyz';
 export const API_URL = 'https://api.self.xyz';
+export const API_URL_STAGING = 'https://api.staging.self.xyz';
 export const CSCA_TREE_URL = 'https://tree.self.xyz/csca';
 export const DSC_TREE_URL = 'https://tree.self.xyz/dsc';
 export const CSCA_TREE_URL_STAGING = 'https://tree.staging.self.xyz/csca';
@@ -47,11 +48,11 @@ export const DEPLOYED_CIRCUITS_REGISTER = [
   'register_sha256_sha256_sha256_rsapss_65537_32_2048',
   'register_sha256_sha256_sha256_rsapss_65537_32_3072',
   'register_sha384_sha384_sha384_ecdsa_brainpoolP384r1',
-  //'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',//
+  'register_sha384_sha384_sha384_ecdsa_brainpoolP512r1',
   'register_sha384_sha384_sha384_ecdsa_secp384r1',
   'register_sha384_sha384_sha384_rsapss_65537_48_2048',
   'register_sha1_sha1_sha1_ecdsa_brainpoolP224r1',
-  //'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',//
+  'register_sha512_sha512_sha512_ecdsa_brainpoolP512r1',
   'register_sha512_sha512_sha512_rsa_65537_4096',
   'register_sha512_sha512_sha512_rsapss_65537_64_2048',
 ]
@@ -70,9 +71,9 @@ export const DEPLOYED_CIRCUITS_DSC = [
   'dsc_sha256_rsapss_65537_32_3072',
   'dsc_sha256_rsapss_65537_32_4096',
   'dsc_sha384_ecdsa_brainpoolP384r1',
-  //'dsc_sha384_ecdsa_brainpoolP512r1',
+  'dsc_sha384_ecdsa_brainpoolP512r1',
   'dsc_sha384_ecdsa_secp384r1',
-  //'dsc_sha512_ecdsa_brainpoolP512r1',
+  'dsc_sha512_ecdsa_brainpoolP512r1',
   'dsc_sha512_rsa_65537_4096',
   'dsc_sha512_rsapss_65537_64_4096',
 ]

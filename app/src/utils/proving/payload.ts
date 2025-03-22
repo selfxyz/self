@@ -3,6 +3,7 @@ import { poseidon2 } from 'poseidon-lite';
 
 import {
   API_URL,
+  API_URL_STAGING,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_VC_AND_DISCLOSE,
 } from '../../../../common/src/constants/constants';
@@ -241,7 +242,7 @@ export async function registerPassport(
       ? 'staging_celo'
       : 'celo';
   const [circuitDNSMapping, dscTree] = await Promise.all([
-    getCircuitDNSMapping(),
+    getCircuitDNSMapping(endpointType),
     getDSCTree(endpointType),
   ]);
   console.log('circuitDNSMapping', circuitDNSMapping);
@@ -289,9 +290,15 @@ export async function getDeployedCircuits() {
     throw new Error('API returned invalid JSON response - server may be down');
   }
 }
-export async function getCircuitDNSMapping() {
+
+export async function getCircuitDNSMapping(endpointType?: EndpointType) {
   console.log('Fetching deployed circuits from api');
-  const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
+  const baseUrl =
+    endpointType === 'celo' || endpointType === 'https'
+      ? API_URL
+      : API_URL_STAGING;
+  const response = await fetch(`${baseUrl}/circuit-dns-mapping/`);
+
   if (!response.ok) {
     throw new Error(
       `API server error: ${response.status} ${response.statusText}`,
@@ -305,10 +312,9 @@ export async function getCircuitDNSMapping() {
   }
   try {
     const data = await response.json();
-
     if (!data.data) {
       throw new Error(
-        'Invalid data structure received from API: missing REGISTER or DSC fields',
+        'Invalid data structure received from API: missing data field',
       );
     }
     return data.data;

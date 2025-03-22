@@ -1,69 +1,105 @@
 import { Linking } from 'react-native';
 
-import { decode } from 'msgpack-lite';
-import { inflate } from 'pako';
+import queryString from 'query-string';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { loadPassportData } from '../stores/passportDataProvider';
 
-export default async function handleQRCodeScan(
-  result: string,
-  setApp: (app: SelfApp) => void,
-) {
+/**
+ * Decodes a URL-encoded string.
+ * @param {string} encodedUrl
+ * @returns {string}
+ */
+const decodeUrl = (encodedUrl: string): string => {
   try {
-    const passportData = await loadPassportData();
-    if (passportData) {
-      const decodedResult = atob(result);
-      const uint8Array = new Uint8Array(
-        decodedResult.split('').map(char => char.charCodeAt(0)),
-      );
-      const decompressedData = inflate(uint8Array);
-      const unpackedData = decode(decompressedData);
-      const openPassportApp: SelfApp = unpackedData;
-
-      setApp(openPassportApp);
-      console.log('✅', {
-        message: 'QR code scanned',
-        customData: {
-          type: 'success',
-        },
-      });
-    } else {
-      console.log('Welcome', {
-        message: 'Please register your passport first',
-        type: 'info',
-      });
-    }
+    return decodeURIComponent(encodedUrl);
   } catch (error) {
-    console.error('Error parsing QR code result:', error);
-    console.log('Try again', {
-      message: 'Error reading QR code: ' + (error as Error).message,
-      customData: {
-        type: 'error',
-      },
-    });
-  }
-}
-
-const handleUniversalLink = (url: string, setApp: (app: SelfApp) => void) => {
-  const encodedData = new URL(url).searchParams.get('data');
-  console.log('Encoded data:', encodedData);
-  if (encodedData) {
-    handleQRCodeScan(encodedData, setApp);
-  } else {
-    console.error('No data found in the Universal Link');
+    console.error('Error decoding URL:', error);
+    return encodedUrl;
   }
 };
 
-export const setupUniversalLinkListener = (setApp: (app: SelfApp) => void) => {
+const handleQRCodeData = (
+  uri: string,
+  setApp: (app: SelfApp) => void,
+  cleanSelfApp: () => void,
+  startAppListener: (sessionId: string, setApp: (app: SelfApp) => void) => void,
+  onNavigationNeeded?: () => void,
+  onErrorCallback?: () => void,
+) => {
+  const decodedUri = decodeUrl(uri);
+  const encodedData = queryString.parseUrl(decodedUri).query;
+  const sessionId = encodedData.sessionId;
+  const selfAppStr = encodedData.selfApp as string | undefined;
+
+  if (selfAppStr) {
+    try {
+      const selfAppJson = JSON.parse(selfAppStr);
+      setApp(selfAppJson);
+
+      if (onNavigationNeeded) {
+        setTimeout(() => {
+          onNavigationNeeded();
+        }, 100);
+      }
+      return;
+    } catch (error) {
+      console.error('Error parsing selfApp:', error);
+      if (onErrorCallback) {
+        onErrorCallback();
+      }
+    }
+  }
+
+  if (sessionId && typeof sessionId === 'string') {
+    cleanSelfApp();
+    startAppListener(sessionId, setApp);
+
+    if (onNavigationNeeded) {
+      setTimeout(() => {
+        onNavigationNeeded();
+      }, 100);
+    }
+  } else {
+    console.error('No sessionId or selfApp found in the data');
+    if (onErrorCallback) {
+      onErrorCallback();
+    }
+  }
+};
+
+export const setupUniversalLinkListenerInNavigation = (
+  navigation: any,
+  setApp: (app: SelfApp) => void,
+  cleanSelfApp: () => void,
+  startAppListener: (sessionId: string, setApp: (app: SelfApp) => void) => void,
+) => {
+  const handleNavigation = (url: string) => {
+    handleQRCodeData(
+      url,
+      setApp,
+      cleanSelfApp,
+      startAppListener,
+      () => {
+        if (navigation.isReady()) {
+          navigation.navigate('ProveScreen');
+        }
+      },
+      () => {
+        if (navigation.isReady()) {
+          navigation.navigate('QRCodeTrouble');
+        }
+      },
+    );
+  };
+
   Linking.getInitialURL().then(url => {
     if (url) {
-      handleUniversalLink(url, setApp);
+      handleNavigation(url);
     }
   });
 
   const linkingEventListener = Linking.addEventListener('url', ({ url }) => {
-    handleUniversalLink(url, setApp);
+    handleNavigation(url);
   });
 
   return () => {

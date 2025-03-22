@@ -8,7 +8,6 @@ import React, {
 } from 'react';
 
 import { SelfApp } from '../../../common/src/utils/appType';
-import { setupUniversalLinkListener } from '../utils/qrCodeNew';
 
 export enum ProofStatusEnum {
   PENDING = 'pending',
@@ -98,13 +97,6 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       globalSetDisclosureStatus = null;
     };
   }, [setRegistrationStatus, setDisclosureStatus]);
-
-  useEffect(() => {
-    const universalLinkCleanup = setupUniversalLinkListener(setSelectedApp);
-    return () => {
-      universalLinkCleanup();
-    };
-  }, []);
 
   const publicApi: IProofContext = useMemo(
     () => ({
