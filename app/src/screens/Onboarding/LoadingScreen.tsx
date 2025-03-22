@@ -49,6 +49,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   }, []);
 
   useEffect(() => {
+    console.log('registrationStatus', registrationStatus);
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
       goToSuccessScreenWithDelay();

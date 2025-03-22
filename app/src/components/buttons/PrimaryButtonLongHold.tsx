@@ -11,7 +11,7 @@ import { PrimaryButton } from './PrimaryButton';
 
 type RGBA = `rgba(${number}, ${number}, ${number}, ${number})`;
 
-const ACTION_TIMER = 1000; // time in ms
+const ACTION_TIMER = 600; // time in ms
 //slate400 to slate800 but in rgb
 const COLORS: RGBA[] = ['rgba(30, 41, 59, 0.3)', 'rgba(30, 41, 59, 1)'];
 export function HeldPrimaryButton({
@@ -33,12 +33,13 @@ export function HeldPrimaryButton({
   };
 
   const onPressOut = () => {
-    setHasTriggered(false);
-    Animated.timing(animation, {
-      toValue: 0,
-      duration: ACTION_TIMER,
-      useNativeDriver: true,
-    }).start();
+    if (!hasTriggered) {
+      Animated.timing(animation, {
+        toValue: 0,
+        duration: ACTION_TIMER,
+        useNativeDriver: true,
+      }).start();
+    }
   };
 
   const getButtonSize = (e: LayoutChangeEvent) => {
