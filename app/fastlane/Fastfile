@@ -131,6 +131,17 @@ platform :android do
   end
 end 
 
+# Helper methods for consistent error and success reporting
+def report_error(message, suggestion = nil, abort_message = nil)
+  UI.error("❌ #{message}")
+  UI.error(suggestion) if suggestion
+  UI.abort_with_message!(abort_message || message)
+end
+
+def report_success(message)
+  UI.success("✅ #{message}")
+end
+
 # for local development
 def verify_env_vars(required_vars)
   missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].to_s.strip.empty? }
@@ -144,17 +155,6 @@ def verify_env_vars(required_vars)
   else
     report_success("All required environment variables are present")
   end
-end
-
-# Helper methods for consistent error and success reporting
-def report_error(message, suggestion = nil, abort_message = nil)
-  UI.error("❌ #{message}")
-  UI.error(suggestion) if suggestion
-  UI.abort_with_message!(abort_message || message)
-end
-
-def report_success(message)
-  UI.success("✅ #{message}")
 end
 
 # Verify build number against App Store Connect
