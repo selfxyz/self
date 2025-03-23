@@ -125,7 +125,6 @@ jobs:
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks
 
       - name: Verify Android Secrets
-        if: false
         run: |
           # Verify keystore file exists and is valid
           if [ ! -f "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" ]; then

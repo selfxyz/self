@@ -10,7 +10,6 @@ opt_out_usage
 require 'base64'
 
 is_ci = ENV['CI'] && !ENV['ACT']
-is_pr = ENV['IS_PR']
 
 # for local development
 unless is_ci
@@ -41,8 +40,16 @@ platform :ios do
 
     cocoapods(podfile: "ios/Podfile")
 
+    api_key = app_store_connect_api_key(
+      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
+      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
+      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+      in_house: false
+    )
+
     match(
       type: "appstore",
+      api_key: api_key,
       readonly: true
     )
     
@@ -59,14 +66,6 @@ platform :ios do
           ENV["APP_STORE_APP_IDENTIFIER"] => "match AppStore #{ENV["APP_STORE_APP_IDENTIFIER"]}"
         }
       }
-    )
-    
-    # Upload to TestFlight
-    api_key = app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
-      in_house: false
     )
     
     return true if should_skip_upload("TestFlight")
@@ -116,8 +115,7 @@ platform :android do
     )
 
     return true if should_skip_upload("Google Play")
-    
-    # Upload to Google Play
+
     upload_to_play_store(
       track: "internal",
       json_key_data: ENV["PLAY_STORE_JSON_KEY"],
@@ -136,7 +134,7 @@ def should_skip_upload(platform)
     return true
   end
 
-  if is_pr
+  if ENV['IS_PR']
     puts "Skipping upload to #{platform} because we are in a pull request"
     return true
   end
