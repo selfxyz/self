@@ -59,6 +59,22 @@ jobs:
           fi
           echo "✅ All iOS secrets verified successfully!"
 
+      - name: Set up keychain
+        if: ${{ !env.ACT }}
+        run: |
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security set-keychain-settings
+
+      - name: Install provisioning profiles
+        if: ${{ !env.ACT }}
+        run: |
+          bundle exec fastlane match appstore --readonly
+        env:
+          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
+          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
+      
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
         if: ${{ !env.ACT }}

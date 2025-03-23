@@ -40,6 +40,11 @@ platform :ios do
     verify_ios_app_store_build_number
 
     cocoapods(podfile: "ios/Podfile")
+
+    match(
+      type: "appstore",
+      readonly: true
+    )
     
     # Build the app
     build_app(
