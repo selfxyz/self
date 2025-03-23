@@ -30,28 +30,22 @@ platform :ios do
     end
 
     Fastlane::Helpers.verify_env_vars([
-      "APP_STORE_APP_IDENTIFIER",
-      "APP_STORE_CONNECT_KEY_ID",
-      "APP_STORE_CONNECT_ISSUER_ID",
-      "APP_STORE_CONNECT_API_KEY",
-      "APP_STORE_TESTFLIGHT_GROUPS"
+      "IOS_APP_IDENTIFIER",
+      "IOS_CONNECT_API_KEY",
+      "IOS_CONNECT_ISSUER_ID",
+      "IOS_CONNECT_KEY_ID",
+      "IOS_TESTFLIGHT_GROUPS"
     ])
 
     Fastlane::Helpers.verify_ios_app_store_build_number
 
     cocoapods(podfile: "ios/Podfile")
 
-    api_key = app_store_connect_api_key(
-      key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
-      issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-      key_content: ENV["APP_STORE_CONNECT_API_KEY"],
+    api_key = IOS_CONNECT_API_KEY(
+      key_id: ENV["IOS_CONNECT_KEY_ID"],
+      issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
+      key_content: ENV["IOS_CONNECT_API_KEY"],
       in_house: false
-    )
-
-    match(
-      type: "appstore",
-      api_key: api_key,
-      readonly: true
     )
     
     # Build the app
@@ -62,11 +56,6 @@ platform :ios do
       export_method: "app-store",
       output_directory: "build",
       clean: true,
-      export_options: {
-        provisioningProfiles: {
-          ENV["APP_STORE_APP_IDENTIFIER"] => "match AppStore #{ENV["APP_STORE_APP_IDENTIFIER"]}"
-        }
-      }
     )
     
     return true if Fastlane::Helpers.should_skip_upload("TestFlight")
@@ -74,7 +63,7 @@ platform :ios do
     upload_to_testflight(
       api_key: api_key,
       distribute_external: true,
-      groups: ENV["APP_STORE_TESTFLIGHT_GROUPS"].split(","),
+      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: ""
     )
   end
@@ -94,7 +83,7 @@ platform :android do
       "ANDROID_KEYSTORE_PASSWORD",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
-      "PLAY_STORE_JSON_KEY"
+      "ANDROID_PLAY_STORE_JSON_KEY"
     ])
     
     # Verify version code before building 
@@ -119,7 +108,7 @@ platform :android do
 
     upload_to_play_store(
       track: "internal",
-      json_key_data: ENV["PLAY_STORE_JSON_KEY"],
+      json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,

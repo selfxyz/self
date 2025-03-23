@@ -32,6 +32,26 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
+      - name: Decode certificate and profile
+        run: |
+          echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
+          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
+
+      - name: Install certificate
+        if: ${{ !env.ACT }}
+        run: |
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          security import dist_cert.p12 -k build.keychain -P "${{ secrets.P12_PASSWORD }}" -T /usr/bin/codesign
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
+
+      - name: Install provisioning profile
+        if: ${{ !env.ACT }}
+        run: |
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+
       - name: Select latest Xcode version
         if: ${{ !env.ACT }}
         run: |
@@ -43,48 +63,32 @@ jobs:
         run: |
           # TODO: verify that copy and pasting file contents into the secrets editor works
           # Verify App Store Connect API Key exists and contains PEM header
-          if ! echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
+          if ! echo "${{ secrets.IOS_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
             echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
             exit 1
           fi
           # Verify Issuer ID is in correct format (UUID)
-          if ! echo "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+          if ! echo "${{ secrets.IOS_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
             exit 1
           fi
           # Verify Key ID is in correct format (alphanumeric)
-          if ! echo "${{ secrets.APP_STORE_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+          if ! echo "${{ secrets.IOS_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
             echo "❌ Error: Invalid App Store Connect Key ID format"
             exit 1
           fi
           echo "✅ All iOS secrets verified successfully!"
 
-      - name: Set up keychain
-        if: ${{ !env.ACT }}
-        run: |
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings
-
-      - name: Install provisioning profiles
-        if: ${{ !env.ACT }}
-        run: |
-          bundle exec fastlane match appstore --readonly
-        env:
-          MATCH_PASSWORD: ${{ secrets.MATCH_PASSWORD }}
-          MATCH_GIT_BASIC_AUTHORIZATION: ${{ secrets.MATCH_GIT_BASIC_AUTHORIZATION }}
-      
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
         if: ${{ !env.ACT }}
         env:
           IS_PR: ${{ github.event.pull_request.number != null }}
-          APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
-          APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
-          APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
-          APP_STORE_CONNECT_KEY_ID: ${{ secrets.APP_STORE_CONNECT_KEY_ID }}
-          APP_STORE_TESTFLIGHT_GROUPS: ${{ secrets.APP_STORE_TESTFLIGHT_GROUPS }}
+          IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
+          IOS_CONNECT_API_KEY: ${{ secrets.IOS_CONNECT_API_KEY }}
+          IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
+          IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
+          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
           bundle exec fastlane ios internal_test --verbose
@@ -167,7 +171,7 @@ jobs:
           fi
           # TODO: uncomment this when we have a way to test the Play Store JSON key
           # Verify Play Store JSON key is valid JSON
-          # if ! echo "${{ secrets.PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
+          # if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
           #   echo "❌ Error: Invalid Play Store JSON key format"
           #   exit 1
           # fi
@@ -184,7 +188,7 @@ jobs:
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          PLAY_STORE_JSON_KEY: ${{ secrets.PLAY_STORE_JSON_KEY }}
+          ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
           cd ${{ env.WORKSPACE }}/self/app
           bundle exec fastlane android internal_test --verbose

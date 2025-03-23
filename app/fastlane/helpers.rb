@@ -42,14 +42,14 @@ module Fastlane
 
     def self.verify_ios_app_store_build_number
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
-        key_id: ENV["APP_STORE_CONNECT_KEY_ID"],
-        issuer_id: ENV["APP_STORE_CONNECT_ISSUER_ID"],
-        key_content: ENV["APP_STORE_CONNECT_API_KEY"]
+        key_id: ENV["IOS_CONNECT_KEY_ID"],
+        issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
+        key_content: ENV["IOS_CONNECT_API_KEY"]
       )
       
       latest_build = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
         api_key: api_key,
-        app_identifier: ENV["APP_STORE_APP_IDENTIFIER"],
+        app_identifier: ENV["IOS_APP_IDENTIFIER"],
         platform: "ios"
       )
       
@@ -71,7 +71,7 @@ module Fastlane
     def self.verify_android_version_code
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key_data: ENV["PLAY_STORE_JSON_KEY"]
+        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"]
       ).first
 
       gradle_file = "../android/app/build.gradle"
