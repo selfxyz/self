@@ -32,6 +32,45 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
+      - name: Verify iOS Secrets
+        run: |
+          # TODO: verify that copy and pasting file contents into the secrets editor works
+          # Verify App Store Connect API Key exists and contains PEM header
+          if ! echo "${{ secrets.IOS_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
+            exit 1
+          fi
+          # Verify Issuer ID is in correct format (UUID)
+          if ! echo "${{ secrets.IOS_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
+            exit 1
+          fi
+          # Verify Key ID is in correct format (alphanumeric)
+          if ! echo "${{ secrets.IOS_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Key ID format"
+            exit 1
+          fi
+          # Verify P12 password is not empty and meets basic security requirements
+          if [ -z "${{ secrets.P12_PASSWORD }}" ]; then
+            echo "❌ Error: P12 password cannot be empty"
+            exit 1
+          fi
+          if [ ${#P12_PASSWORD} -lt 8 ]; then
+            echo "❌ Error: P12 password must be at least 8 characters long"
+            exit 1
+          fi
+          # Verify distribution certificate is valid base64 and contains expected headers
+          if ! echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 -d 2>/dev/null | grep -F "BEGIN CERTIFICATE" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid distribution certificate format (should be base64 encoded PEM certificate)"
+            exit 1
+          fi
+          # Verify provisioning profile is valid base64 and contains expected headers
+          if ! echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 -d 2>/dev/null | grep -F "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid provisioning profile format (should be base64 encoded mobileprovision file)"
+            exit 1
+          fi
+          echo "✅ All iOS secrets verified successfully!"
+
       - name: Decode certificate and profile
         run: |
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
@@ -58,26 +97,6 @@ jobs:
           latest=$(ls /Applications | grep ^Xcode_ | sed 's/Xcode_//' | sed 's/.app//' | sort -V | tail -n 1)
           sudo xcode-select -s "/Applications/Xcode_${latest}.app"
           xcodebuild -version
-
-      - name: Verify iOS Secrets
-        run: |
-          # TODO: verify that copy and pasting file contents into the secrets editor works
-          # Verify App Store Connect API Key exists and contains PEM header
-          if ! echo "${{ secrets.IOS_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
-            exit 1
-          fi
-          # Verify Issuer ID is in correct format (UUID)
-          if ! echo "${{ secrets.IOS_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
-            echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
-            exit 1
-          fi
-          # Verify Key ID is in correct format (alphanumeric)
-          if ! echo "${{ secrets.IOS_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
-            echo "❌ Error: Invalid App Store Connect Key ID format"
-            exit 1
-          fi
-          echo "✅ All iOS secrets verified successfully!"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
