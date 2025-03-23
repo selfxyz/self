@@ -118,7 +118,26 @@ jobs:
         uses: android-actions/setup-android@v3
 
       - name: Install NDK
-        run: sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"
+        run: |
+          max_attempts=3
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts to install NDK..."
+            if sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"; then
+              echo "Successfully installed NDK"
+              exit 0
+            fi
+            echo "Failed to install NDK on attempt $attempt"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "All attempts to install NDK failed"
+              exit 1
+            fi
+            # Exponential backoff: 2^attempt seconds
+            wait_time=$((2 ** attempt))
+            echo "Waiting $wait_time seconds before retrying..."
+            sleep $wait_time
+            attempt=$((attempt + 1))
+          done
 
       - name: Decode Keystore
         run: |
