@@ -173,6 +173,10 @@ jobs:
           # fi
           echo "✅ All Android secrets verified successfully!"
 
+      - name: Set Gradle JVM options
+        run: |
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8" >> ${{ env.WORKSPACE }}/self/app/android/gradle.properties
+
       - name: Build and upload to Google Play Internal Testing
         env:
           IS_PR: ${{ github.event.pull_request.number != null }}
