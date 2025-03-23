@@ -59,7 +59,7 @@ jobs:
           fi
           echo "✅ All iOS secrets verified successfully!"
 
-      # act won't work with macos, but you can test with `bundle exec fastlane ios internal_test`
+      # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
         if: ${{ !env.ACT }}
         env:
