@@ -60,11 +60,11 @@ platform :ios do
     
     unless is_ci
       puts "Skipping upload to TestFlight because CI is false"
-      return
+      return true
     end
 
-    # TOOO: remove after testing
-    return
+    # TODO: remove after testing
+    return true
 
     upload_to_testflight(
       api_key: api_key,
@@ -112,11 +112,11 @@ platform :android do
 
     unless is_ci
       puts "Skipping upload to Google Play because CI is false"
-      exit 1
+      exit true
     end
 
-    # TOOO: remove after testing
-    return
+    # TODO: remove after testing
+    return true
     
     # Upload to Google Play
     upload_to_play_store(

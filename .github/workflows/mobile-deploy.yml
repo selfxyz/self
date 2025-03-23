@@ -51,6 +51,7 @@ jobs:
           fi
           echo "✅ All iOS secrets verified successfully!"
 
+      # act won't work with macos, but you can test with `bundle exec fastlane ios internal_test`
       - name: Build and upload to TestFlight (Internal)
         env:
           APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
