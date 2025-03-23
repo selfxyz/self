@@ -26,6 +26,15 @@ jobs:
   build-ios:
     runs-on: macos-latest
     steps:
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+
       - name: Verify iOS Secrets
         run: |
           # TODO: verify that copy and pasting file contents into the secrets editor works
@@ -60,19 +69,19 @@ jobs:
           fi
           echo "✅ All iOS secrets verified successfully!"
 
-      - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
-        with:
-          app_path: ${{ env.APP_PATH }}
-          node_version: ${{ env.NODE_VERSION }}
-          ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
-
       - name: Decode certificate and profile
         run: |
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
+          echo "MD5 of dist_cert.p12:"
+          md5 dist_cert.p12
+          echo "MD5 of profile.mobileprovision:"
+          md5 profile.mobileprovision
+          echo "Certificate file size:"
+          ls -l dist_cert.p12
+          echo "Password length: ${#P12_PASSWORD}"
+          echo "Certificate file type:"
+          file dist_cert.p12
 
       - name: Install certificate
         if: ${{ !env.ACT }}

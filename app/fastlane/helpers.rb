@@ -26,7 +26,7 @@ module Fastlane
       end
     end
 
-    def self.should_skip_upload(platform)
+    def self.should_upload_app(platform)
       if ENV["ACT"]
         puts "Skipping upload to #{platform} we are testing using `act`"
         return true
@@ -37,8 +37,8 @@ module Fastlane
         return true
       end
 
-      # if we are not in CI, skip uploading
-      !ENV['CI']
+      # if we are in CI, upload the app
+      ENV['CI']
     end
 
     def self.verify_ios_app_store_build_number

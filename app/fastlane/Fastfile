@@ -57,15 +57,15 @@ platform :ios do
       output_directory: "build",
       clean: true,
     )
-    
-    return true if Fastlane::Helpers.should_skip_upload("TestFlight")
+
+    should_upload = Fastlane::Helpers.should_upload_app("TestFlight")
 
     upload_to_testflight(
       api_key: api_key,
       distribute_external: true,
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: ""
-    )
+    ) if should_upload
   end
 end
 
@@ -104,8 +104,8 @@ platform :android do
       }
     )
 
-    return true if Fastlane::Helpers.should_skip_upload("Google Play")
-
+    should_upload = Fastlane::Helpers.should_upload_app("Google Play")
+    
     upload_to_play_store(
       track: "internal",
       json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
@@ -114,6 +114,6 @@ platform :android do
       skip_upload_screenshots: true,
       release_status: "completed",
       aab: "android/app/build/outputs/bundle/release/app-release.aab"
-    )
+    ) if should_upload
   end
 end
