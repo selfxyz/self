@@ -41,7 +41,7 @@ platform :ios do
 
     cocoapods(podfile: "ios/Podfile")
 
-    api_key = IOS_CONNECT_API_KEY(
+    api_key = app_store_connect_api_key(
       key_id: ENV["IOS_CONNECT_KEY_ID"],
       issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
       key_content: ENV["IOS_CONNECT_API_KEY"],
