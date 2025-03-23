@@ -73,15 +73,15 @@ jobs:
         run: |
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
-          echo "MD5 of dist_cert.p12:"
-          md5 dist_cert.p12
-          echo "MD5 of profile.mobileprovision:"
-          md5 profile.mobileprovision
+          echo "SHA256 of dist_cert.p12:"
+          shasum -a 256 dist_cert.p12
+          echo "SHA256 of profile.mobileprovision:"
+          shasum -a 256 profile.mobileprovision
           echo "Certificate file size:"
           ls -l dist_cert.p12
-          echo "Password length: ${#P12_PASSWORD}"
-          echo "Certificate file type:"
-          file dist_cert.p12
+          echo "SHA256 of password:"
+          echo -n "${{ secrets.P12_PASSWORD }}" | shasum -a 256
+
 
       - name: Install certificate
         if: ${{ !env.ACT }}
