@@ -51,7 +51,7 @@ platform :ios do
       clean: true,
       export_options: {
         provisioningProfiles: {
-          ENV["APP_STORE_APP_IDENTIFIER"] => "match adhoc #{ENV["APP_STORE_APP_IDENTIFIER"]}"
+          ENV["APP_STORE_APP_IDENTIFIER"] => "match AppStore #{ENV["APP_STORE_APP_IDENTIFIER"]}"
         }
       }
     )
