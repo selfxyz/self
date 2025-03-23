@@ -38,7 +38,7 @@ module Fastlane
       end
 
       # if we are not in CI, skip uploading
-      ENV['CI']
+      !ENV['CI']
     end
 
     def self.verify_ios_app_store_build_number
