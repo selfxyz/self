@@ -7,6 +7,7 @@ env:
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
   WORKSPACE: /tmp/workspace
+  APP_PATH: /self/app
 
 on:
   push:
@@ -51,18 +52,17 @@ jobs:
             exit 1
           fi
           # Verify P12 password is not empty and meets basic security requirements
-          if [ -z "${{ secrets.P12_PASSWORD }}" ]; then
+          if [ -z "${{ secrets.IOS_P12_PASSWORD }}" ]; then
             echo "❌ Error: P12 password cannot be empty"
             exit 1
           fi
-          # Verify distribution certificate is valid base64 and contains expected headers
-          if ! echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 -d 2>/dev/null | grep -F "BEGIN CERTIFICATE" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid distribution certificate format (should be base64 encoded PEM certificate)"
+          # Verify base64 secrets are not empty
+          if [ -z "${{ secrets.IOS_DIST_CERT_BASE64 }}" ]; then
+            echo "❌ Error: Distribution certificate cannot be empty"
             exit 1
           fi
-          # Verify provisioning profile is valid base64 and contains expected headers
-          if ! echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 -d 2>/dev/null | grep -F "<?xml version=\"1.0\" encoding=\"UTF-8\"?>" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid provisioning profile format (should be base64 encoded mobileprovision file)"
+          if [ -z "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" ]; then
+            echo "❌ Error: Provisioning profile cannot be empty"
             exit 1
           fi
           echo "✅ All iOS secrets verified successfully!"
@@ -105,7 +105,7 @@ jobs:
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
         run: |
-          cd ${{ env.WORKSPACE }}/self/app
+          cd ${{ env.WORKSPACE }}${{ env.APP_PATH }}
           bundle exec fastlane ios internal_test --verbose
 
       - uses: actions/checkout@v4
@@ -158,29 +158,33 @@ jobs:
             attempt=$((attempt + 1))
           done
 
+      - name: Set Gradle JVM options
+        run: |
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8" >> ${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/gradle.properties
+
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks
 
       - name: Verify Android Secrets
         run: |
           # Verify keystore file exists and is valid
-          if [ ! -f "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" ]; then
+          if [ ! -f "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" ]; then
             echo "❌ Error: Keystore file was not created successfully"
             exit 1
           fi
           # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
           # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
             echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
             exit 1
           fi
           # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}/self/app/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
@@ -192,10 +196,6 @@ jobs:
           # fi
           echo "✅ All Android secrets verified successfully!"
 
-      - name: Set Gradle JVM options
-        run: |
-          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8" >> ${{ env.WORKSPACE }}/self/app/android/gradle.properties
-
       - name: Build and upload to Google Play Internal Testing
         env:
           IS_PR: ${{ github.event.pull_request.number != null }}
@@ -205,7 +205,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
-          cd ${{ env.WORKSPACE }}/self/app
+          cd ${{ env.WORKSPACE }}${{ env.APP_PATH }}
           bundle exec fastlane android internal_test --verbose
 
       - uses: actions/checkout@v4

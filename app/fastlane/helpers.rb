@@ -37,7 +37,7 @@ module Fastlane
         return true
       end
 
-      false
+      ENV['CI']
     end
 
     def self.verify_ios_app_store_build_number
