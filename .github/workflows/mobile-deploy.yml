@@ -32,6 +32,13 @@ jobs:
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
 
+      - name: Select latest Xcode version
+        if: ${{ !env.ACT }}
+        run: |
+          latest=$(ls /Applications | grep ^Xcode_ | sed 's/Xcode_//' | sed 's/.app//' | sort -V | tail -n 1)
+          sudo xcode-select -s "/Applications/Xcode_${latest}.app"
+          xcodebuild -version
+
       - name: Verify iOS Secrets
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
@@ -53,6 +60,7 @@ jobs:
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios internal_test`
       - name: Build and upload to TestFlight (Internal)
+        if: ${{ !env.ACT }}
         env:
           APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
@@ -65,6 +73,7 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Commit updated build number
+        if: ${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump ios build number"
@@ -141,6 +150,7 @@ jobs:
 
       - uses: actions/checkout@v4
       - name: Commit updated build version
+        if: ${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump android build version"
