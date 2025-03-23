@@ -37,6 +37,7 @@ module Fastlane
         return true
       end
 
+      # if we are not in CI, skip uploading
       ENV['CI']
     end
 

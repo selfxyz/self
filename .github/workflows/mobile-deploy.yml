@@ -8,6 +8,7 @@ env:
   RUBY_VERSION: 3.2
   WORKSPACE: /tmp/workspace
   APP_PATH: /self/app
+  ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
 
 on:
   push:
@@ -25,14 +26,7 @@ jobs:
   build-ios:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Mobile Dependencies
-        uses: ./.github/actions/mobile-setup
-        with:
-          node_version: ${{ env.NODE_VERSION }}
-          ruby_version: ${{ env.RUBY_VERSION }}
-          workspace: ${{ env.WORKSPACE }}
-
+      # verify secrets first
       - name: Verify iOS Secrets
         run: |
           # TODO: verify that copy and pasting file contents into the secrets editor works
@@ -66,6 +60,15 @@ jobs:
             exit 1
           fi
           echo "✅ All iOS secrets verified successfully!"
+
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
 
       - name: Decode certificate and profile
         run: |
@@ -118,10 +121,46 @@ jobs:
   build-android:
     runs-on: ubuntu-latest
     steps:
+      # verify secrets first
+      - name: Decode Keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+
+      - name: Verify Android Secrets
+        run: |
+          # Verify keystore file exists and is valid
+          if [ ! -f "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" ]; then
+            echo "❌ Error: Keystore file was not created successfully"
+            exit 1
+          fi
+          # Try to verify the keystore with the provided password
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid keystore password"
+            exit 1
+          fi
+          # Verify the key alias exists
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
+            echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
+            exit 1
+          fi
+          # Verify the key password
+          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid key password"
+            exit 1
+          fi
+          # TODO: uncomment this when we have a way to test the Play Store JSON key
+          # Verify Play Store JSON key is valid JSON
+          # if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
+          #   echo "❌ Error: Invalid Play Store JSON key format"
+          #   exit 1
+          # fi
+          echo "✅ All Android secrets verified successfully!"
+
       - uses: actions/checkout@v4
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          app_path: ${{ env.APP_PATH }}
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
@@ -161,40 +200,6 @@ jobs:
       - name: Set Gradle JVM options
         run: |
           echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8" >> ${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/gradle.properties
-
-      - name: Decode Keystore
-        run: |
-          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks
-
-      - name: Verify Android Secrets
-        run: |
-          # Verify keystore file exists and is valid
-          if [ ! -f "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" ]; then
-            echo "❌ Error: Keystore file was not created successfully"
-            exit 1
-          fi
-          # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid keystore password"
-            exit 1
-          fi
-          # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
-            echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
-            exit 1
-          fi
-          # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/app/upload-keystore.jks" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid key password"
-            exit 1
-          fi
-          # TODO: uncomment this when we have a way to test the Play Store JSON key
-          # Verify Play Store JSON key is valid JSON
-          # if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
-          #   echo "❌ Error: Invalid Play Store JSON key format"
-          #   exit 1
-          # fi
-          echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
         env:

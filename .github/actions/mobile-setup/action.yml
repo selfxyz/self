@@ -3,6 +3,9 @@ name: Setup Mobile Environment
 description: "Sets up the environment for mobile app builds"
 
 inputs:
+  app_path:
+    description: "Path to the app directory"
+    required: true
   node_version:
     description: "Node version"
     required: true
@@ -49,12 +52,11 @@ runs:
       run: |
         mkdir -p ${{ inputs.workspace }}
         cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${{ inputs.workspace }}
-        cd ${{ inputs.workspace }}
 
     - name: Install app dependencies
       shell: bash
       run: |
-        cd ${{ inputs.workspace }}/self/app
+        cd ${{ inputs.workspace }}${{ inputs.app_path }}
         corepack enable
         yarn install
         yarn install-app
