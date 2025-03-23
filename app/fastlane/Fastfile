@@ -16,7 +16,7 @@ is_pr = ENV['IS_PR']
 unless is_ci
   puts "Loading .env.secrets"
   require 'dotenv'
-  Dotenv.load('.env.secrets')
+  Dotenv.load('./.env.secrets')
 end
 
 default_platform(:ios)
