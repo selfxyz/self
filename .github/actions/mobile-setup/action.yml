@@ -27,7 +27,7 @@ runs:
         sudo apt-get install -y locales dialog
 
     - name: Install locales and dialog
-      if: ${{ runner.os }} == 'Linux'
+      if: runner.os != 'macOS'
       shell: bash
       run: |
         # for fastlane
