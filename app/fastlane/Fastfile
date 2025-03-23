@@ -10,6 +10,7 @@ opt_out_usage
 require 'base64'
 
 is_ci = ENV['CI'] && !ENV['ACT']
+is_pr = ENV['IS_PR']
 
 # for local development
 unless is_ci
@@ -63,13 +64,7 @@ platform :ios do
       in_house: false
     )
     
-    unless is_ci
-      puts "Skipping upload to TestFlight because CI is false"
-      return true
-    end
-
-    # TODO: remove after testing
-    return true
+    return true if should_skip_upload("TestFlight")
 
     upload_to_testflight(
       api_key: api_key,
@@ -115,13 +110,7 @@ platform :android do
       }
     )
 
-    unless is_ci
-      puts "Skipping upload to Google Play because CI is false"
-      exit true
-    end
-
-    # TODO: remove after testing
-    return true
+    return true if should_skip_upload("Google Play")
     
     # Upload to Google Play
     upload_to_play_store(
@@ -134,7 +123,21 @@ platform :android do
       aab: "android/app/build/outputs/bundle/release/app-release.aab"
     )
   end
-end 
+end
+
+def should_skip_upload(platform)
+  if ENV["ACT"]
+    puts "Skipping upload to #{platform} we are testing using `act`"
+    return true
+  end
+
+  if is_pr
+    puts "Skipping upload to #{platform} because we are in a pull request"
+    return true
+  end
+
+  false
+end
 
 # Helper methods for consistent error and success reporting
 def report_error(message, suggestion = nil, abort_message = nil)
@@ -173,7 +176,7 @@ def verify_ios_app_store_build_number
   
   latest_build = latest_testflight_build_number(
     api_key: api_key,
-    app_identifier: ENV["APP_STORE_APP_IDENTIFIER"],
+    app_identifier: ENV["APP_STORE_APP_IDENTIFIER"]
   )
   
   project = Xcodeproj::Project.open("../ios/Self.xcodeproj")

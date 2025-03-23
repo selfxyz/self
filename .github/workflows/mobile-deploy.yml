@@ -63,6 +63,7 @@ jobs:
       - name: Build and upload to TestFlight (Internal)
         if: ${{ !env.ACT }}
         env:
+          IS_PR: ${{ github.event.pull_request.number != null }}
           APP_STORE_APP_IDENTIFIER: ${{ secrets.APP_STORE_APP_IDENTIFIER }}
           APP_STORE_CONNECT_API_KEY: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
           APP_STORE_CONNECT_ISSUER_ID: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
@@ -140,6 +141,7 @@ jobs:
 
       - name: Build and upload to Google Play Internal Testing
         env:
+          IS_PR: ${{ github.event.pull_request.number != null }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
