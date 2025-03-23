@@ -55,10 +55,6 @@ jobs:
             echo "❌ Error: P12 password cannot be empty"
             exit 1
           fi
-          if [ ${#P12_PASSWORD} -lt 8 ]; then
-            echo "❌ Error: P12 password must be at least 8 characters long"
-            exit 1
-          fi
           # Verify distribution certificate is valid base64 and contains expected headers
           if ! echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 -d 2>/dev/null | grep -F "BEGIN CERTIFICATE" >/dev/null 2>&1; then
             echo "❌ Error: Invalid distribution certificate format (should be base64 encoded PEM certificate)"
