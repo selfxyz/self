@@ -64,6 +64,7 @@ jobs:
       - name: Install Mobile Dependencies
         uses: ./.github/actions/mobile-setup
         with:
+          app_path: ${{ env.APP_PATH }}
           node_version: ${{ env.NODE_VERSION }}
           ruby_version: ${{ env.RUBY_VERSION }}
           workspace: ${{ env.WORKSPACE }}
