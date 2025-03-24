@@ -1,15 +1,33 @@
 'use client';
-export default function Home() {
-  return (
-    <div className="h-screen w-full bg-gray-100 flex flex-row items-center justify-center gap-12">
 
-      <div
-        className="flex flex-col items-center justify-center p-8 bg-white rounded-lg shadow-lg cursor-pointer transition-transform hover:scale-105"
-        onClick={() => (window.location.href = '/disclose')}
-      >
-        <h2 className="text-2xl text-black font-bold mb-4">Disclose</h2>
-        <p className="text-gray-600">1 step disclosure flow</p>
-      </div>
+import { SelfAppBuilder } from '../../../../qrcode/SelfQRcode';
+import SelfQRcodeWrapper from '../../../../qrcode/SelfQRcode';
+import { v4 } from 'uuid';
+
+export default function Home() {
+  const userId = v4();
+
+  const selfApp = new SelfAppBuilder({
+    appName: "Self Workshop",
+    scope: "self-workshop",
+    endpoint: "https://b950-194-230-144-192.ngrok-free.app/api/verify",
+    logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
+    userId,
+    disclosures: {
+      minimumAge: 20,
+      ofac: true,
+    }
+  }).build();
+
+  return (
+    <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
+      <SelfQRcodeWrapper
+        selfApp={selfApp}
+        type='deeplink'
+        onSuccess={() => {
+          window.location.href = '/verified';
+        }}
+      />
     </div>
   );
 }

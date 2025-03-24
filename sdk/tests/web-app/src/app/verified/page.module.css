@@ -1,0 +1,51 @@
+.rotatingTitle {
+    font-size: 4rem;
+    /* Increased from 3rem */
+    font-weight: bold;
+    /* Gradient color for text only */
+    background: linear-gradient(45deg, #1e40af, #7c3aed);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    /* Removed text-shadow to prevent blur */
+    animation: rotate3D 3s infinite linear;
+    /* Faster: 5s → 3s */
+    transform-style: preserve-3d;
+    perspective: 800px;
+    /* Increased from 500px for more dramatic effect */
+    padding: 1.5rem;
+    /* Increased padding */
+    position: relative;
+    display: inline-block;
+}
+
+/* Remove the ::before element that created a background */
+.rotatingTitle::before {
+    display: none;
+}
+
+@keyframes rotate3D {
+    0% {
+        transform: rotateY(0deg) rotateX(0deg);
+    }
+
+    25% {
+        transform: rotateY(30deg) rotateX(15deg);
+        /* Increased angles for more dramatic rotation */
+    }
+
+    50% {
+        transform: rotateY(0deg) rotateX(0deg);
+    }
+
+    75% {
+        transform: rotateY(-30deg) rotateX(-15deg);
+        /* Increased angles */
+    }
+
+    100% {
+        transform: rotateY(0deg) rotateX(0deg);
+    }
+}
+
+/* Remove the hover styles completely */
