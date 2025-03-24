@@ -90,7 +90,10 @@ jobs:
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
-          # for debugging
+
+      - name: Verify ios secret checksums
+        # if: false # for debugging
+        run: |
           echo "SHA256 of dist_cert.p12:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "SHA256 of profile.mobileprovision:"
