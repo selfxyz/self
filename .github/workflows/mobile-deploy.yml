@@ -82,14 +82,14 @@ jobs:
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           # for debugging
           # echo "SHA256 of dist_cert.p12:"
-          # shasum -a 256 dist_cert.p12
+          # shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           # echo "SHA256 of profile.mobileprovision:"
-          # shasum -a 256 profile.mobileprovision
+          # shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           # echo "Certificate file size:"
-          # ls -l dist_cert.p12
+          # ls -l ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           # echo "SHA256 of password:"
           # echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
-          # openssl pkcs12 -in dist_cert.p12 -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
+          # openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
 
       - name: Install certificate
         if: ${{ !env.ACT }}
@@ -97,7 +97,7 @@ jobs:
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import dist_cert.p12 -k build.keychain -P '${{ secrets.IOS_P12_PASSWORD }}' -T /usr/bin/codesign
+          security import ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -k build.keychain -P '${{ secrets.IOS_P12_PASSWORD }}' -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
       - name: Install provisioning profile
