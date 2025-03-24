@@ -25,6 +25,8 @@ if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('./.env.secrets')
+
+  # confirm that we want to force upload
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
 end
 
@@ -140,7 +142,8 @@ platform :android do
     # TODO: fix this missing env var from workflow
     if local_development and ENV["ANDROID_KEYSTORE_PATH"].nil?
       puts "Creating android keystore for local development"
-      ENV["ANDROID_KEYSTORE_PATH"]store_path = Fastlane::Helpers.create_android_keystore
+      ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
+      exit 1
     end
 
     gradle(

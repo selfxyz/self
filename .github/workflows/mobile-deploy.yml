@@ -173,6 +173,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
+          retries: 3
+          retry-delay: 10
+          retry-on-error: true
+          accept-licenses: true
+          cache-key: android-sdk-${{ env.ANDROID_API_LEVEL }}
           api-level: ${{ env.ANDROID_API_LEVEL }}
           target: android-${{ env.ANDROID_API_LEVEL }}
           build-tools-version: '${{ env.ANDROID_API_LEVEL }}.0.0'
