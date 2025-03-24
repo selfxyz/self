@@ -77,8 +77,10 @@ jobs:
 
       - name: Decode certificate and profile
         run: |
+          mkdir -p ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
-          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
+          mkdir -p ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
+          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           # for debugging
           # echo "SHA256 of dist_cert.p12:"
           # shasum -a 256 dist_cert.p12
