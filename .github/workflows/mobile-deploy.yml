@@ -18,6 +18,7 @@ env:
   # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
+  IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
   IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
 
 permissions:
@@ -53,7 +54,7 @@ jobs:
       - name: Verify iOS Secrets
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
-          if ! echo "${{ secrets.IOS_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
+          if ! echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
             echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
             exit 1
           fi
@@ -88,16 +89,19 @@ jobs:
           mkdir -p ${{ env.APP_PATH }}/ios/certs
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
+          echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
           # for debugging
-          # echo "SHA256 of dist_cert.p12:"
-          # shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
-          # echo "SHA256 of profile.mobileprovision:"
-          # shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
-          # echo "Certificate file size:"
-          # ls -l ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
-          # echo "SHA256 of password:"
-          # echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
-          # openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
+          echo "SHA256 of dist_cert.p12:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          echo "SHA256 of profile.mobileprovision:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
+          echo "SHA256 of connect_api_key.p8:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
+          echo "Certificate file size:"
+          ls -l ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          echo "SHA256 of password:"
+          echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
+          openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
 
       - name: Install certificate
         if: ${{ !env.ACT }}
@@ -120,7 +124,7 @@ jobs:
         env:
           IS_PR: ${{ github.event.pull_request.number != null }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
-          IOS_CONNECT_API_KEY: ${{ secrets.IOS_CONNECT_API_KEY }}
+          IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}

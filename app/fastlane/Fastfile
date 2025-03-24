@@ -34,9 +34,9 @@ platform :ios do
 
     required_env_vars = [
       "IOS_APP_IDENTIFIER",
-      "IOS_CONNECT_API_KEY",
       "IOS_CONNECT_ISSUER_ID",
-      "IOS_CONNECT_KEY_ID"
+      "IOS_CONNECT_KEY_ID",
+      "IOS_CONNECT_API_KEY_PATH"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -48,7 +48,7 @@ platform :ios do
     api_key = app_store_connect_api_key(
       key_id: ENV["IOS_CONNECT_KEY_ID"],
       issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
-      key_content: ENV["IOS_CONNECT_API_KEY"],
+      key_path: ENV["IOS_CONNECT_API_KEY_PATH"],
       in_house: false
     )
     
@@ -128,23 +128,13 @@ platform :android do
     # TODO: uncomment this when we have a way to test the version code
     # Fastlane::Helpers.verify_android_version_code
     
-    keystore_path = Fastlane::Helpers.create_android_keystore
-
-    # Debug keystore file
-    if File.exist?(ENV["ANDROID_KEYSTORE_PATH"])
-      UI.message("Keystore exists at #{ENV["ANDROID_KEYSTORE_PATH"]}")
-      UI.message("Keystore size: #{File.size(ENV["ANDROID_KEYSTORE_PATH"])} bytes")
-    else
-      UI.message("Keystore does not exist at #{ENV["ANDROID_KEYSTORE_PATH"]}")
-    end
-
-    return
+    # keystore_path = Fastlane::Helpers.create_android_keystore
 
     gradle(
       task: "clean bundleRelease",
       project_dir: "android/",
       properties: {
-        "android.injected.signing.store.file" => keystore_path,
+        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]

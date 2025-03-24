@@ -45,7 +45,7 @@ module Fastlane
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
         key_id: ENV["IOS_CONNECT_KEY_ID"],
         issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
-        key_content: ENV["IOS_CONNECT_API_KEY"],
+        key_path: ENV["IOS_CONNECT_API_KEY_PATH"],
         in_house: false
       )
       
