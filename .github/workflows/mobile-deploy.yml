@@ -1,17 +1,24 @@
 name: Deploy to Internal Testers
 
 env:
-  ANDROID_NDK_VERSION: 26.1.10909125
-  JAVA_VERSION: 17
+  # Branch configuration
+  STAGING_BRANCH: dev
+  MAIN_BRANCH: main
+
+  # Build environment versions
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
+  JAVA_VERSION: 17
+  ANDROID_NDK_VERSION: 26.1.10909125
+
+  # Path configuration
   WORKSPACE: /tmp/workspace
   APP_PATH: /tmp/workspace/self/app
+  
+  # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
-  STAGING_BRANCH: dev
-  MAIN_BRANCH: main
 
 permissions:
   contents: write
@@ -20,8 +27,8 @@ permissions:
 on:
   push:
     branches:
-      - ${{ env.STAGING_BRANCH }}
-      - ${{ env.MAIN_BRANCH }}
+      - dev
+      - main
     paths:
       - "app/**"
       - ".github/workflows/mobile-deploy.yml"
