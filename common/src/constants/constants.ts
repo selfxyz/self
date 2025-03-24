@@ -586,6 +586,7 @@ export const countries = {
   CYP: "CYPRUS",
   CZE: "CZECHIA",
   DEU: "GERMANY",
+  "D<<": "GERMANY", // Bundesrepublik Deutschland uses this in passports instead of DEU
   DJI: "DJIBOUTI",
   DMA: "DOMINICA",
   DNK: "DENMARK",
