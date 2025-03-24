@@ -132,8 +132,10 @@ jobs:
           IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
         run: |
           cd ${{ env.APP_PATH }}
+          # if pushing to main, deploy to App Store
           if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane ios deploy --verbose
+          # else to upload to TestFlight Internal Testing
           else
             bundle exec fastlane ios internal_test --verbose
           fi
@@ -240,8 +242,10 @@ jobs:
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
           cd ${{ env.APP_PATH }}
+          # if pushing to main, deploy to Play Store
           if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane android deploy --verbose
+          # else to upload to Play Store Internal Testing
           else
             bundle exec fastlane android internal_test --verbose
           fi
