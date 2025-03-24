@@ -14,7 +14,7 @@ env:
   # Path configuration
   WORKSPACE: /tmp/workspace
   APP_PATH: /tmp/workspace/self/app
-  
+
   # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
@@ -163,7 +163,7 @@ jobs:
         with:
           distribution: "temurin"
           java-version: ${{ env.JAVA_VERSION }}
-      
+
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
