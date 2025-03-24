@@ -85,10 +85,11 @@ jobs:
       - name: Install certificate
         if: ${{ !env.ACT }}
         run: |
+          openssl pkcs12 -in dist_cert.p12 -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
-          security import dist_cert.p12 -k build.keychain -P "${{ secrets.IOS_P12_PASSWORD }}" -T /usr/bin/codesign
+          security import dist_cert.p12 -k build.keychain -P '${{ secrets.IOS_P12_PASSWORD }}' -T /usr/bin/codesign
           security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
 
       - name: Install provisioning profile
