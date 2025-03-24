@@ -1,10 +1,13 @@
-name: Setup Mobile Environment
+name: Push Build Version Changes
 
-description: "Sets up the environment for mobile app builds"
+description: "Commits and pushes build version changes for mobile platforms"
 
 inputs:
   commit_message:
     description: "Commit message"
+    required: true
+  commit_path:
+    description: "Path to check for changes (e.g. 'ios' or 'android')"
     required: true
 
 runs:
@@ -15,8 +18,16 @@ runs:
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        git add .
-        git commit -m "chore: ${{ inputs.commit_message }} [skip ci]" || echo "No changes to commit"
+        
+        # Only add changes in the specified path
+        git add "${{ inputs.commit_path }}/"
+        
+        # Check if there are any changes in the specified path
+        if git diff --staged --quiet; then
+          echo "No changes to commit in ${{ inputs.commit_path }}/"
+        else
+          git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
+        fi
 
     - name: Push changes
       shell: bash
