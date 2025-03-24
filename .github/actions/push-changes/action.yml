@@ -21,8 +21,17 @@ runs:
     - name: Push changes
       shell: bash
       run: |
-        if git rev-parse --verify HEAD >/dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/HEAD)" ]; then
-          git push origin HEAD
+        # Get the current branch name or use HEAD if in detached state
+        CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+        if [ "$CURRENT_BRANCH" = "HEAD" ]; then
+          # In detached HEAD state, try to get the PR branch name
+          CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD@{upstream} 2>/dev/null || echo "HEAD")
+        fi
+
+        # Check if there are any changes to push
+        if git rev-parse --verify HEAD >/dev/null 2>&1; then
+          # Push to the current branch
+          git push origin "$CURRENT_BRANCH" || echo "Failed to push changes"
         else
           echo "No new commits to push"
         fi
