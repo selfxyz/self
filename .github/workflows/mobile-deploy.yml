@@ -73,19 +73,20 @@ jobs:
         run: |
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
-          echo "SHA256 of dist_cert.p12:"
-          shasum -a 256 dist_cert.p12
-          echo "SHA256 of profile.mobileprovision:"
-          shasum -a 256 profile.mobileprovision
-          echo "Certificate file size:"
-          ls -l dist_cert.p12
-          echo "SHA256 of password:"
-          echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
+          # for debugging
+          # echo "SHA256 of dist_cert.p12:"
+          # shasum -a 256 dist_cert.p12
+          # echo "SHA256 of profile.mobileprovision:"
+          # shasum -a 256 profile.mobileprovision
+          # echo "Certificate file size:"
+          # ls -l dist_cert.p12
+          # echo "SHA256 of password:"
+          # echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
+          # openssl pkcs12 -in dist_cert.p12 -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
 
       - name: Install certificate
         if: ${{ !env.ACT }}
         run: |
-          openssl pkcs12 -in dist_cert.p12 -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
           security create-keychain -p "" build.keychain
           security default-keychain -s build.keychain
           security unlock-keychain -p "" build.keychain
