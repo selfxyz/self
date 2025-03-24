@@ -40,7 +40,7 @@ module Fastlane
       end
 
       # if we are in CI, upload the app
-      ENV['CI'] || ENV['FORCE_UPLOAD_LOCAL_DEV']
+      ENV['CI'] || ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
     end
 
     def self.confirm_force_upload
