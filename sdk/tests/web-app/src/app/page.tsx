@@ -25,7 +25,7 @@ export default function Home() {
         selfApp={selfApp}
         type='deeplink'
         onSuccess={() => {
-          // window.location.href = '/verified';
+          window.location.href = '/verified';
         }}
       />
     </div>
