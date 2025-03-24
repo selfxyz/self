@@ -133,7 +133,11 @@ platform :android do
     # Verify keystore path matches environment variable
     if keystore_path != ENV["ANDROID_KEYSTORE_PATH"]
       UI.user_error!("Generated keystore path (#{keystore_path}) does not match ANDROID_KEYSTORE_PATH environment variable (#{ENV['ANDROID_KEYSTORE_PATH']})")
+    else
+      UI.message("Keystore path matches environment variable")
     end
+
+    return
 
     gradle(
       task: "clean bundleRelease",
