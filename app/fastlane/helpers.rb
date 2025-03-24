@@ -89,16 +89,5 @@ module Fastlane
         report_success("Version code verified (Current: #{current_version}, Latest Play Store: #{latest_version})")
       end
     end
-
-    def self.create_android_keystore
-      keystore_path = "../android/app/upload-keystore.jks"
-      if ENV["ANDROID_KEYSTORE"]
-        puts "Decoding Android keystore..."
-        FileUtils.mkdir_p(File.dirname(keystore_path))
-        File.write(keystore_path, Base64.decode64(ENV["ANDROID_KEYSTORE"]))
-      end
-
-      File.realpath(keystore_path)
-    end
   end
 end 
