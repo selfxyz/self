@@ -52,7 +52,6 @@ jobs:
 
       - name: Verify iOS Secrets
         run: |
-          # TODO: verify that copy and pasting file contents into the secrets editor works
           # Verify App Store Connect API Key exists and contains PEM header
           if ! echo "${{ secrets.IOS_CONNECT_API_KEY }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
             echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"

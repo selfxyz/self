@@ -24,6 +24,12 @@
     "reinstall": "yarn clean && yarn install && yarn install-app",
     "start": "watchman watch-del-all && react-native start",
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
+    "tag:commit": "sh -c 'v=$(yarn tag:version) && git add . && git commit -m \"chore: release v$v\"'",
+    "tag:create": "sh -c 'v=$(yarn tag:version) && git tag v$v'",
+    "tag:push": "sh -c 'v=$(yarn tag:version) && git push origin v$v'",
+    "tag:release": "yarn tag:commit && yarn tag:create && yarn tag:push",
+    "tag:remove": "sh -c 'v=$(yarn tag:version) && git tag -d v$v && git push origin :refs/tags/v$v'",
+    "tag:version": "node -p \"require(\\\"./package.json\\\").version\"",
     "test": "jest --passWithNoTests"
   },
   "dependencies": {
