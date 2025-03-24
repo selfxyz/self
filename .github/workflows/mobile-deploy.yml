@@ -73,6 +73,14 @@ jobs:
         run: |
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
+          echo "SHA256 of dist_cert.p12:"
+          shasum -a 256 dist_cert.p12
+          echo "SHA256 of profile.mobileprovision:"
+          shasum -a 256 profile.mobileprovision
+          echo "Certificate file size:"
+          ls -l dist_cert.p12
+          echo "SHA256 of password:"
+          echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
 
       - name: Install certificate
         if: ${{ !env.ACT }}
@@ -88,13 +96,6 @@ jobs:
         run: |
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-
-      - name: Select latest Xcode version
-        if: ${{ !env.ACT }}
-        run: |
-          latest=$(ls /Applications | grep ^Xcode_ | sed 's/Xcode_//' | sed 's/.app//' | sort -V | tail -n 1)
-          sudo xcode-select -s "/Applications/Xcode_${latest}.app"
-          xcodebuild -version
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
