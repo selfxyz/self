@@ -16,7 +16,7 @@ import { getLeafDscTree } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
 import { EndpointType } from './../../../../common/src/utils/appType';
-import { generateTeeInputsDsc, generateTeeInputsVCAndDisclose } from './inputs';
+import { generateTeeInputsVCAndDisclose } from './inputs';
 import { sendPayload } from './tee';
 
 export type PassportSupportStatus =
@@ -105,6 +105,7 @@ export async function checkIdPassportDscIsInTree(
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
   dscCircuitName: string,
+  dscInputs: any,
 ): Promise<boolean> {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
@@ -121,6 +122,7 @@ export async function checkIdPassportDscIsInTree(
       circuitDNSMapping,
       endpointType,
       dscCircuitName,
+      dscInputs,
     );
     if (dscStatus !== ProofStatusEnum.SUCCESS) {
       console.log('DSC proof failed');
@@ -143,6 +145,7 @@ export async function sendDscPayload(
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
   dscCircuitName: string,
+  inputs: any,
 ): Promise<ProofStatusEnum | false> {
   if (!passportData) {
     return false;
@@ -153,19 +156,14 @@ export async function sendDscPayload(
   //   return false;
   // }
   console.log('sendDscPayload');
-  const { inputs, circuitName } = await generateTeeInputsDsc(
-    passportData,
-    endpointType,
-    dscCircuitName,
-  );
 
   const dscStatus = await sendPayload(
     inputs,
     'dsc',
-    circuitName,
+    dscCircuitName,
     endpointType,
     'https://self.xyz',
-    (circuitDNSMapping.DSC as any)[circuitName],
+    (circuitDNSMapping.DSC as any)[dscCircuitName],
     undefined,
     { updateGlobalOnSuccess: false },
   );

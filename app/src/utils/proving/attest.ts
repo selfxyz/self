@@ -96,7 +96,10 @@ export const verifyCertChain = async (
  * @throws Error if the attestation document is improperly formatted or missing required fields.
  */
 export const verifyAttestation = async (attestation: Array<number>) => {
-  const coseSign1 = await decode(Buffer.from(attestation));
+  const [coseSign1, isPCR0Set] = await Promise.all([
+    decode(Buffer.from(attestation)),
+    checkPCR0Mapping(attestation),
+  ]);
 
   if (!Array.isArray(coseSign1) || coseSign1.length !== 4) {
     throw new Error('Invalid COSE_Sign1 format');
@@ -105,7 +108,7 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   const [_protectedHeaderBytes, _unprotectedHeader, payload, _signature] =
     coseSign1;
 
-  const attestationDoc = (await decode(payload)) as AttestationDoc;
+  const attestationDoc = await decode(payload);
 
   for (const field of requiredFields) {
     //@ts-ignore
@@ -169,17 +172,11 @@ export const verifyAttestation = async (attestation: Array<number>) => {
   );
 
   const cert = derToPem(attestationDoc.certificate);
-  const isPCR0Set = await checkPCR0Mapping(attestation);
   console.log('isPCR0Set', isPCR0Set);
   if (!isPCR0Set) {
     throw new Error('Invalid image hash');
   }
   console.log('TEE image hash verified');
-
-  if (!(await verifyCertChain(AWS_ROOT_PEM, [...certChain, cert]))) {
-    throw new Error('Invalid certificate chain');
-  }
-
   const { x, y, curve } = getPublicKeyFromPem(cert);
 
   const verifier = {
@@ -190,9 +187,17 @@ export const verifyAttestation = async (attestation: Array<number>) => {
     },
   };
   console.log('verifier', verifier);
-  await cose.sign.verify(Buffer.from(attestation), verifier, {
-    defaultType: 18,
-  });
+
+  const [verifiedOnChain] = await Promise.all([
+    verifyCertChain(AWS_ROOT_PEM, [...certChain, cert]),
+    cose.sign.verify(Buffer.from(attestation), verifier, {
+      defaultType: 18,
+    }),
+  ]);
+  if (!verifiedOnChain) {
+    throw new Error('Invalid certificate chain');
+  }
+
   return true;
 };
 

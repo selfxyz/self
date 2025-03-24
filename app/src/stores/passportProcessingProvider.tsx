@@ -11,7 +11,10 @@ import React, {
 
 import { getCommitmentTree, getDSCTree } from '../../../common/src/utils/trees';
 import analytics from '../utils/analytics';
-import { generateTeeInputsRegister } from '../utils/proving/inputs';
+import {
+  generateTeeInputsDsc,
+  generateTeeInputsRegister,
+} from '../utils/proving/inputs';
 import {
   type RegistrationPayload,
   checkIdPassportDscIsInTree,
@@ -204,21 +207,29 @@ export const PassportProcessingProvider = ({
         }
         setProcessingStatus('checking-registration');
 
-        const [inputs, dscOk] = await Promise.all([
+        const [dscInputs, inputs] = await Promise.all([
+          generateTeeInputsDsc(
+            passportData,
+            endpointType,
+            supportCheckResult.dscCircuitName!,
+          ),
           generateTeeInputsRegister(
             privateKey,
             passportData,
-            supportCheckResult.registerCircuitName,
+            supportCheckResult.registerCircuitName!,
             dscTree,
-          ),
-          checkIdPassportDscIsInTree(
-            passportData,
-            dscTree,
-            circuitDNSMapping,
-            endpointType,
-            supportCheckResult.dscCircuitName,
           ),
         ]);
+
+        const dscOk = await checkIdPassportDscIsInTree(
+          passportData,
+          dscTree,
+          circuitDNSMapping,
+          endpointType,
+          supportCheckResult.dscCircuitName!,
+          dscInputs,
+        );
+
         const isRegistered = isUserRegistered(
           passportData,
           privateKey,
@@ -245,12 +256,11 @@ export const PassportProcessingProvider = ({
         }
         console.log('Passport is not nullified');
 
-        console.log('circuitDNSMapping', circuitDNSMapping);
-
         if (!dscOk) {
           throw new Error('DSC proof failed');
         }
         console.log('KKKKKKKKKKKKKKKKKKK');
+
         setRegistrationPayload({
           inputs,
           registerCircuitName: supportCheckResult.registerCircuitName,

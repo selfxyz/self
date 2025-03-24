@@ -40,7 +40,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     notificationSuccess();
   }, []);
 
-
   // Prevents back navigation
   usePreventRemove(true, () => {});
 
