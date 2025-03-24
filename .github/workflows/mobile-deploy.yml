@@ -7,8 +7,10 @@ env:
   NODE_VERSION: 18
   RUBY_VERSION: 3.2
   WORKSPACE: /tmp/workspace
-  APP_PATH: /self/app
+  APP_PATH: /tmp/workspace/self/app
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
+  IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
+  IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
 
 permissions:
   contents: write
@@ -75,7 +77,7 @@ jobs:
 
       - name: Decode certificate and profile
         run: |
-          echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > dist_cert.p12
+          echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > profile.mobileprovision
           # for debugging
           # echo "SHA256 of dist_cert.p12:"
@@ -113,13 +115,15 @@ jobs:
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
+          IOS_DIST_CERT_PATH: ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
         run: |
-          cd ${{ env.WORKSPACE }}${{ env.APP_PATH }}
+          cd ${{ env.APP_PATH }}
           bundle exec fastlane ios internal_test --verbose
 
       - uses: actions/checkout@v4
       - name: Commit updated build number
-        if: ${{ !env.ACT }}
+        if: false
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump ios build number"
@@ -171,32 +175,32 @@ jobs:
       - name: Set Gradle JVM options
         if: ${{ env.ACT }} # run when testing locally with act to prevent gradle crashes
         run: |
-          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.WORKSPACE }}${{ env.APP_PATH }}/android/gradle.properties
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
 
       - name: Decode Keystore
         run: |
-          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
 
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
         run: |
           # Verify keystore file exists and is valid
-          if [ ! -f "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" ]; then
+          if [ ! -f "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" ]; then
             echo "❌ Error: Keystore file was not created successfully"
             exit 1
           fi
           # Try to verify the keystore with the provided password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid keystore password"
             exit 1
           fi
           # Verify the key alias exists
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
             echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
             exit 1
           fi
           # Verify the key password
-          if ! keytool -list -v -keystore "${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid key password"
             exit 1
           fi
@@ -211,18 +215,18 @@ jobs:
       - name: Build and upload to Google Play Internal Testing
         env:
           IS_PR: ${{ github.event.pull_request.number != null }}
-          ANDROID_KEYSTORE_PATH: ${{ env.WORKSPACE }}${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
-          cd ${{ env.WORKSPACE }}${{ env.APP_PATH }}
+          cd ${{ env.APP_PATH }}
           bundle exec fastlane android internal_test --verbose
 
       - uses: actions/checkout@v4
       - name: Commit updated build version
-        if: ${{ !env.ACT }}
+        if: false
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump android build version"

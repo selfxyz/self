@@ -56,7 +56,7 @@ runs:
     - name: Install app dependencies
       shell: bash
       run: |
-        cd ${{ inputs.workspace }}${{ inputs.app_path }}
+        cd ${{ inputs.app_path }}
         corepack enable
         yarn install
         yarn install-app
