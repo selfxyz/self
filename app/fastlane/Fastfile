@@ -167,7 +167,8 @@ platform :android do
   desc "Sync android version"
   lane :sync_version do
     android_set_version_name(
-      version_name: package_version
+      version_name: package_version,
+      gradle_file: "../app/android/app/build.gradle"
     )
   end
 

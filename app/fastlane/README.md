@@ -15,10 +15,10 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
-### ios sync_versions
+### ios sync_version
 
 ```sh
-[bundle exec] fastlane ios sync_versions
+[bundle exec] fastlane ios sync_version
 ```
 
 Sync ios version
@@ -44,10 +44,10 @@ Prepare a new build for App Store submission
 
 ## Android
 
-### android sync_versions
+### android sync_version
 
 ```sh
-[bundle exec] fastlane android sync_versions
+[bundle exec] fastlane android sync_version
 ```
 
 Sync android version
