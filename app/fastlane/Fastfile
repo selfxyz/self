@@ -15,22 +15,25 @@ PROJECT_NAME = "Self"
 PROJECT_SCHEME = "OpenPassport"
 
 # Environment setup
+attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
 is_ci = ENV['CI'] && !ENV['ACT']
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
+should_increment_build_number = is_ci || attempt_force_upload_local_dev
 
 if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('./.env.secrets')
   Fastlane::Helpers.setup_ios_connect_api_key
+  Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
 end
 
 default_platform(:ios)
 
 platform :ios do
   private_lane :prepare_ios_build do |options|
-    if is_ci
+    if should_increment_build_number
       setup_ci
       increment_build_number(xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj")
     end
@@ -110,7 +113,7 @@ platform :android do
   aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
 
   private_lane :upload_android_build do |options|
-    if is_ci
+    if should_increment_build_number
       increment_version_code(
         gradle_file_path: "android/app/build.gradle"
       )
@@ -146,18 +149,16 @@ platform :android do
     
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
-
-    if should_upload
-      upload_to_play_store(
-        track: options[:track],
-        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
-        skip_upload_changelogs: true,
-        skip_upload_images: true,
-        skip_upload_screenshots: true,
-        release_status: "completed",
-        aab: aab_path
-      )
-    end
+    
+    upload_to_play_store(
+      track: options[:track],
+      json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
+      skip_upload_changelogs: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      release_status: "completed",
+      aab: aab_path
+    ) if should_upload
   end
 
   desc "Sync android version"

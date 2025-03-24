@@ -40,7 +40,16 @@ module Fastlane
       end
 
       # if we are in CI, upload the app
-      ENV['CI']
+      ENV['CI'] || ENV['FORCE_UPLOAD_LOCAL_DEV']
+    end
+
+    def self.confirm_force_upload
+      UI.important "⚠️  FORCE_UPLOAD_LOCAL_DEV is set to true. This will upload the build to the store."
+      UI.important "Are you sure you want to continue? (y/n)"
+      response = STDIN.gets.chomp
+      unless response.downcase == 'y'
+        UI.user_error!("Upload cancelled by user")
+      end
     end
 
     # iOS-specific Methods
