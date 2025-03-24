@@ -44,6 +44,14 @@ Prepare a new build for App Store submission
 
 Push a new build to Google Play Internal Testing
 
+### android deploy
+
+```sh
+[bundle exec] fastlane android deploy
+```
+
+Prepare a new build for Google Play Store submission
+
 ----
 
 This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
