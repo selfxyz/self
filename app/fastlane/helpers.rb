@@ -20,7 +20,7 @@ module Fastlane
       if missing_vars.any?
         report_error(
           "Missing required environment variables: #{missing_vars.join(', ')}",
-          "Please check your .env.secrets file",
+          "Please check your secrets",
           "Environment verification failed"
         )
       else

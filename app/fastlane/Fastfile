@@ -25,7 +25,6 @@ if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('./.env.secrets')
-  Fastlane::Helpers.setup_ios_connect_api_key
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
 end
 
@@ -33,6 +32,10 @@ default_platform(:ios)
 
 platform :ios do
   private_lane :prepare_ios_build do |options|
+    if local_development
+      Fastlane::Helpers.setup_ios_connect_api_key
+    end
+
     if should_increment_build_number
       setup_ci
       increment_build_number(xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj")
@@ -134,7 +137,11 @@ platform :android do
     # TODO: uncomment this when we have a way to test the version code
     # Fastlane::Helpers.verify_android_version_code
     
-    # keystore_path = Fastlane::Helpers.create_android_keystore
+    # TODO: fix this missing env var from workflow
+    if local_development and ENV["ANDROID_KEYSTORE_PATH"].nil?
+      puts "Creating android keystore for local development"
+      ENV["ANDROID_KEYSTORE_PATH"]store_path = Fastlane::Helpers.create_android_keystore
+    end
 
     gradle(
       task: "clean bundleRelease",
