@@ -80,7 +80,7 @@ platform :android do
     end
 
     Fastlane::Helpers.verify_env_vars([
-      "ANDROID_KEYSTORE_PATH",
+      "ANDROID_KEYSTORE",
       "ANDROID_KEYSTORE_PASSWORD",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
@@ -90,13 +90,15 @@ platform :android do
     # Verify version code before building 
     # TODO: uncomment this when we have a way to test the version code
     # Fastlane::Helpers.verify_android_version_code
+    
+    keystore_path = Fastlane::Helpers.create_android_keystore
 
     # Build the Android app
     gradle(
       task: "clean bundleRelease",
       project_dir: "android/",
       properties: {
-        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+        "android.injected.signing.store.file" => keystore_path,
         "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
         "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
