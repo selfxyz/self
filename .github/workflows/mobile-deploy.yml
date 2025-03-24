@@ -10,6 +10,10 @@ env:
   APP_PATH: /self/app
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
 
+permissions:
+  contents: write
+  pull-requests: write
+
 on:
   push:
     branches:

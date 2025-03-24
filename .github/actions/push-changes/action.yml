@@ -20,4 +20,9 @@ runs:
 
     - name: Push changes
       shell: bash
-      run: git push origin HEAD
+      run: |
+        if git rev-parse --verify HEAD >/dev/null 2>&1 && [ "$(git rev-parse HEAD)" != "$(git rev-parse origin/HEAD)" ]; then
+          git push origin HEAD
+        else
+          echo "No new commits to push"
+        fi
