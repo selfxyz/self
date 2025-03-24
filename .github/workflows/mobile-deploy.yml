@@ -1,7 +1,6 @@
 name: Deploy to Internal Testers
 
 env:
-  # TODO: add beta lane, act on new numeric version tag
   ANDROID_NDK_VERSION: 26.1.10909125
   JAVA_VERSION: 17
   NODE_VERSION: 18
@@ -11,6 +10,8 @@ env:
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
+  STAGING_BRANCH: dev
+  MAIN_BRANCH: main
 
 permissions:
   contents: write
@@ -19,9 +20,10 @@ permissions:
 on:
   push:
     branches:
-      - staging # Runs when staging is updated
+      - staging
+      - main
     paths:
-      - "app/**" # Only run when app files change
+      - "app/**"
       - ".github/workflows/mobile-deploy.yml"
   pull_request:
     paths:
@@ -120,7 +122,14 @@ jobs:
           IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
         run: |
           cd ${{ env.APP_PATH }}
-          bundle exec fastlane ios internal_test --verbose
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.STAGING_BRANCH }}" ]; then
+            bundle exec fastlane ios internal_test --verbose
+          elif [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+            bundle exec fastlane ios deploy --verbose
+          else
+            echo "Unsupported branch: ${{ github.ref }}"
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
       - name: Commit updated build number
@@ -224,7 +233,14 @@ jobs:
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
           cd ${{ env.APP_PATH }}
-          bundle exec fastlane android internal_test --verbose
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.STAGING_BRANCH }}" ]; then
+            bundle exec fastlane android internal_test --verbose
+          elif [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+            bundle exec fastlane android deploy --verbose
+          else
+            echo "Unsupported branch: ${{ github.ref }}"
+            exit 1
+          fi
 
       - uses: actions/checkout@v4
       - name: Commit updated build version
