@@ -172,6 +172,7 @@ GEM
       xcpretty (~> 0.4.0)
       xcpretty-travis-formatter (>= 0.0.3, < 2.0.0)
     fastlane-plugin-increment_version_code (0.4.3)
+    fastlane-plugin-versioning_android (0.1.1)
     fastlane-sirp (1.0.0)
       sysrandom (~> 1.0)
     ffi (1.17.1)
@@ -305,6 +306,7 @@ DEPENDENCIES
   dotenv
   fastlane (~> 2.227.0)
   fastlane-plugin-increment_version_code
+  fastlane-plugin-versioning_android
   nokogiri (~> 1.18)
 
 RUBY VERSION

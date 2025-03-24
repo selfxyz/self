@@ -10,8 +10,12 @@ opt_out_usage
 require 'base64'
 require_relative 'helpers'
 
+PROJECT_NAME = "Self"
+PROJECT_SCHEME = "OpenPassport"
+
 is_ci = ENV['CI'] && !ENV['ACT']
 local_development = !is_ci
+package_version = JSON.parse(File.read("../package.json"))["version"]
 
 if local_development
   puts "Loading .env.secrets"
@@ -25,7 +29,7 @@ platform :ios do
   private_lane :prepare_ios_build do |options|
     if is_ci
       setup_ci
-      increment_build_number(xcodeproj: "ios/Self.xcodeproj")
+      increment_build_number(xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj")
     end
 
     required_env_vars = [
@@ -49,8 +53,8 @@ platform :ios do
     )
     
     build_app(
-      workspace: "ios/Self.xcworkspace",
-      scheme: "OpenPassport",
+      workspace: "ios/#{PROJECT_NAME}.xcworkspace",
+      scheme: PROJECT_SCHEME,
       export_method: "app-store",
       output_directory: "build",
       clean: true,
@@ -63,6 +67,14 @@ platform :ios do
       api_key: api_key,
       should_upload: should_upload
     }
+  end
+
+  desc "Sync ios version"
+  lane :sync_version do
+    increment_version_number(
+      xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj",
+      version_number: package_version
+    )
   end
 
   desc "Push a new build to TestFlight Internal Testing"
@@ -150,6 +162,13 @@ platform :android do
         aab: aab_path
       )
     end
+  end
+
+  desc "Sync android version"
+  lane :sync_version do
+    android_set_version_name(
+      version_name: package_version
+    )
   end
 
   desc "Push a new build to Google Play Internal Testing"

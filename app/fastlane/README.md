@@ -15,6 +15,14 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## iOS
 
+### ios sync_versions
+
+```sh
+[bundle exec] fastlane ios sync_versions
+```
+
+Sync ios version
+
 ### ios internal_test
 
 ```sh
@@ -35,6 +43,14 @@ Prepare a new build for App Store submission
 
 
 ## Android
+
+### android sync_versions
+
+```sh
+[bundle exec] fastlane android sync_versions
+```
+
+Sync android version
 
 ### android internal_test
 
