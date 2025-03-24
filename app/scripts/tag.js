@@ -27,7 +27,7 @@ function isWorkingDirectoryClean() {
 function createEmptyCommit(version) {
   try {
     execSync(`git commit --allow-empty -m "chore: release v${version}"`);
-    console.log('Created empty commit');
+    console.log(`Created empty commit for v${version}`);
   } catch (error) {
     console.error('Error creating commit:', error.message);
     process.exit(1);

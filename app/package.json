@@ -24,7 +24,6 @@
     "reinstall": "yarn clean && yarn install && yarn install-app",
     "start": "watchman watch-del-all && react-native start",
     "sync-versions": "bundle exec fastlane ios sync_version && bundle exec fastlane android sync_version",
-    "tag:commit": "node scripts/tag.js commit",
     "tag:release": "node scripts/tag.js release",
     "tag:remove": "node scripts/tag.js remove",
     "test": "jest --passWithNoTests"
