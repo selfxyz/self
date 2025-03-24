@@ -41,7 +41,6 @@ runs:
       uses: ruby/setup-ruby@v1
       with:
         ruby-version: ${{ inputs.ruby_version }}
-        openssl-dir: /usr/local/opt/openssl@1.1 # for fastlane
 
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
