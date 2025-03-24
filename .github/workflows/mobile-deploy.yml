@@ -28,7 +28,6 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Mobile Dependencies
-        if: false
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
