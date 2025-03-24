@@ -20,8 +20,8 @@ permissions:
 on:
   push:
     branches:
-      - staging
-      - main
+      - ${{ env.STAGING_BRANCH }}
+      - ${{ env.MAIN_BRANCH }}
     paths:
       - "app/**"
       - ".github/workflows/mobile-deploy.yml"
