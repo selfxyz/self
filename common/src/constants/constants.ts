@@ -340,6 +340,7 @@ export const countryCodes = {
   GNQ: 'Equatorial Guinea',
   ERI: 'Eritrea',
   EST: 'Estonia',
+  EUE: 'European Union',
   SWZ: 'Eswatini',
   ETH: 'Ethiopia',
   FLK: 'Falkland Islands (Malvinas)',
@@ -504,6 +505,8 @@ export const countryCodes = {
   TUV: 'Tuvalu',
   UGA: 'Uganda',
   UKR: 'Ukraine',
+  UNO: 'United Nations',
+  UNA: 'United Nations',
   ARE: 'United Arab Emirates',
   GBR: 'United Kingdom of Great Britain and Northern Ireland',
   USA: 'United States of America',
@@ -520,6 +523,9 @@ export const countryCodes = {
   YEM: 'Yemen',
   ZMB: 'Zambia',
   ZWE: 'Zimbabwe',
+  XPO: "International Criminal Police Organization",
+  XCE: "Council of Europe",
+  XOM: "Sovereign Military Order of Malta",
 };
 // not using a library for this as the entry countries use can be differnt than the ISO 3166-1 alpha-3 standard
 export type Country3LetterCode = keyof typeof countryCodes;
@@ -598,6 +604,7 @@ export const countries = {
   ESH: "WESTERN_SAHARA",
   ESP: "SPAIN",
   EST: "ESTONIA",
+  EUE: "EUROPEAN_UNION",
   ETH: "ETHIOPIA",
   FIN: "FINLAND",
   FJI: "FIJI",
@@ -763,6 +770,8 @@ export const countries = {
   URY: "URUGUAY",
   USA: "UNITED_STATES",
   UZB: "UZBEKISTAN",
+  UNO: "UNITED_NATIONS",
+  UNA: "UNITED_NATIONS",
   VAT: "VATICAN_CITY",
   VCT: "SAINT_VINCENT_AND_THE_GRENADINES",
   VEN: "VENEZUELA",
@@ -775,7 +784,10 @@ export const countries = {
   YEM: "YEMEN",
   ZAF: "SOUTH_AFRICA",
   ZMB: "ZAMBIA",
-  ZWE: "ZIMBABWE"
+  ZWE: "ZIMBABWE",
+  XCE: "COUNCIL_OF_EUROPE",
+  XPO: "INTERPOL",
+  XOM: "SMOM",
 } as const;
 
 export type CapitalCommonCountryName = typeof countries[keyof typeof countries];
