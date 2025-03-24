@@ -28,6 +28,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Mobile Dependencies
+        if: false
         uses: ./.github/actions/mobile-setup
         with:
           app_path: ${{ env.APP_PATH }}
@@ -80,7 +81,7 @@ jobs:
           echo "Certificate file size:"
           ls -l dist_cert.p12
           echo "SHA256 of password:"
-          echo -n "${{ secrets.P12_PASSWORD }}" | shasum -a 256
+          echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
 
 
       - name: Install certificate
