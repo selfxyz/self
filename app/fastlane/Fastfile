@@ -130,11 +130,12 @@ platform :android do
     
     keystore_path = Fastlane::Helpers.create_android_keystore
 
-    # Verify keystore path matches environment variable
-    if keystore_path != ENV["ANDROID_KEYSTORE_PATH"]
-      UI.user_error!("Generated keystore path (#{keystore_path}) does not match ANDROID_KEYSTORE_PATH environment variable (#{ENV['ANDROID_KEYSTORE_PATH']})")
+    # Debug keystore file
+    if File.exist?(ENV["ANDROID_KEYSTORE_PATH"])
+      UI.message("Keystore exists at #{ENV["ANDROID_KEYSTORE_PATH"]}")
+      UI.message("Keystore size: #{File.size(ENV["ANDROID_KEYSTORE_PATH"])} bytes")
     else
-      UI.message("Keystore path matches environment variable")
+      UI.message("Keystore does not exist at #{ENV["ANDROID_KEYSTORE_PATH"]}")
     end
 
     return
