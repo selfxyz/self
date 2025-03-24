@@ -1,4 +1,4 @@
-name: Deploy to Internal Testers
+name: Mobile App Deployments
 
 env:
   # Branch configuration
