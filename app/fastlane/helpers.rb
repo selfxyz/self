@@ -101,5 +101,27 @@ module Fastlane
 
       File.realpath(keystore_path)
     end
+
+    def self.verify_distribution_certificate
+
+      unless File.exist?(ENV["IOS_DIST_CERT_PATH"])
+        report_error(
+          "Distribution certificate not found at #{ENV["IOS_DIST_CERT_PATH"]}",
+          "Please ensure the distribution certificate is present in the ios/certs directory",
+          "Certificate verification failed"
+        )
+      end
+
+      cert_size = File.size(ENV["IOS_DIST_CERT_PATH"])
+      if cert_size == 0
+        report_error(
+          "Distribution certificate at #{ENV["IOS_DIST_CERT_PATH"]} is empty",
+          "Please ensure the distribution certificate has valid contents",
+          "Certificate verification failed"
+        )
+      end
+
+      report_success("Distribution certificate verified")
+    end
   end
 end 
