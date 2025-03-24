@@ -22,7 +22,6 @@ end
 default_platform(:ios)
 
 platform :ios do
-  # Private lane for common iOS build setup
   private_lane :prepare_ios_build do |options|
     if is_ci
       setup_ci
@@ -57,7 +56,8 @@ platform :ios do
       clean: true,
     )
 
-    should_upload = Fastlane::Helpers.should_upload_app(options[:for_testflight] ? "TestFlight" : "App Store")
+    target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
+    should_upload = Fastlane::Helpers.should_upload_app(target_platform)
 
     {
       api_key: api_key,
@@ -92,22 +92,25 @@ platform :ios do
 end
 
 platform :android do
-  desc "Push a new build to Google Play Internal Testing"
-  lane :internal_test do
+  aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
+
+  private_lane :upload_android_build do |options|
     if is_ci
       increment_version_code(
         gradle_file_path: "android/app/build.gradle"
       )
     end
 
-    Fastlane::Helpers.verify_env_vars([
+    required_env_vars = [
       "ANDROID_KEYSTORE",
       "ANDROID_KEYSTORE_PASSWORD",
       "ANDROID_KEYSTORE_PATH",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
       "ANDROID_PLAY_STORE_JSON_KEY"
-    ])
+    ]
+
+    Fastlane::Helpers.verify_env_vars(required_env_vars)
     
     # Verify version code before building 
     # TODO: uncomment this when we have a way to test the version code
@@ -120,7 +123,6 @@ platform :android do
       UI.user_error!("Generated keystore path (#{keystore_path}) does not match ANDROID_KEYSTORE_PATH environment variable (#{ENV['ANDROID_KEYSTORE_PATH']})")
     end
 
-    # Build the Android app
     gradle(
       task: "clean bundleRelease",
       project_dir: "android/",
@@ -131,17 +133,30 @@ platform :android do
         "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
       }
     )
-
-    should_upload = Fastlane::Helpers.should_upload_app("Google Play")
     
-    upload_to_play_store(
-      track: "internal",
-      json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
-      skip_upload_changelogs: true,
-      skip_upload_images: true,
-      skip_upload_screenshots: true,
-      release_status: "completed",
-      aab: "android/app/build/outputs/bundle/release/app-release.aab"
-    ) if should_upload
+    target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
+    should_upload = Fastlane::Helpers.should_upload_app(target_platform)
+
+    if should_upload
+      upload_to_play_store(
+        track: options[:track],
+        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
+        skip_upload_changelogs: true,
+        skip_upload_images: true,
+        skip_upload_screenshots: true,
+        release_status: "completed",
+        aab: aab_path
+      )
+    end
+  end
+
+  desc "Push a new build to Google Play Internal Testing"
+  lane :internal_test do
+    upload_android_build(track: "internal")
+  end
+
+  desc "Prepare a new build for Google Play Store submission"
+  lane :deploy do
+    upload_android_build(track: "production")
   end
 end
