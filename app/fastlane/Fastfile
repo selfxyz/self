@@ -82,6 +82,7 @@ platform :android do
     Fastlane::Helpers.verify_env_vars([
       "ANDROID_KEYSTORE",
       "ANDROID_KEYSTORE_PASSWORD",
+      "ANDROID_KEYSTORE_PATH",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
       "ANDROID_PLAY_STORE_JSON_KEY"
@@ -92,6 +93,11 @@ platform :android do
     # Fastlane::Helpers.verify_android_version_code
     
     keystore_path = Fastlane::Helpers.create_android_keystore
+
+    # Verify keystore path matches environment variable
+    if keystore_path != ENV["ANDROID_KEYSTORE_PATH"]
+      UI.user_error!("Generated keystore path (#{keystore_path}) does not match ANDROID_KEYSTORE_PATH environment variable (#{ENV['ANDROID_KEYSTORE_PATH']})")
+    end
 
     # Build the Android app
     gradle(

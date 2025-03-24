@@ -218,6 +218,7 @@ jobs:
           IS_PR: ${{ github.event.pull_request.number != null }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
