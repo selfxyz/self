@@ -45,7 +45,7 @@ module Fastlane
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
         key_id: ENV["IOS_CONNECT_KEY_ID"],
         issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
-        key_path: ENV["IOS_CONNECT_API_KEY_PATH"],
+        key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
         in_house: false
       )
       
@@ -102,8 +102,28 @@ module Fastlane
       File.realpath(keystore_path)
     end
 
-    def self.verify_distribution_certificate
+    def self.setup_ios_connect_api_key
+      api_key_path = File.expand_path("../../ios/certs/connect_api_key.p8", __FILE__)
+      ENV["IOS_CONNECT_API_KEY_PATH"] = api_key_path
+      create_ios_connect_api_key(api_key_path)
 
+      # confirm file exists
+      unless File.exist?(api_key_path)
+        UI.user_error!("Connect API key file not found at: #{api_key_path}")
+      end
+    end
+
+    def self.create_ios_connect_api_key(api_key_path)
+      if ENV["IOS_CONNECT_API_KEY_BASE64"]
+        puts "Decoding iOS Connect API key..."
+        FileUtils.mkdir_p(File.dirname(api_key_path))
+        File.write(api_key_path, Base64.decode64(ENV["IOS_CONNECT_API_KEY_BASE64"]))
+      end
+
+      File.realpath(api_key_path)
+    end
+
+    def self.verify_distribution_certificate
       unless File.exist?(ENV["IOS_DIST_CERT_PATH"])
         report_error(
           "Distribution certificate not found at #{ENV["IOS_DIST_CERT_PATH"]}",

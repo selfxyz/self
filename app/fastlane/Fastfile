@@ -10,9 +10,11 @@ opt_out_usage
 require 'base64'
 require_relative 'helpers'
 
+# Project configuration
 PROJECT_NAME = "Self"
 PROJECT_SCHEME = "OpenPassport"
 
+# Environment setup
 is_ci = ENV['CI'] && !ENV['ACT']
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
@@ -21,6 +23,7 @@ if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('./.env.secrets')
+  Fastlane::Helpers.setup_ios_connect_api_key
 end
 
 default_platform(:ios)
@@ -36,7 +39,7 @@ platform :ios do
       "IOS_APP_IDENTIFIER",
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
-      "IOS_CONNECT_API_KEY_PATH"
+      "IOS_CONNECT_API_KEY_BASE64"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -48,7 +51,7 @@ platform :ios do
     api_key = app_store_connect_api_key(
       key_id: ENV["IOS_CONNECT_KEY_ID"],
       issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
-      key_path: ENV["IOS_CONNECT_API_KEY_PATH"],
+      key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
       in_house: false
     )
     
@@ -57,7 +60,7 @@ platform :ios do
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
       output_directory: "build",
-      clean: true,
+      clean: true
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
