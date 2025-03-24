@@ -11,9 +11,9 @@ require 'base64'
 require_relative 'helpers'
 
 is_ci = ENV['CI'] && !ENV['ACT']
+local_development = !is_ci
 
-# for local development
-unless is_ci
+if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
   Dotenv.load('./.env.secrets')
@@ -22,22 +22,22 @@ end
 default_platform(:ios)
 
 platform :ios do
-  desc "Push a new build to TestFlight Internal Testing"
-  lane :internal_test do
+  # Private lane for common iOS build setup
+  private_lane :prepare_ios_build do |options|
     if is_ci
       setup_ci
       increment_build_number(xcodeproj: "ios/Self.xcodeproj")
     end
 
-    Fastlane::Helpers.verify_env_vars([
+    required_env_vars = [
       "IOS_APP_IDENTIFIER",
       "IOS_CONNECT_API_KEY",
       "IOS_CONNECT_ISSUER_ID",
-      "IOS_CONNECT_KEY_ID",
-      "IOS_TESTFLIGHT_GROUPS"
-    ])
+      "IOS_CONNECT_KEY_ID"
+    ]
 
-    Fastlane::Helpers.verify_distribution_certificate
+    Fastlane::Helpers.verify_env_vars(required_env_vars)
+    Fastlane::Helpers.verify_distribution_certificate if is_ci
     Fastlane::Helpers.verify_ios_app_store_build_number
 
     cocoapods(podfile: "ios/Podfile")
@@ -49,24 +49,45 @@ platform :ios do
       in_house: false
     )
     
-    # Build the app
     build_app(
       workspace: "ios/Self.xcworkspace",
-      # TODO: update scheme to Self
       scheme: "OpenPassport",
       export_method: "app-store",
       output_directory: "build",
       clean: true,
     )
 
-    should_upload = Fastlane::Helpers.should_upload_app("TestFlight")
+    should_upload = Fastlane::Helpers.should_upload_app(options[:for_testflight] ? "TestFlight" : "App Store")
+
+    {
+      api_key: api_key,
+      should_upload: should_upload
+    }
+  end
+
+  desc "Push a new build to TestFlight Internal Testing"
+  lane :internal_test do
+    result = prepare_ios_build(for_testflight: true)
 
     upload_to_testflight(
-      api_key: api_key,
+      api_key: result[:api_key],
       distribute_external: true,
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: ""
-    ) if should_upload
+    ) if result[:should_upload]
+  end
+
+  desc "Prepare a new build for App Store submission"
+  lane :deploy do
+    result = prepare_ios_build(for_testflight: false)
+
+    upload_to_app_store(
+      api_key: result[:api_key],
+      skip_screenshots: true,
+      skip_metadata: true,
+      submit_for_review: false,
+      automatic_release: false
+    ) if result[:should_upload]
   end
 end
 
