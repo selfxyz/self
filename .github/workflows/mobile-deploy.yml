@@ -129,13 +129,10 @@ jobs:
           IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
         run: |
           cd ${{ env.APP_PATH }}
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.STAGING_BRANCH }}" ]; then
-            bundle exec fastlane ios internal_test --verbose
-          elif [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane ios deploy --verbose
           else
-            echo "Unsupported branch: ${{ github.ref }}"
-            exit 1
+            bundle exec fastlane ios internal_test --verbose
           fi
 
       - uses: actions/checkout@v4
@@ -240,13 +237,10 @@ jobs:
           ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
         run: |
           cd ${{ env.APP_PATH }}
-          if [ "${{ github.ref }}" = "refs/heads/${{ env.STAGING_BRANCH }}" ]; then
-            bundle exec fastlane android internal_test --verbose
-          elif [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane android deploy --verbose
           else
-            echo "Unsupported branch: ${{ github.ref }}"
-            exit 1
+            bundle exec fastlane android internal_test --verbose
           fi
 
       - uses: actions/checkout@v4
