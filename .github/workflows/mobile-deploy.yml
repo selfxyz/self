@@ -145,11 +145,16 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+      - name: Get version from package.json
+        uses: ./.github/actions/get-version
+        with:
+          app_path: ${{ env.APP_PATH }}
+
       - name: Commit updated build number
         if: false
         uses: ./.github/actions/push-changes
         with:
-          commit_message: "bump ios build number"
+          commit_message: "bump ios build version to ${{ env.VERSION }}"
 
   build-android:
     runs-on: ubuntu-latest
@@ -275,8 +280,13 @@ jobs:
           fi
 
       - uses: actions/checkout@v4
+      - name: Get version from package.json
+        uses: ./.github/actions/get-version
+        with:
+          app_path: ${{ env.APP_PATH }}
+
       - name: Commit updated build version
         if: false
         uses: ./.github/actions/push-changes
         with:
-          commit_message: "bump android build version"
+          commit_message: "bump android build version to ${{ env.VERSION }}"
