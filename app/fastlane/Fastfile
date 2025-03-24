@@ -135,8 +135,6 @@ platform :android do
       UI.user_error!("Generated keystore path (#{keystore_path}) does not match ANDROID_KEYSTORE_PATH environment variable (#{ENV['ANDROID_KEYSTORE_PATH']})")
     end
 
-    return
-
     gradle(
       task: "clean bundleRelease",
       project_dir: "android/",
