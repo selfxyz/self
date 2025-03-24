@@ -37,8 +37,8 @@ platform :ios do
       "IOS_TESTFLIGHT_GROUPS"
     ])
 
-    Fastlane::Helpers.verify_ios_app_store_build_number
     Fastlane::Helpers.verify_distribution_certificate
+    Fastlane::Helpers.verify_ios_app_store_build_number
 
     cocoapods(podfile: "ios/Podfile")
 
