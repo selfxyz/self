@@ -89,5 +89,27 @@ module Fastlane
         report_success("Version code verified (Current: #{current_version}, Latest Play Store: #{latest_version})")
       end
     end
+
+    def self.verify_distribution_certificate
+      dist_cert_path = "ios/certs/dist_cert.p12"
+      unless File.exist?(dist_cert_path)
+        report_error(
+          "Distribution certificate not found at #{dist_cert_path}",
+          "Please ensure the distribution certificate is present in the ios/certs directory",
+          "Certificate verification failed"
+        )
+      end
+
+      cert_size = File.size(dist_cert_path)
+      if cert_size == 0
+        report_error(
+          "Distribution certificate at #{dist_cert_path} is empty",
+          "Please ensure the distribution certificate has valid contents",
+          "Certificate verification failed"
+        )
+      end
+
+      report_success("Distribution certificate verified")
+    end
   end
 end 

@@ -38,6 +38,7 @@ platform :ios do
     ])
 
     Fastlane::Helpers.verify_ios_app_store_build_number
+    Fastlane::Helpers.verify_distribution_certificate
 
     cocoapods(podfile: "ios/Podfile")
 
