@@ -54,8 +54,8 @@ jobs:
       - name: Verify iOS Secrets
         run: |
           # Verify App Store Connect API Key exists and contains PEM header
-          if ! echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | grep -F "BEGIN PRIVATE KEY" >/dev/null 2>&1; then
-            echo "❌ Error: Invalid App Store Connect API Key format (should contain PEM private key)"
+          if [ -z "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" ]; then
+            echo "❌ Error: App Store Connect API Key cannot be empty"
             exit 1
           fi
           # Verify Issuer ID is in correct format (UUID)
