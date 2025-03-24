@@ -52,6 +52,22 @@ module Fastlane
       end
     end
 
+    def self.with_retry(max_retries: 3, delay: 5)
+      attempts = 0
+      begin
+        yield
+      rescue => e
+        attempts += 1
+        if attempts < max_retries
+          UI.important("Retry ##{attempts} after error: #{e.message}")
+          sleep(delay)
+          retry
+        else
+          UI.user_error!("Failed after #{max_retries} retries: #{e.message}")
+        end
+      end
+    end
+
     # iOS-specific Methods
     def self.setup_ios_connect_api_key
       api_key_path = File.expand_path("../../ios/certs/connect_api_key.p8", __FILE__)

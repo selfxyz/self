@@ -146,16 +146,18 @@ platform :android do
       exit 1
     end
 
-    gradle(
-      task: "clean bundleRelease",
-      project_dir: "android/",
-      properties: {
-        "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
-        "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
-        "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
-        "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
-      }
-    )
+    Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
+      gradle(
+          task: "clean bundleRelease",
+          project_dir: "android/",
+          properties: {
+          "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
+          "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
+          "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
+          "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
+        }
+      )
+    end
     
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)

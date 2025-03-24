@@ -180,7 +180,7 @@ jobs:
           cache-key: android-sdk-${{ env.ANDROID_API_LEVEL }}
           api-level: ${{ env.ANDROID_API_LEVEL }}
           target: android-${{ env.ANDROID_API_LEVEL }}
-          build-tools-version: '${{ env.ANDROID_API_LEVEL }}.0.0'
+          build-tools-version: "${{ env.ANDROID_API_LEVEL }}.0.0"
           components: |
             platform-tools
             platform-tools-preview
