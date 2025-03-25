@@ -2,6 +2,7 @@
 
 import { SelfAppBuilder } from '../../../../qrcode/SelfQRcode';
 import SelfQRcodeWrapper from '../../../../qrcode/SelfQRcode';
+import { countries } from '../../../../../common/src/constants/countries';
 import { v4 } from 'uuid';
 
 export default function Home() {
@@ -10,10 +11,17 @@ export default function Home() {
   const selfApp = new SelfAppBuilder({
     appName: "Self Workshop",
     scope: "self-workshop",
-    endpoint: "https://b950-194-230-144-192.ngrok-free.app/api/verify",
+    endpoint: "https://a1d5-133-3-201-47.ngrok-free.app/api/verify",
     logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
     userId,
     disclosures: {
+      nationality: true,
+      excludedCountries: [
+        countries.RUSSIA,
+        countries.CHINA,
+        countries.NORTH_KOREA,
+        countries.IRAN
+      ],
       minimumAge: 20,
       ofac: true,
     }

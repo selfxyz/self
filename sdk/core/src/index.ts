@@ -1,0 +1,1 @@
+export { SelfBackendVerifier } from './SelfBackendVerifier';
