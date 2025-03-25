@@ -6,7 +6,7 @@ export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 import { v4 } from 'uuid';
 import { CountryCca3, REDIRECT_URL, CountryListKeys, countryList } from "../constants/constants";
 
-export interface SelfAppDisclosureConfig<T extends CountryListKeys | CountryCca3 = CountryCca3> {
+export interface SelfAppDisclosureConfig {
   // dg1
   issuing_state?: boolean;
   name?: boolean;
@@ -17,7 +17,7 @@ export interface SelfAppDisclosureConfig<T extends CountryListKeys | CountryCca3
   expiry_date?: boolean;
   // custom checks
   ofac?: boolean;
-  excludedCountries?: T[];
+  excludedCountries?: CountryListKeys[] | CountryCca3[];
   minimumAge?: number;
 }
 
@@ -32,13 +32,13 @@ export interface SelfApp {
   userId: string;
   userIdType: UserIdType;
   devMode: boolean;
-  disclosures: SelfAppDisclosureConfig<CountryCca3>;
+  disclosures: SelfAppDisclosureConfig;
 }
 
 export class SelfAppBuilder {
   private config: SelfApp;
 
-  constructor(config: Partial<SelfApp> & { disclosures?: SelfAppDisclosureConfig<CountryListKeys> }) {
+  constructor(config: Partial<SelfApp> & { disclosures?: SelfAppDisclosureConfig }) {
     if (!config.appName) {
       throw new Error('appName is required');
     }
@@ -67,9 +67,11 @@ export class SelfAppBuilder {
       throw new Error('userId must be a valid UUID or address');
     }
 
-    let disclosures: SelfAppDisclosureConfig<CountryCca3> = {
+    let disclosures: SelfAppDisclosureConfig = {
       ...config.disclosures,
-      excludedCountries: config.disclosures?.excludedCountries?.map(country => countryList[country].cca3)
+      excludedCountries: config.disclosures?.excludedCountries?.map(country => 
+        country in countryList ? countryList[country as CountryListKeys].cca3 : country as CountryCca3
+      )
     };
 
     this.config = {
