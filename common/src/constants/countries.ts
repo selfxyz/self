@@ -249,6 +249,11 @@ export const commonNames = {
     YEM: 'Yemen',
     ZMB: 'Zambia',
     ZWE: 'Zimbabwe',
+    EUE: 'European Union',
+    UNO: 'United Nations',
+    XCE: 'Council of Europe',
+    XPO: 'International Criminal Police Organization',
+    XOM: 'Sovereign Military Order of Malta',
 };
 
 export const countries = {
@@ -501,6 +506,11 @@ export const countries = {
     YEMEN: 'YEM',
     ZAMBIA: 'ZMB',
     ZIMBABWE: 'ZWE',
+    EUROPEAN_UNION: 'EUE',
+    UNITED_NATIONS: 'UNO',
+    COUNCIL_OF_EUROPE: 'XCE',
+    INTERPOL: "XPO",
+    SMOM: "XOM",
 };
 
 export type Country3LetterCode = typeof countries[keyof typeof countries];
