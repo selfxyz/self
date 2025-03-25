@@ -2,6 +2,7 @@
 
 import { SelfAppBuilder } from '../../../../qrcode/SelfQRcode';
 import SelfQRcodeWrapper from '../../../../qrcode/SelfQRcode';
+import { countries } from '../../../../../common/src/constants/countries';
 import { v4 } from 'uuid';
 
 export default function Home() {
@@ -14,6 +15,9 @@ export default function Home() {
     logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
     userId,
     disclosures: {
+      excludedCountries: [
+        countries.FRANCE
+      ],
       minimumAge: 20,
       ofac: true,
     }

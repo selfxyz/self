@@ -4,8 +4,8 @@ export type Mode = 'register' | 'dsc' | 'vc_and_disclose';
 export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 
 import { v4 } from 'uuid';
-import { Country3LetterCode, REDIRECT_URL } from "../constants/constants";
-
+import { REDIRECT_URL } from "../constants/constants";
+import { Country3LetterCode } from "../constants/countries";
 export interface SelfApp {
   appName: string;
   logoBase64: string;
