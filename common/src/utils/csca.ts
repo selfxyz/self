@@ -7,22 +7,14 @@ export function findStartIndexEC(point: string, messagePadded: number[]): [numbe
   }
 
   let startIndex = -1;
-  // For ECDSA, look for the ASN.1 tag for EC Point (0x04)
-  const isECPoint = pointNumArray[0] === 0x04;
 
   for (let i = 0; i < messagePadded.length - pointNumArray.length + 1; i++) {
-    let found = true;
-    for (let j = 0; j < pointNumArray.length; j++) {
-      if (messagePadded[i + j] !== pointNumArray[j]) {
-        found = false;
-        break;
-      }
-      if (found && (j === pointNumArray.length - 1 || (isECPoint && j > 0))) {
-        startIndex = i;
-        break;
-      }
+    const isMatch = pointNumArray.every((byte, j) => messagePadded[i + j] === byte);
+    if (isMatch) {
+      startIndex = i;
+      console.log('Found match at index:', startIndex);
+      break;
     }
-    if (startIndex !== -1) break;
   }
 
   if (startIndex === -1) {
