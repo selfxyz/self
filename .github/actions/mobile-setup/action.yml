@@ -47,12 +47,6 @@ runs:
       with:
         node-version: ${{ inputs.node_version }}
 
-    - name: Prepare workspace directory
-      shell: bash
-      run: |
-        mkdir -p ${{ inputs.workspace }}
-        cp -r ${GITHUB_REPOSITORY_WORKSPACE:-$(pwd)} ${{ inputs.workspace }}
-
     - name: Install app dependencies
       shell: bash
       run: |

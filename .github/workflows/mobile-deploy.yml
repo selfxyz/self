@@ -13,8 +13,8 @@ env:
   ANDROID_NDK_VERSION: 26.1.10909125
 
   # Path configuration
-  WORKSPACE: /tmp/workspace
-  APP_PATH: /tmp/workspace/self/app
+  WORKSPACE: ${{ github.workspace }}
+  APP_PATH: ${{ github.workspace }}/app
 
   # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
