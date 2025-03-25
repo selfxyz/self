@@ -12,7 +12,6 @@ export function findStartIndexEC(point: string, messagePadded: number[]): [numbe
     const isMatch = pointNumArray.every((byte, j) => messagePadded[i + j] === byte);
     if (isMatch) {
       startIndex = i;
-      console.log('Found match at index:', startIndex);
       break;
     }
   }
