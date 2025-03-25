@@ -10,6 +10,7 @@ import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { usePassport } from '../../stores/passportDataProvider';
 import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import { useSettingStore } from '../../stores/settingStore';
 import analytics from '../../utils/analytics';
 import {
   checkPassportSupported,
@@ -17,6 +18,7 @@ import {
   isUserRegistered,
   registerPassport,
 } from '../../utils/proving/payload';
+import { listenToExistingSession } from '../../utils/proving/tee';
 
 const { trackEvent } = analytics();
 
@@ -27,6 +29,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
+  const { setRegistrationSessionId, registrationSessionId } = useSettingStore();
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -51,6 +54,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     console.log('registrationStatus', registrationStatus);
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
+      setRegistrationSessionId(null);
       goToSuccessScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     } else if (
@@ -58,10 +62,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       registrationStatus === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
+      setRegistrationSessionId(null);
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
-  }, [registrationStatus]);
+  }, [registrationStatus, setRegistrationSessionId]);
 
   const processPayloadCalled = useRef(false);
 
@@ -75,6 +80,29 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
+          // If we have a session ID, just listen to its status
+          if (registrationSessionId) {
+            console.log('Listening to existing session:', registrationSessionId);
+            const endpointType = passportData.documentType === 'mock_passport' ? 'staging_celo' : 'celo';
+
+            const result = await listenToExistingSession(registrationSessionId, endpointType, {
+              flow: 'registration',
+            });
+
+            if (result.status === ProofStatusEnum.SUCCESS) {
+              setAnimationSource(successAnimation);
+              setRegistrationSessionId(null);
+              goToSuccessScreenWithDelay();
+              setTimeout(() => resetProof(), 3000);
+            } else {
+              setAnimationSource(failAnimation);
+              setRegistrationSessionId(null);
+              goToErrorScreenWithDelay();
+              setTimeout(() => resetProof(), 3000);
+            }
+            return;
+          }
+
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
@@ -104,15 +132,18 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-          registerPassport(passportData, secret);
+          await registerPassport(passportData, secret, (sessionId) => {
+            setRegistrationSessionId(sessionId);
+          });
         } catch (error) {
           console.error('Error processing payload:', error);
+          setRegistrationSessionId(null);
           setTimeout(() => resetProof(), 1000);
         }
       };
       processPayload();
     }
-  }, []);
+  }, [registrationSessionId]);
 
   return (
     <View style={styles.container}>

@@ -45,6 +45,56 @@ const pubkey =
   key1.getPublic().getX().toString('hex').padStart(64, '0') +
   key1.getPublic().getY().toString('hex').padStart(64, '0');
 
+function setupSocketConnection(
+  sessionId: string,
+  endpointType: EndpointType,
+  onStatus: (status: ProofStatusEnum) => void,
+  ws?: WebSocket,
+): Socket {
+  const socket = io(getWSDbRelayerUrl(endpointType), {
+    path: '/',
+    transports: ['websocket'],
+  });
+
+  socket.on('connect', () => {
+    console.log('SocketIO: Connection opened' + (ws ? '' : ' for existing session'));
+    socket?.emit('subscribe', sessionId);
+  });
+
+  socket.on('status', message => {
+    const data = typeof message === 'string' ? JSON.parse(message) : message;
+    console.log('SocketIO message' + (ws ? '' : ' for existing session') + ':', data);
+    if (data.status === 3) {
+      console.log('Failed to generate proof');
+      socket?.disconnect();
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+      onStatus(ProofStatusEnum.FAILURE);
+    } else if (data.status === 4) {
+      console.log('Proof verified');
+      socket?.disconnect();
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+      onStatus(ProofStatusEnum.SUCCESS);
+    } else if (data.status === 5) {
+      console.log('Failed to verify proof');
+      socket?.disconnect();
+      if (ws?.readyState === WebSocket.OPEN) {
+        ws.close();
+      }
+      onStatus(ProofStatusEnum.FAILURE);
+    }
+  });
+
+  socket.on('disconnect', reason => {
+    console.log(`SocketIO disconnected. Reason: ${reason}`);
+  });
+
+  return socket;
+}
+
 /**
  * @notice Sends a payload over WebSocket connecting to the TEE server, processes the attestation,
  *         and submits a registration request encrypted via a shared key derived using ECDH.
@@ -66,6 +116,7 @@ export async function sendPayload(
     updateGlobalOnSuccess?: boolean;
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
+    onRegistrationStart?: (sessionId: string) => void;
   },
 ): Promise<ProofStatusEnum> {
   const opts = {
@@ -93,6 +144,11 @@ export async function sendPayload(
       }
     }
     const uuid = v4();
+    // Notify about registration start immediately
+    if (options?.flow === 'registration' && options.onRegistrationStart) {
+      console.log('Storing sessionId', uuid);
+      options.onRegistrationStart(uuid);
+    }
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
     function createHelloBody(uuidString: string) {
@@ -169,44 +225,7 @@ export async function sendPayload(
           console.log('Received UUID:', receivedUuid);
           console.log(result);
           if (!socket) {
-            socket = io(getWSDbRelayerUrl(endpointType), {
-              path: '/',
-              transports: ['websocket'],
-            });
-            socket.on('connect', () => {
-              console.log('SocketIO: Connection opened');
-              socket?.emit('subscribe', receivedUuid);
-            });
-            socket.on('status', message => {
-              const data =
-                typeof message === 'string' ? JSON.parse(message) : message;
-              console.log('SocketIO message:', data);
-              if (data.status === 3) {
-                console.log('Failed to generate proof');
-                socket?.disconnect();
-                if (ws.readyState === WebSocket.OPEN) {
-                  ws.close();
-                }
-                finalize(ProofStatusEnum.FAILURE);
-              } else if (data.status === 4) {
-                console.log('Proof verified');
-                socket?.disconnect();
-                if (ws.readyState === WebSocket.OPEN) {
-                  ws.close();
-                }
-                finalize(ProofStatusEnum.SUCCESS);
-              } else if (data.status === 5) {
-                console.log('Failed to verify proof');
-                socket?.disconnect();
-                if (ws.readyState === WebSocket.OPEN) {
-                  ws.close();
-                }
-                finalize(ProofStatusEnum.FAILURE);
-              }
-            });
-            socket.on('disconnect', reason => {
-              console.log(`SocketIO disconnected. Reason: ${reason}`);
-            });
+            socket = setupSocketConnection(receivedUuid, endpointType, finalize, ws);
           }
         }
       } catch (error) {
@@ -304,3 +323,49 @@ function getWSDbRelayerUrl(endpointType: EndpointType) {
     ? WS_DB_RELAYER
     : WS_DB_RELAYER_STAGING;
 }
+
+export async function listenToExistingSession(
+  sessionId: string,
+  endpointType: EndpointType,
+  options?: {
+    updateGlobalOnSuccess?: boolean;
+    updateGlobalOnFailure?: boolean;
+    flow?: 'registration' | 'disclosure';
+  },
+): Promise<{ status: ProofStatusEnum; sessionId?: string }> {
+  const opts = {
+    updateGlobalOnSuccess: true,
+    updateGlobalOnFailure: true,
+    ...options,
+  };
+  return new Promise(resolve => {
+    let finalized = false;
+    function finalize(status: ProofStatusEnum) {
+      if (!finalized) {
+        finalized = true;
+        clearTimeout(timer);
+        if (
+          (status === ProofStatusEnum.SUCCESS && opts.updateGlobalOnSuccess) ||
+          (status !== ProofStatusEnum.SUCCESS && opts.updateGlobalOnFailure)
+        ) {
+          if (options?.flow === 'disclosure') {
+            globalSetDisclosureStatus && globalSetDisclosureStatus(status);
+          } else {
+            globalSetRegistrationStatus && globalSetRegistrationStatus(status);
+          }
+        }
+        resolve({ status, sessionId });
+      }
+    }
+
+    const socket = setupSocketConnection(sessionId, endpointType, finalize);
+
+    const timer = setTimeout(() => {
+      if (socket) {
+        socket.disconnect();
+      }
+      finalize(ProofStatusEnum.ERROR);
+    }, 1200000); // Same timeout as sendPayload
+  });
+}
+
