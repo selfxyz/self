@@ -92,8 +92,9 @@ jobs:
           echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
 
+      # for debugging...which can take some time :(
       - name: Verify ios secret checksums
-        # if: false # for debugging
+        if: false # for debugging
         run: |
           echo "SHA256 of dist_cert.p12:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
@@ -106,6 +107,7 @@ jobs:
           echo "SHA256 of password:"
           echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
           openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}'
+          exit 1
 
       - name: Install certificate
         if: ${{ !env.ACT }}
