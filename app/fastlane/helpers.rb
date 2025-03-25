@@ -111,7 +111,7 @@ module Fastlane
       report_success("Distribution certificate verified")
     end
 
-    def self.verify_ios_app_store_build_number
+    def self.verify_ios_app_store_build_number(project_name)
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
         key_id: ENV["IOS_CONNECT_KEY_ID"],
         issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
@@ -125,7 +125,7 @@ module Fastlane
         platform: "ios"
       )
       
-      project = Xcodeproj::Project.open("../ios/Self.xcodeproj")
+      project = Xcodeproj::Project.open("../ios/#{project_name}.xcodeproj")
       target = project.targets.first
       current_build = target.build_configurations.first.build_settings["CURRENT_PROJECT_VERSION"]
       
@@ -138,6 +138,59 @@ module Fastlane
       else
         report_success("Build number verified (Current: #{current_build}, Latest TestFlight: #{latest_build})")
       end
+    end
+
+    def self.ensure_apple_generic_versioning(project_name)
+      project_path = "../ios/#{project_name}.xcodeproj"
+      puts "Opening Xcode project at: #{File.expand_path(project_path)}"
+      
+      unless File.exist?(project_path)
+        report_error(
+          "Xcode project not found at #{project_path}",
+          "Please ensure you're running this command from the correct directory",
+          "Project file not found"
+        )
+      end
+      
+      project = Xcodeproj::Project.open(project_path)
+      
+      project.targets.each do |target|
+        target.build_configurations.each do |config|
+          if config.build_settings['VERSIONING_SYSTEM'] != 'apple-generic'
+            puts "Enabling Apple Generic Versioning for #{target.name} - #{config.name}"
+            config.build_settings['VERSIONING_SYSTEM'] = 'apple-generic'
+            config.build_settings['CURRENT_PROJECT_VERSION'] ||= '1'
+          end
+        end
+      end
+      
+      project.save
+      report_success("Enabled Apple Generic Versioning in Xcode project")
+    end
+
+    def self.increment_build_number_from_testflight(project_name)
+      # First ensure Apple Generic Versioning is enabled
+      ensure_apple_generic_versioning(project_name)
+      
+      api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
+        key_id: ENV["IOS_CONNECT_KEY_ID"],
+        issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
+        key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
+        in_house: false
+      )
+      
+      latest_build = Fastlane::Actions::LatestTestflightBuildNumberAction.run(
+        api_key: api_key,
+        app_identifier: ENV["IOS_APP_IDENTIFIER"],
+        platform: "ios"
+      )
+      
+      Fastlane::Actions::IncrementBuildNumberAction.run(
+        build_number: latest_build + 1,
+        xcodeproj: "../ios/#{project_name}.xcodeproj"
+      )
+      
+      report_success("Incremented build number to #{latest_build + 1} (previous TestFlight build: #{latest_build})")
     end
 
     # Android-specific Methods
@@ -171,6 +224,23 @@ module Fastlane
       else
         report_success("Version code verified (Current: #{current_version}, Latest Play Store: #{latest_version})")
       end
+    end
+
+    def self.increment_version_code_from_play_store
+      latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
+        track: "internal",
+        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"]
+      ).first || 0
+      
+      new_version = latest_version + 1
+      
+      Fastlane::Actions::IncrementVersionCodeAction.run(
+        gradle_file_path: "android/app/build.gradle"
+      )
+      
+      report_success("Incremented version code to #{new_version} (previous Play Store version: #{latest_version})")
+      
+      new_version
     end
   end
 end 
