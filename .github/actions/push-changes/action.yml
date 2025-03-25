@@ -18,10 +18,10 @@ runs:
       run: |
         git config --global user.email "action@github.com"
         git config --global user.name "GitHub Action"
-        
+
         # Only add changes in the specified path
         git add "${{ inputs.commit_path }}/"
-        
+
         # Check if there are any changes in the specified path
         if git diff --staged --quiet; then
           echo "No changes to commit in ${{ inputs.commit_path }}/"
@@ -34,8 +34,17 @@ runs:
       run: |
         # Check if there are any changes to push
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-          # Push to the current branch
-          git push origin "$CURRENT_BRANCH" || echo "Failed to push changes"
+          # Extract branch name from GITHUB_REF (e.g. refs/heads/main -> main)
+          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          
+          # Ensure we're on the correct branch
+          git checkout -B "$BRANCH_NAME"
+          
+          # Push changes to the correct branch
+          git push origin "$BRANCH_NAME" || {
+            echo "Failed to push to $BRANCH_NAME"
+            exit 1
+          }
         else
           echo "No new commits to push"
         fi
