@@ -235,6 +235,7 @@ module Fastlane
       new_version = latest_version + 1
       
       Fastlane::Actions::IncrementVersionCodeAction.run(
+        version_code: new_version,
         gradle_file_path: "android/app/build.gradle"
       )
       
