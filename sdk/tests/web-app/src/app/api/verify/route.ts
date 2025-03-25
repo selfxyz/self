@@ -1,5 +1,7 @@
 import { SelfBackendVerifier } from '../../../../../../core';
 import { NextResponse } from 'next/server';
+import { countries } from '../../../../../../../common/src/constants/countries';
+import { count } from 'console';
 
 export async function POST(request: Request) {
     try {
@@ -16,9 +18,15 @@ export async function POST(request: Request) {
         const configuredVerifier = new SelfBackendVerifier(
             'https://forno.celo.org',
             "self-workshop",
-            'uuid',
-            true
-        ).setMinimumAge(20);
+            'uuid'
+        )
+            .setMinimumAge(20)
+            .excludeCountries(
+                countries.RUSSIA,
+                countries.CHINA,
+                countries.NORTH_KOREA,
+                countries.IRAN
+            );
 
         const result = await configuredVerifier.verify(proof, publicSignals);
         console.log("Verification result:", result);

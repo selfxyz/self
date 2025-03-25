@@ -66,10 +66,7 @@ export class SelfBackendVerifier {
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
-    const excludedCountryCodes = this.excludedCountries.value.map((country) =>
-      getCountryCode(country)
-    );
-    const forbiddenCountriesListPacked = packForbiddenCountriesList(excludedCountryCodes);
+    const forbiddenCountriesListPacked = packForbiddenCountriesList(this.excludedCountries.value);
 
     const isValidScope =
       this.scope ===
