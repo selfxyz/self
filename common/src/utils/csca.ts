@@ -1,23 +1,23 @@
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 
-export function findStartIndexEC(modulus: string, messagePadded: number[]): [number, number] {
-  const modulusNumArray = [];
-  for (let i = 0; i < modulus.length; i += 2) {
-    modulusNumArray.push(parseInt(modulus.slice(i, i + 2), 16));
+export function findStartIndexEC(point: string, messagePadded: number[]): [number, number] {
+  const pointNumArray = [];
+  for (let i = 0; i < point.length; i += 2) {
+    pointNumArray.push(parseInt(point.slice(i, i + 2), 16));
   }
 
   let startIndex = -1;
   // For ECDSA, look for the ASN.1 tag for EC Point (0x04)
-  const isECPoint = modulusNumArray[0] === 0x04;
+  const isECPoint = pointNumArray[0] === 0x04;
 
-  for (let i = 0; i < messagePadded.length - modulusNumArray.length + 1; i++) {
+  for (let i = 0; i < messagePadded.length - pointNumArray.length + 1; i++) {
     let found = true;
-    for (let j = 0; j < modulusNumArray.length; j++) {
-      if (messagePadded[i + j] !== modulusNumArray[j]) {
+    for (let j = 0; j < pointNumArray.length; j++) {
+      if (messagePadded[i + j] !== pointNumArray[j]) {
         found = false;
         break;
       }
-      if (found && (j === modulusNumArray.length - 1 || (isECPoint && j > 0))) {
+      if (found && (j === pointNumArray.length - 1 || (isECPoint && j > 0))) {
         startIndex = i;
         break;
       }
@@ -28,7 +28,7 @@ export function findStartIndexEC(modulus: string, messagePadded: number[]): [num
   if (startIndex === -1) {
     throw new Error('DSC Pubkey not found in CSCA certificate');
   }
-  return [startIndex, modulusNumArray.length];
+  return [startIndex, pointNumArray.length];
 }
 
 // @returns [startIndex, length] where startIndex is the index of the first byte of the modulus in the message and length is the length of the modulus in bytes
