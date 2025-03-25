@@ -5,9 +5,9 @@ import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
-import { CIRCUIT_CONSTANTS, countryCodes, revealedDataTypes } from '../../../common/src/constants/constants';
+import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { Country3LetterCode } from '../../../common/src/constants/countries';
+import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -151,7 +151,7 @@ export class SelfBackendVerifier {
     let isValidNationality = true;
     if (this.nationality.enabled) {
       const nationality = result[0][revealedDataTypes.nationality];
-      const countryCode = countryCodes[nationality as keyof typeof countryCodes];
+      const countryCode = commonNames[nationality as keyof typeof commonNames];
       isValidNationality = countryCode === this.nationality.value;
     }
 
