@@ -60,6 +60,7 @@ const handleWebSocketMessage =
           break;
         case 'proof_verified':
           console.log('[WebSocket] Proof verified.');
+          console.log('ws data', data);
           setProofVerified(true);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           onSuccess();
