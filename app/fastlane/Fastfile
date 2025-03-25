@@ -49,7 +49,8 @@ platform :ios do
       "IOS_APP_IDENTIFIER",
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
-      "IOS_CONNECT_API_KEY_BASE64"
+      "IOS_CONNECT_API_KEY_BASE64",
+      "IOS_PROVISIONING_PROFILE_NAME"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -70,7 +71,8 @@ platform :ios do
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
       output_directory: "build",
-      clean: true
+      clean: true,
+      xcargs: "-allowProvisioningUpdates"
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
