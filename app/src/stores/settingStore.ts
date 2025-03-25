@@ -12,6 +12,8 @@ interface SettingsState {
   isDevMode: boolean;
   setDevModeOn: () => void;
   setDevModeOff: () => void;
+  registrationSessionId: string | null;
+  setRegistrationSessionId: (sessionId: string | null) => void;
 }
 
 /*
@@ -38,6 +40,10 @@ export const useSettingStore = create<SettingsState>()(
       isDevMode: false,
       setDevModeOn: () => set({ isDevMode: true }),
       setDevModeOff: () => set({ isDevMode: false }),
+
+      registrationSessionId: null,
+      setRegistrationSessionId: (sessionId: string | null) =>
+        set({ registrationSessionId: sessionId }),
     }),
     {
       name: 'setting-storage',

@@ -77,6 +77,7 @@ export async function sendRegisterPayload(
   secret: string,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
+  onRegistrationStart?: (sessionId: string) => void,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
@@ -95,6 +96,7 @@ export async function sendRegisterPayload(
       updateGlobalOnSuccess: true,
       updateGlobalOnFailure: true,
       flow: 'registration',
+      onRegistrationStart,
     },
   );
 }
@@ -216,6 +218,25 @@ export async function isUserRegistered(
   return index !== -1;
 }
 
+export async function isRegistrationPending(sessionId: string, isMock: boolean): Promise<ProofStatusEnum> {
+  console.log('Checking if registration is pending for sessionId', sessionId, isMock);
+  // const response = await fetch(`${WS_DB_RELAYER}/uuid-status/${sessionId}`, {
+  //   method: 'GET',
+  // });
+  // const data = await response.json();
+  // const status = data.data;
+
+  // if (status == 4) {
+  //   return ProofStatusEnum.SUCCESS;
+  // } else if (status == 3) {
+  //   return ProofStatusEnum.FAILURE;
+  // } else {
+  //   return ProofStatusEnum.PENDING;
+  // }
+
+  return ProofStatusEnum.PENDING;
+}
+
 export async function isPassportNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
@@ -235,6 +256,7 @@ export async function isPassportNullified(passportData: PassportData) {
 export async function registerPassport(
   passportData: PassportData,
   secret: string,
+  onRegistrationStart?: (sessionId: string) => void,
 ) {
   // First get the mapping, then use it for the check
   const endpointType =
@@ -260,6 +282,7 @@ export async function registerPassport(
     secret,
     circuitDNSMapping,
     endpointType,
+    onRegistrationStart,
   );
 }
 
