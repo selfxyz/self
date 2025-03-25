@@ -15,6 +15,7 @@ export default function Home() {
     logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
     userId,
     disclosures: {
+      nationality: true,
       excludedCountries: [
         countries.RUSSIA,
         countries.CHINA,

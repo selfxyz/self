@@ -18,7 +18,8 @@ export async function POST(request: Request) {
         const configuredVerifier = new SelfBackendVerifier(
             'https://forno.celo.org',
             "self-workshop",
-            'uuid'
+            'uuid',
+            true
         )
             .setMinimumAge(20)
             .excludeCountries(
@@ -26,7 +27,8 @@ export async function POST(request: Request) {
                 countries.CHINA,
                 countries.NORTH_KOREA,
                 countries.IRAN
-            );
+            )
+            .setNationality(countries.UNITED_STATES);
 
         const result = await configuredVerifier.verify(proof, publicSignals);
         console.log("Verification result:", result);

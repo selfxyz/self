@@ -151,8 +151,7 @@ export class SelfBackendVerifier {
     let isValidNationality = true;
     if (this.nationality.enabled) {
       const nationality = result[0][revealedDataTypes.nationality];
-      const countryCode = commonNames[nationality as keyof typeof commonNames];
-      isValidNationality = countryCode === this.nationality.value;
+      isValidNationality = nationality === this.nationality.value;
     }
 
     const credentialSubject = {
