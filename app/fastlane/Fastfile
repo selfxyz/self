@@ -29,16 +29,6 @@ if local_development
 
   # confirm that we want to force upload
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
-
-  if platform :ios
-    Fastlane::Helpers.setup_ios_connect_api_key
-  end
-
-  if platform :android
-    if ENV["ANDROID_KEYSTORE_PATH"].nil?
-      ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
-    end
-  end
 end
 
 default_platform(:ios)
@@ -129,6 +119,12 @@ platform :android do
   aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
 
   private_lane :upload_android_build do |options|
+    if local_development
+      if ENV["ANDROID_KEYSTORE_PATH"].nil?
+        ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
+      end
+    end
+
     if should_increment_build_number
       increment_version_code(
         gradle_file_path: "android/app/build.gradle"
