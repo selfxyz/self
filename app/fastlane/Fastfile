@@ -12,6 +12,7 @@ require_relative 'helpers'
 
 # Project configuration
 PROJECT_NAME = "Self"
+# TODO: update scheme to Self
 PROJECT_SCHEME = "OpenPassport"
 
 # Environment setup
@@ -28,6 +29,16 @@ if local_development
 
   # confirm that we want to force upload
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
+
+  if platform :ios
+    Fastlane::Helpers.setup_ios_connect_api_key
+  end
+
+  if platform :android
+    if ENV["ANDROID_KEYSTORE_PATH"].nil?
+      ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
+    end
+  end
 end
 
 default_platform(:ios)
@@ -138,13 +149,6 @@ platform :android do
     # Verify version code before building 
     # TODO: uncomment this when we have a way to test the version code
     # Fastlane::Helpers.verify_android_version_code
-    
-    # TODO: fix this missing env var from workflow
-    if local_development and ENV["ANDROID_KEYSTORE_PATH"].nil?
-      puts "Creating android keystore for local development"
-      ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
-      exit 1
-    end
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(
