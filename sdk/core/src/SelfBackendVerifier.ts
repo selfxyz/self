@@ -11,7 +11,7 @@ import type { SelfVerificationResult } from '../../../common/src/utils/selfAttes
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { CapitalCommonCountryName, Country3LetterCode, countries } from '../../../common/src/constants/constants';
+import { CountryListKeys, CountryCca3, countryList } from '../../../common/src/constants/constants';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -24,10 +24,10 @@ export class SelfBackendVerifier {
 
   protected nationality: {
     enabled: boolean;
-    value: Country3LetterCode;
+    value: CountryCca3;
   } = {
       enabled: false,
-      value: '' as Country3LetterCode,
+      value: '' as CountryCca3,
     };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
@@ -35,11 +35,11 @@ export class SelfBackendVerifier {
   };
   protected excludedCountries: {
     enabled: boolean;
-    value: Country3LetterCode[];
+    value: CountryCca3[];
   } = {
-      enabled: false,
-      value: [],
-    };
+    enabled: false,
+    value: [],
+  };
   protected passportNoOfac: boolean = false;
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
@@ -203,18 +203,6 @@ export class SelfBackendVerifier {
     return attestation;
   }
 
-  private getCountryCodeFromCapitalName(countryName: CapitalCommonCountryName): Country3LetterCode {
-    const entry = Object.entries(countries).find(
-      ([_, value]) => value === countryName
-    );
-    
-    if (!entry) {
-      throw new Error(`Country not found: ${countryName}`);
-    }
-    
-    return entry[0] as Country3LetterCode;
-  }
-
   setMinimumAge(age: number): this {
     if (age <= 0) {
       throw new Error('Minimum age must be positive');
@@ -226,31 +214,32 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  setNationality(country: CapitalCommonCountryName): this {
-    const countryCode = this.getCountryCodeFromCapitalName(country);
+  setNationality(country: CountryListKeys): this {
+    const countryCode = countryList[country].cca3;
     this.nationality = { enabled: true, value: countryCode };
     return this;
   }
 
-  excludeCountries(...countries: (CapitalCommonCountryName | Country3LetterCode)[]): this {
+  excludeCountries(...countries: (CountryListKeys | CountryCca3)[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
     
     const countryCodes = countries.map(country => {
-      if (typeof country === 'string' && country.length === 3) {
-        if (Object.keys(countries).includes(country)) {
-          return country as Country3LetterCode;
-        } else {
-          throw new Error(`Invalid country code: ${country}`);
-        }
+      if (this.isCca3(country)) {
+        return country;
       } else {
-        return this.getCountryCodeFromCapitalName(country as CapitalCommonCountryName);
+        return countryList[country].cca3;
       }
     });
     
     this.excludedCountries = { enabled: true, value: countryCodes };
     return this;
+  }
+
+  private isCca3(country: CountryListKeys | CountryCca3): country is CountryCca3 {
+    const validCca3s = Object.values(countryList).map(entry => entry.cca3);
+    return validCca3s.includes(country as CountryCca3);
   }
 
   enablePassportNoOfacCheck(): this {

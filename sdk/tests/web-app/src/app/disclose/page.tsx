@@ -2,6 +2,7 @@
 
 import { SelfAppBuilder } from '../../../../../qrcode/SelfQRcode';
 import SelfQRcodeWrapper from '../../../../../qrcode/SelfQRcode';
+import { countries } from '../../../../../qrcode/SelfQRcode';
 import { v4 } from 'uuid';
 import {logo} from './logo';
 
@@ -21,9 +22,26 @@ export default function Prove() {
       passport_number: true,
       minimumAge: 20,
       excludedCountries: [
-        "AFG", "ALA", "ALB", "DZA", "ASM", "AND", "AGO", "AIA", "ATA", "ATG", "ARG", "ARM", "ABW", "AUS", "AZE", "BHS",
-        "BHR", "BGD", "BRB", "BLR", "BEL", "BMU", "BLZ", "BEN", "BMU", "BTN", "BOL", "BRN", "CPV", "KHM", "CAN", "CHN",
-        "EST", "DNK", "VUT", "ZWE", "ZMB", "YEM", "ESH", "USA"
+        countries.UNITED_STATES,
+        countries.JAPAN,
+        countries.GERMANY,
+        countries.FRANCE,
+        countries.UNITED_KINGDOM,
+        countries.ITALY,
+        countries.CANADA,
+        countries.AUSTRALIA,
+        countries.BRAZIL,
+        countries.CHINA,
+        countries.INDIA,
+        countries.RUSSIA,
+        countries.SOUTH_KOREA,
+        countries.SPAIN,
+        countries.MEXICO,
+        countries.NETHERLANDS,
+        countries.SWITZERLAND,
+        countries.SINGAPORE,
+        countries.SWEDEN,
+        countries.NEW_ZEALAND
       ],
       ofac: true,
     }
