@@ -29,18 +29,18 @@ module Fastlane
     end
 
     def self.should_upload_app(platform)
-      if ENV["ACT"]
+      if ENV["ACT"] == 'true'
         puts "Skipping upload to #{platform} we are testing using `act`"
         return false
       end
 
-      if ENV['IS_PR']
+      if ENV['IS_PR'] == 'true'
         puts "Skipping upload to #{platform} because we are in a pull request"
         return false
       end
 
       # if we are in CI, upload the app
-      ENV['CI'] || ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
+      ENV['CI'] == 'true' || ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
     end
 
     def self.confirm_force_upload
