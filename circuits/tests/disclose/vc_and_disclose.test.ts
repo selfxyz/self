@@ -165,7 +165,7 @@ describe('Disclose', function () {
         }
 
         const forbidden_countries_list_packed = await circuit.getOutput(w, [
-          'forbidden_countries_list_packed[1]',
+          'forbidden_countries_list_packed[4]',
         ]);
         const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(
           forbidden_countries_list_packed
