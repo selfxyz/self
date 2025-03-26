@@ -49,7 +49,14 @@ runs:
           git diff --name-only "${{ inputs.commit_path }}/"
           echo ""
           
-          # Push changes directly without rebasing
+          # Fetch and merge remote changes
+          git fetch origin "$BRANCH_NAME"
+          git merge origin/"$BRANCH_NAME" --no-edit || {
+            echo "Failed to merge remote changes from $BRANCH_NAME"
+            exit 1
+          }
+          
+          # Push changes
           git push origin HEAD:$BRANCH_NAME || {
             echo "Failed to push to $BRANCH_NAME"
             exit 1
