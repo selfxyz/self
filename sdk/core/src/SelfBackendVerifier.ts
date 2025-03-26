@@ -9,6 +9,13 @@ import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/consta
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
 
+interface SelfBackendVerifierConfig {
+  rpcUrl: string;
+  scope: string;
+  user_identifier_type?: UserIdType;
+  mockPassport?: boolean;
+}
+
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
@@ -44,20 +51,15 @@ export class SelfBackendVerifier {
   protected verifyAllContract: ethers.Contract;
   protected mockPassport: boolean;
 
-  constructor(
-    rpcUrl: string,
-    scope: string,
-    user_identifier_type: UserIdType = 'uuid',
-    mockPassport: boolean = false
-  ) {
-    const provider = new ethers.JsonRpcProvider(rpcUrl);
-    const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
-    const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
+  constructor(config: SelfBackendVerifierConfig) {
+    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    const registryAddress = config.mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
+    const verifyAllAddress = config.mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
-    this.scope = scope;
-    this.user_identifier_type = user_identifier_type;
-    this.mockPassport = mockPassport;
+    this.scope = config.scope;
+    this.user_identifier_type = config.user_identifier_type ?? 'uuid';
+    this.mockPassport = config.mockPassport ?? false;
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
