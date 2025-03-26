@@ -2,6 +2,7 @@ name: Mobile App Deployments
 
 env:
   # Branch configuration
+  IS_PR: ${{ github.event.pull_request.number != null }}
   STAGING_BRANCH: dev
   MAIN_BRANCH: main
 
@@ -35,6 +36,7 @@ on:
       - "app/**"
       - ".github/workflows/mobile-deploy.yml"
   # for debugging, there is a check in fastlane to prevent pull request uploads
+  # may also help with incrementing build numbers
   pull_request:
     paths:
       - "app/**"
@@ -136,7 +138,7 @@ jobs:
       - name: Build and upload to TestFlight (Internal)
         if: ${{ !env.ACT }}
         env:
-          IS_PR: ${{ github.event.pull_request.number != null }}
+          IS_PR: ${{ env.IS_PR }}
           IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
           IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
@@ -273,7 +275,7 @@ jobs:
 
       - name: Build and upload to Google Play Internal Testing
         env:
-          IS_PR: ${{ github.event.pull_request.number != null }}
+          IS_PR: ${{ env.IS_PR }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
