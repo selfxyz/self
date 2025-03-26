@@ -16,10 +16,10 @@ export async function POST(request: Request) {
         }
 
         const configuredVerifier = new SelfBackendVerifier(
-            'https://forno.celo.org',
-            "self-workshop",
-            'uuid',
-            true
+            {
+                scope: "self-workshop",
+                mockPassport: true
+            }
         )
             .setMinimumAge(20)
             .excludeCountries(
