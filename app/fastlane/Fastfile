@@ -50,7 +50,6 @@ platform :ios do
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
       "IOS_CONNECT_API_KEY_BASE64",
-      "IOS_PROVISIONING_PROFILE_NAME"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
