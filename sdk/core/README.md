@@ -17,12 +17,14 @@ yarn add @selfxyz/core
 Initialize the verifier with your RPC URL and application scope:
 
 ```typescript
-import { SelfBackendVerifier } from "@selfxyz/core";
+import { SelfBackendVerifier, countries } from "@selfxyz/core";
 
-const selfBackendVerifier = new SelfBackendVerifier(
-  process.env.CELO_RPC_URL as string,  // e.g., 'https://forno.celo.org'
-  process.env.SCOPE as string,         // Your application's unique scope. Should be the same as when initializing SelfApp
-);
+const selfBackendVerifier = new SelfBackendVerifier({
+  scope: "Your-App-Name", // Required: Your application's scope
+  rpcUrl: "https://your-custom-rpc.example.com", // Optional: Custom RPC URL (defaults to https://forno.celo.org)
+  user_identifier_type: "uuid", // Optional: "uuid" for UUID-based identification or "hex" for contract addresses (defaults to "uuid")
+  mockPassport: true // Optional: Use staging contracts for testing with mock passport (defaults to false)
+});
 ```
 
 ## Configuration
@@ -34,10 +36,15 @@ You can configure which verification rules to apply:
 selfBackendVerifier.setMinimumAge(20);
 
 // Set nationality verification
-selfBackendVerifier.setNationality('France');
+selfBackendVerifier.setNationality(
+  countries.FRANCE
+);
 
 // Set excluded countries verification (max 40 countries)
-selfBackendVerifier.excludeCountries('Iran', 'North Korea', 'Russia', 'Syria');
+selfBackendVerifier.excludeCountries(
+  countries.IRAN,
+  countries.NORTH_KOREA
+);
 
 // Enable passport number OFAC check (default: false)
 selfBackendVerifier.enablePassportNoOfacCheck();
@@ -134,7 +141,7 @@ Here's an example of implementing an API endpoint that uses the SDK:
 
 ```typescript
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getUserIdentifier, SelfBackendVerifier, countryCodes } from '@selfxyz/core';
+import { getUserIdentifier, SelfBackendVerifier, countries } from '@selfxyz/core';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === 'POST') {
@@ -151,15 +158,14 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Initialize and configure the verifier
       const selfBackendVerifier = new SelfBackendVerifier(
-        'https://forno.celo.org',
         'my-application-scope'
       );
       
       // Configure verification options
       selfBackendVerifier.setMinimumAge(18);
       selfBackendVerifier.excludeCountries(
-        countryCodes.IRN,   // Iran
-        countryCodes.PRK    // North Korea
+        countries.IRAN, 
+        countries.NORTH_KOREA    // North Korea
       );
       selfBackendVerifier.enableNameAndDobOfacCheck();
 
@@ -196,23 +202,27 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 }
 ```
 
-## Working with Country Codes
+## How to specify countries
 
-The SDK provides a `countryCodes` object for referencing ISO country codes:
+The SDK provides a `countries` object for referencing country codes:
 
 ```typescript
-import { countryCodes } from '@selfxyz/core';
+import { countries } from '@selfxyz/core';
 
 // Examples of usage
-const iranCode = countryCodes.IRN;  // "Iran"
-const northKoreaCode = countryCodes.PRK;  // "North Korea"
+const france = countries.FRANCE;
+const iran = countries.IRAN;
+const northKorea = countries.NORTH_KOREA;
 
 // Use in excludeCountries
 selfBackendVerifier.excludeCountries(
-  countryCodes.IRN,
-  countryCodes.PRK,
-  countryCodes.SYR
+  countries.IRAN,
+  countries.NORTH_KOREA,
+  countries.SYRIA
 );
+
+// Use in setNationality
+selfBackendVerifier.setNationality(countries.FRANCE);
 ```
 
 ## Integration with SelfQRcode
@@ -220,7 +230,7 @@ selfBackendVerifier.excludeCountries(
 This backend SDK is designed to work with the `@selfxyz/qrcode` package. When configuring your QR code, set the verification endpoint to point to your API that uses this SDK:
 
 ```typescript
-import { SelfAppBuilder } from '@selfxyz/qrcode';
+import { SelfAppBuilder, countries } from '@selfxyz/qrcode';
 
 const selfApp = new SelfAppBuilder({
   appName: 'My Application',
@@ -234,7 +244,10 @@ const selfApp = new SelfAppBuilder({
     date_of_birth: true,
     passport_number: true,
     minimumAge: 20,
-    excludedCountries: ["IRN", "PRK"],
+    excludedCountries: [
+      countries.IRAN,
+      countries.NORTH_KOREA
+    ],
     ofac: true,
   },
 }).build();
