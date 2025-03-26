@@ -78,8 +78,6 @@ export async function generateTeeInputsVCAndDisclose(
     }
   });
 
-  let hashedScope = poseidon2([endpoint, scope]);
-
   const majority = disclosures.minimumAge
     ? disclosures.minimumAge.toString()
     : DEFAULT_MAJORITY;
