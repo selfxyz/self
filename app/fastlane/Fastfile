@@ -71,7 +71,12 @@ platform :ios do
       export_method: "app-store",
       output_directory: "build",
       clean: true,
-      xcargs: "-allowProvisioningUpdates"
+      xcargs: "-allowProvisioningUpdates",
+      export_options: {
+        compileBitcode: false,
+        manageAppVersionAndBuildNumber: false,
+        signingStyle: "automatic"
+      }
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
@@ -129,7 +134,8 @@ platform :android do
       end
     end
 
-    if should_increment_build_number
+    # TODO: when we have a the json api key
+    if false && should_increment_build_number
       Fastlane::Helpers.increment_version_code_from_play_store
     end
 
