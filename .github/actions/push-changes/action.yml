@@ -32,15 +32,16 @@ runs:
     - name: Push changes
       shell: bash
       run: |
-        # Check if there are any changes to push
+        # Only proceed if there are commits to push
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-          # Extract branch name from GITHUB_REF (e.g. refs/heads/main -> main)
-          BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          # Get target branch name - use base branch for PRs, otherwise use current branch
+          if [[ ${{ github.ref }} == refs/pull/* ]]; then
+            BRANCH_NAME=${{ github.base_ref }}
+          else
+            BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+          fi
           
-          # Ensure we're on the correct branch
           git checkout -B "$BRANCH_NAME"
-          
-          # Push changes to the correct branch
           git push origin "$BRANCH_NAME" || {
             echo "Failed to push to $BRANCH_NAME"
             exit 1
