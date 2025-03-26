@@ -26,6 +26,9 @@ runs:
         if git diff --staged --quiet; then
           echo "No changes to commit in ${{ inputs.commit_path }}/"
         else
+          echo "Files to be committed:"
+          git diff --staged --name-only
+          echo ""
           git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
         fi
 
@@ -41,7 +44,14 @@ runs:
             BRANCH_NAME=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
           fi
           
+          # Fetch latest changes and update local branch
+          git fetch origin "$BRANCH_NAME"
           git checkout -B "$BRANCH_NAME"
+          git pull origin "$BRANCH_NAME" --rebase || {
+            echo "Failed to pull latest changes from $BRANCH_NAME"
+            exit 1
+          }
+          
           git push origin "$BRANCH_NAME" || {
             echo "Failed to push to $BRANCH_NAME"
             exit 1
