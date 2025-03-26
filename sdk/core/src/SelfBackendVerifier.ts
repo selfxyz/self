@@ -7,11 +7,13 @@ import type { SelfVerificationResult } from '../../../common/src/utils/selfAttes
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
+import { Country3LetterCode } from '../../../common/src/constants/countries';
+
+const DEFAULT_RPC_URL = "https://forno.celo.org";
 
 interface SelfBackendVerifierConfig {
-  rpcUrl: string;
   scope: string;
+  rpcUrl?: string; // Make rpcUrl optional
   user_identifier_type?: UserIdType;
   mockPassport?: boolean;
 }
@@ -52,7 +54,7 @@ export class SelfBackendVerifier {
   protected mockPassport: boolean;
 
   constructor(config: SelfBackendVerifierConfig) {
-    const provider = new ethers.JsonRpcProvider(config.rpcUrl);
+    const provider = new ethers.JsonRpcProvider(config.rpcUrl ?? DEFAULT_RPC_URL);
     const registryAddress = config.mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
     const verifyAllAddress = config.mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
