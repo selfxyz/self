@@ -29,6 +29,8 @@ import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
+import { poseidon2 } from 'poseidon-lite';
+import { EndpointType } from '../../../../common/src/utils/appType';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -161,6 +163,8 @@ export function generateCircuitInputsVCandDisclose(
   attestation_id: string,
   passportData: PassportData,
   scope: string,
+  endpoint: string,
+  endpointType: EndpointType,
   selector_dg1: string[],
   selector_older_than: string | number,
   merkletree: LeanIMT,
@@ -172,6 +176,12 @@ export function generateCircuitInputsVCandDisclose(
   forbidden_countries_list: string[],
   user_identifier: string
 ) {
+  const formattedEndpoint = formatEndpointForHash(endpoint, endpointType);
+  const hashedScope = poseidon2([
+    formattedEndpoint,
+    BigInt(castFromScope(scope))
+  ]).toString();
+
   const formattedMrz = formatMrz(passportData.mrz);
   const passportMetadata = passportData.passportMetadata;
   const eContent_shaBytes = hash(
@@ -234,7 +244,7 @@ export function generateCircuitInputsVCandDisclose(
     siblings: formatInput(siblings),
     selector_dg1: formatInput(selector_dg1),
     selector_older_than: formatInput(selector_older_than),
-    scope: formatInput(castFromScope(scope)),
+    scope: formatInput(hashedScope),
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
@@ -336,5 +346,17 @@ export function formatInput(input: any) {
     }
   } else {
     return [BigInt(input).toString()];
+  }
+}
+
+
+function formatEndpointForHash(endpoint: string, endpointType: EndpointType): bigint {
+  if (endpointType === 'celo' || endpointType === 'staging_celo') {
+    // contract address
+    return BigInt(endpoint);
+  } else {
+    // https endpoint
+    const endpointBytes = Array.from(Buffer.from(endpoint));
+    return BigInt('0x' + Buffer.from(endpointBytes).toString('hex'));
   }
 }

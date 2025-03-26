@@ -7,7 +7,7 @@ import type { SelfVerificationResult } from '../../../common/src/utils/selfAttes
 import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
-import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
+import { Country3LetterCode } from '../../../common/src/constants/countries';
 
 export class SelfBackendVerifier {
   protected scope: string;

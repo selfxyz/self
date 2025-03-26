@@ -63,7 +63,7 @@ export async function generateTeeInputsVCAndDisclose(
   passportData: PassportData,
   selfApp: SelfApp,
 ) {
-  const { scope, userId, disclosures } = selfApp;
+  const { scope, userId, disclosures, endpoint, endpointType } = selfApp;
 
   const selector_dg1 = Array(88).fill('0');
 
@@ -77,6 +77,8 @@ export async function generateTeeInputsVCAndDisclose(
       selector_dg1.fill('1', start, end + 1);
     }
   });
+
+  let hashedScope = poseidon2([endpoint, scope]);
 
   const majority = disclosures.minimumAge
     ? disclosures.minimumAge.toString()
@@ -103,6 +105,8 @@ export async function generateTeeInputsVCAndDisclose(
     PASSPORT_ATTESTATION_ID,
     passportData,
     scope,
+    endpoint,
+    endpointType,
     selector_dg1,
     selector_older_than,
     tree,
