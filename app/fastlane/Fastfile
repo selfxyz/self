@@ -20,7 +20,7 @@ attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
 is_ci = ENV['CI'] && ENV['ACT'] != 'true'
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
-should_increment_build_number = ENV['IS_PR'] != 'true' && (is_ci || attempt_force_upload_local_dev)
+should_increment_build_number = is_ci || attempt_force_upload_local_dev
 
 if local_development
   puts "Loading .env.secrets"
