@@ -17,7 +17,7 @@ PROJECT_SCHEME = "OpenPassport"
 
 # Environment setup
 attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
-is_ci = ENV['CI'] && ENV['ACT'] != 'true'
+is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
 
@@ -78,7 +78,7 @@ platform :ios do
         signingCertificate: "Apple Distribution",
         teamID: ENV["IOS_TEAM_ID"]
       },
-      xcargs: is_ci ? "-allowProvisioningUpdates" : nil
+      xcargs: "-allowProvisioningUpdates"
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
@@ -106,8 +106,9 @@ platform :ios do
       api_key: result[:api_key],
       distribute_external: true,
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-      changelog: ""
-    ) if result[:should_upload]
+      changelog: "",
+      skip_submission: result[:should_upload]
+    )
   end
 
   desc "Prepare a new build for App Store submission"
@@ -119,8 +120,9 @@ platform :ios do
       skip_screenshots: true,
       skip_metadata: true,
       submit_for_review: false,
-      automatic_release: false
-    ) if result[:should_upload]
+      automatic_release: false,
+      skip_submission: result[:should_upload]
+    )
   end
 end
 
@@ -172,9 +174,10 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      release_status: "completed",
-      aab: aab_path
-    ) if should_upload
+      release_status: should_upload ? "completed" : "draft",
+      aab: aab_path,
+      validate_only: !should_upload
+    )
   end
 
   desc "Sync android version"
