@@ -290,6 +290,16 @@ jobs:
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
         run: |
+          # Verify Play Store JSON key base64 secret exists and is valid
+          if [ -z "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" ]; then
+            echo "❌ Error: Play Store JSON key base64 secret cannot be empty"
+            exit 1
+          fi
+          # Verify the base64 can be decoded
+          if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode >/dev/null 2>&1; then
+            echo "❌ Error: Invalid Play Store JSON key base64 format"
+            exit 1
+          fi
           # Verify keystore file exists and is valid
           if [ ! -f "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" ]; then
             echo "❌ Error: Keystore file was not created successfully"
@@ -308,11 +318,6 @@ jobs:
           # Verify the key password
           if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
             echo "❌ Error: Invalid key password"
-            exit 1
-          fi
-          # Verify Play Store JSON key is valid JSON
-          if ! cat "${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}" | jq '.' >/dev/null 2>&1; then
-            echo "❌ Error: Invalid Play Store JSON key format"
             exit 1
           fi
           echo "✅ All Android secrets verified successfully!"
