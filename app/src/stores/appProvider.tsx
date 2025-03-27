@@ -130,15 +130,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
       socketRef.current = initSocket(sessionId);
     }
 
-    console.log('[AppProvider] Emitting proof_verified event with data:', {
-      session_id: sessionId,
-      proof_verified,
-    });
+    if (proof_verified) {
+      console.log('[AppProvider] Emitting proof_verified event with data:', {
+        session_id: sessionId,
+      });
 
-    socketRef.current.emit('proof_verified', {
-      session_id: sessionId,
-      proof_verified,
-    });
+      socketRef.current.emit('proof_verified', {
+        session_id: sessionId,
+      });
+    } else {
+      console.log('[AppProvider] Emitting proof_generation_failed event with data:', {
+        session_id: sessionId,
+      });
+
+      socketRef.current.emit('proof_generation_failed', {
+        session_id: sessionId,
+      });
+    }
   };
 
   useEffect(() => {
