@@ -19,6 +19,7 @@ env:
 
   # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
+  ANDROID_PLAY_STORE_KEY_PATH: /android/play-store-key.json
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
   IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
@@ -281,9 +282,10 @@ jobs:
         run: |
           echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
 
-      - name: Decode Keystore
+      - name: Decode Android Secrets
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}
 
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
@@ -308,12 +310,11 @@ jobs:
             echo "❌ Error: Invalid key password"
             exit 1
           fi
-          # TODO: uncomment this when we have a way to test the Play Store JSON key
           # Verify Play Store JSON key is valid JSON
-          # if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}" | jq '.' >/dev/null 2>&1; then
-          #   echo "❌ Error: Invalid Play Store JSON key format"
-          #   exit 1
-          # fi
+          if ! cat "${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}" | jq '.' >/dev/null 2>&1; then
+            echo "❌ Error: Invalid Play Store JSON key format"
+            exit 1
+          fi
           echo "✅ All Android secrets verified successfully!"
 
       - name: Build and upload to Google Play Internal Testing
@@ -324,7 +325,7 @@ jobs:
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-          ANDROID_PLAY_STORE_JSON_KEY: ${{ secrets.ANDROID_PLAY_STORE_JSON_KEY }}
+          ANDROID_PLAY_STORE_JSON_KEY: $(cat ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }})
         run: |
           cd ${{ env.APP_PATH }}
           # if pushing to main, deploy to Play Store
