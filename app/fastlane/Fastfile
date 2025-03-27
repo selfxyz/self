@@ -20,7 +20,6 @@ attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
 is_ci = ENV['CI'] && ENV['ACT'] != 'true'
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
-should_increment_build_number = is_ci || attempt_force_upload_local_dev
 
 if local_development
   puts "Loading .env.secrets"
@@ -41,16 +40,15 @@ platform :ios do
       setup_ci
     end
 
-    if should_increment_build_number
-      Fastlane::Helpers.increment_build_number_from_testflight(PROJECT_NAME)
-    end
+    Fastlane::Helpers.increment_build_number_from_testflight(PROJECT_NAME)
 
     required_env_vars = [
       "IOS_APP_IDENTIFIER",
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
       "IOS_CONNECT_API_KEY_BASE64",
-      "IOS_PROV_PROFILE_NAME"
+      "IOS_PROV_PROFILE_NAME",
+      "IOS_TEAM_ID"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -72,8 +70,13 @@ platform :ios do
       export_method: "app-store",
       output_directory: "build",
       clean: true,
-      provisioningProfiles: {
-        ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
+      export_options: {
+        provisioningProfiles: {
+          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
+        },
+        signingStyle: "manual",
+        signingCertificate: "Apple Distribution",
+        teamID: ENV["IOS_TEAM_ID"]
       }
     )
 
@@ -133,7 +136,7 @@ platform :android do
     end
 
     # TODO: when we have a the json api key
-    if false && should_increment_build_number
+    if false
       Fastlane::Helpers.increment_version_code_from_play_store
     end
 

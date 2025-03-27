@@ -35,7 +35,7 @@ on:
     paths:
       - "app/**"
       - ".github/workflows/mobile-deploy.yml"
-  # for debugging, there is a check in fastlane to prevent pull request uploads
+  # for debugging, there is a check in fastlane to store uploads from pull requests
   # may also help with incrementing build numbers
   pull_request:
     paths:
@@ -148,6 +148,7 @@ jobs:
           IOS_DIST_CERT_PATH: ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           cd ${{ env.APP_PATH }}
           # if pushing to main, deploy to App Store
