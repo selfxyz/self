@@ -172,8 +172,20 @@ jobs:
       - name: Install provisioning profile
         if: ${{ !env.ACT }}
         run: |
+          # Install provisioning profile in the correct location
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
           cp ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }} ~/Library/MobileDevice/Provisioning\ Profiles/
+          
+          # Install provisioning profile in the keychain
+          security import ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }} -k build.keychain -T /usr/bin/codesign >/dev/null 2>&1
+          
+          # Verify provisioning profile exists
+          if ! security find-identity -v -p codesigning -k build.keychain | grep -q "${{ secrets.IOS_PROV_PROFILE_NAME }}"; then
+            echo "❌ Error: Provisioning profile not found in keychain"
+            exit 1
+          fi
+          
+          echo "✅ Provisioning profile installed and verified"
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
@@ -186,12 +198,18 @@ jobs:
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
-          IOS_DIST_CERT_PATH: ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
-          IOS_PROV_PROFILE_PATH: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
-          IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           cd ${{ env.APP_PATH }}
+          # Verify team ID and app identifier
+          if [ -z "$IOS_TEAM_ID" ]; then
+            echo "❌ Error: IOS_TEAM_ID is not set"
+            exit 1
+          fi
+          if [ -z "$IOS_APP_IDENTIFIER" ]; then
+            echo "❌ Error: IOS_APP_IDENTIFIER is not set"
+            exit 1
+          fi
           # if pushing to main, deploy to App Store
           if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane ios deploy --verbose
