@@ -63,7 +63,9 @@ function setupSocketConnection(
   });
 
   socket.on('connect', () => {
-    console.log('SocketIO: Connection opened' + (ws ? '' : ' for existing session'));
+    console.log(
+      'SocketIO: Connection opened' + (ws ? '' : ' for existing session'),
+    );
     socket?.emit('subscribe', sessionId);
   });
 
@@ -72,7 +74,7 @@ function setupSocketConnection(
     socket?.emit('subscribe', sessionId);
   });
 
-  socket.on('reconnect_error', (error) => {
+  socket.on('reconnect_error', error => {
     console.log('SocketIO: Reconnection error:', error);
   });
 
@@ -83,7 +85,10 @@ function setupSocketConnection(
 
   socket.on('status', message => {
     const data = typeof message === 'string' ? JSON.parse(message) : message;
-    console.log('SocketIO message' + (ws ? '' : ' for existing session') + ':', data);
+    console.log(
+      'SocketIO message' + (ws ? '' : ' for existing session') + ':',
+      data,
+    );
     if (data.status === 3) {
       console.log('Failed to generate proof');
       socket?.disconnect();
@@ -172,7 +177,7 @@ export async function sendPayload(
         // Update registration flow status based on final status
         if (options?.flow === 'registration') {
           updateRegistrationStatus(
-            status === ProofStatusEnum.SUCCESS ? 'success' : 'failure'
+            status === ProofStatusEnum.SUCCESS ? 'success' : 'failure',
           );
         }
         resolve(status);
@@ -263,7 +268,12 @@ export async function sendPayload(
             updateRegistrationStatus('pending');
           }
           if (!socket) {
-            socket = setupSocketConnection(receivedUuid, endpointType, finalize, ws);
+            socket = setupSocketConnection(
+              receivedUuid,
+              endpointType,
+              finalize,
+              ws,
+            );
           }
         }
       } catch (error) {
@@ -410,4 +420,3 @@ export async function listenToExistingSession(
     }, 1200000); // Same timeout as sendPayload
   });
 }
-

@@ -29,7 +29,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
-  const { setRegistrationSessionId, registrationSessionId, registrationFlowStatus, setRegistrationFlowStatus } = useSettingStore();
+  const {
+    setRegistrationSessionId,
+    registrationSessionId,
+    registrationFlowStatus,
+    setRegistrationFlowStatus,
+  } = useSettingStore();
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -82,13 +87,27 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           const { passportData, secret } = passportDataAndSecret.data;
           // If we have a session ID and the flow is not in 'started' state, listen to its status
           // as this means either the session is pending or the flow is already finished
-          if (registrationSessionId && registrationFlowStatus && registrationFlowStatus !== 'started') {
-            console.log('Listening to existing session:', registrationSessionId);
-            const endpointType = passportData.documentType === 'mock_passport' ? 'staging_celo' : 'celo';
+          if (
+            registrationSessionId &&
+            registrationFlowStatus &&
+            registrationFlowStatus !== 'started'
+          ) {
+            console.log(
+              'Listening to existing session:',
+              registrationSessionId,
+            );
+            const endpointType =
+              passportData.documentType === 'mock_passport'
+                ? 'staging_celo'
+                : 'celo';
 
-            const result = await listenToExistingSession(registrationSessionId, endpointType, {
-              flow: 'registration',
-            });
+            const result = await listenToExistingSession(
+              registrationSessionId,
+              endpointType,
+              {
+                flow: 'registration',
+              },
+            );
 
             if (result.status === ProofStatusEnum.SUCCESS) {
               setAnimationSource(successAnimation);
@@ -140,7 +159,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
 
-          await registerPassport(passportData, secret, setRegistrationSessionId, setRegistrationFlowStatus);
+          await registerPassport(
+            passportData,
+            secret,
+            setRegistrationSessionId,
+            setRegistrationFlowStatus,
+          );
         } catch (error) {
           console.error('Error processing payload:', error);
           setRegistrationSessionId(null);
