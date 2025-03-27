@@ -55,7 +55,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
       setRegistrationSessionId(null);
-      setRegistrationFlowStatus('success');
       goToSuccessScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     } else if (
@@ -64,11 +63,10 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     ) {
       setAnimationSource(failAnimation);
       setRegistrationSessionId(null);
-      setRegistrationFlowStatus('failure');
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
-  }, [registrationStatus, setRegistrationSessionId, setRegistrationFlowStatus]);
+  }, [registrationStatus, setRegistrationSessionId]);
 
   const processPayloadCalled = useRef(false);
 
