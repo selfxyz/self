@@ -139,9 +139,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
         session_id: sessionId,
       });
     } else {
-      console.log('[AppProvider] Emitting proof_generation_failed event with data:', {
-        session_id: sessionId,
-      });
+      console.log(
+        '[AppProvider] Emitting proof_generation_failed event with data:',
+        {
+          session_id: sessionId,
+        },
+      );
 
       socketRef.current.emit('proof_generation_failed', {
         session_id: sessionId,
