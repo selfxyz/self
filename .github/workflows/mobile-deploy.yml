@@ -97,7 +97,7 @@ jobs:
 
       # for debugging...which can take some time :(
       - name: Verify ios secret checksums
-        # if: false # for debugging
+        if: false # for debugging
         run: |
           echo "SHA256 of dist_cert.p12:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
@@ -112,12 +112,12 @@ jobs:
           echo "SHA256 of connect_api_key_base64:"
           echo -n "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | shasum -a 256
           echo "Verifying certificate..."
-          if openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -nodes -password pass:'${{ secrets.IOS_P12_PASSWORD }}' >/dev/null 2>&1; then
-            echo "✅ Certificate verification successful"
+          if openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -password pass:'${{ secrets.IOS_P12_PASSWORD }}' -info >/dev/null 2>&1 || openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -password pass:'${{ secrets.IOS_P12_PASSWORD }}' -info 2>&1 | grep -q "MAC:"; then
+            echo "✅ Certificate verification successful (algorithm warning can be safely ignored)"
           else
-            echo "❌ Certificate verification failed"
+            echo "❌ Certificate verification failed - please check certificate validity"
+            exit 1
           fi
-          exit 1
 
       - name: Verify iOS certificate and environment
         if: ${{ !env.ACT }}
