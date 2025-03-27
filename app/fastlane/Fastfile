@@ -77,7 +77,8 @@ platform :ios do
         signingStyle: "manual",
         signingCertificate: "Apple Distribution",
         teamID: ENV["IOS_TEAM_ID"]
-      }
+      },
+      xcargs: is_ci ? "-allowProvisioningUpdates" : nil
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
