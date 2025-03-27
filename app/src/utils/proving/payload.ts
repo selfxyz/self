@@ -20,6 +20,7 @@ import {
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
+import { RegistrationFlowStatus } from '../../stores/settingStore';
 import {
   generateTeeInputsDsc,
   generateTeeInputsRegister,
@@ -78,6 +79,7 @@ export async function sendRegisterPayload(
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
   onRegistrationStart?: (sessionId: string) => void,
+  setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
@@ -97,6 +99,7 @@ export async function sendRegisterPayload(
       updateGlobalOnFailure: true,
       flow: 'registration',
       onRegistrationStart,
+      setRegistrationFlowStatus,
     },
   );
 }
@@ -218,25 +221,6 @@ export async function isUserRegistered(
   return index !== -1;
 }
 
-export async function isRegistrationPending(sessionId: string, isMock: boolean): Promise<ProofStatusEnum> {
-  console.log('Checking if registration is pending for sessionId', sessionId, isMock);
-  // const response = await fetch(`${WS_DB_RELAYER}/uuid-status/${sessionId}`, {
-  //   method: 'GET',
-  // });
-  // const data = await response.json();
-  // const status = data.data;
-
-  // if (status == 4) {
-  //   return ProofStatusEnum.SUCCESS;
-  // } else if (status == 3) {
-  //   return ProofStatusEnum.FAILURE;
-  // } else {
-  //   return ProofStatusEnum.PENDING;
-  // }
-
-  return ProofStatusEnum.PENDING;
-}
-
 export async function isPassportNullified(passportData: PassportData) {
   const nullifier = generateNullifier(passportData);
   const nullifierHex = `0x${BigInt(nullifier).toString(16)}`;
@@ -257,6 +241,7 @@ export async function registerPassport(
   passportData: PassportData,
   secret: string,
   onRegistrationStart?: (sessionId: string) => void,
+  setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void,
 ) {
   // First get the mapping, then use it for the check
   const endpointType =
@@ -275,6 +260,9 @@ export async function registerPassport(
     endpointType,
   );
   if (!dscOk) {
+    if (setRegistrationFlowStatus) {
+      setRegistrationFlowStatus('failure');
+    }
     return;
   }
   await sendRegisterPayload(
@@ -283,6 +271,7 @@ export async function registerPassport(
     circuitDNSMapping,
     endpointType,
     onRegistrationStart,
+    setRegistrationFlowStatus,
   );
 }
 

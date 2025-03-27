@@ -29,7 +29,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
-  const { setRegistrationSessionId, registrationSessionId } = useSettingStore();
+  const { setRegistrationSessionId, registrationSessionId, registrationFlowStatus, setRegistrationFlowStatus } = useSettingStore();
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -55,6 +55,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
       setRegistrationSessionId(null);
+      setRegistrationFlowStatus('success');
       goToSuccessScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     } else if (
@@ -63,10 +64,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     ) {
       setAnimationSource(failAnimation);
       setRegistrationSessionId(null);
+      setRegistrationFlowStatus('failure');
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
-  }, [registrationStatus, setRegistrationSessionId]);
+  }, [registrationStatus, setRegistrationSessionId, setRegistrationFlowStatus]);
 
   const processPayloadCalled = useRef(false);
 
@@ -80,8 +82,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
-          // If we have a session ID, just listen to its status
-          if (registrationSessionId) {
+          // If we have a session ID and the flow is not in 'started' state, listen to its status
+          // as this means either the session is pending or the flow is already finished
+          if (registrationSessionId && registrationFlowStatus && registrationFlowStatus !== 'started') {
             console.log('Listening to existing session:', registrationSessionId);
             const endpointType = passportData.documentType === 'mock_passport' ? 'staging_celo' : 'celo';
 
@@ -92,16 +95,22 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             if (result.status === ProofStatusEnum.SUCCESS) {
               setAnimationSource(successAnimation);
               setRegistrationSessionId(null);
+              setRegistrationFlowStatus('success');
               goToSuccessScreenWithDelay();
               setTimeout(() => resetProof(), 3000);
             } else {
               setAnimationSource(failAnimation);
               setRegistrationSessionId(null);
+              setRegistrationFlowStatus('failure');
               goToErrorScreenWithDelay();
               setTimeout(() => resetProof(), 3000);
             }
             return;
           }
+
+          //setting the flow as 'started' so that if the user exits the app and comes back,
+          //the user is returned to this screen instead of the splashscreen
+          setRegistrationFlowStatus('started');
 
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
@@ -132,18 +141,18 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-          await registerPassport(passportData, secret, (sessionId) => {
-            setRegistrationSessionId(sessionId);
-          });
+
+          await registerPassport(passportData, secret, setRegistrationSessionId, setRegistrationFlowStatus);
         } catch (error) {
           console.error('Error processing payload:', error);
           setRegistrationSessionId(null);
+          setRegistrationFlowStatus('failure');
           setTimeout(() => resetProof(), 1000);
         }
       };
       processPayload();
     }
-  }, [registrationSessionId]);
+  }, [registrationSessionId, registrationFlowStatus]);
 
   return (
     <View style={styles.container}>

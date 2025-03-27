@@ -10,13 +10,12 @@ import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
 import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
-import { isRegistrationPending, isUserRegistered } from '../utils/proving/payload';
-import { ProofStatusEnum } from '../stores/proofProvider';
+import { isUserRegistered } from '../utils/proving/payload';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
-  const { setBiometricsAvailable, registrationSessionId, setRegistrationSessionId } = useSettingStore();
+  const { setBiometricsAvailable, registrationSessionId, registrationFlowStatus, setRegistrationSessionId } = useSettingStore();
 
   useEffect(() => {
     checkBiometricsAvailable()
@@ -38,35 +37,16 @@ const SplashScreen: React.FC = ({}) => {
 
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
 
-      console.log('registrationSessionId', registrationSessionId);
-
-      if (registrationSessionId) {
-        try {
-          const isMock = passportData.documentType === 'mock_passport';
-          const status = await isRegistrationPending(registrationSessionId, isMock);
-          if (status === ProofStatusEnum.PENDING) {
-            navigation.navigate('LoadingScreen', { });
-            return;
-          } else if (status === ProofStatusEnum.SUCCESS) {
-            setRegistrationSessionId(null);
-            navigation.navigate('AccountVerifiedSuccess');
-            return;
-          } else {
-            setRegistrationSessionId(null);
-            navigation.navigate('Launch');
-          }
-        } catch (error) {
-          console.error('Error verifying session:', error);
-          setRegistrationSessionId(null);
-          navigation.navigate('Launch');
-        }
-      }
-
       const isRegistered = await isUserRegistered(passportData, secret);
       console.log('User is registered:', isRegistered);
       if (isRegistered) {
         console.log('Passport is registered already. Skipping to HomeScreen');
         navigation.navigate('Home');
+        return;
+      }
+
+      if (registrationFlowStatus === 'started' || registrationFlowStatus === 'pending') {
+        navigation.navigate('LoadingScreen', { });
         return;
       }
       // Currently, we dont check isPassportNullified(passportData);
@@ -78,7 +58,7 @@ const SplashScreen: React.FC = ({}) => {
       // Rest of the time, keep the LaunchScreen flow
       navigation.navigate('Launch');
     }, 1000);
-  }, [navigation, registrationSessionId, setRegistrationSessionId]);
+  }, [navigation, registrationSessionId, setRegistrationSessionId, registrationFlowStatus]);
 
   return (
     <LottieView

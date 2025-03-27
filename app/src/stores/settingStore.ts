@@ -2,6 +2,8 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+export type RegistrationFlowStatus = 'started' | 'pending' | 'success' | 'failure' | null;
+
 interface SettingsState {
   hasPrivacyNoteBeenDismissed: boolean;
   dismissPrivacyNote: () => void;
@@ -14,6 +16,8 @@ interface SettingsState {
   setDevModeOff: () => void;
   registrationSessionId: string | null;
   setRegistrationSessionId: (sessionId: string | null) => void;
+  registrationFlowStatus: RegistrationFlowStatus;
+  setRegistrationFlowStatus: (status: RegistrationFlowStatus) => void;
 }
 
 /*
@@ -44,6 +48,10 @@ export const useSettingStore = create<SettingsState>()(
       registrationSessionId: null,
       setRegistrationSessionId: (sessionId: string | null) =>
         set({ registrationSessionId: sessionId }),
+
+      registrationFlowStatus: null,
+      setRegistrationFlowStatus: (status: RegistrationFlowStatus) => 
+        set({ registrationFlowStatus: status }),
     }),
     {
       name: 'setting-storage',

@@ -14,6 +14,7 @@ import {
   globalSetDisclosureStatus,
   globalSetRegistrationStatus,
 } from '../../stores/proofProvider';
+import { RegistrationFlowStatus } from '../../stores/settingStore';
 import { getPublicKey, verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
@@ -117,6 +118,7 @@ export async function sendPayload(
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
     onRegistrationStart?: (sessionId: string) => void;
+    setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void;
   },
 ): Promise<ProofStatusEnum> {
   const opts = {
@@ -144,11 +146,6 @@ export async function sendPayload(
       }
     }
     const uuid = v4();
-    // Notify about registration start immediately
-    if (options?.flow === 'registration' && options.onRegistrationStart) {
-      console.log('Storing sessionId', uuid);
-      options.onRegistrationStart(uuid);
-    }
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
     function createHelloBody(uuidString: string) {
@@ -175,6 +172,9 @@ export async function sendPayload(
           const verified = await verifyAttestation(result.result.attestation);
           if (!verified) {
             finalize(ProofStatusEnum.FAILURE);
+            if (options?.setRegistrationFlowStatus) {
+              options.setRegistrationFlowStatus('failure');
+            }
             throw new Error('Attestation verification failed');
           }
           const key2 = ec.keyFromPublic(serverPubkey as string, 'hex');
@@ -224,6 +224,14 @@ export async function sendPayload(
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
           console.log(result);
+          if (options?.flow === 'registration' && options.onRegistrationStart) {
+            console.log('Storing sessionId', uuid);
+            options.onRegistrationStart(uuid);
+
+          }
+          if (options?.setRegistrationFlowStatus) {
+            options.setRegistrationFlowStatus('pending');
+          }
           if (!socket) {
             socket = setupSocketConnection(receivedUuid, endpointType, finalize, ws);
           }
