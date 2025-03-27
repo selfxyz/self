@@ -101,8 +101,6 @@ platform :ios do
   lane :internal_test do
     result = prepare_ios_build(for_testflight: true)
 
-    return
-
     upload_to_testflight(
       api_key: result[:api_key],
       distribute_external: true,

@@ -39,7 +39,7 @@ module Fastlane
         return false
       end
 
-      # if we are in CI, upload the app
+      # upload app if we are in CI or forcing local upload
       ENV['CI'] == 'true' || ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
     end
 
