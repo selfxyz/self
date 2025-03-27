@@ -97,7 +97,7 @@ jobs:
 
       # for debugging...which can take some time :(
       - name: Verify ios secret checksums
-        if: false # for debugging
+        # if: false # for debugging
         run: |
           echo "SHA256 of dist_cert.p12:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
