@@ -50,6 +50,7 @@ platform :ios do
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
       "IOS_CONNECT_API_KEY_BASE64",
+      "IOS_PROV_PROFILE_NAME"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -71,11 +72,8 @@ platform :ios do
       export_method: "app-store",
       output_directory: "build",
       clean: true,
-      xcargs: "-allowProvisioningUpdates",
-      export_options: {
-        compileBitcode: false,
-        manageAppVersionAndBuildNumber: false,
-        signingStyle: "automatic"
+      provisioningProfiles: {
+        ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
       }
     )
 
