@@ -15,7 +15,12 @@ import { isUserRegistered } from '../utils/proving/payload';
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
-  const { setBiometricsAvailable, registrationSessionId, registrationFlowStatus, setRegistrationSessionId } = useSettingStore();
+  const {
+    setBiometricsAvailable,
+    registrationSessionId,
+    registrationFlowStatus,
+    setRegistrationSessionId,
+  } = useSettingStore();
 
   useEffect(() => {
     checkBiometricsAvailable()
@@ -45,8 +50,11 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
-      if (registrationFlowStatus === 'started' || registrationFlowStatus === 'pending') {
-        navigation.navigate('LoadingScreen', { });
+      if (
+        registrationFlowStatus === 'started' ||
+        registrationFlowStatus === 'pending'
+      ) {
+        navigation.navigate('LoadingScreen', {});
         return;
       }
       // Currently, we dont check isPassportNullified(passportData);
@@ -58,7 +66,12 @@ const SplashScreen: React.FC = ({}) => {
       // Rest of the time, keep the LaunchScreen flow
       navigation.navigate('Launch');
     }, 1000);
-  }, [navigation, registrationSessionId, setRegistrationSessionId, registrationFlowStatus]);
+  }, [
+    navigation,
+    registrationSessionId,
+    setRegistrationSessionId,
+    registrationFlowStatus,
+  ]);
 
   return (
     <LottieView
