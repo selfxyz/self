@@ -208,7 +208,7 @@ module Fastlane
     def self.verify_android_version_code
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"]
+        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
       ).first
 
       gradle_file = "../android/app/build.gradle"
@@ -229,7 +229,7 @@ module Fastlane
     def self.increment_version_code_from_play_store
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"]
+        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
       ).first || 0
       
       new_version = latest_version + 1

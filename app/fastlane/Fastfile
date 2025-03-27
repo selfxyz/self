@@ -145,7 +145,7 @@ platform :android do
       "ANDROID_KEYSTORE_PATH",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
-      "ANDROID_PLAY_STORE_JSON_KEY"
+      "ANDROID_PLAY_STORE_KEY_PATH"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -172,7 +172,7 @@ platform :android do
     
     upload_to_play_store(
       track: options[:track],
-      json_key_data: ENV["ANDROID_PLAY_STORE_JSON_KEY"],
+      json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"],
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
