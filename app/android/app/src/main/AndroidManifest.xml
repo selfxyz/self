@@ -41,8 +41,7 @@
             <category android:name="android.intent.category.BROWSABLE" />
             <data
                 android:scheme="https"
-                android:host="redirect.self.xyz"
-                android:pathPrefix="/" />
+                android:host="redirect.self.xyz" />
         </intent-filter>
 
       <meta-data
