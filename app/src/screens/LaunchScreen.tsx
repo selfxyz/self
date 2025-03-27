@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
@@ -17,12 +17,17 @@ import Logo from '../images/logo.svg';
 import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
+import { useSettingStore } from '../stores/settingStore';
+import { useNavigation } from '@react-navigation/native';
 
 interface LaunchScreenProps {}
 
 const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   useConnectionModal();
-  const onStartPress = useHapticNavigation('PassportOnboarding');
+  const navigation = useNavigation();
+  const { registrationFlowStatus } = useSettingStore();
+  const navigateToPassportOnboarding = useHapticNavigation('PassportOnboarding');
+  const navigateToLoadingScreen = useHapticNavigation('LoadingScreen');
   const skipToHome = useHapticNavigation('Home');
   const createMock = useHapticNavigation('CreateMock');
   const { height } = useWindowDimensions();
@@ -32,6 +37,15 @@ const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
     .onStart(() => {
       createMock();
     });
+
+  const onStartPress = useCallback(() => {
+    console.log('registrationFlowStatus', registrationFlowStatus);
+    if (registrationFlowStatus === 'started' || registrationFlowStatus === 'pending') {
+      navigateToLoadingScreen();
+    } else {
+      navigateToPassportOnboarding();
+    }
+  }, [registrationFlowStatus, navigateToPassportOnboarding, navigateToLoadingScreen]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={black}>
