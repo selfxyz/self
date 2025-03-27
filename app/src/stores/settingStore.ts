@@ -50,7 +50,7 @@ export const useSettingStore = create<SettingsState>()(
         set({ registrationSessionId: sessionId }),
 
       registrationFlowStatus: null,
-      setRegistrationFlowStatus: (status: RegistrationFlowStatus) => 
+      setRegistrationFlowStatus: (status: RegistrationFlowStatus) =>
         set({ registrationFlowStatus: status }),
     }),
     {

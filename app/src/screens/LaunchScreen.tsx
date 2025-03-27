@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 
@@ -18,13 +18,11 @@ import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
 import { black, slate50, slate100, slate500, white } from '../utils/colors';
 import { advercase, dinot } from '../utils/fonts';
 import { useSettingStore } from '../stores/settingStore';
-import { useNavigation } from '@react-navigation/native';
 
 interface LaunchScreenProps {}
 
 const LaunchScreen: React.FC<LaunchScreenProps> = ({}) => {
   useConnectionModal();
-  const navigation = useNavigation();
   const { registrationFlowStatus } = useSettingStore();
   const navigateToPassportOnboarding = useHapticNavigation('PassportOnboarding');
   const navigateToLoadingScreen = useHapticNavigation('LoadingScreen');
