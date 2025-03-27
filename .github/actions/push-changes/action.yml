@@ -13,76 +13,48 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - name: Create commit
+    - name: Configure Git
       shell: bash
       run: |
-        # Enable better error handling and logging
         set -e
-        set -x
-
-        # Configure git with more descriptive identity
         git config --global user.email "action@github.com"
         git config --global user.name "Self GitHub Actions"
 
-        # Validate path exists
+    - name: Commit Changes
+      shell: bash
+      run: |
+        set -e
+        set -x
+
         if [ ! -d "${{ inputs.commit_path }}" ]; then
           echo "Error: Path ${{ inputs.commit_path }} does not exist"
           exit 1
         fi
 
-        # Only add changes in the specified path
         git add "${{ inputs.commit_path }}"
 
-        # Check if there are any changes in the specified path
         if git diff --staged --quiet; then
           echo "No changes to commit in ${{ inputs.commit_path }}"
         else
           echo "Changes to be committed:"
           git diff --cached "${{ inputs.commit_path }}"
-          echo ""
           git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
         fi
 
-    - name: Push changes
+    - name: Push Changes
       shell: bash
       run: |
-        # Enable better error handling and logging
         set -e
         set -x
 
-        # Only proceed if there are commits to push
         if git rev-parse --verify HEAD >/dev/null 2>&1; then
-          # Get current branch name with proper PR handling
           if [[ ${{ github.ref }} == refs/pull/* ]]; then
             CURRENT_BRANCH=${{ github.head_ref }}
           else
-            CURRENT_BRANCH=$(echo ${{ github.ref }} | sed 's/refs\/heads\///')
+            CURRENT_BRANCH=$(echo ${{ github.ref }} | sed 's|refs/heads/||')
           fi
 
           echo "Pushing changes to branch: $CURRENT_BRANCH"
-          
-          # Show current changes
-          echo "Current changes in ${{ inputs.commit_path }}:"
-          git diff --name-only "${{ inputs.commit_path }}"
-          echo ""
-          
-          # Fetch all changes
-          echo "Fetching all changes..."
-          git fetch origin
-          
-          # Get the base branch (main or master)
-          BASE_BRANCH="main"
-          if ! git show-ref --verify --quiet refs/remotes/origin/main; then
-            BASE_BRANCH="master"
-          fi
-          
-          echo "Rebasing on top of $BASE_BRANCH..."
-          git rebase origin/$BASE_BRANCH || {
-            echo "Failed to rebase on $BASE_BRANCH"
-            exit 1
-          }
-          
-          # Push changes to current branch
           git push origin HEAD:$CURRENT_BRANCH || {
             echo "Failed to push to $CURRENT_BRANCH"
             exit 1
