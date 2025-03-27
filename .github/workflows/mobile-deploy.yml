@@ -119,6 +119,46 @@ jobs:
           fi
           exit 1
 
+      - name: Verify iOS certificate and environment
+        if: ${{ !env.ACT }}
+        run: |
+          # Check if certificate directory exists
+          if [ ! -d "${{ env.APP_PATH }}/ios/certs" ]; then
+            echo "❌ Error: iOS certificates directory not found at ${{ env.APP_PATH }}/ios/certs"
+            exit 1
+          fi
+          
+          # Check if certificate file exists
+          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" ]; then
+            echo "❌ Error: Distribution certificate not found at ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}"
+            exit 1
+          fi
+          
+          # Check certificate file permissions
+          CERT_PERMS=$(ls -l "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" | awk '{print $1}')
+          if [ "$CERT_PERMS" != "-rw-r--r--" ]; then
+            echo "❌ Error: Distribution certificate has incorrect permissions: $CERT_PERMS"
+            echo "Expected: -rw-r--r--"
+            exit 1
+          fi
+          
+          # Check certificate file size
+          CERT_SIZE=$(stat -f%z "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" 2>/dev/null || stat -c%s "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}")
+          if [ "$CERT_SIZE" -lt 1000 ]; then
+            echo "❌ Error: Distribution certificate file size ($CERT_SIZE bytes) is suspiciously small"
+            exit 1
+          fi
+          
+          # Check if we can create a test keychain
+          TEST_KEYCHAIN="test.keychain"
+          if ! security create-keychain -p "" "$TEST_KEYCHAIN" >/dev/null 2>&1; then
+            echo "❌ Error: Unable to create test keychain. Check permissions."
+            exit 1
+          fi
+          security delete-keychain "$TEST_KEYCHAIN" >/dev/null 2>&1
+          
+          echo "✅ Certificate and environment verification passed!"
+          
       - name: Install certificate
         if: ${{ !env.ACT }}
         run: |
