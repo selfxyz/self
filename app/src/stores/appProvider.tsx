@@ -28,12 +28,12 @@ interface IAppContext {
    * @param sessionId - The session ID from the scanned QR code.
    * @param success - Whether the proof was verified successfully.
    */
-  handleProofVerified: (sessionId: string, success: boolean) => void;
+  handleProofResult: (sessionId: string, success: boolean) => void;
 }
 
 const AppContext = createContext<IAppContext>({
   startAppListener: () => {},
-  handleProofVerified: () => {},
+  handleProofResult: () => {},
 });
 
 const initSocket = (sessionId: string) => {
@@ -120,9 +120,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  const handleProofVerified = (sessionId: string, proof_verified: boolean) => {
+  const handleProofResult = (sessionId: string, proof_verified: boolean) => {
     console.log(
-      '[AppProvider] handleProofVerified called with sessionId:',
+      '[AppProvider] handleProofResult called with sessionId:',
       sessionId,
     );
 
@@ -151,7 +151,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({
   }, []);
 
   return (
-    <AppContext.Provider value={{ startAppListener, handleProofVerified }}>
+    <AppContext.Provider value={{ startAppListener, handleProofResult }}>
       {children}
     </AppContext.Provider>
   );
