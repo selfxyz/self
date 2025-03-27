@@ -55,11 +55,30 @@ function setupSocketConnection(
   const socket = io(getWSDbRelayerUrl(endpointType), {
     path: '/',
     transports: ['websocket'],
+    reconnection: true,
+    reconnectionAttempts: 5,
+    reconnectionDelay: 1000,
+    reconnectionDelayMax: 5000,
+    timeout: 20000,
   });
 
   socket.on('connect', () => {
     console.log('SocketIO: Connection opened' + (ws ? '' : ' for existing session'));
     socket?.emit('subscribe', sessionId);
+  });
+
+  socket.on('reconnect', () => {
+    console.log('SocketIO: Reconnected');
+    socket?.emit('subscribe', sessionId);
+  });
+
+  socket.on('reconnect_error', (error) => {
+    console.log('SocketIO: Reconnection error:', error);
+  });
+
+  socket.on('reconnect_failed', () => {
+    console.log('SocketIO: Reconnection failed');
+    onStatus(ProofStatusEnum.FAILURE);
   });
 
   socket.on('status', message => {
@@ -126,6 +145,14 @@ export async function sendPayload(
     updateGlobalOnFailure: true,
     ...options,
   };
+
+  // Helper function to update registration flow status
+  const updateRegistrationStatus = (status: RegistrationFlowStatus) => {
+    if (options?.flow === 'registration' && options.setRegistrationFlowStatus) {
+      options.setRegistrationFlowStatus(status);
+    }
+  };
+
   return new Promise(resolve => {
     let finalized = false;
     function finalize(status: ProofStatusEnum) {
@@ -142,9 +169,16 @@ export async function sendPayload(
             globalSetRegistrationStatus && globalSetRegistrationStatus(status);
           }
         }
+        // Update registration flow status based on final status
+        if (options?.flow === 'registration') {
+          updateRegistrationStatus(
+            status === ProofStatusEnum.SUCCESS ? 'success' : 'failure'
+          );
+        }
         resolve(status);
       }
     }
+
     const uuid = v4();
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
@@ -172,9 +206,6 @@ export async function sendPayload(
           const verified = await verifyAttestation(result.result.attestation);
           if (!verified) {
             finalize(ProofStatusEnum.FAILURE);
-            if (options?.setRegistrationFlowStatus) {
-              options.setRegistrationFlowStatus('failure');
-            }
             throw new Error('Attestation verification failed');
           }
           const key2 = ec.keyFromPublic(serverPubkey as string, 'hex');
@@ -224,13 +255,12 @@ export async function sendPayload(
           const receivedUuid = result.result;
           console.log('Received UUID:', receivedUuid);
           console.log(result);
-          if (options?.flow === 'registration' && options.onRegistrationStart) {
-            console.log('Storing sessionId', uuid);
-            options.onRegistrationStart(uuid);
-
-          }
-          if (options?.setRegistrationFlowStatus) {
-            options.setRegistrationFlowStatus('pending');
+          if (options?.flow === 'registration') {
+            if (options.onRegistrationStart) {
+              console.log('Storing sessionId', uuid);
+              options.onRegistrationStart(uuid);
+            }
+            updateRegistrationStatus('pending');
           }
           if (!socket) {
             socket = setupSocketConnection(receivedUuid, endpointType, finalize, ws);
@@ -243,13 +273,17 @@ export async function sendPayload(
     });
     ws.addEventListener('error', error => {
       console.error('WebSocket error:', error);
-      finalize(ProofStatusEnum.ERROR);
+      // Don't finalize on error, Instead we handle it in the close event.
     });
     ws.addEventListener('close', event => {
       console.log(
         `WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
       );
-      if (!finalized) {
+
+      // If the connection was not finalized and the code is not 1006, finalize as failure.
+      // 1006 is the code for abnormal closure (ex: due to app going to background).
+      // Since we are not finalizing here, the ws will reconnect and resubscribe to the sessionId.
+      if (!finalized && event.code !== 1006) {
         finalize(ProofStatusEnum.FAILURE);
       }
     });
