@@ -66,13 +66,19 @@ runs:
           git diff --name-only "${{ inputs.commit_path }}"
           echo ""
           
-          # Pull latest changes and show what's being pulled
-          echo "Pulling latest changes from $CURRENT_BRANCH..."
-          git fetch origin $CURRENT_BRANCH
-          echo "Changes to be pulled:"
-          git diff HEAD..origin/$CURRENT_BRANCH --name-only
-          git pull origin $CURRENT_BRANCH || {
-            echo "Failed to pull from $CURRENT_BRANCH"
+          # Fetch all changes
+          echo "Fetching all changes..."
+          git fetch origin
+          
+          # Get the base branch (main or master)
+          BASE_BRANCH="main"
+          if ! git show-ref --verify --quiet refs/remotes/origin/main; then
+            BASE_BRANCH="master"
+          fi
+          
+          echo "Rebasing on top of $BASE_BRANCH..."
+          git rebase origin/$BASE_BRANCH || {
+            echo "Failed to rebase on $BASE_BRANCH"
             exit 1
           }
           
