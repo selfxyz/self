@@ -187,11 +187,6 @@ jobs:
           cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" ~/Library/MobileDevice/Provisioning\ Profiles/
           echo "Provisioning profile copied to filesystem."
 
-          # Install provisioning profile in the keychain
-          echo "Importing provisioning profile into keychain..."
-          security import "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" -k build.keychain -T /usr/bin/codesign
-          echo "Keychain import command executed."
-
           # Verify provisioning profile exists
           # if ! security cms -D -i "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" | grep -q "Name"; then
           #   echo "❌ Error: Invalid provisioning profile"
