@@ -42,7 +42,7 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
-  const { handleProofVerified } = useApp();
+  const { handleProofResult } = useApp();
   const selectedAppRef = useRef(selectedApp);
   const isProcessing = useRef(false);
 
@@ -168,7 +168,7 @@ const ProveScreen: React.FC = () => {
           passportData,
           currentApp,
         );
-        handleProofVerified(
+        handleProofResult(
           currentApp.sessionId,
           status === ProofStatusEnum.SUCCESS,
         );
@@ -179,7 +179,7 @@ const ProveScreen: React.FC = () => {
         isProcessing.current = false;
       }
     },
-    [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
+    [navigate, getPassportDataAndSecret, handleProofResult, resetProof],
   );
 
   const handleScroll = useCallback(

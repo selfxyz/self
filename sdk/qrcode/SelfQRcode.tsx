@@ -58,7 +58,6 @@ const SelfQRcode = ({
         },
         type,
         setProofStep,
-        setProofVerified,
         onSuccess
       );
     }
@@ -85,30 +84,28 @@ const SelfQRcode = ({
             case QRcodeSteps.PROOF_GENERATION_STARTED:
             case QRcodeSteps.PROOF_GENERATED:
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
+            case QRcodeSteps.PROOF_GENERATION_FAILED:
+              return (
+                <Lottie
+                  animationData={X_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
+                  loop={false}
+                />
+              );
             case QRcodeSteps.PROOF_VERIFIED:
-              if (proofVerified) {
-                return (
-                  <Lottie
-                    animationData={CHECK_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    onComplete={() => {
-                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                    }}
-                    loop={false}
-                  />
-                );
-              } else {
-                return (
-                  <Lottie
-                    animationData={X_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    onComplete={() => {
-                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                    }}
-                    loop={false}
-                  />
-                );
-              }
+              return (
+                <Lottie
+                  animationData={CHECK_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
+                  loop={false}
+                />
+              );
             default:
               return (
                 <QRCodeSVG
