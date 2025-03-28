@@ -53,8 +53,8 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.verify_ios_app_store_build_number(PROJECT_NAME)
+    Fastlane::Helpers.verify_ios_provisioning_profile
     
-
     cocoapods(podfile: "ios/Podfile")
 
     api_key = app_store_connect_api_key(
