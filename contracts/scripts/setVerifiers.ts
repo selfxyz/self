@@ -19,7 +19,7 @@ try {
     const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"), "utf-8"));
     console.log("Deployed addresses loaded:", deployedAddresses);
 
-    const identityVerificationHubAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/artifacts/DeployHub#IdentityVerificationHubImplV1.json"), "utf-8");
+    const identityVerificationHubAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/prod/artifacts/DeployHub#IdentityVerificationHubImplV1.json"), "utf-8");
     console.log("ABI file loaded");
 
     const identityVerificationHubAbi = JSON.parse(identityVerificationHubAbiFile).abi;
@@ -43,7 +43,8 @@ try {
         const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
         console.log("Wallet created");
 
-        const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
+        // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
+        const hubAddress = "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea";
         console.log("Hub address:", hubAddress);
 
         if (!hubAddress) {
