@@ -131,11 +131,11 @@ platform :android do
   private_lane :upload_android_build do |options|
     if local_development
       if ENV["ANDROID_KEYSTORE_PATH"].nil?
-        ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.create_android_keystore
+        ENV["ANDROID_KEYSTORE_PATH"] = Fastlane::Helpers.android_create_keystore
       end
     end
 
-    Fastlane::Helpers.increment_version_code_from_play_store
+    Fastlane::Helpers.android_increment_version_code
 
     required_env_vars = [
       "ANDROID_KEYSTORE",
@@ -154,7 +154,7 @@ platform :android do
     )
     
     # Verify version code before building 
-    Fastlane::Helpers.verify_android_version_code
+    Fastlane::Helpers.android_verify_version_code
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(

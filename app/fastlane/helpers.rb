@@ -194,7 +194,7 @@ module Fastlane
     end
 
     # Android-specific Methods
-    def self.create_android_keystore
+    def self.android_create_keystore
       keystore_path = "../android/app/upload-keystore.jks"
       if ENV["ANDROID_KEYSTORE"]
         puts "Decoding Android keystore..."
@@ -205,7 +205,7 @@ module Fastlane
       File.realpath(keystore_path)
     end
 
-    def self.verify_android_version_code
+    def self.android_verify_version_code
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
         json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
@@ -226,7 +226,7 @@ module Fastlane
       end
     end
 
-    def self.increment_local_version_code
+    def self.android_increment_version_code
       # --- Commented out Play Store Check ---
       # Re-enable this block if Google Play API access is restored.
       # latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
