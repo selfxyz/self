@@ -40,6 +40,14 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
+      if (
+        registrationFlowStatus === 'started' ||
+        registrationFlowStatus === 'pending'
+      ) {
+        navigation.navigate('LoadingScreen', {});
+        return;
+      }
+
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
 
       const isRegistered = await isUserRegistered(passportData, secret);
@@ -50,13 +58,6 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
-      if (
-        registrationFlowStatus === 'started' ||
-        registrationFlowStatus === 'pending'
-      ) {
-        navigation.navigate('LoadingScreen', {});
-        return;
-      }
       // Currently, we dont check isPassportNullified(passportData);
       // This could lead to AccountRecoveryChoice just like in LoadingScreen
       // But it looks better right now to keep the LaunchScreen flow
