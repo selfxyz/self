@@ -266,17 +266,6 @@ jobs:
           cache-key: android-sdk-${{ env.ANDROID_API_LEVEL }}
           api-level: ${{ env.ANDROID_API_LEVEL }}
           target: android-${{ env.ANDROID_API_LEVEL }}
-          packages: |
-            platform-tools
-            platform-tools-preview
-            build-tools
-            platforms
-            cmake
-            system-images
-            emulator
-            extras;android;m2repository
-            extras;google;m2repository
-            extras;google;instantapps
 
       - name: Install NDK
         run: |
