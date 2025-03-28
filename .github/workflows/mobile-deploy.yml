@@ -205,6 +205,7 @@ jobs:
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
+          IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
