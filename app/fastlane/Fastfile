@@ -72,7 +72,10 @@ platform :ios do
       clean: true,
       export_options: {
         signingStyle: "automatic",
-        teamID: ENV["IOS_TEAM_ID"]
+        teamID: ENV["IOS_TEAM_ID"],
+        provisioningProfiles: {
+          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
+        }
       },
       xcargs: "-allowProvisioningUpdates"
     )
