@@ -63,17 +63,13 @@ const config: HardhatUserConfig = {
       url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
       accounts: [process.env.PRIVATE_KEY as string],
     },
-    celoBaklava: {
-      chainId: 62320,
-      url: process.env.CELO_BAKLAVA_RPC_URL || "https://baklava-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
-    },
   },
   etherscan: {
     apiKey: {
       sepolia: process.env.ETHERSCAN_API_KEY as string,
       ethereum: process.env.ETHERSCAN_API_KEY as string,
       celo: process.env.CELOSCAN_API_KEY as string,
+      celoAlfajores: process.env.CELOSCAN_API_KEY as string,
     },
     customChains: [
       {
