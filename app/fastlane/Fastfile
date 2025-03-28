@@ -20,6 +20,7 @@ attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
 is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
 local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
+aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
 
 if local_development
   puts "Loading .env.secrets"
@@ -126,7 +127,15 @@ platform :ios do
 end
 
 platform :android do
-  aab_path = "android/app/build/outputs/bundle/release/app-release.aab"
+  desc "Push a new build to Google Play Internal Testing"
+  lane :internal_test do
+    upload_android_build(track: "internal")
+  end
+
+  desc "Push a new build to Google Play Store"
+  lane :deploy do
+    upload_android_build(track: "production")
+  end
 
   private_lane :upload_android_build do |options|
     if local_development
@@ -189,15 +198,5 @@ platform :android do
       version_name: package_version,
       gradle_file: "../app/android/app/build.gradle"
     )
-  end
-
-  desc "Push a new build to Google Play Internal Testing"
-  lane :internal_test do
-    upload_android_build(track: "internal")
-  end
-
-  desc "Prepare a new build for Google Play Store submission"
-  lane :deploy do
-    upload_android_build(track: "production")
   end
 end
