@@ -263,9 +263,6 @@ jobs:
         uses: android-actions/setup-android@v3
         with:
           accept-android-sdk-licenses: true
-          cache-key: android-sdk-${{ env.ANDROID_API_LEVEL }}
-          api-level: ${{ env.ANDROID_API_LEVEL }}
-          target: android-${{ env.ANDROID_API_LEVEL }}
 
       - name: Install NDK
         run: |
