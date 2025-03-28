@@ -17,7 +17,10 @@ export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
   } as T;
 }
 
-export async function getUserIdentifier(publicSignals: PublicSignals, user_identifier_type: UserIdType = 'uuid'): Promise<string> {
+export async function getUserIdentifier(
+  publicSignals: PublicSignals,
+  user_identifier_type: UserIdType = 'uuid'
+): Promise<string> {
   return castToUserIdentifier(
     BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]),
     user_identifier_type
