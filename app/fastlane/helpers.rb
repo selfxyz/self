@@ -218,9 +218,9 @@ module Fastlane
       gradle_file = "android/app/build.gradle"
       
       UI.message("Reading current version code from #{gradle_file}...")
-      current_version_code = Fastlane::Actions::GetVersionNumberAction.run(
-        gradle_file_path: gradle_file
-      ).to_i
+      gradle_content = File.read(gradle_file)
+      version_code_match = gradle_content.match(/versionCode\s+(\d+)/)
+      current_version_code = version_code_match ? version_code_match[1].to_i : 0
       
       UI.message("Current version code found: #{current_version_code}")
       

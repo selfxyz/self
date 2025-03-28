@@ -34,6 +34,41 @@ end
 default_platform(:ios)
 
 platform :ios do
+  desc "Sync ios version"
+  lane :sync_version do
+    increment_version_number(
+      xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj",
+      version_number: package_version
+    )
+  end
+
+  desc "Push a new build to TestFlight Internal Testing"
+  lane :internal_test do
+    result = prepare_ios_build(for_testflight: true)
+
+    upload_to_testflight(
+      api_key: result[:api_key],
+      distribute_external: true,
+      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
+      changelog: "",
+      skip_waiting_for_build_processing: false
+    ) if result[:should_upload]
+  end
+
+  desc "Prepare a new build for App Store submission"
+  lane :deploy do
+    result = prepare_ios_build(for_testflight: false)
+
+    upload_to_app_store(
+      api_key: result[:api_key],
+      skip_screenshots: true,
+      skip_metadata: true,
+      submit_for_review: false,
+      automatic_release: false,
+      skip_app_version_update: true,
+    ) if result[:should_upload]
+  end
+
   private_lane :prepare_ios_build do |options|
     if local_development
       Fastlane::Helpers.setup_ios_connect_api_key
@@ -89,44 +124,17 @@ platform :ios do
       should_upload: should_upload
     }
   end
-
-  desc "Sync ios version"
-  lane :sync_version do
-    increment_version_number(
-      xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj",
-      version_number: package_version
-    )
-  end
-
-  desc "Push a new build to TestFlight Internal Testing"
-  lane :internal_test do
-    result = prepare_ios_build(for_testflight: true)
-
-    upload_to_testflight(
-      api_key: result[:api_key],
-      distribute_external: true,
-      groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
-      changelog: "",
-      skip_waiting_for_build_processing: false
-    ) if result[:should_upload]
-  end
-
-  desc "Prepare a new build for App Store submission"
-  lane :deploy do
-    result = prepare_ios_build(for_testflight: false)
-
-    upload_to_app_store(
-      api_key: result[:api_key],
-      skip_screenshots: true,
-      skip_metadata: true,
-      submit_for_review: false,
-      automatic_release: false,
-      skip_app_version_update: true,
-    ) if result[:should_upload]
-  end
 end
 
 platform :android do
+  desc "Sync android version"
+  lane :sync_version do
+    android_set_version_name(
+      version_name: package_version,
+      gradle_file: "../app/android/app/build.gradle"
+    )
+  end
+
   desc "Push a new build to Google Play Internal Testing"
   lane :internal_test do
     upload_android_build(track: "internal")
@@ -190,13 +198,5 @@ platform :android do
       track_promote_release_status: "completed",
       aab: aab_path,
     ) if should_upload
-  end
-
-  desc "Sync android version"
-  lane :sync_version do
-    android_set_version_name(
-      version_name: package_version,
-      gradle_file: "../app/android/app/build.gradle"
-    )
   end
 end
