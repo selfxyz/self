@@ -52,7 +52,7 @@ platform :ios do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    Fastlane::Helpers.verify_distribution_certificate if is_ci
+    Fastlane::Helpers.verify_distribution_certificate
     Fastlane::Helpers.verify_ios_app_store_build_number(PROJECT_NAME)
 
     cocoapods(podfile: "ios/Podfile")
