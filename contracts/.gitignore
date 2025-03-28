@@ -21,6 +21,15 @@ ignition/deployments/prod/artifacts/*
 !ignition/deployments/prod/artifacts/**/*.json
 ignition/deployments/prod/artifacts/**/dbg.json
 ignition/deployments/prod/artifacts/dbg.json
+!ignition/deployments/testnet
+ignition/deployments/testnet/*
+!ignition/deployments/testnet/deployed_addresses.json
+!ignition/deployments/testnet/artifacts
+ignition/deployments/testnet/artifacts/*
+!ignition/deployments/testnet/artifacts/*.json
+!ignition/deployments/testnet/artifacts/**/*.json
+ignition/deployments/testnet/artifacts/**/dbg.json
+ignition/deployments/testnet/artifacts/dbg.json
 
 #Local verifier
 contracts/verifiers/local/*
