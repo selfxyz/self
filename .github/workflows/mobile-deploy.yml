@@ -19,7 +19,7 @@ env:
 
   # Certificate/keystore paths
   ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
-  ANDROID_PLAY_STORE_KEY_PATH: /android/play-store-key.json
+  ANDROID_PLAY_STORE_JSON_KEY_PATH: /android/play-store-key.json
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
   IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
@@ -294,7 +294,7 @@ jobs:
       - name: Decode Android Secrets
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
-          echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}
+          echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
 
       # run secrets check after keytool has been setup
       - name: Verify Android Secrets
@@ -340,7 +340,7 @@ jobs:
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
-          ANDROID_PLAY_STORE_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}
+          ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
         run: |
           cd ${{ env.APP_PATH }}
           # if pushing to main, deploy to Play Store

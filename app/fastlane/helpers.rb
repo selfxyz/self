@@ -184,10 +184,21 @@ module Fastlane
       File.realpath(keystore_path)
     end
 
+    def self.android_create_play_store_key
+      key_path = "../android/app/play-store-key.json"
+      if ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]
+        puts "Decoding Android Play Store JSON key..."
+        FileUtils.mkdir_p(File.dirname(key_path))
+        File.write(key_path, Base64.decode64(ENV["ANDROID_PLAY_STORE_JSON_KEY_BASE64"]))
+      end
+
+      File.realpath(key_path)
+    end
+
     def self.android_verify_version_code
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
+        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"]
       ).first
 
       gradle_file = "../android/app/build.gradle"
@@ -210,44 +221,29 @@ module Fastlane
       # Re-enable this block if Google Play API access is restored.
       # latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
       #   track: "internal",
-      #   json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"],
+      #   json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
       #   package_name: ENV["ANDROID_PACKAGE_NAME"]
       # ).first || 0
       # --------------------------------------
-      
       gradle_file = "../android/app/build.gradle"
       gradle_file_path = File.expand_path(gradle_file, File.dirname(__FILE__))
       
-      UI.message("Looking for gradle file at: #{gradle_file_path}")
-      
       unless File.exist?(gradle_file_path)
-        UI.error("Gradle file not found at: #{gradle_file_path}")
-        UI.error("Current working directory: #{Dir.pwd}")
-        UI.error("Directory contents:")
-        Dir.entries(File.dirname(gradle_file_path)).each do |entry|
-          UI.error("  - #{entry}")
-        end
-        UI.user_error!("Could not find build.gradle file")
+        UI.error("Could not find build.gradle at: #{gradle_file_path}")
+        UI.user_error!("Please ensure the Android project is properly set up")
       end
       
-      UI.message("Reading current version code from #{gradle_file_path}...")
+      # Read current version code
       gradle_content = File.read(gradle_file_path)
       version_code_match = gradle_content.match(/versionCode\s+(\d+)/)
       current_version_code = version_code_match ? version_code_match[1].to_i : 0
-      
-      UI.message("Current version code found: #{current_version_code}")
-      
       new_version = current_version_code + 1
       
-      UI.message("Incrementing version code to: #{new_version}")
+      # Update version code in file
+      updated_content = gradle_content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}")
+      File.write(gradle_file_path, updated_content)
       
-      Fastlane::Actions::IncrementVersionCodeAction.run(
-        version_code: new_version,
-        gradle_file_path: gradle_file_path
-      )
-      
-      report_success("Incremented local version code to #{new_version} (read from #{gradle_file_path})")
-      
+      report_success("Version code incremented from #{current_version_code} to #{new_version}")
       new_version
     end
 

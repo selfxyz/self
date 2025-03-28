@@ -66,7 +66,7 @@ Push a new build to Google Play Internal Testing
 [bundle exec] fastlane android deploy
 ```
 
-Prepare a new build for Google Play Store submission
+Push a new build to Google Play Store
 
 ----
 
