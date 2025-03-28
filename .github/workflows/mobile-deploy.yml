@@ -262,7 +262,7 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          accept-accept-android-sdk-licenses: true
+          accept-android-sdk-licenses: true
           cache-key: android-sdk-${{ env.ANDROID_API_LEVEL }}
           api-level: ${{ env.ANDROID_API_LEVEL }}
           target: android-${{ env.ANDROID_API_LEVEL }}
