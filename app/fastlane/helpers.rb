@@ -226,21 +226,35 @@ module Fastlane
       end
     end
 
-    def self.increment_version_code_from_play_store
-      latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
-        track: "internal",
-        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"],
-        package_name: ENV["ANDROID_PACKAGE_NAME"]
-      ).first || 0
+    def self.increment_local_version_code
+      # --- Commented out Play Store Check ---
+      # Re-enable this block if Google Play API access is restored.
+      # latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
+      #   track: "internal",
+      #   json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"],
+      #   package_name: ENV["ANDROID_PACKAGE_NAME"]
+      # ).first || 0
+      # --------------------------------------
       
-      new_version = latest_version + 1
+      gradle_file = "android/app/build.gradle"
+      
+      UI.message("Reading current version code from #{gradle_file}...")
+      current_version_code = Fastlane::Actions::GetVersionCodeAction.run(
+        gradle_file_path: gradle_file
+      ).to_i # Ensure it's an integer
+      
+      UI.message("Current version code found: #{current_version_code}")
+      
+      new_version = current_version_code + 1
+      
+      UI.message("Incrementing version code to: #{new_version}")
       
       Fastlane::Actions::IncrementVersionCodeAction.run(
         version_code: new_version,
-        gradle_file_path: "android/app/build.gradle"
+        gradle_file_path: gradle_file
       )
       
-      report_success("Incremented version code to #{new_version} (previous Play Store version: #{latest_version})")
+      report_success("Incremented local version code to #{new_version} (read from #{gradle_file})")
       
       new_version
     end

@@ -178,7 +178,7 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      release_status: "completed",
+      track_promote_release_status: "completed",
       aab: aab_path,
     ) if should_upload
   end
