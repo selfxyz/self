@@ -15,6 +15,7 @@ import {
   globalSetRegistrationStatus,
 } from '../../stores/proofProvider';
 import { RegistrationFlowStatus } from '../../stores/settingStore';
+import { useSettingStore } from '../../stores/settingStore';
 import { getPublicKey, verifyAttestation } from './attest';
 
 const { ec: EC } = elliptic;
@@ -141,8 +142,6 @@ export async function sendPayload(
     updateGlobalOnSuccess?: boolean;
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
-    onRegistrationStart?: (sessionId: string) => void;
-    setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void;
   },
 ): Promise<ProofStatusEnum> {
   const opts = {
@@ -153,8 +152,12 @@ export async function sendPayload(
 
   // Helper function to update registration flow status
   const updateRegistrationStatus = (status: RegistrationFlowStatus) => {
-    if (options?.flow === 'registration' && options.setRegistrationFlowStatus) {
-      options.setRegistrationFlowStatus(status);
+    if (options?.flow === 'registration') {
+      useSettingStore.getState().setRegistrationFlowStatus(status);
+
+      if (status === 'success') {
+        useSettingStore.getState().setRegistrationSessionId(null);
+      }
     }
   };
 
@@ -261,10 +264,7 @@ export async function sendPayload(
           console.log('Received UUID:', receivedUuid);
           console.log(result);
           if (options?.flow === 'registration') {
-            if (options.onRegistrationStart) {
-              console.log('Storing sessionId', uuid);
-              options.onRegistrationStart(uuid);
-            }
+            useSettingStore.getState().setRegistrationSessionId(receivedUuid);
             updateRegistrationStatus('pending');
           }
           if (!socket) {

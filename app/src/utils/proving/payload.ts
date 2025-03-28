@@ -20,7 +20,7 @@ import {
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
-import { RegistrationFlowStatus } from '../../stores/settingStore';
+import { useSettingStore } from '../../stores/settingStore';
 import {
   generateTeeInputsDsc,
   generateTeeInputsRegister,
@@ -78,8 +78,6 @@ export async function sendRegisterPayload(
   secret: string,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
-  onRegistrationStart?: (sessionId: string) => void,
-  setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
@@ -98,8 +96,6 @@ export async function sendRegisterPayload(
       updateGlobalOnSuccess: true,
       updateGlobalOnFailure: true,
       flow: 'registration',
-      onRegistrationStart,
-      setRegistrationFlowStatus,
     },
   );
 }
@@ -240,8 +236,6 @@ export async function isPassportNullified(passportData: PassportData) {
 export async function registerPassport(
   passportData: PassportData,
   secret: string,
-  onRegistrationStart?: (sessionId: string) => void,
-  setRegistrationFlowStatus?: (status: RegistrationFlowStatus) => void,
 ) {
   // First get the mapping, then use it for the check
   const endpointType =
@@ -260,9 +254,7 @@ export async function registerPassport(
     endpointType,
   );
   if (!dscOk) {
-    if (setRegistrationFlowStatus) {
-      setRegistrationFlowStatus('failure');
-    }
+    useSettingStore.getState().setRegistrationFlowStatus('failure');
     return;
   }
   await sendRegisterPayload(
@@ -270,8 +262,6 @@ export async function registerPassport(
     secret,
     circuitDNSMapping,
     endpointType,
-    onRegistrationStart,
-    setRegistrationFlowStatus,
   );
 }
 

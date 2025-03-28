@@ -59,7 +59,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     console.log('registrationStatus', registrationStatus);
     if (registrationStatus === ProofStatusEnum.SUCCESS) {
       setAnimationSource(successAnimation);
-      setRegistrationSessionId(null);
       goToSuccessScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     } else if (
@@ -67,7 +66,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       registrationStatus === ProofStatusEnum.ERROR
     ) {
       setAnimationSource(failAnimation);
-      setRegistrationSessionId(null);
       goToErrorScreenWithDelay();
       setTimeout(() => resetProof(), 3000);
     }
@@ -159,12 +157,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             return;
           }
 
-          await registerPassport(
-            passportData,
-            secret,
-            setRegistrationSessionId,
-            setRegistrationFlowStatus,
-          );
+          await registerPassport(passportData, secret);
         } catch (error) {
           console.error('Error processing payload:', error);
           setRegistrationSessionId(null);
