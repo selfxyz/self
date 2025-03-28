@@ -20,7 +20,7 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
-contract Groth16Verifier {
+contract Verifier_dsc_sha256_ecdsa_secp521r1 {
     // Scalar field size
     uint256 constant r    = 21888242871839275222246405745257275088548364400416034343698204186575808495617;
     // Base field size
