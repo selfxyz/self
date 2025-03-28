@@ -8,15 +8,15 @@ dotenv.config();
 
 // Debug logs for paths and files
 console.log("Current directory:", __dirname);
-console.log("Deployed addresses path:", path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"));
-console.log("Contract ABI path:", path.join(__dirname, "../ignition/deployments/chain-42220/artifacts/DeployHub#IdentityVerificationHubImplV1.json"));
+console.log("Deployed addresses path:", path.join(__dirname, "../ignition/deployments/chain-44787/deployed_addresses.json"));
+console.log("Contract ABI path:", path.join(__dirname, "../ignition/deployments/chain-44787/artifacts/DeployHub#IdentityVerificationHubImplV1.json"));
 
 // Debug logs for environment variables (redacted for security)
-console.log("CELO_RPC_URL configured:", !!process.env.CELO_RPC_URL);
-console.log("CELO_KEY configured:", !!process.env.CELO_KEY);
+console.log("CELO_RPC_URL configured:", !!process.env.CELO_ALFAJORES_RPC_URL);
+console.log("CELO_KEY configured:", !!process.env.PRIVATE_KEY);
 
 try {
-    const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-42220/deployed_addresses.json"), "utf-8"));
+    const deployedAddresses = JSON.parse(fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-44787/deployed_addresses.json"), "utf-8"));
     console.log("Deployed addresses loaded:", deployedAddresses);
 
     const identityVerificationHubAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/prod/artifacts/DeployHub#IdentityVerificationHubImplV1.json"), "utf-8");
@@ -37,14 +37,14 @@ try {
     }
 
     async function main() {
-        const provider = new ethers.JsonRpcProvider(process.env.CELO_RPC_URL as string);
+        const provider = new ethers.JsonRpcProvider(process.env.CELO_ALFAJORES_RPC_URL as string);
         console.log("Provider created");
 
-        const wallet = new ethers.Wallet(process.env.CELO_KEY as string, provider);
+        const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
         console.log("Wallet created");
 
         // const hubAddress = deployedAddresses["DeployHub#IdentityVerificationHub"];
-        const hubAddress = "0x77117D60eaB7C044e785D68edB6C7E0e134970Ea";
+        const hubAddress = "0x3e2487a250e2A7b56c7ef5307Fb591Cc8C83623D";
         console.log("Hub address:", hubAddress);
 
         if (!hubAddress) {

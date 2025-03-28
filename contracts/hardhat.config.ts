@@ -79,6 +79,14 @@ const config: HardhatUserConfig = {
           apiURL: "https://api.celoscan.io/api",
           browserURL: "https://celoscan.io"
         }
+      },
+      {
+        network: "celoAlfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: "https://api-alfajores.celoscan.io/api",
+          browserURL: "https://alfajores.celoscan.io/"
+        }
       }
     ]
   }
