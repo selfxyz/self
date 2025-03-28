@@ -214,26 +214,41 @@ module Fastlane
       #   package_name: ENV["ANDROID_PACKAGE_NAME"]
       # ).first || 0
       # --------------------------------------
+      
       gradle_file = "../android/app/build.gradle"
       gradle_file_path = File.expand_path(gradle_file, File.dirname(__FILE__))
       
+      UI.message("Looking for gradle file at: #{gradle_file_path}")
+      
       unless File.exist?(gradle_file_path)
-        UI.error("Could not find build.gradle at: #{gradle_file_path}")
-        UI.user_error!("Please ensure the Android project is properly set up")
+        UI.error("Gradle file not found at: #{gradle_file_path}")
+        UI.error("Current working directory: #{Dir.pwd}")
+        UI.error("Directory contents:")
+        Dir.entries(File.dirname(gradle_file_path)).each do |entry|
+          UI.error("  - #{entry}")
+        end
+        UI.user_error!("Could not find build.gradle file")
       end
       
+      UI.message("Reading current version code from #{gradle_file_path}...")
       gradle_content = File.read(gradle_file_path)
       version_code_match = gradle_content.match(/versionCode\s+(\d+)/)
       current_version_code = version_code_match ? version_code_match[1].to_i : 0
       
+      UI.message("Current version code found: #{current_version_code}")
+      
       new_version = current_version_code + 1
+      
+      UI.message("Incrementing version code to: #{new_version}")
       
       Fastlane::Actions::IncrementVersionCodeAction.run(
         version_code: new_version,
         gradle_file_path: gradle_file_path
       )
       
-      report_success("Version code incremented from #{current_version_code} to #{new_version}")
+      report_success("Incremented local version code to #{new_version} (read from #{gradle_file_path})")
+      
+      new_version
     end
 
     def self.get_provisioning_profile_path
