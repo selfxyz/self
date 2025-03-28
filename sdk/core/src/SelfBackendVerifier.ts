@@ -1,10 +1,19 @@
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
-import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS, REGISTRY_ADDRESS_STAGING, VERIFYALL_ADDRESS_STAGING } from './constants/contractAddresses';
+import {
+  REGISTRY_ADDRESS,
+  VERIFYALL_ADDRESS,
+  REGISTRY_ADDRESS_STAGING,
+  VERIFYALL_ADDRESS_STAGING,
+} from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
-import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
+import {
+  castToScope,
+  castToUserIdentifier,
+  UserIdType,
+} from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
@@ -22,9 +31,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode;
   } = {
-      enabled: false,
-      value: '' as Country3LetterCode,
-    };
+    enabled: false,
+    value: '' as Country3LetterCode,
+  };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
     value: '18',
@@ -33,9 +42,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode[];
   } = {
-      enabled: false,
-      value: [],
-    };
+    enabled: false,
+    value: [],
+  };
   protected passportNoOfac: boolean = false;
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;

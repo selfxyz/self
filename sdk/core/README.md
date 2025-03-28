@@ -17,11 +17,11 @@ yarn add @selfxyz/core
 Initialize the verifier with your RPC URL and application scope:
 
 ```typescript
-import { SelfBackendVerifier } from "@selfxyz/core";
+import { SelfBackendVerifier } from '@selfxyz/core';
 
 const selfBackendVerifier = new SelfBackendVerifier(
-  process.env.CELO_RPC_URL as string,  // e.g., 'https://forno.celo.org'
-  process.env.SCOPE as string,         // Your application's unique scope. Should be the same as when initializing SelfApp
+  process.env.CELO_RPC_URL as string, // e.g., 'https://forno.celo.org'
+  process.env.SCOPE as string // Your application's unique scope. Should be the same as when initializing SelfApp
 );
 ```
 
@@ -62,7 +62,7 @@ const result = await selfBackendVerifier.verify(proof, publicSignals);
 You can extract the user identifier from the public signals:
 
 ```typescript
-import { getUserIdentifier } from "@selfxyz/core";
+import { getUserIdentifier } from '@selfxyz/core';
 
 const userId = await getUserIdentifier(publicSignals);
 ```
@@ -77,44 +77,44 @@ The `verify` method returns a detailed verification result:
 export interface SelfVerificationResult {
   // Overall verification status
   isValid: boolean;
-  
+
   // Detailed validation statuses
   isValidDetails: {
-    isValidScope: boolean;        // Proof was generated for the expected scope
+    isValidScope: boolean; // Proof was generated for the expected scope
     isValidAttestationId: boolean; // Attestation ID matches expected value
-    isValidProof: boolean;        // Cryptographic validity of the proof
-    isValidNationality: boolean;  // Nationality check (when enabled)
+    isValidProof: boolean; // Cryptographic validity of the proof
+    isValidNationality: boolean; // Nationality check (when enabled)
   };
-  
+
   // User identifier from the proof
   userId: string;
-  
+
   // Application scope
   application: string;
-  
+
   // Cryptographic nullifier to prevent reuse
   nullifier: string;
-  
+
   // Revealed data from the passport
   credentialSubject: {
-    merkle_root?: string;         // Merkle root used for proof generation
-    attestation_id?: string;      // Identity type (1 for passport)
-    current_date?: string;        // Proof generation timestamp
-    issuing_state?: string;       // Passport issuing country
-    name?: string;                // User's name
-    passport_number?: string;     // Passport number
-    nationality?: string;         // User's nationality
-    date_of_birth?: string;       // Date of birth
-    gender?: string;              // Gender
-    expiry_date?: string;         // Passport expiry date
-    older_than?: string;          // Age verification result
-    passport_no_ofac?: boolean;   // Passport OFAC check result.
+    merkle_root?: string; // Merkle root used for proof generation
+    attestation_id?: string; // Identity type (1 for passport)
+    current_date?: string; // Proof generation timestamp
+    issuing_state?: string; // Passport issuing country
+    name?: string; // User's name
+    passport_number?: string; // Passport number
+    nationality?: string; // User's nationality
+    date_of_birth?: string; // Date of birth
+    gender?: string; // Gender
+    expiry_date?: string; // Passport expiry date
+    older_than?: string; // Age verification result
+    passport_no_ofac?: boolean; // Passport OFAC check result.
     // Gives true if the user passed the check (is not on the list),
     // false if the check was not requested or if the user is in the list
-    name_and_dob_ofac?: boolean;  // Name and DOB OFAC check result
-    name_and_yob_ofac?: boolean;  // Name and birth year OFAC check result
+    name_and_dob_ofac?: boolean; // Name and DOB OFAC check result
+    name_and_yob_ofac?: boolean; // Name and birth year OFAC check result
   };
-  
+
   // Original proof data
   proof: {
     value: {
@@ -122,7 +122,7 @@ export interface SelfVerificationResult {
       publicSignals: any;
     };
   };
-  
+
   // Error information if verification failed
   error?: any;
 }
@@ -147,31 +147,31 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
       // Extract user ID from the proof
       const userId = await getUserIdentifier(publicSignals);
-      console.log("Extracted userId:", userId);
+      console.log('Extracted userId:', userId);
 
       // Initialize and configure the verifier
       const selfBackendVerifier = new SelfBackendVerifier(
         'https://forno.celo.org',
         'my-application-scope'
       );
-      
+
       // Configure verification options
       selfBackendVerifier.setMinimumAge(18);
       selfBackendVerifier.excludeCountries(
-        countryCodes.IRN,   // Iran
-        countryCodes.PRK    // North Korea
+        countryCodes.IRN, // Iran
+        countryCodes.PRK // North Korea
       );
       selfBackendVerifier.enableNameAndDobOfacCheck();
 
       // Verify the proof
       const result = await selfBackendVerifier.verify(proof, publicSignals);
-      
+
       if (result.isValid) {
         // Return successful verification response
         return res.status(200).json({
           status: 'success',
           result: true,
-          credentialSubject: result.credentialSubject
+          credentialSubject: result.credentialSubject,
         });
       } else {
         // Return failed verification response
@@ -179,7 +179,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           status: 'error',
           result: false,
           message: 'Verification failed',
-          details: result.isValidDetails
+          details: result.isValidDetails,
         });
       }
     } catch (error) {
@@ -187,7 +187,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return res.status(500).json({
         status: 'error',
         result: false,
-        message: error instanceof Error ? error.message : 'Unknown error'
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   } else {
@@ -204,15 +204,11 @@ The SDK provides a `countryCodes` object for referencing ISO country codes:
 import { countryCodes } from '@selfxyz/core';
 
 // Examples of usage
-const iranCode = countryCodes.IRN;  // "Iran"
-const northKoreaCode = countryCodes.PRK;  // "North Korea"
+const iranCode = countryCodes.IRN; // "Iran"
+const northKoreaCode = countryCodes.PRK; // "North Korea"
 
 // Use in excludeCountries
-selfBackendVerifier.excludeCountries(
-  countryCodes.IRN,
-  countryCodes.PRK,
-  countryCodes.SYR
-);
+selfBackendVerifier.excludeCountries(countryCodes.IRN, countryCodes.PRK, countryCodes.SYR);
 ```
 
 ## Integration with SelfQRcode
@@ -234,7 +230,7 @@ const selfApp = new SelfAppBuilder({
     date_of_birth: true,
     passport_number: true,
     minimumAge: 20,
-    excludedCountries: ["IRN", "PRK"],
+    excludedCountries: ['IRN', 'PRK'],
     ofac: true,
   },
 }).build();
