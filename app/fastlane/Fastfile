@@ -140,6 +140,7 @@ platform :android do
       "ANDROID_KEYSTORE_PATH",
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
+      "ANDROID_PACKAGE_NAME",
       "ANDROID_PLAY_STORE_KEY_PATH"
     ]
 

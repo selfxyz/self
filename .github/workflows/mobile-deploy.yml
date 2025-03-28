@@ -348,6 +348,7 @@ jobs:
           ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           ANDROID_PLAY_STORE_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_KEY_PATH }}
         run: |
           cd ${{ env.APP_PATH }}

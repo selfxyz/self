@@ -229,7 +229,8 @@ module Fastlane
     def self.increment_version_code_from_play_store
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
+        json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"],
+        package_name: ENV["ANDROID_PACKAGE_NAME"]
       ).first || 0
       
       new_version = latest_version + 1
