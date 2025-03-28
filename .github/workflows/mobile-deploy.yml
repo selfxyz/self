@@ -172,20 +172,33 @@ jobs:
       - name: Install provisioning profile
         if: ${{ !env.ACT }}
         run: |
+          # Verify file exists before proceeding
+          echo "Checking for provisioning profile at: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}"
+          ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}"
+          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" ]; then
+            echo "❌ Error: Provisioning profile not found at specified path."
+            exit 1
+          fi
+          echo "Provisioning profile found."
+
           # Install provisioning profile in the correct location
+          echo "Installing provisioning profile in filesystem..."
           mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }} ~/Library/MobileDevice/Provisioning\ Profiles/
-          
+          cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" ~/Library/MobileDevice/Provisioning\ Profiles/
+          echo "Provisioning profile copied to filesystem."
+
           # Install provisioning profile in the keychain
-          security import ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }} -k build.keychain -T /usr/bin/codesign >/dev/null 2>&1
-          
+          echo "Importing provisioning profile into keychain..."
+          security import "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" -k build.keychain -T /usr/bin/codesign
+          echo "Keychain import command executed."
+
           # Verify provisioning profile exists
-          # if ! security cms -D -i ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }} | grep -q "Name"; then
+          # if ! security cms -D -i "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" | grep -q "Name"; then
           #   echo "❌ Error: Invalid provisioning profile"
           #   exit 1
           # fi
-          
-          echo "✅ Provisioning profile installed and verified"
+
+          echo "✅ Provisioning profile installation steps completed."
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
       - name: Build and upload to TestFlight (Internal)
