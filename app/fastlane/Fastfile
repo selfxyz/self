@@ -103,8 +103,8 @@ platform :ios do
       distribute_external: true,
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: "",
-      skip_submission: result[:should_upload]
-    )
+      skip_waiting_for_build_processing: false
+    ) if result[:should_upload]
   end
 
   desc "Prepare a new build for App Store submission"
@@ -117,8 +117,8 @@ platform :ios do
       skip_metadata: true,
       submit_for_review: false,
       automatic_release: false,
-      skip_submission: result[:should_upload]
-    )
+      skip_app_version_update: true,
+    ) if result[:should_upload]
   end
 end
 
@@ -145,6 +145,10 @@ platform :android do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
+
+    validate_play_store_json_key(
+      json_key: ENV["ANDROID_PLAY_STORE_KEY_PATH"]
+    )
     
     # Verify version code before building 
     Fastlane::Helpers.verify_android_version_code
@@ -171,10 +175,9 @@ platform :android do
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
-      release_status: should_upload ? "completed" : "draft",
+      release_status: "completed",
       aab: aab_path,
-      validate_only: !should_upload
-    )
+    ) if should_upload
   end
 
   desc "Sync android version"
