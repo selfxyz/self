@@ -40,7 +40,7 @@ android/app/src/main/assets/*android.bundle
 android/app/src/main/res/*/node_modules*
 android/.kotlin/
 android/app/upload-keystore.jks
-
+android/app/play-store-key.json
 # node.js
 #
 node_modules/

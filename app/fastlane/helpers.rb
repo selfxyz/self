@@ -195,10 +195,13 @@ module Fastlane
       File.realpath(key_path)
     end
 
+    # this method is not used
+    # if we ever get the correct json key permissions re-enable
     def self.android_verify_version_code
       latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
         track: "internal",
-        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"]
+        json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
+        package_name: ENV["ANDROID_PACKAGE_NAME"]
       ).first
 
       gradle_file = "../android/app/build.gradle"
@@ -215,16 +218,8 @@ module Fastlane
         report_success("Version code verified (Current: #{current_version}, Latest Play Store: #{latest_version})")
       end
     end
-
+    
     def self.android_increment_version_code
-      # --- Commented out Play Store Check ---
-      # Re-enable this block if Google Play API access is restored.
-      # latest_version = Fastlane::Actions::GooglePlayTrackVersionCodesAction.run(
-      #   track: "internal",
-      #   json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
-      #   package_name: ENV["ANDROID_PACKAGE_NAME"]
-      # ).first || 0
-      # --------------------------------------
       gradle_file = "../android/app/build.gradle"
       gradle_file_path = File.expand_path(gradle_file, File.dirname(__FILE__))
       
