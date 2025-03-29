@@ -185,7 +185,7 @@ jobs:
           # Install provisioning profile in the correct location
           echo "Installing provisioning profile in filesystem..."
           mkdir -p "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
-          cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" ${{ env.IOS_PROV_PROFILE_PATH }}
+          cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
           echo "Provisioning profile copied to filesystem."
 
           # Verify provisioning profile exists
