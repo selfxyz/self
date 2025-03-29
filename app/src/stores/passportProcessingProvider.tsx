@@ -99,21 +99,24 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
 
       validatePassport: async (passportData, privateKey, clearPassportData) => {
         const state = get();
+        const isMock = passportData.documentType !== 'passport';
+        const dscTree = isMock ? state.mockDscTree : state.serializedDscTree;
+        const passportTree = isMock
+          ? state.mockSerializedTree
+          : state.serializedPassportTree;
         if (
           !state.deployedCircuits ||
           !state.circuitDNSMapping ||
-          !state.serializedDscTree ||
-          !state.serializedPassportTree
+          !dscTree ||
+          !passportTree
         ) {
           return;
         }
 
         set({ processingStatus: 'checking-support' });
 
-        const isMock = passportData.documentType !== 'passport';
-        const endpointType = isMock ? 'staging_celo' : 'celo';
-
         try {
+          const endpointType = isMock ? 'staging_celo' : 'celo';
           const [isNullifierOnchain, supportCheckResult] = await Promise.all([
             isPassportNullified(passportData),
             checkPassportSupported(passportData, state.deployedCircuits),
@@ -145,7 +148,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
 
           const dscOk = await checkIdPassportDscIsInTree(
             passportData,
-            state.serializedDscTree,
+            dscTree,
             state.circuitDNSMapping,
             endpointType,
             supportCheckResult.dscCircuitName!,
@@ -155,12 +158,12 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             privateKey,
             passportData,
             supportCheckResult.registerCircuitName!,
-            state.serializedDscTree,
+            dscTree,
           );
           const isRegistered = isUserRegistered(
             passportData,
             privateKey,
-            state.serializedPassportTree,
+            passportTree,
           );
 
           set({ isRegistered });
