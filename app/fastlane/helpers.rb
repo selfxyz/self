@@ -70,28 +70,7 @@ module Fastlane
 
     ### iOS-specific Methods ###
 
-    def self.setup_ios_connect_api_key
-      api_key_path = File.expand_path("../../ios/certs/connect_api_key.p8", __FILE__)
-      ENV["IOS_CONNECT_API_KEY_PATH"] = api_key_path
-      create_ios_connect_api_key(api_key_path)
-
-      # confirm file exists
-      unless File.exist?(api_key_path)
-        UI.user_error!("Connect API key file not found at: #{api_key_path}")
-      end
-    end
-
-    def self.create_ios_connect_api_key(api_key_path)
-      if ENV["IOS_CONNECT_API_KEY_BASE64"]
-        puts "Decoding iOS Connect API key..."
-        FileUtils.mkdir_p(File.dirname(api_key_path))
-        File.write(api_key_path, Base64.decode64(ENV["IOS_CONNECT_API_KEY_BASE64"]))
-      end
-
-      File.realpath(api_key_path)
-    end
-
-    def self.verify_ios_app_store_build_number(project_name)
+    def self.ios_verify_app_store_build_number(project_name)
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
         key_id: ENV["IOS_CONNECT_KEY_ID"],
         issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
@@ -120,7 +99,7 @@ module Fastlane
       end
     end
 
-    def self.ensure_apple_generic_versioning(project_name)
+    def self.ios_ensure_generic_versioning(project_name)
       project_path = "../ios/#{project_name}.xcodeproj"
       puts "Opening Xcode project at: #{File.expand_path(project_path)}"
       
@@ -148,9 +127,9 @@ module Fastlane
       report_success("Enabled Apple Generic Versioning in Xcode project")
     end
 
-    def self.increment_build_number_from_testflight(project_name)
+    def self.ios_increment_build_number(project_name)
       # First ensure Apple Generic Versioning is enabled
-      ensure_apple_generic_versioning(project_name)
+      ios_ensure_generic_versioning(project_name)
       
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
         key_id: ENV["IOS_CONNECT_KEY_ID"],
@@ -173,15 +152,36 @@ module Fastlane
       report_success("Incremented build number to #{latest_build + 1} (previous TestFlight build: #{latest_build})")
     end
 
+    def self.ios_dev_setup_connect_api_key
+      api_key_path = File.expand_path("../../ios/certs/connect_api_key.p8", __FILE__)
+      ENV["IOS_CONNECT_API_KEY_PATH"] = api_key_path
+      ios_dev_create_connect_api_key(api_key_path)
+
+      # confirm file exists
+      unless File.exist?(api_key_path)
+        UI.user_error!("Connect API key file not found at: #{api_key_path}")
+      end
+    end
+
+    def self.ios_dev_create_connect_api_key(api_key_path)
+      if ENV["IOS_CONNECT_API_KEY_BASE64"]
+        puts "Decoding iOS Connect API key..."
+        FileUtils.mkdir_p(File.dirname(api_key_path))
+        File.write(api_key_path, Base64.decode64(ENV["IOS_CONNECT_API_KEY_BASE64"]))
+      end
+
+      File.realpath(api_key_path)
+    end
+
     # TODO: fix this
 
-    # def self.setup_ios_provisioning_profile
-    #   profile_path = get_provisioning_profile_path
+    # def self.ios_dev_setup_provisioning_profile
+    #   profile_path = ios_dev_get_provisioning_profile_path
     #   FileUtils.cp(profile_path, ENV["IOS_PROV_PROFILE_PATH"])
     #   report_success("Provisioning profile copied to: #{ENV['IOS_PROV_PROFILE_PATH']}")
     # end
 
-    # def self.get_provisioning_profile_path
+    # def self.ios_dev_get_provisioning_profile_path
     #   profile_name = ENV["IOS_PROV_PROFILE_NAME"]
     #   profile_path = File.expand_path("../../ios/certs/#{profile_name}.mobileprovision", __FILE__)
       
@@ -196,8 +196,8 @@ module Fastlane
     #   profile_path
     # end
 
-    # def self.verify_ios_provisioning_profile
-    #   profile_path = get_provisioning_profile_path
+    # def self.ios_verify_provisioning_profile
+    #   profile_path = ios_dev_get_provisioning_profile_path
       
     #   validate_provisioning_profile(
     #     profile_path: profile_path,

@@ -71,12 +71,12 @@ platform :ios do
 
   private_lane :prepare_ios_build do |options|
     if local_development
-      Fastlane::Helpers.setup_ios_connect_api_key
+      Fastlane::Helpers.ios_dev_setup_connect_api_key
     else
       setup_ci
     end
 
-    Fastlane::Helpers.increment_build_number_from_testflight(PROJECT_NAME)
+    Fastlane::Helpers.ios_increment_build_number(PROJECT_NAME)
 
     required_env_vars = [
       "IOS_APP_IDENTIFIER",
@@ -90,8 +90,8 @@ platform :ios do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    Fastlane::Helpers.verify_ios_app_store_build_number(PROJECT_NAME)
-    # Fastlane::Helpers.verify_ios_provisioning_profile
+    Fastlane::Helpers.ios_verify_app_store_build_number(PROJECT_NAME)
+    # Fastlane::Helpers.ios_verify_provisioning_profile
     
     cocoapods(podfile: "ios/Podfile")
 
