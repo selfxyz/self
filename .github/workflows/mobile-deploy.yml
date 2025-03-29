@@ -23,7 +23,7 @@ env:
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
   IOS_PROV_PROFILE_PROJ_PATH: /ios/certs/profile.mobileprovision
-  IOS_PROV_PROFILE_PATH: $HOME/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+  IOS_PROV_PROFILE_PATH: ${{ env.HOME }}/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
 permissions:
   contents: write
