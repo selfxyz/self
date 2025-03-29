@@ -37,8 +37,6 @@ on:
     paths:
       - "app/**"
       - ".github/workflows/mobile-deploy.yml"
-  # for debugging, there is a check in fastlane to store uploads from pull requests
-  # may also help with incrementing build numbers
   pull_request:
     paths:
       - "app/**"
