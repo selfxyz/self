@@ -22,7 +22,8 @@ env:
   ANDROID_PLAY_STORE_JSON_KEY_PATH: /android/play-store-key.json
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
-  IOS_PROV_PROFILE_PATH: /ios/certs/profile.mobileprovision
+  IOS_PROV_PROFILE_PROJ_PATH: /ios/certs/profile.mobileprovision
+  IOS_PROV_PROFILE_PATH: ~/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
 permissions:
   contents: write
@@ -91,9 +92,9 @@ jobs:
 
       - name: Decode certificate and profile
         run: |
-          mkdir -p ${{ env.APP_PATH }}/ios/certs
+          mkdir -p "${{ env.APP_PATH }}$(dirname "${{ env.IOS_DIST_CERT_PATH }}")"
           echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
-          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
+          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}
           echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
 
       # for debugging...which can take some time :(
@@ -103,7 +104,7 @@ jobs:
           echo "SHA256 of dist_cert.p12:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
           echo "SHA256 of profile.mobileprovision:"
-          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}
           echo "SHA256 of connect_api_key.p8:"
           shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
           echo "Certificate file size:"
@@ -173,9 +174,9 @@ jobs:
         if: ${{ !env.ACT }}
         run: |
           # Verify file exists before proceeding
-          echo "Checking for provisioning profile at: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}"
-          ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}"
-          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" ]; then
+          echo "Checking for provisioning profile at: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}"
+          ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}"
+          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" ]; then
             echo "❌ Error: Provisioning profile not found at specified path."
             exit 1
           fi
@@ -183,15 +184,15 @@ jobs:
 
           # Install provisioning profile in the correct location
           echo "Installing provisioning profile in filesystem..."
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" ~/Library/MobileDevice/Provisioning\ Profiles/
+          mkdir -p "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
+          cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" ${{ env.IOS_PROV_PROFILE_PATH }}
           echo "Provisioning profile copied to filesystem."
 
           # Verify provisioning profile exists
-          # if ! security cms -D -i "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PATH }}" | grep -q "Name"; then
-          #   echo "❌ Error: Invalid provisioning profile"
-          #   exit 1
-          # fi
+          if ! security cms -D -i "${{ env.IOS_PROV_PROFILE_PATH }}" | grep -q "Name"; then
+            echo "❌ Error: Invalid provisioning profile"
+            exit 1
+          fi
 
           echo "✅ Provisioning profile installation steps completed."
 
@@ -206,6 +207,7 @@ jobs:
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
+          IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
@@ -336,7 +338,7 @@ jobs:
           IS_PR: ${{ env.IS_PR }}
           ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
           ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEYSTORE_PATH: ${{ env.ANDROID_KEYSTORE_PATH }}
           ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}

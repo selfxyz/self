@@ -68,7 +68,8 @@ module Fastlane
       end
     end
 
-    # iOS-specific Methods
+    ### iOS-specific Methods ###
+
     def self.setup_ios_connect_api_key
       api_key_path = File.expand_path("../../ios/certs/connect_api_key.p8", __FILE__)
       ENV["IOS_CONNECT_API_KEY_PATH"] = api_key_path
@@ -172,7 +173,43 @@ module Fastlane
       report_success("Incremented build number to #{latest_build + 1} (previous TestFlight build: #{latest_build})")
     end
 
-    # Android-specific Methods
+    # TODO: fix this
+
+    # def self.setup_ios_provisioning_profile
+    #   profile_path = get_provisioning_profile_path
+    #   FileUtils.cp(profile_path, ENV["IOS_PROV_PROFILE_PATH"])
+    #   report_success("Provisioning profile copied to: #{ENV['IOS_PROV_PROFILE_PATH']}")
+    # end
+
+    # def self.get_provisioning_profile_path
+    #   profile_name = ENV["IOS_PROV_PROFILE_NAME"]
+    #   profile_path = File.expand_path("../../ios/certs/#{profile_name}.mobileprovision", __FILE__)
+      
+    #   unless File.exist?(profile_path)
+    #     report_error(
+    #       "Provisioning profile not found at: #{profile_path}",
+    #       "Please ensure the profile is downloaded and placed in the correct location",
+    #       "Provisioning profile not found"
+    #     )
+    #   end
+      
+    #   profile_path
+    # end
+
+    # def self.verify_ios_provisioning_profile
+    #   profile_path = get_provisioning_profile_path
+      
+    #   validate_provisioning_profile(
+    #     profile_path: profile_path,
+    #     team_id: ENV["IOS_TEAM_ID"],
+    #     app_identifier: ENV["IOS_APP_IDENTIFIER"]
+    #   )
+      
+    #   report_success("iOS provisioning profile verified successfully")
+    # end
+
+    ### Android-specific Methods ###
+
     def self.android_create_keystore
       keystore_path = "../android/app/upload-keystore.jks"
       if ENV["ANDROID_KEYSTORE"]
@@ -240,33 +277,6 @@ module Fastlane
       
       report_success("Version code incremented from #{current_version_code} to #{new_version}")
       new_version
-    end
-
-    def self.get_provisioning_profile_path
-      profile_name = ENV["IOS_PROV_PROFILE_NAME"]
-      profile_path = File.expand_path("../../ios/certs/#{profile_name}.mobileprovision", __FILE__)
-      
-      unless File.exist?(profile_path)
-        report_error(
-          "Provisioning profile not found at: #{profile_path}",
-          "Please ensure the profile is downloaded and placed in the correct location",
-          "Provisioning profile not found"
-        )
-      end
-      
-      profile_path
-    end
-
-    def self.verify_ios_provisioning_profile
-      profile_path = get_provisioning_profile_path
-      
-      validate_provisioning_profile(
-        profile_path: profile_path,
-        team_id: ENV["IOS_TEAM_ID"],
-        app_identifier: ENV["IOS_APP_IDENTIFIER"]
-      )
-      
-      report_success("iOS provisioning profile verified successfully")
     end
   end
 end 

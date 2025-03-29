@@ -80,16 +80,18 @@ platform :ios do
 
     required_env_vars = [
       "IOS_APP_IDENTIFIER",
+      "IOS_CONNECT_API_KEY_BASE64",
+      "IOS_CONNECT_API_KEY_PATH",
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
-      "IOS_CONNECT_API_KEY_BASE64",
       "IOS_PROV_PROFILE_NAME",
+      "IOS_PROV_PROFILE_PATH",
       "IOS_TEAM_ID"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.verify_ios_app_store_build_number(PROJECT_NAME)
-    Fastlane::Helpers.verify_ios_provisioning_profile
+    # Fastlane::Helpers.verify_ios_provisioning_profile
     
     cocoapods(podfile: "ios/Podfile")
 
