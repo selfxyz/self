@@ -253,10 +253,7 @@ export const usePassportProcessing = () => {
     () => processingStatus === 'waiting-for-passport-to-validate',
     [processingStatus],
   );
-  const readyToSubmit = useMemo(
-    () => processingStatus === 'ready-to-submit',
-    [processingStatus],
-  );
+
   const readyToFetchStaticData = useMemo(
     () => processingStatus === 'ready-to-process',
     [processingStatus],
@@ -297,20 +294,6 @@ export const usePassportProcessing = () => {
     validatePassport,
     readyToValidatePassport,
   ]);
-
-  useEffect(() => {
-    (async () => {
-      if (!readyToSubmit) {
-        return;
-      }
-
-      try {
-        await registerValidPassport();
-      } catch (e) {
-        console.error(e);
-      }
-    })();
-  }, [registerValidPassport, readyToSubmit]);
 
   useEffect(() => {
     (async () => {
