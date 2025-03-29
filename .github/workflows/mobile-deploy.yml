@@ -23,7 +23,7 @@ env:
   IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
   IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
   IOS_PROV_PROFILE_PROJ_PATH: /ios/certs/profile.mobileprovision
-  IOS_PROV_PROFILE_PATH: /home/runner/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
+  IOS_PROV_PROFILE_PATH: /Users/runner/Library/MobileDevice/Provisioning\ Profiles/profile.mobileprovision
 
 permissions:
   contents: write
@@ -182,7 +182,7 @@ jobs:
 
           # Install provisioning profile in the correct location
           echo "Installing provisioning profile in filesystem..."
-          mkdir -p /Users/runner/work/self/self/app/ios/certs/
+          mkdir -p /Users/runner/Library/MobileDevice/Provisioning\ Profiles/
           cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
           echo "Provisioning profile copied to filesystem."
 
