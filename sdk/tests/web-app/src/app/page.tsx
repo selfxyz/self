@@ -11,10 +11,11 @@ export default function Home() {
   const selfApp = new SelfAppBuilder({
     appName: "Self Workshop",
     scope: "self-workshop",
-    endpoint: "https://a1d5-133-3-201-47.ngrok-free.app/api/verify",
+    endpoint: "https://1770-133-3-201-47.ngrok-free.app/api/verify",
     logoBase64: "https://pluspng.com/img-png/images-owls-png-hd-owl-free-download-png-png-image-485.png",
     userId,
     disclosures: {
+      date_of_birth: true,
       nationality: true,
       excludedCountries: [
         countries.RUSSIA,
@@ -22,7 +23,7 @@ export default function Home() {
         countries.NORTH_KOREA,
         countries.IRAN
       ],
-      minimumAge: 20,
+      minimumAge: 18,
       ofac: true,
     }
   }).build();
@@ -31,7 +32,7 @@ export default function Home() {
     <div className="h-screen w-full bg-white flex flex-col items-center justify-center gap-4">
       <SelfQRcodeWrapper
         selfApp={selfApp}
-        type='deeplink'
+        type='websocket'
         onSuccess={() => {
           window.location.href = '/verified';
         }}

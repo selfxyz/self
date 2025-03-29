@@ -19,16 +19,16 @@ export async function POST(request: Request) {
             'https://forno.celo.org',
             "self-workshop",
             'uuid',
-            true
+            false
         )
-            .setMinimumAge(20)
+            .setMinimumAge(18)
             .excludeCountries(
                 countries.RUSSIA,
                 countries.CHINA,
                 countries.NORTH_KOREA,
                 countries.IRAN
             )
-            .setNationality(countries.UNITED_STATES);
+            .setNationality(countries.JAPAN);
 
         const result = await configuredVerifier.verify(proof, publicSignals);
         console.log("Verification result:", result);
