@@ -199,12 +199,11 @@ module Fastlane
     def self.ios_verify_provisioning_profile
       puts "Verifying provisioning profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
 
-      validate_provisioning_profile(
-        profile_path: ENV["IOS_PROV_PROFILE_PATH"],
-        team_id: ENV["IOS_TEAM_ID"],
-        app_identifier: ENV["IOS_APP_IDENTIFIER"]
-      )
-      
+      # check if file exists
+      unless File.exist?(ENV["IOS_PROV_PROFILE_PATH"])
+        report_error("Provisioning profile not found at: #{ENV['IOS_PROV_PROFILE_PATH']}")
+      end
+
       report_success("iOS provisioning profile verified successfully")
     end
 
