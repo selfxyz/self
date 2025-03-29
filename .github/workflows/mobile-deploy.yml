@@ -182,7 +182,7 @@ jobs:
 
           # Install provisioning profile in the correct location
           echo "Installing provisioning profile in filesystem..."
-          mkdir -p "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
+          mkdir -p /Users/runner/work/self/self/app/ios/certs/
           cp "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$(dirname "${{ env.IOS_PROV_PROFILE_PATH }}")"
           echo "Provisioning profile copied to filesystem."
 
