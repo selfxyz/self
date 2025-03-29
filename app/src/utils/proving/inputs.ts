@@ -22,7 +22,7 @@ import {
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 
-export async function generateTeeInputsRegister(
+export function generateTeeInputsRegister(
   secret: string,
   passportData: PassportData,
   circuitName: string,
