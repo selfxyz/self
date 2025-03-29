@@ -193,7 +193,7 @@ platform :android do
     # Fastlane::Helpers.android_verify_version_code
     
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
-    should_upload = false # Fastlane::Helpers.should_upload_app(target_platform)
+    should_upload = Fastlane::Helpers.should_upload_app(target_platform)
     
     upload_to_play_store(
       track: options[:track],
@@ -204,6 +204,6 @@ platform :android do
       skip_upload_screenshots: true,
       track_promote_release_status: "completed",
       aab: aab_path,
-    )
+    ) if should_upload
   end
 end
