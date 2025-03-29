@@ -186,6 +186,9 @@ platform :android do
         }
       )
     end
+
+    # we don't have the permissions to run this action
+    # Fastlane::Helpers.android_verify_version_code
     
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
