@@ -193,6 +193,7 @@ platform :android do
     upload_to_play_store(
       track: options[:track],
       json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
+      package_name: ENV["ANDROID_PACKAGE_NAME"],
       skip_upload_changelogs: true,
       skip_upload_images: true,
       skip_upload_screenshots: true,
