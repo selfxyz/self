@@ -91,7 +91,7 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.ios_verify_app_store_build_number(PROJECT_NAME)
-    # Fastlane::Helpers.ios_verify_provisioning_profile
+    Fastlane::Helpers.ios_verify_provisioning_profile
     
     cocoapods(podfile: "ios/Podfile")
 

@@ -196,17 +196,17 @@ module Fastlane
     #   profile_path
     # end
 
-    # def self.ios_verify_provisioning_profile
-    #   profile_path = ios_dev_get_provisioning_profile_path
+    def self.ios_verify_provisioning_profile
+      puts "Verifying provisioning profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
+
+      validate_provisioning_profile(
+        profile_path: ENV["IOS_PROV_PROFILE_PATH"],
+        team_id: ENV["IOS_TEAM_ID"],
+        app_identifier: ENV["IOS_APP_IDENTIFIER"]
+      )
       
-    #   validate_provisioning_profile(
-    #     profile_path: profile_path,
-    #     team_id: ENV["IOS_TEAM_ID"],
-    #     app_identifier: ENV["IOS_APP_IDENTIFIER"]
-    #   )
-      
-    #   report_success("iOS provisioning profile verified successfully")
-    # end
+      report_success("iOS provisioning profile verified successfully")
+    end
 
     ### Android-specific Methods ###
 
