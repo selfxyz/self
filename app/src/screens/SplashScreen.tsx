@@ -42,7 +42,13 @@ const SplashScreen: React.FC = ({}) => {
       // Rest of the time, keep the LaunchScreen flow
       navigation.navigate('Launch');
     }, 1000);
-  }, [navigation, passportData, privateKey, passportAndSecretStatus]);
+  }, [
+    navigation,
+    passportData,
+    privateKey,
+    passportAndSecretStatus,
+    isRegistered,
+  ]);
 
   return (
     <LottieView

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import 'react-native-get-random-values';
 
 import { Buffer } from 'buffer';
@@ -9,7 +9,7 @@ import { initSentry, wrapWithSentry } from './src/Sentry';
 import { AppProvider } from './src/stores/appProvider';
 import { AuthProvider } from './src/stores/authProvider';
 import { PassportProvider } from './src/stores/passportDataProvider';
-import { PassportProcessingProvider } from './src/stores/passportProcessingProvider';
+import { usePassportProcessing } from './src/stores/passportProcessingProvider';
 import { ProofProvider } from './src/stores/proofProvider';
 
 initSentry();
@@ -17,17 +17,20 @@ initSentry();
 global.Buffer = Buffer;
 
 function App(): React.JSX.Element {
+  const { start } = usePassportProcessing();
+
+  useEffect(() => {
+    start();
+  }, [start]);
   return (
     <YStack f={1} h="100%" w="100%">
       <AuthProvider>
         <PassportProvider>
-          <PassportProcessingProvider>
-            <AppProvider>
-              <ProofProvider>
-                <AppNavigation />
-              </ProofProvider>
-            </AppProvider>
-          </PassportProcessingProvider>
+          <AppProvider>
+            <ProofProvider>
+              <AppNavigation />
+            </ProofProvider>
+          </AppProvider>
         </PassportProvider>
       </AuthProvider>
     </YStack>

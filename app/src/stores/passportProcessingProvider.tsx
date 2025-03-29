@@ -1,15 +1,11 @@
-import React, {
-  type PropsWithChildren,
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react';
+import { useEffect, useMemo } from 'react';
+
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
 
 import { getCommitmentTree, getDSCTree } from '../../../common/src/utils/trees';
+import type { PassportData } from '../../../common/src/utils/types';
 import analytics from '../utils/analytics';
 import {
   generateTeeInputsDsc,
@@ -30,287 +26,310 @@ import { useProofInfo } from './proofProvider';
 
 const { trackEvent } = analytics();
 
-interface IPassportProcessingContext {
-  processingStatus: PassportProcessingStatus;
-  isRegistered?: boolean;
-  isNullified?: boolean;
-  error?: unknown;
-  registerValidPassport: () => Promise<void>;
-}
-
-const PassportProcessingContext = createContext<IPassportProcessingContext>({
-  processingStatus: 'idle',
-  registerValidPassport: () => Promise.resolve(),
-});
-
 export type PassportProcessingStatus =
   | 'idle'
+  | 'ready-to-process'
   | 'fetching-circuit-data'
-  | 'waiting-for-passport'
+  | 'waiting-for-passport-to-validate'
   | 'checking-support'
   | 'checking-registration'
+  | 'ready-to-submit'
   | 'final'
   | 'error';
-interface PassportProcessingProviderProps extends PropsWithChildren {
-  authenticationTimeoutinMs?: number;
+
+interface PassportProcessingState {
+  processingStatus: PassportProcessingStatus;
+  error?: unknown;
+  registrationPayload?: RegistrationPayload;
+  serializedDscTree?: string;
+  mockDscTree?: string;
+  serializedPassportTree?: string;
+  mockSerializedTree?: string;
+  deployedCircuits?: string;
+  circuitDNSMapping?: Record<string, string>;
+  isRegistered?: boolean;
+
+  fetchCircuitData: () => Promise<void>;
+  validatePassport: (
+    passportData: PassportData,
+    privateKey: string,
+    clearPassportData: () => Promise<void>,
+  ) => Promise<void>;
+  registerValidPassport: () => Promise<void>;
+  start: () => void;
 }
 
-async function registerPayload({
-  inputs,
-  registerCircuitName,
-  circuitDNSMapping,
-  endpointType,
-}: RegistrationPayload) {
-  await sendPayload(
-    inputs,
-    'register',
-    registerCircuitName,
-    endpointType,
-    'https://self.xyz',
-    (circuitDNSMapping as any).REGISTER[registerCircuitName],
-    undefined,
-    {
-      updateGlobalOnSuccess: true,
-      updateGlobalOnFailure: true,
-      flow: 'registration',
-    },
-  );
-}
+export const usePassportProcessingStore = create<PassportProcessingState>()(
+  persist(
+    (set, get) => ({
+      processingStatus: 'idle',
 
-export const PassportProcessingProvider = ({
-  children,
-}: PassportProcessingProviderProps) => {
-  const { passportData, privateKey, clearPassportData } = usePassport();
-  const [serializedDscTree, setSerializedDscTree] = useState<string>();
-  const [mockDscTree, setMockDscTree] = useState<string>();
-  const [serializedPassportTree, setSerializedPassportTree] =
-    useState<string>();
-  const [mockSerializedTree, setMockSerializedTree] = useState<string>();
-  const [processingStatus, setProcessingStatus] =
-    useState<PassportProcessingStatus>('idle');
-  const [deployedCircuits, setDeployedCircuits] = useState<string>();
-  const [circuitDNSMapping, setCircuitDNSMapping] =
-    useState<Record<string, string>>();
-  const [error, setError] = useState<unknown>();
-  const [registrationPayload, setRegistrationPayload] =
-    useState<RegistrationPayload>();
-  const isProcessing = useRef(false);
-  const registerValidPassport = useCallback(async () => {
-    if (processingStatus !== 'final' || registrationPayload === undefined) {
-      return;
-    }
-    await registerPayload(registrationPayload);
-  }, [registrationPayload, processingStatus]);
-  const { resetProof } = useProofInfo();
+      fetchCircuitData: async () => {
+        set({ processingStatus: 'fetching-circuit-data' });
+        try {
+          const [
+            circuits,
+            dnsMapping,
+            mockTree,
+            passportTree,
+            dscMockTree,
+            dscTree,
+          ] = await Promise.all([
+            getDeployedCircuits(),
+            getCircuitDNSMapping(),
+            getCommitmentTree('mock_passport'),
+            getCommitmentTree('passport'),
+            getDSCTree('staging_celo'),
+            getDSCTree('celo'),
+          ]);
 
-  useEffect(() => {
-    (async () => {
-      setProcessingStatus('fetching-circuit-data');
-      console.log('Fetching circuit data...');
-      try {
-        const [
-          circuits,
-          dnsMapping,
-          mockTree,
-          passportTree,
-          dscMockTree,
-          dscTree,
-        ] = await Promise.all([
-          getDeployedCircuits(),
-          getCircuitDNSMapping(),
-          getCommitmentTree('mock_passport'),
-          getCommitmentTree('passport'),
-          getDSCTree('staging_celo'),
-          getDSCTree('celo'),
-        ]);
-        setDeployedCircuits(circuits);
-        setCircuitDNSMapping(dnsMapping);
-        setMockSerializedTree(mockTree);
-        setSerializedPassportTree(passportTree);
-        setMockDscTree(dscMockTree);
-        setSerializedDscTree(dscTree);
-      } catch (e) {
-        console.error('Error fetching circuit data:', e);
-        setProcessingStatus('error');
-        setError(e);
-      }
-      console.log('Circuit data fetched successfully');
-      setProcessingStatus('waiting-for-passport');
-    })();
-  }, []);
-
-  useEffect(() => {
-    const isMock = passportData?.documentType !== 'passport';
-    const dscTree = isMock ? mockDscTree : serializedDscTree;
-    const passportTree = isMock ? mockSerializedTree : serializedPassportTree;
-    if (
-      isProcessing.current ||
-      !passportData ||
-      !privateKey ||
-      !deployedCircuits ||
-      !circuitDNSMapping ||
-      !dscTree ||
-      !passportTree
-    ) {
-      console.log('Passport data not ready', {
-        passportData,
-        privateKey,
-        deployedCircuits,
-        circuitDNSMapping,
-        dscTree,
-        passportTree,
-      });
-      return;
-    }
-    isProcessing.current = true;
-    (async function bootstrapPassportValidation() {
-      try {
-        resetProof();
-        setProcessingStatus('checking-support');
-        console.log('Checking passport support...');
-        const endpointType = isMock ? 'staging_celo' : 'celo';
-        const [isNullifierOnchain, supportCheckResult] = await Promise.all([
-          isPassportNullified(passportData),
-          checkPassportSupported(passportData, deployedCircuits),
-        ]);
-
-        if (!supportCheckResult) {
-          console.log('Passport support check failed');
-          setProcessingStatus('error');
-          setError(new Error('Passport support check failed'));
-          isProcessing.current = false;
-          return;
-        }
-        if (supportCheckResult.status !== 'passport_supported') {
-          trackEvent('Passport not supported', {
-            reason: supportCheckResult.status,
-            details: supportCheckResult.error?.message,
+          set({
+            deployedCircuits: circuits,
+            circuitDNSMapping: dnsMapping,
+            mockSerializedTree: mockTree,
+            serializedPassportTree: passportTree,
+            mockDscTree: dscMockTree,
+            serializedDscTree: dscTree,
+            processingStatus: 'waiting-for-passport-to-validate',
           });
-          console.log('Passport not supported');
-          await clearPassportData();
-          setProcessingStatus('error');
-          setError(
-            new Error(`Passport not supported: ${supportCheckResult.status}`),
-          );
-          isProcessing.current = false;
+        } catch (e) {
+          set({ processingStatus: 'error', error: e });
+        }
+      },
+
+      validatePassport: async (passportData, privateKey, clearPassportData) => {
+        const state = get();
+        if (
+          !state.deployedCircuits ||
+          !state.circuitDNSMapping ||
+          !state.serializedDscTree ||
+          !state.serializedPassportTree
+        ) {
           return;
         }
-        if (!supportCheckResult.registerCircuitName) {
-          throw new Error(
-            'Register Circuit name is missing from support check result',
-          );
-        }
-        if (!supportCheckResult.dscCircuitName) {
-          throw new Error(
-            'DSC Circuit name is missing from support check result',
-          );
-        }
-        setProcessingStatus('checking-registration');
 
-        const [dscInputs, inputs] = await Promise.all([
-          generateTeeInputsDsc(
+        set({ processingStatus: 'checking-support' });
+
+        const isMock = passportData.documentType !== 'passport';
+        const endpointType = isMock ? 'staging_celo' : 'celo';
+
+        try {
+          const [isNullifierOnchain, supportCheckResult] = await Promise.all([
+            isPassportNullified(passportData),
+            checkPassportSupported(passportData, state.deployedCircuits),
+          ]);
+
+          if (
+            !supportCheckResult ||
+            supportCheckResult.status !== 'passport_supported'
+          ) {
+            trackEvent('Passport not supported', {
+              reason: supportCheckResult?.status,
+              details: supportCheckResult?.error?.message,
+            });
+            await clearPassportData();
+            set({
+              processingStatus: 'error',
+              error: new Error('Passport not supported'),
+            });
+            return;
+          }
+
+          set({ processingStatus: 'checking-registration' });
+
+          const dscInputs = await generateTeeInputsDsc(
             passportData,
             endpointType,
             supportCheckResult.dscCircuitName!,
-          ),
-          generateTeeInputsRegister(
+          );
+
+          const dscOk = await checkIdPassportDscIsInTree(
+            passportData,
+            state.serializedDscTree,
+            state.circuitDNSMapping,
+            endpointType,
+            supportCheckResult.dscCircuitName!,
+            dscInputs,
+          );
+          const inputs = generateTeeInputsRegister(
             privateKey,
             passportData,
             supportCheckResult.registerCircuitName!,
-            dscTree,
-          ),
-        ]);
-
-        const dscOk = await checkIdPassportDscIsInTree(
-          passportData,
-          dscTree,
-          circuitDNSMapping,
-          endpointType,
-          supportCheckResult.dscCircuitName!,
-          dscInputs,
-        );
-
-        const isRegistered = isUserRegistered(
-          passportData,
-          privateKey,
-          passportTree,
-        );
-        console.log('User is registered:', isRegistered);
-        if (isRegistered) {
-          console.log(
-            'Passport is registered already. Skipping to AccountVerifiedSuccess',
+            state.serializedDscTree,
           );
-          setProcessingStatus('final');
-          isProcessing.current = false;
-          return;
-        }
-
-        console.log('Passport is nullified:', isNullifierOnchain);
-        if (isNullifierOnchain) {
-          console.log(
-            'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
+          const isRegistered = isUserRegistered(
+            passportData,
+            privateKey,
+            state.serializedPassportTree,
           );
-          setProcessingStatus('final');
-          isProcessing.current = false;
-          return;
-        }
-        console.log('Passport is not nullified');
 
-        if (!dscOk) {
-          throw new Error('DSC proof failed');
-        }
-        console.log('KKKKKKKKKKKKKKKKKKK');
+          set({ isRegistered });
 
-        setRegistrationPayload({
-          inputs,
-          registerCircuitName: supportCheckResult.registerCircuitName,
-          circuitDNSMapping,
-          endpointType,
-        });
-        setProcessingStatus('final');
-        isProcessing.current = false;
-      } catch (e) {
-        console.error('Error checking registration:', e);
-        setProcessingStatus('error');
-        setError(e);
-      }
-    })();
-  }, [
-    resetProof,
-    passportData,
-    privateKey,
-    clearPassportData,
-    deployedCircuits,
-    circuitDNSMapping,
+          if (isRegistered || isNullifierOnchain || !dscOk) {
+            set({ processingStatus: 'final' });
+            return;
+          }
+
+          if (!supportCheckResult.registerCircuitName) {
+            set({
+              processingStatus: 'error',
+              error: new Error('Passport not supported'),
+            });
+            return;
+          }
+
+          set({
+            registrationPayload: {
+              inputs,
+              registerCircuitName: supportCheckResult.registerCircuitName,
+              circuitDNSMapping: state.circuitDNSMapping,
+              endpointType,
+            },
+            processingStatus: 'ready-to-submit',
+          });
+        } catch (e) {
+          set({ processingStatus: 'error', error: e });
+        }
+      },
+
+      registerValidPassport: async () => {
+        const { processingStatus, registrationPayload } = get();
+        if (processingStatus === 'ready-to-submit' && registrationPayload) {
+          await sendPayload(
+            registrationPayload.inputs,
+            'register',
+            registrationPayload.registerCircuitName,
+            registrationPayload.endpointType,
+            'https://self.xyz',
+            (registrationPayload.circuitDNSMapping as any).REGISTER[
+              registrationPayload.registerCircuitName
+            ],
+            undefined,
+            {
+              updateGlobalOnSuccess: true,
+              updateGlobalOnFailure: true,
+              flow: 'registration',
+            },
+          );
+        }
+      },
+
+      start: () => {
+        set({ processingStatus: 'ready-to-process' });
+      },
+    }),
+    {
+      name: 'passport-processing-storage',
+      storage: createJSONStorage(() => AsyncStorage),
+      onRehydrateStorage: state => {
+        console.log(
+          `Rehydrated passport processing store ${state.processingStatus}`,
+        );
+      },
+    },
+  ),
+);
+export const usePassportProcessing = () => {
+  const passportProcessingStore = usePassportProcessingStore();
+  const {
     mockDscTree,
     serializedDscTree,
     mockSerializedTree,
     serializedPassportTree,
+    deployedCircuits,
+    circuitDNSMapping,
+    validatePassport,
+    fetchCircuitData,
+    registerValidPassport,
+    processingStatus,
+    error,
+    isRegistered,
+    start,
+  } = passportProcessingStore;
+  const { passportData, privateKey, clearPassportData } = usePassport();
+  const { resetProof } = useProofInfo();
+
+  const readyToValidatePassport = useMemo(
+    () => processingStatus === 'waiting-for-passport-to-validate',
+    [processingStatus],
+  );
+  const readyToSubmit = useMemo(
+    () => processingStatus === 'ready-to-submit',
+    [processingStatus],
+  );
+  const readyToFetchStaticData = useMemo(
+    () => processingStatus === 'ready-to-process',
+    [processingStatus],
+  );
+
+  useEffect(() => {
+    (async () => {
+      if (!readyToValidatePassport) {
+        return;
+      }
+      const isMock = passportData?.documentType !== 'passport';
+      const dscTree = isMock ? mockDscTree : serializedDscTree;
+      const passportTree = isMock ? mockSerializedTree : serializedPassportTree;
+      if (
+        !passportData ||
+        !privateKey ||
+        !dscTree ||
+        !passportTree ||
+        !deployedCircuits ||
+        !circuitDNSMapping
+      ) {
+        return;
+      }
+      resetProof();
+      await validatePassport(passportData, privateKey, clearPassportData);
+    })();
+  }, [
+    passportData,
+    privateKey,
+    resetProof,
+    deployedCircuits,
+    circuitDNSMapping,
+    clearPassportData,
+    mockDscTree,
+    serializedDscTree,
+    mockSerializedTree,
+    serializedPassportTree,
+    validatePassport,
+    readyToValidatePassport,
   ]);
 
-  const state: IPassportProcessingContext = useMemo(
-    () => ({
-      processingStatus,
-      error,
-      registerValidPassport,
-      clearPassportData,
-    }),
-    [processingStatus, error, registerValidPassport, clearPassportData],
-  );
+  useEffect(() => {
+    (async () => {
+      if (!readyToSubmit) {
+        return;
+      }
 
-  return (
-    <PassportProcessingContext.Provider value={state}>
-      {children}
-    </PassportProcessingContext.Provider>
-  );
-};
+      try {
+        await registerValidPassport();
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [registerValidPassport, readyToSubmit]);
 
-export const usePassportProcessing = () => {
-  const context = useContext(PassportProcessingContext);
-  if (!context) {
-    throw new Error(
-      'usePassportProcessing must be used within a PassportProcessingProvider',
-    );
-  }
-  return context;
+  useEffect(() => {
+    (async () => {
+      if (!readyToFetchStaticData) {
+        return;
+      }
+      try {
+        await fetchCircuitData();
+      } catch (e) {
+        console.error(e);
+      }
+    })();
+  }, [fetchCircuitData, readyToFetchStaticData]);
+
+  return {
+    start,
+    processingStatus,
+    error,
+    isRegistered,
+    registerValidPassport,
+  };
 };
