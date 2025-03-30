@@ -31,6 +31,12 @@ export const DEFAULT_MAJORITY = '18';
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
 export const saltLengths = [64, 48, 32];
 
+/**
+ * Maximum number of countries in the forbidden countries list.
+ * 
+ * IMPORTANT: This value must match in both backend and frontend SDK.
+ * Any mismatch will result in an INVALID_FORBIDDEN_COUNTRIES error.
+ */
 export const MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH = 40;
 
 export const DEPLOYED_CIRCUITS_REGISTER = [
