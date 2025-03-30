@@ -17,6 +17,7 @@ import {
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
+import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -31,9 +32,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode;
   } = {
-    enabled: false,
-    value: '' as Country3LetterCode,
-  };
+      enabled: false,
+      value: '' as Country3LetterCode,
+    };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
     value: '18',
@@ -42,9 +43,9 @@ export class SelfBackendVerifier {
     enabled: boolean;
     value: Country3LetterCode[];
   } = {
-    enabled: false,
-    value: [],
-  };
+      enabled: false,
+      value: [],
+    };
   protected passportNoOfac: boolean = false;
   protected nameAndDobOfac: boolean = false;
   protected nameAndYobOfac: boolean = false;
@@ -56,6 +57,7 @@ export class SelfBackendVerifier {
   constructor(
     rpcUrl: string,
     scope: string,
+    endpoint: string,
     user_identifier_type: UserIdType = 'uuid',
     mockPassport: boolean = false
   ) {
@@ -64,7 +66,7 @@ export class SelfBackendVerifier {
     const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
-    this.scope = scope;
+    this.scope = hashEndpointWithScope(scope, endpoint);
     this.user_identifier_type = user_identifier_type;
     this.mockPassport = mockPassport;
   }
@@ -73,8 +75,7 @@ export class SelfBackendVerifier {
     const forbiddenCountriesListPacked = packForbiddenCountriesList(this.excludedCountries.value);
 
     const isValidScope =
-      this.scope ===
-      castToScope(BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]));
+      this.scope === publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX];
 
     const isValidAttestationId =
       this.attestationId.toString() ===

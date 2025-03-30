@@ -18,6 +18,7 @@ import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
+import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
@@ -108,10 +109,7 @@ const ProveScreen: React.FC = () => {
     if (!selectedApp?.endpoint) {
       return null;
     }
-    const urlFormatted = selectedApp.endpoint
-      .replace(/^https?:\/\//, '')
-      .split('/')[0];
-    return urlFormatted;
+    return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
 
   const onVerify = useCallback(

@@ -6,6 +6,7 @@ export type EndpointType = 'https' | 'celo' | 'staging_celo' | 'staging_https';
 import { v4 } from 'uuid';
 import { REDIRECT_URL } from "../constants/constants";
 import { Country3LetterCode } from "../constants/countries";
+import { formatEndpoint } from "./scope";
 export interface SelfApp {
   appName: string;
   logoBase64: string;
@@ -47,6 +48,20 @@ export class SelfAppBuilder {
     }
     if (!config.endpoint) {
       throw new Error('endpoint is required');
+    }
+    // Check if scope and endpoint contain only ASCII characters
+    if (!/^[\x00-\x7F]*$/.test(config.scope)) {
+      throw new Error("Scope must contain only ASCII characters (0-127)");
+    }
+    if (!/^[\x00-\x7F]*$/.test(config.endpoint)) {
+      throw new Error("Endpoint must contain only ASCII characters (0-127)");
+    }
+    if (config.scope.length > 31) {
+      throw new Error("Scope must be less than 31 characters");
+    }
+    const formattedEndpoint = formatEndpoint(config.endpoint);
+    if (formattedEndpoint.length > 496) {
+      throw new Error(`Endpoint must be less than 496 characters, current endpoint: ${formattedEndpoint}, length: ${formattedEndpoint.length}`);
     }
     if (!config.userId) {
       throw new Error('userId is required');
