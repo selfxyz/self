@@ -172,7 +172,7 @@ const ProveScreen: React.FC = () => {
         status === ProofStatusEnum.SUCCESS,
       );
     } catch (e) {
-      console.log('Error in verification process');
+      console.log('Error in verification process', e);
       globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
     } finally {
       isProcessing.current = false;
