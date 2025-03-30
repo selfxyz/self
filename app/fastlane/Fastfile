@@ -105,6 +105,15 @@ platform :ios do
     # Use "iPhone Distribution:" based on security find-identity output
     certificate_name = "iPhone Distribution: #{ENV['IOS_TEAM_NAME']} (#{ENV['IOS_TEAM_ID']})"
 
+    # Use xcargs for explicit manual signing configuration
+    xcargs_array = [
+      "CODE_SIGN_STYLE=Manual",
+      "CODE_SIGN_ON_COPY=NO",
+      "CODE_SIGN_IDENTITY=\"#{certificate_name}\"", # Ensure identity string is quoted
+      "PROVISIONING_PROFILE_SPECIFIER=\"#{ENV['IOS_PROV_PROFILE_NAME']}\"", # Ensure profile name is quoted
+      "DEVELOPMENT_TEAM=#{ENV['IOS_TEAM_ID']}"
+    ]
+
     build_app(
       workspace: "ios/#{PROJECT_NAME}.xcworkspace",
       scheme: PROJECT_SCHEME,
@@ -119,8 +128,7 @@ platform :ios do
       #     ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
       #   }
       # },
-      # Use xcargs for explicit manual signing configuration
-      xcargs: "CODE_SIGN_STYLE=Manual CODE_SIGN_ON_COPY=NO \"CODE_SIGN_IDENTITY=#{certificate_name}\" \"PROVISIONING_PROFILE_SPECIFIER=#{ENV['IOS_PROV_PROFILE_NAME']}\" DEVELOPMENT_TEAM=#{ENV['IOS_TEAM_ID']}"
+      xcargs: xcargs_array.join(" ")
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"

@@ -238,10 +238,6 @@ jobs:
             exit 1
           fi
 
-          # Additional verification using codesign
-          echo "Verifying with codesign..."
-          codesign -vv -d --entitlements :- "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision" || true
-
           echo "✅ Provisioning profile installation steps completed."
 
       # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
