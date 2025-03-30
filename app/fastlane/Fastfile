@@ -109,13 +109,12 @@ platform :ios do
       output_directory: "build",
       clean: true,
       export_options: {
-        signingStyle: "automatic",
+        signingStyle: "manual",
         teamID: ENV["IOS_TEAM_ID"],
         provisioningProfiles: {
           ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
         }
-      },
-      xcargs: "-allowProvisioningUpdates"
+      }
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"

@@ -170,6 +170,11 @@ jobs:
 
       - name: Install provisioning profile
         if: ${{ !env.ACT }}
+        env:
+          IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
+          IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
+          IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
         run: |
           # Verify file exists before proceeding
           echo "Checking for provisioning profile at: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}"
@@ -212,10 +217,10 @@ jobs:
           # Print provisioning profile information
           echo "Provisioning Profile Information:"
           echo "--------------------------------"
-          echo "Profile Name: ${{ secrets.IOS_PROV_PROFILE_NAME }}"
-          echo "Profile Path: ${{ env.IOS_PROV_PROFILE_PATH }}"
-          echo "App Identifier: ${{ secrets.IOS_APP_IDENTIFIER }}"
-          echo "Team ID: ${{ secrets.IOS_TEAM_ID }}"
+          echo "Profile Name: $IOS_PROV_PROFILE_NAME"
+          echo "Profile Path: $IOS_PROV_PROFILE_PATH"
+          echo "App Identifier: $IOS_APP_IDENTIFIER"
+          echo "Team ID: $IOS_TEAM_ID"
           echo "--------------------------------"
 
           # List all provisioning profiles in the system with detailed info
