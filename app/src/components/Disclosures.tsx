@@ -57,7 +57,7 @@ export default function Disclosures({ disclosures }: DisclosureProps) {
             break;
           case 'excludedCountries':
             text = `I am not a citizen of the following countries: ${countriesToSentence(
-              disclosures.excludedCountries as Country3LetterCode[] || [],
+              (disclosures.excludedCountries as Country3LetterCode[]) || [],
             )}`;
             break;
           case 'minimumAge':
