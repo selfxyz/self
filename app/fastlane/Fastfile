@@ -72,8 +72,6 @@ platform :ios do
   private_lane :prepare_ios_build do |options|
     if local_development
       Fastlane::Helpers.ios_dev_setup_connect_api_key
-    else
-      setup_ci
     end
 
     Fastlane::Helpers.ios_increment_build_number(PROJECT_NAME)
