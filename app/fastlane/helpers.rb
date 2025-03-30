@@ -173,28 +173,26 @@ module Fastlane
       File.realpath(api_key_path)
     end
 
-    # TODO: fix this
+    def self.ios_dev_setup_provisioning_profile
+      profile_path = ios_dev_get_provisioning_profile_path
+      FileUtils.cp(profile_path, ENV["IOS_PROV_PROFILE_PATH"])
+      report_success("Provisioning profile copied to: #{ENV['IOS_PROV_PROFILE_PATH']}")
+    end
 
-    # def self.ios_dev_setup_provisioning_profile
-    #   profile_path = ios_dev_get_provisioning_profile_path
-    #   FileUtils.cp(profile_path, ENV["IOS_PROV_PROFILE_PATH"])
-    #   report_success("Provisioning profile copied to: #{ENV['IOS_PROV_PROFILE_PATH']}")
-    # end
-
-    # def self.ios_dev_get_provisioning_profile_path
-    #   profile_name = ENV["IOS_PROV_PROFILE_NAME"]
-    #   profile_path = File.expand_path("../../ios/certs/#{profile_name}.mobileprovision", __FILE__)
+    def self.ios_dev_get_provisioning_profile_path
+      profile_name = ENV["IOS_PROV_PROFILE_NAME"]
+      profile_path = File.expand_path("../../ios/certs/#{profile_name}.mobileprovision", __FILE__)
       
-    #   unless File.exist?(profile_path)
-    #     report_error(
-    #       "Provisioning profile not found at: #{profile_path}",
-    #       "Please ensure the profile is downloaded and placed in the correct location",
-    #       "Provisioning profile not found"
-    #     )
-    #   end
+      unless File.exist?(profile_path)
+        report_error(
+          "Provisioning profile not found at: #{profile_path}",
+          "Please ensure the profile is downloaded and placed in the correct location",
+          "Provisioning profile not found"
+        )
+      end
       
-    #   profile_path
-    # end
+      profile_path
+    end
 
     def self.ios_verify_provisioning_profile
       puts "Verifying provisioning profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
@@ -205,6 +203,35 @@ module Fastlane
       end
 
       report_success("iOS provisioning profile verified successfully")
+    end
+
+    # Decodes and installs provisioning profile from base64 env var for local dev
+    def self.ios_dev_decode_and_install_profile
+      base64_profile = ENV['IOS_PROV_PROFILE_BASE64']
+      unless base64_profile && !base64_profile.empty?
+        report_error(
+          "Missing IOS_PROV_PROFILE_BASE64 environment variable for local development.",
+          "Please add it to your .env.secrets file if you want Fastlane to handle profile installation locally.",
+          "Provisioning profile base64 data not found"
+        )
+        return nil # Indicate failure
+      end
+
+      begin
+        decoded_profile_data = Base64.decode64(base64_profile)
+        # Use a consistent filename locally, or derive from profile name if needed/possible
+        local_profile_filename = "fastlane_local_profile.mobileprovision"
+        profile_dir = File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
+        target_path = File.join(profile_dir, local_profile_filename)
+
+        FileUtils.mkdir_p(profile_dir)
+        File.write(target_path, decoded_profile_data)
+        report_success("Decoded and installed provisioning profile to: #{target_path}")
+        return target_path # Return the path where the profile was installed
+      rescue => e
+        report_error("Failed to decode or install provisioning profile: #{e.message}", nil, "Profile installation failed")
+        return nil # Indicate failure
+      end
     end
 
     ### Android-specific Methods ###
