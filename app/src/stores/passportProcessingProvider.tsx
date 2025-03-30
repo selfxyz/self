@@ -5,24 +5,24 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import {
-  getCSCATree,
-  getCommitmentTree,
-  getDSCTree,
+	getCSCATree,
+	getCommitmentTree,
+	getDSCTree,
 } from '../../../common/src/utils/trees';
 import type { PassportData } from '../../../common/src/utils/types';
 import analytics from '../utils/analytics';
 import {
-  generateTeeInputsDsc,
-  generateTeeInputsRegister,
+	generateTeeInputsDsc,
+	generateTeeInputsRegister,
 } from '../utils/proving/inputs';
 import {
-  type RegistrationPayload,
-  checkIdPassportDscIsInTree,
-  checkPassportSupported,
-  getCircuitDNSMapping,
-  getDeployedCircuits,
-  isPassportNullified,
-  isUserRegistered,
+	type RegistrationPayload,
+	checkIdPassportDscIsInTree,
+	checkPassportSupported,
+	getCircuitDNSMapping,
+	getDeployedCircuits,
+	isPassportNullified,
+	isUserRegistered,
 } from '../utils/proving/payload';
 import { sendPayload } from '../utils/proving/tee';
 import { usePassport } from './passportDataProvider';
@@ -237,7 +237,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
               flow: 'registration',
             },
           );
-          set({ processingStatus: 'final' });
+          set({ processingStatus: 'final', isRegistered: true });
         }
       },
 
