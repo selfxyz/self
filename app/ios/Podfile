@@ -105,5 +105,17 @@ target 'Self' do
     else
       puts "Warning: Could not find QKCutoutView.swift at #{qkCutoutView}"
     end
+
+    # Disable code signing for Pod targets to avoid conflicts with main app signing
+    installer.pods_project.targets.each do |target|
+      target.build_configurations.each do |config|
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
+        # Optional alternative: Reset to automatic if disabling causes issues
+        # config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
+        # config.build_settings['CODE_SIGN_IDENTITY'] = ''
+        # config.build_settings['DEVELOPMENT_TEAM'] = ''
+        # config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ''
+      end
+    end
   end
 end

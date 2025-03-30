@@ -102,8 +102,12 @@ platform :ios do
       in_house: false
     )
     
+    # Ensure Team Name is provided
+    unless ENV['IOS_TEAM_NAME'] && !ENV['IOS_TEAM_NAME'].empty?
+      UI.user_error!("Missing required environment variable: IOS_TEAM_NAME")
+    end
+
     # Construct the certificate name using Team Name and ID
-    # Assumes ENV['IOS_TEAM_NAME'] is available (passed from GitHub Secrets/Workflow)
     certificate_name = "Apple Distribution: #{ENV['IOS_TEAM_NAME']} (#{ENV['IOS_TEAM_ID']})"
 
     build_app(
