@@ -282,13 +282,13 @@ module Fastlane
     def self.log_keychain_diagnostics(certificate_name)
       puts "--- Fastlane Pre-Build Diagnostics ---"
       begin
-        sh "echo 'Running as user: $(whoami)'"
-        sh "echo 'Default keychain:'"
-        sh "security list-keychains -d user"
-        sh "echo 'Identities in build.keychain:'"
+        system("echo 'Running as user: $(whoami)'")
+        system("echo 'Default keychain:'")
+        system("security list-keychains -d user")
+        system("echo 'Identities in build.keychain:'")
         # Use the absolute path expected in the GH runner environment
         keychain_path = "/Users/runner/Library/Keychains/build.keychain-db"
-        sh "security find-identity -v -p codesigning #{keychain_path} || echo 'No identities found or build.keychain doesn\'t exist at #{keychain_path}'"
+        system("security find-identity -v -p codesigning #{keychain_path} || echo 'No identities found or build.keychain doesn\'t exist at #{keychain_path}'")
       rescue => e
         puts "Error running security command: #{e.message}"
       end

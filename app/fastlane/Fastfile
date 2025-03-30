@@ -102,10 +102,8 @@ platform :ios do
     )
 
     # Construct the certificate name using Team Name and ID
-    certificate_name = "Apple Distribution: #{ENV['IOS_TEAM_NAME']} (#{ENV['IOS_TEAM_ID']})"
-
-    # Log diagnostics using the helper method
-    Fastlane::Helpers.log_keychain_diagnostics(certificate_name)
+    # Use "iPhone Distribution:" based on security find-identity output
+    certificate_name = "iPhone Distribution: #{ENV['IOS_TEAM_NAME']} (#{ENV['IOS_TEAM_ID']})"
 
     build_app(
       workspace: "ios/#{PROJECT_NAME}.xcworkspace",
