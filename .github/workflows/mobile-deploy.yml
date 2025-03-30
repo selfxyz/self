@@ -261,6 +261,13 @@ jobs:
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
         run: |
           cd ${{ env.APP_PATH }}
+          echo "--- Pre-Fastlane Diagnostics ---"
+          echo "Running as user: $(whoami)"
+          echo "Default keychain:"
+          security list-keychains -d user
+          echo "Identities in build.keychain:"
+          security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
+          echo "--- Starting Fastlane ---"
           # Verify team ID and app identifier
           if [ -z "$IOS_TEAM_ID" ]; then
             echo "❌ Error: IOS_TEAM_ID is not set"
