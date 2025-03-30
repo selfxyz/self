@@ -4,7 +4,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
-import { getCommitmentTree, getDSCTree } from '../../../common/src/utils/trees';
+import {
+  getCSCATree,
+  getCommitmentTree,
+  getDSCTree,
+} from '../../../common/src/utils/trees';
 import type { PassportData } from '../../../common/src/utils/types';
 import analytics from '../utils/analytics';
 import {
@@ -37,16 +41,19 @@ export type PassportProcessingStatus =
   | 'final'
   | 'error';
 
+type CircuitDNSMapping = Record<string, string>;
 interface PassportProcessingState {
   processingStatus: PassportProcessingStatus;
   error?: unknown;
   registrationPayload?: RegistrationPayload;
-  serializedDscTree?: string;
+  dscTree?: string;
   mockDscTree?: string;
-  serializedPassportTree?: string;
-  mockSerializedTree?: string;
+  passportTree?: string;
+  mockPassportTree?: string;
+  cscaTree?: string[][];
+  mockCscaTree?: string[][];
   deployedCircuits?: string;
-  circuitDNSMapping?: Record<string, string>;
+  circuitDNSMapping?: CircuitDNSMapping;
   isRegistered?: boolean;
 
   fetchCircuitData: () => Promise<void>;
@@ -70,10 +77,12 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           const [
             circuits,
             dnsMapping,
-            mockTree,
+            mockPassportTree,
             passportTree,
-            dscMockTree,
+            mockDscTree,
             dscTree,
+            mockCscaTree,
+            cscaTree,
           ] = await Promise.all([
             getDeployedCircuits(),
             getCircuitDNSMapping(),
@@ -81,18 +90,23 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             getCommitmentTree('passport'),
             getDSCTree('staging_celo'),
             getDSCTree('celo'),
+            getCSCATree('staging_celo'),
+            getCSCATree('celo'),
           ]);
 
           set({
             deployedCircuits: circuits,
             circuitDNSMapping: dnsMapping,
-            mockSerializedTree: mockTree,
-            serializedPassportTree: passportTree,
-            mockDscTree: dscMockTree,
-            serializedDscTree: dscTree,
+            mockPassportTree,
+            passportTree,
+            mockDscTree,
+            dscTree,
+            mockCscaTree,
+            cscaTree,
             processingStatus: 'waiting-for-passport-to-validate',
           });
         } catch (e) {
+          console.error(e);
           set({ processingStatus: 'error', error: e });
         }
       },
@@ -100,15 +114,17 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
       validatePassport: async (passportData, privateKey, clearPassportData) => {
         const state = get();
         const isMock = passportData.documentType !== 'passport';
-        const dscTree = isMock ? state.mockDscTree : state.serializedDscTree;
-        const passportTree = isMock
-          ? state.mockSerializedTree
-          : state.serializedPassportTree;
+        const serializedDscTree = isMock ? state.mockDscTree : state.dscTree;
+        const serializedPassportTree = isMock
+          ? state.mockPassportTree
+          : state.passportTree;
+        const serializedCscaTree = isMock ? state.mockCscaTree : state.cscaTree;
         if (
           !state.deployedCircuits ||
           !state.circuitDNSMapping ||
-          !dscTree ||
-          !passportTree
+          !serializedDscTree ||
+          !serializedPassportTree ||
+          !serializedCscaTree
         ) {
           return;
         }
@@ -138,32 +154,38 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             return;
           }
 
+          if (!supportCheckResult.dscCircuitName) {
+            set({
+              processingStatus: 'error',
+              error: new Error('dscCircuitName not found'),
+            });
+            return;
+          }
+
           set({ processingStatus: 'checking-registration' });
 
-          const dscInputs = await generateTeeInputsDsc(
+          const dscInputs = generateTeeInputsDsc(
             passportData,
-            endpointType,
-            supportCheckResult.dscCircuitName!,
+            serializedCscaTree,
           );
 
           const dscOk = await checkIdPassportDscIsInTree(
             passportData,
-            dscTree,
+            serializedDscTree,
             state.circuitDNSMapping,
             endpointType,
-            supportCheckResult.dscCircuitName!,
+            supportCheckResult.dscCircuitName,
             dscInputs,
           );
           const inputs = generateTeeInputsRegister(
             privateKey,
             passportData,
-            supportCheckResult.registerCircuitName!,
-            dscTree,
+            serializedDscTree,
           );
           const isRegistered = isUserRegistered(
             passportData,
             privateKey,
-            passportTree,
+            serializedPassportTree,
           );
 
           set({ isRegistered });
@@ -191,6 +213,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             processingStatus: 'ready-to-submit',
           });
         } catch (e) {
+          console.error(e);
           set({ processingStatus: 'error', error: e });
         }
       },
@@ -214,6 +237,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
               flow: 'registration',
             },
           );
+          set({ processingStatus: 'final' });
         }
       },
 
@@ -235,12 +259,6 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
 export const usePassportProcessing = () => {
   const passportProcessingStore = usePassportProcessingStore();
   const {
-    mockDscTree,
-    serializedDscTree,
-    mockSerializedTree,
-    serializedPassportTree,
-    deployedCircuits,
-    circuitDNSMapping,
     validatePassport,
     fetchCircuitData,
     registerValidPassport,
@@ -248,6 +266,8 @@ export const usePassportProcessing = () => {
     error,
     isRegistered,
     start,
+    mockPassportTree,
+    passportTree,
   } = passportProcessingStore;
   const { passportData, privateKey, clearPassportData } = usePassport();
   const { resetProof } = useProofInfo();
@@ -267,36 +287,24 @@ export const usePassportProcessing = () => {
       if (!readyToValidatePassport) {
         return;
       }
-      const isMock = passportData?.documentType !== 'passport';
-      const dscTree = isMock ? mockDscTree : serializedDscTree;
-      const passportTree = isMock ? mockSerializedTree : serializedPassportTree;
-      if (
-        !passportData ||
-        !privateKey ||
-        !dscTree ||
-        !passportTree ||
-        !deployedCircuits ||
-        !circuitDNSMapping
-      ) {
+      if (!passportData || !privateKey) {
         return;
       }
       resetProof();
       await validatePassport(passportData, privateKey, clearPassportData);
     })();
   }, [
+    readyToValidatePassport,
     passportData,
     privateKey,
-    resetProof,
-    deployedCircuits,
-    circuitDNSMapping,
     clearPassportData,
-    mockDscTree,
-    serializedDscTree,
-    mockSerializedTree,
-    serializedPassportTree,
+    resetProof,
     validatePassport,
-    readyToValidatePassport,
   ]);
+  const conditionalPassportTree = useMemo(() => {
+    const isMock = passportData?.documentType !== 'passport';
+    return isMock ? mockPassportTree : passportTree;
+  }, [passportData, mockPassportTree, passportTree]);
 
   useEffect(() => {
     (async () => {
@@ -317,5 +325,6 @@ export const usePassportProcessing = () => {
     error,
     isRegistered,
     registerValidPassport,
+    passportTree: conditionalPassportTree,
   };
 };

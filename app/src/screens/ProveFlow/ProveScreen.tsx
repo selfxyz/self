@@ -35,6 +35,7 @@ import {
 } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
+import { generateTeeInputsVCAndDisclose } from '../../utils/proving/inputs';
 import { sendVcAndDisclosePayload } from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
@@ -46,7 +47,7 @@ const ProveScreen: React.FC = () => {
   const { handleProofVerified } = useApp();
   const selectedAppRef = useRef(selectedApp);
   const isProcessing = useRef(false);
-  const { isRegistered } = usePassportProcessing();
+  const { isRegistered, passportTree } = usePassportProcessing();
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -117,7 +118,11 @@ const ProveScreen: React.FC = () => {
   }, [selectedApp?.endpoint]);
 
   const onVerify = useCallback(async () => {
-    if (passportAndSecretStatus !== 'success' || isProcessing.current) {
+    if (
+      passportAndSecretStatus !== 'success' ||
+      isProcessing.current ||
+      !passportTree
+    ) {
       return;
     }
 
@@ -155,13 +160,13 @@ const ProveScreen: React.FC = () => {
         cleanSelfApp();
         return;
       }
-
-      console.log('currentApp', currentApp);
-      const status = await sendVcAndDisclosePayload(
+      const inputs = generateTeeInputsVCAndDisclose(
         privateKey,
         passportData,
         currentApp,
+        passportTree,
       );
+      const status = await sendVcAndDisclosePayload(currentApp, inputs);
       handleProofVerified(
         currentApp.sessionId,
         status === ProofStatusEnum.SUCCESS,
@@ -183,6 +188,7 @@ const ProveScreen: React.FC = () => {
     isRegistered,
     privateKey,
     loginWithBiometrics,
+    passportTree,
   ]);
 
   const handleScroll = useCallback(

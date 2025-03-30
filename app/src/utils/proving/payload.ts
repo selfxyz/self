@@ -1,4 +1,5 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import { poseidon2 } from 'poseidon-lite';
 
 import {
@@ -16,7 +17,6 @@ import { getLeafDscTree } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { ProofStatusEnum } from '../../stores/proofProvider';
 import { EndpointType } from './../../../../common/src/utils/appType';
-import { generateTeeInputsVCAndDisclose } from './inputs';
 import { sendPayload } from './tee';
 
 export type PassportSupportStatus =
@@ -39,6 +39,12 @@ export interface RegistrationPayload {
   registerCircuitName: string;
   circuitDNSMapping: Record<string, string>;
   endpointType: EndpointType;
+}
+
+export interface ofacSMTs {
+  passportNoAndNationalitySMT: SMT;
+  nameAndDobSMT: SMT;
+  nameAndYobSMT: SMT;
 }
 
 export function checkPassportSupported(
@@ -170,23 +176,11 @@ export async function sendDscPayload(
   return dscStatus;
 }
 
-export async function sendVcAndDisclosePayload(
-  secret: string,
-  passportData: PassportData | null,
-  selfApp: SelfApp,
-) {
-  if (!passportData) {
-    return null;
-  }
-  const { inputs, circuitName } = await generateTeeInputsVCAndDisclose(
-    secret,
-    passportData,
-    selfApp,
-  );
+export async function sendVcAndDisclosePayload(selfApp: SelfApp, inputs: any) {
   return await sendPayload(
     inputs,
     'vc_and_disclose',
-    circuitName,
+    'vc_and_disclose',
     selfApp.endpointType,
     selfApp.endpoint,
     WS_RPC_URL_VC_AND_DISCLOSE,
