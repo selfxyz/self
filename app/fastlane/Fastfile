@@ -86,7 +86,8 @@ platform :ios do
       "IOS_CONNECT_KEY_ID",
       "IOS_PROV_PROFILE_NAME",
       "IOS_PROV_PROFILE_PATH",
-      "IOS_TEAM_ID"
+      "IOS_TEAM_ID",
+      "IOS_TEAM_NAME"
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
@@ -101,11 +102,6 @@ platform :ios do
       key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
       in_house: false
     )
-    
-    # Ensure Team Name is provided
-    unless ENV['IOS_TEAM_NAME'] && !ENV['IOS_TEAM_NAME'].empty?
-      UI.user_error!("Missing required environment variable: IOS_TEAM_NAME")
-    end
 
     # Construct the certificate name using Team Name and ID
     certificate_name = "Apple Distribution: #{ENV['IOS_TEAM_NAME']} (#{ENV['IOS_TEAM_ID']})"

@@ -55,6 +55,10 @@ runs:
           fi
 
           echo "Pushing changes to branch: $CURRENT_BRANCH"
+          git pull --rebase origin $CURRENT_BRANCH || {
+            echo "Failed to pull from $CURRENT_BRANCH"
+            exit 1
+          }
           git push origin HEAD:$CURRENT_BRANCH || {
             echo "Failed to push to $CURRENT_BRANCH"
             exit 1
