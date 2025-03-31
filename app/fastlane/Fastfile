@@ -146,14 +146,14 @@ platform :ios do
       output_directory: "build",
       clean: true,
       # Remove export_options related to signing, let xcargs handle it
-      # export_options: {
-      #   # signingStyle: "manual", # redundant with xcargs
-      #   teamID: ENV["IOS_TEAM_ID"], # redundant with xcargs
-      #   provisioningProfiles: { # redundant with xcargs
-      #     ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
-      #   }
-      # },
-      xcargs: xcargs_array.join(" ")
+      export_options: {
+        # signingStyle: "manual", # redundant with xcargs
+        teamID: ENV["IOS_TEAM_ID"], # redundant with xcargs
+        provisioningProfiles: { # redundant with xcargs
+          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"]
+        }
+      }
+      # xcargs: xcargs_array.join(" ")
     )
 
     target_platform = options[:for_testflight] ? "TestFlight" : "App Store"
