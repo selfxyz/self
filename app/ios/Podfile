@@ -109,22 +109,7 @@ target 'Self' do
     # Disable code signing for Pod targets to avoid conflicts with main app signing
     installer.pods_project.targets.each do |target|
       target.build_configurations.each do |config|
-        # Enable verbose logging for framework embedding
-        if config.build_settings['WRAPPER_EXTENSION'] == 'framework'
-          config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
-          config.build_settings['OTHER_LDFLAGS'] << '-Xlinker -verbose'
-        end
-
-        # Try automatic signing for frameworks instead of disabling completely
-        if target.platform_name == :ios
-          config.build_settings['CODE_SIGN_STYLE'] = 'Automatic'
-          config.build_settings['CODE_SIGNING_REQUIRED'] = 'NO'
-          config.build_settings['CODE_SIGNING_ALLOWED'] = 'YES'
-          # Clear any explicit signing settings to let Xcode handle it
-          config.build_settings['CODE_SIGN_IDENTITY'] = ''
-          config.build_settings['DEVELOPMENT_TEAM'] = ''
-          config.build_settings['PROVISIONING_PROFILE_SPECIFIER'] = ''
-        end
+        config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
       end
     end
   end
