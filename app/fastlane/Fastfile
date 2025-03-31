@@ -95,13 +95,8 @@ platform :ios do
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.ios_verify_app_store_build_number(PROJECT_NAME)
     
-    # Add provisioning profile diagnostics
-    puts "--- Provisioning Profile Diagnostics ---"
-    puts "Looking for profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
-    puts "Profile name from env: #{ENV['IOS_PROV_PROFILE_NAME']}"
-    puts "Contents of provisioning profiles directory:"
-    system("ls -la '/Users/runner/Library/MobileDevice/Provisioning Profiles/'")
-    puts "--- End Diagnostics ---"
+    # Print diagnostics about the provisioning profile
+    Fastlane::Helpers.ios_print_profile_diagnostics
     
     Fastlane::Helpers.ios_verify_provisioning_profile
     

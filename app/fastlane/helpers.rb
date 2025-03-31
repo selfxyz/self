@@ -205,6 +205,25 @@ module Fastlane
       report_success("iOS provisioning profile verified successfully")
     end
 
+    # Print detailed diagnostics about the provisioning profile
+    def self.ios_print_profile_diagnostics
+      puts "--- Provisioning Profile Diagnostics ---"
+      puts "Looking for profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
+      puts "Profile name from env: #{ENV['IOS_PROV_PROFILE_NAME']}"
+      puts "Contents of provisioning profiles directory:"
+      system("ls -la '/Users/runner/Library/MobileDevice/Provisioning Profiles/'")
+      
+      if File.exist?(ENV['IOS_PROV_PROFILE_PATH'])
+        puts "\nProvisioning Profile Details:"
+        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 5 'Entitlements'")
+        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 2 'application-identifier'")
+        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 2 'TeamIdentifier'")
+      else
+        puts "\n⚠️ Warning: Could not find provisioning profile at #{ENV['IOS_PROV_PROFILE_PATH']}"
+      end
+      puts "--- End Diagnostics ---"
+    end
+
     # Decodes and installs provisioning profile from base64 env var for local dev
     def self.ios_dev_decode_and_install_profile
       base64_profile = ENV['IOS_PROV_PROFILE_BASE64']
