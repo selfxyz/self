@@ -76,6 +76,8 @@ platform :ios do
       installed_profile_path = Fastlane::Helpers.ios_dev_decode_and_install_profile
       # Set the profile path env var if installation was successful
       ENV["IOS_PROV_PROFILE_PATH"] = installed_profile_path if installed_profile_path
+    else
+      setup_ci
     end
 
     Fastlane::Helpers.ios_increment_build_number(PROJECT_NAME)
@@ -94,10 +96,6 @@ platform :ios do
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.ios_verify_app_store_build_number(PROJECT_NAME)
-    
-    # Print diagnostics about the provisioning profile
-    Fastlane::Helpers.ios_print_profile_diagnostics
-    
     Fastlane::Helpers.ios_verify_provisioning_profile
     
     cocoapods(podfile: "ios/Podfile")

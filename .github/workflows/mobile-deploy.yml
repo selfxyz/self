@@ -44,7 +44,7 @@ on:
 
 jobs:
   build-ios:
-    runs-on: macos-latest-large
+    runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
       - name: Install Mobile Dependencies
