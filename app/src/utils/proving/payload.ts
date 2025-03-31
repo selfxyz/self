@@ -265,7 +265,12 @@ export async function registerPassport(
 
 export async function getDeployedCircuits(documentType: string) {
   console.log('Fetching deployed circuits from api');
-  const baseUrl = !documentType || typeof documentType !== 'string' || documentType === 'passport' ? API_URL : API_URL_STAGING;
+  const baseUrl =
+    !documentType ||
+    typeof documentType !== 'string' ||
+    documentType === 'passport'
+      ? API_URL
+      : API_URL_STAGING;
   const response = await fetch(`${baseUrl}/deployed-circuits/`);
   if (!response.ok) {
     throw new Error(
