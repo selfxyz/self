@@ -250,14 +250,13 @@ jobs:
           IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
           IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
           IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
+          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
           IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
           IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
           NODE_OPTIONS: "--max-old-space-size=8192"
-          VERBOSE_SCRIPT_LOGGING: "true"  # Enable verbose script logging
-          COCOAPODS_VERBOSE_LOGGING: "true"  # Enable verbose CocoaPods logging
         timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
