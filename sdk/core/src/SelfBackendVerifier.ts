@@ -66,7 +66,7 @@ export class SelfBackendVerifier {
     const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
-    this.scope = hashEndpointWithScope(scope, endpoint);
+    this.scope = hashEndpointWithScope(endpoint, scope);
     this.user_identifier_type = user_identifier_type;
     this.mockPassport = mockPassport;
   }
