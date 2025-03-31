@@ -10,7 +10,8 @@ describe('Scope Utilities', function () {
             { input: 'example.net', expected: 'example.net' },
             { input: '', expected: '' },
             { input: 'https://multiple.dots.in.domain.com', expected: 'multiple.dots.in.domain.com' },
-            { input: 'https://multiple.dots.in.domain.com.that.exceeds.25.chars/path?query=1', expected: 'multiple.dots.in.domain.com.that.exceeds.25.chars' }
+            { input: 'https://multiple.dots.in.domain.com.that.exceeds.25.chars/path?query=1', expected: 'multiple.dots.in.domain.com.that.exceeds.25.chars' },
+            { input: "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968", expected: "0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968" }
         ];
 
         testCases.forEach(({ input, expected }) => {
@@ -43,6 +44,11 @@ describe('Scope Utilities', function () {
             const hash1 = hashEndpointWithScope(endpoint, 'scope1');
             const hash2 = hashEndpointWithScope(endpoint, 'scope2');
             expect(hash1).to.not.equal(hash2);
+        });
+
+        it('should hash 0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968 correctly', () => {
+            const hash = hashEndpointWithScope('0x37F5CB8cB1f6B00aa768D8aA99F1A9289802A968', 'scope1');
+            expect(hash).to.equal('21792212437898267310059828522707476766793174271399605592779109529816681750611');
         });
     });
 
