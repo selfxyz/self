@@ -255,6 +255,8 @@ jobs:
           IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
+          NODE_OPTIONS: "--max-old-space-size=8192"
+        timeout-minutes: 30
         run: |
           cd ${{ env.APP_PATH }}
           echo "--- Pre-Fastlane Diagnostics ---"
