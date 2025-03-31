@@ -152,6 +152,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       'sha512',
       'ecdsa_sha512_brainpoolP384r1_384',
     ],
+    'sha512 poland': ['sha512', 'sha512', 'rsa_sha256_65537_4096'],
   } as const;
 
   const handleGenerate = useCallback(async () => {

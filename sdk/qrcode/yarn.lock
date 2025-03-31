@@ -165,12 +165,18 @@ __metadata:
   resolution: "@selfxyz/qrcode@workspace:."
   dependencies:
     "@types/node": "npm:^20.11.19"
+    "@types/node-forge": "npm:^1"
     "@types/react": "npm:^18.3.4"
     "@types/react-dom": "npm:^18.3.0"
     "@types/uuid": "npm:^10.0.0"
+    js-sha1: "npm:^0.7.0"
+    js-sha256: "npm:^0.11.0"
+    js-sha512: "npm:^0.9.0"
     lottie-react: "npm:^2.4.0"
     mocha: "npm:^10.3.0"
     next: "npm:^14.2.8"
+    node-forge: "npm:^1.3.1"
+    poseidon-lite: "npm:^0.3.0"
     prettier: "npm:^3.3.3"
     qrcode.react: "npm:^4.1.0"
     react: "npm:^18.0.0"
@@ -245,6 +251,24 @@ __metadata:
   version: 0.0.29
   resolution: "@types/json5@npm:0.0.29"
   checksum: 10c0/6bf5337bc447b706bb5b4431d37686aa2ea6d07cfd6f79cc31de80170d6ff9b1c7384a9c0ccbc45b3f512bae9e9f75c2e12109806a15331dc94e8a8db6dbb4ac
+  languageName: node
+  linkType: hard
+
+"@types/node-forge@npm:^1":
+  version: 1.3.11
+  resolution: "@types/node-forge@npm:1.3.11"
+  dependencies:
+    "@types/node": "npm:*"
+  checksum: 10c0/3d7d23ca0ba38ac0cf74028393bd70f31169ab9aba43f21deb787840170d307d662644bac07287495effe2812ddd7ac8a14dbd43f16c2936bbb06312e96fc3b9
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:*":
+  version: 22.13.14
+  resolution: "@types/node@npm:22.13.14"
+  dependencies:
+    undici-types: "npm:~6.20.0"
+  checksum: 10c0/fa2ab5b8277bfbcc86c42e46a3ea9871b0d559894cc9d955685d17178c9499f0b1bf03d1d1ea8d92ef2dda818988f4035acb8abf9dc15423a998fa56173ab804
   languageName: node
   linkType: hard
 
@@ -1012,6 +1036,27 @@ __metadata:
   languageName: node
   linkType: hard
 
+"js-sha1@npm:^0.7.0":
+  version: 0.7.0
+  resolution: "js-sha1@npm:0.7.0"
+  checksum: 10c0/f6ae6d7a3d7e8772fac8a82b2f002c282bef0b75a42ab36b4cafd99c7e02fb4654eb51c444dd026b24ff9fef5d762239aeed42a88fa44ca4b67a0a90ebce059e
+  languageName: node
+  linkType: hard
+
+"js-sha256@npm:^0.11.0":
+  version: 0.11.0
+  resolution: "js-sha256@npm:0.11.0"
+  checksum: 10c0/90980fe01ca01fbd166751fb16c4caa09c1ab997e8bf77c0764cc05c772c6044946f4c1b3bad266ce78357280d2131d3dc0cf2dd7646e78272996bd4d590aa4f
+  languageName: node
+  linkType: hard
+
+"js-sha512@npm:^0.9.0":
+  version: 0.9.0
+  resolution: "js-sha512@npm:0.9.0"
+  checksum: 10c0/00b85acae8ffde790a703a5424ae03c97c623b008135388396db1bfb1ac0ebf7356c5ff0d5a17630b5ae25ac09fe35eed2abc66bc276e9dc86fcb3cabcfcdfa2
+  languageName: node
+  linkType: hard
+
 "js-tokens@npm:^3.0.0 || ^4.0.0":
   version: 4.0.0
   resolution: "js-tokens@npm:4.0.0"
@@ -1374,6 +1419,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"node-forge@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "node-forge@npm:1.3.1"
+  checksum: 10c0/e882819b251a4321f9fc1d67c85d1501d3004b4ee889af822fd07f64de3d1a8e272ff00b689570af0465d65d6bf5074df9c76e900e0aff23e60b847f2a46fbe8
+  languageName: node
+  linkType: hard
+
 "node-gyp@npm:latest":
   version: 11.1.0
   resolution: "node-gyp@npm:11.1.0"
@@ -1488,6 +1540,13 @@ __metadata:
   version: 2.3.1
   resolution: "picomatch@npm:2.3.1"
   checksum: 10c0/26c02b8d06f03206fc2ab8d16f19960f2ff9e81a658f831ecb656d8f17d9edc799e8364b1f4a7873e89d9702dff96204be0fa26fe4181f6843f040f819dac4be
+  languageName: node
+  linkType: hard
+
+"poseidon-lite@npm:^0.3.0":
+  version: 0.3.0
+  resolution: "poseidon-lite@npm:0.3.0"
+  checksum: 10c0/03494ea69be0dc3ced055b7f1505ff73848002c68332d52a5cf5f00d1a657693317e1ffc790b84ccaf9a0f5f61bf05e1a453eab60c385c98701a6580edead49c
   languageName: node
   linkType: hard
 
@@ -2029,6 +2088,13 @@ __metadata:
   version: 6.19.8
   resolution: "undici-types@npm:6.19.8"
   checksum: 10c0/078afa5990fba110f6824823ace86073b4638f1d5112ee26e790155f481f2a868cc3e0615505b6f4282bdf74a3d8caad715fd809e870c2bb0704e3ea6082f344
+  languageName: node
+  linkType: hard
+
+"undici-types@npm:~6.20.0":
+  version: 6.20.0
+  resolution: "undici-types@npm:6.20.0"
+  checksum: 10c0/68e659a98898d6a836a9a59e6adf14a5d799707f5ea629433e025ac90d239f75e408e2e5ff086afc3cace26f8b26ee52155293564593fbb4a2f666af57fc59bf
   languageName: node
   linkType: hard
 

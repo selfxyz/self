@@ -18,6 +18,7 @@ import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
+import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
@@ -42,7 +43,7 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
-  const { handleProofVerified } = useApp();
+  const { handleProofResult } = useApp();
   const selectedAppRef = useRef(selectedApp);
   const isProcessing = useRef(false);
 
@@ -108,10 +109,7 @@ const ProveScreen: React.FC = () => {
     if (!selectedApp?.endpoint) {
       return null;
     }
-    const urlFormatted = selectedApp.endpoint
-      .replace(/^https?:\/\//, '')
-      .split('/')[0];
-    return urlFormatted;
+    return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
 
   const onVerify = useCallback(
@@ -168,7 +166,7 @@ const ProveScreen: React.FC = () => {
           passportData,
           currentApp,
         );
-        handleProofVerified(
+        handleProofResult(
           currentApp.sessionId,
           status === ProofStatusEnum.SUCCESS,
         );
@@ -179,7 +177,7 @@ const ProveScreen: React.FC = () => {
         isProcessing.current = false;
       }
     },
-    [navigate, getPassportDataAndSecret, handleProofVerified, resetProof],
+    [navigate, getPassportDataAndSecret, handleProofResult, resetProof],
   );
 
   const handleScroll = useCallback(
