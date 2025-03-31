@@ -4,6 +4,7 @@ import { poseidon2 } from 'poseidon-lite';
 
 import {
   API_URL,
+  API_URL_STAGING,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_VC_AND_DISCLOSE,
 } from '../../../../common/src/constants/constants';
@@ -256,9 +257,13 @@ export async function getDeployedCircuits() {
     throw new Error('API returned invalid JSON response - server may be down');
   }
 }
-export async function getCircuitDNSMapping() {
-  console.log('Fetching circuit DNS mapping from api');
-  const response = await fetch(`${API_URL}/circuit-dns-mapping/`);
+export async function getCircuitDNSMapping(endpointType?: EndpointType) {
+  console.log('Fetching deployed circuits from api');
+  const baseUrl =
+    endpointType === 'celo' || endpointType === 'https'
+      ? API_URL
+      : API_URL_STAGING;
+  const response = await fetch(`${baseUrl}/circuit-dns-mapping/`);
   if (!response.ok) {
     throw new Error(
       `API server error: ${response.status} ${response.statusText}`,

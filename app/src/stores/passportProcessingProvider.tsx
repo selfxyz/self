@@ -5,24 +5,24 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
 import {
-	getCSCATree,
-	getCommitmentTree,
-	getDSCTree,
+  getCSCATree,
+  getCommitmentTree,
+  getDSCTree,
 } from '../../../common/src/utils/trees';
 import type { PassportData } from '../../../common/src/utils/types';
 import analytics from '../utils/analytics';
 import {
-	generateTeeInputsDsc,
-	generateTeeInputsRegister,
+  generateTeeInputsDsc,
+  generateTeeInputsRegister,
 } from '../utils/proving/inputs';
 import {
-	type RegistrationPayload,
-	checkIdPassportDscIsInTree,
-	checkPassportSupported,
-	getCircuitDNSMapping,
-	getDeployedCircuits,
-	isPassportNullified,
-	isUserRegistered,
+  type RegistrationPayload,
+  checkIdPassportDscIsInTree,
+  checkPassportSupported,
+  getCircuitDNSMapping,
+  getDeployedCircuits,
+  isPassportNullified,
+  isUserRegistered,
 } from '../utils/proving/payload';
 import { sendPayload } from '../utils/proving/tee';
 import { usePassport } from './passportDataProvider';
@@ -53,6 +53,7 @@ interface PassportProcessingState {
   cscaTree?: string[][];
   mockCscaTree?: string[][];
   deployedCircuits?: string;
+  mockCircuitDNSMapping?: CircuitDNSMapping;
   circuitDNSMapping?: CircuitDNSMapping;
   isRegistered?: boolean;
 
@@ -76,6 +77,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
         try {
           const [
             circuits,
+            mockDnsMapping,
             dnsMapping,
             mockPassportTree,
             passportTree,
@@ -85,7 +87,8 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             cscaTree,
           ] = await Promise.all([
             getDeployedCircuits(),
-            getCircuitDNSMapping(),
+            getCircuitDNSMapping('staging_celo'),
+            getCircuitDNSMapping('celo'),
             getCommitmentTree('mock_passport'),
             getCommitmentTree('passport'),
             getDSCTree('staging_celo'),
@@ -96,6 +99,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
 
           set({
             deployedCircuits: circuits,
+            mockCircuitDNSMapping: mockDnsMapping,
             circuitDNSMapping: dnsMapping,
             mockPassportTree,
             passportTree,
@@ -114,6 +118,9 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
       validatePassport: async (passportData, privateKey, clearPassportData) => {
         const state = get();
         const isMock = passportData.documentType !== 'passport';
+        const mapping = isMock
+          ? state.mockCircuitDNSMapping
+          : state.circuitDNSMapping;
         const serializedDscTree = isMock ? state.mockDscTree : state.dscTree;
         const serializedPassportTree = isMock
           ? state.mockPassportTree
@@ -121,7 +128,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
         const serializedCscaTree = isMock ? state.mockCscaTree : state.cscaTree;
         if (
           !state.deployedCircuits ||
-          !state.circuitDNSMapping ||
+          !mapping ||
           !serializedDscTree ||
           !serializedPassportTree ||
           !serializedCscaTree
@@ -172,7 +179,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           const dscOk = await checkIdPassportDscIsInTree(
             passportData,
             serializedDscTree,
-            state.circuitDNSMapping,
+            mapping,
             endpointType,
             supportCheckResult.dscCircuitName,
             dscInputs,
@@ -207,7 +214,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             registrationPayload: {
               inputs,
               registerCircuitName: supportCheckResult.registerCircuitName,
-              circuitDNSMapping: state.circuitDNSMapping,
+              circuitDNSMapping: mapping,
               endpointType,
             },
             processingStatus: 'ready-to-submit',
