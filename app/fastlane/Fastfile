@@ -80,14 +80,23 @@ platform :ios do
       # Setup CI specific configuration
       setup_ci
       
-      # Create and configure keychain
-      sh("security create-keychain -p \"\" build.keychain >/dev/null 2>&1")
-      sh("security default-keychain -s build.keychain >/dev/null 2>&1")
-      sh("security unlock-keychain -p \"\" build.keychain >/dev/null 2>&1")
+      # Create and configure keychain with absolute path
+      keychain_path = File.expand_path("~/Library/Keychains/build.keychain")
+      sh("security create-keychain -p \"\" #{keychain_path} >/dev/null 2>&1")
+      sh("security default-keychain -s #{keychain_path} >/dev/null 2>&1")
+      sh("security unlock-keychain -p \"\" #{keychain_path} >/dev/null 2>&1")
       
-      # Import certificate
-      sh("security import #{ENV['APP_PATH']}#{ENV['IOS_DIST_CERT_PATH']} -k build.keychain -P '#{ENV['IOS_P12_PASSWORD']}' -T /usr/bin/codesign >/dev/null 2>&1")
-      sh("security set-key-partition-list -S apple-tool:,apple: -s -k \"\" build.keychain >/dev/null 2>&1")
+      # Debug certificate path and existence
+      cert_path = File.expand_path("#{ENV['APP_PATH']}#{ENV['IOS_DIST_CERT_PATH']}")
+      sh("ls -l #{cert_path}")
+      
+      # Import certificate with proper escaping
+      cert_password = ENV['IOS_P12_PASSWORD']
+      sh("security import #{cert_path} -k #{keychain_path} -P '#{cert_password}' -T /usr/bin/codesign")
+      sh("security set-key-partition-list -S apple-tool:,apple: -s -k \"\" #{keychain_path}")
+      
+      # Verify certificate was imported
+      sh("security find-identity -v -c codesigning -k #{keychain_path}")
     end
 
     Fastlane::Helpers.ios_increment_build_number(PROJECT_NAME)
