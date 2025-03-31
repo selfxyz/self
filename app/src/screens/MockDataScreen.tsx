@@ -31,9 +31,9 @@ import { storePassportData } from '../stores/passportDataProvider';
 import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
 import { buttonTap, selectionChange } from '../utils/haptic';
 
-interface MockDataScreenProps {}
+interface MockDataScreenProps { }
 
-const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
+const MockDataScreen: React.FC<MockDataScreenProps> = ({ }) => {
   const navigation = useNavigation();
   const [age, setAge] = useState(24);
   const [expiryYears, setExpiryYears] = useState(5);
@@ -152,6 +152,11 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       'sha512',
       'ecdsa_sha512_brainpoolP384r1_384',
     ],
+    'sha512 poland': [
+      'sha512',
+      'sha512',
+      'rsa_sha256_65537_4096',
+    ],
   } as const;
 
   const handleGenerate = useCallback(async () => {
@@ -166,7 +171,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
         let mockPassportData;
         const [hashFunction1, hashFunction2, signatureAlgorithm] =
           signatureAlgorithmToStrictSignatureAlgorithm[
-            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+          selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
           ];
 
         if (isInOfacList) {
