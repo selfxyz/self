@@ -160,7 +160,7 @@ jobs:
           echo "✅ Certificate and environment verification passed!"
 
       - name: Install certificate
-        if: ${{ !env.ACT }}
+        if: false #${{ !env.ACT }}
         run: |
           security create-keychain -p "" build.keychain >/dev/null 2>&1
           security default-keychain -s build.keychain >/dev/null 2>&1

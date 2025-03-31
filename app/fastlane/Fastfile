@@ -77,7 +77,17 @@ platform :ios do
       # Set the profile path env var if installation was successful
       ENV["IOS_PROV_PROFILE_PATH"] = installed_profile_path if installed_profile_path
     else
+      # Setup CI specific configuration
       setup_ci
+      
+      # Create and configure keychain
+      sh("security create-keychain -p \"\" build.keychain >/dev/null 2>&1")
+      sh("security default-keychain -s build.keychain >/dev/null 2>&1")
+      sh("security unlock-keychain -p \"\" build.keychain >/dev/null 2>&1")
+      
+      # Import certificate
+      sh("security import #{ENV['APP_PATH']}#{ENV['IOS_DIST_CERT_PATH']} -k build.keychain -P '#{ENV['IOS_P12_PASSWORD']}' -T /usr/bin/codesign >/dev/null 2>&1")
+      sh("security set-key-partition-list -S apple-tool:,apple: -s -k \"\" build.keychain >/dev/null 2>&1")
     end
 
     Fastlane::Helpers.ios_increment_build_number(PROJECT_NAME)
