@@ -256,7 +256,9 @@ jobs:
           IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
           IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
           NODE_OPTIONS: "--max-old-space-size=8192"
-        timeout-minutes: 30
+          VERBOSE_SCRIPT_LOGGING: "true"  # Enable verbose script logging
+          COCOAPODS_VERBOSE_LOGGING: "true"  # Enable verbose CocoaPods logging
+        timeout-minutes: 90
         run: |
           cd ${{ env.APP_PATH }}
           echo "--- Pre-Fastlane Diagnostics ---"
@@ -397,6 +399,7 @@ jobs:
           ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
           ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
           ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
+          NODE_OPTIONS: "--max-old-space-size=8192"
         run: |
           cd ${{ env.APP_PATH }}
           # if pushing to main, deploy to Play Store

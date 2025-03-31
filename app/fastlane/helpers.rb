@@ -210,14 +210,25 @@ module Fastlane
       puts "--- Provisioning Profile Diagnostics ---"
       puts "Looking for profile at: #{ENV['IOS_PROV_PROFILE_PATH']}"
       puts "Profile name from env: #{ENV['IOS_PROV_PROFILE_NAME']}"
-      puts "Contents of provisioning profiles directory:"
-      system("ls -la '/Users/runner/Library/MobileDevice/Provisioning Profiles/'")
+      
+      # Get the correct profiles directory based on environment
+      profiles_dir = ENV['CI'] == 'true' ? 
+        "/Users/runner/Library/MobileDevice/Provisioning Profiles" :
+        File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
+      
+      puts "Contents of provisioning profiles directory (#{profiles_dir}):"
+      system("ls -la '#{profiles_dir}'")
       
       if File.exist?(ENV['IOS_PROV_PROFILE_PATH'])
         puts "\nProvisioning Profile Details:"
-        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 5 'Entitlements'")
+        puts "\nEntitlements:"
+        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 20 'Entitlements'")
+        puts "\nApplication Identifier:"
         system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 2 'application-identifier'")
+        puts "\nTeam Identifier:"
         system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 2 'TeamIdentifier'")
+        puts "\nProfile Type:"
+        system("security cms -D -i '#{ENV['IOS_PROV_PROFILE_PATH']}' | grep -A 2 'ProvisionedDevices\\|ProvisionsAllDevices'")
       else
         puts "\n⚠️ Warning: Could not find provisioning profile at #{ENV['IOS_PROV_PROFILE_PATH']}"
       end
