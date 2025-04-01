@@ -11,9 +11,9 @@ require 'base64'
 require_relative 'helpers'
 
 # Project configuration
-PROJECT_NAME = "Self"
-PROJECT_SCHEME = "OpenPassport"
-signing_certificate = "iOS Distribution"
+PROJECT_NAME = ENV["IOS_PROJECT_NAME"]
+PROJECT_SCHEME = ENV["IOS_PROJECT_SCHEME"]
+SIGNING_CERTIFICATE = ENV["IOS_SIGNING_CERTIFICATE"]
 
 # Environment setup
 attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
@@ -94,7 +94,10 @@ platform :ios do
       "IOS_CONNECT_API_KEY_PATH",
       "IOS_CONNECT_ISSUER_ID",
       "IOS_CONNECT_KEY_ID",
+      "IOS_PROJECT_NAME",
+      "IOS_PROJECT_SCHEME",
       "IOS_PROV_PROFILE_NAME",
+      "IOS_SIGNING_CERTIFICATE",
       "IOS_TEAM_ID",
       "IOS_TEAM_NAME"
     ]
@@ -129,7 +132,7 @@ platform :ios do
         provisioningProfiles: { 
           ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"] 
         },
-        signingCertificate: signing_certificate,
+        signingCertificate: SIGNING_CERTIFICATE,
         teamID: ENV["IOS_TEAM_ID"],
         xcargs: "CODE_SIGNING_ALLOWED=NO"
       }
