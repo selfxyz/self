@@ -204,46 +204,47 @@ jobs:
             exit 1
           fi
           
-          # Extract UUID from plist
-          echo "Extracting UUID from plist..."
+          # Extract UUID and profile name from plist
+          echo "Extracting UUID and profile name from plist..."
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$TEMP_PLIST_PATH" 2>/dev/null)
           if [ $? -ne 0 ] || [ -z "$PROFILE_UUID" ]; then
             echo "❌ Error: Failed to extract UUID from provisioning profile"
             cat "$TEMP_PLIST_PATH" | head -20
             exit 1
           fi
+
+          # Extract the actual profile name from within the file
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$TEMP_PLIST_PATH" 2>/dev/null)
+          if [ $? -ne 0 ] || [ -z "$PROFILE_NAME" ]; then
+            echo "⚠️ Warning: Failed to extract Name from provisioning profile, will use provided IOS_PROV_PROFILE_NAME"
+            PROFILE_NAME="$IOS_PROV_PROFILE_NAME"
+          fi
+          
           echo "Profile UUID: $PROFILE_UUID"
+          echo "Profile Name: $PROFILE_NAME"
 
           # Install provisioning profile in the correct location with UUID filename
           echo "Installing provisioning profile in filesystem..."
           mkdir -p "/Users/runner/Library/MobileDevice/Provisioning Profiles"
 
-          # Check target directory permissions
-          echo "Target directory permissions:"
-          ls -ld "/Users/runner/Library/MobileDevice/Provisioning Profiles"
-
           # Copy with the UUID as filename
-          TARGET_PATH="/Users/runner/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
-          cp -v "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$TARGET_PATH"
-
-          # Verify copy was successful
-          if [ ! -f "$TARGET_PATH" ]; then
-            echo "❌ Error: Failed to copy provisioning profile to target location"
-            exit 1
-          fi
+          UUID_TARGET_PATH="/Users/runner/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          cp -v "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$UUID_TARGET_PATH"
 
           # Set correct permissions on the profile
-          chmod 644 "$TARGET_PATH"
-          chown runner:staff "$TARGET_PATH"
+          chmod 644 "$UUID_TARGET_PATH"
+          chown runner:staff "$UUID_TARGET_PATH"
 
-          # Save the profile path to environment for later steps
-          echo "IOS_PROV_PROFILE_PATH=$TARGET_PATH" >> $GITHUB_ENV
+          # Save the profile path and name to environment for later steps
+          echo "IOS_PROV_PROFILE_PATH=$UUID_TARGET_PATH" >> $GITHUB_ENV
+          echo "IOS_PROV_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
 
           # Print provisioning profile information
           echo "Provisioning Profile Information:"
           echo "--------------------------------"
-          echo "Profile Name: $IOS_PROV_PROFILE_NAME"
-          echo "Profile Path: $TARGET_PATH"
+          echo "Profile Name (from file): $PROFILE_NAME"
+          echo "Profile Name (from env): $IOS_PROV_PROFILE_NAME"
+          echo "Profile Path: $UUID_TARGET_PATH"
           echo "Profile UUID: $PROFILE_UUID"
           echo "App Identifier: $IOS_APP_IDENTIFIER"
           echo "Team ID: $IOS_TEAM_ID"
@@ -252,7 +253,7 @@ jobs:
           # List all provisioning profiles in the system with detailed info
           echo "List of all provisioning profiles in system:"
           ls -la "/Users/runner/Library/MobileDevice/Provisioning Profiles/"
-
+          
           # Clean up temp file
           rm -f "$TEMP_PLIST_PATH"
 

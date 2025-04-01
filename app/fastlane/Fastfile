@@ -10,6 +10,16 @@ opt_out_usage
 require 'base64'
 require_relative 'helpers'
 
+# load secrets early
+if local_development
+  puts "Loading .env.secrets"
+  require 'dotenv'
+  Dotenv.load('./.env.secrets')
+
+  # confirm that we want to force upload
+  Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
+end
+
 # Project configuration
 PROJECT_NAME = ENV["IOS_PROJECT_NAME"]
 PROJECT_SCHEME = ENV["IOS_PROJECT_SCHEME"]
@@ -28,15 +38,6 @@ android_play_store_json_key_path = "../android/app/play-store-key.json"
 ios_connect_api_key_path = "../ios/certs/connect_api_key.p8"
 ios_provisioning_profile_directory = "~/Library/MobileDevice/Provisioning\ Profiles"
 ios_xcode_profile_path = "../ios/#{PROJECT_NAME}.xcodeproj"
-
-if local_development
-  puts "Loading .env.secrets"
-  require 'dotenv'
-  Dotenv.load('./.env.secrets')
-
-  # confirm that we want to force upload
-  Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
-end
 
 default_platform(:ios)
 
