@@ -76,9 +76,9 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
         set({ processingStatus: 'fetching-circuit-data' });
         try {
           const [
-            circuits,
-            mockDnsMapping,
-            dnsMapping,
+            deployedCircuits,
+            mockCircuitDNSMapping,
+            circuitDNSMapping,
             mockPassportTree,
             passportTree,
             mockDscTree,
@@ -98,9 +98,9 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           ]);
 
           set({
-            deployedCircuits: circuits,
-            mockCircuitDNSMapping: mockDnsMapping,
-            circuitDNSMapping: dnsMapping,
+            deployedCircuits,
+            mockCircuitDNSMapping,
+            circuitDNSMapping,
             mockPassportTree,
             passportTree,
             mockDscTree,
