@@ -1,0 +1,17 @@
+name: Get Version from package.json
+
+description: "Gets the version from package.json and sets it as an environment variable"
+
+inputs:
+  app_path:
+    description: "Path to the app directory"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get version from package.json
+      shell: bash
+      run: |
+        VERSION=$(node -p "require('${{ inputs.app_path }}/package.json').version")
+        echo "VERSION=$VERSION" >> $GITHUB_ENV 

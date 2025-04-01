@@ -1,0 +1,68 @@
+name: Push Build Version Changes
+
+description: "Commits and pushes build version changes for mobile platforms"
+
+inputs:
+  commit_message:
+    description: "Commit message"
+    required: true
+  commit_path:
+    description: "Path to check for changes (e.g. 'ios' or 'android')"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Configure Git
+      shell: bash
+      run: |
+        set -e
+        git config --global user.email "action@github.com"
+        git config --global user.name "Self GitHub Actions"
+
+    - name: Commit Changes
+      shell: bash
+      run: |
+        set -e
+        set -x
+
+        if [ ! -d "${{ inputs.commit_path }}" ]; then
+          echo "Error: Path ${{ inputs.commit_path }} does not exist"
+          exit 1
+        fi
+
+        git add "${{ inputs.commit_path }}"
+
+        if git diff --staged --quiet; then
+          echo "No changes to commit in ${{ inputs.commit_path }}"
+        else
+          echo "Changes to be committed:"
+          git diff --cached "${{ inputs.commit_path }}"
+          git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
+        fi
+
+    - name: Push Changes
+      shell: bash
+      run: |
+        set -e
+        set -x
+
+        if git rev-parse --verify HEAD >/dev/null 2>&1; then
+          if [[ ${{ github.ref }} == refs/pull/* ]]; then
+            CURRENT_BRANCH=${{ github.head_ref }}
+          else
+            CURRENT_BRANCH=$(echo ${{ github.ref }} | sed 's|refs/heads/||')
+          fi
+
+          echo "Pushing changes to branch: $CURRENT_BRANCH"
+          git pull --rebase origin $CURRENT_BRANCH || {
+            echo "Failed to pull from $CURRENT_BRANCH"
+            exit 1
+          }
+          git push origin HEAD:$CURRENT_BRANCH || {
+            echo "Failed to push to $CURRENT_BRANCH"
+            exit 1
+          }
+        else
+          echo "No new commits to push"
+        fi
