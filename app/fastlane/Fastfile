@@ -10,7 +10,12 @@ opt_out_usage
 require 'base64'
 require_relative 'helpers'
 
-# load secrets early
+# early setup
+attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
+is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
+local_development = !is_ci
+
+# load secrets before project configuration
 if local_development
   puts "Loading .env.secrets"
   require 'dotenv'
@@ -26,9 +31,6 @@ PROJECT_SCHEME = ENV["IOS_PROJECT_SCHEME"]
 SIGNING_CERTIFICATE = ENV["IOS_SIGNING_CERTIFICATE"]
 
 # Environment setup
-attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
-is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
-local_development = !is_ci
 package_version = JSON.parse(File.read("../package.json"))["version"]
 # most of these values are for local development
 android_aab_path = "../android/app/build/outputs/bundle/release/app-release.aab"
