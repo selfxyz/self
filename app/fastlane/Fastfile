@@ -77,45 +77,15 @@ platform :ios do
   end
 
   private_lane :prepare_ios_build do |options|
-    build_app_options = {
-      workspace: "ios/#{PROJECT_NAME}.xcworkspace",
-      # TODO: update scheme to Self
-      scheme: PROJECT_SCHEME,
-      export_method: "app-store",
-      output_directory: "build",
-      clean: true
-    }
-
     if local_development
       # Set up API key, profile, and potentially certificate for local dev
       Fastlane::Helpers.ios_dev_setup_connect_api_key(ios_connect_api_key_path)
       Fastlane::Helpers.ios_dev_setup_provisioning_profile(ios_provisioning_profile_directory)
       Fastlane::Helpers.ios_dev_setup_certificate
-
-      # Define export options specifically for local build with manual signing
-      build_app_options[:export_options] = {
-        method: "app-store",
-        signingStyle: "manual",
-        provisioningProfiles: { 
-          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"] 
-        },
-        signingCertificate: signing_certificate,
-        teamID: ENV["IOS_TEAM_ID"]
-      }
     else
       # we need this for building ios apps in CI
       # else build will hang on "[CP] Embed Pods Frameworks"
       setup_ci
-
-      xcargs_array = [
-        "CODE_SIGN_STYLE=Manual",
-        "CODE_SIGN_ON_COPY=NO",
-        "CODE_SIGN_IDENTITY=\"#{signing_certificate}\"", 
-        "PROVISIONING_PROFILE_SPECIFIER=\"#{ENV['IOS_PROV_PROFILE_NAME']}\"", 
-        "DEVELOPMENT_TEAM=#{ENV['IOS_TEAM_ID']}"
-      ]
-      build_app_options[:xcargs] = xcargs_array.join(" ")
-      build_app_options.delete(:export_options)
     end
 
     required_env_vars = [

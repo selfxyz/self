@@ -1,147 +1,279 @@
-# Fastlane & CI/CD Development Guide
+# Fastlane & CI/CD Development Guide 🚀
 
 This document outlines how to work with the Fastlane setup and the GitHub Actions CI/CD pipeline for this mobile application.
 
-## Secrets Management (`.env.secrets`)
+## Prerequisites 🛠️
+
+Before working with this setup, ensure you have the following installed:
+
+* **Ruby** - Fastlane requires Ruby (version 2.6.0 or higher recommended)
+* **Bundler** - For managing Ruby dependencies
+* **Xcode** - For iOS development (latest stable version recommended)
+* **Android Studio** - For Android development
+* **Node.js & Yarn** - For JavaScript dependencies
+
+### Local Fastlane Setup ⚙️
+
+1. Install Fastlane via Bundler:
+   ```bash
+   cd app
+   bundle install
+   ```
+
+2. Verify installation:
+   ```bash
+   bundle exec fastlane --version
+   ```
+
+## GitHub Actions CI/CD (`mobile-deploy.yml`) 🔄
+
+The primary CI/CD workflow is defined in `.github/workflows/mobile-deploy.yml`. It automates the build and deployment process based on repository events.
+
+### Triggers 🎯
+
+* **Push Events:** 
+  * Automatically runs when code is pushed to the `dev` or `main` branches
+  * Only triggers if changes occur within the `app/` directory or the workflow file itself
+
+* **Pull Request Events:** 
+  * Automatically runs when a pull request is opened or updated that targets the `dev` or `main` branches
+  * Only triggers if changes occur in `app/` or the workflow file
+
+### Environment Variables (`env`) 🔧
+
+* `IS_PR`: True if the trigger is a pull request
+* `STAGING_BRANCH` / `MAIN_BRANCH`: Defines the names of key branches (`dev`, `main`)
+* Version variables (`NODE_VERSION`, `RUBY_VERSION`, etc.): Ensure consistent build environments
+* Path variables (`WORKSPACE`, `APP_PATH`, certificate/key paths): Standardize file locations within the runner
+* `ACT`: Set automatically by `act` when running locally, allowing steps to be skipped (e.g., code signing, uploads)
+
+### Permissions 🔐
+
+Grants necessary permissions (`contents: write`, `pull-requests: write`) for actions like checking out code and potentially committing version bumps (though this is currently disabled).
+
+### Jobs 👷
+
+The workflow consists of parallel jobs for each platform:
+
+#### `build-ios` (runs on `macos-latest`) 🍏
+
+1. **Checkout Code:** Gets the repository files
+2. **Install Mobile Dependencies:** Sets up Node.js, Ruby (with Bundler for Fastlane), Yarn dependencies, and CocoaPods
+3. **Verify & Decode Secrets:** Processes iOS secrets (certificates, API keys) stored as GitHub Actions Secrets
+4. **Install Certificate & Provisioning Profile:** Prepares the build environment for code signing
+5. **Run Fastlane:**
+   * Executes `bundle exec fastlane ios deploy --verbose` for pushes to `main` branch
+   * Executes `bundle exec fastlane ios internal_test --verbose` for pushes to `dev` or pull requests
+
+#### `build-android` (runs on `ubuntu-latest`) 🤖
+
+1. **Checkout Code:** Gets the repository files
+2. **Install Mobile Dependencies & SDK:** Sets up Node.js, Java, Android SDK and NDK
+3. **Decode & Verify Secrets:** Processes Android keystore and Play Store JSON key
+4. **Run Fastlane:**
+   * Executes `bundle exec fastlane android deploy --verbose` for pushes to `main` branch
+   * Executes `bundle exec fastlane android internal_test --verbose` for pushes to `dev` or pull requests
+
+### Deployment Summary 📦
+
+* **Internal Testing:** 
+  * Builds are automatically uploaded to TestFlight (iOS) and Google Play Internal Testing (Android)
+  * Triggered on every push to the `dev` branch and for pull requests targeting `dev` or `main`
+
+* **Production:** 
+  * Builds are automatically uploaded to the App Store (iOS, ready for submission) and Google Play Production track (Android)
+  * Triggered on every push to the `main` branch
+
+## Fastlane Lanes Overview 🛣️
+
+The project uses several custom Fastlane lanes to handle different build and deployment scenarios:
+
+### iOS Lanes
+
+| Lane | Description | Usage |
+|------|-------------|-------|
+| `internal_test` | Builds a beta version and uploads to TestFlight | `bundle exec fastlane ios internal_test` |
+| `deploy` | Builds a production version and uploads to App Store Connect | `bundle exec fastlane ios deploy` |
+| `sync_version` | Syncs version from package.json to Info.plist | `bundle exec fastlane ios sync_version` |
+
+### Android Lanes
+
+| Lane | Description | Usage |
+|------|-------------|-------|
+| `internal_test` | Builds a beta version and uploads to Google Play Internal Testing | `bundle exec fastlane android internal_test` |
+| `deploy` | Builds a production version and uploads to Google Play Production | `bundle exec fastlane android deploy` |
+| `sync_version` | Syncs version from package.json to build.gradle | `bundle exec fastlane android sync_version` |
+
+## Secrets Management (`.env.secrets`) 🔑
 
 Fastlane requires various secrets (API keys, certificates, passwords) to interact with Apple App Store Connect and Google Play Store, and to sign the applications.
 
 1. **Template File:** A template file `app/fastlane/.env.secrets.example` lists all the required environment variables.
+
 2. **Create Your Local Secrets File:** Copy the example file to `app/fastlane/.env.secrets`:
    
    ```bash
    cp app/fastlane/.env.secrets.example app/fastlane/.env.secrets
    ```
-3. **Populate Values:** Fill in the values in your newly created `.env.secrets` file. Obtain these credentials from the appropriate platform developer portals or your team's administrator.
-4. **`.gitignore`:** The `.env.secrets` file is included in the project's `.gitignore` and **must not** be committed to the repository.
-5. **CI/CD:** For the GitHub Actions workflow (`.github/workflows/mobile-deploy.yml`), these same secrets must be configured as [GitHub Actions Secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) in the repository settings. The workflow automatically decodes and uses these secrets during builds and deployments.
 
-## `package.json` Scripts
+3. **Populate Values:** Fill in the values in your newly created `.env.secrets` file. Obtain these credentials from the appropriate platform developer portals or your team's administrator.
+
+4. **`.gitignore`:** The `.env.secrets` file is included in the project's `.gitignore` and **must not** be committed to the repository.
+
+5. **CI/CD:** For the GitHub Actions workflow, these same secrets must be configured as [GitHub Actions Secrets](https://docs.github.com/en/actions/security-guides/using-secrets-in-github-actions) in the repository settings.
+
+### Environment Secrets Reference 📝
+
+Below is a reference for all the environment secrets in the `.env.secrets` file:
+
+#### Android Secrets 🤖
+
+| Secret | Description |
+|--------|-------------|
+| `ANDROID_KEYSTORE` | Path to keystore file used for signing Android apps |
+| `ANDROID_KEYSTORE_PASSWORD` | Password for the Android keystore |
+| `ANDROID_KEY_ALIAS` | Alias of the key in the keystore |
+| `ANDROID_KEY_PASSWORD` | Password for the specified key |
+| `ANDROID_PACKAGE_NAME` | Package name/application ID of the Android app |
+| `ANDROID_PLAY_STORE_JSON_KEY_BASE64` | Base64 encoded Google Play Store service account JSON key file for API access |
+
+#### iOS Secrets 🍏
+
+| Secret | Description |
+|--------|-------------|
+| `IOS_APP_IDENTIFIER` | Bundle identifier for the iOS app |
+| `IOS_CONNECT_API_KEY_BASE64` | Base64 encoded App Store Connect API key for authentication |
+| `IOS_CONNECT_ISSUER_ID` | App Store Connect issuer ID associated with the API key |
+| `IOS_CONNECT_KEY_ID` | App Store Connect key ID for API access |
+| `IOS_DIST_CERT_BASE64` | Base64 encoded iOS distribution certificate for code signing |
+| `IOS_PROV_PROFILE_BASE64` | Base64 encoded provisioning profile for the app |
+| `IOS_PROV_PROFILE_NAME` | Name of the provisioning profile |
+| `IOS_P12_PASSWORD` | Password for the p12 certificate file |
+| `IOS_TEAM_ID` | Apple Developer Team ID |
+| `IOS_TEAM_NAME` | Apple Developer Team name |
+| `IOS_TESTFLIGHT_GROUPS` | Comma-separated list of TestFlight groups to distribute the app to |
+
+## `package.json` Scripts 📜
 
 Several scripts in `app/package.json` facilitate common Fastlane and versioning tasks:
 
-* **`yarn ios:fastlane-debug` / `yarn android:fastlane-debug`**:
-  
-  * These scripts execute the `internal_test` Fastlane lane for the respective platforms (`bundle exec fastlane ios internal_test` and `bundle exec fastlane android internal_test`).
-  * They typically build the app in a debug or internal testing configuration and upload it to TestFlight (for iOS) or Google Play Internal Testing (for Android).
-  * They clean the respective build directories (`ios/build`, `android/app/build`) before running Fastlane.
+### Debug Builds 🐞
 
-* **`yarn force-local-upload-deploy` / `yarn force-local-upload-deploy:ios` / `yarn force-local-upload-deploy:android`**:
-  
-  * These scripts run the `deploy` Fastlane lane, forcing the use of local development settings (`FORCE_UPLOAD_LOCAL_DEV=true`).
-  * This is useful for testing the deployment process locally or manually deploying builds using local secrets, potentially bypassing some CI checks. Use with caution.
-  * They also clean build directories first.
+**`yarn ios:fastlane-debug`** / **`yarn android:fastlane-debug`**
 
-* **`yarn force-local-upload-test` / `yarn force-local-upload-test:ios` / `yarn force-local-upload-test:android`**:
-  
-  * Similar to the `deploy` versions, but these run the `internal_test` Fastlane lane with `FORCE_UPLOAD_LOCAL_DEV=true`.
-  * Useful for testing the internal distribution process locally.
+* Executes the `internal_test` Fastlane lane for the respective platforms
+  ```
+  bundle exec fastlane ios internal_test
+  bundle exec fastlane android internal_test
+  ```
+* Builds the app in a debug configuration for internal testing
+* Uploads to TestFlight (iOS) or Google Play Internal Testing (Android)
+* Cleans build directories (`ios/build`, `android/app/build`) before running
 
-* **`yarn bump-version:major|minor|patch`**:
-  
-  * Uses `npm version` to increment the version number in `package.json` according to semantic versioning rules (major, minor, or patch).
-  * Automatically creates a version commit and tag.
-  * Calls `sync-versions` afterwards.
+### Forced Local Deployment 🚀
 
-* **`yarn sync-versions`**:
-  
-  * Executes Fastlane lanes (`bundle exec fastlane ios sync_version` and `bundle exec fastlane android sync_version`).
-  * These lanes synchronize the `version` from `package.json` to the native project files (e.g., `Info.plist` for iOS, `build.gradle` for Android). This ensures consistency across the JS bundle and native app wrappers.
+**`yarn force-local-upload-deploy`**  
+**`yarn force-local-upload-deploy:ios`**  
+**`yarn force-local-upload-deploy:android`**
 
-## Fastlane Structure (`Fastfile` & `helpers.rb`)
+* Runs the `deploy` Fastlane lane with local development settings
+  ```
+  FORCE_UPLOAD_LOCAL_DEV=true
+  ```
+* Useful for testing deployment process locally or manual deploys
+* Bypasses some CI checks - use with caution!
+* Cleans build directories first
 
-The core Fastlane logic resides in two files within the `app/fastlane/` directory:
+### Forced Local Testing 🧪
 
-* **`Fastfile`**: This Ruby file defines the main automation lanes for iOS and Android.
-  
-  * **Platforms:** It's organized by `platform :ios do ... end` and `platform :android do ... end`.
-  * **Public Lanes:** These are the primary entry points for tasks:
-    * `sync_version`: Updates native project version files (`Info.plist`, `build.gradle`) to match `package.json`. Called by `yarn sync-versions`.
-    * `internal_test`: Prepares and uploads a build to internal testing tracks (TestFlight, Google Play Internal Testing). Called by `yarn ios:fastlane-debug`/`yarn android:fastlane-debug` and by the CI workflow for `dev` branch builds/PRs.
-    * `deploy`: Prepares and uploads a build for production release (App Store, Google Play Production). Called by the CI workflow for `main` branch builds.
-  * **Private Lanes:** These contain shared logic used by the public lanes:
-    * `prepare_ios_build`: Handles common iOS build steps like dependency installation (CocoaPods), environment setup (API keys, certificates, profiles for local dev or CI), version checking/incrementing, and running the actual `build_app` action.
-    * `upload_android_build`: Handles common Android build steps like environment setup (keystore, Play Store key for local dev or CI), version checking/incrementing, running the `gradle` build task, and uploading via `upload_to_play_store`.
-  * **Environment Handling:** The `Fastfile` checks `ENV['CI']`, `ENV['ACT']`, and `ENV['FORCE_UPLOAD_LOCAL_DEV']` to adjust behavior for CI vs. local development environments (e.g., loading `.env.secrets`, setting up signing differently).
+**`yarn force-local-upload-test`**  
+**`yarn force-local-upload-test:ios`**  
+**`yarn force-local-upload-test:android`**
 
-* **`helpers.rb`**: This Ruby module contains reusable helper functions called by the `Fastfile` to keep the lanes cleaner and encapsulate logic.
-  
-  * **Environment & Setup:** `verify_env_vars`, `should_upload_app`, `confirm_force_upload`, `ios_dev_setup_*` (certificate, profile, API key), `android_create_*` (keystore, Play Store key). These handle checking secrets, determining if an upload should happen, and setting up the necessary credentials, especially for local development.
-  * **Versioning:** `ios_increment_build_number`, `android_increment_version_code`, `ios_verify_app_store_build_number`. These manage fetching the latest build numbers and incrementing/verifying them.
-  * **Utilities:** `report_error`, `report_success`, `with_retry`. Standardized methods for logging and handling retries.
+* Similar to deploy version, but runs `internal_test` lane locally
+* Useful for testing the internal distribution process
+* Uses `FORCE_UPLOAD_LOCAL_DEV=true` flag
 
-## GitHub Actions CI/CD (`mobile-deploy.yml`) - In Depth
+### Version Management 🏷️
 
-The primary CI/CD workflow is defined in `.github/workflows/mobile-deploy.yml`. It automates the build and deployment process based on repository events.
+**`yarn bump-version:major|minor|patch`**
 
-* **Triggers:** The workflow is initiated by:
-  
-  * **Push Events:** Automatically runs when code is pushed to the `dev` or `main` branches, specifically if changes occur within the `app/` directory or the workflow file itself.
-  * **Pull Request Events:** Automatically runs when a pull request is opened or updated that targets the `dev` or `main` branches, again checking for changes in `app/` or the workflow file.
+* Increments version in `package.json` according to semantic versioning
+* Creates version commit and tag automatically
+* Calls `sync-versions` afterwards
 
-* **Environment Variables (`env`):** Defines crucial variables used across jobs:
-  
-  * `IS_PR`: True if the trigger is a pull request.
-  * `STAGING_BRANCH` / `MAIN_BRANCH`: Defines the names of key branches (`dev`, `main`).
-  * Version variables (`NODE_VERSION`, `RUBY_VERSION`, etc.): Ensure consistent build environments.
-  * Path variables (`WORKSPACE`, `APP_PATH`, certificate/key paths): Standardize file locations within the runner.
-  * `ACT`: Set automatically by `act` when running locally, allowing steps to be skipped (e.g., code signing, uploads).
+**`yarn sync-versions`**
 
-* **Permissions:** Grants necessary permissions (`contents: write`, `pull-requests: write`) for actions like checking out code and potentially committing version bumps (though this is currently disabled).
+* Synchronizes the version from `package.json` to native files:
+  ```
+  bundle exec fastlane ios sync_version
+  bundle exec fastlane android sync_version
+  ```
+* Updates iOS `Info.plist` and Android `build.gradle`
+* Ensures consistency across JS bundle and native app wrappers
 
-* **Jobs:** The workflow consists of parallel jobs for each platform:
-  
-  * **`build-ios` (runs on `macos-latest`)**
-    
-    1. **Checkout Code:** Gets the repository files.
-    2. **Install Mobile Dependencies:** Uses the custom composite action `.github/actions/mobile-setup` to set up Node.js, Ruby (with Bundler for Fastlane), Yarn dependencies, and CocoaPods.
-    3. **Verify Secrets:** Checks that required iOS secrets (like `IOS_CONNECT_API_KEY_BASE64`, `IOS_DIST_CERT_BASE64`, etc., stored as GitHub Actions Secrets) are present and have the correct basic format.
-    4. **Decode Secrets:** Decodes the Base64 encoded secrets and writes them to the file paths specified in the `env` section (e.g., `${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}`).
-    5. **Verify Certificate/Environment (CI Only):** Performs checks on the decoded certificate file (existence, permissions, size) and keychain access. Skipped if `env.ACT` is true.
-    6. **Install Certificate (CI Only - Currently Disabled):** Imports the distribution certificate into a temporary keychain (`build.keychain`). Skipped if `env.ACT` is true. *Note: This step seems currently disabled in the YML.*
-    7. **Install Provisioning Profile (CI Only):** Copies the decoded provisioning profile (`profile.mobileprovision`) into the standard system location (`~/Library/MobileDevice/Provisioning Profiles/`) so Xcode/Fastlane can find it. Skipped if `env.ACT` is true.
-    8. **Run Fastlane:**
-       * Navigates to the `app` directory.
-       * Executes `bundle exec fastlane ios deploy --verbose` if the trigger was a push to the `main` branch.
-       * Executes `bundle exec fastlane ios internal_test --verbose` for pushes to `dev` or pull requests.
-       * The corresponding Fastlane lane (`deploy` or `internal_test`) handles the build (`build_app`) and upload (`upload_to_app_store` or `upload_to_testflight`) logic. Secrets needed by Fastlane are passed via environment variables (e.g., `IOS_CONNECT_ISSUER_ID`).
-    9. **Versioning Steps (Currently Disabled):** Includes steps to get the version from `package.json` and commit/push the updated native project files after a build number increment. These appear disabled (`if: false`).
-  
-  * **`build-android` (runs on `ubuntu-latest`)**
-    
-    1. **Checkout Code:** Gets the repository files.
-    2. **Install Mobile Dependencies:** Uses the `.github/actions/mobile-setup` action.
-    3. **Setup Java/Android SDK/NDK:** Installs the required Java, Android SDK, and NDK versions using standard GitHub Actions (`actions/setup-java`, `android-actions/setup-android`) and `sdkmanager`. Includes retry logic for NDK installation.
-    4. **Set Gradle JVM Options (Local `act` only):** Adds Gradle JVM arguments to `gradle.properties` if running via `act` to prevent potential memory issues.
-    5. **Decode Secrets:** Decodes `ANDROID_KEYSTORE` and `ANDROID_PLAY_STORE_JSON_KEY_BASE64` secrets into their respective file paths.
-    6. **Verify Secrets:** Checks the decoded keystore (using `keytool` with provided passwords/alias) and the Play Store JSON key.
-    7. **Run Fastlane:**
-       * Navigates to the `app` directory.
-       * Executes `bundle exec fastlane android deploy --verbose` if the trigger was a push to the `main` branch.
-       * Executes `bundle exec fastlane android internal_test --verbose` for pushes to `dev` or pull requests.
-       * The corresponding Fastlane lane (`deploy` or `internal_test`) handles the Gradle build (`gradle task: "clean bundleRelease"`) and upload (`upload_to_play_store`) logic. Signing configuration is passed to Gradle via properties.
-    8. **Versioning Steps (Currently Disabled):** Similar to iOS, includes disabled steps for committing version changes.
-
-* **Deployment Summary:**
-  
-  * **Internal Testing:** Builds are automatically uploaded to TestFlight (iOS) and Google Play Internal Testing (Android) on every push to the `dev` branch and for pull requests targeting `dev` or `main`.
-  * **Production:** Builds are automatically uploaded to the App Store (iOS, ready for submission) and Google Play Production track (Android) on every push to the `main` branch.
-
-## Local Testing with `act`
+## Local Testing with `act` 🧰
 
 You can test the GitHub Actions workflow locally using [`act`](https://github.com/nektos/act). This requires Docker to be installed and running.
 
 1. **Install `act`:** Follow the installation instructions in the `act` repository.
-2. **Run Jobs:** From the *root* of the project repository, you can execute specific jobs from the workflow file:
+
+2. **Run Jobs:** From the *root* of the project repository:
+
    * Test the Android build:
-     
      ```bash
      act -j build-android
      ```
+
    * Test the iOS build:
-     
      ```bash
      act -j build-ios
      ```
-   * **Note:** Running jobs that require macOS-specific runners (like `build-ios` or anything involving code signing/TestFlight uploads) might have limitations or require specific configurations with `act`, especially if you are not on a macOS host. The `build-android` job is generally easier to test cross-platform. Consult the `act` documentation for advanced usage.
-   * **Secrets:** `act` will prompt you for secrets unless you provide them via a secrets file (`-s KEY=VALUE` or `--secret-file`). For basic build tests that don't involve signing/uploading, you might be able to skip some secrets.
+
+3. **Notes:**
+   * macOS-specific jobs might have limitations when not running on macOS
+   * `act` will prompt for secrets unless provided via `-s KEY=VALUE` or `--secret-file`
+   * For basic build tests, you might be able to skip some secrets
+
+## Troubleshooting 🔍
+
+### Common Issues and Solutions
+
+#### iOS Build Issues
+
+1. **Certificate/Provisioning Profile Errors**
+   * Ensure your certificate and provisioning profile are valid and not expired
+   * Verify that the correct team ID is being used
+   * Try using `fastlane match` to manage certificates and profiles
+
+2. **TestFlight Upload Failures**
+   * Check that your App Store Connect API key has sufficient permissions
+   * Verify your app's version and build numbers are incremented properly
+   * Ensure binary is properly signed with distribution certificate
+
+#### Android Build Issues
+
+1. **Keystore Issues**
+   * Verify keystore path, password, and key alias are correct
+   * Check file permissions on the keystore file
+   * Ensure you're using the correct signing configuration in Gradle
+
+2. **Google Play Upload Failures**
+   * Verify the service account has proper permissions in the Google Play Console
+   * Check that the app's version code has been incremented
+   * Ensure the JSON key file is valid and not expired
+
+## Additional Resources 📚
+
+### Official Documentation
+
+* [Fastlane Documentation](https://docs.fastlane.tools/)
+* [GitHub Actions Documentation](https://docs.github.com/en/actions)
+* [App Store Connect API](https://developer.apple.com/documentation/appstoreconnectapi)
+* [Google Play Developer API](https://developers.google.com/android-publisher)
+
+### Helpful Tools
+
+* [Match](https://docs.fastlane.tools/actions/match/) - Fastlane tool for iOS code signing
+* [Supply](https://docs.fastlane.tools/actions/supply/) - Fastlane tool for Android app deployment
+* [Gym](https://docs.fastlane.tools/actions/gym/) - Fastlane tool for building iOS apps
