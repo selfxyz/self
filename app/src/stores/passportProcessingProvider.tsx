@@ -1,9 +1,13 @@
-import { useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { poseidon2 } from 'poseidon-lite';
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { generateCommitment } from '../../../common/src/utils/passports/passport';
 import {
   getCSCATree,
   getCommitmentTree,
@@ -64,6 +68,7 @@ interface PassportProcessingState {
     clearPassportData: () => Promise<void>,
   ) => Promise<void>;
   registerValidPassport: () => Promise<void>;
+  updateCommitmentCache: (commitment: string, isMock: boolean) => void;
   start: () => void;
 }
 
@@ -247,7 +252,28 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           set({ processingStatus: 'final', isRegistered: true });
         }
       },
-
+      updateCommitmentCache: (commitment: string, isMock: boolean) => {
+        const { passportTree, mockPassportTree } = get();
+        const tree = isMock ? mockPassportTree : passportTree;
+        if (!tree) {
+          throw new Error('Tree not found');
+        }
+        const commitmentTree = LeanIMT.import(
+          (a, b) => poseidon2([a, b]),
+          tree,
+        );
+        commitmentTree.insert(BigInt(commitment));
+        const serializedTree = commitmentTree.export();
+        if (isMock) {
+          set({
+            mockPassportTree: serializedTree,
+          });
+        } else {
+          set({
+            passportTree: serializedTree,
+          });
+        }
+      },
       start: () => {
         set({ processingStatus: 'ready-to-process' });
       },
@@ -275,6 +301,7 @@ export const usePassportProcessing = () => {
     start,
     mockPassportTree,
     passportTree,
+    updateCommitmentCache,
   } = passportProcessingStore;
   const { passportData, privateKey, clearPassportData } = usePassport();
   const { resetProof } = useProofInfo();
@@ -326,12 +353,26 @@ export const usePassportProcessing = () => {
     })();
   }, [fetchCircuitData, readyToFetchStaticData]);
 
+  const registerAndUpdateCommitmentCache = useCallback(async () => {
+    if (!passportData || !privateKey) {
+      throw new Error('Passport data or private key is missing');
+    }
+    const isMock = passportData?.documentType !== 'passport';
+    await registerValidPassport();
+    const commitment = generateCommitment(
+      privateKey,
+      PASSPORT_ATTESTATION_ID,
+      passportData,
+    );
+    updateCommitmentCache(commitment, isMock);
+  }, [passportData, privateKey]);
+
   return {
     start,
     processingStatus,
     error,
     isRegistered,
-    registerValidPassport,
+    registerValidPassport: registerAndUpdateCommitmentCache,
     passportTree: conditionalPassportTree,
   };
 };
