@@ -97,6 +97,7 @@ platform :ios do
       "IOS_PROJECT_NAME",
       "IOS_PROJECT_SCHEME",
       "IOS_PROV_PROFILE_NAME",
+      "IOS_PROV_PROFILE_PATH",
       "IOS_SIGNING_CERTIFICATE",
       "IOS_TEAM_ID",
       "IOS_TEAM_NAME"

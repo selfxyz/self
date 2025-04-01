@@ -193,7 +193,28 @@ jobs:
           echo "File owner: $(ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" | awk '{print $3}')"
           echo "--------------------------------"
 
-          # Install provisioning profile in the correct location
+          # Create a temporary plist file to extract UUID
+          TEMP_PLIST_PATH=$(mktemp /tmp/profile_plist.XXXXXX)
+
+          # Extract plist from mobileprovision file
+          echo "Extracting plist from provisioning profile..."
+          security cms -D -i "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" -o "$TEMP_PLIST_PATH"
+          if [ $? -ne 0 ]; then
+            echo "❌ Error: Failed to extract plist from provisioning profile"
+            exit 1
+          fi
+          
+          # Extract UUID from plist
+          echo "Extracting UUID from plist..."
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$TEMP_PLIST_PATH" 2>/dev/null)
+          if [ $? -ne 0 ] || [ -z "$PROFILE_UUID" ]; then
+            echo "❌ Error: Failed to extract UUID from provisioning profile"
+            cat "$TEMP_PLIST_PATH" | head -20
+            exit 1
+          fi
+          echo "Profile UUID: $PROFILE_UUID"
+
+          # Install provisioning profile in the correct location with UUID filename
           echo "Installing provisioning profile in filesystem..."
           mkdir -p "/Users/runner/Library/MobileDevice/Provisioning Profiles"
 
@@ -201,24 +222,29 @@ jobs:
           echo "Target directory permissions:"
           ls -ld "/Users/runner/Library/MobileDevice/Provisioning Profiles"
 
-          # Copy with verbose output
-          cp -v "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision"
+          # Copy with the UUID as filename
+          TARGET_PATH="/Users/runner/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          cp -v "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$TARGET_PATH"
 
           # Verify copy was successful
-          if [ ! -f "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision" ]; then
+          if [ ! -f "$TARGET_PATH" ]; then
             echo "❌ Error: Failed to copy provisioning profile to target location"
             exit 1
           fi
 
           # Set correct permissions on the profile
-          chmod 644 "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision"
-          chown runner:staff "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision"
+          chmod 644 "$TARGET_PATH"
+          chown runner:staff "$TARGET_PATH"
+
+          # Save the profile path to environment for later steps
+          echo "IOS_PROV_PROFILE_PATH=$TARGET_PATH" >> $GITHUB_ENV
 
           # Print provisioning profile information
           echo "Provisioning Profile Information:"
           echo "--------------------------------"
           echo "Profile Name: $IOS_PROV_PROFILE_NAME"
-          echo "Profile Path: $IOS_PROV_PROFILE_PATH"
+          echo "Profile Path: $TARGET_PATH"
+          echo "Profile UUID: $PROFILE_UUID"
           echo "App Identifier: $IOS_APP_IDENTIFIER"
           echo "Team ID: $IOS_TEAM_ID"
           echo "--------------------------------"
@@ -227,16 +253,8 @@ jobs:
           echo "List of all provisioning profiles in system:"
           ls -la "/Users/runner/Library/MobileDevice/Provisioning Profiles/"
 
-          # Verify provisioning profile exists and is valid
-          echo "Verifying provisioning profile contents..."
-          PROFILE_INFO=$(security cms -D -i "/Users/runner/Library/MobileDevice/Provisioning Profiles/profile.mobileprovision")
-          if [ $? -eq 0 ]; then
-            echo "Profile is valid and contains:"
-            echo "$PROFILE_INFO" | grep -E "Name|TeamName|TeamIdentifier|AppIdentifier"
-          else
-            echo "❌ Error: Failed to read provisioning profile contents"
-            exit 1
-          fi
+          # Clean up temp file
+          rm -f "$TEMP_PLIST_PATH"
 
           echo "✅ Provisioning profile installation steps completed."
 
