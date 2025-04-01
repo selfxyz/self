@@ -26,7 +26,7 @@
     "force-local-upload-test:android": "yarn clean:android && FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane android internal_test --verbose",
     "force-local-upload-test:ios": "yarn clean:ios && FORCE_UPLOAD_LOCAL_DEV=true bundle exec fastlane ios internal_test --verbose",
     "ia": "yarn install-app",
-    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && pod install && cd .. && yarn clean:xcode-env-local",
+    "install-app": "cd ../common && yarn && cd ../app && yarn && cd ios && bundle install && cd .. && yarn clean:xcode-env-local",
     "ios": "react-native run-ios",
     "ios:fastlane-debug": "yarn clean:ios && bundle exec fastlane ios internal_test",
     "lint": "eslint .",
