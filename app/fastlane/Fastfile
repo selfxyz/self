@@ -14,6 +14,7 @@ require_relative 'helpers'
 attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
 is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
 local_development = !is_ci
+android_has_permissions = false
 
 # load secrets before project configuration
 if local_development
@@ -190,9 +191,9 @@ platform :android do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    Fastlane::Helpers.android_increment_version_code(android_gradle_file_path)
+    Fastlane::Helpers.android_increment_version_code(android_gradle_file_path) if android_has_permissions
     # TODO: uncomment when we have the permissions to run this action
-    # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
+    Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
@@ -223,6 +224,6 @@ platform :android do
       skip_upload_screenshots: true,
       track_promote_release_status: "completed",
       aab: android_aab_path,
-    ) if should_upload
+    ) if should_upload && android_has_permissions
   end
 end
