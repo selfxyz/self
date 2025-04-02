@@ -372,6 +372,28 @@ module Fastlane
       rescue => e
          report_error("Error accessing provisioning profile at #{profile_path}: #{e.message}")
       end
+
+      # Print current user
+      current_user = ENV['USER'] || `whoami`.strip
+      puts "Current user: #{current_user}"
+
+      # List all provisioning profiles in user's directory
+      profiles_dir = File.expand_path("~/Library/MobileDevice/Provisioning Profiles")
+      if Dir.exist?(profiles_dir)
+        puts "Listing mobile provisioning profiles in #{profiles_dir}:"
+        profiles = Dir.glob(File.join(profiles_dir, "*.mobileprovision"))
+        if profiles.empty?
+          puts "  No provisioning profiles found"
+        else
+          profiles.each do |profile|
+            uuid = File.basename(profile, ".mobileprovision")
+            puts "  - #{uuid}.mobileprovision"
+          end
+          puts "Total provisioning profiles found: #{profiles.count}"
+        end
+      else
+        puts "Provisioning profiles directory not found at: #{profiles_dir}"
+      end
     end
 
     ### Android-specific Methods ###

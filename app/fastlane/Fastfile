@@ -193,7 +193,7 @@ platform :android do
     Fastlane::Helpers.verify_env_vars(required_env_vars)
     Fastlane::Helpers.android_increment_version_code(android_gradle_file_path) if android_has_permissions
     # TODO: uncomment when we have the permissions to run this action
-    Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
+    # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
     target_platform = options[:track] == "production" ? "Google Play" : "Internal Testing"
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
