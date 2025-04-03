@@ -394,6 +394,85 @@ module Fastlane
       else
         puts "Provisioning profiles directory not found at: #{profiles_dir}"
       end
+      
+      # Advanced checks for provisioning profile
+      puts "\n--- Advanced Provisioning Profile Diagnostics ---"
+      
+      # Check if profile can be parsed
+      if File.exist?(profile_path)
+        puts "Testing if profile can be parsed with security tool:"
+        temp_plist = Tempfile.new(['profile_info', '.plist'])
+        begin
+          security_cmd = "security cms -D -i #{Shellwords.escape(profile_path)} -o #{Shellwords.escape(temp_plist.path)}"
+          security_output = `#{security_cmd} 2>&1`
+          security_success = $?.success?
+          
+          if security_success
+            puts "✅ Profile can be parsed successfully"
+            
+            # Extract and display important profile information
+            puts "\nExtracting profile information:"
+            
+            # Get profile UUID
+            uuid_cmd = "/usr/libexec/PlistBuddy -c 'Print :UUID' #{Shellwords.escape(temp_plist.path)}"
+            uuid = `#{uuid_cmd}`.strip
+            puts "Profile UUID: #{uuid}"
+            
+            # Get App ID/Bundle ID
+            app_id_cmd = "/usr/libexec/PlistBuddy -c 'Print :Entitlements:application-identifier' #{Shellwords.escape(temp_plist.path)}"
+            app_id = `#{app_id_cmd}`.strip
+            puts "App Identifier: #{app_id}"
+            
+            # Get Team ID
+            team_id_cmd = "/usr/libexec/PlistBuddy -c 'Print :TeamIdentifier:0' #{Shellwords.escape(temp_plist.path)}"
+            team_id = `#{team_id_cmd}`.strip
+            puts "Team Identifier: #{team_id}"
+            
+            # Get profile type (development, distribution, etc.)
+            profile_type_cmd = "/usr/libexec/PlistBuddy -c 'Print :Entitlements:get-task-allow' #{Shellwords.escape(temp_plist.path)} 2>/dev/null"
+            get_task_allow = `#{profile_type_cmd}`.strip.downcase
+            
+            if get_task_allow == "true"
+              puts "Profile Type: Development"
+            else
+              distribution_cmd = "/usr/libexec/PlistBuddy -c 'Print :ProvisionsAllDevices' #{Shellwords.escape(temp_plist.path)} 2>/dev/null"
+              provisions_all = `#{distribution_cmd}`.strip.downcase
+              
+              if provisions_all == "true"
+                puts "Profile Type: Enterprise Distribution"
+              else
+                puts "Profile Type: App Store Distribution"
+              end
+            end
+            
+            # Get expiration date
+            expiration_cmd = "/usr/libexec/PlistBuddy -c 'Print :ExpirationDate' #{Shellwords.escape(temp_plist.path)}"
+            expiration = `#{expiration_cmd}`.strip
+            puts "Expiration Date: #{expiration}"
+          else
+            puts "❌ Failed to parse profile: #{security_output}"
+          end
+        ensure
+          temp_plist.close
+          temp_plist.unlink
+        end
+      end
+      
+      # Check code signing identities
+      puts "\nInspecting code signing identities:"
+      signing_identities = `security find-identity -v -p codesigning 2>&1`
+      puts signing_identities
+      
+      # Check keychain configuration
+      puts "\nKeychain configuration:"
+      puts `security list-keychains -d user 2>&1`
+      
+      # Check Xcode configuration
+      puts "\nXcode code signing search paths:"
+      puts "Provisioning profiles search path: ~/Library/MobileDevice/Provisioning Profiles/"
+      puts "Recommended check: In Xcode settings, verify your Apple ID is correctly logged in"
+      
+      puts "--- End of Provisioning Profile Diagnostics ---\n"
     end
 
     ### Android-specific Methods ###
