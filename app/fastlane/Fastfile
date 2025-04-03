@@ -141,7 +141,6 @@ platform :ios do
         },
         signingCertificate: SIGNING_CERTIFICATE,
         teamID: ENV["IOS_TEAM_ID"],
-        xcargs: "CODE_SIGNING_ALLOWED=NO"
       }
     })
 
