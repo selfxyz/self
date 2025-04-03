@@ -132,6 +132,18 @@ platform :ios do
     puts "Verifying final build settings for Release config:"
     sh "xcodebuild -showBuildSettings -workspace #{workspace_path} -scheme #{PROJECT_SCHEME} -configuration Release | grep 'CODE_SIGN_STYLE\\|PROVISIONING_PROFILE_SPECIFIER\\|CODE_SIGN_IDENTITY\\|DEVELOPMENT_TEAM'"
 
+    # Update project to use manual code signing
+    update_code_signing_settings(
+      use_automatic_signing: false,
+      path: "ios/#{PROJECT_NAME}.xcodeproj",
+      team_id: ENV["IOS_TEAM_ID"],
+      targets: [PROJECT_SCHEME],
+      code_sign_identity: ENV["IOS_SIGNING_CERTIFICATE"],
+      profile_name: ENV["IOS_PROV_PROFILE_NAME"],
+      bundle_identifier: ENV["IOS_APP_IDENTIFIER"],
+      build_configurations: ["Release"]
+    )
+
     build_app({
       workspace: "#{workspace_path}",
       scheme: PROJECT_SCHEME,
