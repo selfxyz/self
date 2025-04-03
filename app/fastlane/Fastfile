@@ -141,6 +141,7 @@ platform :ios do
         },
         signingCertificate: SIGNING_CERTIFICATE,
         teamID: ENV["IOS_TEAM_ID"],
+        xcargs: "CODE_SIGN_IDENTITY=\"#{ENV["IOS_SIGNING_CERTIFICATE"]}\" PROVISIONING_PROFILE_SPECIFIER=\"#{ENV["IOS_PROV_PROFILE_NAME"]}\" DEVELOPMENT_TEAM=\"#{ENV["IOS_TEAM_ID"]}\""
       }
     })
 
