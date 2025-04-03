@@ -89,7 +89,12 @@ platform :ios do
     else
       # we need this for building ios apps in CI
       # else build will hang on "[CP] Embed Pods Frameworks"
-      setup_ci
+      setup_ci(
+        force: true,
+        provider: "github",
+        keychain_name: "build.keychain",
+        keychain_password: ""
+      )
     end
 
     required_env_vars = [
