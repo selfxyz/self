@@ -126,13 +126,14 @@ platform :ios do
       in_house: false
     )
 
+    workspace_path = File.expand_path("../ios/#{PROJECT_NAME}.xcworkspace", Dir.pwd)
+
     # Print final build settings before archiving
     puts "Verifying final build settings for Release config:"
-    sh "xcodebuild -showBuildSettings -workspace ios/#{PROJECT_NAME}.xcworkspace -scheme #{PROJECT_SCHEME} -configuration Release | grep 'CODE_SIGN_STYLE\|PROVISIONING_PROFILE_SPECIFIER\|CODE_SIGN_IDENTITY\|DEVELOPMENT_TEAM'"
+    sh "xcodebuild -showBuildSettings -workspace #{workspace_path} -scheme #{PROJECT_SCHEME} -configuration Release | grep 'CODE_SIGN_STYLE\\|PROVISIONING_PROFILE_SPECIFIER\\|CODE_SIGN_IDENTITY\\|DEVELOPMENT_TEAM'"
 
     build_app({
-      workspace: "ios/#{PROJECT_NAME}.xcworkspace",
-      # TODO: update scheme to Self
+      workspace: "#{workspace_path}",
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
       output_directory: "build",
