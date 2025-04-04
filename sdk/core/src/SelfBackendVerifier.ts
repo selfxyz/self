@@ -19,6 +19,9 @@ import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
 import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
+const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
+const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
+
 export class SelfBackendVerifier {
   protected scope: string;
   protected attestationId: number = 1;
@@ -55,12 +58,12 @@ export class SelfBackendVerifier {
   protected mockPassport: boolean;
 
   constructor(
-    rpcUrl: string,
     scope: string,
     endpoint: string,
     user_identifier_type: UserIdType = 'uuid',
     mockPassport: boolean = false
   ) {
+    const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
     const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
