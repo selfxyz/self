@@ -148,8 +148,9 @@ platform :ios do
     clear_derived_data
 
     # Print final build settings before archiving
-    puts "Verifying final build settings for Release config:"
-    sh "xcodebuild -showBuildSettings -workspace #{workspace_path} -scheme #{PROJECT_SCHEME} -configuration Release | grep 'CODE_SIGN_STYLE\\|PROVISIONING_PROFILE_SPECIFIER\\|CODE_SIGN_IDENTITY\\|DEVELOPMENT_TEAM'"
+    sh "xcodebuild -showBuildSettings -workspace #{workspace_path} " \
+       "-scheme #{PROJECT_SCHEME} -configuration Release " \
+       "| grep 'CODE_SIGN_STYLE\|PROVISIONING_PROFILE_SPECIFIER\|CODE_SIGN_IDENTITY\|DEVELOPMENT_TEAM' || true"
 
     build_app({
       workspace: "#{workspace_path}",
