@@ -22,7 +22,7 @@ import {
 } from '../passports/passport';
 import { hash, packBytesAndPoseidon } from '../hash';
 import { formatMrz } from '../passports/format';
-import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
+import { castFromScope, castFromUUID, stringToAsciiBigIntArray } from './uuid';
 import { getCurrentDateYYMMDD } from '../date';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
@@ -171,6 +171,7 @@ export function generateCircuitInputsVCandDisclose(
   forbidden_countries_list: string[],
   user_identifier: string
 ) {
+  const formattedScope = castFromScope(scope);
   const formattedMrz = formatMrz(passportData.mrz);
   const passportMetadata = passportData.passportMetadata;
   const eContent_shaBytes = hash(
@@ -233,7 +234,7 @@ export function generateCircuitInputsVCandDisclose(
     siblings: formatInput(siblings),
     selector_dg1: formatInput(selector_dg1),
     selector_older_than: formatInput(selector_older_than),
-    scope: formatInput(scope),
+    scope: formatInput(formattedScope),
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),
