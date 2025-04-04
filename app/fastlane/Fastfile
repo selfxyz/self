@@ -160,7 +160,7 @@ platform :ios do
         provisioningProfiles: { 
           ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"] 
         },
-        signingCertificate: SIGNING_CERTIFICATE,
+        signingCertificate: ios_signing_certificate_name,
         teamID: ENV["IOS_TEAM_ID"],
       },
       xcodebuild_formatter: "",
