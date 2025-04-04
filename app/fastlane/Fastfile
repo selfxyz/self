@@ -137,12 +137,14 @@ platform :ios do
       use_automatic_signing: false,
       path: "ios/#{PROJECT_NAME}.xcodeproj",
       team_id: ENV["IOS_TEAM_ID"],
-      targets: [PROJECT_SCHEME],
+      targets: [PROJECT_NAME],
       code_sign_identity: ENV["IOS_SIGNING_CERTIFICATE"],
       profile_name: ENV["IOS_PROV_PROFILE_NAME"],
       bundle_identifier: ENV["IOS_APP_IDENTIFIER"],
       build_configurations: ["Release"]
     )
+
+    clear_derived_data
 
     build_app({
       workspace: "#{workspace_path}",
@@ -159,7 +161,8 @@ platform :ios do
         signingCertificate: SIGNING_CERTIFICATE,
         teamID: ENV["IOS_TEAM_ID"],
       },
-      xcargs: "CODE_SIGN_IDENTITY=\"#{ENV["IOS_SIGNING_CERTIFICATE"]}\" PROVISIONING_PROFILE_SPECIFIER=\"#{ENV["IOS_PROV_PROFILE_NAME"]}\" DEVELOPMENT_TEAM=\"#{ENV["IOS_TEAM_ID"]}\""
+      xcodebuild_formatter: "",
+      # xcargs: "CODE_SIGN_IDENTITY=\"#{ENV["IOS_SIGNING_CERTIFICATE"]}\" PROVISIONING_PROFILE_SPECIFIER=\"#{ENV["IOS_PROV_PROFILE_NAME"]}\" DEVELOPMENT_TEAM=\"#{ENV["IOS_TEAM_ID"]}\""
     })
 
     {
