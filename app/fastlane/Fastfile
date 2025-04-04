@@ -82,6 +82,8 @@ platform :ios do
 
   private_lane :prepare_ios_build do |options|
     if local_development
+      # app breaks with Xcode 16.3
+      xcode_select "/Applications/Xcode-16-2.app"
       # Set up API key, profile, and potentially certificate for local dev
       Fastlane::Helpers.ios_dev_setup_connect_api_key(ios_connect_api_key_path)
       Fastlane::Helpers.ios_dev_setup_provisioning_profile(ios_provisioning_profile_directory)
@@ -104,7 +106,6 @@ platform :ios do
       "IOS_PROJECT_SCHEME",
       "IOS_PROV_PROFILE_NAME",
       "IOS_PROV_PROFILE_PATH",
-      "IOS_SIGNING_CERTIFICATE",
       "IOS_TEAM_ID",
       "IOS_TEAM_NAME"
     ]
@@ -127,6 +128,7 @@ platform :ios do
     )
 
     workspace_path = File.expand_path("../ios/#{PROJECT_NAME}.xcworkspace", Dir.pwd)
+    ios_signing_certificate_name = "iPhone Distribution: #{ENV["IOS_TEAM_NAME"]} (#{ENV["IOS_TEAM_ID"]})"
 
     # Print final build settings before archiving
     puts "Verifying final build settings for Release config:"
@@ -138,7 +140,7 @@ platform :ios do
       path: "ios/#{PROJECT_NAME}.xcodeproj",
       team_id: ENV["IOS_TEAM_ID"],
       targets: [PROJECT_NAME],
-      code_sign_identity: ENV["IOS_SIGNING_CERTIFICATE"],
+      code_sign_identity: ios_signing_certificate_name,
       profile_name: ENV["IOS_PROV_PROFILE_NAME"],
       bundle_identifier: ENV["IOS_APP_IDENTIFIER"],
       build_configurations: ["Release"]
@@ -162,7 +164,7 @@ platform :ios do
         teamID: ENV["IOS_TEAM_ID"],
       },
       xcodebuild_formatter: "",
-      # xcargs: "CODE_SIGN_IDENTITY=\"#{ENV["IOS_SIGNING_CERTIFICATE"]}\" PROVISIONING_PROFILE_SPECIFIER=\"#{ENV["IOS_PROV_PROFILE_NAME"]}\" DEVELOPMENT_TEAM=\"#{ENV["IOS_TEAM_ID"]}\""
+      xcargs: "CODE_SIGN_IDENTITY=\"#{ios_signing_certificate_name}\" PROVISIONING_PROFILE_SPECIFIER=\"#{ENV["IOS_PROV_PROFILE_NAME"]}\" DEVELOPMENT_TEAM=\"#{ENV["IOS_TEAM_ID"]}\""
     })
 
     {
