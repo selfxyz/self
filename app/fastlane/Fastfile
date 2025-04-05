@@ -148,8 +148,8 @@ platform :ios do
 
     cocoapods(
       podfile: "ios/Podfile",
-      clean: true,
-      repo_update: !local_development
+      clean_install: true,
+      deployment: true
     )
 
     build_app({

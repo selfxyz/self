@@ -1,4 +1,5 @@
 use_frameworks!
+require 'tmpdir'
 
 # Resolve react_native_pods.rb with node to allow for hoisting
 require Pod::Executable.execute_command('node', ['-p',
@@ -98,10 +99,31 @@ target 'Self' do
     # update QKCutoutView.swift to hide OCR border
     qkCutoutView = 'Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift'
     if File.exist?(qkCutoutView)
-      text = File.read(qkCutoutView)
-      # Comment out the line containing "addBorderAroundCutout()"
-      new_text = text.gsub(/^(\s*addBorderAroundCutout\s*\(\s*\))/, '// \1')
-      File.open(qkCutoutView, "w") { |file| file.puts new_text }
+      puts "Adding build phase script to patch QKCutoutView.swift"
+      phase_name = "Patch QKCutoutView to hide border"
+      
+      # Find the QKMRZScanner target
+      qkmrz_target = installer.pods_project.targets.find { |t| t.name == 'QKMRZScanner' }
+      
+      if qkmrz_target
+        # Check if the phase already exists to avoid duplicates
+        unless qkmrz_target.shell_script_build_phases.any? { |bp| bp.name == phase_name }
+          # Add a build phase that will patch the file during build time
+          phase = qkmrz_target.new_shell_script_build_phase(phase_name)
+          phase.shell_script = <<~SCRIPT
+            QKCUTOUT_PATH="${PODS_TARGET_SRCROOT}/QKMRZScanner/QKCutoutView.swift"
+            if [ -f "$QKCUTOUT_PATH" ]; then
+              # Use sed to comment out the line with addBorderAroundCutout
+              sed -i '' 's/^\\(\\s*addBorderAroundCutout\\s*(.*)\\)/\\/\\/\\1/' "$QKCUTOUT_PATH"
+              echo "Successfully patched QKCutoutView.swift to hide border"
+            else
+              echo "Warning: Could not find QKCutoutView.swift at $QKCUTOUT_PATH"
+            fi
+          SCRIPT
+        end
+      else
+        puts "Warning: Could not find QKMRZScanner target to add build phase"
+      end
     else
       puts "Warning: Could not find QKCutoutView.swift at #{qkCutoutView}"
     end
