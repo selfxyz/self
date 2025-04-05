@@ -42,6 +42,19 @@ runs:
       with:
         ruby-version: ${{ inputs.ruby_version }}
 
+    - name: Install bundler
+      shell: bash
+      run: gem install bundler
+
+    - name: Install dependencies from Gemfile
+      shell: bash
+      run: bundle install
+
+    - name: Install CocoaPods
+      shell: bash
+      run: bundle exec pod install
+      working-directory: ${{ inputs.app_path }}
+
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
       with:
