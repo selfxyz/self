@@ -55,4 +55,4 @@ runs:
         cd ${{ inputs.app_path }}
         corepack enable
         yarn install
-        yarn install-app-deploy
+        yarn install-app:deploy
