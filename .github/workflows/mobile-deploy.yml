@@ -343,7 +343,7 @@ jobs:
 
       - name: Install NDK
         run: |
-          max_attempts=3
+          max_attempts=5
           attempt=1
           while [ $attempt -le $max_attempts ]; do
             echo "Attempt $attempt of $max_attempts to install NDK..."

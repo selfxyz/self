@@ -10,7 +10,7 @@ require Pod::Executable.execute_command('node', ['-p',
 
 project 'Self.xcodeproj'
 
-platform :ios, '15.0'
+platform :ios, '15.0' if !ENV['ACT']
 prepare_react_native_project!
 
 
