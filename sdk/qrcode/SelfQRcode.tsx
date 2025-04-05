@@ -44,11 +44,15 @@ const SelfQRcode = ({
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [sessionId, setSessionId] = useState(uuidv4());
+  const [sessionId, setSessionId] = useState('');
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   useEffect(() => {
-    // Only initialize if we don't have a socket already
-    if (!socketRef.current) {
+    setSessionId(uuidv4());
+  }, []);
+
+  useEffect(() => {
+    if (sessionId && !socketRef.current) {
       console.log('[QRCode] Initializing new WebSocket connection');
       socketRef.current = initWebSocket(
         websocketUrl,
@@ -69,9 +73,11 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [type, websocketUrl, onSuccess, selfApp]);
+  }, [sessionId, type, websocketUrl, onSuccess, selfApp]);
 
-  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
+  if (!sessionId) {
+    return null;
+  }
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
