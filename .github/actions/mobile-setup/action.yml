@@ -24,7 +24,7 @@ runs:
       shell: bash
       run: |
         sudo apt-get update
-        sudo apt-get install -y locales dialog
+        sudo apt-get install -y locales dialog unzip
 
     # for fastlane
     - name: Install locales and dialog
@@ -42,19 +42,6 @@ runs:
       with:
         ruby-version: ${{ inputs.ruby_version }}
 
-    - name: Install bundler
-      shell: bash
-      run: gem install bundler
-
-    - name: Install dependencies from Gemfile
-      shell: bash
-      run: bundle install
-
-    - name: Install CocoaPods
-      shell: bash
-      run: bundle exec pod install
-      working-directory: ${{ inputs.app_path }}
-
     - name: Setup Node.js environment
       uses: actions/setup-node@v3
       with:
@@ -62,6 +49,8 @@ runs:
 
     - name: Install app dependencies
       shell: bash
+      env:
+        COCOAPODS_ALLOW_ROOT: 1
       run: |
         cd ${{ inputs.app_path }}
         corepack enable
