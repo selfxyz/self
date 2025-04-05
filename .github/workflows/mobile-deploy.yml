@@ -296,15 +296,6 @@ jobs:
           echo "Identities in build.keychain:"
           security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
           echo "--- Starting Fastlane ---"
-          # Verify team ID and app identifier
-          if [ -z "$IOS_TEAM_ID" ]; then
-            echo "❌ Error: IOS_TEAM_ID is not set"
-            exit 1
-          fi
-          if [ -z "$IOS_APP_IDENTIFIER" ]; then
-            echo "❌ Error: IOS_APP_IDENTIFIER is not set"
-            exit 1
-          fi
           # if pushing to main, deploy to App Store
           if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
             bundle exec fastlane ios deploy --verbose
