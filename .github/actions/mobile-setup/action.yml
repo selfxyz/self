@@ -49,8 +49,6 @@ runs:
 
     - name: Install app dependencies
       shell: bash
-      env:
-        COCOAPODS_ALLOW_ROOT: 1
       run: |
         cd ${{ inputs.app_path }}
         corepack enable
