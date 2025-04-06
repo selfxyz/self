@@ -50,7 +50,7 @@ jobs:
         uses: maxim-lobanov/setup-xcode@v1
         with:
           # some cocoapods won't compile with xcode 16.3
-          xcode-version: '16.2'
+          xcode-version: "16.2"
 
       - uses: actions/checkout@v4
       - name: Install Mobile Dependencies
@@ -209,7 +209,7 @@ jobs:
             echo "❌ Error: Failed to extract plist from provisioning profile"
             exit 1
           fi
-          
+
           # Extract UUID and profile name from plist
           echo "Extracting UUID and profile name from plist..."
           PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$TEMP_PLIST_PATH" 2>/dev/null)
@@ -225,7 +225,7 @@ jobs:
             echo "⚠️ Warning: Failed to extract Name from provisioning profile, will use provided IOS_PROV_PROFILE_NAME"
             PROFILE_NAME="$IOS_PROV_PROFILE_NAME"
           fi
-          
+
           echo "Profile UUID: $PROFILE_UUID"
           echo "Profile Name: $PROFILE_NAME"
 
@@ -259,7 +259,7 @@ jobs:
           # List all provisioning profiles in the system with detailed info
           echo "List of all provisioning profiles in system:"
           ls -la "/Users/runner/Library/MobileDevice/Provisioning Profiles/"
-          
+
           # Clean up temp file
           rm -f "$TEMP_PLIST_PATH"
 
