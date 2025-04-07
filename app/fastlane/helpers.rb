@@ -672,11 +672,14 @@ module Fastlane
       uri = URI("https://slack.com/api/files.getUploadURLExternal")
       req = Net::HTTP::Post.new(uri)
       req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-      req["Content-Type"] = "application/json; charset=utf-8"
-      req.body = JSON.generate({
-        length: File.size(file_path),
+      req.set_form_data({
+        length: File.size(file_path).to_s,
         filename: File.basename(file_path),
       })
+
+      # Log request details (Content-Type is set automatically by set_form_data)
+      UI.message("Sending request to getUploadURLExternal (form-data):")
+      UI.message("  Body: [form data]") # Don't log sensitive form data body directly
 
       begin
         upload_url_response = nil
@@ -689,29 +692,79 @@ module Fastlane
 
         unless upload_result["ok"]
           UI.error("❌ Failed to get upload URL from Slack: #{upload_result["error"]}")
-          puts "Upload result: #{upload_result}"
-          exit 1
-          return
+          # Log the full response body on failure
+          UI.error("Full Slack response: #{upload_url_response.body}")
+          return # Keep return here to avoid proceeding
         end
 
         upload_url = upload_result["upload_url"]
         file_id = upload_result["file_id"]
 
+        # Log the upload URL
+        UI.message("Received Upload URL: #{upload_url}")
+        UI.message("Received File ID: #{file_id}")
+
         # Step 2: Upload file content to the provided upload URL
-        upload_req = Net::HTTP::Put.new(URI(upload_url))
+        upload_uri = URI(upload_url)
+        upload_req = Net::HTTP::Put.new(upload_uri)
 
-        # Read file in binary mode and send as raw data
-        File.open(file_path, "rb") do |file|
-          upload_req.body = file.read
+        # Determine the Content-Type for the file upload
+        content_type = if file_path.end_with?(".aab")
+            "application/vnd.android.package-archive"
+          elsif file_path.end_with?(".ipa")
+            "application/octet-stream"
+          else
+            # Fallback using mime-types gem
+            (MIME::Types.type_for(file_path).first || MIME::Type.new("application/octet-stream")).content_type
+          end
+        UI.message("Determined Content-Type: #{content_type}") # Log the determined content type
+
+        # Use streaming upload with chunked transfer encoding by setting body_stream and omitting the Content-Length header
+        upload_req["Content-Type"] = content_type # Use the determined content type
+        upload_req["Transfer-Encoding"] = "chunked"
+        upload_req.body_stream = File.open(file_path, "rb")
+
+        # Log PUT request headers and send PUT request with redirect following
+        redirect_count = 0
+        while redirect_count < 5
+          UI.message("Sending PUT request to upload URL:")
+          UI.message("  URI: #{upload_uri}")
+          UI.message("  Headers: #{upload_req.to_hash}")
+          upload_response = nil
+          Net::HTTP.start(upload_uri.hostname, upload_uri.port, use_ssl: true) do |http|
+            upload_response = http.request(upload_req)
+          end
+
+          UI.message("Received PUT response:")
+          UI.message("  Code: #{upload_response.code}")
+          UI.message("  Message: #{upload_response.message}")
+          UI.message("  Headers: #{upload_response.to_hash}")
+
+          if upload_response.code.to_i == 200
+            break
+          elsif (300...400).include?(upload_response.code.to_i)
+            new_location = upload_response["location"]
+            if new_location && !new_location.empty?
+              UI.message("Following redirect to: #{new_location}")
+              upload_uri = URI(new_location)
+              new_req = Net::HTTP::Put.new(upload_uri)
+              new_req.body_stream = upload_req.body_stream
+              upload_req.each_header { |k, v| new_req[k] = v unless k.downcase == "host" }
+              upload_req = new_req
+              redirect_count += 1
+            else
+              UI.error("Redirect without location header. Aborting.")
+              break
+            end
+          else
+            UI.error("❌ Failed to upload file to provided URL: #{upload_response.code} #{upload_response.message}")
+            puts "Full Slack response: #{upload_response.body}"
+            return
+          end
         end
 
-        upload_response = nil
-        Net::HTTP.start(URI(upload_url).hostname, URI(upload_url).port, use_ssl: true) do |http|
-          upload_response = http.request(upload_req)
-        end
-
-        unless upload_response.code.to_i == 200
-          UI.error("❌ Failed to upload file to provided URL: #{upload_response.code} #{upload_response.message}")
+        if upload_response.code.to_i != 200
+          UI.error("Too many redirects or failed to get a 200 response. Aborting.")
           return
         end
 
@@ -741,6 +794,7 @@ module Fastlane
           UI.success("✅ File uploaded successfully to Slack")
         else
           UI.error("❌ Failed to complete file upload to Slack: #{complete_result["error"]}")
+          puts "Full Slack response: #{complete_response.body}"
         end
       rescue => e
         UI.error("❌ Exception during file upload: #{e.message}")
