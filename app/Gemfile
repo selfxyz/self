@@ -1,24 +1,22 @@
-source 'https://rubygems.org'
+source "https://rubygems.org"
 
 # You may use http://rbenv.org/ or https://rvm.io/ to install and use this version
 ruby ">= 3.2"
 
 # Exclude problematic versions of cocoapods and activesupport that causes build failures.
-gem 'cocoapods', '>= 1.13', '!= 1.15.0', '!= 1.15.1'
-gem 'activesupport', '>= 6.1.7.5', '!= 7.1.0'
+gem "cocoapods", ">= 1.13", "!= 1.15.0", "!= 1.15.1"
+gem "activesupport", ">= 6.1.7.5", "!= 7.1.0"
 
 # Add fastlane for CI/CD
-gem 'fastlane', '~> 2.227.0'
+gem "fastlane", "~> 2.227.0"
 
 group :development do
   gem "dotenv"
   # Exclude nokogiri for GitHub Actions and Act
-  gem "nokogiri", "~> 1.18", platform: :ruby unless ENV['GITHUB_ACTIONS'] || ENV['ACT']
+  gem "nokogiri", "~> 1.18", platform: :ruby unless ENV["GITHUB_ACTIONS"] || ENV["ACT"]
 end
 
-plugins_path = File.join(File.dirname(__FILE__), 'fastlane', 'Pluginfile')
+plugins_path = File.join(File.dirname(__FILE__), "fastlane", "Pluginfile")
 eval_gemfile(plugins_path) if File.exist?(plugins_path)
 
-gem "multipart-post", "~> 2.4"
-
-gem "mime-types", "~> 3.6"
+gem "slack-ruby-client", "~> 1.0"
