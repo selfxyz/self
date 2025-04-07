@@ -78,6 +78,13 @@ platform :ios do
       automatic_release: false,
       skip_app_version_update: true,
     ) if result[:should_upload]
+
+    Fastlane::Helpers.notify_mobile_app_deploy(
+      platform: "iOS",
+      version: package_version,
+      build: result[:build_number],
+      file_path: "builds/MyApp-v2.3.1.ipa"
+    )
   end
 
   private_lane :prepare_ios_build do |options|
@@ -116,7 +123,7 @@ platform :ios do
     ios_signing_certificate_name = "iPhone Distribution: #{ENV["IOS_TEAM_NAME"]} (#{ENV["IOS_TEAM_ID"]})"
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    Fastlane::Helpers.ios_increment_build_number(ios_xcode_profile_path)
+    build_number = Fastlane::Helpers.ios_increment_build_number(ios_xcode_profile_path)
     Fastlane::Helpers.ios_verify_app_store_build_number(ios_xcode_profile_path)
     Fastlane::Helpers.ios_verify_provisioning_profile
 
@@ -171,6 +178,7 @@ platform :ios do
 
     {
       api_key: api_key,
+      build_number: build_number,
       should_upload: should_upload
     }
   end
@@ -251,5 +259,12 @@ platform :android do
       track_promote_release_status: "completed",
       aab: android_aab_path,
     ) if should_upload && android_has_permissions
+
+    Fastlane::Helpers.notify_mobile_app_deploy(
+      platform: "Android",
+      version: package_version,
+      build: 1042,
+      file_path: "builds/MyApp-v2.3.1.ipa"
+    )
   end
 end

@@ -4,9 +4,12 @@ require 'fileutils'
 require 'base64'
 require 'shellwords'
 
+SLACK_TOKEN = ENV['SLACK_API_TOKEN']
+CHANNEL_ID = ENV['SLACK_ANNOUNCE_CHANNEL_ID']
+
 module Fastlane
   module Helpers
-    # UI and Reporting Methods
+    ### UI and Reporting Methods ###
     def self.report_error(message, suggestion = nil, abort_message = nil)
       UI.error("❌ #{message}")
       UI.error(suggestion) if suggestion
@@ -17,7 +20,7 @@ module Fastlane
       UI.success("✅ #{message}")
     end
 
-    # Environment and Configuration Methods
+    ### Environment and Configuration Methods ###
     def self.verify_env_vars(required_vars)
       missing_vars = required_vars.select { |var| ENV[var].nil? || ENV[var].to_s.strip.empty? }
       
@@ -72,7 +75,7 @@ module Fastlane
       end
     end
 
-    ### iOS-specific Methods ###
+    ### iOS Methods ###
 
     def self.ios_verify_app_store_build_number(ios_xcode_profile_path)
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
@@ -146,13 +149,17 @@ module Fastlane
         app_identifier: ENV["IOS_APP_IDENTIFIER"],
         platform: "ios"
       )
+
+      new_build_number = latest_build + 1
       
       Fastlane::Actions::IncrementBuildNumberAction.run(
-        build_number: latest_build + 1,
+        build_number: new_build_number,
         xcodeproj: ios_xcode_profile_path
       )
       
-      report_success("Incremented build number to #{latest_build + 1} (previous TestFlight build: #{latest_build})")
+      report_success("Incremented build number to #{new_build_number} (previous TestFlight build: #{latest_build})")
+
+      new_build_number
     end
 
     def self.ios_dev_setup_certificate
@@ -558,5 +565,68 @@ module Fastlane
       puts "Certificate name constructed by Fastlane: #{certificate_name}"
       puts "--- End Fastlane Diagnostics ---"
     end
+  end
+
+  ### Slack Methods ###
+
+  # Resolve the channel ID from its name
+  def self.get_channel_id
+    uri = URI("https://slack.com/api/conversations.list?types=private_channel")
+    req = Net::HTTP::Get.new(uri)
+    req['Authorization'] = "Bearer #{SLACK_TOKEN}"
+
+    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+
+    channels = JSON.parse(res.body)['channels']
+    match = channels.find { |c| c['name'] == CHANNEL_NAME }
+
+    raise "Channel '#{CHANNEL_NAME}' not found or bot not invited" unless match
+    match['id']
+  end
+
+  # Post a message to the Slack channel
+  def self.post_deploy_message(channel_id:, platform:, version:, build:)
+    text = ":rocket: A new *#{platform}* app has been released! `v#{version}` (build #{build})"
+    uri = URI("https://slack.com/api/chat.postMessage")
+
+    req = Net::HTTP::Post.new(uri)
+    req['Authorization'] = "Bearer #{SLACK_TOKEN}"
+    req['Content-Type'] = "application/json"
+    req.body = {
+      channel: channel_id,
+      text: text
+    }.to_json
+
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+  end
+
+  # Upload the file (IPA or AAB)
+  def self.upload_build_file(channel_id:, file_path:)
+    uri = URI("https://slack.com/api/files.upload")
+    file = File.open(file_path)
+
+    req = Net::HTTP::Post::Multipart.new uri.path,
+      "channels" => channel_id,
+      "file" => UploadIO.new(file, MIME::Types.type_for(file_path).first.to_s, File.basename(file_path)),
+      "initial_comment" => "Here is the new build file: #{File.basename(file_path)}"
+
+    req['Authorization'] = "Bearer #{SLACK_TOKEN}"
+
+    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+      http.request(req)
+    end
+  ensure
+    file.close if file
+  end
+
+  # Wrapper method
+  def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
+    channel_id = get_channel_id
+    post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
+    upload_build_file(channel_id: channel_id, file_path: file_path)
   end
 end 
