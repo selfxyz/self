@@ -7,20 +7,21 @@
 
 opt_out_usage
 
-require 'base64'
-require_relative 'helpers'
+require "bundler/setup"
+require "base64"
+require_relative "helpers"
 
 # early setup
-attempt_force_upload_local_dev = ENV['FORCE_UPLOAD_LOCAL_DEV'] == 'true'
-is_ci = ENV['CI'] == 'true' && ENV['ACT'] != 'true'
+attempt_force_upload_local_dev = ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
+is_ci = ENV["CI"] == "true" && ENV["ACT"] != "true"
 local_development = !is_ci
 android_has_permissions = false
 
 # load secrets before project configuration
 if local_development
   puts "Loading .env.secrets"
-  require 'dotenv'
-  Dotenv.load('./.env.secrets')
+  require "dotenv"
+  Dotenv.load("./.env.secrets")
 
   # confirm that we want to force upload
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
@@ -49,7 +50,7 @@ platform :ios do
   lane :sync_version do
     increment_version_number(
       xcodeproj: "ios/#{PROJECT_NAME}.xcodeproj",
-      version_number: package_version
+      version_number: package_version,
     )
   end
 
@@ -62,8 +63,15 @@ platform :ios do
       distribute_external: true,
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: "",
-      skip_waiting_for_build_processing: false
+      skip_waiting_for_build_processing: false,
     ) if result[:should_upload]
+
+    Fastlane::Helpers.notify_mobile_app_deploy(
+      platform: "iOS",
+      version: package_version,
+      build: result[:build_number],
+      file_path: result[:ipa_path],
+    )
   end
 
   desc "Prepare a new build for App Store submission"
@@ -83,7 +91,7 @@ platform :ios do
       platform: "iOS",
       version: package_version,
       build: result[:build_number],
-      file_path: "builds/MyApp-v2.3.1.ipa"
+      file_path: result[:ipa_path],
     )
   end
 
@@ -114,7 +122,7 @@ platform :ios do
       "IOS_PROV_PROFILE_NAME",
       "IOS_PROV_PROFILE_PATH",
       "IOS_TEAM_ID",
-      "IOS_TEAM_NAME"
+      "IOS_TEAM_NAME",
     ]
 
     target_platform = options[:prod_release] ? "App Store" : "TestFlight"
@@ -131,7 +139,7 @@ platform :ios do
       key_id: ENV["IOS_CONNECT_KEY_ID"],
       issuer_id: ENV["IOS_CONNECT_ISSUER_ID"],
       key_filepath: ENV["IOS_CONNECT_API_KEY_PATH"],
-      in_house: false
+      in_house: false,
     )
 
     # Update project to use manual code signing
@@ -143,7 +151,7 @@ platform :ios do
       code_sign_identity: ios_signing_certificate_name,
       profile_name: ENV["IOS_PROV_PROFILE_NAME"],
       bundle_identifier: ENV["IOS_APP_IDENTIFIER"],
-      build_configurations: ["Release"]
+      build_configurations: ["Release"],
     )
 
     clear_derived_data
@@ -156,10 +164,10 @@ platform :ios do
     cocoapods(
       podfile: "ios/Podfile",
       clean_install: true,
-      deployment: true
+      deployment: true,
     )
 
-    build_app({
+    ipa_path = build_app({
       workspace: "#{workspace_path}",
       scheme: PROJECT_SCHEME,
       export_method: "app-store",
@@ -168,18 +176,19 @@ platform :ios do
       export_options: {
         method: "app-store",
         signingStyle: "manual",
-        provisioningProfiles: { 
-          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"] 
+        provisioningProfiles: {
+          ENV["IOS_APP_IDENTIFIER"] => ENV["IOS_PROV_PROFILE_NAME"],
         },
         signingCertificate: ios_signing_certificate_name,
         teamID: ENV["IOS_TEAM_ID"],
-      }
+      },
     })
 
     {
       api_key: api_key,
       build_number: build_number,
-      should_upload: should_upload
+      ipa_path: ipa_path,
+      should_upload: should_upload,
     }
   end
 end
@@ -189,7 +198,7 @@ platform :android do
   lane :sync_version do
     android_set_version_name(
       version_name: package_version,
-      gradle_file: android_gradle_file_path
+      gradle_file: android_gradle_file_path,
     )
   end
 
@@ -221,11 +230,11 @@ platform :android do
       "ANDROID_KEY_ALIAS",
       "ANDROID_KEY_PASSWORD",
       "ANDROID_PACKAGE_NAME",
-      "ANDROID_PLAY_STORE_JSON_KEY_PATH"
+      "ANDROID_PLAY_STORE_JSON_KEY_PATH",
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    Fastlane::Helpers.android_increment_version_code(android_gradle_file_path) if android_has_permissions
+    version_code = Fastlane::Helpers.android_increment_version_code(android_gradle_file_path) if android_has_permissions
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 
@@ -233,22 +242,22 @@ platform :android do
     should_upload = Fastlane::Helpers.should_upload_app(target_platform)
 
     validate_play_store_json_key(
-      json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"]
+      json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
     )
 
     Fastlane::Helpers.with_retry(max_retries: 3, delay: 10) do
       gradle(
-          task: "clean bundleRelease",
-          project_dir: "android/",
-          properties: {
+        task: "clean bundleRelease",
+        project_dir: "android/",
+        properties: {
           "android.injected.signing.store.file" => ENV["ANDROID_KEYSTORE_PATH"],
           "android.injected.signing.store.password" => ENV["ANDROID_KEYSTORE_PASSWORD"],
           "android.injected.signing.key.alias" => ENV["ANDROID_KEY_ALIAS"],
-          "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"]
-        }
+          "android.injected.signing.key.password" => ENV["ANDROID_KEY_PASSWORD"],
+        },
       )
     end
-    
+
     upload_to_play_store(
       track: options[:track],
       json_key: ENV["ANDROID_PLAY_STORE_JSON_KEY_PATH"],
@@ -263,8 +272,8 @@ platform :android do
     Fastlane::Helpers.notify_mobile_app_deploy(
       platform: "Android",
       version: package_version,
-      build: 1042,
-      file_path: "builds/MyApp-v2.3.1.ipa"
+      build: version_code,
+      file_path: android_aab_path,
     )
   end
 end
