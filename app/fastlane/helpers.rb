@@ -606,31 +606,31 @@ module Fastlane
     Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
       http.request(req)
     end
-  end
 
-  # Upload the file (IPA or AAB)
-  def self.upload_build_file(channel_id:, file_path:)
-    uri = URI("https://slack.com/api/files.upload")
-    file = File.open(file_path)
+    # Upload the file (IPA or AAB)
+    def self.upload_build_file(channel_id:, file_path:)
+      uri = URI("https://slack.com/api/files.upload")
+      file = File.open(file_path)
 
-    req = Net::HTTP::Post::Multipart.new uri.path,
-                                         "channels" => channel_id,
-                                         "file" => UploadIO.new(file, MIME::Types.type_for(file_path).first.to_s, File.basename(file_path)),
-                                         "initial_comment" => "Here is the new build file: #{File.basename(file_path)}"
+      req = Net::HTTP::Post::Multipart.new uri.path,
+                                           "channels" => channel_id,
+                                           "file" => UploadIO.new(file, MIME::Types.type_for(file_path).first.to_s, File.basename(file_path)),
+                                           "initial_comment" => "Here is the new build file: #{File.basename(file_path)}"
 
-    req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
 
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(req)
+      Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.request(req)
+      end
+    ensure
+      file.close if file
     end
-  ensure
-    file.close if file
-  end
 
-  # Wrapper method
-  def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
-    channel_id = get_channel_id
-    post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
-    upload_build_file(channel_id: channel_id, file_path: file_path)
+    # Wrapper method
+    def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
+      channel_id = get_channel_id
+      post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
+      upload_build_file(channel_id: channel_id, file_path: file_path)
+    end
   end
 end
