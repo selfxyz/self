@@ -668,50 +668,84 @@ module Fastlane
 
       UI.message("Uploading file to Slack: #{file_path} (size: #{File.size(file_path)} bytes)")
 
-      uri = URI("https://slack.com/api/files.upload")
-      file = File.open(file_path)
-
-      boundary = "----WebKitFormBoundary#{Time.now.to_i}"
-      content_type = MIME::Types.type_for(file_path).first.to_s
-
-      post_body = []
-      post_body << "--#{boundary}\r\n"
-      post_body << "Content-Disposition: form-data; name=\"channels\"\r\n\r\n"
-      post_body << "#{channel_id}\r\n"
-      post_body << "--#{boundary}\r\n"
-      post_body << "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.basename(file_path)}\"\r\n"
-      post_body << "Content-Type: #{content_type}\r\n\r\n"
-      post_body << file.read
-      post_body << "\r\n--#{boundary}--\r\n"
-
+      # Step 1: Get upload URL using files.getUploadURLExternal
+      uri = URI("https://slack.com/api/files.getUploadURLExternal")
       req = Net::HTTP::Post.new(uri)
       req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-      req["Content-Type"] = "multipart/form-data; boundary=#{boundary}"
-      req.body = post_body.join
+      req["Content-Type"] = "application/json; charset=utf-8"
+      req.body = JSON.generate({
+        length: File.size(file_path),
+        filename: File.basename(file_path),
+      })
 
       begin
-        response = nil
+        upload_url_response = nil
         Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          response = http.request(req)
+          upload_url_response = http.request(req)
+        end
+
+        # Parse response to get upload URL and file ID
+        upload_result = JSON.parse(upload_url_response.body)
+
+        unless upload_result["ok"]
+          UI.error("❌ Failed to get upload URL from Slack: #{upload_result["error"]}")
+          puts "Upload result: #{upload_result}"
+          exit 1
+          return
+        end
+
+        upload_url = upload_result["upload_url"]
+        file_id = upload_result["file_id"]
+
+        # Step 2: Upload file content to the provided upload URL
+        upload_req = Net::HTTP::Put.new(URI(upload_url))
+
+        # Read file in binary mode and send as raw data
+        File.open(file_path, "rb") do |file|
+          upload_req.body = file.read
+        end
+
+        upload_response = nil
+        Net::HTTP.start(URI(upload_url).hostname, URI(upload_url).port, use_ssl: true) do |http|
+          upload_response = http.request(upload_req)
+        end
+
+        unless upload_response.code.to_i == 200
+          UI.error("❌ Failed to upload file to provided URL: #{upload_response.code} #{upload_response.message}")
+          return
+        end
+
+        # Step 3: Complete the upload
+        complete_uri = URI("https://slack.com/api/files.completeUploadExternal")
+        complete_req = Net::HTTP::Post.new(complete_uri)
+        complete_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+        complete_req["Content-Type"] = "application/json"
+        complete_req.body = JSON.generate({
+          files: [
+            {
+              id: file_id,
+              title: File.basename(file_path),
+              channels: channel_id,
+            },
+          ],
+        })
+
+        complete_response = nil
+        Net::HTTP.start(complete_uri.hostname, complete_uri.port, use_ssl: true) do |http|
+          complete_response = http.request(complete_req)
         end
 
         # Parse response
-        if response
-          result = JSON.parse(response.body)
-          if result["ok"]
-            UI.success("✅ File uploaded successfully to Slack")
-          else
-            UI.error("❌ Failed to upload file to Slack: #{result["error"]}")
-          end
+        complete_result = JSON.parse(complete_response.body)
+        if complete_result["ok"]
+          UI.success("✅ File uploaded successfully to Slack")
         else
-          UI.error("❌ No response received from Slack API")
+          UI.error("❌ Failed to complete file upload to Slack: #{complete_result["error"]}")
         end
       rescue => e
         UI.error("❌ Exception during file upload: #{e.message}")
         UI.error(e.backtrace.join("\n"))
       end
-    ensure
-      file.close if file
     end
 
     # Wrapper method
