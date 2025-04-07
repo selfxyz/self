@@ -11,18 +11,16 @@ require "bundler/setup"
 require "base64"
 require_relative "helpers"
 
-# early setup
-attempt_force_upload_local_dev = ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
-is_ci = ENV["CI"] == "true" && ENV["ACT"] != "true"
+# load secrets before project configuration
+Fastlane::Helpers.dev_load_dotenv_secrets
+is_ci = Fastlane::Helpers.is_ci_environment?
 local_development = !is_ci
+
+# checks after calling Dotenv.load
+attempt_force_upload_local_dev = ENV["FORCE_UPLOAD_LOCAL_DEV"] == "true"
 android_has_permissions = false
 
-# load secrets before project configuration
 if local_development
-  puts "Loading .env.secrets"
-  require "dotenv"
-  Dotenv.load("./.env.secrets")
-
   # confirm that we want to force upload
   Fastlane::Helpers.confirm_force_upload if attempt_force_upload_local_dev
 end

@@ -8,7 +8,29 @@ require "net/http"
 require "uri"
 require "json"
 require "mime/types"
+require "multipart/post"
 
+# Load secrets before defining constants
+module Fastlane
+  module Helpers
+    def self.is_ci_environment?
+      ENV["CI"] == "true" && ENV["ACT"] != "true"
+    end
+
+    def self.dev_load_dotenv_secrets
+      if !is_ci_environment?
+        puts "Loading .env.secrets"
+        require "dotenv"
+        Dotenv.load("./.env.secrets")
+      end
+    end
+  end
+end
+
+# Call load_dotenv_secrets before setting constants
+Fastlane::Helpers.dev_load_dotenv_secrets
+
+# Now set constants after secrets are loaded
 SLACK_TOKEN = ENV["SLACK_API_TOKEN"]
 CHANNEL_ID = ENV["SLACK_ANNOUNCE_CHANNEL_ID"]
 
@@ -79,8 +101,6 @@ module Fastlane
         end
       end
     end
-
-    ### iOS Methods ###
 
     def self.ios_verify_app_store_build_number(ios_xcode_profile_path)
       api_key = Fastlane::Actions::AppStoreConnectApiKeyAction.run(
@@ -569,42 +589,80 @@ module Fastlane
       puts "Certificate name constructed by Fastlane: #{certificate_name}"
       puts "--- End Fastlane Diagnostics ---"
     end
-  end
 
-  ### Slack Methods ###
+    ### Slack Methods ###
 
-  # Resolve the channel ID from its name
-  def self.get_channel_id
-    uri = URI("https://slack.com/api/conversations.list?types=private_channel")
-    req = Net::HTTP::Get.new(uri)
-    req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+    # Resolve the channel ID from its name
+    def self.get_channel_id
+      # Verify Slack token is present
+      unless SLACK_TOKEN && !SLACK_TOKEN.empty?
+        UI.important("⚠️ SLACK_API_TOKEN environment variable is not set")
+        return nil
+      end
 
-    res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(req)
+      # Simply return the channel ID that's already defined
+      if CHANNEL_ID && !CHANNEL_ID.empty?
+        UI.message("Using predefined Slack channel ID: #{CHANNEL_ID}")
+        return CHANNEL_ID
+      end
+
+      # Fallback to API call if needed
+      uri = URI("https://slack.com/api/conversations.list?types=private_channel")
+      req = Net::HTTP::Get.new(uri)
+      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+
+      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.request(req)
+      end
+
+      # Log response for debugging
+      UI.message("Slack API Response:")
+      UI.message("Status: #{res.code} #{res.message}")
+      UI.message("Headers: #{res.header}")
+      UI.message("Body: #{res.body}")
+
+      # Parse response
+      response = JSON.parse(res.body)
+
+      if !response["ok"]
+        UI.important("⚠️ Slack API Error: #{response["error"]}")
+        return nil
+      end
+
+      channels = response["channels"]
+      if channels.nil? || channels.empty?
+        UI.important("⚠️ No channels found in Slack response. Check your Slack token permissions.")
+        return nil
+      end
+
+      # Since CHANNEL_NAME is not defined, we'll just return the first channel if available
+      match = channels.first
+
+      if match
+        UI.message("Found Slack channel: #{match["name"]} (ID: #{match["id"]})")
+        return match["id"]
+      else
+        UI.important("⚠️ No channels available in the workspace")
+        return nil
+      end
     end
 
-    channels = JSON.parse(res.body)["channels"]
-    match = channels.find { |c| c["name"] == CHANNEL_NAME }
+    # Post a message to the Slack channel
+    def self.post_deploy_message(channel_id:, platform:, version:, build:)
+      text = ":rocket: A new *#{platform}* app has been released! `v#{version}` (build #{build})"
+      uri = URI("https://slack.com/api/chat.postMessage")
 
-    raise "Channel '#{CHANNEL_NAME}' not found or bot not invited" unless match
-    match["id"]
-  end
+      req = Net::HTTP::Post.new(uri)
+      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+      req["Content-Type"] = "application/json"
+      req.body = {
+        channel: channel_id,
+        text: text,
+      }.to_json
 
-  # Post a message to the Slack channel
-  def self.post_deploy_message(channel_id:, platform:, version:, build:)
-    text = ":rocket: A new *#{platform}* app has been released! `v#{version}` (build #{build})"
-    uri = URI("https://slack.com/api/chat.postMessage")
-
-    req = Net::HTTP::Post.new(uri)
-    req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-    req["Content-Type"] = "application/json"
-    req.body = {
-      channel: channel_id,
-      text: text,
-    }.to_json
-
-    Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-      http.request(req)
+      Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+        http.request(req)
+      end
     end
 
     # Upload the file (IPA or AAB)
@@ -629,6 +687,13 @@ module Fastlane
     # Wrapper method
     def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
       channel_id = get_channel_id
+
+      if channel_id.nil?
+        UI.important("⚠️ Skipping Slack notification - channel ID not available")
+        return
+      end
+
+      UI.message("Sending notification to Slack channel: #{channel_id}")
       post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
       upload_build_file(channel_id: channel_id, file_path: file_path)
     end
