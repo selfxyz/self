@@ -232,7 +232,7 @@ platform :android do
     ]
 
     Fastlane::Helpers.verify_env_vars(required_env_vars)
-    version_code = Fastlane::Helpers.android_increment_version_code(android_gradle_file_path) if android_has_permissions
+    version_code = Fastlane::Helpers.android_increment_version_code(android_gradle_file_path)
     # TODO: uncomment when we have the permissions to run this action
     # Fastlane::Helpers.android_verify_version_code(android_gradle_file_path)
 

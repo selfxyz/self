@@ -32,10 +32,12 @@ Fastlane::Helpers.dev_load_dotenv_secrets
 
 # Now set constants after secrets are loaded
 SLACK_TOKEN = ENV["SLACK_API_TOKEN"]
-CHANNEL_ID = ENV["SLACK_ANNOUNCE_CHANNEL_ID"]
+CHANNEL_NAME = ENV["SLACK_ANNOUNCE_CHANNEL_NAME"] || "deploy-mobile"
 
 module Fastlane
   module Helpers
+    @@android_has_permissions = false
+
     ### UI and Reporting Methods ###
     def self.report_error(message, suggestion = nil, abort_message = nil)
       UI.error("❌ #{message}")
@@ -561,15 +563,19 @@ module Fastlane
       gradle_content = File.read(gradle_file_full_path)
       version_code_match = gradle_content.match(/versionCode\s+(\d+)/)
       current_version_code = version_code_match ? version_code_match[1].to_i : 0
+
+      # TODO: fetch version code from play store when we have permissions
       new_version = current_version_code + 1
 
       # Update version code in file
-      updated_content = gradle_content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}")
-      File.write(gradle_file_full_path, updated_content)
+      if @@android_has_permissions
+        updated_content = gradle_content.gsub(/versionCode\s+\d+/, "versionCode #{new_version}")
+        File.write(gradle_file_full_path, updated_content)
+      end
 
       report_success("Version code incremented from #{current_version_code} to #{new_version}")
 
-      new_version
+      @@android_has_permissions ? new_version : current_version_code
     end
 
     # Helper to log keychain diagnostics
@@ -600,13 +606,6 @@ module Fastlane
         return nil
       end
 
-      # Simply return the channel ID that's already defined
-      if CHANNEL_ID && !CHANNEL_ID.empty?
-        UI.message("Using predefined Slack channel ID: #{CHANNEL_ID}")
-        return CHANNEL_ID
-      end
-
-      # Fallback to API call if needed
       uri = URI("https://slack.com/api/conversations.list?types=private_channel")
       req = Net::HTTP::Get.new(uri)
       req["Authorization"] = "Bearer #{SLACK_TOKEN}"
@@ -614,12 +613,6 @@ module Fastlane
       res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
         http.request(req)
       end
-
-      # Log response for debugging
-      UI.message("Slack API Response:")
-      UI.message("Status: #{res.code} #{res.message}")
-      UI.message("Headers: #{res.header}")
-      UI.message("Body: #{res.body}")
 
       # Parse response
       response = JSON.parse(res.body)
@@ -635,14 +628,14 @@ module Fastlane
         return nil
       end
 
-      # Since CHANNEL_NAME is not defined, we'll just return the first channel if available
-      match = channels.first
+      # Find channel by name
+      match = channels.find { |channel| channel["name"] == CHANNEL_NAME }
 
       if match
         UI.message("Found Slack channel: #{match["name"]} (ID: #{match["id"]})")
         return match["id"]
       else
-        UI.important("⚠️ No channels available in the workspace")
+        UI.important("⚠️ Channel '#{CHANNEL_NAME}' not found in the workspace")
         return nil
       end
     end
@@ -667,18 +660,55 @@ module Fastlane
 
     # Upload the file (IPA or AAB)
     def self.upload_build_file(channel_id:, file_path:)
+      # Check if file exists before attempting upload
+      unless File.exist?(file_path)
+        UI.error("❌ File does not exist at path: #{file_path}")
+        return
+      end
+
+      UI.message("Uploading file to Slack: #{file_path} (size: #{File.size(file_path)} bytes)")
+
       uri = URI("https://slack.com/api/files.upload")
       file = File.open(file_path)
 
-      req = Net::HTTP::Post::Multipart.new uri.path,
-                                           "channels" => channel_id,
-                                           "file" => UploadIO.new(file, MIME::Types.type_for(file_path).first.to_s, File.basename(file_path)),
-                                           "initial_comment" => "Here is the new build file: #{File.basename(file_path)}"
+      boundary = "----WebKitFormBoundary#{Time.now.to_i}"
+      content_type = MIME::Types.type_for(file_path).first.to_s
 
+      post_body = []
+      post_body << "--#{boundary}\r\n"
+      post_body << "Content-Disposition: form-data; name=\"channels\"\r\n\r\n"
+      post_body << "#{channel_id}\r\n"
+      post_body << "--#{boundary}\r\n"
+      post_body << "Content-Disposition: form-data; name=\"file\"; filename=\"#{File.basename(file_path)}\"\r\n"
+      post_body << "Content-Type: #{content_type}\r\n\r\n"
+      post_body << file.read
+      post_body << "\r\n--#{boundary}--\r\n"
+
+      req = Net::HTTP::Post.new(uri)
       req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+      req["Content-Type"] = "multipart/form-data; boundary=#{boundary}"
+      req.body = post_body.join
 
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-        http.request(req)
+      begin
+        response = nil
+        Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
+          response = http.request(req)
+        end
+
+        # Parse response
+        if response
+          result = JSON.parse(response.body)
+          if result["ok"]
+            UI.success("✅ File uploaded successfully to Slack")
+          else
+            UI.error("❌ Failed to upload file to Slack: #{result["error"]}")
+          end
+        else
+          UI.error("❌ No response received from Slack API")
+        end
+      rescue => e
+        UI.error("❌ Exception during file upload: #{e.message}")
+        UI.error(e.backtrace.join("\n"))
       end
     ensure
       file.close if file
@@ -686,6 +716,29 @@ module Fastlane
 
     # Wrapper method
     def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
+      UI.message("Starting mobile app deploy notification process...")
+
+      # Debug information about environment variables
+      UI.message("SLACK_API_TOKEN present: #{!SLACK_TOKEN.nil? && !SLACK_TOKEN.empty?}")
+      UI.message("SLACK_ANNOUNCE_CHANNEL_NAME: #{CHANNEL_NAME || "not set"}")
+
+      if CHANNEL_NAME.nil? || CHANNEL_NAME.empty? || SLACK_TOKEN.nil? || SLACK_TOKEN.empty?
+        UI.important("⚠️ Skipping Slack notification - channel name or token not available")
+        return
+      end
+
+      # Debug information about the file
+      if file_path
+        if File.exist?(file_path)
+          UI.message("File for upload exists at path: #{file_path}")
+          UI.message("File size: #{File.size(file_path)} bytes")
+        else
+          UI.error("❌ File for upload does not exist at path: #{file_path}")
+        end
+      else
+        UI.error("❌ File path is nil or empty")
+      end
+
       channel_id = get_channel_id
 
       if channel_id.nil?
