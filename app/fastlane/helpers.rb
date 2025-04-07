@@ -7,9 +7,7 @@ require "shellwords"
 require "net/http"
 require "uri"
 require "json"
-require "mime/types"
-require "multipart/post"
-require "net/http/post/multipart" # For UploadIO
+require "slack-ruby-client"
 
 # Load secrets before defining constants
 module Fastlane
@@ -604,160 +602,177 @@ module Fastlane
 
     ### Slack Methods ###
 
-    # Resolve the channel ID from its name
+    # Configure Slack client once (sets default token for new clients)
+    Slack.configure do |config|
+      config.token = SLACK_TOKEN
+    end
+
+    # Resolve the channel ID from its name using slack-ruby-client
     def self.get_channel_id
-      # Verify Slack token is present
       unless SLACK_TOKEN && !SLACK_TOKEN.empty?
         UI.important("⚠️ SLACK_API_TOKEN environment variable is not set")
         return nil
       end
-
-      uri = URI("https://slack.com/api/conversations.list?types=private_channel")
-      req = Net::HTTP::Get.new(uri)
-      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-
-      res = Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-        http.request(req)
-      end
-
-      # Parse response
-      response = JSON.parse(res.body)
-
-      if !response["ok"]
-        UI.important("⚠️ Slack API Error: #{response["error"]}")
+      unless CHANNEL_NAME && !CHANNEL_NAME.empty?
+        UI.important("⚠️ SLACK_ANNOUNCE_CHANNEL_NAME environment variable is not set")
         return nil
       end
-
-      channels = response["channels"]
-      if channels.nil? || channels.empty?
-        UI.important("⚠️ No channels found in Slack response. Check your Slack token permissions.")
-        return nil
-      end
-
-      # Find channel by name
-      match = channels.find { |channel| channel["name"] == CHANNEL_NAME }
-
-      if match
-        UI.message("Found Slack channel: #{match["name"]} (ID: #{match["id"]})")
-        return match["id"]
-      else
-        UI.important("⚠️ Channel '#{CHANNEL_NAME}' not found in the workspace")
-        return nil
-      end
-    end
-
-    # Post a message to the Slack channel
-    def self.post_deploy_message(channel_id:, platform:, version:, build:)
-      text = ":rocket: A new *#{platform}* app has been released! `v#{version}` (build #{build})"
-      uri = URI("https://slack.com/api/chat.postMessage")
-
-      req = Net::HTTP::Post.new(uri)
-      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-      req["Content-Type"] = "application/json"
-      req.body = {
-        channel: channel_id,
-        text: text,
-      }.to_json
-
-      Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-        http.request(req)
-      end
-    end
-
-    # Helper method for curl upload that can be called from multiple places
-    def self.upload_build_file(channel_id:, file_path:)
-      UI.message("Using slack-api gem to upload file...")
-
-      # Create a temporary file to hold the output
-      output_file = Tempfile.new(["slack_upload", ".log"])
 
       begin
-        # Configure the Slack client
-        Slack.configure do |config|
-          config.token = SLACK_TOKEN
+        client = Slack::Web::Client.new # Instantiate the client
+        response = client.conversations_list(types: "public_channel,private_channel", limit: 1000)
+        unless response["ok"]
+          UI.important("⚠️ Slack API Error (conversations.list): #{response["error"]}")
+          return nil
         end
 
-        # Upload the file using the slack-api gem
-        response = Slack.files_upload(
-          channels: channel_id,
-          file: File.new(file_path),
-          filename: File.basename(file_path),
-          initial_comment: "📱 New build uploaded: #{File.basename(file_path)}",
-        )
+        channels = response["channels"]
+        if channels.nil? || channels.empty?
+          UI.important("⚠️ No channels found. Check token permissions.")
+          return nil
+        end
 
-        # Write response to output file for backward compatibility
-        File.write(output_file.path, response.to_json)
+        match = channels.find { |channel| channel["name"] == CHANNEL_NAME }
 
-        # Check response
-        if response["ok"]
-          UI.success("✅ File uploaded successfully via slack-api")
-
-          # Post a follow-up message with clear instructions
-          instructions = "📱 *New build uploaded:* `#{File.basename(file_path)}`\n\n" +
-                         "To download the file:\n" +
-                         "1. Click on the file above\n" +
-                         "2. Click the download button (⬇️) in the top right\n" +
-                         "3. If prompted for login, use your Slack credentials"
-
-          Slack.chat_postMessage(
-            channel: channel_id,
-            text: instructions,
-            mrkdwn: true,
-          )
-
-          return true
+        if match
+          UI.message("Found Slack channel: #{match["name"]} (ID: #{match["id"]})")
+          return match["id"]
         else
-          UI.important("Upload failed: #{response["error"]}")
-          return false
+          UI.important("⚠️ Channel '#{CHANNEL_NAME}' not found in the workspace's channels.")
+          return nil
         end
+      rescue Slack::Web::Api::Errors::MissingScope => e
+        # Handle missing scope specifically
+        UI.important("⚠️ Slack API Error getting channel ID: #{e.message}")
+        UI.important("   Needed scope: #{e.needed}, Provided scopes: #{e.provided}")
+        UI.important("   Please add the '#{e.needed}' scope to your Slack App's bot token.")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+        return nil
+      rescue Slack::Web::Api::Errors::SlackError => e
+        # Handle other Slack API errors
+        error_details = e.respond_to?(:error_code) ? "(Code: #{e.error_code})" : ""
+        UI.important("⚠️ Slack API Error getting channel ID: #{e.message} #{error_details}")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+        return nil
       rescue => e
-        UI.important("Error in slack-api upload: #{e.message}")
-        UI.important(e.backtrace.join("\n")) if ENV["DEBUG"]
-        return false
-      ensure
-        # Clean up temp file
-        output_file.close
-        output_file.unlink if output_file.path && File.exist?(output_file.path)
+        UI.important("⚠️ Unexpected error getting channel ID: #{e.message}")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+        return nil
       end
     end
 
-    # Wrapper method
+    # Post a message to the Slack channel using slack-ruby-client
+    def self.post_deploy_message(client:, channel_id:, platform:, version:, build:) # Pass client
+      text = ":rocket: A new *#{platform}* app has been released! `v#{version}` (build #{build})"
+      begin
+        response = client.chat_postMessage( # Use client instance
+          channel: channel_id,
+          text: text,
+          mrkdwn: true,
+        )
+        unless response["ok"]
+          UI.important("⚠️ Slack API Error (chat.postMessage): #{response["error"]}")
+        else
+          UI.success("✅ Deployment message posted successfully.")
+        end
+      rescue Slack::Web::Api::Errors::SlackError => e
+        UI.important("⚠️ Slack API Error posting message: #{e.message} (Error Code: #{e.error_code})")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+      rescue => e
+        UI.important("⚠️ Unexpected error posting message: #{e.message}")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+      end
+    end
+
+    # Upload build file using slack-ruby-client
+    def self.upload_build_file(client:, channel_id:, file_path:) # Pass client
+      begin
+        file_name = File.basename(file_path)
+        UI.message("Using slack-ruby-client v2 to upload file: #{file_name} to channel #{channel_id}")
+
+        file_content = File.read(file_path)
+
+        response = client.files_upload_v2( # Use client instance
+          channel: channel_id,
+          content: file_content,
+          filename: file_name,
+          initial_comment: "📱 New build uploaded: `#{file_name}`",
+        )
+
+        if response["ok"]
+          UI.success("✅ File uploaded successfully via slack-ruby-client v2")
+          return true
+        else
+          UI.important("⚠️ Slack API Error (files_upload_v2): #{response["error"]}")
+          return false
+        end
+      rescue Slack::Web::Api::Errors::SlackError => e
+        UI.important("⚠️ Slack API Error uploading file (v2): #{e.message} (Code: #{e.error_code})")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+        return false
+      rescue Errno::ENOENT
+        UI.error("❌ File not found at path: #{file_path}")
+        return false
+      rescue => e
+        UI.important("⚠️ Unexpected error uploading file (v2): #{e.message}")
+        UI.important(e.backtrace.join("\\n")) if ENV["DEBUG"]
+        return false
+      end
+    end
+
+    # Wrapper method - Refactored
     def self.notify_mobile_app_deploy(platform:, version:, build:, file_path:)
-      UI.message("Starting mobile app deploy notification process...")
+      UI.message("🚀 Starting mobile app deploy notification process...")
 
-      # Debug information about environment variables
-      UI.message("SLACK_API_TOKEN present: #{!SLACK_TOKEN.nil? && !SLACK_TOKEN.empty?}")
-      UI.message("SLACK_ANNOUNCE_CHANNEL_NAME: #{CHANNEL_NAME || "not set"}")
+      # --- Pre-checks ---
+      token_present = SLACK_TOKEN && !SLACK_TOKEN.empty?
+      channel_name_present = CHANNEL_NAME && !CHANNEL_NAME.empty?
 
-      if CHANNEL_NAME.nil? || CHANNEL_NAME.empty? || SLACK_TOKEN.nil? || SLACK_TOKEN.empty?
-        UI.important("⚠️ Skipping Slack notification - channel name or token not available")
+      unless token_present && channel_name_present
+        UI.important("⚠️ Skipping Slack notification: SLACK_API_TOKEN or SLACK_ANNOUNCE_CHANNEL_NAME is not set.")
         return
       end
 
-      # Debug information about the file
+      file_exists = file_path && File.exist?(file_path)
       if file_path
-        if File.exist?(file_path)
-          UI.message("File for upload exists at path: #{file_path}")
-          UI.message("File size: #{File.size(file_path)} bytes")
+        if file_exists
+          UI.message("   File path: #{file_path}")
+          UI.message("   File size: #{File.size(file_path)} bytes")
         else
-          UI.error("❌ File for upload does not exist at path: #{file_path}")
+          UI.error("   File for upload does not exist: #{file_path}")
         end
       else
-        UI.error("❌ File path is nil or empty")
+        UI.important("   No file path provided for upload.")
       end
 
+      # --- Get Channel ID ---
       channel_id = get_channel_id
-
-      if channel_id.nil?
-        UI.important("⚠️ Skipping Slack notification - channel ID not available")
+      unless channel_id
+        UI.important("⚠️ Skipping Slack notification: Could not resolve channel ID for '#{CHANNEL_NAME}'. Check channel name and bot permissions.")
         return
       end
 
-      UI.message("Sending notification to Slack channel: #{channel_id}")
-      post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
+      # --- Instantiate Client --- (Do this once here)
+      client = Slack::Web::Client.new
 
-      UI.message("Using slack-api gem for direct file upload (more reliable than curl)")
-      upload_build_file(channel_id: channel_id, file_path: file_path)
+      # --- Post Deployment Message ---
+      UI.message("   Posting deployment message to channel #{channel_id}...")
+      post_deploy_message(client: client, channel_id: channel_id, platform: platform, version: version, build: build)
+
+      # --- Upload Build File (if applicable) ---
+      if file_exists
+        UI.message("   Attempting to upload build file...")
+        upload_successful = upload_build_file(client: client, channel_id: channel_id, file_path: file_path)
+        if upload_successful
+          UI.success("   Build file uploaded.")
+        else
+          UI.error("   Build file upload failed.") # Error logged within upload_build_file
+        end
+      else
+        UI.important("   Skipping file upload because the file path was invalid or the file doesn't exist.")
+      end
+
+      UI.success("✅ Slack notification process finished for channel #{channel_id}.")
     end
   end
 end
