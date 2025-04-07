@@ -9,6 +9,7 @@ require "uri"
 require "json"
 require "mime/types"
 require "multipart/post"
+require "net/http/post/multipart" # For UploadIO
 
 # Load secrets before defining constants
 module Fastlane
@@ -23,6 +24,40 @@ module Fastlane
         require "dotenv"
         Dotenv.load("./.env.secrets")
       end
+    end
+
+    # Simple multipart boundary generator
+    def self.generate_boundary
+      "----FastlaneSlackUploadBoundary#{rand(1000000)}"
+    end
+
+    # Helper to build a multipart request body
+    def self.build_multipart_body(params, boundary, file_path)
+      body = ""
+
+      # Add regular params
+      params.each do |key, value|
+        body << "--#{boundary}\r\n"
+        body << "Content-Disposition: form-data; name=\"#{key}\"\r\n\r\n"
+        body << "#{value}\r\n"
+      end
+
+      # Add file part
+      if file_path && File.exist?(file_path)
+        filename = File.basename(file_path)
+        content_type = MIME::Types.type_for(file_path).first&.content_type || "application/octet-stream"
+
+        body << "--#{boundary}\r\n"
+        body << "Content-Disposition: form-data; name=\"file\"; filename=\"#{filename}\"\r\n"
+        body << "Content-Type: #{content_type}\r\n\r\n"
+        body << File.binread(file_path)
+        body << "\r\n"
+      end
+
+      # Add final boundary
+      body << "--#{boundary}--\r\n"
+
+      body
     end
   end
 end
@@ -660,125 +695,167 @@ module Fastlane
 
     # Upload the file (IPA or AAB)
     def self.upload_build_file(channel_id:, file_path:)
-      # Check if file exists before attempting upload
-      unless File.exist?(file_path)
-        UI.error("❌ File does not exist at path: #{file_path}")
+      # Check if file exists and has content before attempting upload
+      unless File.exist?(file_path) && File.size?(file_path)
+        UI.error("❌ File does not exist or is empty at path: #{file_path}")
         return
       end
 
-      UI.message("Uploading file to Slack: #{file_path} (size: #{File.size(file_path)} bytes)")
+      file_size = File.size(file_path)
+      UI.message("Uploading file to Slack: #{file_path} (size: #{file_size} bytes)")
 
-      # Step 1: Get upload URL using files.getUploadURLExternal
-      uri = URI("https://slack.com/api/files.getUploadURLExternal")
-      req = Net::HTTP::Post.new(uri)
-      req["Authorization"] = "Bearer #{SLACK_TOKEN}"
-      req.set_form_data({
-        length: File.size(file_path).to_s,
-        filename: File.basename(file_path),
-      })
-
-      # Log request details (Content-Type is set automatically by set_form_data)
-      UI.message("Sending request to getUploadURLExternal (form-data):")
-      UI.message("  Body: [form data]") # Don't log sensitive form data body directly
+      # Alternative: Try to upload as a direct attachment to a message instead
+      # This may work better for downloading as it bypasses the Slack file sharing system
+      UI.message("Trying alternative method: uploading using the recommended API flow...")
 
       begin
-        upload_url_response = nil
-        Net::HTTP.start(uri.hostname, uri.port, use_ssl: true) do |http|
-          upload_url_response = http.request(req)
-        end
+        # Get the file size to set Content-Length
+        file_size = File.size(file_path)
 
-        # Parse response to get upload URL and file ID
-        upload_result = JSON.parse(upload_url_response.body)
+        # Check if file is larger than Slack's upload limit (typically ~50MB)
+        if file_size > 50 * 1024 * 1024
+          UI.important("⚠️ File is larger than 50MB (#{(file_size.to_f / 1024 / 1024).round(2)}MB), which may exceed Slack's upload limits")
+          UI.important("Suggesting a different approach to share large files...")
 
-        unless upload_result["ok"]
-          UI.error("❌ Failed to get upload URL from Slack: #{upload_result["error"]}")
-          # Log the full response body on failure
-          UI.error("Full Slack response: #{upload_url_response.body}")
-          return # Keep return here to avoid proceeding
-        end
+          # Post a message with suggestions for sharing large binary files
+          alt_message = "The #{File.basename(file_path)} file is too large to upload directly to Slack (#{(file_size.to_f / 1024 / 1024).round(2)}MB).\n" +
+                        "Please consider one of these alternatives:\n" +
+                        "• Share via Google Drive or Dropbox link\n" +
+                        "• Upload to TestFlight/AppCenter for iOS apps\n" +
+                        "• Upload to Play Store internal testing for Android apps\n" +
+                        "• Create a GitHub release with the binary attached"
 
-        upload_url = upload_result["upload_url"]
-        file_id = upload_result["file_id"]
+          alt_msg_uri = URI("https://slack.com/api/chat.postMessage")
+          alt_msg_req = Net::HTTP::Post.new(alt_msg_uri)
+          alt_msg_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          alt_msg_req["Content-Type"] = "application/json"
+          alt_msg_req.body = JSON.generate({ channel: channel_id, text: alt_message })
 
-        # Log the upload URL
-        UI.message("Received Upload URL: #{upload_url}")
-        UI.message("Received File ID: #{file_id}")
-
-        # Step 2: Upload file content to the provided upload URL
-        upload_uri = URI(upload_url)
-        upload_req = Net::HTTP::Put.new(upload_uri)
-
-        # Determine the Content-Type for the file upload
-        content_type = if file_path.end_with?(".aab")
-            "application/vnd.android.package-archive"
-          elsif file_path.end_with?(".ipa")
-            "application/octet-stream"
-          else
-            # Fallback using mime-types gem
-            (MIME::Types.type_for(file_path).first || MIME::Type.new("application/octet-stream")).content_type
-          end
-        UI.message("Determined Content-Type: #{content_type}") # Log the determined content type
-
-        # Use streaming upload with chunked transfer encoding by setting body_stream and omitting the Content-Length header
-        upload_req["Content-Type"] = content_type # Use the determined content type
-        upload_req["Transfer-Encoding"] = "chunked"
-        upload_req.body_stream = File.open(file_path, "rb")
-
-        # Log PUT request headers and send PUT request with redirect following
-        redirect_count = 0
-        while redirect_count < 5
-          UI.message("Sending PUT request to upload URL:")
-          UI.message("  URI: #{upload_uri}")
-          UI.message("  Headers: #{upload_req.to_hash}")
-          upload_response = nil
-          Net::HTTP.start(upload_uri.hostname, upload_uri.port, use_ssl: true) do |http|
-            upload_response = http.request(upload_req)
+          Net::HTTP.start(alt_msg_uri.hostname, alt_msg_uri.port, use_ssl: true) do |http|
+            http.request(alt_msg_req)
           end
 
-          UI.message("Received PUT response:")
-          UI.message("  Code: #{upload_response.code}")
-          UI.message("  Message: #{upload_response.message}")
-          UI.message("  Headers: #{upload_response.to_hash}")
-
-          if upload_response.code.to_i == 200
-            break
-          elsif (300...400).include?(upload_response.code.to_i)
-            new_location = upload_response["location"]
-            if new_location && !new_location.empty?
-              UI.message("Following redirect to: #{new_location}")
-              upload_uri = URI(new_location)
-              new_req = Net::HTTP::Put.new(upload_uri)
-              new_req.body_stream = upload_req.body_stream
-              upload_req.each_header { |k, v| new_req[k] = v unless k.downcase == "host" }
-              upload_req = new_req
-              redirect_count += 1
-            else
-              UI.error("Redirect without location header. Aborting.")
-              break
-            end
-          else
-            UI.error("❌ Failed to upload file to provided URL: #{upload_response.code} #{upload_response.message}")
-            puts "Full Slack response: #{upload_response.body}"
-            return
-          end
-        end
-
-        if upload_response.code.to_i != 200
-          UI.error("Too many redirects or failed to get a 200 response. Aborting.")
+          UI.important("Shared alternative suggestions for large file sharing")
           return
         end
 
-        # Step 3: Complete the upload
+        # Step 1: Get upload URL - Same as our original method with better error handling
+        upload_url_uri = URI("https://slack.com/api/files.getUploadURLExternal")
+        upload_url_req = Net::HTTP::Post.new(upload_url_uri)
+        upload_url_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+        upload_url_req.set_form_data({
+          length: file_size.to_s,
+          filename: File.basename(file_path),
+          alt_text: "#{File.basename(file_path)} - Mobile app binary",
+        })
+
+        UI.message("Requesting upload URL for file: #{File.basename(file_path)}")
+
+        upload_url_response = nil
+        Net::HTTP.start(upload_url_uri.hostname, upload_url_uri.port, use_ssl: true) do |http|
+          upload_url_response = http.request(upload_url_req)
+        end
+
+        upload_url_result = JSON.parse(upload_url_response.body)
+        unless upload_url_result["ok"]
+          UI.error("❌ Failed to get upload URL: #{upload_url_result["error"]}")
+          raise "Failed to get upload URL: #{upload_url_result["error"]}"
+        end
+
+        upload_url = upload_url_result["upload_url"]
+        file_id = upload_url_result["file_id"]
+
+        UI.message("Upload URL received. File ID: #{file_id}")
+        UI.message("Upload URL: #{upload_url}")
+
+        # Step 2: Upload content to the URL
+        content_type = MIME::Types.type_for(file_path).first&.content_type || "application/octet-stream"
+        upload_uri = URI(upload_url)
+
+        UI.message("Uploading file content to Slack's servers...")
+        UI.message("URI host: #{upload_uri.host}, path: #{upload_uri.path}, query: #{upload_uri.query || "none"}")
+
+        # Setup for handling redirects
+        max_redirects = 5
+        redirect_count = 0
+        current_uri = upload_uri
+
+        UI.message("Starting file upload with redirect handling (max #{max_redirects} redirects)")
+
+        while redirect_count < max_redirects
+          http = Net::HTTP.new(current_uri.host, current_uri.port)
+          http.use_ssl = (current_uri.scheme == "https")
+          http.set_debug_output($stdout) if ENV["DEBUG_SLACK_UPLOAD"] == "true"
+
+          # Create the request for the current URI
+          current_path = current_uri.path
+          current_path += "?#{current_uri.query}" if current_uri.query
+
+          upload_req = Net::HTTP::Put.new(current_path)
+          upload_req["Content-Type"] = content_type
+          upload_req["Content-Length"] = file_size.to_s
+
+          # Only open the file once and reuse the handle to avoid issues
+          if redirect_count == 0
+            @file_handle = File.open(file_path, "rb")
+            upload_req.body_stream = @file_handle
+          else
+            # For redirects, we need to reopen the file since body_stream can only be read once
+            @file_handle.close if @file_handle && !@file_handle.closed?
+            @file_handle = File.open(file_path, "rb")
+            upload_req.body_stream = @file_handle
+          end
+
+          UI.message("Uploading to #{current_uri.host}#{current_path} (attempt #{redirect_count + 1})")
+
+          # Send the request
+          upload_response = http.request(upload_req)
+
+          # Check for redirect
+          if upload_response.code.to_i >= 300 && upload_response.code.to_i < 400
+            location = upload_response["location"]
+
+            if location
+              UI.message("Following redirect to: #{location}")
+              redirect_count += 1
+              current_uri = URI(location)
+            else
+              UI.error("❌ Received redirect without Location header")
+              break
+            end
+          elsif upload_response.code.to_i == 200
+            UI.success("✅ Upload successful after #{redirect_count} redirects")
+            break
+          else
+            UI.error("❌ Failed to upload file content: #{upload_response.code} - #{upload_response.message}")
+            UI.error("Response: #{upload_response.body}")
+            raise "Failed to upload file content: HTTP #{upload_response.code}"
+          end
+        end
+
+        # Make sure to close the file handle
+        @file_handle.close if @file_handle && !@file_handle.closed?
+
+        if redirect_count >= max_redirects
+          UI.error("❌ Too many redirects (#{max_redirects})")
+          raise "Too many redirects while uploading file"
+        end
+
+        UI.message("File content uploaded successfully. Completing upload...")
+
+        # Step 3: Complete the upload and share in channel
         complete_uri = URI("https://slack.com/api/files.completeUploadExternal")
         complete_req = Net::HTTP::Post.new(complete_uri)
         complete_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
         complete_req["Content-Type"] = "application/json"
+
+        # Add channels parameter to share the file in the channel
         complete_req.body = JSON.generate({
           files: [
             {
               id: file_id,
               title: File.basename(file_path),
-              channels: channel_id,
+              channels: [channel_id],
             },
           ],
         })
@@ -788,17 +865,79 @@ module Fastlane
           complete_response = http.request(complete_req)
         end
 
-        # Parse response
         complete_result = JSON.parse(complete_response.body)
+
         if complete_result["ok"]
-          UI.success("✅ File uploaded successfully to Slack")
+          UI.success("✅ File uploaded and shared in channel successfully")
+          uploaded_file = complete_result["files"]&.first
+
+          if uploaded_file
+            download_link = uploaded_file["url_private_download"]
+            permalink = uploaded_file["permalink"]
+
+            UI.message("File details:")
+            UI.message("- Download link: #{download_link}")
+            UI.message("- Permalink: #{permalink}")
+
+            # Send a follow-up message with clear instructions
+            instructions = "📱 *New build uploaded:* `#{File.basename(file_path)}`\n\n" +
+                           "To download the file:\n" +
+                           "1. Click on the file above\n" +
+                           "2. Click the download button (⬇️) in the top right\n" +
+                           "3. If prompted for login, use your Slack credentials"
+
+            inst_uri = URI("https://slack.com/api/chat.postMessage")
+            inst_req = Net::HTTP::Post.new(inst_uri)
+            inst_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+            inst_req["Content-Type"] = "application/json"
+            inst_req.body = JSON.generate({
+              channel: channel_id,
+              text: instructions,
+              mrkdwn: true,
+            })
+
+            Net::HTTP.start(inst_uri.hostname, inst_uri.port, use_ssl: true) do |http|
+              http.request(inst_req)
+            end
+          end
         else
-          UI.error("❌ Failed to complete file upload to Slack: #{complete_result["error"]}")
-          puts "Full Slack response: #{complete_response.body}"
+          UI.error("❌ Failed to complete upload: #{complete_result["error"]}")
+          UI.error("Response: #{complete_response.body}")
+          raise "Failed to complete upload: #{complete_result["error"]}"
         end
       rescue => e
-        UI.error("❌ Exception during file upload: #{e.message}")
+        UI.error("❌ Error during upload process: #{e.message}")
         UI.error(e.backtrace.join("\n"))
+
+        # Last resort: Just send instructions for finding the file in Slack
+        UI.important("Sending manual instructions as a fallback...")
+        manual_instructions = "🔍 *A new build has been uploaded but couldn't be shared automatically*\n\n" +
+                              "File details:\n" +
+                              "• Name: `#{File.basename(file_path)}`\n" +
+                              "• Size: #{(File.size(file_path).to_f / 1024 / 1024).round(2)} MB\n\n" +
+                              "*Alternative options:*\n" +
+                              "1. Ask a developer to share the file via a cloud storage link\n" +
+                              "2. For iOS: Check TestFlight for the latest build\n" +
+                              "3. For Android: Check internal testing track on Play Store"
+
+        begin
+          manual_uri = URI("https://slack.com/api/chat.postMessage")
+          manual_req = Net::HTTP::Post.new(manual_uri)
+          manual_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          manual_req["Content-Type"] = "application/json"
+          manual_req.body = JSON.generate({
+            channel: channel_id,
+            text: manual_instructions,
+            mrkdwn: true,
+          })
+
+          Net::HTTP.start(manual_uri.hostname, manual_uri.port, use_ssl: true) do |http|
+            http.request(manual_req)
+          end
+          UI.important("Sent manual instructions as final fallback")
+        rescue => e2
+          UI.error("Even the fallback message failed: #{e2.message}")
+        end
       end
     end
 
@@ -836,7 +975,139 @@ module Fastlane
 
       UI.message("Sending notification to Slack channel: #{channel_id}")
       post_deploy_message(channel_id: channel_id, platform: platform, version: version, build: build)
+
+      # Try uploading with a simple method first instead of the complex flow
+      if simple_upload_file(channel_id: channel_id, file_path: file_path)
+        UI.success("✅ File uploaded successfully using the simple method")
+        return
+      end
+
+      # If simple upload fails, try the more complex method
       upload_build_file(channel_id: channel_id, file_path: file_path)
+    end
+
+    # Simple upload method that tries to use files.upload directly
+    def self.simple_upload_file(channel_id:, file_path:)
+      return false unless File.exist?(file_path)
+
+      begin
+        UI.message("Attempting simple file upload via curl command...")
+
+        # Create a temporary file to hold the curl output
+        output_file = Tempfile.new(["slack_upload", ".log"])
+
+        # Build the curl command - this is often more reliable than using Ruby's HTTP libraries
+        curl_cmd = [
+          "curl",
+          "-X", "POST",
+          "-H", "Authorization: Bearer #{SLACK_TOKEN}",
+          "-F", "channels=#{channel_id}",
+          "-F", "initial_comment=📱 New build uploaded: #{File.basename(file_path)}",
+          "-F", "file=@#{file_path}",
+          "-o", output_file.path,
+          "-v",
+          "https://slack.com/api/files.upload",
+        ].join(" ")
+
+        UI.message("Executing curl upload...")
+
+        # Execute the curl command
+        exit_status = system(curl_cmd)
+
+        # Check if the command executed successfully
+        if exit_status
+          # Read and parse the response
+          response_text = File.read(output_file.path)
+
+          # Try to parse as JSON
+          begin
+            response = JSON.parse(response_text)
+
+            if response["ok"]
+              UI.success("✅ File uploaded successfully via curl")
+
+              # Post a follow-up message with clear instructions
+              instructions = "📱 *New build uploaded:* `#{File.basename(file_path)}`\n\n" +
+                             "To download the file:\n" +
+                             "1. Click on the file above\n" +
+                             "2. Click the download button (⬇️) in the top right\n" +
+                             "3. If prompted for login, use your Slack credentials"
+
+              inst_uri = URI("https://slack.com/api/chat.postMessage")
+              inst_req = Net::HTTP::Post.new(inst_uri)
+              inst_req["Authorization"] = "Bearer #{SLACK_TOKEN}"
+              inst_req["Content-Type"] = "application/json"
+              inst_req.body = JSON.generate({
+                channel: channel_id,
+                text: instructions,
+                mrkdwn: true,
+              })
+
+              Net::HTTP.start(inst_uri.hostname, inst_uri.port, use_ssl: true) do |http|
+                http.request(inst_req)
+              end
+
+              return true
+            else
+              UI.important("Curl upload failed: #{response["error"]}")
+            end
+          rescue JSON::ParserError => e
+            UI.important("Could not parse curl response as JSON: #{e.message}")
+            UI.important("Raw response: #{response_text[0..500]}...")
+          end
+        else
+          UI.important("Curl command failed with non-zero exit status")
+        end
+
+        # Try the native Ruby approach as a fallback
+        UI.message("Trying native Ruby upload as fallback...")
+
+        uri = URI("https://slack.com/api/files.upload")
+
+        # Create the HTTP request with form data
+        request = Net::HTTP::Post.new(uri)
+        request["Authorization"] = "Bearer #{SLACK_TOKEN}"
+
+        # Open the file in binary mode
+        file_data = File.binread(file_path)
+
+        # Create form data
+        form_data = {
+          "channels" => channel_id,
+          "initial_comment" => "📱 New build: #{File.basename(file_path)}",
+          "filename" => File.basename(file_path),
+          "file" => UploadIO.new(StringIO.new(file_data), "application/octet-stream", File.basename(file_path)),
+        }
+
+        # Set form data
+        request.set_form(form_data, "multipart/form-data")
+
+        # Send the request
+        http = Net::HTTP.new(uri.host, uri.port)
+        http.use_ssl = true
+        http.read_timeout = 300  # Set a longer timeout (5 minutes)
+
+        response = http.request(request)
+
+        # Parse the response
+        result = JSON.parse(response.body)
+
+        if result["ok"]
+          UI.success("✅ File uploaded successfully via Ruby method")
+          return true
+        else
+          UI.important("Ruby upload failed: #{result["error"]}")
+          return false
+        end
+      rescue => e
+        UI.important("Simple upload error: #{e.message}")
+        UI.important(e.backtrace.join("\n"))
+        return false
+      ensure
+        # Clean up temp file
+        output_file.close
+        output_file.unlink
+      end
     end
   end
 end
