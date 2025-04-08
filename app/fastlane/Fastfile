@@ -69,7 +69,7 @@ platform :ios do
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "Deployed iOS v#{package_version} (Build #{result[:build_number]}) to TestFlight",
+        initial_comment: "🍎 iOS 🍎 v#{package_version} (Build #{result[:build_number]}) deployed to TestFlight",
         title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
     else
@@ -95,7 +95,7 @@ platform :ios do
       Fastlane::Helpers.upload_file_to_slack(
         file_path: result[:ipa_path],
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "Deployed iOS v#{package_version} (Build #{result[:build_number]}) to App Store Connect (Ready for Submission)",
+        initial_comment: "🍎 iOS 🍎 (Ready for Submission) v#{package_version} (Build #{result[:build_number]}) deployed to App Store Connect",
         title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
       )
     else
@@ -283,8 +283,8 @@ platform :android do
       Fastlane::Helpers.upload_file_to_slack(
         file_path: android_aab_path,
         channel_id: ENV["SLACK_CHANNEL_ID"],
-        initial_comment: "Deployed Android v#{package_version} (Build #{version_code}) to #{target_platform}",
-        title: "app-#{package_version}-#{version_code}.aab",
+        initial_comment: "🤖 Android 🤖 v#{package_version} (Build #{version_code}) deployed to #{target_platform}",
+        title: "#{PROJECT_NAME}-#{package_version}-#{version_code}.aab",
       )
     else
       UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
