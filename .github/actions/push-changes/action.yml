@@ -56,7 +56,7 @@ runs:
           echo "Changes to be committed in paths: $paths_to_commit"
           # Show the staged diff for the specified paths
           git diff --cached -- $paths_to_commit
-          git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
+          git commit -m "chore: ${{ inputs.commit_message }} [github action]"
         fi
 
     - name: Push Changes
