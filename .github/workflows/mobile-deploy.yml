@@ -309,27 +309,43 @@ jobs:
       - name: Remove project.pbxproj updates we don't want to commit
         run: |
           PBXPROJ_FILE="app/ios/Self.xcodeproj/project.pbxproj"
-          # Generate a patch with 0 context lines
-          git diff --unified=0 "HEAD -- ${PBXPROJ_FILE}" > full.patch || echo "No changes in pbxproj, skipping."
-          if [ -s full.patch ]; then
-            echo "Filtering pbxproj changes..."
-            # Filter the patch to keep only CURRENT_PROJECT_VERSION lines and hunk headers
-            grep -E '^@@|^[+-].*CURRENT_PROJECT_VERSION' full.patch > version.patch
-            # Check if the filtered patch has content (i.e., if version actually changed)
-            if [ -s version.patch ]; then
-              echo "Resetting pbxproj and applying filtered changes..."
-              # Reset the file to HEAD state
-              git checkout HEAD -- "${PBXPROJ_FILE}"
-              # Apply the filtered patch
-              git apply version.patch
-            else
-              echo "No CURRENT_PROJECT_VERSION changes found, resetting file."
-              # Reset the file if no version changes were detected (discarding other changes)
-              git checkout HEAD -- "${PBXPROJ_FILE}"
+          
+          # Create a temporary file to store version info
+          echo "Extracting version information..."
+          rm -f versions.txt
+          grep -E 'CURRENT_PROJECT_VERSION = [0-9]+;|MARKETING_VERSION = [0-9]+\.[0-9]+\.[0-9]+;' "${PBXPROJ_FILE}" > versions.txt
+          
+          # Check if we have version information
+          if [ -s versions.txt ]; then
+            echo "Found version information. Resetting file and re-applying versions..."
+            
+            # Store the version values
+            CURRENT_VERSION=$(grep 'CURRENT_PROJECT_VERSION' versions.txt | head -1 | sed 's/.*CURRENT_PROJECT_VERSION = \([0-9]*\);.*/\1/')
+            MARKETING_VERSION=$(grep 'MARKETING_VERSION' versions.txt | head -1 | sed 's/.*MARKETING_VERSION = \([0-9]*\.[0-9]*\.[0-9]*\);.*/\1/')
+            
+            echo "Current version: $CURRENT_VERSION"
+            echo "Marketing version: $MARKETING_VERSION"
+            
+            # Reset the file to HEAD
+            git checkout HEAD -- "${PBXPROJ_FILE}"
+            
+            # Update the versions if they exist
+            if [ ! -z "$CURRENT_VERSION" ]; then
+              sed -i '' "s/\(CURRENT_PROJECT_VERSION = \)[0-9]*;/\1$CURRENT_VERSION;/g" "${PBXPROJ_FILE}"
             fi
+            
+            if [ ! -z "$MARKETING_VERSION" ]; then
+              sed -i '' "s/\(MARKETING_VERSION = \)[0-9]*\.[0-9]*\.[0-9]*;/\1$MARKETING_VERSION;/g" "${PBXPROJ_FILE}"
+            fi
+            
+            echo "Version information successfully applied."
+          else
+            echo "No version information found. Resetting file..."
+            git checkout HEAD -- "${PBXPROJ_FILE}"
           fi
-          # Clean up patch files
-          rm -f full.patch version.patch
+          
+          # Clean up
+          rm -f versions.txt
 
       - name: Get version from package.json
         uses: ./.github/actions/get-version
