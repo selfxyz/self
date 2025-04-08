@@ -64,12 +64,17 @@ platform :ios do
       skip_waiting_for_build_processing: false,
     ) if result[:should_upload]
 
-    Fastlane::Helpers.notify_mobile_app_deploy(
-      platform: "iOS",
-      version: package_version,
-      build: result[:build_number],
-      file_path: result[:ipa_path],
-    )
+    # Notify Slack about the new build
+    if ENV["SLACK_CHANNEL_ID"]
+      Fastlane::Helpers.upload_file_to_slack(
+        file_path: result[:ipa_path],
+        channel_id: ENV["SLACK_CHANNEL_ID"],
+        initial_comment: "Deployed iOS v#{package_version} (Build #{result[:build_number]}) to TestFlight",
+        title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
+      )
+    else
+      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
+    end
   end
 
   desc "Prepare a new build for App Store submission"
@@ -85,18 +90,24 @@ platform :ios do
       skip_app_version_update: true,
     ) if result[:should_upload]
 
-    Fastlane::Helpers.notify_mobile_app_deploy(
-      platform: "iOS",
-      version: package_version,
-      build: result[:build_number],
-      file_path: result[:ipa_path],
-    )
+    # Notify Slack about the new build
+    if ENV["SLACK_CHANNEL_ID"]
+      Fastlane::Helpers.upload_file_to_slack(
+        file_path: result[:ipa_path],
+        channel_id: ENV["SLACK_CHANNEL_ID"],
+        initial_comment: "Deployed iOS v#{package_version} (Build #{result[:build_number]}) to App Store Connect (Ready for Submission)",
+        title: "#{PROJECT_NAME}-#{package_version}-#{result[:build_number]}.ipa",
+      )
+    else
+      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
+    end
   end
 
   private_lane :prepare_ios_build do |options|
     if local_development
       # app breaks with Xcode 16.3
       xcode_select "/Applications/Xcode-16-2.app"
+
       # Set up API key, profile, and potentially certificate for local dev
       Fastlane::Helpers.ios_dev_setup_connect_api_key(ios_connect_api_key_path)
       Fastlane::Helpers.ios_dev_setup_provisioning_profile(ios_provisioning_profile_directory)
@@ -267,11 +278,16 @@ platform :android do
       aab: android_aab_path,
     ) if should_upload && android_has_permissions
 
-    Fastlane::Helpers.notify_mobile_app_deploy(
-      platform: "Android",
-      version: package_version,
-      build: version_code,
-      file_path: android_aab_path,
-    )
+    # Notify Slack about the new build
+    if ENV["SLACK_CHANNEL_ID"]
+      Fastlane::Helpers.upload_file_to_slack(
+        file_path: android_aab_path,
+        channel_id: ENV["SLACK_CHANNEL_ID"],
+        initial_comment: "Deployed Android v#{package_version} (Build #{version_code}) to #{target_platform}",
+        title: "app-#{package_version}-#{version_code}.aab",
+      )
+    else
+      UI.important("Skipping Slack notification: SLACK_CHANNEL_ID not set.")
+    end
   end
 end

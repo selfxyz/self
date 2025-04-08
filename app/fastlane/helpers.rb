@@ -600,5 +600,140 @@ module Fastlane
     end
 
     ### Slack Methods ###
+    # Uploads a file to Slack using the files.upload API endpoint.
+    # Handles multipart/form-data request construction.
+    #
+    # Args:
+    #   file_path (String): Path to the file to upload.
+    #   channel_id (String): ID of the channel to upload the file to.
+    #   initial_comment (String, optional): Message to post alongside the file.
+    #   thread_ts (String, optional): Timestamp of a message to reply to (creates a thread).
+    #   title (String, optional): Title for the uploaded file (defaults to filename).
+    def self.upload_file_to_slack(file_path:, channel_id:, initial_comment: nil, thread_ts: nil, title: nil)
+      unless SLACK_TOKEN && !SLACK_TOKEN.strip.empty?
+        report_error("Missing SLACK_API_TOKEN environment variable.", "Cannot upload file to Slack without API token.", "Slack Upload Failed")
+        return false
+      end
+
+      unless File.exist?(file_path)
+        report_error("File not found at path: #{file_path}", "Please ensure the file exists before uploading.", "Slack Upload Failed")
+        return false
+      end
+
+      file_name = File.basename(file_path)
+      file_size = File.size(file_path)
+      file_title = title || file_name
+
+      begin
+        upload_url = nil
+        file_id = nil
+
+        # Step 1: Get Upload URL
+        with_retry(max_retries: 3, delay: 5) do
+          UI.message("Step 1: Getting Slack upload URL for #{file_name}...")
+          uri = URI.parse("https://slack.com/api/files.getUploadURLExternal")
+          request = Net::HTTP::Post.new(uri)
+          request["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          request.set_form_data(filename: file_name, length: file_size)
+
+          http = Net::HTTP.new(uri.host, uri.port)
+          http.use_ssl = true
+          response = http.request(request)
+
+          unless response.is_a?(Net::HTTPSuccess)
+            raise "Slack API (files.getUploadURLExternal) failed: #{response.code} #{response.body}"
+          end
+
+          response_json = JSON.parse(response.body)
+          unless response_json["ok"]
+            raise "Slack API Error (files.getUploadURLExternal): #{response_json["error"]}"
+          end
+
+          upload_url = response_json["upload_url"]
+          file_id = response_json["file_id"]
+          UI.message("Got upload URL and file ID: #{file_id}")
+        end
+
+        # Step 2: Upload file content to the obtained URL
+        with_retry(max_retries: 3, delay: 5) do
+          UI.message("Step 2: Uploading file content to Slack...")
+          upload_uri = URI.parse(upload_url)
+          # Net::HTTP::Post requires the request body to be an IO object or string
+          # Reading the file content here for the request body
+          file_content = File.binread(file_path)
+
+          upload_request = Net::HTTP::Post.new(upload_uri)
+          upload_request.body = file_content
+          # Slack's upload URL expects the raw file bytes in the body
+          # Content-Type is often application/octet-stream, but Slack might infer
+          upload_request["Content-Type"] = "application/octet-stream"
+          upload_request["Content-Length"] = file_size.to_s
+
+          upload_http = Net::HTTP.new(upload_uri.host, upload_uri.port)
+          upload_http.use_ssl = true
+          upload_response = upload_http.request(upload_request)
+
+          # Check for a 200 OK response for the file upload itself
+          unless upload_response.is_a?(Net::HTTPOK)
+            raise "File content upload failed: #{upload_response.code} #{upload_response.message} Body: #{upload_response.body}"
+          end
+          UI.message("File content uploaded successfully.")
+        end
+
+        # Step 3: Complete the upload
+        final_file_info = nil
+        with_retry(max_retries: 3, delay: 5) do
+          UI.message("Step 3: Completing Slack upload for file ID #{file_id}...")
+          complete_uri = URI.parse("https://slack.com/api/files.completeUploadExternal")
+          complete_request = Net::HTTP::Post.new(complete_uri)
+          complete_request["Authorization"] = "Bearer #{SLACK_TOKEN}"
+          complete_request["Content-Type"] = "application/json; charset=utf-8"
+
+          payload = {
+            files: [{ id: file_id, title: file_title }],
+            channel_id: channel_id,
+          }
+          payload[:initial_comment] = initial_comment if initial_comment
+          payload[:thread_ts] = thread_ts if thread_ts
+
+          complete_request.body = payload.to_json
+
+          complete_http = Net::HTTP.new(complete_uri.host, complete_uri.port)
+          complete_http.use_ssl = true
+          complete_response = complete_http.request(complete_request)
+
+          unless complete_response.is_a?(Net::HTTPSuccess)
+            raise "Slack API (files.completeUploadExternal) failed: #{complete_response.code} #{complete_response.body}"
+          end
+
+          complete_response_json = JSON.parse(complete_response.body)
+          unless complete_response_json["ok"]
+            # Specific error handling for common issues
+            if complete_response_json["error"] == "invalid_channel"
+              UI.error("Error: Invalid SLACK_CHANNEL_ID: '#{channel_id}'. Please verify the channel ID.")
+            elsif complete_response_json["error"] == "channel_not_found"
+              UI.error("Error: Channel '#{channel_id}' not found. Ensure the bot is invited or the ID is correct.")
+            end
+            raise "Slack API Error (files.completeUploadExternal): #{complete_response_json["error"]} - #{complete_response_json["response_metadata"]&.[]("messages")&.join(", ")}"
+          end
+
+          # Expecting an array of file objects
+          final_file_info = complete_response_json["files"]&.first
+          unless final_file_info
+            raise "Upload completed but no file information returned in response: #{complete_response.body}"
+          end
+          report_success("Successfully uploaded and shared #{file_name} (ID: #{final_file_info["id"]}) to Slack channel #{channel_id}")
+        end
+
+        return final_file_info # Return the first file object on success
+      rescue JSON::ParserError => e
+        report_error("Failed to parse Slack API response.", "Error: #{e.message}", "Slack Upload Failed")
+        return false
+      rescue => e
+        # Include backtrace for better debugging
+        report_error("Error during Slack upload process: #{e.message}", e.backtrace.join("\n"), "Slack Upload Failed")
+        return false
+      end
+    end
   end
 end
