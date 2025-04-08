@@ -26,6 +26,7 @@ runs:
         set -e
         set -x
 
+        # Restore the logic for checking specific paths existence
         commit_paths_input="${{ inputs.commit_paths }}"
         paths_to_commit=""
 
@@ -45,12 +46,15 @@ runs:
         # Remove leading space if present
         paths_to_commit=$(echo "$paths_to_commit" | sed 's/^ *//')
 
+        # Stage ONLY the specified paths
         git add $paths_to_commit
 
+        # Check if there are staged changes ONLY in the specified paths
         if git diff --staged --quiet -- $paths_to_commit; then
           echo "No changes to commit in the specified paths: $paths_to_commit"
         else
           echo "Changes to be committed in paths: $paths_to_commit"
+          # Show the staged diff for the specified paths
           git diff --cached -- $paths_to_commit
           git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
         fi
@@ -69,7 +73,8 @@ runs:
           fi
 
           echo "Pushing changes to branch: $CURRENT_BRANCH"
-          git pull --rebase origin $CURRENT_BRANCH || {
+          # Add --autostash to handle potential unstaged changes gracefully
+          git pull --rebase --autostash origin $CURRENT_BRANCH || {
             echo "Failed to pull from $CURRENT_BRANCH"
             exit 1
           }
