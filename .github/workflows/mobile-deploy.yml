@@ -313,7 +313,7 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build number
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump ios build version to ${{ env.VERSION }}"
@@ -440,7 +440,7 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build version
-        if: false #${{ !env.ACT }}
+        if: ${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump android build version to ${{ env.VERSION }}"
