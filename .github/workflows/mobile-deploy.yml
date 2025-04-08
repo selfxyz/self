@@ -306,7 +306,6 @@ jobs:
             bundle exec fastlane ios internal_test --verbose
           fi
 
-      - uses: actions/checkout@v4
       - name: Get version from package.json
         uses: ./.github/actions/get-version
         with:
@@ -433,7 +432,6 @@ jobs:
             bundle exec fastlane android internal_test --verbose
           fi
 
-      - uses: actions/checkout@v4
       - name: Get version from package.json
         uses: ./.github/actions/get-version
         with:
