@@ -317,7 +317,7 @@ jobs:
         uses: ./.github/actions/push-changes
         with:
           commit_message: "bump ios build version to ${{ env.VERSION }}"
-          commit_paths: "./app/ios/OpenPassport/Info.plist, ./app/ios/Self.xcodeproj/project.pbxproj"
+          commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
 
   build-android:
     runs-on: ubuntu-latest
