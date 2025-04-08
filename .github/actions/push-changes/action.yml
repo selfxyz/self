@@ -6,8 +6,8 @@ inputs:
   commit_message:
     description: "Commit message"
     required: true
-  commit_path:
-    description: "Path to check for changes (e.g. 'ios' or 'android')"
+  commit_paths:
+    description: "Space-separated list of paths to check for changes (e.g. 'ios/file.txt android/another/file.xml')"
     required: true
 
 runs:
@@ -26,18 +26,32 @@ runs:
         set -e
         set -x
 
-        if [ ! -d "${{ inputs.commit_path }}" ]; then
-          echo "Error: Path ${{ inputs.commit_path }} does not exist"
+        commit_paths_input="${{ inputs.commit_paths }}"
+        paths_to_commit=""
+
+        for path in $commit_paths_input; do
+          if [ ! -e "$path" ]; then
+            echo "Error: Path $path does not exist"
+            exit 1
+          fi
+          paths_to_commit="$paths_to_commit $path"
+        done
+
+        if [ -z "$paths_to_commit" ]; then
+          echo "No valid paths provided."
           exit 1
         fi
 
-        git add "${{ inputs.commit_path }}"
+        # Remove leading space if present
+        paths_to_commit=$(echo "$paths_to_commit" | sed 's/^ *//')
 
-        if git diff --staged --quiet; then
-          echo "No changes to commit in ${{ inputs.commit_path }}"
+        git add $paths_to_commit
+
+        if git diff --staged --quiet -- $paths_to_commit; then
+          echo "No changes to commit in the specified paths: $paths_to_commit"
         else
-          echo "Changes to be committed:"
-          git diff --cached "${{ inputs.commit_path }}"
+          echo "Changes to be committed in paths: $paths_to_commit"
+          git diff --cached -- $paths_to_commit
           git commit -m "chore: ${{ inputs.commit_message }} [skip ci]"
         fi
 
