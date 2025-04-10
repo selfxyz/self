@@ -57,6 +57,7 @@ interface PassportProcessingState {
   cscaTree?: string[][];
   mockCscaTree?: string[][];
   deployedCircuits?: string;
+  mockDeployedCircuits?: string;
   mockCircuitDNSMapping?: CircuitDNSMapping;
   circuitDNSMapping?: CircuitDNSMapping;
   isRegistered?: boolean;
@@ -81,6 +82,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
         set({ processingStatus: 'fetching-circuit-data' });
         try {
           const [
+            mockDeployedCircuits,
             deployedCircuits,
             mockCircuitDNSMapping,
             circuitDNSMapping,
@@ -91,7 +93,8 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
             mockCscaTree,
             cscaTree,
           ] = await Promise.all([
-            getDeployedCircuits(),
+            getDeployedCircuits('mock_passport'),
+            getDeployedCircuits('passport'),
             getCircuitDNSMapping('staging_celo'),
             getCircuitDNSMapping('celo'),
             getCommitmentTree('mock_passport'),
@@ -103,6 +106,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           ]);
 
           set({
+            mockDeployedCircuits,
             deployedCircuits,
             mockCircuitDNSMapping,
             circuitDNSMapping,
@@ -131,8 +135,11 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           ? state.mockPassportTree
           : state.passportTree;
         const serializedCscaTree = isMock ? state.mockCscaTree : state.cscaTree;
+        const serializedDeployedCircuits = isMock
+          ? state.mockDeployedCircuits
+          : state.deployedCircuits;
         if (
-          !state.deployedCircuits ||
+          !serializedDeployedCircuits||
           !mapping ||
           !serializedDscTree ||
           !serializedPassportTree ||
@@ -147,7 +154,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           const endpointType = isMock ? 'staging_celo' : 'celo';
           const [isNullifierOnchain, supportCheckResult] = await Promise.all([
             isPassportNullified(passportData),
-            checkPassportSupported(passportData, state.deployedCircuits),
+            checkPassportSupported(passportData, serializedDeployedCircuits),
           ]);
 
           if (
