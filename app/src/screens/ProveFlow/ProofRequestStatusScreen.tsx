@@ -23,7 +23,8 @@ import {
 } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } = useProofInfo();
+  const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } =
+    useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -116,7 +117,6 @@ function Info({
   appName: string;
   reason?: string;
 }) {
-
   if (status === 'success') {
     return (
       <Description>

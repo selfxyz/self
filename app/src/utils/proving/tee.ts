@@ -68,7 +68,7 @@ export async function sendPayload(
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
   },
-): Promise<{status: ProofStatusEnum, error_code?: string, reason?: string}> {
+): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
   const opts = {
     updateGlobalOnSuccess: true,
     updateGlobalOnFailure: true,
@@ -76,7 +76,11 @@ export async function sendPayload(
   };
   return new Promise(resolve => {
     let finalized = false;
-    function finalize(status: ProofStatusEnum, error_code?: string, reason?: string) {
+    function finalize(
+      status: ProofStatusEnum,
+      error_code?: string,
+      reason?: string,
+    ) {
       if (!finalized) {
         finalized = true;
         clearTimeout(timer);
@@ -85,13 +89,15 @@ export async function sendPayload(
           (status !== ProofStatusEnum.SUCCESS && opts.updateGlobalOnFailure)
         ) {
           if (options?.flow === 'disclosure') {
-            let discloseError: DiscloseError | undefined = error_code || reason ? {error_code, reason} : undefined;
-            globalSetDisclosureStatus && globalSetDisclosureStatus(status, discloseError);
+            let discloseError: DiscloseError | undefined =
+              error_code || reason ? { error_code, reason } : undefined;
+            globalSetDisclosureStatus &&
+              globalSetDisclosureStatus(status, discloseError);
           } else {
             globalSetRegistrationStatus && globalSetRegistrationStatus(status);
           }
         }
-        resolve({status, error_code, reason});
+        resolve({ status, error_code, reason });
       }
     }
     const uuid = v4();

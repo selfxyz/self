@@ -140,9 +140,9 @@ export async function sendDscPayload(
   passportData: PassportData,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
-): Promise<{status: ProofStatusEnum, error_code?: string, reason?: string}> {
+): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
   if (!passportData) {
-    return {status: ProofStatusEnum.FAILURE};
+    return { status: ProofStatusEnum.FAILURE };
   }
   // const isSupported = checkPassportSupported(passportData);
   // if (!isSupported) {

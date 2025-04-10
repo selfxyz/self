@@ -19,7 +19,7 @@ export enum ProofStatusEnum {
 export type DiscloseError = {
   error_code?: string;
   reason?: string;
-}
+};
 
 interface IProofContext {
   registrationStatus: ProofStatusEnum;
@@ -73,7 +73,9 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     ProofStatusEnum.PENDING,
   );
 
-  const [discloseError, setDiscloseError] = useState<DiscloseError | undefined>(undefined);
+  const [discloseError, setDiscloseError] = useState<DiscloseError | undefined>(
+    undefined,
+  );
 
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
