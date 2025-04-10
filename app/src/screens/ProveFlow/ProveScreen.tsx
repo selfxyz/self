@@ -4,41 +4,41 @@ import React, {
 	useMemo,
 	useRef,
 	useState,
-} from "react";
+} from 'react';
 import {
 	LayoutChangeEvent,
 	NativeScrollEvent,
 	NativeSyntheticEvent,
 	ScrollView,
 	StyleSheet,
-} from "react-native";
+} from 'react-native';
 
-import { useNavigation } from "@react-navigation/native";
-import LottieView from "lottie-react-native";
-import { Image, Text, View, YStack } from "tamagui";
+import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import { Image, Text, View, YStack } from 'tamagui';
 
-import { SelfAppDisclosureConfig } from "../../../../common/src/utils/appType";
-import { formatEndpoint } from "../../../../common/src/utils/scope";
-import miscAnimation from "../../assets/animations/loading/misc.json";
-import Disclosures from "../../components/Disclosures";
-import { HeldPrimaryButton } from "../../components/buttons/PrimaryButtonLongHold";
-import { BodyText } from "../../components/typography/BodyText";
-import { Caption } from "../../components/typography/Caption";
-import { ExpandableBottomLayout } from "../../layouts/ExpandableBottomLayout";
-import { useApp } from "../../stores/appProvider";
-import { useAuth } from "../../stores/authProvider";
-import { usePassport } from "../../stores/passportDataProvider";
+import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
+import { formatEndpoint } from '../../../../common/src/utils/scope';
+import miscAnimation from '../../assets/animations/loading/misc.json';
+import Disclosures from '../../components/Disclosures';
+import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
+import { BodyText } from '../../components/typography/BodyText';
+import { Caption } from '../../components/typography/Caption';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { useApp } from '../../stores/appProvider';
+import { useAuth } from '../../stores/authProvider';
+import { usePassport } from '../../stores/passportDataProvider';
 import {
 	ProofStatusEnum,
 	globalSetDisclosureStatus,
 	useProofInfo,
-} from "../../stores/proofProvider";
-import { black, slate300, white } from "../../utils/colors";
-import { buttonTap } from "../../utils/haptic";
+} from '../../stores/proofProvider';
+import { black, slate300, white } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
 import {
 	isUserRegistered,
 	sendVcAndDisclosePayload,
-} from "../../utils/proving/payload";
+} from '../../utils/proving/payload';
 
 const ProveScreen: React.FC = () => {
 	const { navigate } = useNavigation();
@@ -79,7 +79,7 @@ const ProveScreen: React.FC = () => {
 			return; // Avoid unnecessary updates
 		}
 		selectedAppRef.current = selectedApp;
-		console.log("[ProveScreen] Selected app updated:", selectedApp);
+		console.log('[ProveScreen] Selected app updated:', selectedApp);
 	}, [selectedApp]);
 
 	const disclosureOptions = useMemo(() => {
@@ -94,14 +94,14 @@ const ProveScreen: React.FC = () => {
 
 		// Check if the logo is already a URL
 		if (
-			selectedApp.logoBase64.startsWith("http://") ||
-			selectedApp.logoBase64.startsWith("https://")
+			selectedApp.logoBase64.startsWith('http://') ||
+			selectedApp.logoBase64.startsWith('https://')
 		) {
 			return { uri: selectedApp.logoBase64 };
 		}
 
 		// Otherwise handle as base64 as before
-		const base64String = selectedApp.logoBase64.startsWith("data:image")
+		const base64String = selectedApp.logoBase64.startsWith('data:image')
 			? selectedApp.logoBase64
 			: `data:image/png;base64,${selectedApp.logoBase64}`;
 		return { uri: base64String };
@@ -115,7 +115,7 @@ const ProveScreen: React.FC = () => {
 	}, [selectedApp?.endpoint]);
 
 	const onVerify = useCallback(async () => {
-		if (passportStatus !== "success" || isProcessing.current) {
+		if (passportStatus !== 'success' || isProcessing.current) {
 			return;
 		}
 		isProcessing.current = true;
@@ -130,32 +130,32 @@ const ProveScreen: React.FC = () => {
 			let timeToNavigateToStatusScreen: NodeJS.Timeout;
 
 			timeToNavigateToStatusScreen = setTimeout(() => {
-				navigate("ProofRequestStatusScreen");
+				navigate('ProofRequestStatusScreen');
 			}, 200);
 
 			if (!passportData || !privateKey) {
-				console.log("No passport data or secret");
+				console.log('No passport data or secret');
 				globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
 				setTimeout(() => {
-					navigate("PassportDataNotFound");
+					navigate('PassportDataNotFound');
 				}, 3000);
 				return;
 			}
 
 			const isRegistered = await isUserRegistered(passportData, privateKey);
-			console.log("isRegistered", isRegistered);
+			console.log('isRegistered', isRegistered);
 
 			if (!isRegistered) {
 				clearTimeout(timeToNavigateToStatusScreen);
 				console.log(
-					"User is not registered, sending to ConfirmBelongingScreen",
+					'User is not registered, sending to ConfirmBelongingScreen',
 				);
-				navigate("ConfirmBelongingScreen");
+				navigate('ConfirmBelongingScreen');
 				cleanSelfApp();
 				return;
 			}
 
-			console.log("currentApp", currentApp);
+			console.log('currentApp', currentApp);
 			const status = await sendVcAndDisclosePayload(
 				privateKey,
 				passportData,
@@ -166,7 +166,7 @@ const ProveScreen: React.FC = () => {
 				status === ProofStatusEnum.SUCCESS,
 			);
 		} catch (e) {
-			console.log("Error in verification process");
+			console.log('Error in verification process');
 			globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
 		} finally {
 			isProcessing.current = false;
@@ -253,7 +253,7 @@ const ProveScreen: React.FC = () => {
 			<ExpandableBottomLayout.BottomSection
 				paddingBottom={20}
 				backgroundColor={white}
-				maxHeight={"55%"}
+				maxHeight={'55%'}
 			>
 				<ScrollView
 					ref={scrollViewRef}
@@ -282,8 +282,8 @@ const ProveScreen: React.FC = () => {
 					disabled={!selectedApp.sessionId || !hasScrolledToBottom}
 				>
 					{hasScrolledToBottom
-						? "Hold To Verify"
-						: "Please read all disclosures"}
+						? 'Hold To Verify'
+						: 'Please read all disclosures'}
 				</HeldPrimaryButton>
 			</ExpandableBottomLayout.BottomSection>
 		</ExpandableBottomLayout.Layout>
