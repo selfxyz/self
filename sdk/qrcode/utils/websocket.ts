@@ -28,7 +28,6 @@ const handleWebSocketMessage =
     selfApp: SelfApp,
     type: 'websocket' | 'deeplink',
     setProofStep: (step: number) => void,
-    setProofVerified: (proofVerified: boolean) => void,
     onSuccess: () => void
   ) =>
     async (data: any) => {
@@ -55,12 +54,11 @@ const handleWebSocketMessage =
           break;
         case 'proof_generation_failed':
           console.log('[WebSocket] Proof generation failed.');
-          setProofVerified(false);
-          setProofStep(QRcodeSteps.PROOF_VERIFIED);
+          setProofStep(QRcodeSteps.PROOF_GENERATION_FAILED);
           break;
         case 'proof_verified':
           console.log('[WebSocket] Proof verified.');
-          setProofVerified(true);
+          console.log('ws data', data);
           setProofStep(QRcodeSteps.PROOF_VERIFIED);
           onSuccess();
           break;
@@ -75,7 +73,6 @@ export function initWebSocket(
   selfApp: SelfApp,
   type: 'websocket' | 'deeplink',
   setProofStep: (step: number) => void,
-  setProofVerified: (proofVerified: boolean) => void,
   onSuccess: () => void
 ) {
   const sessionId = selfApp.sessionId;
@@ -98,7 +95,6 @@ export function initWebSocket(
       selfApp,
       type,
       setProofStep,
-      setProofVerified,
       onSuccess
     )(data);
   });

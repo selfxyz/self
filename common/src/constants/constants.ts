@@ -140,6 +140,10 @@ export enum RegisterVerifierId {
   register_sha256_sha256_sha256_ecdsa_brainpoolP256r1 = 18,
   register_sha1_sha1_sha1_ecdsa_brainpoolP224r1 = 19,
   register_sha384_sha384_sha384_rsapss_65537_48_2048 = 20,
+  register_sha1_sha1_sha1_ecdsa_secp256r1 = 21,
+  register_sha256_sha256_sha256_rsapss_65537_64_2048 = 22,
+  register_sha512_sha512_sha256_rsa_65537_4096 = 23,
+  register_sha512_sha512_sha512_ecdsa_secp521r1 = 24,
 };
 
 export enum DscVerifierId {
@@ -162,6 +166,7 @@ export enum DscVerifierId {
   dsc_sha512_rsa_65537_4096 = 16,
   dsc_sha512_rsapss_65537_64_4096 = 17,
   dsc_sha256_rsapss_3_32_4096 = 18,
+  dsc_sha1_ecdsa_secp256r1 = 19,
 };
 
 export enum SignatureAlgorithmIndex {

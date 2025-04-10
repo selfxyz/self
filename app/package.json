@@ -9,6 +9,7 @@
     "android:build-debug": "yarn reinstall && cd ./android && yarn android:build-debug-bundle && ./gradlew clean assembleDebug && cd ..",
     "android:build-debug-bundle": "yarn react-native bundle --platform android --dev false --entry-file index.js --bundle-output android/app/src/main/assets/index.android.bundle --assets-dest android/app/src/main/res/",
     "android:build-release": "yarn reinstall && cd ./android && ./gradlew clean bundleRelease && cd ..",
+    "android:build-apk": "yarn reinstall && cd ./android && ./gradlew clean assembleRelease && cd ..",
     "clean": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build android/app/build android/build .yarn/cache ios/.xcode.env.local",
     "clean:xcode-env-local": "rm -f ios/.xcode.env.local",
     "fmt": "prettier --check .",

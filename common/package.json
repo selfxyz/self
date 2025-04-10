@@ -6,7 +6,8 @@
   "scripts": {
     "format": "prettier --write .",
     "lint": "prettier --check .",
-    "test": "yarn ts-mocha tests/**/*.test.ts --exit"
+    "test": "yarn ts-mocha tests/**/*.test.ts --exit",
+    "test:scope": "yarn ts-mocha tests/scope.test.ts --exit"
   },
   "dependencies": {
     "@babel/runtime": "^7.23.4",
