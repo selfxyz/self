@@ -44,7 +44,7 @@ describe('Disclose', function () {
   const selector_dg1 = Array(88).fill('1');
   const selector_older_than = '1';
   const endpoint = 'https://example.com';
-  const scope = 'scope1';
+  const scope = 'scope';
   const fullScope = hashEndpointWithScope(endpoint, scope);
   const attestation_id = PASSPORT_ATTESTATION_ID;
 
