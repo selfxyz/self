@@ -23,7 +23,7 @@ import {
 } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus, cleanSelfApp } = useProofInfo();
+  const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } = useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -69,6 +69,7 @@ const SuccessScreen: React.FC = () => {
           <Info
             status={disclosureStatus}
             appName={appName === '' ? 'The app' : appName}
+            reason={discloseError?.reason ?? undefined}
           />
         </View>
         <PrimaryButton
@@ -109,10 +110,13 @@ function getTitle(status: ProofStatusEnum) {
 function Info({
   status,
   appName,
+  reason,
 }: {
   status: ProofStatusEnum;
   appName: string;
+  reason?: string;
 }) {
+
   if (status === 'success') {
     return (
       <Description>
@@ -126,6 +130,7 @@ function Info({
         Unable to prove your identity to{' '}
         <BodyText style={typography.strong}>{appName}</BodyText>
         {status === 'error' && '. Due to technical issues.'}
+        {status === 'failure' && reason && '. Reason: ' + reason}
       </Description>
     );
   } else {

@@ -10,6 +10,7 @@ import {
 } from '../../../../common/src/constants/constants';
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
+  DiscloseError,
   ProofStatusEnum,
   globalSetDisclosureStatus,
   globalSetRegistrationStatus,
@@ -84,7 +85,8 @@ export async function sendPayload(
           (status !== ProofStatusEnum.SUCCESS && opts.updateGlobalOnFailure)
         ) {
           if (options?.flow === 'disclosure') {
-            globalSetDisclosureStatus && globalSetDisclosureStatus(status);
+            let discloseError: DiscloseError | undefined = error_code || reason ? {error_code, reason} : undefined;
+            globalSetDisclosureStatus && globalSetDisclosureStatus(status, discloseError);
           } else {
             globalSetRegistrationStatus && globalSetRegistrationStatus(status);
           }
