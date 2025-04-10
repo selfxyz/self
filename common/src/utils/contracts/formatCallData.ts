@@ -80,3 +80,15 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]): string
     
     return output;
 }
+
+export function formatProof(proof: any, publicSignals: any) {
+  return {
+    a: proof.a,
+    b: [
+      [proof.b[0][1], proof.b[0][0]],
+      [proof.b[1][1], proof.b[1][0]],
+    ],
+    c: proof.c,
+    pubSignals: publicSignals,
+  };
+}

@@ -44,21 +44,24 @@ const SelfQRcode = ({
 }: SelfQRcodeProps) => {
   const [proofStep, setProofStep] = useState(QRcodeSteps.WAITING_FOR_MOBILE);
   const [proofVerified, setProofVerified] = useState(false);
-  const [internalSelfApp] = useState(() => ({
-    ...selfApp,
-    sessionId: uuidv4()
-  }));
+  const [sessionId, setSessionId] = useState('');
+  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
 
   useEffect(() => {
-    // Only initialize if we don't have a socket already
-    if (!socketRef.current) {
+    setSessionId(uuidv4());
+  }, []);
+
+  useEffect(() => {
+    if (sessionId && !socketRef.current) {
       console.log('[QRCode] Initializing new WebSocket connection');
       socketRef.current = initWebSocket(
         websocketUrl,
-        internalSelfApp,
+        {
+          ...selfApp,
+          sessionId: sessionId
+        },
         type,
         setProofStep,
-        setProofVerified,
         onSuccess
       );
     }
@@ -70,9 +73,11 @@ const SelfQRcode = ({
         socketRef.current = null;
       }
     };
-  }, [type, websocketUrl, internalSelfApp, onSuccess]);
+  }, [sessionId, type, websocketUrl, onSuccess, selfApp]);
 
-  const socketRef = useRef<ReturnType<typeof initWebSocket> | null>(null);
+  if (!sessionId) {
+    return null;
+  }
 
   const renderProofStatus = () => (
     <div style={containerStyle}>
@@ -85,34 +90,35 @@ const SelfQRcode = ({
             case QRcodeSteps.PROOF_GENERATION_STARTED:
             case QRcodeSteps.PROOF_GENERATED:
               return <BounceLoader loading={true} size={200} color="#94FBAB" />;
+            case QRcodeSteps.PROOF_GENERATION_FAILED:
+              return (
+                <Lottie
+                  animationData={X_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
+                  loop={false}
+                />
+              );
             case QRcodeSteps.PROOF_VERIFIED:
-              if (proofVerified) {
-                return (
-                  <Lottie
-                    animationData={CHECK_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    onComplete={() => {
-                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                    }}
-                    loop={false}
-                  />
-                );
-              } else {
-                return (
-                  <Lottie
-                    animationData={X_ANIMATION}
-                    style={{ width: 200, height: 200 }}
-                    onComplete={() => {
-                      setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
-                    }}
-                    loop={false}
-                  />
-                );
-              }
+              return (
+                <Lottie
+                  animationData={CHECK_ANIMATION}
+                  style={{ width: 200, height: 200 }}
+                  onComplete={() => {
+                    setProofStep(QRcodeSteps.WAITING_FOR_MOBILE);
+                  }}
+                  loop={false}
+                />
+              );
             default:
               return (
                 <QRCodeSVG
-                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${internalSelfApp.sessionId}` : getUniversalLink(internalSelfApp)}
+                  value={type === 'websocket' ? `${REDIRECT_URL}?sessionId=${sessionId}` : getUniversalLink({
+                    ...selfApp,
+                    sessionId: sessionId
+                  })}
                   size={size}
                   bgColor={darkMode ? '#000000' : '#ffffff'}
                   fgColor={darkMode ? '#ffffff' : '#000000'}

@@ -230,9 +230,15 @@ export async function isPassportNullified(passportData: PassportData) {
   return data.data;
 }
 
-export async function getDeployedCircuits() {
+export async function getDeployedCircuits(documentType: string) {
   console.log('Fetching deployed circuits from api');
-  const response = await fetch(`${API_URL}/deployed-circuits/`);
+  const baseUrl =
+    !documentType ||
+    typeof documentType !== 'string' ||
+    documentType === 'passport'
+      ? API_URL
+      : API_URL_STAGING;
+  const response = await fetch(`${baseUrl}/deployed-circuits/`);
   if (!response.ok) {
     throw new Error(
       `API server error: ${response.status} ${response.statusText}`,

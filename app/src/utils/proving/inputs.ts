@@ -16,6 +16,7 @@ import {
   generateCircuitInputsRegister,
   generateCircuitInputsVCandDisclose,
 } from '../../../../common/src/utils/circuits/generateInputs';
+import { hashEndpointWithScope } from '../../../../common/src/utils/scope';
 import { PassportData } from '../../../../common/src/utils/types';
 
 export function generateTeeInputsRegister(
@@ -39,8 +40,8 @@ export function generateTeeInputsVCAndDisclose(
   selfApp: SelfApp,
   passportTree: string,
 ) {
-  const { scope, userId, disclosures } = selfApp;
-
+  const { scope, userId, disclosures, endpoint } = selfApp;
+  const scope_hash = hashEndpointWithScope(endpoint, scope);
   const selector_dg1 = Array(88).fill('0');
 
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
@@ -77,7 +78,7 @@ export function generateTeeInputsVCAndDisclose(
     secret,
     PASSPORT_ATTESTATION_ID,
     passportData,
-    scope,
+    scope_hash,
     selector_dg1,
     selector_older_than,
     tree,

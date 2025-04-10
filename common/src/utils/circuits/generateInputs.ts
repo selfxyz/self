@@ -24,7 +24,6 @@ import { hash, packBytesAndPoseidon } from '../hash';
 import { formatMrz } from '../passports/format';
 import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
 import { getCurrentDateYYMMDD } from '../date';
-import { castFromScope } from './uuid';
 import { formatCountriesList } from './formatInputs';
 import { generateMerkleProof, generateSMTProof } from '../trees';
 import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
@@ -234,7 +233,7 @@ export function generateCircuitInputsVCandDisclose(
     siblings: formatInput(siblings),
     selector_dg1: formatInput(selector_dg1),
     selector_older_than: formatInput(selector_older_than),
-    scope: formatInput(castFromScope(scope)),
+    scope: formatInput(scope),
     current_date: formatInput(getCurrentDateYYMMDD()),
     majority: formatInput(majority_ascii),
     user_identifier: formatInput(castFromUUID(user_identifier)),

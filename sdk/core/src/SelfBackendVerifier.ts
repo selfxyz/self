@@ -1,18 +1,26 @@
 import { registryAbi } from './abi/IdentityRegistryImplV1';
 import { verifyAllAbi } from './abi/VerifyAll';
-import { REGISTRY_ADDRESS, VERIFYALL_ADDRESS, REGISTRY_ADDRESS_STAGING, VERIFYALL_ADDRESS_STAGING } from './constants/contractAddresses';
+import {
+  REGISTRY_ADDRESS,
+  VERIFYALL_ADDRESS,
+  REGISTRY_ADDRESS_STAGING,
+  VERIFYALL_ADDRESS_STAGING,
+} from './constants/contractAddresses';
 import { ethers } from 'ethers';
 import { PublicSignals } from 'snarkjs';
-import {
-  countryCodes,
-  getCountryCode,
-} from '../../../common/src/constants/constants';
 import type { SelfVerificationResult } from '../../../common/src/utils/selfAttestation';
-import { castToScope, castToUserIdentifier, UserIdType } from '../../../common/src/utils/circuits/uuid';
+import {
+  castToScope,
+  castToUserIdentifier,
+  UserIdType,
+} from '../../../common/src/utils/circuits/uuid';
 import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/constants/constants';
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
+import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
+import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
-type CountryCode = (typeof countryCodes)[keyof typeof countryCodes];
+const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
+const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
 
 export class SelfBackendVerifier {
   protected scope: string;
@@ -25,10 +33,10 @@ export class SelfBackendVerifier {
 
   protected nationality: {
     enabled: boolean;
-    value: CountryCode;
+    value: Country3LetterCode;
   } = {
       enabled: false,
-      value: '' as CountryCode,
+      value: '' as Country3LetterCode,
     };
   protected minimumAge: { enabled: boolean; value: string } = {
     enabled: false,
@@ -36,7 +44,7 @@ export class SelfBackendVerifier {
   };
   protected excludedCountries: {
     enabled: boolean;
-    value: CountryCode[];
+    value: Country3LetterCode[];
   } = {
       enabled: false,
       value: [],
@@ -50,30 +58,27 @@ export class SelfBackendVerifier {
   protected mockPassport: boolean;
 
   constructor(
-    rpcUrl: string,
     scope: string,
+    endpoint: string,
     user_identifier_type: UserIdType = 'uuid',
     mockPassport: boolean = false
   ) {
+    const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
     const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
     const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
-    this.scope = scope;
+    this.scope = hashEndpointWithScope(endpoint, scope);
     this.user_identifier_type = user_identifier_type;
     this.mockPassport = mockPassport;
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
-    const excludedCountryCodes = this.excludedCountries.value.map((country) =>
-      getCountryCode(country)
-    );
-    const forbiddenCountriesListPacked = packForbiddenCountriesList(excludedCountryCodes);
+    const forbiddenCountriesListPacked = packForbiddenCountriesList(this.excludedCountries.value);
 
     const isValidScope =
-      this.scope ===
-      castToScope(BigInt(publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX]));
+      this.scope === publicSignals[CIRCUIT_CONSTANTS.VC_AND_DISCLOSE_SCOPE_INDEX];
 
     const isValidAttestationId =
       this.attestationId.toString() ===
@@ -159,8 +164,7 @@ export class SelfBackendVerifier {
     let isValidNationality = true;
     if (this.nationality.enabled) {
       const nationality = result[0][revealedDataTypes.nationality];
-      const countryCode = countryCodes[nationality as keyof typeof countryCodes];
-      isValidNationality = countryCode === this.nationality.value;
+      isValidNationality = nationality === this.nationality.value;
     }
 
     const credentialSubject = {
@@ -215,12 +219,12 @@ export class SelfBackendVerifier {
     return this;
   }
 
-  setNationality(country: CountryCode): this {
+  setNationality(country: Country3LetterCode): this {
     this.nationality = { enabled: true, value: country };
     return this;
   }
 
-  excludeCountries(...countries: CountryCode[]): this {
+  excludeCountries(...countries: Country3LetterCode[]): this {
     if (countries.length > 40) {
       throw new Error('Number of excluded countries cannot exceed 40');
     }
