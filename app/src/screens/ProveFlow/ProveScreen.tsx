@@ -4,21 +4,21 @@ import React, {
   useMemo,
   useRef,
   useState,
-} from "react";
+} from 'react';
 import {
   LayoutChangeEvent,
   NativeScrollEvent,
   NativeSyntheticEvent,
   ScrollView,
   StyleSheet,
-} from "react-native";
+} from 'react-native';
 
-import { useNavigation } from "@react-navigation/native";
-import LottieView from "lottie-react-native";
-import { Image, Text, View, YStack } from "tamagui";
+import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
+import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
-import { formatEndpoint } from "../../../../common/src/utils/scope";
+import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import Disclosures from '../../components/Disclosures';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
@@ -80,7 +80,7 @@ const ProveScreen: React.FC = () => {
 			return; // Avoid unnecessary updates
 		}
 		selectedAppRef.current = selectedApp;
-		console.log("[ProveScreen] Selected app updated:", selectedApp);
+		console.log('[ProveScreen] Selected app updated:', selectedApp);
 	}, [selectedApp]);
 
 	const disclosureOptions = useMemo(() => {
@@ -95,14 +95,14 @@ const ProveScreen: React.FC = () => {
 
 		// Check if the logo is already a URL
 		if (
-			selectedApp.logoBase64.startsWith("http://") ||
-			selectedApp.logoBase64.startsWith("https://")
+			selectedApp.logoBase64.startsWith('http://') ||
+			selectedApp.logoBase64.startsWith('https://')
 		) {
 			return { uri: selectedApp.logoBase64 };
 		}
 
 		// Otherwise handle as base64 as before
-		const base64String = selectedApp.logoBase64.startsWith("data:image")
+		const base64String = selectedApp.logoBase64.startsWith('data:image')
 			? selectedApp.logoBase64
 			: `data:image/png;base64,${selectedApp.logoBase64}`;
 		return { uri: base64String };
@@ -260,7 +260,7 @@ const ProveScreen: React.FC = () => {
 			<ExpandableBottomLayout.BottomSection
 				paddingBottom={20}
 				backgroundColor={white}
-				maxHeight={"55%"}
+				maxHeight={'55%'}
 			>
 				<ScrollView
 					ref={scrollViewRef}
@@ -289,8 +289,8 @@ const ProveScreen: React.FC = () => {
 					disabled={!selectedApp.sessionId || !hasScrolledToBottom}
 				>
 					{hasScrolledToBottom
-						? "Hold To Verify"
-						: "Please read all disclosures"}
+						? 'Hold To Verify'
+						: 'Please read all disclosures'}
 				</HeldPrimaryButton>
 			</ExpandableBottomLayout.BottomSection>
 		</ExpandableBottomLayout.Layout>

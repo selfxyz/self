@@ -139,7 +139,7 @@ export const usePassportProcessingStore = create<PassportProcessingState>()(
           ? state.mockDeployedCircuits
           : state.deployedCircuits;
         if (
-          !serializedDeployedCircuits||
+          !serializedDeployedCircuits ||
           !mapping ||
           !serializedDscTree ||
           !serializedPassportTree ||
