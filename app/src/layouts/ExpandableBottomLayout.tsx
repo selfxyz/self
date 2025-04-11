@@ -88,11 +88,12 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   style,
   ...props
 }) => {
-  const { bottom } = useSafeAreaInsets();
+  const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
+  const minBottom = Math.max(safeAreaBottom, 10);
 
   const totalBottom =
-    typeof incomingBottom === 'number' ? bottom + incomingBottom : bottom;
+    typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
   return (
     <View
       {...props}
