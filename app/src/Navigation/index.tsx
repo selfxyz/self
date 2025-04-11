@@ -9,7 +9,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import DefaultNavBar from '../components/NavBar/DefaultNavBar';
+import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
 import { useApp } from '../stores/appProvider';
 import { useProofInfo } from '../stores/proofProvider';

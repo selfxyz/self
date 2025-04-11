@@ -10,7 +10,7 @@ import ActivityIcon from '../../images/icons/activity.svg';
 import SettingsIcon from '../../images/icons/settings.svg';
 import { NavBar } from './base';
 
-const HomeNavBar = (props: NativeStackHeaderProps) => {
+export const HomeNavBar = (props: NativeStackHeaderProps) => {
   const insets = useSafeAreaInsets();
   return (
     <NavBar.Container
@@ -61,5 +61,3 @@ const HomeNavBar = (props: NativeStackHeaderProps) => {
     </NavBar.Container>
   );
 };
-
-export default HomeNavBar;

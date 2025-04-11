@@ -8,7 +8,7 @@ import { white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { NavBar } from './base';
 
-export const DefaultNavBar = (props: NativeStackHeaderProps) => {
+export const ProgressNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;

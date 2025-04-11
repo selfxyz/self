@@ -14,7 +14,7 @@ import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, slate800, white } from '../../utils/colors';
+import { slate100, slate800, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 
@@ -30,9 +30,9 @@ const PassportOnboardingScreen: React.FC<
   }, []);
 
   return (
-    <ExpandableBottomLayout.Layout backgroundColor={black}>
-      <StatusBar barStyle="light-content" backgroundColor={black} />
-      <ExpandableBottomLayout.TopSection roundTop backgroundColor={black}>
+    <ExpandableBottomLayout.Layout backgroundColor={white}>
+      <StatusBar barStyle="light-content" backgroundColor={white} />
+      <ExpandableBottomLayout.TopSection backgroundColor={white}>
         <LottieView
           ref={animationRef}
           autoPlay={false}
