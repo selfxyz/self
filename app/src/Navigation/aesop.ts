@@ -15,6 +15,8 @@ const aesopScreens = {
       headerStyle: {
         backgroundColor: slate100,
       },
+      headerCurrentStep: 1,
+      headerTotalSteps: 3,
     } as NativeStackNavigationOptions,
   },
 };
