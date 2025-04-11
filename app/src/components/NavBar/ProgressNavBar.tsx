@@ -7,7 +7,7 @@ import {
 } from '@react-navigation/native-stack';
 import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
-import { slate300, white } from '../../utils/colors';
+import { cyan300, slate200, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { NavBar } from './BaseNavBar';
 
@@ -40,15 +40,6 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
     1;
 
   const segments = Array.from({ length: totalSteps }, (_, index) => index + 1);
-
-  console.log(
-    '[ProgressNavBar] currentStep:',
-    currentStep,
-    'totalSteps:',
-    totalSteps,
-    'segments:',
-    segments,
-  );
 
   return (
     <YStack>
@@ -94,15 +85,15 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
           (props.options.headerStyle as ViewStyle)?.backgroundColor || white
         }
         paddingHorizontal={20}
-        paddingBottom={16}
+        paddingBottom={20}
       >
         <XStack width="100%" height={4} gap={4}>
           {segments.map((step, index) => (
             <YStack
               key={step}
               flex={1}
-              height={4}
-              backgroundColor={step <= currentStep ? '#00A3FF' : slate300}
+              height={5}
+              backgroundColor={step <= currentStep ? cyan300 : slate200}
               borderRadius={0}
               borderTopLeftRadius={index === 0 ? 4 : 0}
               borderBottomLeftRadius={index === 0 ? 4 : 0}
