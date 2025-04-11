@@ -2,65 +2,63 @@ use_frameworks!
 require 'tmpdir'
 
 # Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
+require Pod::Executable.execute_command("node", ["-p",
+                                                 'require.resolve(
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-project 'Self.xcodeproj'
+project "Self.xcodeproj"
 
 platform :ios, '15.0' if !ENV['ACT']
 prepare_react_native_project!
 
-
-linkage = ENV['USE_FRAMEWORKS']
+linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'Self' do
-
+target "Self" do
   config = use_native_modules!
 
   use_frameworks!
-  pod 'NFCPassportReader', git: 'https://github.com/zk-passport/NFCPassportReader', commit: '9bf434c86a01ae9670422f5a7484d7405124a108'
-  pod 'QKMRZScanner'
-  pod 'lottie-ios'
-  pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
-  pod 'RNReactNativeHapticFeedback', :path => '../node_modules/react-native-haptic-feedback', :modular_headers => true
+  pod "NFCPassportReader", git: "https://github.com/zk-passport/NFCPassportReader", commit: "9bf434c86a01ae9670422f5a7484d7405124a108"
+  pod "QKMRZScanner"
+  pod "lottie-ios"
+  pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
+  pod "RNReactNativeHapticFeedback", :path => "../node_modules/react-native-haptic-feedback", :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
-
     :hermes_enabled => false,
     # :fabric_enabled => flags[:fabric_enabled],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
   )
 
-  pod 'Sentry', :modular_headers => true
-  pod 'SentryPrivate', :modular_headers => true
+  pod "Sentry", :modular_headers => true
+  pod "SentryPrivate", :modular_headers => true
 
   post_install do |installer|
     installer.generated_projects.each do |project|
       project.targets.each do |target|
-        if target.name == 'RNZipArchive'
+        if target.name == "RNZipArchive"
           target.source_build_phase.files.each do |file|
-            if file.settings && file.settings['COMPILER_FLAGS']
-              file.settings['COMPILER_FLAGS'] = ''
+            if file.settings && file.settings["COMPILER_FLAGS"]
+              file.settings["COMPILER_FLAGS"] = ""
             end
           end
         end
-          target.build_configurations.each do |config|
-              config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
-              config.build_settings['GCC_PREPROCESSOR_DEFINITIONS'] ||= ['$(inherited)', '_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION']
-          end
+        target.build_configurations.each do |config|
+          config.build_settings["IPHONEOS_DEPLOYMENT_TARGET"] = "15.0"
+          config.build_settings["GCC_PREPROCESSOR_DEFINITIONS"] ||= ["$(inherited)", "_LIBCPP_ENABLE_CXX17_REMOVED_UNARY_BINARY_FUNCTION"]
+        end
       end
     end
 
     bitcode_strip_path = `xcrun --find bitcode_strip`.chop!
+
     def strip_bitcode_from_framework(bitcode_strip_path, framework_relative_path)
       framework_path = File.join(Dir.pwd, framework_relative_path)
       command = "#{bitcode_strip_path} #{framework_path} -r -o #{framework_path}"
@@ -88,41 +86,23 @@ target 'Self' do
     )
 
     installer.pods_project.targets.each do |target|
-      if target.name == 'RNReactNativeHapticFeedback'
+      if target.name == "RNReactNativeHapticFeedback"
         target.build_configurations.each do |config|
-          config.build_settings['OTHER_LDFLAGS'] ||= ['$(inherited)']
-          config.build_settings['OTHER_LDFLAGS'] << '-framework AudioToolbox'
+          config.build_settings["OTHER_LDFLAGS"] ||= ["$(inherited)"]
+          config.build_settings["OTHER_LDFLAGS"] << "-framework AudioToolbox"
         end
       end
     end
 
     # update QKCutoutView.swift to hide OCR border
-    qkCutoutView = 'Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift'
+    qkCutoutView = "Pods/QKMRZScanner/QKMRZScanner/QKCutoutView.swift"
     if File.exist?(qkCutoutView)
-      puts "Adding build phase script to patch QKCutoutView.swift"
-      phase_name = "Patch QKCutoutView to hide border"
-      
-      # Find the QKMRZScanner target
-      qkmrz_target = installer.pods_project.targets.find { |t| t.name == 'QKMRZScanner' }
-      
-      if qkmrz_target
-        # Check if the phase already exists to avoid duplicates
-        unless qkmrz_target.shell_script_build_phases.any? { |bp| bp.name == phase_name }
-          # Add a build phase that will patch the file during build time
-          phase = qkmrz_target.new_shell_script_build_phase(phase_name)
-          phase.shell_script = <<~SCRIPT
-            QKCUTOUT_PATH="${PODS_TARGET_SRCROOT}/QKMRZScanner/QKCutoutView.swift"
-            if [ -f "$QKCUTOUT_PATH" ]; then
-              # Use sed to comment out the line with addBorderAroundCutout
-              sed -i '' 's/^\\(\\s*addBorderAroundCutout\\s*(.*)\\)/\\/\\/\\1/' "$QKCUTOUT_PATH"
-              echo "Successfully patched QKCutoutView.swift to hide border"
-            else
-              echo "Warning: Could not find QKCutoutView.swift at $QKCUTOUT_PATH"
-            fi
-          SCRIPT
-        end
-      else
-        puts "Warning: Could not find QKMRZScanner target to add build phase"
+      text = File.read(qkCutoutView)
+      # Only modify if the line is not already commented
+      if text.match?(/^\s*[^\/]*addBorderAroundCutout\s*\(\s*\)/)
+        # Comment out the line containing "addBorderAroundCutout()"
+        new_text = text.gsub(/^(\s*addBorderAroundCutout\s*\(\s*\))/, '// \1')
+        File.open(qkCutoutView, "w") { |file| file.puts new_text }
       end
     else
       puts "Warning: Could not find QKCutoutView.swift at #{qkCutoutView}"
