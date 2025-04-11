@@ -22,6 +22,7 @@ import passportScreens from './passport';
 import proveScreens from './prove';
 import settingsScreens from './settings';
 import staticScreens from './static';
+import aesopScreens from './aesop';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
@@ -38,6 +39,7 @@ const AppNavigation = createNativeStackNavigator({
     ...proveScreens,
     ...accountScreens,
     ...settingsScreens,
+    ...aesopScreens,
   },
 });
 
