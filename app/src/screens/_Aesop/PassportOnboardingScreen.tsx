@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { StatusBar, StyleSheet, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
 
@@ -10,10 +10,11 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
 import Additional from '../../components/typography/Additional';
 import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
+import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
+import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { black, slate100, white } from '../../utils/colors';
+import { black, slate100, slate800, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 
@@ -48,18 +49,30 @@ const PassportOnboardingScreen: React.FC<
         />
       </ExpandableBottomLayout.TopSection>
       <ExpandableBottomLayout.BottomSection backgroundColor={white}>
+        <TextsContainer style={styles.textContainer}>
+          <View style={styles.textIconWrapper}>
+            <Scan
+              style={styles.scanIcon}
+              height={40}
+              width={40}
+              color={slate800}
+            />
+            <View>
+              <DescriptionTitle>Open to the photograph page</DescriptionTitle>
+              <Description textBreakStrategy="balanced">
+                Lay the Passport flat and position the machine readable text in
+                the viewfinder.
+              </Description>
+            </View>
+          </View>
+        </TextsContainer>
         <TextsContainer>
-          <Title>Scan your passport</Title>
-          <Description textBreakStrategy="balanced">
-            Open your passport to the first page to scan it.
-          </Description>
           <Additional textBreakStrategy="balanced">
-            Self will not capture an image of your passport. Our system is only
-            reading the fields.
+            Self will not capture an image of your passport.
           </Additional>
         </TextsContainer>
         <ButtonsContainer>
-          <PrimaryButton onPress={handleCameraPress}>Open CameraaaaaC</PrimaryButton>
+          <PrimaryButton onPress={handleCameraPress}>Open Camera</PrimaryButton>
           <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
@@ -74,5 +87,17 @@ const styles = StyleSheet.create({
     backgroundColor: slate100,
     width: '115%',
     height: '115%',
+  },
+  textIconWrapper: {
+    width: '100%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 20,
+  },
+  scanIcon: {
+    marginRight: 10,
+  },
+  textContainer: {
+    marginBottom: 10,
   },
 });
