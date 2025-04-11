@@ -5,9 +5,9 @@ import {
   NativeStackHeaderProps,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
-import { Progress, TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
+import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
-import { slate100, slate300, white } from '../../utils/colors';
+import { slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { NavBar } from './BaseNavBar';
 
@@ -39,7 +39,16 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
     (props as ProgressNavBarProps).totalSteps ||
     1;
 
-  const progressValue = (currentStep / totalSteps) * 100;
+  const segments = Array.from({ length: totalSteps }, (_, index) => index + 1);
+
+  console.log(
+    '[ProgressNavBar] currentStep:',
+    currentStep,
+    'totalSteps:',
+    totalSteps,
+    'segments:',
+    segments,
+  );
 
   return (
     <YStack>
@@ -56,44 +65,53 @@ export const ProgressNavBar = (props: NativeStackHeaderProps) => {
             : 'dark-content'
         }
       >
-        <XStack width="100%" alignItems="center" justifyContent="space-between">
-          <NavBar.LeftAction
-            component={
-              options.headerBackTitle || (canGoBack() ? 'back' : undefined)
-            }
-            onPress={() => {
-              buttonTap();
-              goBack();
-            }}
-            {...(options.headerTitleStyle as ViewStyle)}
-          />
+        <XStack width="100%" alignItems="center">
+          <XStack width={50} justifyContent="flex-start">
+            <NavBar.LeftAction
+              component={
+                options.headerBackTitle || (canGoBack() ? 'back' : undefined)
+              }
+              onPress={() => {
+                buttonTap();
+                goBack();
+              }}
+              {...(options.headerTitleStyle as ViewStyle)}
+            />
+          </XStack>
 
-          <XStack flex={1} justifyContent="center">
+          <XStack flex={1} justifyContent="center" alignItems="center">
             <NavBar.Title {...(options.headerTitleStyle as ViewStyle)}>
               {props.options.title}
             </NavBar.Title>
           </XStack>
 
-          <XStack width={30} />
+          <XStack width={50} />
         </XStack>
       </NavBar.Container>
 
       <YStack
-        backgroundColor={slate100}
+        backgroundColor={
+          (props.options.headerStyle as ViewStyle)?.backgroundColor || white
+        }
         paddingHorizontal={20}
         paddingBottom={16}
       >
-        <Progress
-          size="$2"
-          value={progressValue}
-          backgroundColor={slate300}
-          borderRadius={4}
-          overflow="hidden"
-          width="100%"
-          height={4}
-        >
-          <Progress.Indicator backgroundColor="#00A3FF" animation="bouncy" />
-        </Progress>
+        <XStack width="100%" height={4} gap={4}>
+          {segments.map((step, index) => (
+            <YStack
+              key={step}
+              flex={1}
+              height={4}
+              backgroundColor={step <= currentStep ? '#00A3FF' : slate300}
+              borderRadius={0}
+              borderTopLeftRadius={index === 0 ? 4 : 0}
+              borderBottomLeftRadius={index === 0 ? 4 : 0}
+              borderTopRightRadius={index === segments.length - 1 ? 4 : 0}
+              borderBottomRightRadius={index === segments.length - 1 ? 4 : 0}
+              overflow="hidden"
+            />
+          ))}
+        </XStack>
       </YStack>
     </YStack>
   );
