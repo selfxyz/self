@@ -6,8 +6,8 @@ import { Button } from 'tamagui';
 
 import { black, neutral400, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import ActivityIcon from '../images/icons/activity.svg';
-import SettingsIcon from '../images/icons/settings.svg';
+import ActivityIcon from '../../images/icons/activity.svg';
+import SettingsIcon from '../../images/icons/settings.svg';
 import { NavBar } from './base';
 
 const HomeNavBar = (props: NativeStackHeaderProps) => {
