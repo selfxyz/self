@@ -14,7 +14,7 @@ import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { slate100, slate800, white } from '../../utils/colors';
+import { black, slate100, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
 
@@ -55,7 +55,7 @@ const PassportOnboardingScreen: React.FC<
               style={styles.scanIcon}
               height={40}
               width={40}
-              color={slate800}
+              color={black}
             />
             <View>
               <DescriptionTitle>Open to the photograph page</DescriptionTitle>

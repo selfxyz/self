@@ -1,8 +1,9 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import { shouldUseAesopRedesign } from '../hooks/useAesopRedesign';
-import PassportOnboardingScreen from '../screens/_Aesop/PassportOnboardingScreen';
 import { ProgressNavBar } from '../components/NavBar';
+import { shouldShowAesopRedesign } from '../hooks/useAesopRedesign';
+import PassportOnboardingScreen from '../screens/_Aesop/PassportOnboardingScreen';
+import { slate100 } from '../utils/colors';
 
 const aesopScreens = {
   PassportOnboarding: {
@@ -11,8 +12,11 @@ const aesopScreens = {
       animation: 'slide_from_bottom',
       header: ProgressNavBar,
       title: 'Scan your passport',
+      headerStyle: {
+        backgroundColor: slate100,
+      },
     } as NativeStackNavigationOptions,
   },
 };
 
-export default shouldUseAesopRedesign() ? aesopScreens : {};
+export default shouldShowAesopRedesign() ? aesopScreens : {};

@@ -6,7 +6,7 @@ import { TextStyle, ViewStyle } from 'tamagui';
 
 import { white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import { NavBar } from './base';
+import { NavBar } from './BaseNavBar';
 
 export const ProgressNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
