@@ -18,6 +18,7 @@ import { CIRCUIT_CONSTANTS, revealedDataTypes } from '../../../common/src/consta
 import { packForbiddenCountriesList } from '../../../common/src/utils/contracts/formatCallData';
 import { Country3LetterCode, commonNames } from '../../../common/src/constants/countries';
 import { hashEndpointWithScope } from '../../../common/src/utils/scope';
+import { SelfAppVerificationConfig } from '../../../common/src/utils/appType';
 
 const CELO_MAINNET_RPC_URL = "https://forno.celo.org";
 const CELO_TESTNET_RPC_URL = "https://alfajores-forno.celo-testnet.org";
@@ -57,21 +58,32 @@ export class SelfBackendVerifier {
   protected verifyAllContract: ethers.Contract;
   protected mockPassport: boolean;
 
-  constructor(
-    scope: string,
-    endpoint: string,
-    user_identifier_type: UserIdType = 'uuid',
-    mockPassport: boolean = false
-  ) {
-    const rpcUrl = mockPassport ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
+  constructor(config: SelfAppVerificationConfig) {
+    const rpcUrl = config.devMode ? CELO_TESTNET_RPC_URL : CELO_MAINNET_RPC_URL;
     const provider = new ethers.JsonRpcProvider(rpcUrl);
-    const registryAddress = mockPassport ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
-    const verifyAllAddress = mockPassport ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
+    const registryAddress = config.devMode ? REGISTRY_ADDRESS_STAGING : REGISTRY_ADDRESS;
+    const verifyAllAddress = config.devMode ? VERIFYALL_ADDRESS_STAGING : VERIFYALL_ADDRESS;
     this.registryContract = new ethers.Contract(registryAddress, registryAbi, provider);
     this.verifyAllContract = new ethers.Contract(verifyAllAddress, verifyAllAbi, provider);
-    this.scope = hashEndpointWithScope(endpoint, scope);
-    this.user_identifier_type = user_identifier_type;
-    this.mockPassport = mockPassport;
+    this.scope = hashEndpointWithScope(config.endpoint, config.scope);
+    this.user_identifier_type = config.userIdType;
+    this.mockPassport = config.devMode;
+    
+    if (config.disclosureConfig) {
+      this.minimumAge = {
+        enabled: config.disclosureConfig.minimumAge !== undefined,
+        value: config.disclosureConfig.minimumAge?.toString() || '18'
+      };
+
+      this.excludedCountries = {
+        enabled: config.disclosureConfig.excludedCountries !== undefined && config.disclosureConfig.excludedCountries.length > 0,
+        value: config.disclosureConfig.excludedCountries || []
+      };
+
+      this.passportNoOfac = config.disclosureConfig.passportNoOfac || false;
+      this.nameAndDobOfac = config.disclosureConfig.nameAndDobOfac || false;
+      this.nameAndYobOfac = config.disclosureConfig.nameAndYobOfac || false;
+    }
   }
 
   public async verify(proof: any, publicSignals: PublicSignals): Promise<SelfVerificationResult> {
@@ -208,42 +220,9 @@ export class SelfBackendVerifier {
     return attestation;
   }
 
-  setMinimumAge(age: number): this {
-    if (age <= 0) {
-      throw new Error('Minimum age must be positive');
-    }
-    if (age > 100) {
-      throw new Error('Minimum age must be at most 100 years old');
-    }
-    this.minimumAge = { enabled: true, value: age.toString() };
-    return this;
-  }
-
   setNationality(country: Country3LetterCode): this {
     this.nationality = { enabled: true, value: country };
     return this;
   }
 
-  excludeCountries(...countries: Country3LetterCode[]): this {
-    if (countries.length > 40) {
-      throw new Error('Number of excluded countries cannot exceed 40');
-    }
-    this.excludedCountries = { enabled: true, value: countries };
-    return this;
-  }
-
-  enablePassportNoOfacCheck(): this {
-    this.passportNoOfac = true;
-    return this;
-  }
-
-  enableNameAndDobOfacCheck(): this {
-    this.nameAndDobOfac = true;
-    return this;
-  }
-
-  enableNameAndYobOfacCheck(): this {
-    this.nameAndYobOfac = true;
-    return this;
-  }
 }

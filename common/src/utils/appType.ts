@@ -7,31 +7,38 @@ import { v4 } from 'uuid';
 import { REDIRECT_URL } from "../constants/constants";
 import { Country3LetterCode } from "../constants/countries";
 import { formatEndpoint } from "./scope";
+
 export interface SelfApp {
   appName: string;
   logoBase64: string;
+  header: string;
+  sessionId: string;
+  verificationConfig: SelfAppVerificationConfig;
+}
+
+export interface SelfAppVerificationConfig {
   endpointType: EndpointType;
   endpoint: string;
-  header: string;
   scope: string;
-  sessionId: string;
-  userId: string;
   userIdType: UserIdType;
+  userId?: string;
   devMode: boolean;
-  disclosures: SelfAppDisclosureConfig;
+  disclosureConfig: SelfAppDisclosureConfig;
 }
 
 export interface SelfAppDisclosureConfig {
   // dg1
-  issuing_state?: boolean;
+  issuingState?: boolean;
   name?: boolean;
-  passport_number?: boolean;
+  passportNumber?: boolean;
   nationality?: boolean;
-  date_of_birth?: boolean;
+  dateOfBirth?: boolean;
   gender?: boolean;
-  expiry_date?: boolean;
+  expiryDate?: boolean;
   // custom checks
-  ofac?: boolean;
+  passportNoOfac?: boolean;
+  nameAndDobOfac?: boolean;
+  nameAndYobOfac?: boolean;
   excludedCountries?: Country3LetterCode[];
   minimumAge?: number;
 }
@@ -43,53 +50,53 @@ export class SelfAppBuilder {
     if (!config.appName) {
       throw new Error('appName is required');
     }
-    if (!config.scope) {
+    if (!config.verificationConfig.scope) {
       throw new Error('scope is required');
     }
-    if (!config.endpoint) {
+    if (!config.verificationConfig.endpoint) {
       throw new Error('endpoint is required');
     }
     // Check if scope and endpoint contain only ASCII characters
-    if (!/^[\x00-\x7F]*$/.test(config.scope)) {
+    if (!/^[\x00-\x7F]*$/.test(config.verificationConfig.scope)) {
       throw new Error("Scope must contain only ASCII characters (0-127)");
     }
-    if (!/^[\x00-\x7F]*$/.test(config.endpoint)) {
+    if (!/^[\x00-\x7F]*$/.test(config.verificationConfig.endpoint)) {
       throw new Error("Endpoint must contain only ASCII characters (0-127)");
     }
-    if (config.scope.length > 31) {
+    if (config.verificationConfig.scope.length > 31) {
       throw new Error("Scope must be less than 31 characters");
     }
-    const formattedEndpoint = formatEndpoint(config.endpoint);
+    const formattedEndpoint = formatEndpoint(config.verificationConfig.endpoint);
     if (formattedEndpoint.length > 496) {
       throw new Error(`Endpoint must be less than 496 characters, current endpoint: ${formattedEndpoint}, length: ${formattedEndpoint.length}`);
     }
-    if (!config.userId) {
+    if (!config.verificationConfig.userId) {
       throw new Error('userId is required');
     }
-    if (config.endpointType === 'https' && !config.endpoint.startsWith('https://')) {
+    if (config.verificationConfig.endpointType === 'https' && !config.verificationConfig.endpoint.startsWith('https://')) {
       throw new Error('endpoint must start with https://');
     }
-    if (config.endpointType === 'celo' && !config.endpoint.startsWith('0x')) {
+    if (config.verificationConfig.endpointType === 'celo' && !config.verificationConfig.endpoint.startsWith('0x')) {
       throw new Error('endpoint must be a valid address');
     }
-    if (config.userIdType === 'hex') {
-      if (!config.userId.startsWith('0x')) {
+    if (config.verificationConfig.userIdType === 'hex') {
+      if (!config.verificationConfig.userId.startsWith('0x')) {
         throw new Error('userId as hex must start with 0x');
       }
-      config.userId = config.userId.slice(2);
+      config.verificationConfig.userId = config.verificationConfig.userId.slice(2);
     }
-    if (!validateUserId(config.userId, config.userIdType ?? "uuid")) {
+    if (!validateUserId(config.verificationConfig.userId, config.verificationConfig.userIdType ?? "uuid")) {
       throw new Error('userId must be a valid UUID or address');
     }
 
     this.config = {
       sessionId: v4(),
-      userIdType: 'uuid',
-      devMode: false,
-      endpointType: 'https',
-      header: "",
-      logoBase64: "",
-      disclosures: {},
+      verificationConfig: {
+        userIdType: 'uuid',
+        devMode: false,
+        endpointType: 'https',
+        ...config.verificationConfig,
+      },
       ...config,
     } as SelfApp;
   }

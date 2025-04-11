@@ -16,18 +16,26 @@ export async function POST(request: Request) {
         }
 
         const configuredVerifier = new SelfBackendVerifier(
-            'https://forno.celo.org',
-            "self-workshop",
-            'uuid',
-            false
+            {
+                scope: "self-workshop",
+                endpoint: "https://1770-133-3-201-47.ngrok-free.app/api/verify",
+                endpointType: "https",
+                userIdType: "uuid",
+                devMode: true,
+                disclosureConfig: {
+                  dateOfBirth: true,
+                  nationality: true,
+                  excludedCountries: [
+                      countries.RUSSIA,
+                      countries.CHINA,
+                      countries.NORTH_KOREA,
+                      countries.IRAN
+                  ],
+                  minimumAge: 18,
+                  passportNoOfac: true,
+                }
+            }
         )
-            .setMinimumAge(18)
-            .excludeCountries(
-                countries.RUSSIA,
-                countries.CHINA,
-                countries.NORTH_KOREA,
-                countries.IRAN
-            )
             .setNationality(countries.JAPAN);
 
         const result = await configuredVerifier.verify(proof, publicSignals);
