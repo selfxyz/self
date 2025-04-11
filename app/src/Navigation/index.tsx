@@ -9,7 +9,7 @@ import {
 } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
-import DefaultNavBar from '../components/DefaultNavBar';
+import DefaultNavBar from '../components/NavBar/DefaultNavBar';
 import AppLayout from '../layouts/AppLayout';
 import { useApp } from '../stores/appProvider';
 import { useProofInfo } from '../stores/proofProvider';
@@ -17,12 +17,12 @@ import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/qrCodeNew';
 import accountScreens from './account';
+import aesopScreens from './aesop';
 import homeScreens from './home';
 import passportScreens from './passport';
 import proveScreens from './prove';
 import settingsScreens from './settings';
 import staticScreens from './static';
-import aesopScreens from './aesop';
 
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
