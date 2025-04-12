@@ -80,7 +80,7 @@ const CloudBackupScreen: React.FC<CloudBackupScreenProps> = ({
     await upload(secret);
     toggleCloudBackupEnabled();
     setPending(false);
-  }, [cloudBackupEnabled, upload, toggleCloudBackupEnabled, secret]);
+  }, [cloudBackupEnabled, upload, toggleCloudBackupEnabled, secret, status]);
 
   const disableCloudBackups = useCallback(() => {
     confirmTap();
