@@ -62,7 +62,7 @@ interface IPassportContext {
   setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
   setSecret: () => Promise<Mnemonic | null>;
-  restorefromSecret: (mnemonic: string) => Promise<Mnemonic | null>;
+  restorefromSecret: (mnemonic: string) => Promise<string>;
   unsafe_clearSecrets: () => Promise<void>;
 }
 
@@ -74,7 +74,7 @@ const PassportContext = createContext<IPassportContext>({
   setPassportData: () => Promise.resolve(),
   clearPassportData: () => Promise.resolve(),
   setSecret: () => Promise.resolve(null),
-  restorefromSecret: () => Promise.resolve(null),
+  restorefromSecret: () => Promise.resolve(''),
   unsafe_clearSecrets: () => Promise.resolve(),
 });
 
@@ -160,8 +160,11 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
 
   const restorefromSecret = useCallback(async (mnemonic: string) => {
     const data = await restoreFromMnemonic(mnemonic);
+    if (!data) {
+      throw new Error('Invalid mnemonic');
+    }
     setSecretCache(data);
-    return data;
+    return ethers.HDNodeWallet.fromPhrase(data.phrase).privateKey;
   }, []);
 
   const state: IPassportContext = useMemo(
