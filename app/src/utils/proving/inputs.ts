@@ -24,6 +24,7 @@ import {
   getDSCTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
+import { useProtocolStore } from '../../stores/protocolStore';
 
 export async function generateTeeInputsRegister(
   secret: string,
@@ -45,9 +46,8 @@ export async function generateTeeInputsRegister(
 
 export async function generateTeeInputsDsc(
   passportData: PassportData,
-  endpointType: EndpointType,
 ) {
-  const serialized_csca_tree = await getCSCATree(endpointType);
+  const serialized_csca_tree = useProtocolStore.getState().passport.csca_tree;
   const inputs = generateCircuitInputsDSC(
     passportData.dsc,
     serialized_csca_tree,

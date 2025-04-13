@@ -10,6 +10,7 @@ import React, {
 import { SelfApp } from '../../../common/src/utils/appType';
 
 export enum ProofStatusEnum {
+  IDLE = 'idle',
   PENDING = 'pending',
   SUCCESS = 'success',
   FAILURE = 'failure',

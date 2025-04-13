@@ -10,8 +10,9 @@ import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
 import { isUserRegistered } from '../utils/proving/payload';
+import { useProtocolStore } from '../stores/protocolStore';
 
-const SplashScreen: React.FC = ({}) => {
+const SplashScreen: React.FC = ({ }) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
@@ -35,7 +36,7 @@ const SplashScreen: React.FC = ({}) => {
       }
 
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
-
+      await useProtocolStore.getState().passport.fetch_all('stg');
       const isRegistered = await isUserRegistered(passportData, secret);
       console.log('User is registered:', isRegistered);
       if (isRegistered) {

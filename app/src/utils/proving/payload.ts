@@ -3,7 +3,6 @@ import { poseidon2 } from 'poseidon-lite';
 
 import {
   API_URL,
-  API_URL_STAGING,
   PASSPORT_ATTESTATION_ID,
   WS_RPC_URL_VC_AND_DISCLOSE,
 } from '../../../../common/src/constants/constants';
@@ -14,8 +13,6 @@ import {
   generateNullifier,
 } from '../../../../common/src/utils/passports/passport';
 import {
-  getCommitmentTree,
-  getDSCTree,
   getLeafDscTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
@@ -26,6 +23,7 @@ import {
   generateTeeInputsVCAndDisclose,
 } from './inputs';
 import { sendPayload } from './tee';
+import { useProtocolStore } from '../../stores/protocolStore';
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -52,7 +50,7 @@ export async function checkPassportSupported(
     passportData,
     'register',
   );
-  const deployedCircuits = await getDeployedCircuits(passportData.documentType);
+  const deployedCircuits = useProtocolStore.getState().passport.deployed_circuits;
   console.log('circuitNameRegister', circuitNameRegister);
   if (
     !circuitNameRegister ||
@@ -75,7 +73,6 @@ export async function checkPassportSupported(
 export async function sendRegisterPayload(
   passportData: PassportData,
   secret: string,
-  circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
@@ -89,7 +86,7 @@ export async function sendRegisterPayload(
     circuitName,
     endpointType,
     'https://self.xyz',
-    (circuitDNSMapping as any).REGISTER[circuitName],
+    (useProtocolStore.getState().passport.circuits_dns_mapping as any).REGISTER[circuitName],
     undefined,
     {
       updateGlobalOnSuccess: true,
@@ -99,14 +96,12 @@ export async function sendRegisterPayload(
   );
 }
 
-async function checkIdPassportDscIsInTree(
+export async function checkIdPassportDscIsInTree(
   passportData: PassportData,
-  dscTree: string,
-  circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
 ): Promise<boolean> {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
-  const tree = LeanIMT.import(hashFunction, dscTree);
+  const tree = LeanIMT.import(hashFunction, useProtocolStore.getState().passport.dsc_tree);
   const leaf = getLeafDscTree(
     passportData.dsc_parsed!,
     passportData.csca_parsed!,
@@ -117,7 +112,7 @@ async function checkIdPassportDscIsInTree(
     console.log('DSC is not found in the tree, sending DSC payload');
     const dscStatus = await sendDscPayload(
       passportData,
-      circuitDNSMapping,
+      useProtocolStore.getState().passport.circuits_dns_mapping,
       endpointType,
     );
     if (dscStatus.status !== ProofStatusEnum.SUCCESS) {
@@ -125,12 +120,6 @@ async function checkIdPassportDscIsInTree(
       return false;
     }
   } else {
-    // console.log('DSC i found in the tree, sending DSC payload for debug');
-    // const dscStatus = await sendDscPayload(passportData);
-    // if (dscStatus !== ProofStatusEnum.SUCCESS) {
-    //   console.log('DSC proof failed');
-    //   return false;
-    // }
     console.log('DSC is found in the tree, skipping DSC payload');
   }
   return true;
@@ -150,8 +139,7 @@ export async function sendDscPayload(
   //   return false;
   // }
   const { inputs, circuitName } = await generateTeeInputsDsc(
-    passportData,
-    endpointType,
+    passportData
   );
 
   const dscStatus = await sendPayload(
@@ -210,7 +198,7 @@ export async function isUserRegistered(
     PASSPORT_ATTESTATION_ID,
     passportData,
   );
-  const serializedTree = await getCommitmentTree(passportData.documentType);
+  const serializedTree = useProtocolStore.getState().passport.commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serializedTree);
   const index = tree.indexOf(BigInt(commitment));
   return index !== -1;
@@ -236,20 +224,12 @@ export async function registerPassport(
   passportData: PassportData,
   secret: string,
 ) {
-  // First get the mapping, then use it for the check
   const endpointType =
     passportData.documentType && passportData.documentType === 'mock_passport'
       ? 'staging_celo'
       : 'celo';
-  const [circuitDNSMapping, dscTree] = await Promise.all([
-    getCircuitDNSMapping(endpointType),
-    getDSCTree(endpointType),
-  ]);
-  console.log('circuitDNSMapping', circuitDNSMapping);
   const dscOk = await checkIdPassportDscIsInTree(
     passportData,
-    dscTree,
-    circuitDNSMapping,
     endpointType,
   );
   if (!dscOk) {
@@ -258,73 +238,72 @@ export async function registerPassport(
   await sendRegisterPayload(
     passportData,
     secret,
-    circuitDNSMapping,
     endpointType,
   );
 }
 
-export async function getDeployedCircuits(documentType: string) {
-  console.log('Fetching deployed circuits from api');
-  const baseUrl =
-    !documentType ||
-    typeof documentType !== 'string' ||
-    documentType === 'passport'
-      ? API_URL
-      : API_URL_STAGING;
-  const response = await fetch(`${baseUrl}/deployed-circuits/`);
-  if (!response.ok) {
-    throw new Error(
-      `API server error: ${response.status} ${response.statusText}`,
-    );
-  }
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('text/html')) {
-    throw new Error(
-      'API returned HTML instead of JSON - server may be down or misconfigured',
-    );
-  }
-  try {
-    const data = await response.json();
+// export async function getDeployedCircuits(documentType: string) {
+//   console.log('Fetching deployed circuits from api');
+//   const baseUrl =
+//     !documentType ||
+//     typeof documentType !== 'string' ||
+//     documentType === 'passport'
+//       ? API_URL
+//       : API_URL_STAGING;
+//   const response = await fetch(`${baseUrl}/deployed-circuits/`);
+//   if (!response.ok) {
+//     throw new Error(
+//       `API server error: ${response.status} ${response.statusText}`,
+//     );
+//   }
+//   const contentType = response.headers.get('content-type');
+//   if (contentType && contentType.includes('text/html')) {
+//     throw new Error(
+//       'API returned HTML instead of JSON - server may be down or misconfigured',
+//     );
+//   }
+//   try {
+//     const data = await response.json();
 
-    if (!data.data || !data.data.REGISTER || !data.data.DSC) {
-      throw new Error(
-        'Invalid data structure received from API: missing REGISTER or DSC fields',
-      );
-    }
-    return data.data;
-  } catch (error) {
-    throw new Error('API returned invalid JSON response - server may be down');
-  }
-}
+//     if (!data.data || !data.data.REGISTER || !data.data.DSC) {
+//       throw new Error(
+//         'Invalid data structure received from API: missing REGISTER or DSC fields',
+//       );
+//     }
+//     return data.data;
+//   } catch (error) {
+//     throw new Error('API returned invalid JSON response - server may be down');
+//   }
+// }
 
-export async function getCircuitDNSMapping(endpointType?: EndpointType) {
-  console.log('Fetching deployed circuits from api');
-  const baseUrl =
-    endpointType === 'celo' || endpointType === 'https'
-      ? API_URL
-      : API_URL_STAGING;
-  const response = await fetch(`${baseUrl}/circuit-dns-mapping/`);
+// export async function getCircuitDNSMapping(endpointType?: EndpointType) {
+//   console.log('Fetching deployed circuits from api');
+//   const baseUrl =
+//     endpointType === 'celo' || endpointType === 'https'
+//       ? API_URL
+//       : API_URL_STAGING;
+//   const response = await fetch(`${baseUrl}/circuit-dns-mapping/`);
 
-  if (!response.ok) {
-    throw new Error(
-      `API server error: ${response.status} ${response.statusText}`,
-    );
-  }
-  const contentType = response.headers.get('content-type');
-  if (contentType && contentType.includes('text/html')) {
-    throw new Error(
-      'API returned HTML instead of JSON - server may be down or misconfigured',
-    );
-  }
-  try {
-    const data = await response.json();
-    if (!data.data) {
-      throw new Error(
-        'Invalid data structure received from API: missing data field',
-      );
-    }
-    return data.data;
-  } catch (error) {
-    throw new Error('API returned invalid JSON response - server may be down');
-  }
-}
+//   if (!response.ok) {
+//     throw new Error(
+//       `API server error: ${response.status} ${response.statusText}`,
+//     );
+//   }
+//   const contentType = response.headers.get('content-type');
+//   if (contentType && contentType.includes('text/html')) {
+//     throw new Error(
+//       'API returned HTML instead of JSON - server may be down or misconfigured',
+//     );
+//   }
+//   try {
+//     const data = await response.json();
+//     if (!data.data) {
+//       throw new Error(
+//         'Invalid data structure received from API: missing data field',
+//       );
+//     }
+//     return data.data;
+//   } catch (error) {
+//     throw new Error('API returned invalid JSON response - server may be down');
+//   }
+// }

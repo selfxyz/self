@@ -1,0 +1,115 @@
+import { WS_DB_RELAYER_STAGING } from '../../../../common/src/constants/constants';
+
+import { WS_DB_RELAYER } from '../../../../common/src/constants/constants';
+import { EndpointType } from '../../../../common/src/utils/appType';
+import { initElliptic } from '../../../../common/src/utils/certificate_parsing/elliptic';
+import forge from 'node-forge';
+import { PassportData } from '../../../../common/src/utils/types';
+import { poseidon2 } from 'poseidon-lite';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { getLeafDscTree } from '../../../../common/src/utils/trees';
+import { useProtocolStore } from '../../stores/protocolStore';
+const elliptic = initElliptic();
+const { ec: EC } = elliptic;
+export const ec = new EC('p256');
+export const clientKey = ec.genKeyPair(); // Use a consistent client keypair for the session
+export const clientPublicKeyHex =
+    clientKey.getPublic().getX().toString('hex').padStart(64, '0') +
+    clientKey.getPublic().getY().toString('hex').padStart(64, '0');
+
+export function encryptAES256GCM(plaintext: string, key: forge.util.ByteStringBuffer) {
+    const iv = forge.random.getBytesSync(12);
+    const cipher = forge.cipher.createCipher('AES-GCM', key);
+    cipher.start({ iv: iv, tagLength: 128 });
+    cipher.update(forge.util.createBuffer(plaintext, 'utf8'));
+    cipher.finish();
+    const encrypted = cipher.output.getBytes();
+    const authTag = cipher.mode.tag.getBytes();
+    return {
+        nonce: Array.from(Buffer.from(iv, 'binary')),
+        cipher_text: Array.from(Buffer.from(encrypted, 'binary')),
+        auth_tag: Array.from(Buffer.from(authTag, 'binary')),
+    };
+}
+
+export type TEEPayloadDisclose = {
+    type: 'disclose';
+    endpointType: string;
+    endpoint: string;
+    onchain: boolean;
+    circuit: {
+        name: string;
+        inputs: string;
+    };
+};
+
+export type TEEPayload = {
+    type: 'register' | 'dsc';
+    onchain: true;
+    endpointType: string;
+    circuit: {
+        name: string;
+        inputs: string;
+    };
+};
+
+export function getPayload(
+    inputs: any,
+    circuitType: 'register' | 'dsc' | 'disclose',
+    circuitName: string,
+    endpointType: EndpointType,
+    endpoint: string,
+) {
+    if (circuitType === 'disclose') {
+        const payload: TEEPayloadDisclose = {
+            type: 'disclose',
+            endpointType: endpointType,
+            endpoint: endpoint,
+            onchain: endpointType === 'celo' ? true : false,
+            circuit: {
+                name: circuitName,
+                inputs: JSON.stringify(inputs),
+            },
+        };
+        return payload;
+    } else {
+        // Covers 'register' and 'dsc'
+        const payload: TEEPayload = {
+            type: circuitType as 'register' | 'dsc',
+            onchain: true,
+            endpointType: endpointType,
+            circuit: {
+                name: circuitName,
+                inputs: JSON.stringify(inputs),
+            },
+        };
+        return payload;
+    }
+}
+
+export function getWSDbRelayerUrl(endpointType: EndpointType) {
+    return endpointType === 'celo' || endpointType === 'https'
+        ? WS_DB_RELAYER
+        : WS_DB_RELAYER_STAGING;
+}
+
+export async function checkIfPassportDscIsInTree(
+    passportData: PassportData,
+): Promise<boolean> {
+    const hashFunction = (a: any, b: any) => poseidon2([a, b]);
+    const tree = LeanIMT.import(hashFunction, useProtocolStore.getState().passport.dsc_tree);
+    const leaf = getLeafDscTree(
+        passportData.dsc_parsed!,
+        passportData.csca_parsed!,
+    );
+    console.log('DSC leaf:', leaf);
+    const index = tree.indexOf(BigInt(leaf));
+    if (index === -1) {
+        console.log('DSC not found in the tree');
+        return false;
+    } else {
+        console.log('DSC found in the tree');
+        return true;
+
+    }
+}

@@ -11968,6 +11968,7 @@ __metadata:
     tamagui: "npm:1.110.0"
     typescript: "npm:5.0.4"
     uuid: "npm:^11.0.5"
+    xstate: "npm:^5.19.2"
     zustand: "npm:^4.5.2"
   languageName: unknown
   linkType: soft
@@ -14938,6 +14939,13 @@ __metadata:
   version: 2.1.2
   resolution: "xmlhttprequest-ssl@npm:2.1.2"
   checksum: 10c0/70d60869323e823f473a238f78fd108437edbc3690ecd5859c39c83217080090a18899b272e515769c0d1f518cc64cbed6b6995b23fdd7ba13b297d530b6e631
+  languageName: node
+  linkType: hard
+
+"xstate@npm:^5.19.2":
+  version: 5.19.2
+  resolution: "xstate@npm:5.19.2"
+  checksum: 10c0/0ff24a88af9fbb8182240b1c0929b3aa46f5777e91e6446939016fa7128afffe2421619613720e6266cc2436a91631e471ee0572215e127a5bdf841891a2b057
   languageName: node
   linkType: hard
 

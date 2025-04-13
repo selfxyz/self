@@ -1,117 +1,31 @@
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
+
+import { StaticScreenProps } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
-import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { usePassport } from '../../stores/passportDataProvider';
-import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
-import analytics from '../../utils/analytics';
-import {
-  checkPassportSupported,
-  isPassportNullified,
-  isUserRegistered,
-  registerPassport,
-} from '../../utils/proving/payload';
-
-const { trackEvent } = analytics();
+import { useProvingStore } from '../../utils/proving/proving_state';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
-  const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
-  const goToErrorScreen = useHapticNavigation('Launch');
-  const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
-  const navigation = useNavigation();
+const LoadingScreen: React.FC<LoadingScreenProps> = ({ }) => {
 
-  const goToSuccessScreenWithDelay = () => {
-    setTimeout(() => {
-      goToSuccessScreen();
-    }, 3000);
-  };
-  const goToErrorScreenWithDelay = () => {
-    setTimeout(() => {
-      goToErrorScreen();
-    }, 3000);
-  };
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const { registrationStatus, resetProof } = useProofInfo();
-  const { getPassportDataAndSecret, clearPassportData } = usePassport();
+  const provingStore = useProvingStore();
 
+  // Monitor the state of the proving machine
   useEffect(() => {
-    // TODO this makes sense if reset proof was only about passport registration
-    resetProof();
-  }, []);
+    console.log('Current proving state:', provingStore.currentState);
 
-  useEffect(() => {
-    console.log('registrationStatus', registrationStatus);
-    if (registrationStatus === ProofStatusEnum.SUCCESS) {
+    if (provingStore.currentState === 'completed') {
       setAnimationSource(successAnimation);
-      goToSuccessScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
-    } else if (
-      registrationStatus === ProofStatusEnum.FAILURE ||
-      registrationStatus === ProofStatusEnum.ERROR
-    ) {
+    } else if (provingStore.currentState === 'error') {
       setAnimationSource(failAnimation);
-      goToErrorScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
     }
-  }, [registrationStatus]);
-
-  const processPayloadCalled = useRef(false);
-
-  useEffect(() => {
-    if (!processPayloadCalled.current) {
-      processPayloadCalled.current = true;
-      const processPayload = async () => {
-        try {
-          const passportDataAndSecret = await getPassportDataAndSecret();
-          if (!passportDataAndSecret) {
-            return;
-          }
-          const { passportData, secret } = passportDataAndSecret.data;
-          const isSupported = await checkPassportSupported(passportData);
-          if (isSupported.status !== 'passport_supported') {
-            trackEvent('Passport not supported', {
-              reason: isSupported.status,
-              details: isSupported.details,
-            });
-            goToUnsupportedScreen();
-            console.log('Passport not supported');
-            clearPassportData();
-            return;
-          }
-          const isRegistered = await isUserRegistered(passportData, secret);
-          console.log('User is registered:', isRegistered);
-          if (isRegistered) {
-            console.log(
-              'Passport is registered already. Skipping to AccountVerifiedSuccess',
-            );
-            navigation.navigate('AccountVerifiedSuccess');
-            return;
-          }
-          const isNullifierOnchain = await isPassportNullified(passportData);
-          console.log('Passport is nullified:', isNullifierOnchain);
-          if (isNullifierOnchain) {
-            console.log(
-              'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
-            );
-            navigation.navigate('AccountRecoveryChoice');
-            return;
-          }
-          registerPassport(passportData, secret);
-        } catch (error) {
-          console.error('Error processing payload:', error);
-          setTimeout(() => resetProof(), 1000);
-        }
-      };
-      processPayload();
-    }
-  }, []);
+  }, [provingStore.currentState]);
 
   return (
     <View style={styles.container}>

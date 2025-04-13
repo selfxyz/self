@@ -96,6 +96,7 @@
     "socket.io-client": "^4.7.5",
     "tamagui": "1.110.0",
     "uuid": "^11.0.5",
+    "xstate": "^5.19.2",
     "zustand": "^4.5.2"
   },
   "devDependencies": {

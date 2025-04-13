@@ -11,11 +11,12 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
+import { useProvingStore } from '../../utils/proving/proving_state';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<
   | {
-      mockPassportFlow?: boolean;
-    }
+    mockPassportFlow?: boolean;
+  }
   | undefined
 >;
 
@@ -23,17 +24,36 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   route,
 }) => {
   const mockPassportFlow = route.params?.mockPassportFlow;
-  const onOkPress = useHapticNavigation('LoadingScreen', {
+  const navigate = useHapticNavigation('LoadingScreen', {
     params: {
       mockPassportFlow,
     },
   });
+  const provingStore = useProvingStore();
+
   useEffect(() => {
     notificationSuccess();
+    provingStore.init('dsc', null);
   }, []);
 
+  const onOkPress = async () => {
+    // Initialize the proving process just before navigation
+    // This ensures a fresh start each time
+    try {
+      // Initialize the state machine
+
+      // Mark as user confirmed - proving will start automatically when ready
+      provingStore.setUserConfirmed();
+
+      // Navigate to loading screen
+      navigate();
+    } catch (error) {
+      console.error('Error initializing proving process:', error);
+    }
+  };
+
   // Prevents back navigation
-  usePreventRemove(true, () => {});
+  usePreventRemove(true, () => { });
 
   return (
     <>
@@ -58,7 +78,9 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress}>Confirm</PrimaryButton>
+          <PrimaryButton onPress={onOkPress}>
+            Confirm
+          </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>
     </>
