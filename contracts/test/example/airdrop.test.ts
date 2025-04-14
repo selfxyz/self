@@ -13,6 +13,7 @@ import BalanceTree from "../utils/example/balance-tree";
 import { castFromScope } from "../../../common/src/utils/circuits/uuid";
 import { formatCountriesList, reverseBytes } from '../../../common/src/utils/circuits/formatInputs';
 import { Formatter } from "../utils/formatter";
+import { hashEndpointWithScope } from "../../../common/src/utils/scope";
 
 describe("Airdrop", () => {
     let deployedActors: DeployedActors;
@@ -45,7 +46,7 @@ describe("Airdrop", () => {
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
             deployedActors.mockPassport,
-            "test-airdrop",
+            hashEndpointWithScope("https://test.com", "test-scope"),
             new Array(88).fill("1"),
             "1",
             imt,
@@ -73,7 +74,7 @@ describe("Airdrop", () => {
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
-            castFromScope("test-airdrop"),
+            hashEndpointWithScope("https://test.com", "test-scope"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
             true,
@@ -234,7 +235,7 @@ describe("Airdrop", () => {
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
             deployedActors.mockPassport,
-            "test-airdrop-invalid",
+            hashEndpointWithScope("https://test.com", "test-scope-invalid"),
             new Array(88).fill("1"),
             "1",
             imt,
@@ -316,7 +317,7 @@ describe("Airdrop", () => {
         const airdropFactory = await ethers.getContractFactory("Airdrop");
         const newAirdrop = await airdropFactory.connect(owner).deploy(
             hub.target,
-            castFromScope("test-airdrop"),
+            hashEndpointWithScope("https://test.com", "test-scope"),
             ATTESTATION_ID.E_PASSPORT,
             token.target,
             true,
@@ -334,7 +335,7 @@ describe("Airdrop", () => {
 
     it("should return correct scope", async () => {
         const scope = await airdrop.getScope();
-        expect(scope).to.equal(castFromScope("test-airdrop"));
+        expect(scope).to.equal(hashEndpointWithScope("https://test.com", "test-scope"));
     });
 
     it("should return correct attestation id", async () => {

@@ -5,10 +5,7 @@ import {IERC20, SafeERC20} from "@openzeppelin/contracts/token/ERC20/utils/SafeE
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
-import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
-import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuitVerifier.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /**
  * @title Airdrop (Experimental)
@@ -188,7 +185,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
     function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        ISelfVerificationRoot.DiscloseCircuitProof memory proof
     ) 
         public 
         override 
@@ -197,38 +194,21 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
-        
-        if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
-            revert InvalidScope();
-        }
 
-        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
-            revert InvalidAttestationId();
-        }
-
-        if (_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != 0) {
+        if (_nullifiers[proof.pubSignals[NULLIFIER_INDEX]] != 0) {
             revert RegisteredNullifier();
         }
         
-        if (proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX] == 0) {
+        if (proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
             revert InvalidUserIdentifier();
         }
 
-        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
-            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: proof
-            })
-        );
+        super.verifySelfProof(proof);
 
-        _nullifiers[result.nullifier] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
-        _registeredUserIdentifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]] = true;
+        _nullifiers[proof.pubSignals[NULLIFIER_INDEX]] = proof.pubSignals[USER_IDENTIFIER_INDEX];
+        _registeredUserIdentifiers[proof.pubSignals[USER_IDENTIFIER_INDEX]] = true;
 
-        emit UserIdentifierRegistered(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX], result.nullifier);
+        emit UserIdentifierRegistered(proof.pubSignals[USER_IDENTIFIER_INDEX], proof.pubSignals[NULLIFIER_INDEX]);
     }
 
     /**

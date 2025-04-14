@@ -5,6 +5,7 @@ import {IVcAndDiscloseCircuitVerifier} from "../interfaces/IVcAndDiscloseCircuit
 import {IIdentityVerificationHubV1} from "../interfaces/IIdentityVerificationHubV1.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
+import {AttestationId} from "../constants/AttestationId.sol";
 
 /**
  * @title SelfVerificationRoot
@@ -32,6 +33,29 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     /// @notice Reference to the identity verification hub contract
     /// @dev Immutable reference used for proof verification
     IIdentityVerificationHubV1 internal immutable _identityVerificationHub;
+
+    // ====================================================
+    // Circuit Constants
+    // ====================================================
+
+    // Make CircuitConstants available to inheriting contracts
+    uint256 internal constant REVEALED_DATA_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_REVEALED_DATA_PACKED_INDEX;
+    uint256 internal constant FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX = CircuitConstants.VC_AND_DISCLOSE_FORBIDDEN_COUNTRIES_LIST_PACKED_INDEX;
+    uint256 internal constant NULLIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX;
+    uint256 internal constant ATTESTATION_ID_INDEX = CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX;
+    uint256 internal constant MERKLE_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_MERKLE_ROOT_INDEX;
+    uint256 internal constant CURRENT_DATE_INDEX = CircuitConstants.VC_AND_DISCLOSE_CURRENT_DATE_INDEX;
+    uint256 internal constant PASSPORT_NO_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_PASSPORT_NO_SMT_ROOT_INDEX;
+    uint256 internal constant NAME_DOB_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_NAME_DOB_SMT_ROOT_INDEX;
+    uint256 internal constant NAME_YOB_SMT_ROOT_INDEX = CircuitConstants.VC_AND_DISCLOSE_NAME_YOB_SMT_ROOT_INDEX;
+    uint256 internal constant SCOPE_INDEX = CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX;
+    uint256 internal constant USER_IDENTIFIER_INDEX = CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX;
+
+    // ====================================================
+    // Attestation ID
+    // ====================================================
+
+    bytes32 constant E_PASSPORT_ID = AttestationId.E_PASSPORT;
 
     // ====================================================
     // Errors
@@ -82,7 +106,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param proof The proof data for verification and disclosure
      */
     function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
+        ISelfVerificationRoot.DiscloseCircuitProof memory proof
     ) 
         public
         virtual
@@ -95,6 +119,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert InvalidAttestationId();
         }
 
+        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory circuitProof = _convertToHubProof(proof);
         _identityVerificationHub.verifyVcAndDisclose(
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
                 olderThanEnabled: _verificationConfig.olderThanEnabled,
@@ -102,9 +127,24 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
                 forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
                 forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
                 ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: proof
+                vcAndDiscloseProof: circuitProof
             })
         );
+    }
+
+    function _convertToHubProof(
+        ISelfVerificationRoot.DiscloseCircuitProof memory proof    
+    )
+        internal
+        view
+        returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory circuitProof)
+    {
+        return IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
+            a: proof.a,
+            b: proof.b,
+            c: proof.c,
+            pubSignals: proof.pubSignals
+        });
     }
 
 }
