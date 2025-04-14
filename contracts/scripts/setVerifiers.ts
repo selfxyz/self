@@ -27,7 +27,7 @@ try {
 
     const contractAbiPath = path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts");
 
-    function getContractAddressByPartialName(partialName: string): string | unknown {
+    function getContractAddressByPartialName(partialName: string): string | undefined {
         for (const [key, value] of Object.entries(deployedAddresses)) {
             if (key.includes(partialName)) {
                 return value;
