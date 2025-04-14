@@ -124,7 +124,6 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert InvalidAttestationId();
         }
 
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory circuitProof = _convertToHubProof(proof);
         _identityVerificationHub.verifyVcAndDisclose(
             IIdentityVerificationHubV1.VcAndDiscloseHubProof({
                 olderThanEnabled: _verificationConfig.olderThanEnabled,
@@ -132,24 +131,13 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
                 forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
                 forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
                 ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: circuitProof
+                vcAndDiscloseProof: IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
+                    a: proof.a,
+                    b: proof.b,
+                    c: proof.c,
+                    pubSignals: proof.pubSignals
+                })
             })
         );
     }
-
-    function _convertToHubProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof    
-    )
-        internal
-        view
-        returns (IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory circuitProof)
-    {
-        return IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof({
-            a: proof.a,
-            b: proof.b,
-            c: proof.c,
-            pubSignals: proof.pubSignals
-        });
-    }
-
 }
