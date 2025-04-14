@@ -7,7 +7,6 @@
     background-clip: text;
     animation: rotate3D 3s infinite linear;
     transform-style: preserve-3d;
-    perspective: 800px;
     padding: 1.5rem;
     position: relative;
     display: inline-block;
@@ -46,6 +45,11 @@
     100% {
         transform: rotateY(0deg) rotateX(0deg);
     }
+}
+
+.rotatingWrapper {
+    perspective: 800px;
+    display: inline-block;
 }
 
 .rotatingTitle:hover {
