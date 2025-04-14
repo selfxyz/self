@@ -8,24 +8,30 @@ import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import { useProvingStore } from '../../utils/proving/proving_state';
+import { useIsFocused } from '@react-navigation/native';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ }) => {
 
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const provingStore = useProvingStore();
+  const currentState = useProvingStore(state => state.currentState);
+  const isFocused = useIsFocused();
 
   // Monitor the state of the proving machine
   useEffect(() => {
-    console.log('Current proving state:', provingStore.currentState);
-
-    if (provingStore.currentState === 'completed') {
-      setAnimationSource(successAnimation);
-    } else if (provingStore.currentState === 'error') {
-      setAnimationSource(failAnimation);
+    if (isFocused) {
+      console.log('[LoadingScreen] Current proving state:', currentState);
     }
-  }, [provingStore.currentState]);
+
+    if (currentState === 'completed') {
+      setAnimationSource(successAnimation);
+    } else if (currentState === 'error') {
+      setAnimationSource(failAnimation);
+    } else {
+      setAnimationSource(miscAnimation);
+    }
+  }, [currentState, isFocused]);
 
   return (
     <View style={styles.container}>

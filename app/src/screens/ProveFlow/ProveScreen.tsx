@@ -1,5 +1,3 @@
-import { useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
   useEffect,
@@ -14,6 +12,9 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
+
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
@@ -27,19 +28,15 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import {
-  globalSetDisclosureStatus,
-  ProofStatusEnum,
-  useProofInfo,
+  useProofInfo
 } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import {
-  isUserRegistered,
-  sendVcAndDisclosePayload,
-} from '../../utils/proving/payload';
+import { useProvingStore } from '../../utils/proving/proving_state';
 
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
+  const isFocused = useIsFocused();
   const { getPassportDataAndSecret } = usePassport();
   const { selectedApp, resetProof, cleanSelfApp } = useProofInfo();
   const { handleProofResult } = useApp();
@@ -55,6 +52,7 @@ const ProveScreen: React.FC = () => {
     () => scrollViewContentHeight <= scrollViewHeight,
     [scrollViewContentHeight, scrollViewHeight],
   );
+  const provingStore = useProvingStore();
 
   /**
    * Whenever the relationship between content height vs. scroll view height changes,
@@ -70,14 +68,16 @@ const ProveScreen: React.FC = () => {
 
   useEffect(() => {
     if (
+      !isFocused ||
       !selectedApp ||
       selectedAppRef.current?.sessionId === selectedApp.sessionId
     ) {
-      return; // Avoid unnecessary updates
+      return; // Avoid unnecessary updates or processing when not focused
     }
     selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
-  }, [selectedApp]);
+    provingStore.init('disclose', selectedApp);
+  }, [selectedApp, isFocused]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -111,75 +111,83 @@ const ProveScreen: React.FC = () => {
     return formatEndpoint(selectedApp.endpoint);
   }, [selectedApp?.endpoint]);
 
-  const onVerify = useCallback(
-    async function () {
-      if (isProcessing.current) {
-        return;
-      }
-      isProcessing.current = true;
+  function onVerify() {
+    provingStore.setUserConfirmed();
+    buttonTap();
+    setTimeout(() => {
+      navigate('ProofRequestStatusScreen');
+    }, 200);
+  }
 
-      resetProof();
-      buttonTap();
-      const currentApp = selectedAppRef.current;
+  // const onVerify = useCallback(
+  //   async function () {
+  //     if (isProcessing.current) {
+  //       return;
+  //     }
+  //     isProcessing.current = true;
 
-      try {
-        let timeToNavigateToStatusScreen: NodeJS.Timeout;
+  //     // resetProof();
+  //     // buttonTap();
+  //     // const currentApp = selectedAppRef.current;
 
-        const passportDataAndSecret = await getPassportDataAndSecret().catch(
-          (e: Error) => {
-            console.error('Error getting passport data', e);
-            globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-          },
-        );
+  //     // try {
+  //     //   let timeToNavigateToStatusScreen: NodeJS.Timeout;
 
-        timeToNavigateToStatusScreen = setTimeout(() => {
-          navigate('ProofRequestStatusScreen');
-        }, 200);
+  //     //   const passportDataAndSecret = await getPassportDataAndSecret().catch(
+  //     //     (e: Error) => {
+  //     //       console.error('Error getting passport data', e);
+  //     //       globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+  //     //     },
+  //     //   );
 
-        if (!passportDataAndSecret) {
-          console.log('No passport data or secret');
-          globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-          setTimeout(() => {
-            navigate('PassportDataNotFound');
-          }, 3000);
-          return;
-        }
+  //     //   timeToNavigateToStatusScreen = setTimeout(() => {
+  //     //     navigate('ProofRequestStatusScreen');
+  //     //   }, 200);
 
-        const { passportData, secret } = passportDataAndSecret.data;
-        const isRegistered = await isUserRegistered(passportData, secret);
-        console.log('isRegistered', isRegistered);
+  //     //   if (!passportDataAndSecret) {
+  //     //     console.log('No passport data or secret');
+  //     //     globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+  //     //     setTimeout(() => {
+  //     //       navigate('PassportDataNotFound');
+  //     //     }, 3000);
+  //     //     return;
+  //     //   }
 
-        if (!isRegistered) {
-          clearTimeout(timeToNavigateToStatusScreen);
-          console.log(
-            'User is not registered, sending to ConfirmBelongingScreen',
-          );
-          navigate('ConfirmBelongingScreen');
-          cleanSelfApp();
-          return;
-        }
+  //     //   const { passportData, secret } = passportDataAndSecret.data;
+  //     //   const isRegistered = await isUserRegistered(passportData, secret);
+  //     //   console.log('isRegistered', isRegistered);
 
-        console.log('currentApp', currentApp);
-        const status = await sendVcAndDisclosePayload(
-          secret,
-          passportData,
-          currentApp,
-        );
-        handleProofResult(
-          currentApp.sessionId,
-          status?.status === ProofStatusEnum.SUCCESS,
-          status?.error_code,
-          status?.reason,
-        );
-      } catch (e) {
-        console.log('Error in verification process');
-        globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
-      } finally {
-        isProcessing.current = false;
-      }
-    },
-    [navigate, getPassportDataAndSecret, handleProofResult, resetProof],
-  );
+  //     //   if (!isRegistered) {
+  //     //     clearTimeout(timeToNavigateToStatusScreen);
+  //     //     console.log(
+  //     //       'User is not registered, sending to ConfirmBelongingScreen',
+  //     //     );
+  //     //     navigate('ConfirmBelongingScreen');
+  //     //     cleanSelfApp();
+  //     //     return;
+  //     //   }
+
+  //     //   console.log('currentApp', currentApp);
+  //     //   const status = await sendVcAndDisclosePayload(
+  //     //     secret,
+  //     //     passportData,
+  //     //     currentApp,
+  //     //   );
+  //     //   handleProofResult(
+  //     //     currentApp.sessionId,
+  //     //     status === ProofStatusEnum.SUCCESS,
+  //     //   );
+  //     // } catch (e) {
+  //     //   console.log('Error in verification process');
+  //     //   globalSetDisclosureStatus?.(ProofStatusEnum.ERROR);
+  //     // } finally {
+  //     // }
+
+  //     //   isProcessing.current = false;
+
+  //   },
+  //   [navigate, getPassportDataAndSecret, handleProofResult, resetProof],
+  // );
 
   const handleScroll = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {

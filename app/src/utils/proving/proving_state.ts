@@ -14,6 +14,7 @@ import { clientKey, clientPublicKeyHex, getPayload, encryptAES256GCM, getWSDbRel
 import { ec } from './provingTypes';
 import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
 import { generateCircuitInputsDSC, generateCircuitInputsRegister } from '../../../../common/src/utils/circuits/generateInputs';
+import { generateTeeInputsVCAndDisclose } from './inputs';
 const provingMachine = createMachine({
     id: 'proving',
     initial: 'idle',
@@ -79,6 +80,7 @@ interface ProvingState {
     passportData: any | null;
     secret: string | null;
     circuitType: 'register' | 'dsc' | 'disclose' | null;
+    selfApp: SelfApp | null;
     init: (circuitType: 'dsc' | 'disclose', selfApp: SelfApp | null) => Promise<void>;
     startFetchingData: () => Promise<void>;
     validatePassport: () => Promise<void>;
@@ -89,13 +91,19 @@ interface ProvingState {
     closeConnections: () => void;
     _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
     _startSocketIOStatusListener: (receivedUuid: string, endpointType: EndpointType) => void;
+    _handleWsOpen: () => void;
+    _handleWsError: (error: Event) => void;
+    _handleWsClose: (event: CloseEvent) => void;
 }
 
 export const useProvingStore = create<ProvingState>((set, get) => {
     let actor: AnyActorRef | null = null;
+    let actorId: string | null = null;
 
-    function setupActorSubscriptions(newActor: AnyActorRef) {
+    function setupActorSubscriptions(newActor: AnyActorRef, id: string) {
+        console.log(`[ProvingState] Setting up subscriptions for actor ${id}`);
         newActor.subscribe((state: any) => {
+            console.log(`[ProvingState Actor ${id}] State transition: ${state.value}`);
             set({ currentState: state.value as string });
 
             if (state.value === 'fetching_data') {
@@ -112,17 +120,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
                 let circuitName = null;
                 let wsRpcUrl = null;
-                if (get().circuitType === 'disclose') { // TODO: refactor this inside the getCircuitNameFromPassportData function
+                if (get().circuitType === 'disclose') {
                     circuitName = 'disclose';
                     wsRpcUrl = WS_RPC_URL_VC_AND_DISCLOSE;
                 } else {
                     circuitName = getCircuitNameFromPassportData(passportData, get().circuitType as 'register' | 'dsc');
                     if (get().circuitType === 'register') {
-                        console.log(circuitsMapping?.REGISTER);
                         wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
                     }
                     else {
-                        console.log(circuitsMapping?.DSC);
                         wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
                     }
                 }
@@ -163,13 +169,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         passportData: null,
         secret: null,
         circuitType: null,
+        selfApp: null,
 
         _handleWebSocketMessage: async (event: MessageEvent) => {
             if (!actor) {
                 console.error('Cannot process message: State machine not initialized.');
                 return;
             }
-            console.log('Received WebSocket message:', event.data);
+            // console.log('Received WebSocket message:', event.data);
             try {
                 const result = JSON.parse(event.data);
 
@@ -276,13 +283,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
             socket.on('disconnect', (reason: string) => {
                 console.log(`SocketIO disconnected. Reason: ${reason}`);
-                const currentActor = actor; // Store actor locally
-                // Check state and ensure actor exists before sending
+                const currentActor = actor;
                 if (get().currentState === 'ready_to_prove' && currentActor) {
                     console.error('SocketIO disconnected unexpectedly during proof listening.');
                     currentActor.send({ type: 'PROVE_ERROR' });
                 }
-                set({ socketConnection: null }); // Clean up reference
+                set({ socketConnection: null });
             });
 
             socket.on('connect_error', (error) => {
@@ -293,14 +299,55 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         },
 
-        init: async (circuitType: 'dsc' | 'disclose', _selfApp: SelfApp | null = null) => {
+        _handleWsOpen: () => {
+            if (!actor) { return; }
+            const ws = get().wsConnection;
+            if (!ws) { return; }
+
+            console.log('TEE WebSocket open, sending hello...');
+            const connectionUuid = v4();
+            const helloBody = {
+                jsonrpc: '2.0',
+                method: 'openpassport_hello',
+                id: 1,
+                params: {
+                    user_pubkey: [4, ...Array.from(Buffer.from(clientPublicKeyHex, 'hex'))],
+                    uuid: connectionUuid,
+                },
+            };
+            ws.send(JSON.stringify(helloBody));
+        },
+
+        _handleWsError: (error: Event) => {
+            console.error('TEE WebSocket error event:', error);
+            if (!actor) { return; }
+            get()._handleWebSocketMessage(new MessageEvent('error', { data: JSON.stringify({ error: 'WebSocket connection error' }) }));
+        },
+
+        _handleWsClose: (event: CloseEvent) => {
+            console.log(`TEE WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`);
+            if (!actor) { return; }
+            const currentState = get().currentState;
+            if (currentState === 'init_tee_connexion' || currentState === 'proving' || currentState === 'listening_for_status') {
+                console.error(`TEE WebSocket closed unexpectedly during ${currentState}.`);
+                get()._handleWebSocketMessage(new MessageEvent('error', { data: JSON.stringify({ error: 'WebSocket closed unexpectedly' }) }));
+            }
+            if (get().wsConnection) {
+                set({ wsConnection: null });
+            }
+        },
+
+        init: async (circuitType: 'dsc' | 'disclose', selfApp: SelfApp | null = null) => {
+            console.log('[ProvingState] init called');
             get().closeConnections();
+
             if (actor) {
                 try {
+                    console.log(`[ProvingState] Stopping existing actor ${actorId}`);
                     actor.stop();
-                    console.log('Stopped existing state machine actor');
+                    console.log(`[ProvingState] Stopped existing actor ${actorId}`);
                 } catch (error) {
-                    console.error('Error stopping actor:', error);
+                    console.error(`[ProvingState] Error stopping actor ${actorId}:`, error);
                 }
             }
             set({
@@ -316,9 +363,12 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 secret: null,
             });
 
+            actorId = v4();
             actor = createActor(provingMachine);
-            setupActorSubscriptions(actor);
+            console.log(`[ProvingState] Created new actor ${actorId}`);
+            setupActorSubscriptions(actor, actorId);
             actor.start();
+            console.log(`[ProvingState] Started new actor ${actorId}`);
 
             const passportDataAndSecretStr = await loadPassportDataAndSecret();
             if (!passportDataAndSecretStr) {
@@ -331,6 +381,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
             set({ passportData, secret });
             set({ circuitType });
+            console.log('selfApp in the init function', selfApp);
+            set({ selfApp });
             actor.send({ type: 'FETCH_DATA' });
         },
 
@@ -350,11 +402,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         validatePassport: async () => {
             _checkActorInitialized(actor);
             try {
-                const { passportData, secret } = get();
+                const { passportData, secret, circuitType } = get();
                 const isSupported = await checkPassportSupported(passportData);
                 if (isSupported.status !== 'passport_supported') {
                     console.log('Passport not supported:', isSupported.status, isSupported.details);
-                    // TODO: we have to fire a mixpanel event here
                     if (navigationRef.isReady()) {
                         navigationRef.navigate('UnsupportedPassport');
                     }
@@ -364,6 +415,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 }
 
                 const isRegistered = await isUserRegistered(passportData, secret as string);
+                if (circuitType === 'disclose') {
+                    if (isRegistered) {
+                        actor!.send({ type: 'VALIDATION_SUCCESS' });
+                        return;
+                    }
+                    else {
+                        // TODO: show the screen 'are you new here?'
+                    }
+                }
                 if (isRegistered) {
                     if (navigationRef.isReady()) {
                         navigationRef.navigate('AccountVerifiedSuccess');
@@ -383,11 +443,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 }
                 const isDscRegistered = await checkIfPassportDscIsInTree(passportData);
                 if (isDscRegistered) {
-                    console.log('DSC is registered, setting circuit type to register');
+                    console.log('[ProvingState] DSC is registered, setting circuit type to register');
                     set({ circuitType: 'register' });
                 }
                 else {
-                    console.log('DSC is not registered');
+                    console.log('[ProvingState] DSC is not registered');
                 }
                 actor!.send({ type: 'VALIDATION_SUCCESS' });
             } catch (error) {
@@ -400,11 +460,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             _checkActorInitialized(actor);
 
             console.log(`Attempting TEE connection to ${wsRpcUrl}`);
-            const ws = get().wsConnection;
-            if (ws) {
-                ws.close();
-                set({ wsConnection: null });
-            }
+            get().closeConnections();
 
             return new Promise((resolve) => {
                 const ws = new WebSocket(wsRpcUrl);
@@ -414,42 +470,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                 const handleConnectError = () => resolve(false);
 
                 ws.addEventListener('message', get()._handleWebSocketMessage);
+                ws.addEventListener('open', get()._handleWsOpen);
+                ws.addEventListener('error', get()._handleWsError);
+                ws.addEventListener('close', get()._handleWsClose);
 
-                ws.addEventListener('open', () => {
-                    const connectionUuid = v4();
-                    const helloBody = {
-                        jsonrpc: '2.0',
-                        method: 'openpassport_hello',
-                        id: 1,
-                        params: {
-                            user_pubkey: [4, ...Array.from(Buffer.from(clientPublicKeyHex, 'hex'))],
-                            uuid: connectionUuid,
-                        },
-                    };
-                    console.log('TEE WebSocket open, sending hello:', helloBody);
-                    ws.send(JSON.stringify(helloBody));
-                });
-
-                ws.addEventListener('error', (error) => {
-                    console.error('TEE WebSocket error:', error);
-                    get()._handleWebSocketMessage(new MessageEvent('error', { data: JSON.stringify({ error: 'WebSocket connection error' }) }));
-                    handleConnectError();
-                });
-
-                ws.addEventListener('close', (event) => {
-                    console.log(`TEE WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`);
-                    if (get().currentState === 'init_tee_connexion') {
-                        console.error('TEE WebSocket closed unexpectedly during connection.');
-                        get()._handleWebSocketMessage(new MessageEvent('error', { data: JSON.stringify({ error: 'WebSocket closed unexpectedly' }) }));
-                        handleConnectError();
-                    }
-                });
-
-                if (!actor) {
-                    console.error('Cannot subscribe to actor changes: Actor not initialized.');
-                    handleConnectError();
-                    return;
-                }
+                if (!actor) { return; }
                 const unsubscribe = actor.subscribe((state) => {
                     if (state.matches('ready_to_prove')) {
                         handleConnectSuccess();
@@ -463,10 +488,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         },
 
         startProving: async () => {
-            if (!actor) {
-                console.error('Cannot start proving: State machine not initialized.');
-                return;
-            }
+            _checkActorInitialized(actor);
             const { wsConnection, sharedKey, uuid: currentUuid, passportData, secret } = get();
 
             if (get().currentState !== 'ready_to_prove') {
@@ -475,7 +497,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             }
             if (!wsConnection || !sharedKey || !passportData || !secret) {
                 console.error('Cannot start proving: Missing wsConnection, sharedKey, passportData, or secret.');
-                actor.send({ type: 'PROVE_ERROR' });
+                actor!.send({ type: 'PROVE_ERROR' });
                 return;
             }
 
@@ -507,26 +529,20 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                         endpoint = 'https://self.xyz';
                         break;
                     case 'disclose':
-                        // circuitName ='disclose;
+                        circuitName = 'vc_and_disclose';
+                        const selfApp = get().selfApp;
+                        inputs = generateTeeInputsVCAndDisclose(
+                            secret,
+                            passportData,
+                            selfApp as SelfApp,
+                        ).inputs;
+                        endpointType = selfApp?.endpointType;
+                        endpoint = selfApp?.endpoint;
                         break;
                     default:
                         console.error('Invalid circuit type:', get().circuitType);
                         throw new Error('Invalid circuit type');
                 }
-
-
-                // const endpointType = passportData.documentType && passportData.documentType !== 'passport' ? 'staging_celo' : 'celo';
-                // console.log('Generating circuit inputs for registration...');
-                // const { inputs, circuitName } = await generateTeeInputsRegister(
-                //     secret,
-                //     passportData,
-                //     endpointType
-                // );
-                // if (!circuitName) {
-                //     throw new Error('Could not determine circuit name');
-                // }
-
-                // console.log('Creating TEE payload...');
                 const payload = getPayload(
                     inputs,
                     get().circuitType as 'register' | 'dsc' | 'disclose',
@@ -552,12 +568,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
                         ...encryptionData,
                     },
                 };
-                console.log('Truncated submit body:', submitBody);
                 wsConnection.send(JSON.stringify(submitBody));
-                actor.send({ type: 'START_PROVING' });
+                actor!.send({ type: 'START_PROVING' });
             } catch (error) {
                 console.error('Error during startProving preparation/send:', error);
-                actor.send({ type: 'PROVE_ERROR' });
+                actor!.send({ type: 'PROVE_ERROR' });
             }
         },
 
@@ -570,37 +585,44 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
         postProving: () => {
             _checkActorInitialized(actor);
-            if (get().circuitType === 'dsc') {
+            const { circuitType } = get();
+            console.log(`[ProvingState Actor ${actorId}] Post-proving for circuit type: ${circuitType}`);
+            if (circuitType === 'dsc') {
                 actor!.send({ type: 'SWITCH_TO_REGISTER' });
-            } else {
+            } else if (circuitType === 'register') {
                 actor!.send({ type: 'COMPLETED' });
                 navigationRef.navigate('AccountVerifiedSuccess');
-
+            }
+            else if (circuitType === 'disclose') {
+                actor!.send({ type: 'COMPLETED' });
             }
         },
 
         closeConnections: () => {
-            console.log('🧹 Cleaning up connections');
+            console.log(`[ProvingState Actor ${actorId}] 🧹 Cleaning up connections`);
 
             const ws = get().wsConnection;
             if (ws) {
+                console.log(`[ProvingState Actor ${actorId}] Removing WebSocket listeners...`);
                 try {
+                    ws.removeEventListener('message', get()._handleWebSocketMessage);
+                    ws.removeEventListener('open', get()._handleWsOpen);
+                    ws.removeEventListener('error', get()._handleWsError);
+                    ws.removeEventListener('close', get()._handleWsClose);
+
+                    console.log(`[ProvingState Actor ${actorId}] Closing WebSocket connection...`);
                     ws.close();
-                    console.log('Closed WebSocket connection.');
+                    console.log(`[ProvingState Actor ${actorId}] Closed WebSocket connection.`);
                 } catch (error) {
-                    console.error('Error closing WebSocket:', error);
+                    console.error(`[ProvingState Actor ${actorId}] Error removing listeners or closing WebSocket:`, error);
                 }
                 set({ wsConnection: null });
             }
 
             const socket = get().socketConnection;
             if (socket) {
-                try {
-                    socket.disconnect();
-                    console.log('Disconnected Socket.IO.');
-                } catch (error) {
-                    console.error('Error disconnecting Socket.IO:', error);
-                }
+                console.log('Removing Socket.IO listeners...');
+                socket.close();
                 set({ socketConnection: null });
             }
 
@@ -613,7 +635,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         },
     };
 });
-
 
 function _checkActorInitialized(actor: AnyActorRef | null) {
     if (!actor) {

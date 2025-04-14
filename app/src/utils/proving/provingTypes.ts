@@ -73,7 +73,6 @@ export function getPayload(
         };
         return payload;
     } else {
-        // Covers 'register' and 'dsc'
         const payload: TEEPayload = {
             type: circuitType as 'register' | 'dsc',
             onchain: true,

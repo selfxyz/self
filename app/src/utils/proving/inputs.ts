@@ -59,7 +59,7 @@ export async function generateTeeInputsDsc(
   return { inputs, circuitName };
 }
 
-export async function generateTeeInputsVCAndDisclose(
+export function generateTeeInputsVCAndDisclose(
   secret: string,
   passportData: PassportData,
   selfApp: SelfApp,
@@ -87,10 +87,10 @@ export async function generateTeeInputsVCAndDisclose(
   const selector_ofac = disclosures.ofac ? 1 : 0;
 
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
-    await getOfacSMTs();
-  const serialized_tree = await getCommitmentTree(passportData.documentType);
+    getOfacSMTs();
+  const serialized_tree = useProtocolStore.getState().passport.commitment_tree; //await getCommitmentTree(passportData.documentType);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
-  console.log('tree', tree);
+  // console.log('tree', tree);
   // const commitment = generateCommitment(
   //   secret,
   //   PASSPORT_ATTESTATION_ID,
@@ -120,7 +120,7 @@ export async function generateTeeInputsVCAndDisclose(
 
 /*** DISCLOSURE ***/
 
-async function getOfacSMTs() {
+function getOfacSMTs() {
   // TODO: get the SMT from an endpoint
   const passportNoAndNationalitySMT = new SMT(poseidon2, true);
   passportNoAndNationalitySMT.import(passportNoAndNationalitySMTData);

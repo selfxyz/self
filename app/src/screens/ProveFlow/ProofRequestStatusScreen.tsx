@@ -1,8 +1,9 @@
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 import { ScrollView, Spinner } from 'tamagui';
 
+import { useIsFocused } from '@react-navigation/native';
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
 import succesAnimation from '../../assets/animations/proof_success.json';
@@ -20,12 +21,18 @@ import {
   notificationError,
   notificationSuccess,
 } from '../../utils/haptic';
+import { useProvingStore } from '../../utils/proving/proving_state';
 
 const SuccessScreen: React.FC = () => {
   const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } =
     useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
+
+  const currentState = useProvingStore(state => state.currentState);
+  const isFocused = useIsFocused();
+
+  const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
 
   function onOkPress() {
     buttonTap();
@@ -34,12 +41,19 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    if (disclosureStatus === 'success') {
-      notificationSuccess();
-    } else if (disclosureStatus === 'failure' || disclosureStatus === 'error') {
-      notificationError();
+    if (isFocused) {
+      console.log('[ProofRequestStatusScreen] State update while focused:', currentState);
     }
-  }, [disclosureStatus]);
+    if (currentState === 'completed') {
+      notificationSuccess();
+      setAnimationSource(succesAnimation);
+    } else if (currentState === 'error') {
+      notificationError();
+      setAnimationSource(failAnimation);
+    } else {
+      setAnimationSource(loadingAnimation);
+    }
+  }, [currentState, isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -51,8 +65,8 @@ const SuccessScreen: React.FC = () => {
       >
         <LottieView
           autoPlay
-          loop={disclosureStatus === 'pending'}
-          source={getAnimation(disclosureStatus)}
+          loop={animationSource === loadingAnimation}
+          source={animationSource}
           style={styles.animation}
           cacheComposition={false}
           renderMode="HARDWARE"
@@ -73,10 +87,10 @@ const SuccessScreen: React.FC = () => {
           />
         </View>
         <PrimaryButton
-          disabled={disclosureStatus === 'pending'}
+          disabled={currentState !== 'completed' && currentState !== 'error'}
           onPress={onOkPress}
         >
-          {disclosureStatus === 'pending' ? <Spinner /> : 'OK'}
+          {currentState !== 'completed' && currentState !== 'error' ? <Spinner /> : 'OK'}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
