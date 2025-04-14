@@ -76,14 +76,18 @@ describe("Airdrop", () => {
             deployedActors.hub.target,
             hashEndpointWithScope("https://test.com", "test-scope"),
             ATTESTATION_ID.E_PASSPORT,
-            token.target,
-            true,
-            20,
-            true,
-            countriesListPacked,
-            [true, true, true],
+            token.target
         );
         await airdrop.waitForDeployment();
+        
+        const verificationConfig = {
+            olderThanEnabled: true,
+            olderThan: 20,
+            forbiddenCountriesEnabled: true,
+            forbiddenCountriesListPacked: countriesListPacked,
+            ofacEnabled: [true, true, true] as [boolean, boolean, boolean]
+        };
+        await airdrop.connect(deployedActors.owner).setVerificationConfig(verificationConfig);
         
         const mintAmount = ethers.parseEther("424242424242");
         await token.mint(airdrop.target, mintAmount);
@@ -240,6 +244,12 @@ describe("Airdrop", () => {
             "1",
             imt,
             "20",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            forbiddenCountriesList,
+            (await deployedActors.user1.getAddress()).slice(2)
         );
 
         await airdrop.connect(owner).openRegistration();
@@ -276,11 +286,17 @@ describe("Airdrop", () => {
             registerSecret,
             BigInt(ATTESTATION_ID.INVALID_ATTESTATION_ID).toString(),
             deployedActors.mockPassport,
-            "test-airdrop",
+            hashEndpointWithScope("https://test.com", "test-scope"),
             new Array(88).fill("1"),
             "1",
             invalidImt,
             "20",
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            forbiddenCountriesList,
+            (await deployedActors.user1.getAddress()).slice(2)
         );
 
         await airdrop.connect(owner).openRegistration();
@@ -295,11 +311,13 @@ describe("Airdrop", () => {
             registerSecret,
             BigInt(ATTESTATION_ID.E_PASSPORT).toString(),
             deployedActors.mockPassport,
-            "test-airdrop",
+            hashEndpointWithScope("https://test.com", "test-scope"),
             new Array(88).fill("1"),
             "1",
             imt,
             "20",
+            undefined,
+            undefined,
             undefined,
             undefined,
             forbiddenCountriesList,
@@ -319,14 +337,18 @@ describe("Airdrop", () => {
             hub.target,
             hashEndpointWithScope("https://test.com", "test-scope"),
             ATTESTATION_ID.E_PASSPORT,
-            token.target,
-            true,
-            20,
-            true,
-            countriesListPacked,
-            [true, true, true],
+            token.target
         );
         await newAirdrop.waitForDeployment();
+
+        const verificationConfig = {
+            olderThanEnabled: true,
+            olderThan: 20,
+            forbiddenCountriesEnabled: true,
+            forbiddenCountriesListPacked: countriesListPacked,
+            ofacEnabled: [true, true, true]
+        };
+        await newAirdrop.connect(owner).setVerificationConfig(verificationConfig);
 
         await newAirdrop.connect(owner).openRegistration();
         await expect(newAirdrop.connect(user1).verifySelfProof(vcAndDiscloseProof))

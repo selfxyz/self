@@ -19,7 +19,7 @@
     "contracts/utils/PCR0Manager.sol"
   ],
   "scripts": {
-    "compile": "npx hardhat clean && npx hardhat compile",
+    "build": "npx hardhat clean && npx hardhat compile",
     "deploy:all:localhost": "npm run deploy:verifiers:localhost && npm run deploy:registry:localhost && npm run deploy:hub:localhost",
     "deploy:hub:localhost": "npx hardhat ignition deploy ignition/modules/deployHub.ts --network localhost --verify",
     "deploy:registry:localhost": "npx hardhat ignition deploy ignition/modules/deployRegistry.ts --network localhost --verify",

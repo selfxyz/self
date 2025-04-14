@@ -74,30 +74,35 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @param identityVerificationHub The address of the Identity Verification Hub.
      * @param scope The expected proof scope for user registration.
      * @param attestationId The expected attestation identifier required in proofs.
-     * @param olderThanEnabled Flag indicating if 'olderThan' verification is enabled.
-     * @param olderThan Value for 'olderThan' verification.
-     * @param forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
-     * @param forbiddenCountriesListPacked Packed list of forbidden countries.
-     * @param ofacEnabled Array of flags indicating which OFAC checks are enabled. [passportNo, nameAndDob, nameAndYob]
      */
     constructor(
         address identityVerificationHub,
         uint256 scope,
-        uint256 attestationId,
-        bool olderThanEnabled,
-        uint256 olderThan,
-        bool forbiddenCountriesEnabled,
-        uint256[4] memory forbiddenCountriesListPacked,
-        bool[3] memory ofacEnabled
+        uint256 attestationId
     ) {
         _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
         _scope = scope;
         _attestationId = attestationId;
-        _verificationConfig.olderThanEnabled = olderThanEnabled;
-        _verificationConfig.olderThan = olderThan;
-        _verificationConfig.forbiddenCountriesEnabled = forbiddenCountriesEnabled;
-        _verificationConfig.forbiddenCountriesListPacked = forbiddenCountriesListPacked;
-        _verificationConfig.ofacEnabled = ofacEnabled;
+    }
+
+    /**
+     * @notice Updates the verification configuration
+     * @dev Used to set or update verification parameters after contract deployment
+     * @param verificationConfig The new verification configuration to apply
+     */
+    function _setVerificationConfig(
+        ISelfVerificationRoot.VerificationConfig memory verificationConfig
+    ) internal {
+        _verificationConfig = verificationConfig;
+    }
+    
+    /**
+     * @notice Returns the current verification configuration
+     * @dev Used to retrieve the current verification settings
+     * @return Current verification configuration
+     */
+    function _getVerificationConfig() internal view returns (ISelfVerificationRoot.VerificationConfig memory) {
+        return _verificationConfig;
     }
 
     /**

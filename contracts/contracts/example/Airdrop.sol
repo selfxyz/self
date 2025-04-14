@@ -87,32 +87,17 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param _scope The expected proof scope for user registration.
      * @param _attestationId The expected attestation identifier required in proofs.
      * @param _token The address of the ERC20 token for airdrop.
-     * @param _olderThanEnabled Flag indicating if 'olderThan' verification is enabled.
-     * @param _olderThan Value for 'olderThan' verification.
-     * @param _forbiddenCountriesEnabled Flag indicating if forbidden countries verification is enabled.
-     * @param _forbiddenCountriesListPacked Packed list of forbidden countries.
-     * @param _ofacEnabled Array of flags indicating which OFAC checks are enabled. [passportNo, nameAndDob, nameAndYob]
      */
     constructor(
         address _identityVerificationHub, 
         uint256 _scope, 
         uint256 _attestationId,
-        address _token,
-        bool _olderThanEnabled,
-        uint256 _olderThan,
-        bool _forbiddenCountriesEnabled,
-        uint256[4] memory _forbiddenCountriesListPacked,
-        bool[3] memory _ofacEnabled
+        address _token
     ) 
         SelfVerificationRoot(
             _identityVerificationHub, 
             _scope, 
-            _attestationId, 
-            _olderThanEnabled,
-            _olderThan,
-            _forbiddenCountriesEnabled,
-            _forbiddenCountriesListPacked,
-            _ofacEnabled
+            _attestationId
         )
         Ownable(_msgSender())
     {
@@ -140,7 +125,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     function setVerificationConfig(
         ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
-        _verificationConfig = newVerificationConfig;
+        _setVerificationConfig(newVerificationConfig);
     }
 
     /**
@@ -241,7 +226,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @return The verification configuration used for registration.
      */
     function getVerificationConfig() external view returns (ISelfVerificationRoot.VerificationConfig memory) {
-        return _verificationConfig;
+        return _getVerificationConfig();
     }
 
     /**
