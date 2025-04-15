@@ -118,7 +118,7 @@ interface ProvingState {
   circuitType: provingMachineCircuitType | null;
   selfApp: SelfApp | null;
   init: (
-    circuitType: 'dsc' | 'disclose',
+    circuitType: 'dsc' | 'disclose' | 'register',
     selfApp: SelfApp | null,
   ) => Promise<void>;
   startFetchingData: () => Promise<void>;
@@ -413,7 +413,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     init: async (
-      circuitType: 'dsc' | 'disclose',
+      circuitType: 'dsc' | 'disclose' | 'register',
       selfApp: SelfApp | null = null,
     ) => {
       get()._closeConnections();
@@ -549,12 +549,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         }
       }
       if (!circuitName) {
-        console.error('Could not determine circuit name');
         actor?.send({ type: 'CONNECT_ERROR' });
+        throw new Error('Could not determine circuit name');
       }
       if (!wsRpcUrl) {
-        console.error('No WebSocket URL available for TEE connection');
-        actor?.send({ type: 'CONNECT_ERROR' });
+        throw new Error('No WebSocket URL available for TEE connection');
       }
 
       get()._closeConnections();
@@ -623,8 +622,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        set({ circuitType: 'register' });
-        actor!.send({ type: 'SWITCH_TO_REGISTER' });
+        get().init('register', null);
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {
