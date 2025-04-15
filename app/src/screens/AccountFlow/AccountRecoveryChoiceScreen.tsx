@@ -16,7 +16,7 @@ import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/payload';
+import { isUserRegistered } from '../../utils/proving/validateDocument';
 
 interface AccountRecoveryChoiceScreenProps {}
 

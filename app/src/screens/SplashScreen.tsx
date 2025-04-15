@@ -6,13 +6,13 @@ import { StyleSheet } from 'react-native';
 import splashAnimation from '../assets/animations/splash.json';
 import { useAuth } from '../stores/authProvider';
 import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
+import { useProtocolStore } from '../stores/protocolStore';
 import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
-import { isUserRegistered } from '../utils/proving/payload';
-import { useProtocolStore } from '../stores/protocolStore';
+import { isUserRegistered } from '../utils/proving/validateDocument';
 
-const SplashScreen: React.FC = ({ }) => {
+const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();

@@ -10,13 +10,13 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
-import { useProvingStore } from '../../utils/proving/proving_state';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<
   | {
-    mockPassportFlow?: boolean;
-  }
+      mockPassportFlow?: boolean;
+    }
   | undefined
 >;
 
@@ -53,7 +53,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   };
 
   // Prevents back navigation
-  usePreventRemove(true, () => { });
+  usePreventRemove(true, () => {});
 
   return (
     <>
@@ -78,9 +78,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress}>
-            Confirm
-          </PrimaryButton>
+          <PrimaryButton onPress={onOkPress}>Confirm</PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>
     </>

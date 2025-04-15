@@ -2,18 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import { StaticScreenProps } from '@react-navigation/native';
+import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
-import { useProvingStore } from '../../utils/proving/proving_state';
-import { useIsFocused } from '@react-navigation/native';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 
-const LoadingScreen: React.FC<LoadingScreenProps> = ({ }) => {
-
+const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const currentState = useProvingStore(state => state.currentState);
   const isFocused = useIsFocused();

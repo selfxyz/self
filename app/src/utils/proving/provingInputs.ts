@@ -10,7 +10,7 @@ import {
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
 } from '../../../../common/src/constants/constants';
-import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
+import { SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import {
   generateCircuitInputsDSC,
@@ -18,48 +18,39 @@ import {
   generateCircuitInputsVCandDisclose,
 } from '../../../../common/src/utils/circuits/generateInputs';
 import { hashEndpointWithScope } from '../../../../common/src/utils/scope';
-import {
-  getCommitmentTree,
-  getCSCATree,
-  getDSCTree,
-} from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';
 import { useProtocolStore } from '../../stores/protocolStore';
 
-export async function generateTeeInputsRegister(
+export function generateTEEInputsRegister(
   secret: string,
   passportData: PassportData,
-  endpointType: EndpointType,
+  dscTree: string,
 ) {
-  const serialized_dsc_tree = await getDSCTree(endpointType);
-  const inputs = generateCircuitInputsRegister(
-    secret,
-    passportData,
-    serialized_dsc_tree,
-  );
+  const inputs = generateCircuitInputsRegister(secret, passportData, dscTree);
   const circuitName = getCircuitNameFromPassportData(passportData, 'register');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-  }
-  return { inputs, circuitName };
+  const endpointType =
+    passportData.documentType && passportData.documentType !== 'passport'
+      ? 'staging_celo'
+      : 'celo';
+  const endpoint = 'https://self.xyz';
+  return { inputs, circuitName, endpointType, endpoint };
 }
 
-export async function generateTeeInputsDsc(
+export function generateTEEInputsDSC(
   passportData: PassportData,
+  cscaTree: string[][],
 ) {
-  const serialized_csca_tree = useProtocolStore.getState().passport.csca_tree;
-  const inputs = generateCircuitInputsDSC(
-    passportData.dsc,
-    serialized_csca_tree,
-  );
+  const inputs = generateCircuitInputsDSC(passportData.dsc, cscaTree);
   const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (circuitName == null) {
-    throw new Error('Circuit name is null');
-  }
-  return { inputs, circuitName };
+  const endpointType =
+    passportData.documentType && passportData.documentType !== 'passport'
+      ? 'staging_celo'
+      : 'celo';
+  const endpoint = 'https://self.xyz';
+  return { inputs, circuitName, endpointType, endpoint };
 }
 
-export function generateTeeInputsVCAndDisclose(
+export function generateTEEInputsDisclose(
   secret: string,
   passportData: PassportData,
   selfApp: SelfApp,
@@ -67,7 +58,6 @@ export function generateTeeInputsVCAndDisclose(
   const { scope, userId, disclosures, endpoint } = selfApp;
   const scope_hash = hashEndpointWithScope(endpoint, scope);
   const selector_dg1 = Array(88).fill('0');
-
   Object.entries(disclosures).forEach(([attribute, reveal]) => {
     if (['ofac', 'excludedCountries', 'minimumAge'].includes(attribute)) {
       return;
@@ -90,14 +80,6 @@ export function generateTeeInputsVCAndDisclose(
     getOfacSMTs();
   const serialized_tree = useProtocolStore.getState().passport.commitment_tree; //await getCommitmentTree(passportData.documentType);
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
-  // console.log('tree', tree);
-  // const commitment = generateCommitment(
-  //   secret,
-  //   PASSPORT_ATTESTATION_ID,
-  //   passportData,
-  // );
-  // tree.insert(BigInt(commitment));
-  // Uncomment to add artificially the commitment to the tree
 
   const inputs = generateCircuitInputsVCandDisclose(
     secret,
@@ -115,7 +97,12 @@ export function generateTeeInputsVCAndDisclose(
     disclosures.excludedCountries ?? [],
     userId,
   );
-  return { inputs, circuitName: 'vc_and_disclose' };
+  return {
+    inputs,
+    circuitName: 'vc_and_disclose',
+    endpointType: selfApp.endpointType,
+    endpoint: selfApp.endpoint,
+  };
 }
 
 /*** DISCLOSURE ***/

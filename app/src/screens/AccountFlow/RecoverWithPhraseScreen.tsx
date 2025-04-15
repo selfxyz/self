@@ -18,7 +18,7 @@ import {
   slate700,
   white,
 } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/payload';
+import { isUserRegistered } from '../../utils/proving/validateDocument';
 
 interface RecoverWithPhraseScreenProps {}
 

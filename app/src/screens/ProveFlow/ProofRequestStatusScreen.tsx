@@ -1,9 +1,10 @@
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
-import { ScrollView, Spinner } from 'tamagui';
 
 import { useIsFocused } from '@react-navigation/native';
+import { ScrollView, Spinner } from 'tamagui';
+
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
 import succesAnimation from '../../assets/animations/proof_success.json';
@@ -21,7 +22,7 @@ import {
   notificationError,
   notificationSuccess,
 } from '../../utils/haptic';
-import { useProvingStore } from '../../utils/proving/proving_state';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
   const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } =
@@ -42,7 +43,10 @@ const SuccessScreen: React.FC = () => {
 
   useEffect(() => {
     if (isFocused) {
-      console.log('[ProofRequestStatusScreen] State update while focused:', currentState);
+      console.log(
+        '[ProofRequestStatusScreen] State update while focused:',
+        currentState,
+      );
     }
     if (currentState === 'completed') {
       notificationSuccess();
@@ -90,24 +94,16 @@ const SuccessScreen: React.FC = () => {
           disabled={currentState !== 'completed' && currentState !== 'error'}
           onPress={onOkPress}
         >
-          {currentState !== 'completed' && currentState !== 'error' ? <Spinner /> : 'OK'}
+          {currentState !== 'completed' && currentState !== 'error' ? (
+            <Spinner />
+          ) : (
+            'OK'
+          )}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
 };
-
-function getAnimation(status: ProofStatusEnum) {
-  switch (status) {
-    case 'success':
-      return succesAnimation;
-    case 'failure':
-    case 'error':
-      return failAnimation;
-    default:
-      return loadingAnimation;
-  }
-}
 
 function getTitle(status: ProofStatusEnum) {
   switch (status) {
