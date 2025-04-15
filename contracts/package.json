@@ -1,6 +1,6 @@
 {
   "name": "@selfxyz/contracts",
-  "version": "0.0.3",
+  "version": "0.0.6",
   "repository": {
     "type": "git",
     "url": "https://github.com/selfxyz/self"
@@ -8,9 +8,10 @@
   "license": "MIT",
   "author": "motemotech <i.am.nicoshark@gmail.com>",
   "files": [
-    "contracts/interfaces/ISelfVerificationRoot.sol",
-    "contracts/libraries/SelfCircuitLibrary.sol",
-    "contracts/abstract/SelfVerificationRoot.sol"
+    "contracts/interfaces/*",
+    "contracts/constants/*",
+    "contracts/libraries/*",
+    "contracts/abstract/*"
   ],
   "scripts": {
     "build": "npx hardhat clean && npx hardhat compile",
