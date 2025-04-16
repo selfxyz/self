@@ -31,6 +31,9 @@ const SuccessScreen: React.FC = () => {
   const goHome = useHapticNavigation('Home');
 
   const currentState = useProvingStore(state => state.currentState);
+  const reason = useProvingStore(state => state.reason);
+  const appName = useProvingStore(state => state.selfApp?.appName);
+
   const isFocused = useIsFocused();
 
   const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
@@ -51,7 +54,7 @@ const SuccessScreen: React.FC = () => {
     if (currentState === 'completed') {
       notificationSuccess();
       setAnimationSource(succesAnimation);
-    } else if (currentState === 'error') {
+    } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
       setAnimationSource(failAnimation);
     } else {
@@ -83,18 +86,24 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(disclosureStatus)}</Title>
+          <Title size="large">{getTitle(currentState)}</Title>
           <Info
-            status={disclosureStatus}
-            appName={appName === '' ? 'The app' : appName}
-            reason={discloseError?.reason ?? undefined}
+            currentState={currentState}
+            appName={appName ?? 'The app'}
+            reason={reason ?? undefined}
           />
         </View>
         <PrimaryButton
-          disabled={currentState !== 'completed' && currentState !== 'error'}
+          disabled={
+            currentState !== 'completed' &&
+            currentState !== 'error' &&
+            currentState !== 'failure'
+          }
           onPress={onOkPress}
         >
-          {currentState !== 'completed' && currentState !== 'error' ? (
+          {currentState !== 'completed' &&
+            currentState !== 'error' &&
+            currentState !== 'failure' ? (
             <Spinner />
           ) : (
             'OK'
@@ -105,9 +114,9 @@ const SuccessScreen: React.FC = () => {
   );
 };
 
-function getTitle(status: ProofStatusEnum) {
-  switch (status) {
-    case 'success':
+function getTitle(currentState: string) {
+  switch (currentState) {
+    case 'completed':
       return 'Proof Verified';
     case 'failure':
     case 'error':
@@ -118,30 +127,30 @@ function getTitle(status: ProofStatusEnum) {
 }
 
 function Info({
-  status,
+  currentState,
   appName,
   reason,
 }: {
-  status: ProofStatusEnum;
+  currentState: string;
   appName: string;
   reason?: string;
 }) {
-  if (status === 'success') {
+  if (currentState === 'completed') {
     return (
       <Description>
         You've successfully proved your identity to{' '}
         <BodyText style={typography.strong}>{appName}</BodyText>
       </Description>
     );
-  } else if (status === 'failure' || status === 'error') {
+  } else if (currentState === 'error' || currentState === 'failure') {
     return (
       <View style={{ gap: 8 }}>
         <Description>
           Unable to prove your identity to{' '}
           <BodyText style={typography.strong}>{appName}</BodyText>
-          {status === 'error' && '. Due to technical issues.'}
+          {currentState === 'error' && '. Due to technical issues.'}
         </Description>
-        {status === 'failure' && reason && (
+        {currentState === 'failure' && reason && (
           <>
             <Description>
               <BodyText style={[typography.strong, { fontSize: 14 }]}>
