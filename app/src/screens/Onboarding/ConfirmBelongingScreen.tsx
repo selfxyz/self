@@ -33,7 +33,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
 
   useEffect(() => {
     notificationSuccess();
-    provingStore.init('dsc', null);
+    provingStore.init('dsc');
   }, []);
 
   const onOkPress = async () => {

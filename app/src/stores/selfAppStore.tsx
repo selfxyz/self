@@ -12,6 +12,11 @@ interface SelfAppState {
   cleanSelfApp: () => void;
   setSelfApp: (selfApp: SelfApp | null) => void;
   _initSocket: (sessionId: string) => Socket;
+  handleProofResult: (
+    proof_verified: boolean,
+    error_code?: string,
+    reason?: string,
+  ) => void;
 }
 
 export const useSelfAppStore = create<SelfAppState>((set, get) => ({
@@ -138,9 +143,47 @@ export const useSelfAppStore = create<SelfAppState>((set, get) => ({
     // Reset state
     set({ selfApp: null, sessionId: null, socket: null });
   },
-}));
 
-// Optional: You might want to add a way to trigger cleanup automatically,
-// for example, when the app closes or the user logs out.
-// This typically involves calling cleanSelfApp from appropriate places
-// in your application lifecycle.
+  handleProofResult: (
+    proof_verified: boolean,
+    error_code?: string,
+    reason?: string,
+  ) => {
+    const socket = get().socket;
+    const sessionId = get().sessionId;
+
+    if (!socket || !sessionId) {
+      console.error(
+        '[SelfAppStore] Cannot handleProofResult: Socket or SessionId missing.',
+      );
+      return;
+    }
+
+    console.log(
+      `[SelfAppStore] handleProofResult called for sessionId: ${sessionId}, verified: ${proof_verified}`,
+    );
+
+    if (proof_verified) {
+      console.log('[SelfAppStore] Emitting proof_verified event with data:', {
+        session_id: sessionId,
+      });
+      socket.emit('proof_verified', {
+        session_id: sessionId,
+      });
+    } else {
+      console.log(
+        '[SelfAppStore] Emitting proof_generation_failed event with data:',
+        {
+          session_id: sessionId,
+          error_code,
+          reason,
+        },
+      );
+      socket.emit('proof_generation_failed', {
+        session_id: sessionId,
+        error_code,
+        reason,
+      });
+    }
+  },
+}));

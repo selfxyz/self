@@ -13,6 +13,7 @@ import {
   loadPassportDataAndSecret,
 } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
+import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
   generateTEEInputsDSC,
@@ -120,13 +121,9 @@ interface ProvingState {
   passportData: any | null;
   secret: string | null;
   circuitType: provingMachineCircuitType | null;
-  selfApp: SelfApp | null;
   error_code: string | null;
   reason: string | null;
-  init: (
-    circuitType: 'dsc' | 'disclose' | 'register',
-    selfApp: SelfApp | null,
-  ) => Promise<void>;
+  init: (circuitType: 'dsc' | 'disclose' | 'register') => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
@@ -184,6 +181,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             navigationRef.navigate('AccountVerifiedSuccess');
           }, 3000);
         }
+        if (get().circuitType === 'disclose') {
+          useSelfAppStore.getState().handleProofResult(true);
+        }
       }
       if (state.value === 'passport_not_supported') {
         if (navigationRef.isReady()) {
@@ -198,6 +198,23 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'passport_data_not_found') {
         if (navigationRef.isReady()) {
           navigationRef.navigate('PassportDataNotFound');
+        }
+      }
+      if (state.value === 'failure') {
+        if (get().circuitType === 'disclose') {
+          const { error_code, reason } = get();
+          useSelfAppStore
+            .getState()
+            .handleProofResult(
+              false,
+              error_code ?? undefined,
+              reason ?? undefined,
+            );
+        }
+      }
+      if (state.value === 'error') {
+        if (get().circuitType === 'disclose') {
+          useSelfAppStore.getState().handleProofResult(false, 'error', 'error');
         }
       }
     });
@@ -420,10 +437,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    init: async (
-      circuitType: 'dsc' | 'disclose' | 'register',
-      selfApp: SelfApp | null = null,
-    ) => {
+    init: async (circuitType: 'dsc' | 'disclose' | 'register') => {
       get()._closeConnections();
 
       if (actor) {
@@ -461,7 +475,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
       set({ passportData, secret });
       set({ circuitType });
-      set({ selfApp });
       actor.send({ type: 'FETCH_DATA' });
     },
 
@@ -483,6 +496,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     validatingDocument: async () => {
       _checkActorInitialized(actor);
+      // TODO: for the disclosure, we could check that the selfApp is a valid one.
       try {
         const { passportData, secret, circuitType } = get();
         const isSupported = await checkPassportSupported(passportData);
@@ -630,7 +644,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        get().init('register', null);
+        get().init('register');
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {
@@ -670,23 +684,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     _generatePayload: async () => {
-      const { circuitType, passportData, secret, selfApp, uuid, sharedKey } =
-        get();
-      // if (!secret) {
-      //     throw new Error('Missing secret for generating payload');
-      // }
-      // if (!passportData) {
-      //     throw new Error('Missing passportData for generating payload');
-      // }
-      // if (!selfApp) {
-      //     throw new Error('Missing selfApp for generating payload');
-      // }
-      // if (!uuid) {
-      //     throw new Error('Missing uuid for generating payload');
-      // }
-      // if (!sharedKey) {
-      //     throw new Error('Missing sharedKey for generating payload');
-      // }
+      const { circuitType, passportData, secret, uuid, sharedKey } = get();
+      const selfApp = useSelfAppStore.getState().selfApp;
+      // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;
       const protocolStore = useProtocolStore.getState();
       switch (circuitType) {
