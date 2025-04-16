@@ -69,7 +69,7 @@ const ProveScreen: React.FC = () => {
     }
     selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
-    provingStore.init('disclose', selectedApp);
+    provingStore.init('disclose');
   }, [selectedApp, isFocused]);
 
   const disclosureOptions = useMemo(() => {
