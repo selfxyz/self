@@ -25,7 +25,7 @@ import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useProofInfo } from '../../stores/proofProvider';
+import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
@@ -33,7 +33,7 @@ import { useProvingStore } from '../../utils/proving/provingMachine';
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
-  const { selectedApp } = useProofInfo();
+  const selectedApp = useSelfAppStore(state => state.selfApp);
   const selectedAppRef = useRef(selectedApp);
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
@@ -146,7 +146,7 @@ const ProveScreen: React.FC = () => {
     <ExpandableBottomLayout.Layout flex={1} backgroundColor={black}>
       <ExpandableBottomLayout.TopSection backgroundColor={black}>
         <YStack alignItems="center">
-          {!selectedApp.sessionId ? (
+          {!selectedApp?.sessionId ? (
             <LottieView
               source={miscAnimation}
               autoPlay
@@ -203,13 +203,13 @@ const ProveScreen: React.FC = () => {
               paddingBottom={20}
             >
               Self will confirm that these details are accurate and none of your
-              confidential info will be revealed to {selectedApp.appName}
+              confidential info will be revealed to {selectedApp?.appName}
             </Caption>
           </View>
         </ScrollView>
         <HeldPrimaryButton
           onPress={onVerify}
-          disabled={!selectedApp.sessionId || !hasScrolledToBottom}
+          disabled={!selectedApp?.sessionId || !hasScrolledToBottom}
         >
           {hasScrolledToBottom
             ? 'Hold To Verify'

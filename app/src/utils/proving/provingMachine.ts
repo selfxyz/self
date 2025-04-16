@@ -76,7 +76,7 @@ const provingMachine = createMachine({
       on: {
         PROVE_SUCCESS: 'post_proving',
         PROVE_ERROR: 'error',
-                PROVE_FAILURE: 'failure',
+        PROVE_FAILURE: 'failure',
       },
     },
     post_proving: {
@@ -100,9 +100,9 @@ const provingMachine = createMachine({
     passport_data_not_found: {
       type: 'final',
     },
-        failure: {
-            type: 'final',
-        },
+    failure: {
+      type: 'final',
+    },
   },
 });
 
@@ -121,8 +121,8 @@ interface ProvingState {
   secret: string | null;
   circuitType: provingMachineCircuitType | null;
   selfApp: SelfApp | null;
-    error_code: string | null;
-    reason: string | null;
+  error_code: string | null;
+  reason: string | null;
   init: (
     circuitType: 'dsc' | 'disclose' | 'register',
     selfApp: SelfApp | null,
@@ -171,7 +171,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'post_proving') {
         get().postProving();
       }
-            if (get().circuitType !== 'disclose' && state.value === 'error') {
+      if (get().circuitType !== 'disclose' && state.value === 'error') {
         setTimeout(() => {
           if (navigationRef.isReady()) {
             navigationRef.navigate('Launch');
@@ -216,8 +216,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     secret: null,
     circuitType: null,
     selfApp: null,
-        error_code: null,
-        reason: null,
+    error_code: null,
+    reason: null,
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -257,7 +257,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           const statusUuid = result.result;
           if (get().uuid !== statusUuid) {
             console.warn(
-                            `Received status UUID (${statusUuid}) does not match stored UUID (${get().uuid
+              `Received status UUID (${statusUuid}) does not match stored UUID (${
+                get().uuid
               }). Using received UUID.`,
             );
           }
@@ -324,8 +325,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error(
             'Proof generation/verification failed (status 3 or 5).',
           );
-                    set({ error_code: data.error_code, reason: data.reason });
-                    actor!.send({ type: 'PROVE_FAILURE' });
+          set({ error_code: data.error_code, reason: data.reason });
+          actor!.send({ type: 'PROVE_FAILURE' });
           socket?.disconnect();
           set({ socketConnection: null });
         } else if (data.status === 4) {

@@ -15,7 +15,7 @@ import { typography } from '../../components/typography/styles';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, white } from '../../utils/colors';
 import {
   buttonTap,
@@ -25,14 +25,12 @@ import {
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } =
-    useProofInfo();
-  const appName = selectedApp?.appName;
+  const { selfApp, cleanSelfApp } = useSelfAppStore();
+  const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
 
   const currentState = useProvingStore(state => state.currentState);
   const reason = useProvingStore(state => state.reason);
-  const appName = useProvingStore(state => state.selfApp?.appName);
 
   const isFocused = useIsFocused();
 
@@ -102,8 +100,8 @@ const SuccessScreen: React.FC = () => {
           onPress={onOkPress}
         >
           {currentState !== 'completed' &&
-            currentState !== 'error' &&
-            currentState !== 'failure' ? (
+          currentState !== 'error' &&
+          currentState !== 'failure' ? (
             <Spinner />
           ) : (
             'OK'

@@ -21,8 +21,7 @@ import useConnectionModal from '../../hooks/useConnectionModal';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import QRScan from '../../images/icons/qr_code.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useApp } from '../../stores/appProvider';
-import { useProofInfo } from '../../stores/proofProvider';
+import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, slate800, white } from '../../utils/colors';
 
 interface QRCodeViewFinderScreenProps {}
@@ -45,9 +44,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
   const { visible: connectionModalVisible } = useConnectionModal();
   const navigation = useNavigation();
   const isFocused = useIsFocused();
-  const { setSelectedApp, cleanSelfApp } = useProofInfo();
   const [doneScanningQR, setDoneScanningQR] = useState(false);
-  const { startAppListener } = useApp();
   const navigateToProveScreen = useHapticNavigation('ProveScreen');
   const onCancelPress = useHapticNavigation('Home');
 
@@ -73,14 +70,14 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         const selfApp = encodedData.get('selfApp');
         if (selfApp) {
           const selfAppJson = JSON.parse(selfApp);
-          setSelectedApp(selfAppJson);
-          startAppListener(selfAppJson.sessionId, setSelectedApp);
+          useSelfAppStore.getState().setSelfApp(selfAppJson);
+          useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
           setTimeout(() => {
             navigateToProveScreen();
           }, 100);
         } else if (sessionId) {
-          cleanSelfApp();
-          startAppListener(sessionId, setSelectedApp);
+          useSelfAppStore.getState().cleanSelfApp();
+          useSelfAppStore.getState().startAppListener(sessionId);
           setTimeout(() => {
             navigateToProveScreen();
           }, 100);
@@ -92,14 +89,7 @@ const QRCodeViewFinderScreen: React.FC<QRCodeViewFinderScreenProps> = ({}) => {
         }
       }
     },
-    [
-      doneScanningQR,
-      navigation,
-      startAppListener,
-      cleanSelfApp,
-      setSelectedApp,
-      navigateToProveScreen,
-    ],
+    [doneScanningQR, navigation, navigateToProveScreen],
   );
 
   const shouldRenderCamera = !connectionModalVisible && !doneScanningQR;
