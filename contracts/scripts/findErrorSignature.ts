@@ -63,13 +63,12 @@ const errorSignatures = [
     'INVALID_REVEALED_DATA_TYPE()',
     'HUB_NOT_SET()',
     'ONLY_HUB_CAN_ACCESS()',
-    'REGISTERED_COMMITMENT()',
-    'RegisteredNullifier()'
+    'REGISTERED_COMMITMENT()'
 ];
 
 errorSignatures.forEach(sig => {
   // Pls input the error code
-  const errorCode = '0x22cbc6a2';
+  const errorCode = '0x9003ac4d';
   const selector = ethers.id(sig).slice(0, 10);
   if (selector === errorCode) {
     console.log(`Found matching error: ${sig}`);
