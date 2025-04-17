@@ -142,11 +142,8 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
         // Verify the proof using the parent contract's logic
         super.verifySelfProof(proof);
 
-        // Extract passport attributes from the revealed data
-        uint256[3] memory revealedDataPacked;
-        for (uint256 i = 0; i < 3; i++) {
-            revealedDataPacked[i] = proof.pubSignals[REVEALED_DATA_PACKED_INDEX + i];
-        }
+        // Extract passport attributes from the revealed data using the utility function
+        uint256[3] memory revealedDataPacked = getRevealedDataPacked(proof.pubSignals);
 
         // Extract passport data using SelfCircuitLibrary
         SelfCircuitLibrary.PassportData memory attributes = SelfCircuitLibrary.extractPassportData(revealedDataPacked);

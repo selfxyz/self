@@ -6,7 +6,6 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
-import {SelfCircuitLibrary} from "../libraries/SelfCircuitLibrary.sol";
 
 /**
  * @title Airdrop (Experimental)

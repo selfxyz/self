@@ -135,6 +135,19 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
+     * @notice Helper function to get an array of revealed data values from proof signals
+     * @dev Returns an array of the three packed revealed data values
+     * @param pubSignals The proof's public signals
+     * @return revealedDataPacked Array of the three packed revealed data values
+     */
+    function getRevealedDataPacked(uint256[21] memory pubSignals) internal pure returns (uint256[3] memory revealedDataPacked) {
+        revealedDataPacked[0] = pubSignals[REVEALED_DATA_PACKED_INDEX];
+        revealedDataPacked[1] = pubSignals[REVEALED_DATA_PACKED_INDEX + 1];
+        revealedDataPacked[2] = pubSignals[REVEALED_DATA_PACKED_INDEX + 2];
+        return revealedDataPacked;
+    }
+
+    /**
      * @notice Verifies a self-proof
      * @dev Validates scope and attestation ID before performing verification through the identity hub
      * @param proof The proof data for verification and disclosure
