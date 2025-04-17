@@ -353,7 +353,8 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build number
-        if: ${{ !env.ACT }}
+        # disable for now, commit doesn't work as expected
+        if: false #${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing ios build number for version ${{ env.VERSION }}"
@@ -479,7 +480,8 @@ jobs:
           app_path: ${{ env.APP_PATH }}
 
       - name: Commit updated build version
-        if: ${{ !env.ACT }}
+        # disable for now, commit doesn't work as expected
+        if: false #${{ !env.ACT }}
         uses: ./.github/actions/push-changes
         with:
           commit_message: "incrementing android build version for version ${{ env.VERSION }}"
