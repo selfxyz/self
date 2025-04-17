@@ -207,7 +207,7 @@ platform :android do
   lane :sync_version do
     android_set_version_name(
       version_name: package_version,
-      gradle_file: android_gradle_file_path,
+      gradle_file: android_gradle_file_path.gsub("../", ""),
     )
   end
 
