@@ -59,6 +59,7 @@ platform :ios do
     upload_to_testflight(
       api_key: result[:api_key],
       distribute_external: true,
+      # TODO: fix error about the groups not being set correctly, fwiw groups are set in the app store connect
       groups: ENV["IOS_TESTFLIGHT_GROUPS"].split(","),
       changelog: "",
       skip_waiting_for_build_processing: false,
