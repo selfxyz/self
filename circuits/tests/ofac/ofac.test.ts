@@ -237,7 +237,7 @@ describe('OFAC - Name and YOB match', function () {
   });
 });
 
-describe.only('OFAC - SMT Security Tests', function () {
+describe('OFAC - SMT Security Tests', function () {
   this.timeout(0);
   let passNoAndNationality_smt = new SMT(poseidon2, true);
   let circuit: any;

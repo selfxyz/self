@@ -21,6 +21,7 @@ import {
   getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
+import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
 describe('Disclose', function () {
   this.timeout(0);
@@ -42,7 +43,9 @@ describe('Disclose', function () {
   const user_identifier = crypto.randomUUID();
   const selector_dg1 = Array(88).fill('1');
   const selector_older_than = '1';
-  const scope = '@coboyApp';
+  const endpoint = 'https://example.com';
+  const scope = 'scope';
+  const fullScope = hashEndpointWithScope(endpoint, scope);
   const attestation_id = PASSPORT_ATTESTATION_ID;
 
   // compute the commitment and insert it in the tree
@@ -78,7 +81,7 @@ describe('Disclose', function () {
       secret,
       PASSPORT_ATTESTATION_ID,
       passportData,
-      scope,
+      fullScope,
       selector_dg1,
       selector_older_than,
       tree,
@@ -165,7 +168,7 @@ describe('Disclose', function () {
         }
 
         const forbidden_countries_list_packed = await circuit.getOutput(w, [
-          'forbidden_countries_list_packed[1]',
+          'forbidden_countries_list_packed[4]',
         ]);
         const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(
           forbidden_countries_list_packed
@@ -364,7 +367,7 @@ describe('Disclose', function () {
           secret,
           PASSPORT_ATTESTATION_ID,
           passportData,
-          scope,
+          fullScope,
           Array(88).fill('0'), // selector_dg1
           selector_older_than,
           tree,

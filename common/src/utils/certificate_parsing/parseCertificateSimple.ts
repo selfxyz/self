@@ -231,8 +231,15 @@ export function getParamsECDSA(cert: Certificate): PublicKeyDetailsECDSA {
       const x_point = key.getPublic().getX().toString('hex');
       const y_point = key.getPublic().getY().toString('hex');
 
-      x = x_point.length % 2 === 0 ? x_point : '0' + x_point;
-      y = y_point.length % 2 === 0 ? y_point : '0' + y_point;
+      // For 521 bit curves, pad to expected length of 132 hex chars (66 bytes)
+      if (curveName === 'secp521r1' || curveName === 'brainpoolP521r1') {
+        x = x_point.padStart(132, '0');
+        y = y_point.padStart(132, '0');
+      } else {
+        // For other curves, ensure even length
+        x = x_point.length % 2 === 0 ? x_point : '0' + x_point;
+        y = y_point.length % 2 === 0 ? y_point : '0' + y_point;
+      }
     }
     return { curve: curveName, params: curveParams, bits: bits, x: x, y: y };
   } catch (error) {

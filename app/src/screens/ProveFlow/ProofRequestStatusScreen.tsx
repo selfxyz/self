@@ -2,7 +2,7 @@ import React, { useEffect } from 'react';
 import { StatusBar, StyleSheet, View } from 'react-native';
 
 import LottieView from 'lottie-react-native';
-import { Spinner } from 'tamagui';
+import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
@@ -23,7 +23,8 @@ import {
 } from '../../utils/haptic';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus, cleanSelfApp } = useProofInfo();
+  const { selectedApp, disclosureStatus, discloseError, cleanSelfApp } =
+    useProofInfo();
   const appName = selectedApp?.appName;
   const goHome = useHapticNavigation('Home');
 
@@ -69,6 +70,7 @@ const SuccessScreen: React.FC = () => {
           <Info
             status={disclosureStatus}
             appName={appName === '' ? 'The app' : appName}
+            reason={discloseError?.reason ?? undefined}
           />
         </View>
         <PrimaryButton
@@ -109,9 +111,11 @@ function getTitle(status: ProofStatusEnum) {
 function Info({
   status,
   appName,
+  reason,
 }: {
   status: ProofStatusEnum;
   appName: string;
+  reason?: string;
 }) {
   if (status === 'success') {
     return (
@@ -122,11 +126,31 @@ function Info({
     );
   } else if (status === 'failure' || status === 'error') {
     return (
-      <Description>
-        Unable to prove your identity to{' '}
-        <BodyText style={typography.strong}>{appName}</BodyText>
-        {status === 'error' && '. Due to technical issues.'}
-      </Description>
+      <View style={{ gap: 8 }}>
+        <Description>
+          Unable to prove your identity to{' '}
+          <BodyText style={typography.strong}>{appName}</BodyText>
+          {status === 'error' && '. Due to technical issues.'}
+        </Description>
+        {status === 'failure' && reason && (
+          <>
+            <Description>
+              <BodyText style={[typography.strong, { fontSize: 14 }]}>
+                Reason:
+              </BodyText>
+            </Description>
+            <View style={{ maxHeight: 60 }}>
+              <ScrollView showsVerticalScrollIndicator={true}>
+                <Description>
+                  <BodyText style={[typography.strong, { fontSize: 14 }]}>
+                    {reason}
+                  </BodyText>
+                </Description>
+              </ScrollView>
+            </View>
+          </>
+        )}
+      </View>
     );
   } else {
     return (

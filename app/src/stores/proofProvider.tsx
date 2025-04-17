@@ -16,9 +16,15 @@ export enum ProofStatusEnum {
   ERROR = 'error',
 }
 
+export type DiscloseError = {
+  error_code?: string;
+  reason?: string;
+};
+
 interface IProofContext {
   registrationStatus: ProofStatusEnum;
   disclosureStatus: ProofStatusEnum;
+  discloseError: DiscloseError | undefined;
   selectedApp: SelfApp;
   setSelectedApp: (app: SelfApp) => void;
   cleanSelfApp: () => void;
@@ -28,6 +34,7 @@ interface IProofContext {
 const defaults: IProofContext = {
   registrationStatus: ProofStatusEnum.PENDING,
   disclosureStatus: ProofStatusEnum.PENDING,
+  discloseError: undefined,
   selectedApp: {
     appName: '',
     logoBase64: '',
@@ -52,7 +59,7 @@ export let globalSetRegistrationStatus:
   | ((status: ProofStatusEnum) => void)
   | null = null;
 export let globalSetDisclosureStatus:
-  | ((status: ProofStatusEnum) => void)
+  | ((status: ProofStatusEnum, error?: DiscloseError) => void)
   | null = null;
 
 /*
@@ -66,6 +73,10 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     ProofStatusEnum.PENDING,
   );
 
+  const [discloseError, setDiscloseError] = useState<DiscloseError | undefined>(
+    undefined,
+  );
+
   const [selectedApp, setSelectedAppInternal] = useState<SelfApp>(
     defaults.selectedApp,
   );
@@ -75,6 +86,7 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
       return;
     }
     setRegistrationStatus(ProofStatusEnum.PENDING);
+    setDiscloseError(undefined);
     setSelectedAppInternal(app);
   }, []);
 
@@ -87,11 +99,15 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
   const resetProof = useCallback(() => {
     setRegistrationStatus(ProofStatusEnum.PENDING);
     setDisclosureStatus(ProofStatusEnum.PENDING);
+    setDiscloseError(undefined);
   }, []);
 
   useEffect(() => {
     globalSetRegistrationStatus = setRegistrationStatus;
-    globalSetDisclosureStatus = setDisclosureStatus;
+    globalSetDisclosureStatus = (status, error) => {
+      setDisclosureStatus(status);
+      setDiscloseError(error);
+    };
     return () => {
       globalSetRegistrationStatus = null;
       globalSetDisclosureStatus = null;
@@ -102,6 +118,7 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     () => ({
       registrationStatus,
       disclosureStatus,
+      discloseError,
       selectedApp,
       setSelectedApp,
       cleanSelfApp,
@@ -110,8 +127,10 @@ export function ProofProvider({ children }: PropsWithChildren<{}>) {
     [
       registrationStatus,
       disclosureStatus,
+      discloseError,
       selectedApp,
       setSelectedApp,
+      setDiscloseError,
       cleanSelfApp,
       resetProof,
     ],

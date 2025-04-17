@@ -15,6 +15,7 @@ import { getUniversalLink, SelfApp, SelfAppBuilder } from '../../common/src/util
 interface SelfQRcodeProps {
   selfApp: SelfApp;
   onSuccess: () => void;
+  onError: (data: {error_code?: string, reason?: string}) => void;
   type?: 'websocket' | 'deeplink';
   websocketUrl?: string;
   size?: number;
@@ -37,6 +38,7 @@ const SelfQRcodeWrapper = (props: SelfQRcodeProps) => {
 const SelfQRcode = ({
   selfApp,
   onSuccess,
+  onError,
   type = 'websocket',
   websocketUrl = WS_DB_RELAYER,
   size = 300,
@@ -62,7 +64,8 @@ const SelfQRcode = ({
         },
         type,
         setProofStep,
-        onSuccess
+        onSuccess,
+        onError,
       );
     }
 
