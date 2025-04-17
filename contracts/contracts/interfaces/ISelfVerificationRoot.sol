@@ -20,6 +20,10 @@ interface ISelfVerificationRoot {
         uint256[21] pubSignals;
     }
     
+    /**
+     * @notice Verifies a self-proof
+     * @param proof The proof data for verification and disclosure
+     */
     function verifySelfProof(
         DiscloseCircuitProof memory proof
     ) external;

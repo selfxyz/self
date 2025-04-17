@@ -38,6 +38,15 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
         SelfCircuitLibrary.PassportData attributes
     );
 
+    /// @notice Emitted when the scope is updated
+    event ScopeUpdated(uint256 newScope);
+    
+    /// @notice Emitted when a new attestation ID is added
+    event AttestationIdAdded(uint256 attestationId);
+    
+    /// @notice Emitted when an attestation ID is removed
+    event AttestationIdRemoved(uint256 attestationId);
+
     // ====================================================
     // Errors
     // ====================================================
@@ -54,18 +63,18 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @notice Constructor for the SelfPassportERC721 contract
      * @param identityVerificationHub The address of the Identity Verification Hub
      * @param scope The expected proof scope for user registration
-     * @param attestationId The expected attestation identifier required in proofs
+     * @param attestationIds The expected attestation identifiers required in proofs
      * @param name The name of the NFT collection
      * @param symbol The symbol of the NFT collection
      */
     constructor(
         address identityVerificationHub,
         uint256 scope,
-        uint256 attestationId,
+        uint256[] memory attestationIds,
         string memory name,
         string memory symbol
     )
-        SelfVerificationRoot(identityVerificationHub, scope, attestationId)
+        SelfVerificationRoot(identityVerificationHub, scope, attestationIds)
         ERC721(name, symbol)
         Ownable(_msgSender())
     {}
@@ -73,6 +82,47 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     // ====================================================
     // External/Public Functions
     // ====================================================
+
+    /**
+     * @notice Updates the scope used for verification
+     * @dev Only callable by the contract owner
+     * @param newScope The new scope to set
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+        emit ScopeUpdated(newScope);
+    }
+
+    /**
+     * @notice Adds a new attestation ID to the allowed list
+     * @dev Only callable by the contract owner
+     * @param attestationId The attestation ID to add
+     */
+    function addAttestationId(uint256 attestationId) external onlyOwner {
+        _addAttestationId(attestationId);
+        emit AttestationIdAdded(attestationId);
+    }
+
+    /**
+     * @notice Removes an attestation ID from the allowed list
+     * @dev Only callable by the contract owner
+     * @param attestationId The attestation ID to remove
+     */
+    function removeAttestationId(uint256 attestationId) external onlyOwner {
+        _removeAttestationId(attestationId);
+        emit AttestationIdRemoved(attestationId);
+    }
+
+    /**
+     * @notice Updates the verification configuration
+     * @dev Only callable by the contract owner
+     * @param verificationConfig The new verification configuration
+     */
+    function setVerificationConfig(
+        ISelfVerificationRoot.VerificationConfig memory verificationConfig
+    ) external onlyOwner {
+        _setVerificationConfig(verificationConfig);
+    }
 
     /**
      * @notice Verifies a self-proof and mints an NFT with passport attributes
@@ -127,6 +177,31 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      */
     function isNullifierUsed(uint256 nullifier) external view returns (bool) {
         return _usedNullifiers[nullifier];
+    }
+
+    /**
+     * @notice Check if the specified attestation ID is allowed
+     * @param attestationId The attestation ID to check
+     * @return True if the attestation ID is allowed, false otherwise
+     */
+    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+        return _attestationIds[attestationId];
+    }
+
+    /**
+     * @notice Get the current scope value
+     * @return The current scope value
+     */
+    function getScope() external view returns (uint256) {
+        return _scope;
+    }
+
+    /**
+     * @notice Get the current verification configuration
+     * @return The current verification configuration
+     */
+    function getVerificationConfig() external view returns (ISelfVerificationRoot.VerificationConfig memory) {
+        return _getVerificationConfig();
     }
 
     // ====================================================

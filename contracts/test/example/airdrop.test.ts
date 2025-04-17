@@ -28,12 +28,14 @@ describe("Airdrop", () => {
     let nullifier: any;
     let forbiddenCountriesList: any;
     let countriesListPacked: any;
+    let attestationIds: any[];
 
     before(async () => {
         deployedActors = await deploySystemFixtures();
 
         registerSecret = generateRandomFieldElement();
         nullifier = generateRandomFieldElement();
+        attestationIds = [BigInt(ATTESTATION_ID.E_PASSPORT)];
         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
 
         forbiddenCountriesList = ['AAA', 'ABC', 'CBA'];
@@ -75,7 +77,7 @@ describe("Airdrop", () => {
         airdrop = await airdropFactory.connect(deployedActors.owner).deploy(
             deployedActors.hub.target,
             hashEndpointWithScope("https://test.com", "test-scope"),
-            ATTESTATION_ID.E_PASSPORT,
+            attestationIds,
             token.target
         );
         await airdrop.waitForDeployment();
@@ -336,7 +338,7 @@ describe("Airdrop", () => {
         const newAirdrop = await airdropFactory.connect(owner).deploy(
             hub.target,
             hashEndpointWithScope("https://test.com", "test-scope"),
-            ATTESTATION_ID.E_PASSPORT,
+            attestationIds,
             token.target
         );
         await newAirdrop.waitForDeployment();
@@ -346,7 +348,7 @@ describe("Airdrop", () => {
             olderThan: 20,
             forbiddenCountriesEnabled: true,
             forbiddenCountriesListPacked: countriesListPacked,
-            ofacEnabled: [true, true, true]
+            ofacEnabled: [true, true, true] as [boolean, boolean, boolean]
         };
         await newAirdrop.connect(owner).setVerificationConfig(verificationConfig);
 
@@ -360,9 +362,12 @@ describe("Airdrop", () => {
         expect(scope).to.equal(hashEndpointWithScope("https://test.com", "test-scope"));
     });
 
-    it("should return correct attestation id", async () => {
-        const attestationId = await airdrop.getAttestationId();
-        expect(attestationId).to.equal(ATTESTATION_ID.E_PASSPORT);
+    it("should check if attestation ID is allowed", async () => {
+        const isAllowed = await airdrop.isAttestationIdAllowed(ATTESTATION_ID.E_PASSPORT);
+        expect(isAllowed).to.be.true;
+        
+        const isNotAllowed = await airdrop.isAttestationIdAllowed(999999); // Some random ID not in the list
+        expect(isNotAllowed).to.be.false;
     });
 
     it("should return correct merkle root", async () => {
@@ -534,7 +539,7 @@ describe("Airdrop", () => {
             olderThan: 25,
             forbiddenCountriesEnabled: false,
             forbiddenCountriesListPacked: countriesListPacked,
-            ofacEnabled: [false, false, false]
+            ofacEnabled: [false, false, false] as [boolean, boolean, boolean]
         };
 
         await airdrop.connect(owner).setVerificationConfig(newVerificationConfig);
@@ -556,7 +561,7 @@ describe("Airdrop", () => {
             olderThan: 25,
             forbiddenCountriesEnabled: false,
             forbiddenCountriesListPacked: countriesListPacked,
-            ofacEnabled: [false, false, false]
+            ofacEnabled: [false, false, false] as [boolean, boolean, boolean]
         };
 
         await expect(airdrop.connect(user1).setVerificationConfig(newVerificationConfig))
@@ -573,6 +578,78 @@ describe("Airdrop", () => {
             expect(config.forbiddenCountriesListPacked[i]).to.equal(countriesListPacked[i]);
         }
         expect(config.ofacEnabled).to.deep.equal([true, true, true]);
+    });
+
+    it("should able to update scope by owner", async () => {
+        const { owner } = deployedActors;
+        const newScope = hashEndpointWithScope("https://newtest.com", "new-test-scope");
+        
+        await airdrop.connect(owner).setScope(newScope);
+        const scope = await airdrop.getScope();
+        expect(scope).to.equal(newScope);
+        
+        // Verify event was emitted
+        const filter = airdrop.filters.ScopeUpdated();
+        const events = await airdrop.queryFilter(filter);
+        const lastEvent = events[events.length - 1];
+        expect(lastEvent.args.newScope).to.equal(newScope);
+    });
+
+    it("should not be able to update scope by non-owner", async () => {
+        const { user1 } = deployedActors;
+        const newScope = hashEndpointWithScope("https://newtest.com", "new-test-scope");
+        
+        await expect(airdrop.connect(user1).setScope(newScope))
+            .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
+            .withArgs(await user1.getAddress());
+    });
+
+    it("should able to add attestation ID by owner", async () => {
+        const { owner } = deployedActors;
+        const newAttestationId = 999; // Some new ID
+        
+        await airdrop.connect(owner).addAttestationId(newAttestationId);
+        const isAllowed = await airdrop.isAttestationIdAllowed(newAttestationId);
+        expect(isAllowed).to.be.true;
+        
+        // Verify event was emitted
+        const filter = airdrop.filters.AttestationIdAdded();
+        const events = await airdrop.queryFilter(filter);
+        const lastEvent = events[events.length - 1];
+        expect(lastEvent.args.attestationId).to.equal(newAttestationId);
+    });
+
+    it("should not be able to add attestation ID by non-owner", async () => {
+        const { user1 } = deployedActors;
+        const newAttestationId = 888; // Some new ID
+        
+        await expect(airdrop.connect(user1).addAttestationId(newAttestationId))
+            .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
+            .withArgs(await user1.getAddress());
+    });
+
+    it("should able to remove attestation ID by owner", async () => {
+        const { owner } = deployedActors;
+        const attestationIdToRemove = ATTESTATION_ID.E_PASSPORT;
+        
+        await airdrop.connect(owner).removeAttestationId(attestationIdToRemove);
+        const isAllowed = await airdrop.isAttestationIdAllowed(attestationIdToRemove);
+        expect(isAllowed).to.be.false;
+        
+        // Verify event was emitted
+        const filter = airdrop.filters.AttestationIdRemoved();
+        const events = await airdrop.queryFilter(filter);
+        const lastEvent = events[events.length - 1];
+        expect(lastEvent.args.attestationId).to.equal(attestationIdToRemove);
+    });
+
+    it("should not be able to remove attestation ID by non-owner", async () => {
+        const { user1 } = deployedActors;
+        const attestationIdToRemove = ATTESTATION_ID.E_PASSPORT;
+        
+        await expect(airdrop.connect(user1).removeAttestationId(attestationIdToRemove))
+            .to.be.revertedWithCustomError(airdrop, "OwnableUnauthorizedAccount")
+            .withArgs(await user1.getAddress());
     });
 
 });

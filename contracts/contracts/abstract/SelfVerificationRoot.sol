@@ -23,8 +23,8 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     uint256 internal _scope;
 
     /// @notice The attestation ID that proofs must match
-    /// @dev Used to validate that submitted proofs contain the correct attestation
-    uint256 internal _attestationId;
+    /// @dev Used to validate that submitted proofs is generated with allowed attestation IDs
+    mapping(uint256 => bool) internal _attestationIds;
 
     /// @notice Configuration settings for the verification process
     /// @dev Contains settings for age verification, country restrictions, and OFAC checks
@@ -73,16 +73,18 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @notice Initializes the SelfVerificationRoot contract.
      * @param identityVerificationHub The address of the Identity Verification Hub.
      * @param scope The expected proof scope for user registration.
-     * @param attestationId The expected attestation identifier required in proofs.
+     * @param attestationIds The expected attestation identifiers required in proofs.
      */
     constructor(
         address identityVerificationHub,
         uint256 scope,
-        uint256 attestationId
+        uint256[] memory attestationIds
     ) {
         _identityVerificationHub = IIdentityVerificationHubV1(identityVerificationHub);
         _scope = scope;
-        _attestationId = attestationId;
+        for (uint256 i = 0; i < attestationIds.length; i++) {
+            _attestationIds[attestationIds[i]] = true;
+        }
     }
 
     /**
@@ -106,6 +108,33 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
     }
 
     /**
+     * @notice Updates the scope value
+     * @dev Used to change the expected scope for proofs
+     * @param newScope The new scope value to set
+     */
+    function _setScope(uint256 newScope) internal {
+        _scope = newScope;
+    }
+
+    /**
+     * @notice Adds a new attestation ID to the allowed list
+     * @dev Used to add support for additional attestation types
+     * @param attestationId The attestation ID to add
+     */
+    function _addAttestationId(uint256 attestationId) internal {
+        _attestationIds[attestationId] = true;
+    }
+
+    /**
+     * @notice Removes an attestation ID from the allowed list
+     * @dev Used to revoke support for specific attestation types
+     * @param attestationId The attestation ID to remove
+     */
+    function _removeAttestationId(uint256 attestationId) internal {
+        _attestationIds[attestationId] = false;
+    }
+
+    /**
      * @notice Verifies a self-proof
      * @dev Validates scope and attestation ID before performing verification through the identity hub
      * @param proof The proof data for verification and disclosure
@@ -120,7 +149,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             revert InvalidScope();
         }
 
-        if (_attestationId != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]) {
+        if (!_attestationIds[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_ATTESTATION_ID_INDEX]]) {
             revert InvalidAttestationId();
         }
 

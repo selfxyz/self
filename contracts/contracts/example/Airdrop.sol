@@ -6,6 +6,7 @@ import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProo
 import {SelfVerificationRoot} from "../abstract/SelfVerificationRoot.sol";
 import {ISelfVerificationRoot} from "../interfaces/ISelfVerificationRoot.sol";
 import {Ownable} from "@openzeppelin/contracts/access/Ownable.sol";
+import {SelfCircuitLibrary} from "../libraries/SelfCircuitLibrary.sol";
 
 /**
  * @title Airdrop (Experimental)
@@ -74,6 +75,12 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     event ClaimClose();
 
     event UserIdentifierRegistered(uint256 indexed registeredUserIdentifier, uint256 indexed nullifier);
+    /// @notice Emitted when the scope is updated.
+    event ScopeUpdated(uint256 newScope);
+    /// @notice Emitted when a new attestation ID is added.
+    event AttestationIdAdded(uint256 attestationId);
+    /// @notice Emitted when an attestation ID is removed.
+    event AttestationIdRemoved(uint256 attestationId);
 
     // ====================================================
     // Constructor
@@ -85,19 +92,19 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      *      and sets the ERC20 token to be distributed.
      * @param _identityVerificationHub The address of the Identity Verification Hub.
      * @param _scope The expected proof scope for user registration.
-     * @param _attestationId The expected attestation identifier required in proofs.
+     * @param _attestationIds The expected attestation identifiers required in proofs.
      * @param _token The address of the ERC20 token for airdrop.
      */
     constructor(
         address _identityVerificationHub, 
         uint256 _scope, 
-        uint256 _attestationId,
+        uint256[] memory _attestationIds,
         address _token
     ) 
         SelfVerificationRoot(
             _identityVerificationHub, 
             _scope, 
-            _attestationId
+            _attestationIds
         )
         Ownable(_msgSender())
     {
@@ -126,6 +133,36 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         ISelfVerificationRoot.VerificationConfig memory newVerificationConfig
     ) external onlyOwner {
         _setVerificationConfig(newVerificationConfig);
+    }
+
+    /**
+     * @notice Updates the scope used for verification.
+     * @dev Only callable by the contract owner.
+     * @param newScope The new scope to set.
+     */
+    function setScope(uint256 newScope) external onlyOwner {
+        _setScope(newScope);
+        emit ScopeUpdated(newScope);
+    }
+
+    /**
+     * @notice Adds a new attestation ID to the allowed list.
+     * @dev Only callable by the contract owner.
+     * @param attestationId The attestation ID to add.
+     */
+    function addAttestationId(uint256 attestationId) external onlyOwner {
+        _addAttestationId(attestationId);
+        emit AttestationIdAdded(attestationId);
+    }
+
+    /**
+     * @notice Removes an attestation ID from the allowed list.
+     * @dev Only callable by the contract owner.
+     * @param attestationId The attestation ID to remove.
+     */
+    function removeAttestationId(uint256 attestationId) external onlyOwner {
+        _removeAttestationId(attestationId);
+        emit AttestationIdRemoved(attestationId);
     }
 
     /**
@@ -205,11 +242,12 @@ contract Airdrop is SelfVerificationRoot, Ownable {
     }
 
     /**
-     * @notice Retrieves the expected attestation identifier.
-     * @return The attestation identifier.
+     * @notice Checks if the specified attestation ID is allowed.
+     * @param attestationId The attestation ID to check.
+     * @return True if the attestation ID is allowed, false otherwise.
      */
-    function getAttestationId() external view returns (uint256) {
-        return _attestationId;
+    function isAttestationIdAllowed(uint256 attestationId) external view returns (bool) {
+        return _attestationIds[attestationId];
     }
 
     /**
