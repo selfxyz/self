@@ -1,4 +1,4 @@
- import * as fs from 'fs';
+import * as fs from 'fs';
 import * as path from 'path';
 
 const srcDir = path.join(__dirname, '..', '..', 'src', 'mock_certificates');

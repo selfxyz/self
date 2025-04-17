@@ -48,7 +48,7 @@ template AadhaarQRVerifier(n, k, maxDataLength) {
     signatureVerifier.signature <== signature;
     pubkeyHash <== signatureVerifier.pubkeyHash;
 
-    // do not want to use this component here anymore
+    // do not want to use this component here anymore,further discussion required
     // // Assert data between qrDataPaddedLength and maxDataLength is zero
     // AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
     

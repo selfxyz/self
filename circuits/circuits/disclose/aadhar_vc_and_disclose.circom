@@ -11,8 +11,7 @@ include "circomlib/circuits/poseidon.circom";
 /// @input leaf_depth Actual size of the merkle tree
 /// @input siblings Siblings of the commitment in the merkle tree
 /// @input qrDataPadded QR data without the signature; assumes elements to be bytes; remaining space is padded with 0
-/// @input qrDataPaddedLength Length of padded QR data
-/// for now we follow the pattern similar to anon aadhaar but later would like to switch to a format similar to passport circuits
+/// @input qrDataPaddedLength Length of padded QR dat
 /// @input revealAgeAbove18 Flag to reveal age is above 18
 /// @input revealGender Flag to reveal extracted gender
 /// @input revealPinCode Flag to reveal extracted pin code
@@ -28,14 +27,15 @@ include "circomlib/circuits/poseidon.circom";
 /// @output pincode
 /// @output gender
 /// @output state
-/// @output nullifier Scope nullifier - not deterministic on the passport data
+/// @output nullifier Scope nullifier - not deterministic on the aadhaar data
 /// TODO
+/// for now we follow the pattern similar to anon aadhaar but later would like to switch to a format similar to passport circuits
 /// @input datarevealselector Indices of delimiters (255) in the QR text data. 18 in total
 
 template AADHAAR_VC_AND_DISCLOSE(nLevels) {
 
     signal input secret;
-    signal input attestation_id;          // == 2,
+    signal input attestation_id;// == 2,
     // data inputs
     signal input qrDataPadded[maxDataLength];
     signal input qrDataPaddedLength;
@@ -50,7 +50,7 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
     signal input user_identifier;
 
     /// TODO
-    // signal input forbidden_countries_list[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH * 3];
+    //To discuss further for aadhaar how does the forbidden stuff look with the name fields etuff etc
 
     // signal input ofac_passportno_smt_leaf_key;
     // signal input ofac_passportno_smt_root;
@@ -68,10 +68,11 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
     // would like to move to something like 
     /// @input datarevealselector Indices of delimiters (255) in the QR text data. 18 in total
     /// to disclose all the fields like in the passport circuit 
+
     signal input revealAgeAbove18;   // 0/1
-    signal input gender;       // 0/1
-    signal input pinCode;      // 0/1
-    signal input state;        // 0/1
+    signal input gender;             // 0/1
+    signal input pinCode;            // 0/1
+    signal input state;              // 0/1
 
     signal ageAbove18; 
     signal gender;
