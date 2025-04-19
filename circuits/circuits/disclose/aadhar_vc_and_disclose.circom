@@ -68,11 +68,11 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
     // would like to move to something like 
     /// @input datarevealselector Indices of delimiters (255) in the QR text data. 18 in total
     /// to disclose all the fields like in the passport circuit 
+    signal input revealAgeAbove18;         // 0/1
+    signal input revealGender;             // 0/1
+    signal input revealPinCode;            // 0/1
+    signal input revealState;              // 0/1
 
-    signal input revealAgeAbove18;   // 0/1
-    signal input gender;             // 0/1
-    signal input pinCode;            // 0/1
-    signal input state;              // 0/1
 
     signal ageAbove18; 
     signal gender;
@@ -90,6 +90,7 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
     gender <== revealGender * qrDataExtractor.gender;
     state <== revealstate * qrDataExtractor.state;
     pinCode <== revealPinCode * qrDataExtractor.pinCode;
+
 
 
     // verify commitment is part of the merkle tree

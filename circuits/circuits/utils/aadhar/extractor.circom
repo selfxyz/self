@@ -67,7 +67,7 @@ template ExtractAndPackAsInt(maxDataLength, extractPosition) {
     signal endDelimiterIndex <== delimiterIndices[extractPosition];
 
     var extractMaxLength = maxFieldByteSize(); // Packing data only as a single int
-    var byteLength = extractMaxLength + 1;
+    var byteLength = extractMaxLength + 1; 
     
     // Shift the data to the right till the the delimiter start
     component subArraySelector = SelectSubArray(maxDataLength, byteLength);
@@ -107,9 +107,13 @@ template ExtractAndPackAsInt(maxDataLength, extractPosition) {
 /// @output RedId
 template RefIdExtractor(maxDataLength){
     signal input nDelimitedData[maxDataLength];
+    signal input delimiterIndices[18];
     signal output RefId;
 
-    RefId <== DigitBytesToInt(4)(nDelimitedData[])
+    component extractor = ExtractAndPackAsInt(maxDataLength, referenceIdPosition());//2 is the position 
+    extractor.nDelimitedData   <== nDelimitedData;
+    extractor.delimiterIndices <== delimiterIndices;
+    refId <== extractor.out;
 
 }
 
@@ -298,6 +302,7 @@ template PhotoExtractor(maxDataLength) {
 /// @input qrDataPaddedLength - Length of the padded QR data
 /// @input delimiterIndices[17] - Indices of the delimiters in the QR data
 /// @output name - single field (int) element representing the name in big endian order
+/// @output RedId - 
 /// @output age - Unix timestamp representing the date of birth
 /// @output gender - Single byte number representing gender
 /// @output photo - Photo of the user along the SHA padding
@@ -307,6 +312,7 @@ template QRDataExtractor(maxDataLength) {
     signal input delimiterIndices[18];
 
     // signal output name;
+    signal output RedId;
     signal output timestamp;
     signal output ageAbove18;
     signal output gender;
@@ -340,6 +346,11 @@ template QRDataExtractor(maxDataLength) {
 
         nDelimitedData[i] <== is255AndIndexBeforePhoto[i] * n255Filter[i] + data[i];
     }
+    // Extract RefID
+    component refIdExt = RefIdExtractor( maxQrDataLength );
+    refIdExt.nDelimitedData   <== qrDataPadded;
+    refIdExt.delimiterIndices <== delimiterIndices;
+    RefId <== refIdExt.refId;
 
     // Extract timestamp
     component timestampExtractor = TimestampExtractor(maxDataLength);
