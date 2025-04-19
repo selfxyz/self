@@ -101,6 +101,17 @@ template ExtractAndPackAsInt(maxDataLength, extractPosition) {
 /// @output name 
 /// to discuss
 
+/// @title
+/// @notice RefIdExtractor
+/// @input nDelimitedData[maxDataLength]
+/// @output RedId
+template RefIdExtractor(maxDataLength){
+    signal input nDelimitedData[maxDataLength];
+    signal output RefId;
+
+    RefId <== DigitBytesToInt(4)(nDelimitedData[])
+
+}
 
 /// @title TimestampExtractor
 /// @notice Extracts the timestamp when the QR was signed rounded to nearest hour
@@ -141,6 +152,7 @@ template TimestampExtractor(maxDataLength) {
 /// @input currentYear - Current year to calculate the age
 /// @input currentMonth - Current month to calculate the age
 /// @input currentDay - Current day to calculate the age
+/// @output age - Age of the person 
 /// @output out - Unix timestamp representing the date of birth
 template AgeExtractor(maxDataLength) {
     signal input nDelimitedData[maxDataLength];

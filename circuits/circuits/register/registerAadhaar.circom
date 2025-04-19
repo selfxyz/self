@@ -7,6 +7,7 @@ include "../utils/aadhar/extractor.circom";
 include "../utils/aadhar/constant.circom";
 include "../utils/passport/customHashers.circom";
 include "../utils/aadhar/nullifier.circom";
+include "../passport/customHashers.circom";
 
 /// @title: AadhaarRegister
 /// notice: This circuit is reposonsible for verifing the Aadhaar QR data and then outputting the commitment and nullifier
@@ -82,25 +83,19 @@ template AadhaarRegister(n, k,maxDataLength) {
 
     signal photoHash <== hReduce.out;
 
-    // TODO:figure out this part
-    // many questions to solve +task hand , primry of which being a better data extractor
-    // Skipping a full dataHash for now, since photo is already unique-enough + hashing full QR (512*3) would need custom batching,need to work on this 
+    // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
+    component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
+    n2bHeaderLength.in <== qrDataPaddedLength;
 
-    // component dataHasher = Poseidon(4);
-    // dataHasher.inputs[0] <== ex.ageAbove18;
-    // dataHasher.inputs[1] <== ex.gender;
-    // dataHasher.inputs[2] <== ex.state;
-    // dataHasher.inputs[3] <== ex.pinCode;
-    // signal dataHash <== dataHasher.out;
+    // Assert data between qrDataPaddedLength and maxDataLength is zero
+    AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
 
-    commitment <== Poseidon(4)([
-        secret,
-        attestation_id,
-        // data_hash,
-        photoHash,
-        pubKeyHash
-    ]);
+    // Poseidon commitment
+    component dataCommit = PackBytesAndPoseidon(maxDataLength);
+    dataCommit.in <== qrDataPadded;// whole buffer including zeros
+    commitment <== dataCommit.out;
 
+    // WIP - nullifier
     nullifier <== Nullifier()(nullifierSeed, photo);
 
 }
