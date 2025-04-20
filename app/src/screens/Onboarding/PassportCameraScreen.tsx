@@ -34,6 +34,9 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
   // Add a ref to track when the camera screen is mounted
   const scanStartTimeRef = useRef(Date.now());
 
+  const windowHeight = Dimensions.get('window').height;
+  const bottomSectionHeight = windowHeight * 0.38; // roughly 38% of screen height
+
   const onPassportRead = useCallback<PassportCameraProps['onPassportRead']>(
     (error, result) => {
       // Calculate scan duration in seconds with exactly 2 decimal places
@@ -116,46 +119,56 @@ const PassportCameraScreen: React.FC<PassportNFCScanScreen> = ({}) => {
           renderMode="HARDWARE"
         />
       </ExpandableBottomLayout.TopSection>
-      <ExpandableBottomLayout.BottomSection backgroundColor={white}>
-        <YStack alignItems="center" gap="$2.5">
-          <YStack alignItems="center" gap="$6" pb="$2.5">
-            <Title>Scan your passport</Title>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View pt="$2">
-                <Scan height={40} width={40} color={slate800} />
-              </View>
-              <View maxWidth="75%">
-                <Description style={styles.subheader}>
-                  Open to the photograph page
-                </Description>
-                <Additional style={styles.description}>
-                  Position all four corners of the first passport page clearly
-                  in the frame.
-                </Additional>
-              </View>
-            </XStack>
-            <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
-              <View pt="$2">
-                <Bulb height={40} width={40} color={slate800} />
-              </View>
-              <View
-                alignItems="flex-start"
-                justifyContent="flex-start"
-                maxWidth="75%"
-              >
-                <Description style={styles.subheader}>
-                  Avoid dim lighting or glare
-                </Description>
-                <Additional style={styles.description}>
-                  Ensure that the text and photo are clearly readable and well
-                  lit.
-                </Additional>
-              </View>
-            </XStack>
-          </YStack>
+      <ExpandableBottomLayout.BottomSection
+        backgroundColor={white}
+        height={bottomSectionHeight}
+        flexShrink={0}
+      >
+        <ScrollView
+          flex={1}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ flexGrow: 1 }}
+        >
+          <YStack alignItems="center" gap="$2.5">
+            <YStack alignItems="center" gap="$6" pb="$2.5">
+              <Title>Scan your passport</Title>
+              <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+                <View pt="$2">
+                  <Scan height={40} width={40} color={slate800} />
+                </View>
+                <View maxWidth="75%">
+                  <Description style={styles.subheader}>
+                    Open to the photograph page
+                  </Description>
+                  <Additional style={styles.description}>
+                    Position all four corners of the first passport page clearly
+                    in the frame.
+                  </Additional>
+                </View>
+              </XStack>
+              <XStack gap="$6" alignSelf="flex-start" alignItems="flex-start">
+                <View pt="$2">
+                  <Bulb height={40} width={40} color={slate800} />
+                </View>
+                <View
+                  alignItems="flex-start"
+                  justifyContent="flex-start"
+                  maxWidth="75%"
+                >
+                  <Description style={styles.subheader}>
+                    Avoid dim lighting or glare
+                  </Description>
+                  <Additional style={styles.description}>
+                    Ensure that the text and photo are clearly readable and well
+                    lit.
+                  </Additional>
+                </View>
+              </XStack>
+            </YStack>
 
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
-        </YStack>
+            <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          </YStack>
+        </ScrollView>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
