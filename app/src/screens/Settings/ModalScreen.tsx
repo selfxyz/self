@@ -35,6 +35,7 @@ interface ModalScreenProps extends StaticScreenProps<ModalParams> {}
 
 const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
   const navigation = useNavigation();
+
   const onButtonPressed = useCallback(async () => {
     confirmTap();
     try {
@@ -43,13 +44,13 @@ const ModalScreen: React.FC<ModalScreenProps> = ({ route: { params } }) => {
     } catch (error) {
       console.error(error);
     }
-  }, []);
+  }, [params?.onButtonPress]);
 
   const onClose = useCallback(() => {
     impactLight();
     navigation.goBack();
     params?.onModalDismiss();
-  }, [params]);
+  }, [params?.onModalDismiss]);
 
   return (
     <ModalBackDrop>
