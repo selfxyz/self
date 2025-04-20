@@ -24,6 +24,7 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       buttonText: 'Update and restart',
       onButtonPress: async () => {
         if (newVersionUrl !== null) {
+          // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
           await Linking.openURL(newVersionUrl);
         }
       },
