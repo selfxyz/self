@@ -1,7 +1,7 @@
 import { IS_TEST_BUILD } from '@env';
 
 export const shouldShowAesopRedesign = (): boolean => {
-  return IS_TEST_BUILD === 'true';
+  return JSON.parse(IS_TEST_BUILD);
 };
 
 export const useAesopRedesign = (): boolean => {
