@@ -1,8 +1,7 @@
-import { SENTRY_DISABLE_LOCAL_DEV, SENTRY_DSN } from '@env';
+import { SENTRY_DSN } from '@env';
 import * as Sentry from '@sentry/react-native';
 
-export const isSentryDisabled =
-  !SENTRY_DSN || JSON.parse(SENTRY_DISABLE_LOCAL_DEV);
+export const isSentryDisabled = !SENTRY_DSN;
 
 export const initSentry = () => {
   if (isSentryDisabled) {
