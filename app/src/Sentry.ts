@@ -1,4 +1,4 @@
-import { SENTRY_DSN } from '@env';
+import { SENTRY_DISABLE_LOCAL_DEV, SENTRY_DSN } from '@env';
 import * as Sentry from '@sentry/react-native';
 
 export const initSentry = () => {
@@ -44,7 +44,7 @@ export const captureMessage = (
   message: string,
   context?: Record<string, any>,
 ) => {
-  if (!SENTRY_DSN) {
+  if (!SENTRY_DSN || JSON.parse(SENTRY_DISABLE_LOCAL_DEV)) {
     return;
   }
   Sentry.captureMessage(message, {
