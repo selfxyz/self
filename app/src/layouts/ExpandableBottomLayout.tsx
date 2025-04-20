@@ -1,7 +1,8 @@
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import { Dimensions, StatusBar, StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { View, ViewProps } from 'tamagui';
+
+import { ScrollView, View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
 
@@ -93,13 +94,24 @@ const BottomSection: React.FC<BottomSectionProps> = ({
 
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
+  // cap bottom section height and make contents scrollable
+  const windowHeight = Dimensions.get('window').height;
+  const defaultHeight = windowHeight * 0.38;
+  const height = props.height ?? defaultHeight;
   return (
     <View
       {...props}
+      height={height}
       style={[styles.bottomSection, style]}
       paddingBottom={totalBottom}
     >
-      {children}
+      <ScrollView
+        flex={1}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        {children}
+      </ScrollView>
     </View>
   );
 };
