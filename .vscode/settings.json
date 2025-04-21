@@ -29,6 +29,15 @@
   },
   "editor.codeActionsOnSave.mode": "all",
 
+  // TypeScript Specific Rules
+  "typescript.format.enable": false,  // Disable VS Code's built-in formatter for TypeScript
+  "[typescript]": {
+    "editor.defaultFormatter": null  // Let ESLint handle TypeScript formatting
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": null  // Let ESLint handle TypeScript React formatting
+  },
+
   // Indentation & Whitespace
   "editor.tabSize": 2,
   "editor.insertSpaces": true,

@@ -86,12 +86,12 @@ const PassportDataInfoScreen: React.FC<PassportDataInfoScreenProps> = ({}) => {
               !metadata
                 ? ''
                 : key === 'cscaFound'
-                ? metadata?.cscaFound === true
-                  ? 'Yes'
-                  : 'No'
-                : (metadata?.[key as keyof PassportMetadata] as
-                    | string
-                    | number) || 'None'
+                  ? metadata?.cscaFound === true
+                    ? 'Yes'
+                    : 'No'
+                  : (metadata?.[key as keyof PassportMetadata] as
+                      | string
+                      | number) || 'None'
             }
           />
         ))}
