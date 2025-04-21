@@ -11,11 +11,9 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { DefaultNavBar } from '../components/NavBar';
 import AppLayout from '../layouts/AppLayout';
-import { useApp } from '../stores/appProvider';
-import { useProofInfo } from '../stores/proofProvider';
 import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
-import { setupUniversalLinkListenerInNavigation } from '../utils/qrCodeNew';
+import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import accountScreens from './account';
 import aesopScreens from './aesop';
 import homeScreens from './home';
@@ -70,23 +68,14 @@ const NavigationWithTracking = () => {
     }
   };
 
-  // Add these hooks to get access to the necessary functions
-  const { setSelectedApp, cleanSelfApp } = useProofInfo();
-  const { startAppListener } = useApp();
-
   // Setup universal link handling at the navigation level
   React.useEffect(() => {
-    const cleanup = setupUniversalLinkListenerInNavigation(
-      navigationRef,
-      setSelectedApp,
-      cleanSelfApp,
-      startAppListener,
-    );
+    const cleanup = setupUniversalLinkListenerInNavigation();
 
     return () => {
       cleanup();
     };
-  }, [setSelectedApp, cleanSelfApp, startAppListener]);
+  }, []);
 
   return (
     <GestureHandlerRootView>

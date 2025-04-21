@@ -16,8 +16,8 @@ import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
 import {
-  generateTEEInputsDSC,
   generateTEEInputsDisclose,
+  generateTEEInputsDSC,
   generateTEEInputsRegister,
 } from './provingInputs';
 import {

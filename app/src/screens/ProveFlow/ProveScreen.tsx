@@ -1,3 +1,5 @@
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
   useEffect,
@@ -12,9 +14,6 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-
-import { useIsFocused, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';

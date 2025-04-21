@@ -1,6 +1,5 @@
-import { Linking } from 'react-native';
-
 import queryString from 'query-string';
+import { Linking } from 'react-native';
 
 import { navigationRef } from '../Navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';

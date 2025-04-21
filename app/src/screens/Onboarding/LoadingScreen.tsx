@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-
 import { StaticScreenProps } from '@react-navigation/native';
 import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
