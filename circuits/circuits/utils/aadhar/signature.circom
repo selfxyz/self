@@ -1,8 +1,8 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
-include "@zk-email/circuits/lib/rsa.circom";
-include "@zk-email/circuits/lib/sha.circom";
+include "@@openpassport/zk-email/circuits/lib/rsa.circom";
+include "@@openpassport/zk-email/circuits/lib/sha.circom";
 
 
 /// @title SignatureVerifier

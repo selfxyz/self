@@ -2,8 +2,8 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@zk-email/circuits/utils/array.circom";
-include "@zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email/circuits/utils/array.circom";
+include "@openpassport/zk-email/circuits/utils/bytes.circom";
 include "./constants.circom";
 include "./BytesToTimestamp.circom";
 
@@ -94,27 +94,14 @@ template ExtractAndPackAsInt(maxDataLength, extractPosition) {
     out <== outInt.out[0];
 }
 
-/// TODO
-/// @title NameExtractor
-/// @input nDelimitedData[maxDataLength] - QR data where each delimiter is 255 * n where n is order of the data
-/// @input startDelimiterIndex - index of the delimiter after which the photo start
-/// @output name 
-/// to discuss
-
-/// @title
-/// @notice RefIdExtractor
+/// @title RefIdExtractor
+/// @notice Extracts the 4 digits of the aadhar number
 /// @input nDelimitedData[maxDataLength]
-/// @output RedId
+/// @output RedId the 4 digit refid
 template RefIdExtractor(maxDataLength){
     signal input nDelimitedData[maxDataLength];
-    signal input delimiterIndices[18];
     signal output RefId;
-
-    component extractor = ExtractAndPackAsInt(maxDataLength, referenceIdPosition());//2 is the position 
-    extractor.nDelimitedData   <== nDelimitedData;
-    extractor.delimiterIndices <== delimiterIndices;
-    refId <== extractor.out;
-
+    RedId <== DigitBytesToInt([nDelimitedData[5],nDelimitedData[6],nDelimitedData[7],nDelimitedData[8]]);
 }
 
 /// @title TimestampExtractor
@@ -207,7 +194,7 @@ template AgeExtractor(maxDataLength) {
 /// @title GenderExtractor
 /// @notice Extracts the Gender from the Aadhaar QR data and returns as Unix timestamp
 /// @input nDelimitedDataShiftedToDob[maxDataLength] - QR data where each delimiter is 255 * n 
-///     where n is order of the data shifted till DOB index
+///        where n is order of the data shifted till DOB index
 /// @input startDelimiterIndex - index of the delimiter after
 /// @output out Single byte number representing gender
 template GenderExtractor(maxDataLength) {
@@ -295,6 +282,57 @@ template PhotoExtractor(maxDataLength) {
     out <== outInt.out;
 }
 
+/// @title  NameExtractor
+/// @notice Extracts the name and packages it into a hash to be used later
+/// @param  maxDataLength   – total length of qrDataPadded
+/// @param  nameMaxBytes    – upper bound for the number of bytes in the name
+/// @input  nDelimitedData[maxDataLength] - QR data where each delimiter is 255 * n where n is order of the data
+/// @input  startDelimiterIndex - index of the delimiter after which the name start
+/// @input  endIndex - Index of the last byte that belongs to the name field
+/// @output namepacked - name packed into field elements
+/// @output namehash - poseidon hash namepacked
+
+template NameExtractor(maxDataLength,nameMaxBytes){
+
+    signal input nDelimitedData[maxDataLength];
+    signal input startDelimiterIndex;
+    signal input endIndex;
+
+    var packedLength  = computeIntChunkLength(nameMaxBytes); // limbs count
+    var bytesLength   = nameMaxBytes + 1;                    // +1 for delimiter
+
+    signal output namepacked[packedLength];
+    signal output namehash;
+
+    signal shiftedBytes[bytesLength];
+    signal out[packedLength];
+
+    component selector = SelectSubArray(maxDataLength, bytesLength);
+    selector.in         <== nDelimitedData;
+    selector.startIndex <== startDelimiterIndex;
+    selector.length     <== (endIndex - startDelimiterIndex + 1);
+
+    for (var i = 0; i < bytesLength; i++)
+        shiftedBytes[i] <== selector.out[i];
+
+
+    // leading delimiter (position index · 255) must match first byte
+    shiftedBytes[0] === namePosition() * 255;
+
+
+    component packer = PackBytes(nameMaxBytes);
+    for (var i = 0; i < nameMaxBytes; i++) {
+        packer.in[i] <== shiftedBytes[i + 1];       // drop the delimiter
+    }
+
+    for (var i = 0; i < packedLength; i++)
+        namepacked[i] <== packer.out[i];
+    
+    namehash <== PackBytesAndPoseidon(packedLength)(namepacked);
+
+}
+
+
 
 /// @title QRDataExtractor
 /// @notice Extracts the name, date, gender, photo from the Aadhaar QR data
@@ -302,7 +340,7 @@ template PhotoExtractor(maxDataLength) {
 /// @input qrDataPaddedLength - Length of the padded QR data
 /// @input delimiterIndices[17] - Indices of the delimiters in the QR data
 /// @output name - single field (int) element representing the name in big endian order
-/// @output RedId - 
+/// @output ReFId - 
 /// @output age - Unix timestamp representing the date of birth
 /// @output gender - Single byte number representing gender
 /// @output photo - Photo of the user along the SHA padding
@@ -312,7 +350,7 @@ template QRDataExtractor(maxDataLength) {
     signal input delimiterIndices[18];
 
     // signal output name;
-    signal output RedId;
+    signal output RefId;
     signal output timestamp;
     signal output ageAbove18;
     signal output gender;

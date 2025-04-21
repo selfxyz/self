@@ -1,7 +1,8 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
-
+include "../utils/aadhar/QrVerifier.circom";
+include "../utils/aadhar/disclose/verify_commitment_aadhaar.circom";
 
 /// @title AADHAAR_VC_AND_DISCLOSE
 /// @notice verify user's commitment is part of the tree and discloses data selectively 
