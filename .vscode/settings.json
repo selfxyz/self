@@ -5,6 +5,13 @@
   "editor.defaultFormatter": "esbenp.prettier-vscode",
   "prettier.requireConfig": true,
 
+  // Prettier Configuration
+  "prettier.arrowParens": "avoid",
+  "prettier.bracketSameLine": false,
+  "prettier.bracketSpacing": true,
+  "prettier.singleQuote": true,
+  "prettier.trailingComma": "all",
+
   // ESLint Configuration
   "eslint.run": "onType",
   "eslint.alwaysShowStatus": true,
