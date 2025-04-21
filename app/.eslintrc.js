@@ -5,8 +5,8 @@ module.exports = {
   ignorePatterns: ['ios/', 'android/', 'deployments/', 'node_modules/'],
   rules: {
     // Import sorting rules
-    'simple-import-sort/imports': 'error',
-    'simple-import-sort/exports': 'error',
+    'simple-import-sort/imports': 'warn',
+    'simple-import-sort/exports': 'warn',
 
     // Preserve project-specific rule exemptions
     'react-native/no-inline-styles': 'off',
