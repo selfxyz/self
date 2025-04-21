@@ -43,6 +43,8 @@ const AppNavigation = createNativeStackNavigator({
     ...recoveryScreens,
     ...aesopScreens,
     ...recoveryScreens,
+    ...recoveryScreens,
+    ...aesopScreens,
   },
 });
 
