@@ -2,15 +2,6 @@
   // Formatting & Linting
   "editor.formatOnSave": true,
   "editor.formatOnPaste": false,
-  "editor.defaultFormatter": "esbenp.prettier-vscode",
-  "prettier.requireConfig": true,
-
-  // Prettier Configuration
-  "prettier.arrowParens": "avoid",
-  "prettier.bracketSameLine": false,
-  "prettier.bracketSpacing": true,
-  "prettier.singleQuote": true,
-  "prettier.trailingComma": "all",
 
   // ESLint Configuration
   "eslint.run": "onType",
@@ -34,7 +25,6 @@
   // Auto-fix Actions
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always",
-    "source.fixAll": "always",
     "source.organizeImports": "always"
   },
   "editor.codeActionsOnSave.mode": "all",
