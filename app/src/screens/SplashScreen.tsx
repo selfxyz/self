@@ -3,6 +3,7 @@ import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 
+import { PassportData } from '../../../common/src/utils/types';
 import splashAnimation from '../assets/animations/splash.json';
 import { useAuth } from '../stores/authProvider';
 import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
@@ -36,7 +37,16 @@ const SplashScreen: React.FC = ({}) => {
       }
 
       const { passportData, secret } = JSON.parse(passportDataAndSecret);
-      await useProtocolStore.getState().passport.fetch_all('stg');
+      if (!isPassportDataValid(passportData)) {
+        navigation.navigate('Launch');
+        return;
+      }
+      const environment =
+        (passportData as PassportData).documentType &&
+        (passportData as PassportData).documentType !== 'passport'
+          ? 'stg'
+          : 'prod';
+      await useProtocolStore.getState().passport.fetch_all(environment);
       const isRegistered = await isUserRegistered(passportData, secret);
       console.log('User is registered:', isRegistered);
       if (isRegistered) {
@@ -83,3 +93,22 @@ const styles = StyleSheet.create({
 });
 
 export default SplashScreen;
+
+function isPassportDataValid(passportData: PassportData) {
+  if (!passportData) {
+    return false;
+  }
+  if (!passportData.passportMetadata) {
+    return false;
+  }
+  if (!passportData.passportMetadata.dg1HashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.eContentHashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.signedAttrHashFunction) {
+    return false;
+  }
+  return true;
+}
