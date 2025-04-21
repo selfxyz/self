@@ -11,9 +11,9 @@ import {
 import { EndpointType } from '../../../../common/src/utils/appType';
 import {
   DiscloseError,
-  ProofStatusEnum,
   globalSetDisclosureStatus,
   globalSetRegistrationStatus,
+  ProofStatusEnum,
 } from '../../stores/proofProvider';
 import { getPublicKey, verifyAttestation } from './attest';
 

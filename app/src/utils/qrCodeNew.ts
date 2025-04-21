@@ -1,6 +1,5 @@
-import { Linking } from 'react-native';
-
 import queryString from 'query-string';
+import { Linking } from 'react-native';
 
 import { SelfApp } from '../../../common/src/utils/appType';
 

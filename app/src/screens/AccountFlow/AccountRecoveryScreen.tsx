@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { View, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';

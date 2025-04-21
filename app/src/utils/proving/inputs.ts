@@ -6,9 +6,9 @@ import nameAndDobSMTData from '../../../../common/ofacdata/outputs/nameAndDobSMT
 import nameAndYobSMTData from '../../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNoAndNationalitySMTData from '../../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
+  attributeToPosition,
   DEFAULT_MAJORITY,
   PASSPORT_ATTESTATION_ID,
-  attributeToPosition,
 } from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
@@ -19,8 +19,8 @@ import {
 } from '../../../../common/src/utils/circuits/generateInputs';
 import { hashEndpointWithScope } from '../../../../common/src/utils/scope';
 import {
-  getCSCATree,
   getCommitmentTree,
+  getCSCATree,
   getDSCTree,
 } from '../../../../common/src/utils/trees';
 import { PassportData } from '../../../../common/src/utils/types';

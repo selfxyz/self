@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
-
 import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';

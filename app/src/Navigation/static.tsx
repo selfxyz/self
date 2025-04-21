@@ -1,7 +1,6 @@
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
-
-import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import LaunchScreen from '../screens/LaunchScreen';
 import ModalScreen from '../screens/Settings/ModalScreen';

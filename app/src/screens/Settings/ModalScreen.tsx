@@ -1,7 +1,6 @@
-import React, { useCallback } from 'react';
-
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import { View, XStack, YStack, styled } from 'tamagui';
+import React, { useCallback } from 'react';
+import { styled, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';

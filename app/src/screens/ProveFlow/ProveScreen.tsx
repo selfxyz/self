@@ -1,3 +1,5 @@
+import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, {
   useCallback,
   useEffect,
@@ -12,24 +14,21 @@ import {
   ScrollView,
   StyleSheet,
 } from 'react-native';
-
-import { useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { Image, Text, View, YStack } from 'tamagui';
 
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
 import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
-import Disclosures from '../../components/Disclosures';
 import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
+import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useApp } from '../../stores/appProvider';
 import { usePassport } from '../../stores/passportDataProvider';
 import {
-  ProofStatusEnum,
   globalSetDisclosureStatus,
+  ProofStatusEnum,
   useProofInfo,
 } from '../../stores/proofProvider';
 import { black, slate300, white } from '../../utils/colors';

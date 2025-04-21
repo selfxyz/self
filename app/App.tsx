@@ -1,7 +1,7 @@
-import React from 'react';
 import 'react-native-get-random-values';
 
 import { Buffer } from 'buffer';
+import React from 'react';
 import { YStack } from 'tamagui';
 
 import AppNavigation from './src/Navigation';
