@@ -21,6 +21,7 @@ import aesopScreens from './aesop';
 import homeScreens from './home';
 import passportScreens from './passport';
 import proveScreens from './prove';
+import recoveryScreens from './recovery';
 import settingsScreens from './settings';
 import staticScreens from './static';
 
@@ -39,6 +40,7 @@ const AppNavigation = createNativeStackNavigator({
     ...proveScreens,
     ...accountScreens,
     ...settingsScreens,
+    ...recoveryScreens,
     ...aesopScreens,
   },
 });
