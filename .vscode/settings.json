@@ -1,7 +1,12 @@
 {
   // Formatting & Linting
-  "editor.formatOnSave": true,
+  "editor.formatOnSave": false,
   "editor.formatOnPaste": false,
+
+  // Path-specific formatting
+  "[**/app/**]": {
+    "editor.formatOnSave": true
+  },
 
   // ESLint Configuration
   "eslint.run": "onType",
