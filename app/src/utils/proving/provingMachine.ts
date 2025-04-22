@@ -118,6 +118,7 @@ interface ProvingState {
   wsConnection: WebSocket | null;
   socketConnection: Socket | null;
   uuid: string | null;
+  userConfirmed: boolean;
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
   reason: string | null;
@@ -133,6 +134,7 @@ interface ProvingState {
   ) => Promise<void>;
   initTeeConnection: (passportData: PassportData) => Promise<boolean>;
   startProving: (passportData: PassportData, secret: string) => Promise<void>;
+  setUserConfirmed: (passportData: PassportData, secret: string) => void;
   postProving: (passportData: PassportData, secret: string) => void;
   _closeConnections: () => void;
   _generatePayload: (
@@ -172,7 +174,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().initTeeConnection(passportData);
       }
 
-      if (state.value === 'ready_to_prove') {
+      if (state.value === 'ready_to_prove' && get().userConfirmed) {
         get().startProving(passportData, secret);
       }
 
@@ -239,6 +241,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     wsConnection: null,
     socketConnection: null,
     uuid: null,
+    userConfirmed: false,
     passportData: null,
     secret: null,
     circuitType: null,
@@ -462,6 +465,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         wsConnection: null,
         socketConnection: null,
         uuid: null,
+        userConfirmed: false,
       });
 
       actor = createActor(provingMachine);
@@ -625,6 +629,13 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       } catch (error) {
         console.error('Error during startProving preparation/send:', error);
         actor!.send({ type: 'PROVE_ERROR' });
+      }
+    },
+
+    setUserConfirmed: (passportData: PassportData, secret: string) => {
+      set({ userConfirmed: true });
+      if (get().currentState === 'ready_to_prove') {
+        get().startProving(passportData, secret);
       }
     },
 

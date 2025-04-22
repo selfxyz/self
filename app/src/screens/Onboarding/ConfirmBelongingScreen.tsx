@@ -53,14 +53,14 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
       // Initialize the state machine
 
       // Mark as user confirmed - proving will start automatically when ready
-      provingStore.startProving(passportData, secret);
+      provingStore.setUserConfirmed(passportData, secret);
 
       // Navigate to loading screen
       navigate();
     } catch (error) {
       console.error('Error initializing proving process:', error);
     }
-  }, [passportData, secret, provingStore.startProving, navigate]);
+  }, [passportData, secret, provingStore.setUserConfirmed, navigate]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});
