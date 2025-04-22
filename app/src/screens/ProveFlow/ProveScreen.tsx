@@ -24,6 +24,7 @@ import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { usePassport } from '../../stores/passportDataProvider';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
@@ -32,6 +33,8 @@ import { useProvingStore } from '../../utils/proving/provingMachine';
 const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
+
+  const { passportData, secret } = usePassport();
 
   const selectedApp = useSelfAppStore(state => state.selfApp);
   const selectedAppRef = useRef(selectedApp);
@@ -63,14 +66,16 @@ const ProveScreen: React.FC = () => {
     if (
       !isFocused ||
       !selectedApp ||
-      selectedAppRef.current?.sessionId === selectedApp.sessionId
+      selectedAppRef.current?.sessionId === selectedApp.sessionId ||
+      !passportData ||
+      !secret
     ) {
       return; // Avoid unnecessary updates or processing when not focused
     }
     selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
-    provingStore.init('disclose');
-  }, [selectedApp, isFocused]);
+    provingStore.init('disclose', passportData, secret);
+  }, [selectedApp, isFocused, provingStore.init, passportData, secret]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];
@@ -105,7 +110,10 @@ const ProveScreen: React.FC = () => {
   }, [selectedApp?.endpoint]);
 
   function onVerify() {
-    provingStore.setUserConfirmed();
+    if (!passportData || !secret) {
+      return;
+    }
+    provingStore.setUserConfirmed(passportData, secret);
     buttonTap();
     setTimeout(() => {
       navigate('ProofRequestStatusScreen');
