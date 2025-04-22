@@ -41,7 +41,7 @@ const AccountRecoveryChoiceScreen: React.FC<
           return;
         }
         const privateKey = await restorefromSecret(mnemonic.phrase);
-        if ( !passportData || !privateKey) {
+        if (!passportData || !privateKey) {
           console.warn('Secret or passport data is missing');
           navigation.navigate('Launch');
           setRestoring(false);

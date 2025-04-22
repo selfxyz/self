@@ -8,7 +8,6 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { useAuth } from '../../stores/authProvider';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
@@ -24,7 +23,6 @@ type ConfirmBelongingScreenProps = StaticScreenProps<
 const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   route,
 }) => {
-  const { loginWithBiometrics } = useAuth();
   const mockPassportFlow = route.params?.mockPassportFlow;
   const navigate = useHapticNavigation('LoadingScreen', {
     params: {

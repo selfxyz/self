@@ -1,3 +1,4 @@
+import { ethers, type Mnemonic } from 'ethers';
 import React, {
   createContext,
   PropsWithChildren,
@@ -8,8 +9,6 @@ import React, {
   useState,
 } from 'react';
 import Keychain from 'react-native-keychain';
-
-import { type Mnemonic, ethers } from 'ethers';
 
 import type { PassportData } from '../../../common/src/utils/types';
 

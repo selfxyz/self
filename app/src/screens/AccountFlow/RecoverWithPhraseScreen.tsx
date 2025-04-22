@@ -50,7 +50,7 @@ const RecoverWithPhraseScreen: React.FC<
 
     try {
       const privateKey = await restorefromSecret(slimMnemonic);
-      if (!passportData  || !privateKey) {
+      if (!passportData || !privateKey) {
         console.warn('Secret or passport data is missing');
         navigation.navigate('Launch');
         setRestoring(false);
@@ -76,13 +76,7 @@ const RecoverWithPhraseScreen: React.FC<
       setRestoring(false);
       return;
     }
-  }, [
-    mnemonic,
-    restorefromSecret,
-    navigation,
-    passportData,
-    status,
-  ]);
+  }, [mnemonic, restorefromSecret, navigation, passportData, status]);
 
   return (
     <YStack alignItems="center" gap="$6" pb="$2.5" style={styles.layout}>
