@@ -58,7 +58,12 @@ export const AuthProvider = ({
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   useEffect(() => {
-    fetchBiometricAvailablity();
+    async function setAvailablity() {
+      setBiometricAvailablity('checking');
+      const available = await fetchBiometricAvailablity();
+      setBiometricAvailablity(available ? 'available' : 'unavailable');
+    }
+    setAvailablity();
   }, []);
 
   const loginWithBiometrics = useCallback(async () => {
