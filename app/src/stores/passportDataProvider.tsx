@@ -60,7 +60,7 @@ interface IPassportContext {
   secret: string | null;
   setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
-  setSecret: () => Promise<Mnemonic | null>;
+  setMnemonic: () => Promise<Mnemonic | null>;
   restorefromSecret: (mnemonic: string) => Promise<string>;
   unsafe_clearSecrets: () => Promise<void>;
 }
@@ -72,7 +72,7 @@ const PassportContext = createContext<IPassportContext>({
   secret: null,
   setPassportData: () => Promise.resolve(),
   clearPassportData: () => Promise.resolve(),
-  setSecret: () => Promise.resolve(null),
+  setMnemonic: () => Promise.resolve(null),
   restorefromSecret: () => Promise.resolve(''),
   unsafe_clearSecrets: () => Promise.resolve(),
 });
@@ -80,7 +80,7 @@ const PassportContext = createContext<IPassportContext>({
 export const PassportProvider = ({ children }: PassportProviderProps) => {
   const [status, setStatus] = useState<Status>('idle');
   const [passportCache, setPasspotCache] = useState<PassportData | null>(null);
-  const [secretCache, setSecretCache] = useState<Mnemonic | null>(null);
+  const [mnemonicCache, setMnemonicCache] = useState<Mnemonic | null>(null);
   const getPassportDataFromKeychain = useCallback(async () => {
     const passportDataCreds = await Keychain.getGenericPassword({
       service: 'passportData',
@@ -91,12 +91,12 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     return JSON.parse(passportDataCreds.password);
   }, []);
 
-  const privateKey = useMemo(() => {
-    if (secretCache) {
-      return ethers.HDNodeWallet.fromPhrase(secretCache.phrase).privateKey;
+  const secret = useMemo(() => {
+    if (mnemonicCache) {
+      return ethers.HDNodeWallet.fromPhrase(mnemonicCache.phrase).privateKey;
     }
     return null;
-  }, [secretCache]);
+  }, [mnemonicCache]);
 
   const getSecretDataFromKeyChain = useCallback(async () => {
     const storedMnemonic = await Keychain.getGenericPassword({
@@ -119,10 +119,10 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
         if (passportData) {
           setPasspotCache(passportData);
         }
-        const secret =
-          (await getSecretDataFromKeyChain()) || (await setSecret());
-        if (secret) {
-          setSecretCache(secret);
+        const mnemonic =
+          (await getSecretDataFromKeyChain()) || (await setMnemonic());
+        if (mnemonic) {
+          setMnemonicCache(mnemonic);
         }
         setStatus('success');
       } catch (error) {
@@ -140,7 +140,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     setPasspotCache(data);
   }, []);
 
-  const setSecret = useCallback(async () => {
+  const setMnemonic = useCallback(async () => {
     const { mnemonic } = ethers.HDNodeWallet.fromMnemonic(
       ethers.Mnemonic.fromEntropy(ethers.randomBytes(32)),
     );
@@ -148,7 +148,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     await Keychain.setGenericPassword('secret', data, {
       service: SERVICE_NAME,
     });
-    setSecretCache(mnemonic);
+    setMnemonicCache(mnemonic);
     return mnemonic;
   }, []);
 
@@ -162,31 +162,31 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     if (!data) {
       throw new Error('Invalid mnemonic');
     }
-    setSecretCache(data);
+    setMnemonicCache(data);
     return ethers.HDNodeWallet.fromPhrase(data.phrase).privateKey;
   }, []);
 
   const state: IPassportContext = useMemo(
     () => ({
       passportData: passportCache,
-      secret: secretCache,
+      secret,
       status,
       setPassportData,
       clearPassportData,
       restorefromSecret,
-      setSecret,
+      setMnemonic,
       unsafe_clearSecrets,
-      privateKey,
+      mnemonic: mnemonicCache,
     }),
     [
       passportCache,
-      secretCache,
+      mnemonicCache,
       status,
       setPassportData,
       clearPassportData,
       restorefromSecret,
-      setSecret,
-      privateKey,
+      setMnemonic,
+      secret,
     ],
   );
 
