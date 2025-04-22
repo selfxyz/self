@@ -7,6 +7,7 @@ import { create } from 'zustand';
 import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
+import { DocumentType, PassportData } from '../../../../common/src/utils/types';
 import { navigationRef } from '../../Navigation';
 import {
   clearPassportData,
@@ -117,21 +118,27 @@ interface ProvingState {
   wsConnection: WebSocket | null;
   socketConnection: Socket | null;
   uuid: string | null;
-  userConfirmed: boolean;
-  passportData: any | null;
-  secret: string | null;
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
   reason: string | null;
-  init: (circuitType: 'dsc' | 'disclose' | 'register') => Promise<void>;
-  startFetchingData: () => Promise<void>;
-  validatingDocument: () => Promise<void>;
-  initTeeConnection: () => Promise<boolean>;
-  startProving: () => Promise<void>;
-  postProving: () => void;
-  setUserConfirmed: () => void;
+  init: (
+    circuitType: 'dsc' | 'disclose' | 'register',
+    passportData: PassportData,
+    secret: string,
+  ) => Promise<void>;
+  startFetchingData: (documentType: DocumentType) => Promise<void>;
+  validatingDocument: (
+    passportData: PassportData,
+    secret: string,
+  ) => Promise<void>;
+  initTeeConnection: (passportData: PassportData) => Promise<boolean>;
+  startProving: (passportData: PassportData, secret: string) => Promise<void>;
+  postProving: (passportData: PassportData, secret: string) => void;
   _closeConnections: () => void;
-  _generatePayload: () => Promise<any>;
+  _generatePayload: (
+    passportData: PassportData,
+    secret: string,
+  ) => Promise<any>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
   _startSocketIOStatusListener: (
     receivedUuid: string,
@@ -145,28 +152,32 @@ interface ProvingState {
 export const useProvingStore = create<ProvingState>((set, get) => {
   let actor: AnyActorRef | null = null;
 
-  function setupActorSubscriptions(newActor: AnyActorRef) {
+  function setupActorSubscriptions(
+    newActor: AnyActorRef,
+    passportData: PassportData,
+    secret: string,
+  ) {
     newActor.subscribe((state: any) => {
       console.log(`State transition: ${state.value}`);
       set({ currentState: state.value as string });
 
       if (state.value === 'fetching_data') {
-        get().startFetchingData();
+        get().startFetchingData(passportData.documentType);
       }
       if (state.value === 'validating_document') {
-        get().validatingDocument();
+        get().validatingDocument(passportData, secret);
       }
 
       if (state.value === 'init_tee_connexion') {
-        get().initTeeConnection();
+        get().initTeeConnection(passportData);
       }
 
-      if (state.value === 'ready_to_prove' && get().userConfirmed) {
-        get().startProving();
+      if (state.value === 'ready_to_prove') {
+        get().startProving(passportData, secret);
       }
 
       if (state.value === 'post_proving') {
-        get().postProving();
+        get().postProving(passportData, secret);
       }
       if (get().circuitType !== 'disclose' && state.value === 'error') {
         setTimeout(() => {
@@ -228,14 +239,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     wsConnection: null,
     socketConnection: null,
     uuid: null,
-    userConfirmed: false,
     passportData: null,
     secret: null,
     circuitType: null,
     selfApp: null,
     error_code: null,
     reason: null,
-    _handleWebSocketMessage: async (event: MessageEvent) => {
+    _handleWebSocketMessage: async (
+      event: MessageEvent,
+      socketEndpointType: 'celo' | 'staging_celo',
+    ) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
         return;
@@ -279,7 +292,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               }). Using received UUID.`,
             );
           }
-          const { passportData } = get();
           if (!statusUuid) {
             console.error(
               'Cannot start Socket.IO listener: UUID missing from state or response.',
@@ -287,16 +299,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
-          if (!passportData) {
-            console.error(
-              'Cannot start Socket.IO listener: passportData missing from state.',
-            );
-            actor!.send({ type: 'PROVE_ERROR' });
-            return;
-          }
 
-          const socketEndpointType =
-            passportData.documentType === 'passport' ? 'celo' : 'staging_celo';
           get()._startSocketIOStatusListener(statusUuid, socketEndpointType);
         } else if (result.error) {
           console.error('Received error from TEE:', result.error);
@@ -437,7 +440,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    init: async (circuitType: 'dsc' | 'disclose' | 'register') => {
+    init: async (
+      circuitType: 'dsc' | 'disclose' | 'register',
+      passportData: PassportData,
+      secret: string,
+    ) => {
       get()._closeConnections();
 
       if (actor) {
@@ -455,13 +462,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         wsConnection: null,
         socketConnection: null,
         uuid: null,
-        userConfirmed: false,
-        passportData: null,
-        secret: null,
       });
 
       actor = createActor(provingMachine);
-      setupActorSubscriptions(actor);
+      setupActorSubscriptions(actor, passportData, secret);
       actor.start();
 
       const passportDataAndSecretStr = await loadPassportDataAndSecret();
@@ -470,22 +474,14 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
 
-      const passportDataAndSecret = JSON.parse(passportDataAndSecretStr);
-      const { passportData, secret } = passportDataAndSecret;
-
-      set({ passportData, secret });
       set({ circuitType });
       actor.send({ type: 'FETCH_DATA' });
     },
 
-    startFetchingData: async () => {
+    startFetchingData: async (documentType: DocumentType) => {
       _checkActorInitialized(actor);
       try {
-        const { passportData } = get();
-        const env =
-          passportData.documentType && passportData.documentType !== 'passport'
-            ? 'stg'
-            : 'prod';
+        const env = documentType !== 'passport' ? 'stg' : 'prod';
         await useProtocolStore.getState().passport.fetch_all(env);
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
@@ -494,11 +490,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async () => {
+    validatingDocument: async (passportData: PassportData, secret: string) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       try {
-        const { passportData, secret, circuitType } = get();
+        const { circuitType } = get();
         const isSupported = await checkPassportSupported(passportData);
         if (isSupported.status !== 'passport_supported') {
           console.error(
@@ -550,10 +546,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    initTeeConnection: async (): Promise<boolean> => {
+    initTeeConnection: async (passportData: PassportData): Promise<boolean> => {
       const circuitsMapping =
         useProtocolStore.getState().passport.circuits_dns_mapping;
-      const passportData = get().passportData;
 
       let circuitName, wsRpcUrl;
       if (get().circuitType === 'disclose') {
@@ -607,15 +602,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
     },
 
-    startProving: async () => {
+    startProving: async (passportData: PassportData, secret: string) => {
       _checkActorInitialized(actor);
-      const { wsConnection, sharedKey, passportData, secret } = get();
+      const { wsConnection, sharedKey } = get();
 
       if (get().currentState !== 'ready_to_prove') {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret) {
+      if (!wsConnection || !sharedKey) {
         console.error(
           'Cannot start proving: Missing wsConnection, sharedKey, passportData, or secret.',
         );
@@ -624,7 +619,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       try {
-        const submitBody = await get()._generatePayload();
+        const submitBody = await get()._generatePayload(passportData, secret);
         wsConnection.send(JSON.stringify(submitBody));
         actor!.send({ type: 'START_PROVING' });
       } catch (error) {
@@ -633,18 +628,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    setUserConfirmed: () => {
-      set({ userConfirmed: true });
-      if (get().currentState === 'ready_to_prove') {
-        get().startProving();
-      }
-    },
-
-    postProving: () => {
+    postProving: (passportData: PassportData, secret: string) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        get().init('register');
+        get().init('register', passportData, secret);
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {
@@ -683,8 +671,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
     },
 
-    _generatePayload: async () => {
-      const { circuitType, passportData, secret, uuid, sharedKey } = get();
+    _generatePayload: async (passportData: PassportData, secret: string) => {
+      const { circuitType, uuid, sharedKey } = get();
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;

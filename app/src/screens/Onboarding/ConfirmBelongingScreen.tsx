@@ -1,6 +1,6 @@
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useEffect } from 'react';
+import React, { useCallback, useEffect } from 'react';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -8,6 +8,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { usePassport } from '../../stores/passportDataProvider';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
@@ -30,27 +31,36 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     },
   });
   const provingStore = useProvingStore();
+  const { passportData, privateKey } = usePassport();
 
   useEffect(() => {
+    if (!passportData || !privateKey) {
+      console.error('Passport data or private key is missing');
+      return;
+    }
     notificationSuccess();
-    provingStore.init('dsc');
-  }, []);
+    provingStore.init('dsc', passportData, privateKey);
+  }, [provingStore.init, passportData, privateKey]);
 
-  const onOkPress = async () => {
+  const onOkPress = useCallback(async () => {
     // Initialize the proving process just before navigation
     // This ensures a fresh start each time
     try {
+      if (!passportData || !privateKey) {
+        throw new Error('Passport data or private key is missing');
+      }
+
       // Initialize the state machine
 
       // Mark as user confirmed - proving will start automatically when ready
-      provingStore.setUserConfirmed();
+      provingStore.startProving(passportData, privateKey);
 
       // Navigate to loading screen
       navigate();
     } catch (error) {
       console.error('Error initializing proving process:', error);
     }
-  };
+  }, [passportData, privateKey, provingStore.startProving, navigate]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});
