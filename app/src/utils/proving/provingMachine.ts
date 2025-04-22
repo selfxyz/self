@@ -9,10 +9,7 @@ import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import { DocumentType, PassportData } from '../../../../common/src/utils/types';
 import { navigationRef } from '../../Navigation';
-import {
-  clearPassportData,
-  loadPassportDataAndSecret,
-} from '../../stores/passportDataProvider';
+import { clearPassportData } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
@@ -43,7 +40,6 @@ const provingMachine = createMachine({
     idle: {
       on: {
         FETCH_DATA: 'fetching_data',
-        ERROR: 'error',
       },
     },
     fetching_data: {
@@ -472,12 +468,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       setupActorSubscriptions(actor, passportData, secret);
       actor.start();
 
-      const passportDataAndSecretStr = await loadPassportDataAndSecret();
-      if (!passportDataAndSecretStr) {
-        actor!.send({ type: 'ERROR' });
-        return;
-      }
-
       set({ circuitType });
       actor.send({ type: 'FETCH_DATA' });
     },
@@ -511,10 +501,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           return;
         }
 
-        const isRegistered = await isUserRegistered(
-          passportData,
-          secret as string,
-        );
+        const isRegistered = await isUserRegistered(passportData, secret);
         if (circuitType === 'disclose') {
           if (isRegistered) {
             actor!.send({ type: 'VALIDATION_SUCCESS' });
