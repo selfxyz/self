@@ -1,6 +1,7 @@
 import React from 'react';
 import { StyleSheet, Text, TextProps } from 'react-native';
 
+import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
 import { slate400 } from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
 
@@ -24,5 +25,10 @@ const styles = StyleSheet.create({
     color: slate400,
     marginTop: 10,
     fontFamily: dinot,
+    textTransform: 'none',
+    ...(shouldShowAesopRedesign() && {
+      fontSize: 11.5,
+      textTransform: 'uppercase',
+    }),
   },
 });

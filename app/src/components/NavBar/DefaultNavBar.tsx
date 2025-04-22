@@ -1,14 +1,13 @@
+import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import React from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-import { NativeStackHeaderProps } from '@react-navigation/native-stack';
 import { TextStyle, ViewStyle } from 'tamagui';
 
-import { white } from '../utils/colors';
-import { buttonTap } from '../utils/haptic';
-import { NavBar } from './NavBar';
+import { white } from '../../utils/colors';
+import { buttonTap } from '../../utils/haptic';
+import { NavBar } from './BaseNavBar';
 
-const DefaultNavBar = (props: NativeStackHeaderProps) => {
+export const DefaultNavBar = (props: NativeStackHeaderProps) => {
   const { goBack, canGoBack } = props.navigation;
   const { options } = props;
   const headerStyle = (options.headerStyle || {}) as ViewStyle;
@@ -43,5 +42,3 @@ const DefaultNavBar = (props: NativeStackHeaderProps) => {
     </NavBar.Container>
   );
 };
-
-export default DefaultNavBar;

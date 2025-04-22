@@ -1,0 +1,73 @@
+{
+  // Formatting & Linting
+  "editor.formatOnSave": false,
+  "editor.formatOnPaste": false,
+
+  // Path-specific formatting
+  "[**/app/**]": {
+    "editor.formatOnSave": true
+  },
+
+  // ESLint Configuration
+  "eslint.run": "onType",
+  "eslint.alwaysShowStatus": true,
+  "eslint.format.enable": true,
+  "eslint.lintTask.enable": true,
+  "eslint.quiet": false,
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+
+  // Auto-fix Actions
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "always",
+    "source.organizeImports": "always"
+  },
+  "editor.codeActionsOnSave.mode": "all",
+
+  // TypeScript Specific Rules
+  "typescript.format.enable": false,  // Disable VS Code's built-in formatter for TypeScript
+  "[typescript]": {
+    "editor.defaultFormatter": null  // Let ESLint handle TypeScript formatting
+  },
+  "[typescriptreact]": {
+    "editor.defaultFormatter": null  // Let ESLint handle TypeScript React formatting
+  },
+
+  // Indentation & Whitespace
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.indentSize": "tabSize",
+  "editor.detectIndentation": true,
+  "editor.useTabStops": true,
+  "editor.stickyTabStops": true,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+  "javascript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+  "typescript.format.insertSpaceAfterOpeningAndBeforeClosingEmptyBraces": false,
+
+  // Editor Visual Aids
+  "editor.renderWhitespace": "selection",
+  "editor.renderControlCharacters": true,
+  "editor.rulers": [100],
+  "editor.wordWrap": "off",
+  "editor.wrappingIndent": "none",
+
+  // Editor suggestions
+  "editor.quickSuggestions": {
+    "other": true,
+    "comments": false,
+    "strings": false
+  }
+}

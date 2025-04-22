@@ -219,9 +219,7 @@ export function findStartPubKeyIndex(
     const [x_index, x_totalLength] = findStartIndexEC(x, rawCert);
     const [y_index, y_totalLength] = findStartIndexEC(y, rawCert);
 
-    //zero between x and y
-    const pad_between_x_y = y_index - x_index - x_totalLength;
-    return [x_index, x_totalLength + pad_between_x_y + y_totalLength];
+    return [x_index, x_totalLength + y_totalLength];
   } else {
     // Splits to 525 words of 8 bits each
     const { modulus } = publicKeyDetails as PublicKeyDetailsRSA;

@@ -1,7 +1,6 @@
+import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import React, { useMemo } from 'react';
 import { StatusBar, StatusBarStyle } from 'react-native';
-
-import { ChevronLeft, X } from '@tamagui/lucide-icons';
 import {
   Button,
   TextProps,
@@ -11,7 +10,7 @@ import {
   XStackProps,
 } from 'tamagui';
 
-import { Title } from './typography/Title';
+import { Title } from '../typography/Title';
 
 interface NavBarProps extends XStackProps {
   children: React.ReactNode;

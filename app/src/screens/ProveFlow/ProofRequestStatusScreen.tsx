@@ -1,8 +1,8 @@
-import React, { useEffect } from 'react';
-import { StatusBar, StyleSheet, View } from 'react-native';
-
+import { useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import { Spinner } from 'tamagui';
+import React, { useEffect, useState } from 'react';
+import { StatusBar, StyleSheet, View } from 'react-native';
+import { ScrollView, Spinner } from 'tamagui';
 
 import loadingAnimation from '../../assets/animations/loading/misc.json';
 import failAnimation from '../../assets/animations/proof_failed.json';
@@ -10,22 +10,30 @@ import succesAnimation from '../../assets/animations/proof_success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { BodyText } from '../../components/typography/BodyText';
 import Description from '../../components/typography/Description';
-import { Title } from '../../components/typography/Title';
 import { typography } from '../../components/typography/styles';
+import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
+import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, white } from '../../utils/colors';
 import {
   buttonTap,
   notificationError,
   notificationSuccess,
 } from '../../utils/haptic';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const SuccessScreen: React.FC = () => {
-  const { selectedApp, disclosureStatus, cleanSelfApp } = useProofInfo();
-  const appName = selectedApp?.appName;
+  const { selfApp, cleanSelfApp } = useSelfAppStore();
+  const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
+
+  const currentState = useProvingStore(state => state.currentState);
+  const reason = useProvingStore(state => state.reason);
+
+  const isFocused = useIsFocused();
+
+  const [animationSource, setAnimationSource] = useState<any>(loadingAnimation);
 
   function onOkPress() {
     buttonTap();
@@ -34,12 +42,22 @@ const SuccessScreen: React.FC = () => {
   }
 
   useEffect(() => {
-    if (disclosureStatus === 'success') {
-      notificationSuccess();
-    } else if (disclosureStatus === 'failure' || disclosureStatus === 'error') {
-      notificationError();
+    if (isFocused) {
+      console.log(
+        '[ProofRequestStatusScreen] State update while focused:',
+        currentState,
+      );
     }
-  }, [disclosureStatus]);
+    if (currentState === 'completed') {
+      notificationSuccess();
+      setAnimationSource(succesAnimation);
+    } else if (currentState === 'failure' || currentState === 'error') {
+      notificationError();
+      setAnimationSource(failAnimation);
+    } else {
+      setAnimationSource(loadingAnimation);
+    }
+  }, [currentState, isFocused]);
 
   return (
     <ExpandableBottomLayout.Layout backgroundColor={white}>
@@ -51,8 +69,8 @@ const SuccessScreen: React.FC = () => {
       >
         <LottieView
           autoPlay
-          loop={disclosureStatus === 'pending'}
-          source={getAnimation(disclosureStatus)}
+          loop={animationSource === loadingAnimation}
+          source={animationSource}
           style={styles.animation}
           cacheComposition={false}
           renderMode="HARDWARE"
@@ -65,38 +83,37 @@ const SuccessScreen: React.FC = () => {
         backgroundColor={white}
       >
         <View style={styles.content}>
-          <Title size="large">{getTitle(disclosureStatus)}</Title>
+          <Title size="large">{getTitle(currentState)}</Title>
           <Info
-            status={disclosureStatus}
-            appName={appName === '' ? 'The app' : appName}
+            currentState={currentState}
+            appName={appName ?? 'The app'}
+            reason={reason ?? undefined}
           />
         </View>
         <PrimaryButton
-          disabled={disclosureStatus === 'pending'}
+          disabled={
+            currentState !== 'completed' &&
+            currentState !== 'error' &&
+            currentState !== 'failure'
+          }
           onPress={onOkPress}
         >
-          {disclosureStatus === 'pending' ? <Spinner /> : 'OK'}
+          {currentState !== 'completed' &&
+          currentState !== 'error' &&
+          currentState !== 'failure' ? (
+            <Spinner />
+          ) : (
+            'OK'
+          )}
         </PrimaryButton>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );
 };
 
-function getAnimation(status: ProofStatusEnum) {
-  switch (status) {
-    case 'success':
-      return succesAnimation;
-    case 'failure':
-    case 'error':
-      return failAnimation;
-    default:
-      return loadingAnimation;
-  }
-}
-
-function getTitle(status: ProofStatusEnum) {
-  switch (status) {
-    case 'success':
+function getTitle(currentState: string) {
+  switch (currentState) {
+    case 'completed':
       return 'Proof Verified';
     case 'failure':
     case 'error':
@@ -107,26 +124,48 @@ function getTitle(status: ProofStatusEnum) {
 }
 
 function Info({
-  status,
+  currentState,
   appName,
+  reason,
 }: {
-  status: ProofStatusEnum;
+  currentState: string;
   appName: string;
+  reason?: string;
 }) {
-  if (status === 'success') {
+  if (currentState === 'completed') {
     return (
       <Description>
         You've successfully proved your identity to{' '}
         <BodyText style={typography.strong}>{appName}</BodyText>
       </Description>
     );
-  } else if (status === 'failure' || status === 'error') {
+  } else if (currentState === 'error' || currentState === 'failure') {
     return (
-      <Description>
-        Unable to prove your identity to{' '}
-        <BodyText style={typography.strong}>{appName}</BodyText>
-        {status === 'error' && '. Due to technical issues.'}
-      </Description>
+      <View style={{ gap: 8 }}>
+        <Description>
+          Unable to prove your identity to{' '}
+          <BodyText style={typography.strong}>{appName}</BodyText>
+          {currentState === 'error' && '. Due to technical issues.'}
+        </Description>
+        {currentState === 'failure' && reason && (
+          <>
+            <Description>
+              <BodyText style={[typography.strong, { fontSize: 14 }]}>
+                Reason:
+              </BodyText>
+            </Description>
+            <View style={{ maxHeight: 60 }}>
+              <ScrollView showsVerticalScrollIndicator={true}>
+                <Description>
+                  <BodyText style={[typography.strong, { fontSize: 14 }]}>
+                    {reason}
+                  </BodyText>
+                </Description>
+              </ScrollView>
+            </View>
+          </>
+        )}
+      </View>
     );
   } else {
     return (

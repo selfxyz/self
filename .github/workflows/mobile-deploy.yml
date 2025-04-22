@@ -1,0 +1,492 @@
+name: Mobile App Deployments
+
+env:
+  # Branch configuration
+  IS_PR: ${{ github.event.pull_request.number != null }}
+  STAGING_BRANCH: dev
+  MAIN_BRANCH: main
+
+  # Build environment versions
+  NODE_VERSION: 18
+  RUBY_VERSION: 3.2
+  JAVA_VERSION: 17
+  ANDROID_API_LEVEL: 35
+  ANDROID_NDK_VERSION: 26.1.10909125
+
+  # Path configuration
+  WORKSPACE: ${{ github.workspace }}
+  APP_PATH: ${{ github.workspace }}/app
+
+  # Certificate/keystore paths
+  ANDROID_KEYSTORE_PATH: /android/app/upload-keystore.jks
+  ANDROID_PLAY_STORE_JSON_KEY_PATH: /android/play-store-key.json
+  IOS_DIST_CERT_PATH: /ios/certs/dist_cert.p12
+  IOS_CONNECT_API_KEY_PATH: /ios/certs/connect_api_key.p8
+  IOS_PROV_PROFILE_PROJ_PATH: /ios/certs/profile.mobileprovision
+  IOS_PROV_PROFILE_DIRECTORY: "~/Library/MobileDevice/Provisioning\ Profiles/"
+
+permissions:
+  contents: write
+  pull-requests: write
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/mobile-deploy.yml"
+  pull_request:
+    paths:
+      - "app/**"
+      - ".github/workflows/mobile-deploy.yml"
+
+jobs:
+  build-ios:
+    # disable for now, will fix soon
+    if: false
+    runs-on: macos-latest
+    steps:
+      - name: Set up Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          # some cocoapods won't compile with xcode 16.3
+          xcode-version: "16.2"
+
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+
+      - name: Verify iOS Secrets
+        run: |
+          # Verify App Store Connect API Key exists and contains PEM header
+          if [ -z "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" ]; then
+            echo "❌ Error: App Store Connect API Key cannot be empty"
+            exit 1
+          fi
+          # Verify Issuer ID is in correct format (UUID)
+          if ! echo "${{ secrets.IOS_CONNECT_ISSUER_ID }}" | grep -E "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Issuer ID format (should be UUID)"
+            exit 1
+          fi
+          # Verify Key ID is in correct format (alphanumeric)
+          if ! echo "${{ secrets.IOS_CONNECT_KEY_ID }}" | grep -E "^[A-Z0-9]{10}$" >/dev/null; then
+            echo "❌ Error: Invalid App Store Connect Key ID format"
+            exit 1
+          fi
+          # Verify P12 password is not empty and meets basic security requirements
+          if [ -z "${{ secrets.IOS_P12_PASSWORD }}" ]; then
+            echo "❌ Error: P12 password cannot be empty"
+            exit 1
+          fi
+          # Verify base64 secrets are not empty
+          if [ -z "${{ secrets.IOS_DIST_CERT_BASE64 }}" ]; then
+            echo "❌ Error: Distribution certificate cannot be empty"
+            exit 1
+          fi
+          if [ -z "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" ]; then
+            echo "❌ Error: Provisioning profile cannot be empty"
+            exit 1
+          fi
+          echo "✅ All iOS secrets verified successfully!"
+
+      - name: Decode certificate and profile
+        run: |
+          mkdir -p "${{ env.APP_PATH }}$(dirname "${{ env.IOS_DIST_CERT_PATH }}")"
+          echo "${{ secrets.IOS_DIST_CERT_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          echo "${{ secrets.IOS_PROV_PROFILE_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}
+          echo "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
+
+      # for debugging...which can take some time :(
+      - name: Verify ios secret checksums
+        if: false # for debugging
+        run: |
+          echo "SHA256 of dist_cert.p12:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          echo "SHA256 of profile.mobileprovision:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}
+          echo "SHA256 of connect_api_key.p8:"
+          shasum -a 256 ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
+          echo "Certificate file size:"
+          ls -l ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}
+          echo "SHA256 of password:"
+          echo -n "${{ secrets.IOS_P12_PASSWORD }}" | shasum -a 256
+          echo "SHA256 of connect_api_key_base64:"
+          echo -n "${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}" | shasum -a 256
+          echo "Verifying certificate..."
+          if openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -password pass:'${{ secrets.IOS_P12_PASSWORD }}' -info >/dev/null 2>&1 || openssl pkcs12 -in ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -password pass:'${{ secrets.IOS_P12_PASSWORD }}' -info 2>&1 | grep -q "MAC:"; then
+            echo "✅ Certificate verification successful (algorithm warning can be safely ignored)"
+          else
+            echo "❌ Certificate verification failed - please check certificate validity"
+            exit 1
+          fi
+
+      - name: Verify iOS certificate and environment
+        if: ${{ !env.ACT }}
+        run: |
+          # Check if certificate directory exists
+          if [ ! -d "${{ env.APP_PATH }}/ios/certs" ]; then
+            echo "❌ Error: iOS certificates directory not found at ${{ env.APP_PATH }}/ios/certs"
+            exit 1
+          fi
+
+          # Check if certificate file exists
+          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" ]; then
+            echo "❌ Error: Distribution certificate not found at ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}"
+            exit 1
+          fi
+
+          # Check certificate file permissions
+          CERT_PERMS=$(ls -l "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" | awk '{print $1}')
+          if [ "$CERT_PERMS" != "-rw-r--r--" ]; then
+            echo "❌ Error: Distribution certificate has incorrect permissions: $CERT_PERMS"
+            echo "Expected: -rw-r--r--"
+            exit 1
+          fi
+
+          # Check certificate file size
+          CERT_SIZE=$(stat -f%z "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}" 2>/dev/null || stat -c%s "${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }}")
+          if [ "$CERT_SIZE" -lt 1000 ]; then
+            echo "❌ Error: Distribution certificate file size ($CERT_SIZE bytes) is suspiciously small"
+            exit 1
+          fi
+
+          # Check if we can create a test keychain
+          TEST_KEYCHAIN="test.keychain"
+          if ! security create-keychain -p "" "$TEST_KEYCHAIN" >/dev/null 2>&1; then
+            echo "❌ Error: Unable to create test keychain. Check permissions."
+            exit 1
+          fi
+          security delete-keychain "$TEST_KEYCHAIN" >/dev/null 2>&1
+
+          echo "✅ Certificate and environment verification passed!"
+
+      - name: Install certificate
+        if: ${{ !env.ACT }}
+        run: |
+          security create-keychain -p "" build.keychain >/dev/null 2>&1
+          security default-keychain -s build.keychain >/dev/null 2>&1
+          security unlock-keychain -p "" build.keychain >/dev/null 2>&1
+          security import ${{ env.APP_PATH }}${{ env.IOS_DIST_CERT_PATH }} -k build.keychain -P '${{ secrets.IOS_P12_PASSWORD }}' -T /usr/bin/codesign >/dev/null 2>&1
+          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain >/dev/null 2>&1
+
+      - name: Install provisioning profile
+        if: ${{ !env.ACT }}
+        env:
+          IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
+          IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
+          IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+        run: |
+          # Verify file exists before proceeding
+          echo "Checking for provisioning profile at: ${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}"
+          ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}"
+          if [ ! -f "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" ]; then
+            echo "❌ Error: Provisioning profile not found at specified path."
+            exit 1
+          fi
+          echo "Provisioning profile found."
+
+          # Print file details
+          echo "Provisioning Profile File Details:"
+          echo "--------------------------------"
+          echo "File size: $(stat -f%z "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" 2>/dev/null || stat -c%s "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}") bytes"
+          echo "File permissions: $(ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" | awk '{print $1}')"
+          echo "File owner: $(ls -l "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" | awk '{print $3}')"
+          echo "--------------------------------"
+
+          # Create a temporary plist file to extract UUID
+          TEMP_PLIST_PATH=$(mktemp /tmp/profile_plist.XXXXXX)
+
+          # Extract plist from mobileprovision file
+          echo "Extracting plist from provisioning profile..."
+          security cms -D -i "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" -o "$TEMP_PLIST_PATH"
+          if [ $? -ne 0 ]; then
+            echo "❌ Error: Failed to extract plist from provisioning profile"
+            exit 1
+          fi
+
+          # Extract UUID and profile name from plist
+          echo "Extracting UUID and profile name from plist..."
+          PROFILE_UUID=$(/usr/libexec/PlistBuddy -c "Print :UUID" "$TEMP_PLIST_PATH" 2>/dev/null)
+          if [ $? -ne 0 ] || [ -z "$PROFILE_UUID" ]; then
+            echo "❌ Error: Failed to extract UUID from provisioning profile"
+            cat "$TEMP_PLIST_PATH" | head -20
+            exit 1
+          fi
+
+          # Extract the actual profile name from within the file
+          PROFILE_NAME=$(/usr/libexec/PlistBuddy -c "Print :Name" "$TEMP_PLIST_PATH" 2>/dev/null)
+          if [ $? -ne 0 ] || [ -z "$PROFILE_NAME" ]; then
+            echo "⚠️ Warning: Failed to extract Name from provisioning profile, will use provided IOS_PROV_PROFILE_NAME"
+            PROFILE_NAME="$IOS_PROV_PROFILE_NAME"
+          fi
+
+          echo "Profile UUID: $PROFILE_UUID"
+          echo "Profile Name: $PROFILE_NAME"
+
+          # Install provisioning profile in the correct location with UUID filename
+          echo "Installing provisioning profile in filesystem..."
+          mkdir -p "/Users/runner/Library/MobileDevice/Provisioning Profiles"
+
+          # Copy with the UUID as filename
+          UUID_TARGET_PATH="/Users/runner/Library/MobileDevice/Provisioning Profiles/${PROFILE_UUID}.mobileprovision"
+          cp -v "${{ env.APP_PATH }}${{ env.IOS_PROV_PROFILE_PROJ_PATH }}" "$UUID_TARGET_PATH"
+
+          # Set correct permissions on the profile
+          chmod 644 "$UUID_TARGET_PATH"
+          chown runner:staff "$UUID_TARGET_PATH"
+
+          # Save the profile path and name to environment for later steps
+          echo "IOS_PROV_PROFILE_PATH=$UUID_TARGET_PATH" >> $GITHUB_ENV
+          echo "IOS_PROV_PROFILE_NAME=$PROFILE_NAME" >> $GITHUB_ENV
+
+          # Print provisioning profile information
+          echo "Provisioning Profile Information:"
+          echo "--------------------------------"
+          echo "Profile Name (from file): $PROFILE_NAME"
+          echo "Profile Name (from env): $IOS_PROV_PROFILE_NAME"
+          echo "Profile Path: $UUID_TARGET_PATH"
+          echo "Profile UUID: $PROFILE_UUID"
+          echo "App Identifier: $IOS_APP_IDENTIFIER"
+          echo "Team ID: $IOS_TEAM_ID"
+          echo "--------------------------------"
+
+          # List all provisioning profiles in the system with detailed info
+          echo "List of all provisioning profiles in system:"
+          ls -la "/Users/runner/Library/MobileDevice/Provisioning Profiles/"
+
+          # Clean up temp file
+          rm -f "$TEMP_PLIST_PATH"
+
+          echo "✅ Provisioning profile installation steps completed."
+
+      # act won't work with macos, but you can test with `bundle exec fastlane ios ...`
+      - name: Build and upload to TestFlight (Internal)
+        if: ${{ !env.ACT }}
+        env:
+          IS_PR: ${{ env.IS_PR }}
+          IOS_APP_IDENTIFIER: ${{ secrets.IOS_APP_IDENTIFIER }}
+          IOS_CONNECT_API_KEY_BASE64: ${{ secrets.IOS_CONNECT_API_KEY_BASE64 }}
+          IOS_CONNECT_API_KEY_PATH: ${{ env.APP_PATH }}${{ env.IOS_CONNECT_API_KEY_PATH }}
+          IOS_CONNECT_ISSUER_ID: ${{ secrets.IOS_CONNECT_ISSUER_ID }}
+          IOS_CONNECT_KEY_ID: ${{ secrets.IOS_CONNECT_KEY_ID }}
+          IOS_P12_PASSWORD: ${{ secrets.IOS_P12_PASSWORD }}
+          IOS_PROJECT_NAME: ${{ secrets.IOS_PROJECT_NAME }}
+          IOS_PROJECT_SCHEME: ${{ secrets.IOS_PROJECT_SCHEME }}
+          IOS_PROV_PROFILE_DIR: ${{ env.IOS_PROV_PROFILE_DIRECTORY }}
+          IOS_PROV_PROFILE_NAME: ${{ secrets.IOS_PROV_PROFILE_NAME }}
+          IOS_PROV_PROFILE_PATH: ${{ env.IOS_PROV_PROFILE_PATH }}
+          IOS_SIGNING_CERTIFICATE: ${{ secrets.IOS_SIGNING_CERTIFICATE }}
+          IOS_TESTFLIGHT_GROUPS: ${{ secrets.IOS_TESTFLIGHT_GROUPS }}
+          IOS_TEAM_ID: ${{ secrets.IOS_TEAM_ID }}
+          IOS_TEAM_NAME: ${{ secrets.IOS_TEAM_NAME }}
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+        timeout-minutes: 90
+        run: |
+          cd ${{ env.APP_PATH }}
+          echo "--- Pre-Fastlane Diagnostics ---"
+          echo "Running as user: $(whoami)"
+          echo "Default keychain:"
+          security list-keychains -d user
+          echo "Identities in build.keychain:"
+          security find-identity -v -p codesigning build.keychain || echo "Failed to find identities in build.keychain"
+          echo "--- Starting Fastlane ---"
+          # if pushing to main, deploy to App Store
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+            bundle exec fastlane ios deploy --verbose
+          # else to upload to TestFlight Internal Testing
+          else
+            bundle exec fastlane ios internal_test --verbose
+          fi
+
+      - name: Remove project.pbxproj updates we don't want to commit
+        run: |
+          PBXPROJ_FILE="app/ios/Self.xcodeproj/project.pbxproj"
+
+          # Create a temporary file to store version info
+          echo "Extracting version information..."
+          rm -f versions.txt
+          grep -E 'CURRENT_PROJECT_VERSION = [0-9]+;|MARKETING_VERSION = [0-9]+\.[0-9]+\.[0-9]+;' "${PBXPROJ_FILE}" > versions.txt
+
+          # Check if we have version information
+          if [ -s versions.txt ]; then
+            echo "Found version information. Resetting file and re-applying versions..."
+
+            # Store the version values
+            CURRENT_VERSION=$(grep 'CURRENT_PROJECT_VERSION' versions.txt | head -1 | sed 's/.*CURRENT_PROJECT_VERSION = \([0-9]*\);.*/\1/')
+            MARKETING_VERSION=$(grep 'MARKETING_VERSION' versions.txt | head -1 | sed 's/.*MARKETING_VERSION = \([0-9]*\.[0-9]*\.[0-9]*\);.*/\1/')
+
+            echo "Current version: $CURRENT_VERSION"
+            echo "Marketing version: $MARKETING_VERSION"
+
+            # Reset the file to HEAD
+            git checkout HEAD -- "${PBXPROJ_FILE}"
+
+            # Update the versions if they exist
+            if [ ! -z "$CURRENT_VERSION" ]; then
+              sed -i '' "s/\(CURRENT_PROJECT_VERSION = \)[0-9]*;/\1$CURRENT_VERSION;/g" "${PBXPROJ_FILE}"
+            fi
+
+            if [ ! -z "$MARKETING_VERSION" ]; then
+              sed -i '' "s/\(MARKETING_VERSION = \)[0-9]*\.[0-9]*\.[0-9]*;/\1$MARKETING_VERSION;/g" "${PBXPROJ_FILE}"
+            fi
+
+            echo "Version information successfully applied."
+          else
+            echo "No version information found. Resetting file..."
+            git checkout HEAD -- "${PBXPROJ_FILE}"
+          fi
+
+          # Clean up
+          rm -f versions.txt
+
+      - name: Get version from package.json
+        uses: ./.github/actions/get-version
+        with:
+          app_path: ${{ env.APP_PATH }}
+
+      - name: Commit updated build number
+        # disable for now, commit doesn't work as expected
+        if: false #${{ !env.ACT }}
+        uses: ./.github/actions/push-changes
+        with:
+          commit_message: "incrementing ios build number for version ${{ env.VERSION }}"
+          commit_paths: "./app/ios/OpenPassport/Info.plist ./app/ios/Self.xcodeproj/project.pbxproj"
+
+  build-android:
+    # disable for now, will fix soon
+    if: false
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Mobile Dependencies
+        uses: ./.github/actions/mobile-setup
+        with:
+          app_path: ${{ env.APP_PATH }}
+          node_version: ${{ env.NODE_VERSION }}
+          ruby_version: ${{ env.RUBY_VERSION }}
+          workspace: ${{ env.WORKSPACE }}
+
+      # android specific steps
+      - name: Setup Java environment
+        uses: actions/setup-java@v3
+        with:
+          distribution: "temurin"
+          java-version: ${{ env.JAVA_VERSION }}
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          accept-android-sdk-licenses: true
+
+      - name: Install NDK
+        run: |
+          max_attempts=5
+          attempt=1
+          while [ $attempt -le $max_attempts ]; do
+            echo "Attempt $attempt of $max_attempts to install NDK..."
+            if sdkmanager "ndk;${{ env.ANDROID_NDK_VERSION }}"; then
+              echo "Successfully installed NDK"
+              exit 0
+            fi
+            echo "Failed to install NDK on attempt $attempt"
+            if [ $attempt -eq $max_attempts ]; then
+              echo "All attempts to install NDK failed"
+              exit 1
+            fi
+            # Exponential backoff: 2^attempt seconds
+            wait_time=$((2 ** attempt))
+            echo "Waiting $wait_time seconds before retrying..."
+            sleep $wait_time
+            attempt=$((attempt + 1))
+          done
+
+      - name: Set Gradle JVM options
+        if: ${{ env.ACT }} # run when testing locally with act to prevent gradle crashes
+        run: |
+          echo "org.gradle.jvmargs=-Xmx2048m -XX:MaxMetaspaceSize=1024m -Dfile.encoding=UTF-8" >> ${{ env.APP_PATH }}/android/gradle.properties
+
+      - name: Decode Android Secrets
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode > ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
+
+      # run secrets check after keytool has been setup
+      - name: Verify Android Secrets
+        run: |
+          # Verify Play Store JSON key base64 secret exists and is valid
+          if [ -z "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" ]; then
+            echo "❌ Error: Play Store JSON key base64 secret cannot be empty"
+            exit 1
+          fi
+          # Verify the base64 can be decoded
+          if ! echo "${{ secrets.ANDROID_PLAY_STORE_JSON_KEY_BASE64 }}" | base64 --decode >/dev/null 2>&1; then
+            echo "❌ Error: Invalid Play Store JSON key base64 format"
+            exit 1
+          fi
+          # Verify keystore file exists and is valid
+          if [ ! -f "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" ]; then
+            echo "❌ Error: Keystore file was not created successfully"
+            exit 1
+          fi
+          # Try to verify the keystore with the provided password
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid keystore password"
+            exit 1
+          fi
+          # Verify the key alias exists
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" >/dev/null 2>&1; then
+            echo "❌ Error: Key alias '${{ secrets.ANDROID_KEY_ALIAS }}' not found in keystore"
+            exit 1
+          fi
+          # Verify the key password
+          if ! keytool -list -v -keystore "${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}" -storepass "${{ secrets.ANDROID_KEYSTORE_PASSWORD }}" -alias "${{ secrets.ANDROID_KEY_ALIAS }}" -keypass "${{ secrets.ANDROID_KEY_PASSWORD }}" >/dev/null 2>&1; then
+            echo "❌ Error: Invalid key password"
+            exit 1
+          fi
+          echo "✅ All Android secrets verified successfully!"
+
+      - name: Build and upload to Google Play Internal Testing
+        env:
+          IS_PR: ${{ env.IS_PR }}
+          ANDROID_KEYSTORE: ${{ secrets.ANDROID_KEYSTORE }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEYSTORE_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_KEYSTORE_PATH }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_PACKAGE_NAME: ${{ secrets.ANDROID_PACKAGE_NAME }}
+          ANDROID_PLAY_STORE_JSON_KEY_PATH: ${{ env.APP_PATH }}${{ env.ANDROID_PLAY_STORE_JSON_KEY_PATH }}
+          NODE_OPTIONS: "--max-old-space-size=8192"
+          SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+          SLACK_ANNOUNCE_CHANNEL_NAME: ${{ secrets.SLACK_ANNOUNCE_CHANNEL_NAME }}
+        run: |
+          cd ${{ env.APP_PATH }}
+          # if pushing to main, deploy to Play Store
+          if [ "${{ github.ref }}" = "refs/heads/${{ env.MAIN_BRANCH }}" ]; then
+            bundle exec fastlane android deploy --verbose
+          # else to upload to Play Store Internal Testing
+          else
+            bundle exec fastlane android internal_test --verbose
+          fi
+
+      - name: Get version from package.json
+        uses: ./.github/actions/get-version
+        with:
+          app_path: ${{ env.APP_PATH }}
+
+      - name: Commit updated build version
+        # disable for now, commit doesn't work as expected
+        if: false #${{ !env.ACT }}
+        uses: ./.github/actions/push-changes
+        with:
+          commit_message: "incrementing android build version for version ${{ env.VERSION }}"
+          commit_paths: "./app/android/app/build.gradle"

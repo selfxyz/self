@@ -22,6 +22,7 @@ DerivedData
 *.xcuserstate
 ios/.xcode.env.local
 **/.xcode.env.local
+ios/certs
 
 
 # Android/IntelliJ
@@ -37,6 +38,9 @@ local.properties
 # debug bundled builds
 android/app/src/main/assets/*android.bundle
 android/app/src/main/res/*/node_modules*
+android/.kotlin/
+android/app/upload-keystore.jks
+android/app/play-store-key.json
 
 # node.js
 #
@@ -55,6 +59,7 @@ yarn-error.log
 **/fastlane/Preview.html
 **/fastlane/screenshots
 **/fastlane/test_output
+**/fastlane/.env.secrets
 
 # Bundle artifact
 *.jsbundle

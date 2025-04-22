@@ -1,7 +1,6 @@
-import React, { useCallback, useEffect } from 'react';
-
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useEffect } from 'react';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -12,6 +11,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { useAuth } from '../../stores/authProvider';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<
@@ -26,19 +26,33 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
 }) => {
   const { loginWithBiometrics } = useAuth();
   const mockPassportFlow = route.params?.mockPassportFlow;
-  const goToLoadingScreen = useHapticNavigation('LoadingScreen', {
+  const navigate = useHapticNavigation('LoadingScreen', {
     params: {
       mockPassportFlow,
     },
   });
-  const onOkPress = useCallback(async () => {
-    await loginWithBiometrics();
-    goToLoadingScreen();
-  }, [loginWithBiometrics, goToLoadingScreen]);
+  const provingStore = useProvingStore();
 
   useEffect(() => {
     notificationSuccess();
+    provingStore.init('dsc');
   }, []);
+
+  const onOkPress = async () => {
+    // Initialize the proving process just before navigation
+    // This ensures a fresh start each time
+    try {
+      // Initialize the state machine
+
+      // Mark as user confirmed - proving will start automatically when ready
+      provingStore.setUserConfirmed();
+
+      // Navigate to loading screen
+      navigate();
+    } catch (error) {
+      console.error('Error initializing proving process:', error);
+    }
+  };
 
   // Prevents back navigation
   usePreventRemove(true, () => {});
