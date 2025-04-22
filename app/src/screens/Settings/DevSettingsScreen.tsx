@@ -125,7 +125,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
     setPassportData,
     status,
     unsafe_clearSecrets,
-    privateKey,
+    secret,
   } = usePassport();
 
   const nav = useNavigation();
@@ -258,7 +258,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
           userSelect="all"
           style={{ fontFamily: 'monospace', fontWeight: 'bold' }}
         >
-          {privateKey ?? ''}
+          {secret ?? ''}
         </SelectableText>
       </Fieldset>
     </YStack>

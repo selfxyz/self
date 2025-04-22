@@ -31,36 +31,36 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     },
   });
   const provingStore = useProvingStore();
-  const { passportData, privateKey } = usePassport();
+  const { passportData, secret } = usePassport();
 
   useEffect(() => {
-    if (!passportData || !privateKey) {
+    if (!passportData || !secret) {
       console.error('Passport data or private key is missing');
       return;
     }
     notificationSuccess();
-    provingStore.init('dsc', passportData, privateKey);
-  }, [provingStore.init, passportData, privateKey]);
+    provingStore.init('dsc', passportData, secret);
+  }, [provingStore.init, passportData, secret]);
 
   const onOkPress = useCallback(async () => {
     // Initialize the proving process just before navigation
     // This ensures a fresh start each time
     try {
-      if (!passportData || !privateKey) {
+      if (!passportData || !secret) {
         throw new Error('Passport data or private key is missing');
       }
 
       // Initialize the state machine
 
       // Mark as user confirmed - proving will start automatically when ready
-      provingStore.startProving(passportData, privateKey);
+      provingStore.startProving(passportData, secret);
 
       // Navigate to loading screen
       navigate();
     } catch (error) {
       console.error('Error initializing proving process:', error);
     }
-  }, [passportData, privateKey, provingStore.startProving, navigate]);
+  }, [passportData, secret, provingStore.startProving, navigate]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

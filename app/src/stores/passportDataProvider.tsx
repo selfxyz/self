@@ -55,9 +55,9 @@ interface PassportProviderProps extends PropsWithChildren {
 type Status = 'idle' | 'initializing' | 'updating' | 'error' | 'success';
 interface IPassportContext {
   passportData: PassportData | null;
-  secret: Mnemonic | null;
+  mnemonic: Mnemonic | null;
   status: Status;
-  privateKey: string | null;
+  secret: string | null;
   setPassportData: (data: PassportData) => Promise<void>;
   clearPassportData: () => Promise<void>;
   setSecret: () => Promise<Mnemonic | null>;
@@ -67,9 +67,9 @@ interface IPassportContext {
 
 const PassportContext = createContext<IPassportContext>({
   passportData: null,
-  secret: null,
+  mnemonic: null,
   status: 'idle',
-  privateKey: null,
+  secret: null,
   setPassportData: () => Promise.resolve(),
   clearPassportData: () => Promise.resolve(),
   setSecret: () => Promise.resolve(null),

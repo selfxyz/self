@@ -47,7 +47,7 @@ const REDACTED = new Array(24)
   .fill('')
   .map(_ => '*'.repeat(Math.max(4, Math.floor(Math.random() * 10))));
 const Mnemonic = ({ onRevealWords }: MnemonicProps) => {
-  const { secret } = usePassport();
+  const { mnemonic } = usePassport();
   const { loginWithBiometrics } = useAuth();
   const [revealWords, setRevealWords] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -58,10 +58,10 @@ const Mnemonic = ({ onRevealWords }: MnemonicProps) => {
       onRevealWords?.();
       return setRevealWords(previous => !previous);
     }
-    Clipboard.setString(secret?.phrase || '');
+    Clipboard.setString(mnemonic?.phrase || '');
     setCopied(true);
     setTimeout(() => setCopied(false), 2500);
-  }, [secret, revealWords, onRevealWords, loginWithBiometrics]);
+  }, [mnemonic, revealWords, onRevealWords, loginWithBiometrics]);
 
   return (
     <YStack position="relative" alignItems="stretch" gap={0}>
@@ -77,7 +77,7 @@ const Mnemonic = ({ onRevealWords }: MnemonicProps) => {
         paddingVertical={28}
         flexWrap="wrap"
       >
-        {(revealWords && secret ? secret.phrase.split(' ') : REDACTED).map(
+        {(revealWords && mnemonic ? mnemonic.phrase.split(' ') : REDACTED).map(
           (word, i) => (
             <WordPill key={i + word} word={word} index={i} />
           ),
