@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: development
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Circom installation from https://github.com/erhant/circomkit/blob/main/.github/workflows/tests.yml
       - name: Install dependencies
