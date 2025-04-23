@@ -23,7 +23,7 @@ target "Self" do
   config = use_native_modules!
 
   use_frameworks!
-  pod "NFCPassportReader", git: "https://github.com/zk-passport/NFCPassportReader", commit: "9bf434c86a01ae9670422f5a7484d7405124a108"
+  pod "NFCPassportReader", git: "https://github.com/zk-passport/NFCPassportReader", commit: "e3e869b14fb7fb2417928079db3967f203523580"
   pod "QKMRZScanner"
   pod "lottie-ios"
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
