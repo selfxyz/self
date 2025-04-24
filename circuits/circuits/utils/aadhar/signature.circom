@@ -15,6 +15,7 @@ include "@@openpassport/zk-email/circuits/lib/sha.circom";
 /// @input signature - RSA signature
 /// @input pubKey - RSA public key
 /// @output pubkeyHash - Poseidon hash of the public key
+
 template SignatureVerifier(n, k, maxDataLength) {
   signal input qrDataPadded[maxDataLength];
   signal input qrDataPaddedLength;

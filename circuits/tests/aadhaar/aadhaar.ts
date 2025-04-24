@@ -21,7 +21,7 @@ import crypto from 'crypto'
 import assert from 'assert'
 import { buildPoseidon } from 'circomlibjs'
 import { testQRData } from '../assets/dataInput.json'
-import { bytesToIntChunks, padArrayWithZeros, bigIntsToString } from './util'
+import { bytesToIntChunks, padArrayWithZeros, bigIntsToString } from './utils'
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 require('dotenv').config()
 

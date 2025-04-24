@@ -24,7 +24,7 @@ include "../passport/customHashers.circom";
 /// @output nullifier attestation nullifier - deterministic on the aadhaar data
 /// @output pubKeyHash Poseidon hash of the RSA public key (after merging nearby chunks)
 
-template AadhaarRegister(n, k,maxDataLength) {
+template AadhaarRegister(n,k,maxDataLength) {
 
     // This means the attestation is aadhaar
     var attestation_id = 2;
@@ -67,21 +67,21 @@ template AadhaarRegister(n, k,maxDataLength) {
     // state <== qrDataExtractor.state;
     // pinCode <== qrDataExtractor.pinCode;
 
-    signal photo[photoPackSize()] <== qrDataExtractor.photo;
+    // signal photo[photoPackSize()] <== qrDataExtractor.photo;
 
-    // photohash (similar to nullifier calc)
-    component h0 = Poseidon(16);
-    component h1 = Poseidon(16);
-    for (var i = 0; i < 16; i++) {
-        h0.inputs[i] <== photo[i];
-        h1.inputs[i] <== photo[i + 16];
-    }
+    // // photohash (similar to nullifier calc)
+    // component h0 = Poseidon(16);
+    // component h1 = Poseidon(16);
+    // for (var i = 0; i < 16; i++) {
+    //     h0.inputs[i] <== photo[i];
+    //     h1.inputs[i] <== photo[i + 16];
+    // }
 
-    component hReduce = Poseidon(2);
-    hReduce.inputs[0] <== h0.out;
-    hReduce.inputs[1] <== h1.out;
+    // component hReduce = Poseidon(2);
+    // hReduce.inputs[0] <== h0.out;
+    // hReduce.inputs[1] <== h1.out;
 
-    signal photoHash <== hReduce.out;
+    // signal photoHash <== hReduce.out;
 
     // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
     component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
@@ -96,8 +96,6 @@ template AadhaarRegister(n, k,maxDataLength) {
     commitment <== dataCommit.out;
 
     // WIP - nullifier
-    nullifier <== Nullifier()(nullifierSeed, photo);
+    nullifier <== Nullifier()(nullifierSeed);
 
 }
-
-component main = AadhaarRegister(121, 17, 512 * 3);

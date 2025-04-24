@@ -35,22 +35,7 @@ template VERIFY_COMMITMENT(nLevels) {
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
 
-
-    // photohash (similar to nullifier calc)
-    component h0 = Poseidon(16);
-    component h1 = Poseidon(16);
-    for (var i = 0; i < 16; i++) {
-        h0.inputs[i] <== photo[i];
-        h1.inputs[i] <== photo[i + 16];
-    }
-
-    component hReduce = Poseidon(2);
-    hReduce.inputs[0] <== h0.out;
-    hReduce.inputs[1] <== h1.out;
-
-    signal photoHash <== hReduce.out;
-
-
+    
     commitment <== Poseidon(4)([
         secret,
         attestation_id,
