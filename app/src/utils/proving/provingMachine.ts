@@ -9,7 +9,6 @@ import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import { DocumentType, PassportData } from '../../../../common/src/utils/types';
 import { navigationRef } from '../../Navigation';
-import { clearPassportData } from '../../stores/passportDataProvider';
 import { useProtocolStore } from '../../stores/protocolStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { getPublicKey, verifyAttestation } from './attest';
@@ -122,16 +121,18 @@ interface ProvingState {
     circuitType: 'dsc' | 'disclose' | 'register',
     passportData: PassportData,
     secret: string,
+    clearPassportData: () => Promise<void>
   ) => Promise<void>;
   startFetchingData: (documentType: DocumentType) => Promise<void>;
   validatingDocument: (
     passportData: PassportData,
     secret: string,
+    clearPassportData: () => Promise<void>
   ) => Promise<void>;
   initTeeConnection: (passportData: PassportData) => Promise<boolean>;
   startProving: (passportData: PassportData, secret: string) => Promise<void>;
   setUserConfirmed: (passportData: PassportData, secret: string) => void;
-  postProving: (passportData: PassportData, secret: string) => void;
+  postProving: (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>) => void;
   _closeConnections: () => void;
   _generatePayload: (
     passportData: PassportData,
@@ -154,6 +155,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     newActor: AnyActorRef,
     passportData: PassportData,
     secret: string,
+    clearPassportData: () => Promise<void>
   ) {
     newActor.subscribe((state: any) => {
       console.log(`State transition: ${state.value}`);
@@ -163,7 +165,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         get().startFetchingData(passportData.documentType);
       }
       if (state.value === 'validating_document') {
-        get().validatingDocument(passportData, secret);
+        get().validatingDocument(passportData, secret, clearPassportData);
       }
 
       if (state.value === 'init_tee_connexion') {
@@ -175,7 +177,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
 
       if (state.value === 'post_proving') {
-        get().postProving(passportData, secret);
+        get().postProving(passportData, secret, clearPassportData);
       }
       if (get().circuitType !== 'disclose' && state.value === 'error') {
         setTimeout(() => {
@@ -298,7 +300,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
-
           get()._startSocketIOStatusListener(statusUuid, socketEndpointType);
         } else if (result.error) {
           console.error('Received error from TEE:', result.error);
@@ -443,6 +444,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       circuitType: 'dsc' | 'disclose' | 'register',
       passportData: PassportData,
       secret: string,
+      clearpassportData: () => Promise<void>
     ) => {
       get()._closeConnections();
 
@@ -465,7 +467,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       });
 
       actor = createActor(provingMachine);
-      setupActorSubscriptions(actor, passportData, secret);
+      setupActorSubscriptions(actor, passportData, secret, clearpassportData);
       actor.start();
 
       set({ circuitType });
@@ -484,7 +486,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async (passportData: PassportData, secret: string) => {
+    validatingDocument: async (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       try {
@@ -626,11 +628,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    postProving: (passportData: PassportData, secret: string) => {
+    postProving: (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>)  => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        get().init('register', passportData, secret);
+        get().init('register', passportData, secret, clearPassportData);
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {

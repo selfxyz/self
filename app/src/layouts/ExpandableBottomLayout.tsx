@@ -1,9 +1,20 @@
 import React from 'react';
-import { StatusBar, StyleSheet } from 'react-native';
+import {
+  Dimensions,
+  PixelRatio,
+  ScrollView,
+  StatusBar,
+  StyleSheet,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { View, ViewProps } from 'tamagui';
 
 import { black, white } from '../utils/colors';
+
+// Get the current font scale factor
+const fontScale = PixelRatio.getFontScale();
+// fontScale > 1 means the user has increased text size in accessibility settings
+const isLargerTextEnabled = fontScale > 1;
 
 interface ExpandableBottomLayoutProps extends ViewProps {
   children: React.ReactNode;
@@ -90,12 +101,29 @@ const BottomSection: React.FC<BottomSectionProps> = ({
   const { bottom: safeAreaBottom } = useSafeAreaInsets();
   const incomingBottom = props.paddingBottom ?? props.pb ?? 0;
   const minBottom = Math.max(safeAreaBottom, 10);
-
   const totalBottom =
     typeof incomingBottom === 'number' ? minBottom + incomingBottom : minBottom;
+
+  let panelHeight: number | 'auto' = 'auto';
+  // set bottom section height to 38% of screen height
+  // and wrap children in a scroll view if larger text is enabled
+  if (isLargerTextEnabled) {
+    const windowHeight = Dimensions.get('window').height;
+    panelHeight = windowHeight * 0.38;
+    children = (
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
+      >
+        {children}
+      </ScrollView>
+    );
+  }
+
   return (
     <View
       {...props}
+      height={panelHeight}
       style={[styles.bottomSection, style]}
       paddingBottom={totalBottom}
     >

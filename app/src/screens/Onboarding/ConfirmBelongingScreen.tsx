@@ -31,7 +31,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     },
   });
   const provingStore = useProvingStore();
-  const { passportData, secret } = usePassport();
+  const { passportData, secret, clearPassportData } = usePassport();
 
   useEffect(() => {
     if (!passportData || !secret) {
@@ -39,7 +39,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
       return;
     }
     notificationSuccess();
-    provingStore.init('dsc', passportData, secret);
+    provingStore.init('dsc', passportData, secret, clearPassportData);
   }, [provingStore.init, passportData, secret]);
 
   const onOkPress = useCallback(async () => {

@@ -27,6 +27,7 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
+      const { passportData, secret } = JSON.parse(passportDataAndSecret);
       if (!isPassportDataValid(passportData)) {
         navigation.navigate('Launch');
         return;

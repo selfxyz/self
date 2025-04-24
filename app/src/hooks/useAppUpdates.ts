@@ -1,5 +1,5 @@
 import { useNavigation } from '@react-navigation/native';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Linking } from 'react-native';
 import { checkVersion } from 'react-native-check-version';
 
@@ -8,11 +8,13 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
   const [newVersionUrl, setNewVersionUrl] = useState<string | null>(null);
   const [isModalDismissed, setIsModalDismissed] = useState(false);
 
-  checkVersion().then(version => {
-    if (version.needsUpdate) {
-      setNewVersionUrl(version.url);
-    }
-  });
+  useEffect(() => {
+    checkVersion().then(version => {
+      if (version.needsUpdate) {
+        setNewVersionUrl(version.url);
+      }
+    });
+  }, []);
 
   const showAppUpdateModal = () => {
     navigation.navigate('Modal', {
@@ -22,9 +24,8 @@ export const useAppUpdates = (): [boolean, () => void, boolean] => {
       buttonText: 'Update and restart',
       onButtonPress: async () => {
         if (newVersionUrl !== null) {
-          await Linking.openURL(
-            newVersionUrl, // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
-          );
+          // TODO or use: `Platform.OS === 'ios' ? appStoreUrl : playStoreUrl`
+          await Linking.openURL(newVersionUrl);
         }
       },
       onModalDismiss: () => {

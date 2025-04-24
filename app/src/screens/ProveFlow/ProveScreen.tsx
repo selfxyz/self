@@ -34,7 +34,7 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
 
-  const { passportData, secret } = usePassport();
+  const { passportData, secret, clearPassportData } = usePassport();
 
   const selectedApp = useSelfAppStore(state => state.selfApp);
   const selectedAppRef = useRef(selectedApp);
@@ -74,7 +74,7 @@ const ProveScreen: React.FC = () => {
     }
     selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
-    provingStore.init('disclose', passportData, secret);
+    provingStore.init('disclose', passportData, secret, clearPassportData);
   }, [selectedApp, isFocused, provingStore.init, passportData, secret]);
 
   const disclosureOptions = useMemo(() => {
