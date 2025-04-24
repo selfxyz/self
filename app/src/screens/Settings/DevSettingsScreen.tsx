@@ -131,6 +131,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const nav = useNavigation();
 
   async function handleRestart() {
+    console.log("handleRestart")
     if (status !== 'success') {
       return;
     }
@@ -139,7 +140,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   }
 
   async function deleteEverything() {
-    await clearPassportData();
+    await unsafe_clearSecrets();
     await handleRestart();
   }
 

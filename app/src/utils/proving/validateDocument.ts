@@ -67,7 +67,6 @@ export async function isUserRegistered(
   if (!passportData) {
     return false;
   }
-
   const commitment = generateCommitment(
     secret,
     PASSPORT_ATTESTATION_ID,
