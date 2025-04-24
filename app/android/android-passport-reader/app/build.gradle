@@ -44,6 +44,12 @@ android {
     namespace 'example.jllarraz.com.passportreader'
 }
 
+repositories {
+    google()
+    mavenCentral()
+    maven { url "https://jitpack.io" }
+}
+
 dependencies {
     implementation fileTree(include: ['*.jar'], dir: 'libs')
     implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -73,7 +79,8 @@ dependencies {
     implementation 'commons-codec:commons-codec:1.13'
 
     //Camera
-    implementation 'io.fotoapparat:fotoapparat:2.7.0'
+    // implementation 'io.fotoapparat:fotoapparat:2.7.0'
+    implementation 'com.github.Fotoapparat:Fotoapparat:2.7.0'
 
     implementation 'androidx.multidex:multidex:2.0.1'
 

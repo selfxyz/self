@@ -89,3 +89,5 @@ yarn-error.log
 
 # Bundle analyzer source maps
 *-sourcemap.jsonandroid/.kotlin/errors/
+
+./android/app/google-services.json

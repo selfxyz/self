@@ -77,13 +77,14 @@ export async function sendRegisterPayload(
   secret: string,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
+  sessionId?: string,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
     passportData,
     endpointType,
   );
-  await sendPayload(
+  return await sendPayload(
     inputs,
     'register',
     circuitName,
@@ -95,6 +96,7 @@ export async function sendRegisterPayload(
       updateGlobalOnSuccess: true,
       updateGlobalOnFailure: true,
       flow: 'registration',
+      sessionId,
     },
   );
 }
@@ -235,6 +237,7 @@ export async function isPassportNullified(passportData: PassportData) {
 export async function registerPassport(
   passportData: PassportData,
   secret: string,
+  sessionId?: string,
 ) {
   // First get the mapping, then use it for the check
   const endpointType =
@@ -253,13 +256,14 @@ export async function registerPassport(
     endpointType,
   );
   if (!dscOk) {
-    return;
+    return { status: ProofStatusEnum.FAILURE };
   }
-  await sendRegisterPayload(
+  return await sendRegisterPayload(
     passportData,
     secret,
     circuitDNSMapping,
     endpointType,
+    sessionId,
   );
 }
 

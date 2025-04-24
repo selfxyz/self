@@ -31,6 +31,11 @@ allprojects {
     repositories {
         google()
         jcenter()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
+        maven { url "https://maven.fabricmc.net/" }
+        maven { url "https://dl.bintray.com/kotlin/kotlin-eap" }
+        maven { url 'https://dl.bintray.com/fotoapparat/fotoapparat' }
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {

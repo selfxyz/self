@@ -67,8 +67,9 @@ export async function sendPayload(
     updateGlobalOnSuccess?: boolean;
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
+    sessionId?: string;
   },
-): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
+): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string; uuid?: string }> {
   const opts = {
     updateGlobalOnSuccess: true,
     updateGlobalOnFailure: true,
@@ -80,6 +81,7 @@ export async function sendPayload(
       status: ProofStatusEnum,
       error_code?: string,
       reason?: string,
+      responseUuid?: string,
     ) {
       if (!finalized) {
         finalized = true;
@@ -97,10 +99,10 @@ export async function sendPayload(
             globalSetRegistrationStatus && globalSetRegistrationStatus(status);
           }
         }
-        resolve({ status, error_code, reason });
+        resolve({ status, error_code, reason, uuid: responseUuid });
       }
     }
-    const uuid = v4();
+    const uuid = options?.sessionId || v4();
     const ws = new WebSocket(wsRpcUrl);
     let socket: Socket | null = null;
     function createHelloBody(uuidString: string) {
@@ -195,21 +197,21 @@ export async function sendPayload(
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.FAILURE);
+                finalize(ProofStatusEnum.FAILURE, undefined, undefined, receivedUuid);
               } else if (data.status === 4) {
                 console.log('Proof verified');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.SUCCESS);
+                finalize(ProofStatusEnum.SUCCESS, undefined, undefined, receivedUuid);
               } else if (data.status === 5) {
                 console.log('Failed to verify proof');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.FAILURE, data.error_code, data.reason);
+                finalize(ProofStatusEnum.FAILURE, data.error_code, data.reason, receivedUuid);
               }
             });
             socket.on('disconnect', reason => {
@@ -219,19 +221,19 @@ export async function sendPayload(
         }
       } catch (error) {
         console.error('Error processing message:', error);
-        finalize(ProofStatusEnum.ERROR);
+        finalize(ProofStatusEnum.ERROR, undefined, undefined, uuid);
       }
     });
     ws.addEventListener('error', error => {
       console.error('WebSocket error:', error);
-      finalize(ProofStatusEnum.ERROR);
+      finalize(ProofStatusEnum.ERROR, undefined, undefined, uuid);
     });
     ws.addEventListener('close', event => {
       console.log(
         `WebSocket closed. Code: ${event.code}, Reason: ${event.reason}`,
       );
       if (!finalized) {
-        finalize(ProofStatusEnum.FAILURE);
+        finalize(ProofStatusEnum.FAILURE, undefined, undefined, uuid);
       }
     });
     const timer = setTimeout(() => {
@@ -244,7 +246,7 @@ export async function sendPayload(
       ) {
         ws.close();
       }
-      finalize(ProofStatusEnum.ERROR);
+      finalize(ProofStatusEnum.ERROR, undefined, undefined, uuid);
     }, timeoutMs);
   });
 }
