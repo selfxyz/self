@@ -168,7 +168,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (state.value === 'post_proving') {
         get().postProving();
       }
-      if (get().circuitType !== 'disclose' && state.value === 'error') {
+      if (
+        get().circuitType !== 'disclose' &&
+        (state.value === 'error' || state.value === 'failure')
+      ) {
         setTimeout(() => {
           if (navigationRef.isReady()) {
             navigationRef.navigate('Launch');
@@ -338,6 +341,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         const data =
           typeof message === 'string' ? JSON.parse(message) : message;
         console.log('Received status update with status:', data.status);
+        console.log(data);
         if (data.status === 3 || data.status === 5) {
           console.error(
             'Proof generation/verification failed (status 3 or 5).',

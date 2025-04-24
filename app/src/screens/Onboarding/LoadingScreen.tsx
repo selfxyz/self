@@ -1,5 +1,4 @@
-import { StaticScreenProps } from '@react-navigation/native';
-import { useIsFocused } from '@react-navigation/native';
+import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
@@ -24,7 +23,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
     if (currentState === 'completed') {
       setAnimationSource(successAnimation);
-    } else if (currentState === 'error') {
+    } else if (currentState === 'error' || currentState === 'failure') {
       setAnimationSource(failAnimation);
     } else {
       setAnimationSource(miscAnimation);
