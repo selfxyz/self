@@ -14,6 +14,10 @@ import { typography } from '../../components/typography/styles';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import {
+  ProofStatus,
+  useProofHistoryStore,
+} from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, white } from '../../utils/colors';
 import {
@@ -28,8 +32,12 @@ const SuccessScreen: React.FC = () => {
   const appName = selfApp?.appName;
   const goHome = useHapticNavigation('Home');
 
+  const { updateProofStatus } = useProofHistoryStore();
+
   const currentState = useProvingStore(state => state.currentState);
   const reason = useProvingStore(state => state.reason);
+  const sessionId = useProvingStore(state => state.uuid);
+  const errorCode = useProvingStore(state => state.error_code);
 
   const isFocused = useIsFocused();
 
@@ -51,9 +59,16 @@ const SuccessScreen: React.FC = () => {
     if (currentState === 'completed') {
       notificationSuccess();
       setAnimationSource(succesAnimation);
+      updateProofStatus(sessionId!, ProofStatus.SUCCESS);
     } else if (currentState === 'failure' || currentState === 'error') {
       notificationError();
       setAnimationSource(failAnimation);
+      updateProofStatus(
+        sessionId!,
+        ProofStatus.FAILURE,
+        errorCode ?? undefined,
+        reason ?? undefined,
+      );
     } else {
       setAnimationSource(loadingAnimation);
     }

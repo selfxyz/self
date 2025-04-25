@@ -58,6 +58,7 @@ const goToStore = () => {
 
 const routes = [
   [Data, 'View passport info', 'PassportDataInfo'],
+  [Data, 'Proof history', 'ProofHistory'],
   [Lock, 'Reveal recovery phrase', 'ShowRecoveryPhrase'],
   [Cloud, 'Cloud backup', 'CloudBackupSettings'],
   [Feedback, 'Send feeback', 'email_feedback'],
