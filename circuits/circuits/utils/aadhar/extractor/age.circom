@@ -18,6 +18,7 @@ include "../constants.circom";
 /// @input currentMonth - Current month to calculate the age
 /// @input currentDay - Current day to calculate the age
 /// @output age - Age of the person 
+/// @output DobHasH - poseidon(year,month,day),here year-month-day are Ints
 /// @output out - Unix timestamp representing the date of birth
 template AgeExtractor(maxDataLength) {
     signal input nDelimitedData[maxDataLength];
@@ -27,6 +28,7 @@ template AgeExtractor(maxDataLength) {
     signal input currentDay;
 
     signal output age;
+    signal output DobHash;
     signal output nDelimitedDataShiftedToDob[maxDataLength];
     
     // Shift the data to the right to until the DOB index
@@ -46,6 +48,9 @@ template AgeExtractor(maxDataLength) {
     signal year <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
     signal month <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
     signal day <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
+
+    // calculate a poseidon hash for the DOB to be used as nullifier 
+    DobHash <== Poseidon(3)([year,month,day]);
 
     // Completed age based on year value
     signal ageByYear <== currentYear - year - 1;

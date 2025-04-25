@@ -3,37 +3,45 @@ pragma circom 2.1.9;
 include "circomlib/circuits/poseidon.circom";
 include "../utils/aadhar/QrVerifier.circom";
 include "../utils/aadhar/disclose/verify_commitment_aadhaar.circom";
+include "../utils/extractor.circom";
 
 /// @title AADHAAR_VC_AND_DISCLOSE
 /// @notice verify user's commitment is part of the tree and discloses data selectively 
+
 /// @input secret Secret of the user — used to reconstruct commitment and generate nullifier
 /// @input attestation_id attestation_id Attestation ID of the credential used to generate the commitment
 /// @input merkle_root Root of the commitment merkle tree
 /// @input leaf_depth Actual size of the merkle tree
 /// @input siblings Siblings of the commitment in the merkle tree
+
 /// @input qrDataPadded QR data without the signature; assumes elements to be bytes; remaining space is padded with 0
-/// @input qrDataPaddedLength Length of padded QR dat
-/// @input revealAgeAbove18 Flag to reveal age is above 18
+/// @input qrDataPaddedLength Length of padded QR data
+/// @input delimiterIndexes
+/// @input scope Scope of the application users generates the proof for
+
+/// @input majority Majority user wants to prove he is older than: YY — ASCII
+/// @input current_date Current date: YYMMDD — number
+
+/// @input revealAgeolderthan Flag to reveal age older than
 /// @input revealGender Flag to reveal extracted gender
 /// @input revealPinCode Flag to reveal extracted pin code
 /// @input revealState Flag to reveal extracted state
+
 /// @output pubkeyHash Poseidon hash of the RSA public key (after merging nearby chunks)
-/// @output nullifier A unique value derived from nullifierSeed and Aadhaar data to nullify the proof/user
 /// @output timestamp Timestamp of when the data was signed - extracted and converted to Unix timestamp
 /// @output ageAbove18 Boolean flag indicating age is above 18; 0 if not revealed
 /// @output gender Gender 70(F) or 77(M); 0 if not revealed
 /// @output pinCode Pin code of the address as int; 0 if not revealed
 /// @output state State packed as int (reverse order); 0 if not revealed
-/// @output ageAbove18
+
+/// @output age
 /// @output pincode
 /// @output gender
 /// @output state
-/// @output nullifier Scope nullifier - not deterministic on the aadhaar data
-/// TODO
-/// for now we follow the pattern similar to anon aadhaar but later would like to switch to a format similar to passport circuits
-/// @input datarevealselector Indices of delimiters (255) in the QR text data. 18 in total
 
-template AADHAAR_VC_AND_DISCLOSE(nLevels) {
+/// @output nullifier Scope nullifier - not deterministic on the aadhaar data
+
+template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
 
     signal input secret;
     signal input attestation_id;// == 2,
@@ -49,10 +57,23 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
 
     signal input scope;
     signal input user_identifier;
+    //age related
+    signal input majority[2];
+    signal input current_date[6];
+    //selector bitmaps
+    signal input revealAgeolderthan;
+    signal input revealGender;
+    signal input revealPinCode;
+    signal input revealState;
+    // Outputs
+    signal output timestamp;
+    signal output age;
+    signal output gender;
+    signal output state;
+    signal output pinCode;
+    signal output nullifier;
 
     /// TODO
-    //To discuss further for aadhaar how does the forbidden stuff look with the name fields etuff etc
-
     // signal input ofac_passportno_smt_leaf_key;
     // signal input ofac_passportno_smt_root;
     // signal input ofac_passportno_smt_siblings[passportNoTreeLevels];
@@ -63,49 +84,27 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels) {
 
     // signal input ofac_nameyob_smt_leaf_key;
     // signal input ofac_nameyob_smt_root;
-    // signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
+    // signal input ofac_nameyob_smt_siblings[nameyobTreeLevels]; 
 
-    // reveal flags 
-    // would like to move to something like 
-    /// @input datarevealselector Indices of delimiters (255) in the QR text data. 18 in total
-    /// to disclose all the fields like in the passport circuit 
-    signal input revealAgeAbove18;         // 0/1
-    signal input revealGender;             // 0/1
-    signal input revealPinCode;            // 0/1
-    signal input revealState;              // 0/1
+    // Assert data between qrDataPaddedLength and maxDataLength is zero
+    AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
 
-
-    signal ageAbove18; 
-    signal gender;
-    signal state;
-    signal pinCode;
-
-    component qrDataExtractor = QRDataExtractor(maxDataLength);
-    qrDataExtractor.data <== qrDataPadded;
-    qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
-    qrDataExtractor.delimiterIndices <== delimiterIndices;
-
-    timestamp <== qrDataExtractor.timestamp;
-
-    ageAbove18 <== revealAgeAbove18 * qrDataExtractor.ageAbove18;
-    gender <== revealGender * qrDataExtractor.gender;
-    state <== revealstate * qrDataExtractor.state;
-    pinCode <== revealPinCode * qrDataExtractor.pinCode;
-
-
-
-    // verify commitment is part of the merkle tree
-    VERIFY_COMMITMENT(nLevels)(
+    VerifyAadhaarCommitment = VERIFY_COMMITMENT_AADHAAR(nLevels,maxDataLength)(        
         secret,
         attestation_id,
         qrDataPadded,
-        qrDataPaddedLength
+        qrDataPaddedLength,
         delimiterIndices,
         merkle_root,
         leaf_depth,
         path,
         siblings
     );
+
+
+    component DiscloseAadhaar = DiscloseAadhaar(maxDataLength);
+ 
+
 
     // action nullifier
     signal output nullifier <== Poseidon(2)([secret, scope]);

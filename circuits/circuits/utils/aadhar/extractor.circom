@@ -60,21 +60,29 @@ There are no official spec docs for Aadhaar V2 available publicly, but the diffe
 /// @input qrDataPaddedLength - Length of the padded QR data
 /// @input delimiterIndices[17] - Indices of the delimiters in the QR data
 /// @output name - An array of Integers packed as big endian representing the name value
-///                We dont know what is lenght of name 
-/// @output RefId - The four digit that encompas the  
+///                We dont know what is lenght of name at compile time
+/// @output NameHash - poseidon hash of the name field
+/// @output RefId - The four digit that encompas the aadhaar number
 /// @output age - Unix timestamp representing the date of birth
 /// @output gender - Single byte number representing gender
+/// @output state - The state of the person 
+/// @output pincode - The pin code of 
 /// @output photo - Photo of the user along the SHA padding
 
 template QRDataExtractor(maxDataLength,nameMaxBytes) {
+
+    var packedLength  = computeIntChunkLength(nameMaxBytes);
+
     signal input data[maxDataLength];
     signal input qrDataPaddedLength;
     signal input delimiterIndices[18];
 
-    signal output name;
+    signal output Name[packedLength];
+    signal output NameHash;
     signal output RefId;
     signal output timestamp;
     signal output age;
+    signal output DOBHash;
     signal output gender;
     signal output state;
     signal output pinCode;
@@ -84,6 +92,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     // Create `nDelimitedData` - same as `data` but each delimiter is replaced with n * 255
     // where n means the nth occurrence of 255
     // This is to verify `delimiterIndices` is correctly set for each extraction
+
     component is255[maxDataLength];
     component indexBeforePhoto[maxDataLength];
     signal is255AndIndexBeforePhoto[maxDataLength];
@@ -108,7 +117,6 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
         nDelimitedData[i] <== is255AndIndexBeforePhoto[i] * n255Filter[i] + data[i];
     }
 
-
     // Extract RefID
     component refIdExt = RefIdExtractor( maxQrDataLength );
     refIdExt.nDelimitedData   <== qrDataPadded;
@@ -131,6 +139,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     ageExtractor.currentMonth <== timestampExtractor.month;
     ageExtractor.currentDay <== timestampExtractor.day;
     age <== ageExtractor.age;
+    DOBHash <== ageExtractor.DobHash;
 
     // Extract Name
     component nameExtractor =NameExtractor(maxDataLength,nameMaxBytes);
@@ -138,7 +147,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     nameExtractor.startDelimiterIndex <== delimiterIndices[namePosition() - 1];
     nameExtractor.endIndex            <== delimiterIndices[namePosition()];
     Name <== nameExtractor.namepacked;
-    NameHash   <== nameExtractor.nameHash;
+    NameHash   <== nameExtractor.namehash;
 
 
     // Extract gender

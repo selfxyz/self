@@ -16,7 +16,7 @@ include "circomlib/circuits/poseidon.circom";
 /// @input siblings Siblings of the user's commitment in the merkle tree
 
 
-template VERIFY_COMMITMENT(nLevels) {
+template VERIFY_COMMITMENT_AADHAAR(nLevels,maxDataLength) {
     signal input secret;
     signal input attestation_id;
 
@@ -29,23 +29,12 @@ template VERIFY_COMMITMENT(nLevels) {
     signal input path[nLevels];
     signal input siblings[nLevels];
 
-
-    component qrDataExtractor = QRDataExtractor(maxDataLength);
-    qrDataExtractor.data <== qrDataPadded;
-    qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
-    qrDataExtractor.delimiterIndices <== delimiterIndices;
-
+    // Poseidon commitment
+    component dataCommit = PackBytesAndPoseidon(maxDataLength);
+    dataCommit.in <== qrDataPadded;// whole buffer including zeros
+    commitment <== dataCommit.out;
     
-    commitment <== Poseidon(4)([
-        secret,
-        attestation_id,
-        // data_hash,
-        photoHash,
-        pubKeyHash
-    ]);
-
     // Verify commitment inclusion
     signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);
     merkle_root === computedRoot;
-
 }

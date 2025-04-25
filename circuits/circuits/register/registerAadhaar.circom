@@ -1,5 +1,7 @@
 pragma circom 2.1.9;
 
+include "circomlib/circuits/comparators.circom";
+include "circomlib/circuits/bitify.circom";
 include "../utils/aadhar/QrVerifier.circom";
 include "circomlib/circuits/poseidon.circom";
 include "circomlib/circuits/bitify.circom";
@@ -24,10 +26,11 @@ include "../passport/customHashers.circom";
 /// @output nullifier attestation nullifier - deterministic on the aadhaar data
 /// @output pubKeyHash Poseidon hash of the RSA public key (after merging nearby chunks)
 
-template AadhaarRegister(n,k,maxDataLength) {
+template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
 
     // This means the attestation is aadhaar
     var attestation_id = 2;
+    var packedLength  = computeIntChunkLength(nameMaxBytes);
 
     signal input qrDataPadded[maxDataLength];
     signal input qrDataPaddedLength;
@@ -41,6 +44,12 @@ template AadhaarRegister(n,k,maxDataLength) {
     signal output timestamp;
     signal output pubKeyHash;
 
+    // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
+    component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
+    n2bHeaderLength.in <== qrDataPaddedLength;
+
+
+    //verify if the data provided is correct
     component qr = AadhaarQRVerifier(n,k,maxDataLength);
     qr.qrDataPadded        <== qrDataPadded;
     qr.qrDataPaddedLength  <== qrDataPaddedLength;
@@ -51,51 +60,34 @@ template AadhaarRegister(n,k,maxDataLength) {
 
     pubKeyHash <== qr.pubkeyHash;
 
+
+    // Assert data between qrDataPaddedLength and maxDataLength is zero
+    AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
+
+    // extract all the data from QR and computer commitment + nullfier
     component qrDataExtractor = QRDataExtractor(maxDataLength);
     qrDataExtractor.data <== qrDataPadded;
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
 
-    // signal ageAbove18; 
-    // signal gender;
-    // signal state;
-    // signal pinCode;
-
-    // timestamp <== qrDataExtractor.timestamp;
-    // ageAbove18 <== qrDataExtractor.ageAbove18;
-    // gender <== qrDataExtractor.gender;
-    // state <== qrDataExtractor.state;
-    // pinCode <== qrDataExtractor.pinCode;
-
-    // signal photo[photoPackSize()] <== qrDataExtractor.photo;
-
-    // // photohash (similar to nullifier calc)
-    // component h0 = Poseidon(16);
-    // component h1 = Poseidon(16);
-    // for (var i = 0; i < 16; i++) {
-    //     h0.inputs[i] <== photo[i];
-    //     h1.inputs[i] <== photo[i + 16];
-    // }
-
-    // component hReduce = Poseidon(2);
-    // hReduce.inputs[0] <== h0.out;
-    // hReduce.inputs[1] <== h1.out;
-
-    // signal photoHash <== hReduce.out;
-
-    // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
-    component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
-    n2bHeaderLength.in <== qrDataPaddedLength;
-
-    // Assert data between qrDataPaddedLength and maxDataLength is zero
-    AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
+    signal name[packedLength] <== qrDataExtractor.Name;
+    signal nameHash <== qrDataExtractor.NameHash;
+    signal RefId <== qrDataExtractor.RefID;
+    signal timestamp <== qrDataExtractor.timestamp;
+    signal age <== qrDataExtractor.age;
+    signal DOBHash <== qrDataExtractor.DOBHash;
+    signal gender <== qrDataExtractor.gender;
+    signal state <== qrDataExtractor.state;
+    signal pinCode <== qrDataExtractor.pinCode;
+    signal photo[photoPackSize()] <== qrDataExtractor.photo;
 
     // Poseidon commitment
+    // the data has a max size of 
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
     commitment <== dataCommit.out;
 
-    // WIP - nullifier
-    nullifier <== Nullifier()(nullifierSeed);
+    // nullifier - https://www.notion.so/Indian-identity-Integration-1dc57801cd1280bebd45f3527ef60150?pvs=4#1dc57801cd12800e8f51f89648ca37d5
+    nullifier <== poseidon(4)([NameHash,DOBHash,gender,RefID]);
 
 }

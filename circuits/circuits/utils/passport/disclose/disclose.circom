@@ -17,6 +17,7 @@ include "../date/isOlderThan.circom";
 /// @input selector_ofac bitmap used to reveal the OFAC verification result
 /// @output revealedData_packed Packed revealed data
 /// @output forbidden_countries_list_packed Packed forbidden countries list
+
 template DISCLOSE(
     MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH,
     passportNoTreeLevels,
