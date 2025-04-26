@@ -8,6 +8,8 @@
     <uses-permission android:name="android.permission.ACCESS_SURFACE_FLINGER" />
     <uses-permission android:name="android.permission.NFC" />
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     
     <application
       android:name=".MainApplication"
@@ -48,5 +50,31 @@
         android:name="android.nfc.action.TECH_DISCOVERED"
         android:resource="@xml/nfc_tech_filter" />
       </activity>
+      
+      <!-- Firebase Messaging Service -->
+      <service
+        android:name=".SelfFirebaseMessagingService"
+        android:exported="false">
+        <intent-filter>
+          <action android:name="com.google.firebase.MESSAGING_EVENT" />
+        </intent-filter>
+      </service>
+      
+      <!-- Set custom default notification channel -->
+      <meta-data
+        android:name="com.google.firebase.messaging.default_notification_channel_id"
+        android:value="default-channel"
+        tools:replace="android:value" />
+        
+      <!-- Set notification icon -->
+      <meta-data
+        android:name="com.google.firebase.messaging.default_notification_icon"
+        android:resource="@mipmap/ic_launcher" />
+        
+      <!-- Set notification color - use a hardcoded color value since we don't know if primary exists -->
+      <meta-data
+        android:name="com.google.firebase.messaging.default_notification_color"
+        android:value="#5168FC" />
+        
     </application>
 </manifest>

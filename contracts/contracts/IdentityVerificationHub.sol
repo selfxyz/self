@@ -16,4 +16,5 @@ contract IdentityVerificationHub is ProxyRoot {
      * @param _data The initialization data to be executed in the context of the implementation contract.
      */
     constructor(address _logic, bytes memory _data) ProxyRoot(_logic, _data) {}
+
 }

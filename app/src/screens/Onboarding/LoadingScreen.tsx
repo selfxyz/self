@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View, Platform } from 'react-native';
+import { PermissionsAndroid } from 'react-native';
 
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
@@ -22,21 +23,41 @@ import {
 
 const { trackEvent } = analytics();
 
-// Firebaseアプリの初期化
 const initializeMessaging = async () => {
   try {
-    // Androidのみで実行
-    if (Platform.OS === 'android') {
-      // 背景メッセージハンドラを設定して初期化する
-      messaging().setBackgroundMessageHandler(async remoteMessage => {
-        console.log('Message handled in the background!', remoteMessage);
-      });
-      console.log('Firebase messaging initialized for Android in LoadingScreen');
-    } else {
-      console.log('Firebase messaging initialization skipped for iOS in LoadingScreen');
+    // バックグラウンドハンドラーの登録
+    messaging().setBackgroundMessageHandler(async remoteMessage => {
+      console.log('Message handled in the background in LoadingScreen!', remoteMessage);
+    });
+    
+    // フォアグラウンド通知の処理を設定
+    messaging().onMessage(async remoteMessage => {
+      console.log('Foreground message received in LoadingScreen:', remoteMessage);
+      
+      // メッセージの詳細をログに記録
+      if (remoteMessage && remoteMessage.notification) {
+        console.log('Notification title:', remoteMessage.notification.title);
+        console.log('Notification body:', remoteMessage.notification.body);
+        console.log('Notification data:', remoteMessage.data);
+      }
+    });
+    
+    // トークンが変更されたときのハンドラーを設定
+    messaging().onTokenRefresh(token => {
+      console.log('FCM token refreshed:', token);
+    });
+    
+    // Android 13+の場合は通知パーミッションを確認
+    if (Platform.OS === 'android' && Platform.Version >= 33) {
+      const hasPermission = await PermissionsAndroid.check(
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+      );
+      console.log('Current notification permission status:', hasPermission);
     }
+    
+    console.log('Firebase messaging initialized for', Platform.OS);
   } catch (error) {
-    console.error('Firebase messaging initialization error in LoadingScreen:', error);
+    console.error('Firebase messaging initialization error:', error);
   }
 };
 
@@ -46,10 +67,7 @@ type LoadingScreenProps = StaticScreenProps<{
 }>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
-  console.log("fcmToken2: ", route.params?.fcmToken);
   const fcmToken = route.params?.fcmToken;
-  console.log("fcmToken3: ", fcmToken);
-  const mockPassportFlow = route.params?.mockPassportFlow;
   const [sessionId] = useState(() => uuidv4());
   
   // Firebaseの初期化
@@ -62,7 +80,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
   const navigation = useNavigation();
 
-  // FCMトークン送信用関数
   const sendFCMTokenToServer = async (deviceToken: string, sessionId: string) => {
     try {
       const passportDataAndSecret = await getPassportDataAndSecret()
@@ -79,38 +96,90 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       const { passportData } = passportDataAndSecret.data;
       
       const API_URL = passportData.documentType === 'mock_passport' 
-        ? 'https://b60c-133-3-201-45.ngrok-free.app' 
+        ? 'https://2ac4-133-3-201-46.ngrok-free.app' 
         : 'https://api.self.xyz';
+      
+      // Ensure token is properly formatted - no spaces or unexpected characters
+      const cleanedToken = deviceToken.trim();
       
       const deviceTokenRegistration = {
         session_id: sessionId,
-        device_token: deviceToken,
+        device_token: cleanedToken,
         platform: Platform.OS === 'ios' ? 'ios' : 'android'
       };
       
-      console.log('Sending FCM token with session_id as tee_uuid:', sessionId);
-      
-      const response = await fetch(`${API_URL}/register-token`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(deviceTokenRegistration),
-      });
-      
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('Server response:', errorText);
-        throw new Error(`FCM token registration failed: ${response.status}`);
+      console.log('Sending FCM token registration:');
+      console.log('- Session ID:', sessionId);
+      console.log('- Platform:', Platform.OS);
+      // Log only the first/last few characters of the token for security/debugging
+      if (cleanedToken.length > 10) {
+        console.log('- Device token:', `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(cleanedToken.length - 5)}`);
+      } else {
+        console.log('- Device token: [token too short]');
       }
       
-      const result = await response.json();
-      console.log('FCM token registered successfully with session_id:', result);
-      
+      try {
+        // Test that we can properly stringify this object
+        const requestBody = JSON.stringify(deviceTokenRegistration);
+        console.log('Request body length:', requestBody.length);
+        
+        const response = await fetch(`${API_URL}/register-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: requestBody,
+        });
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Server response error:', response.status, errorText);
+          throw new Error(`FCM token registration failed: ${response.status} - ${errorText}`);
+        }
+        
+        // Safely handle the response
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.indexOf('application/json') !== -1) {
+            const result = await response.json();
+            console.log('FCM token registered successfully with session_id');
+          } else {
+            const text = await response.text();
+            console.log('FCM token registration response (non-JSON):', text);
+          }
+        } catch (responseError) {
+          console.error('Error processing response:', responseError);
+        }
+      } catch (jsonError) {
+        console.error('JSON processing error:', jsonError);
+        // Try a simplified version if JSON stringification failed
+        const simplePayload = JSON.stringify({
+          session_id: sessionId,
+          device_token: "token-removed-due-to-error",
+          platform: Platform.OS === 'ios' ? 'ios' : 'android'
+        });
+        
+        console.log('Attempting with simplified payload');
+        
+        const response = await fetch(`${API_URL}/register-token`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: simplePayload,
+        });
+        
+        console.log('Simplified request result:', response.status);
+      }
     } catch (error) {
       console.error('Failed to send FCM token to server:', error);
     }
   };
+
+  const processPayloadCalled = useRef(false);
+  const fcmTokenSent = useRef(false);
 
   const goToSuccessScreenWithDelay = () => {
     setTimeout(() => {
@@ -147,13 +216,25 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
     }
   }, [registrationStatus]);
 
-  const processPayloadCalled = useRef(false);
-
   useEffect(() => {
     if (!processPayloadCalled.current) {
       processPayloadCalled.current = true;
       const processPayload = async () => {
         try {
+          if (fcmToken && sessionId && Platform.OS === 'android' && !fcmTokenSent.current) {
+            console.log('FCM token before sending:', typeof fcmToken, fcmToken ? fcmToken.length : 0);
+            // Validate token format
+            if (typeof fcmToken === 'string' && fcmToken.includes(' ')) {
+              console.warn('FCM token contains spaces, which may cause issues. Cleaning token...');
+              // If the token includes spaces, it might be malformed - take only the part after the last space
+              const cleanedToken = fcmToken.trim().split(' ').pop() || fcmToken.trim();
+              await sendFCMTokenToServer(cleanedToken, sessionId);
+            } else {
+              await sendFCMTokenToServer(fcmToken, sessionId);
+            }
+            fcmTokenSent.current = true;
+          }
+
           const passportDataAndSecret = await getPassportDataAndSecret();
           if (!passportDataAndSecret) {
             return;
@@ -189,23 +270,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             return;
           }
           
-          // 登録処理を実行し、TEE UUIDを受け取る
           await registerPassport(
             passportData, 
             secret, 
-            sessionId // 生成したUUIDをTEE通信に使用
+            sessionId
           );
-
-          console.log("Send fcm token");
-          console.log("fcmToken", fcmToken);
-          console.log("sessionId", sessionId);
-          console.log("Platform.OS", Platform.OS);
           
-          // FCMトークンをサーバーに送信
-          if (fcmToken && sessionId && Platform.OS === 'android') {
-            console.log('Using session_id for both TEE and FCM:', sessionId);
-            await sendFCMTokenToServer(fcmToken, sessionId);
-          }
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
