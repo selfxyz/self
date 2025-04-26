@@ -1,7 +1,6 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import CloudBackupScreen from '../screens/Settings/CloudBackupScreen';
-import DevSettingsScreen from '../screens/Settings/DevSettingsScreen';
 import PassportDataInfoScreen from '../screens/Settings/PassportDataInfoScreen';
 import ShowRecoveryPhraseScreen from '../screens/Settings/ShowRecoveryPhraseScreen';
 import SettingsScreen from '../screens/SettingsScreen';
@@ -38,15 +37,6 @@ const settingsScreens = {
     screen: PassportDataInfoScreen,
     options: {
       title: 'Passport Data Info',
-      headerStyle: {
-        backgroundColor: white,
-      },
-    } as NativeStackNavigationOptions,
-  },
-  DevSettings: {
-    screen: DevSettingsScreen,
-    options: {
-      title: 'Developer Settings',
       headerStyle: {
         backgroundColor: white,
       },
