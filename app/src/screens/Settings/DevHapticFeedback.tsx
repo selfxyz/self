@@ -34,8 +34,6 @@ const DevHapticFeedback = () => {
       </StyledButton>
       <StyledButton onPress={feedbackSuccess}>Feedback Success</StyledButton>
       <StyledButton onPress={feedbackProgress}>Feedback Progress</StyledButton>
-      <StyledButton onPress={impactLight}>Impact Light</StyledButton>
-      <StyledButton onPress={impactMedium}>Impact Medium</StyledButton>
       <StyledButton onPress={notificationError}>
         Notification Error
       </StyledButton>
@@ -45,6 +43,8 @@ const DevHapticFeedback = () => {
       <StyledButton onPress={notificationWarning}>
         Notification Warning
       </StyledButton>
+      <StyledButton onPress={impactLight}>Impact Light</StyledButton>
+      <StyledButton onPress={impactMedium}>Impact Medium</StyledButton>
       <StyledButton onPress={selectionChange}>Selection Change</StyledButton>
     </ScrollView>
   );
