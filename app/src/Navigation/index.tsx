@@ -25,7 +25,7 @@ import settingsScreens from './settings';
 import staticScreens from './static';
 
 const AppNavigation = createNativeStackNavigator({
-  initialRouteName: 'DevHapticFeedback',
+  initialRouteName: 'Splash',
   orientation: 'portrait_up',
   screenOptions: {
     header: DefaultNavBar,
