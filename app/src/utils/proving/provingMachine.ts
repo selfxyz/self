@@ -286,7 +286,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           }
           const endpointType = get().endpointType;
           if (!endpointType) {
-            console.error('Cannot start Socket.IO listener: endpointType not set.');
+            console.error(
+              'Cannot start Socket.IO listener: endpointType not set.',
+            );
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
