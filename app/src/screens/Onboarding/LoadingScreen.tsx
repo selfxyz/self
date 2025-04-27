@@ -96,7 +96,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       const { passportData } = passportDataAndSecret.data;
       
       const API_URL = passportData.documentType === 'mock_passport' 
-        ? 'https://2ac4-133-3-201-46.ngrok-free.app' 
+        ? 'https://9ebd-133-3-201-46.ngrok-free.app' 
         : 'https://api.self.xyz';
       
       // Ensure token is properly formatted - no spaces or unexpected characters
@@ -221,25 +221,29 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       processPayloadCalled.current = true;
       const processPayload = async () => {
         try {
-          if (fcmToken && sessionId && Platform.OS === 'android' && !fcmTokenSent.current) {
-            console.log('FCM token before sending:', typeof fcmToken, fcmToken ? fcmToken.length : 0);
-            // Validate token format
-            if (typeof fcmToken === 'string' && fcmToken.includes(' ')) {
-              console.warn('FCM token contains spaces, which may cause issues. Cleaning token...');
-              // If the token includes spaces, it might be malformed - take only the part after the last space
-              const cleanedToken = fcmToken.trim().split(' ').pop() || fcmToken.trim();
-              await sendFCMTokenToServer(cleanedToken, sessionId);
-            } else {
-              await sendFCMTokenToServer(fcmToken, sessionId);
-            }
-            fcmTokenSent.current = true;
-          }
-
+          // パスポートデータを1回だけ取得
           const passportDataAndSecret = await getPassportDataAndSecret();
           if (!passportDataAndSecret) {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
+
+          // FCMトークンがある場合はサーバーに送信
+          if (fcmToken && sessionId && Platform.OS === 'android' && !fcmTokenSent.current) {
+            console.log('FCM token before sending:', typeof fcmToken, fcmToken ? fcmToken.length : 0);
+            
+            // 必要に応じてトークンをクリーニング
+            let tokenToSend = fcmToken;
+            if (typeof fcmToken === 'string' && fcmToken.includes(' ')) {
+              console.warn('FCM token contains spaces, which may cause issues. Cleaning token...');
+              tokenToSend = fcmToken.trim().split(' ').pop() || fcmToken.trim();
+            }
+
+            await sendFCMTokenToServerWithData(tokenToSend, sessionId, passportData);
+            fcmTokenSent.current = true;
+          }
+
+          // 残りの処理を続行
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
@@ -251,6 +255,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             clearPassportData();
             return;
           }
+          
           const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
@@ -260,6 +265,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             navigation.navigate('AccountVerifiedSuccess');
             return;
           }
+          
           const isNullifierOnchain = await isPassportNullified(passportData);
           console.log('Passport is nullified:', isNullifierOnchain);
           if (isNullifierOnchain) {
@@ -275,7 +281,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             secret, 
             sessionId
           );
-          
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
@@ -284,6 +289,65 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       processPayload();
     }
   }, []);
+
+  // パスポートデータを引数として渡す新しい関数
+  const sendFCMTokenToServerWithData = async (deviceToken: string, sessionId: string, passportData: any) => {
+    try {
+      const API_URL = passportData.documentType === 'mock_passport' 
+        ? 'https://38e4-133-3-201-46.ngrok-free.app' 
+        : 'https://api.self.xyz';
+      
+      // Ensure token is properly formatted
+      const cleanedToken = deviceToken.trim();
+      
+      const deviceTokenRegistration = {
+        session_id: sessionId,
+        device_token: cleanedToken,
+        platform: Platform.OS === 'ios' ? 'ios' : 'android'
+      };
+      
+      // Log token info (部分的に表示してセキュリティを保つ)
+      if (cleanedToken.length > 10) {
+        console.log('- Device token:', `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(cleanedToken.length - 5)}`);
+      } else {
+        console.log('- Device token: [token too short]');
+      }
+      
+      // サーバーにトークンを送信
+      const requestBody = JSON.stringify(deviceTokenRegistration);
+      console.log('Request body length:', requestBody.length);
+      
+      const response = await fetch(`${API_URL}/register-token`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: requestBody,
+      });
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Server response error:', response.status, errorText);
+        throw new Error(`FCM token registration failed: ${response.status} - ${errorText}`);
+      }
+      
+      // レスポンス処理
+      try {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.indexOf('application/json') !== -1) {
+          console.log('FCM token registered successfully with session_id');
+        } else {
+          const text = await response.text();
+          console.log('FCM token registration response (non-JSON):', text);
+        }
+      } catch (responseError) {
+        console.error('Error processing response:', responseError);
+      }
+    } catch (error) {
+      console.error('Failed to send FCM token to server:', error);
+    }
+  };
 
   return (
     <View style={styles.container}>
