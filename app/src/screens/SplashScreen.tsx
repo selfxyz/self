@@ -27,14 +27,13 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
 
-      const { passportData, secret } = JSON.parse(passportDataAndSecret);
       if (!isPassportDataValid(passportData)) {
         navigation.navigate('Launch');
         return;
       }
       const environment =
-        (passportData as PassportData).documentType &&
-        (passportData as PassportData).documentType !== 'passport'
+        passportData.documentType &&
+        passportData.documentType !== 'passport'
           ? 'stg'
           : 'prod';
       await useProtocolStore.getState().passport.fetch_all(environment);
