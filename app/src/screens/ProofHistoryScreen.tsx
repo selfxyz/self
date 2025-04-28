@@ -291,7 +291,7 @@ const ProofHistoryScreen: React.FC = () => {
     loadMoreHistory();
   }, [resetHistory, loadMoreHistory]);
 
-  const keyExtractor = useCallback((item: ProofHistory) => item.id, []);
+  const keyExtractor = useCallback((item: ProofHistory) => item.sessionId, []);
 
   const handleEndReached = useCallback(() => {
     if (!isLoading && hasMore) {
@@ -350,7 +350,7 @@ const ProofHistoryScreen: React.FC = () => {
         ListFooterComponent={renderFooter}
         initialNumToRender={10}
         maxToRenderPerBatch={10}
-        windowSize={5}
+        windowSize={10}
         removeClippedSubviews={true}
       />
     </View>

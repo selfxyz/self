@@ -119,7 +119,7 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           CREATE TABLE IF NOT EXISTS ${TABLE_NAME} (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             appName TEXT NOT NULL,
-            sessionId TEXT NOT NULL,
+            sessionId TEXT NOT NULL UNIQUE,
             userId TEXT NOT NULL,
             userIdType TEXT NOT NULL,
             endpointType TEXT NOT NULL,
@@ -158,8 +158,8 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
         const timestamp = Date.now();
 
-        await db.executeSql(
-          `INSERT INTO ${TABLE_NAME} (appName, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId) 
+        const [insertResult] = await db.executeSql(
+          `INSERT OR IGNORE INTO ${TABLE_NAME} (appName, endpointType, status, errorCode, errorReason, timestamp, disclosures, logoBase64, userId, userIdType, sessionId)
            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
           [
             proof.appName,
@@ -176,23 +176,20 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
           ],
         );
 
-        // workaround as 'RETURNING id' doesn't work
-        const [result] = await db.executeSql(
-          'SELECT last_insert_rowid() as id',
-        );
-        const id = result.rows.item(0).id;
-
-        set(state => ({
-          proofHistory: [
-            {
-              ...proof,
-              id: id.toString(),
-              timestamp,
-              disclosures: proof.disclosures,
-            },
-            ...state.proofHistory,
-          ],
-        }));
+        if (insertResult.rowsAffected > 0 && insertResult.insertId) {
+          const id = insertResult.insertId.toString();
+          set(state => ({
+            proofHistory: [
+              {
+                ...proof,
+                id,
+                timestamp,
+                disclosures: proof.disclosures,
+              },
+              ...state.proofHistory,
+            ],
+          }));
+        }
       } catch (error) {
         console.error('Error adding proof history', error);
       }
