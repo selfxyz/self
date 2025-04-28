@@ -40,7 +40,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     }
     notificationSuccess();
     provingStore.init('dsc', passportData, secret, clearPassportData);
-  }, [provingStore.init, passportData, secret]);
+  }, [provingStore.init, passportData, secret, clearPassportData]);
 
   const onOkPress = useCallback(async () => {
     // Initialize the proving process just before navigation

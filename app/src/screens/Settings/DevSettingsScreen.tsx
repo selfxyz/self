@@ -131,7 +131,6 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   const nav = useNavigation();
 
   async function handleRestart() {
-    console.log("handleRestart")
     if (status !== 'success') {
       return;
     }

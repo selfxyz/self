@@ -75,7 +75,14 @@ const ProveScreen: React.FC = () => {
     selectedAppRef.current = selectedApp;
     console.log('[ProveScreen] Selected app updated:', selectedApp);
     provingStore.init('disclose', passportData, secret, clearPassportData);
-  }, [selectedApp, isFocused, provingStore.init, passportData, secret]);
+  }, [
+    selectedApp,
+    isFocused,
+    provingStore.init,
+    passportData,
+    secret,
+    clearPassportData,
+  ]);
 
   const disclosureOptions = useMemo(() => {
     return (selectedApp?.disclosures as SelfAppDisclosureConfig) || [];

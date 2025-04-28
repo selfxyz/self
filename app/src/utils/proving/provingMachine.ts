@@ -121,18 +121,22 @@ interface ProvingState {
     circuitType: 'dsc' | 'disclose' | 'register',
     passportData: PassportData,
     secret: string,
-    clearPassportData: () => Promise<void>
+    clearPassportData: () => Promise<void>,
   ) => Promise<void>;
   startFetchingData: (documentType: DocumentType) => Promise<void>;
   validatingDocument: (
     passportData: PassportData,
     secret: string,
-    clearPassportData: () => Promise<void>
+    clearPassportData: () => Promise<void>,
   ) => Promise<void>;
   initTeeConnection: (passportData: PassportData) => Promise<boolean>;
   startProving: (passportData: PassportData, secret: string) => Promise<void>;
   setUserConfirmed: (passportData: PassportData, secret: string) => void;
-  postProving: (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>) => void;
+  postProving: (
+    passportData: PassportData,
+    secret: string,
+    clearPassportData: () => Promise<void>,
+  ) => void;
   _closeConnections: () => void;
   _generatePayload: (
     passportData: PassportData,
@@ -155,7 +159,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     newActor: AnyActorRef,
     passportData: PassportData,
     secret: string,
-    clearPassportData: () => Promise<void>
+    clearPassportData: () => Promise<void>,
   ) {
     newActor.subscribe((state: any) => {
       console.log(`State transition: ${state.value}`);
@@ -444,7 +448,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       circuitType: 'dsc' | 'disclose' | 'register',
       passportData: PassportData,
       secret: string,
-      clearpassportData: () => Promise<void>
+      clearpassportData: () => Promise<void>,
     ) => {
       get()._closeConnections();
 
@@ -486,7 +490,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    validatingDocument: async (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>) => {
+    validatingDocument: async (
+      passportData: PassportData,
+      secret: string,
+      clearPassportData: () => Promise<void>,
+    ) => {
       _checkActorInitialized(actor);
       // TODO: for the disclosure, we could check that the selfApp is a valid one.
       try {
@@ -628,7 +636,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    postProving: (passportData: PassportData, secret: string, clearPassportData: () => Promise<void>)  => {
+    postProving: (
+      passportData: PassportData,
+      secret: string,
+      clearPassportData: () => Promise<void>,
+    ) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {

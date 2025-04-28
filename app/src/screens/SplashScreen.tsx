@@ -32,8 +32,7 @@ const SplashScreen: React.FC = ({}) => {
         return;
       }
       const environment =
-        passportData.documentType &&
-        passportData.documentType !== 'passport'
+        passportData.documentType && passportData.documentType !== 'passport'
           ? 'stg'
           : 'prod';
       await useProtocolStore.getState().passport.fetch_all(environment);

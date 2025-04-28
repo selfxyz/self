@@ -198,7 +198,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
         Linking.sendIntent('android.settings.NFC_SETTINGS');
       }
     }
-  }, [isNfcSupported, isNfcEnabled, passportNumber, dateOfBirth, dateOfExpiry]);
+  }, [
+    isNfcSupported,
+    isNfcEnabled,
+    passportNumber,
+    dateOfBirth,
+    dateOfExpiry,
+    setPassportData,
+  ]);
 
   const onCancelPress = useHapticNavigation('Launch', {
     action: 'cancel',

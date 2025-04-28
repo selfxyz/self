@@ -204,7 +204,14 @@ const MockDataScreen: React.FC<MockDataScreenProps> = () => {
     navigation.navigate('ConfirmBelongingScreen', {
       mockPassportFlow: true,
     });
-  }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
+  }, [
+    selectedAlgorithm,
+    selectedCountry,
+    age,
+    expiryYears,
+    isInOfacList,
+    setPassportData,
+  ]);
 
   // Add gesture for advanced mode
   const twoFingerTripleTap = Gesture.Tap()

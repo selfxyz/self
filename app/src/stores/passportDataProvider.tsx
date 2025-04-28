@@ -104,7 +104,7 @@ export const PassportProvider = ({ children }: PassportProviderProps) => {
     });
     if (storedMnemonic) {
       const parsed = JSON.parse(storedMnemonic.password);
-      console.log('Stored mnemonic parsed successfully');
+      console.log('Stored mnemonic parsed successfully and saved in memory');
       return parsed as Mnemonic;
     }
   }, []);
