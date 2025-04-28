@@ -1,9 +1,13 @@
-import React, { useEffect, useCallback, useState } from 'react';
-import { Platform, PermissionsAndroid } from 'react-native';
+import React, { useCallback, useEffect, useState } from 'react';
+import { PermissionsAndroid, Platform } from 'react-native';
 
-import { StaticScreenProps, usePreventRemove, useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import messaging from '@react-native-firebase/messaging';
+import {
+  StaticScreenProps,
+  useNavigation,
+  usePreventRemove,
+} from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import { v4 as uuidv4 } from 'uuid';
 
 import successAnimation from '../../assets/animations/loading/success.json';
@@ -11,18 +15,9 @@ import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
-import { usePassport } from '../../stores/passportDataProvider';
 import { black, white } from '../../utils/colors';
-import { notificationSuccess, impactLight } from '../../utils/haptic';
+import { impactLight, notificationSuccess } from '../../utils/haptic';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
-
-// Add type for LoadingScreen params to fix navigation type error
-type NavigationParamList = {
-  LoadingScreen: {
-    sessionId: string;
-    mockPassportFlow?: boolean;
-  }
-};
 
 // Attempt to get FCM token directly
 const getFCMToken = async () => {
@@ -34,32 +29,32 @@ const getFCMToken = async () => {
         return null;
       }
     }
-    
+
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().requestPermission({
-        announcement: true,  // Request permission to play notification sounds
-        badge: true,         // Request permission to update app badge
-        carPlay: false,      // Not needed for most apps
+        announcement: true, // Request permission to play notification sounds
+        badge: true, // Request permission to update app badge
+        carPlay: false, // Not needed for most apps
         criticalAlert: false, // Not needed for most apps
-        provisional: true,   // Allow provisional permissions (silent notifications first)
-        sound: true,         // Request permission to play sounds
+        provisional: true, // Allow provisional permissions (silent notifications first)
+        sound: true, // Request permission to play sounds
       });
-      
-      const enabled = 
+
+      const enabled =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-      
+
       if (!enabled) {
         console.log('iOS notification permission not enabled');
         return null;
       }
     }
-    
+
     // Register with APNs for iOS
     if (Platform.OS === 'ios') {
       await messaging().registerDeviceForRemoteMessages();
     }
-    
+
     // Get token using the new modular API
     const token = await messaging().getToken();
     console.log('FCM token obtained successfully:', token ? 'yes' : 'no');
@@ -77,12 +72,12 @@ const requestAndroidNotificationPermissions = async () => {
       const granted = await PermissionsAndroid.request(
         PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         {
-          title: "Notification Permission",
-          message: "The app needs permission to send you notifications",
-          buttonNeutral: "Ask Me Later",
-          buttonNegative: "Cancel",
-          buttonPositive: "OK"
-        }
+          title: 'Notification Permission',
+          message: 'The app needs permission to send you notifications',
+          buttonNeutral: 'Ask Me Later',
+          buttonNegative: 'Cancel',
+          buttonPositive: 'OK',
+        },
       );
       console.log('POST_NOTIFICATIONS permission result:', granted);
       return granted === PermissionsAndroid.RESULTS.GRANTED;
@@ -94,52 +89,65 @@ const requestAndroidNotificationPermissions = async () => {
   }
 };
 
-const sendFCMTokenToServer = async (deviceToken: string, sessionId: string, mockPassportFlow: boolean | undefined) => {
+const sendFCMTokenToServer = async (
+  deviceToken: string,
+  sessionId: string,
+  mockPassportFlow: boolean | undefined,
+) => {
   if (!deviceToken || !sessionId) {
-    console.error('Missing device token or session ID for FCM token registration');
+    console.error(
+      'Missing device token or session ID for FCM token registration',
+    );
     return;
   }
-  
-  const API_URL = mockPassportFlow 
-    ? 'https://9ebd-133-3-201-46.ngrok-free.app' 
+
+  const API_URL = mockPassportFlow
+    ? 'https://9ebd-133-3-201-46.ngrok-free.app'
     : 'https://api.self.xyz';
-  
+
   // Ensure token is properly formatted - no spaces or unexpected characters
   const cleanedToken = deviceToken.trim();
-  
+
   const deviceTokenRegistration = {
     session_id: sessionId,
     device_token: cleanedToken,
-    platform: Platform.OS === 'ios' ? 'ios' : 'android'
+    platform: Platform.OS === 'ios' ? 'ios' : 'android',
   };
-  
+
   // Log only the first/last few characters of the token for security/debugging
   if (cleanedToken.length > 10) {
-    console.log('- Device token:', `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(cleanedToken.length - 5)}`);
+    console.log(
+      '- Device token:',
+      `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
+        cleanedToken.length - 5,
+      )}`,
+    );
   } else {
     console.log('- Device token: [token too short]');
   }
-  
+
   try {
     // Test that we can properly stringify this object
     const requestBody = JSON.stringify(deviceTokenRegistration);
     console.log('Request body length:', requestBody.length);
-    
+
     const response = await fetch(`${API_URL}/register-token`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Accept: 'application/json',
       },
       body: requestBody,
     });
-    
+
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Server response error:', response.status, errorText);
-      throw new Error(`FCM token registration failed: ${response.status} - ${errorText}`);
+      throw new Error(
+        `FCM token registration failed: ${response.status} - ${errorText}`,
+      );
     }
-    
+
     // Safely handle the response
     try {
       const contentType = response.headers.get('content-type');
@@ -169,30 +177,32 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
 }) => {
   const mockPassportFlow = route.params?.mockPassportFlow;
   const [permissionRequested, setPermissionRequested] = useState(false);
-  const [fcmToken, setFcmToken] = useState<string | null>(null);
+  const [_fcmToken, setFcmToken] = useState<string | null>(null);
   const [sessionId] = useState(() => uuidv4());
 
   const navigation = useNavigation();
-  
+
   const handleConfirm = useCallback(async () => {
     if (!permissionRequested) {
       setPermissionRequested(true);
-      
+
       try {
         const token = await getFCMToken();
         if (token) {
           setFcmToken(token);
-          
+
           // Clean the token if it contains spaces
           let cleanedToken = token;
           if (typeof token === 'string' && token.includes(' ')) {
-            console.warn('FCM token contains spaces, which may cause issues. Cleaning token...');
+            console.warn(
+              'FCM token contains spaces, which may cause issues. Cleaning token...',
+            );
             cleanedToken = token.trim().split(' ').pop() || token.trim();
           }
-          
+
           // Send FCM token to server before navigating
           await sendFCMTokenToServer(cleanedToken, sessionId, mockPassportFlow);
-          
+
           impactLight();
           navigation.navigate('LoadingScreen', {
             mockPassportFlow,
@@ -201,25 +211,28 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
           return;
         }
       } catch (error) {
-        console.error('Failed in notification permission or token flow:', error);
+        console.error(
+          'Failed in notification permission or token flow:',
+          error,
+        );
       }
     }
-    
+
     impactLight();
     navigation.navigate('LoadingScreen', {
       mockPassportFlow,
       sessionId,
     });
   }, [permissionRequested, navigation, mockPassportFlow, sessionId]);
-  
+
   useEffect(() => {
     notificationSuccess();
-    
+
     const checkNotificationPermission = async () => {
       if (Platform.OS === 'android' && Platform.Version >= 33) {
         try {
           const hasPermission = await PermissionsAndroid.check(
-            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+            PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
           );
           console.log('Already has notification permission:', hasPermission);
         } catch (error) {
@@ -227,7 +240,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
         }
       }
     };
-    
+
     checkNotificationPermission();
   }, []);
 

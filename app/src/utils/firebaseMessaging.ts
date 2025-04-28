@@ -1,7 +1,8 @@
 import { Platform } from 'react-native';
+import { PermissionsAndroid } from 'react-native';
+
 import messaging from '@react-native-firebase/messaging';
 import { FirebaseMessagingTypes } from '@react-native-firebase/messaging';
-import { PermissionsAndroid } from 'react-native';
 
 // Firebase Messagingが初期化されたかどうかのフラグ
 let isInitialized = false;
@@ -11,58 +12,64 @@ let isInitialized = false;
  * システム設定でプッシュ通知が無効にされているかどうかも確認
  * @returns {Promise<{granted: boolean, reason?: string}>}
  */
-export const checkNotificationPermissionStatus = async (): Promise<{granted: boolean, reason?: string}> => {
+export const checkNotificationPermissionStatus = async (): Promise<{
+  granted: boolean;
+  reason?: string;
+}> => {
   try {
     // Androidの場合
     if (Platform.OS === 'android') {
       // Android 13 (API 33)以上の場合
       if (Platform.Version >= 33) {
         const granted = await PermissionsAndroid.check(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (!granted) {
-          return { 
-            granted: false, 
-            reason: 'Android notification permission not granted in system settings'
+          return {
+            granted: false,
+            reason:
+              'Android notification permission not granted in system settings',
           };
         }
       }
       // Androidは古いバージョンまたは権限がある場合、メッセージングの初期化状態を確認
       return { granted: true };
     }
-    
+
     // iOSの場合
     if (Platform.OS === 'ios') {
       const authStatus = await messaging().hasPermission();
-      const enabled = 
+      const enabled =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
         authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-      
+
       if (!enabled) {
         let reason = 'iOS notification permission not granted';
-        
+
         if (authStatus === messaging.AuthorizationStatus.DENIED) {
           reason = 'iOS notifications are disabled in system settings';
-        } else if (authStatus === messaging.AuthorizationStatus.NOT_DETERMINED) {
+        } else if (
+          authStatus === messaging.AuthorizationStatus.NOT_DETERMINED
+        ) {
           reason = 'iOS notification permission not requested yet';
         }
-        
+
         return { granted: false, reason };
       }
-      
+
       return { granted: true };
     }
-    
+
     // サポートされていないプラットフォーム
-    return { 
-      granted: false, 
-      reason: `Notifications not supported on platform: ${Platform.OS}` 
+    return {
+      granted: false,
+      reason: `Notifications not supported on platform: ${Platform.OS}`,
     };
   } catch (error: any) {
     console.error('Error checking notification permission status:', error);
-    return { 
-      granted: false, 
-      reason: `Error checking permission: ${error.message || 'Unknown error'}` 
+    return {
+      granted: false,
+      reason: `Error checking permission: ${error.message || 'Unknown error'}`,
     };
   }
 };
@@ -80,22 +87,32 @@ export const initializeMessagingHandlers = async (): Promise<void> => {
 
   try {
     // Register background handler (doesn't request permissions)
-    messaging().setBackgroundMessageHandler(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-      console.log('Message handled in the background!', remoteMessage);
-    });
+    messaging().setBackgroundMessageHandler(
+      async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+        console.log('Message handled in the background!', remoteMessage);
+      },
+    );
 
     // Configure foreground notifications (doesn't request permissions)
-    messaging().onMessage(async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
-      console.log('Foreground message received:', remoteMessage);
-      
-      if (Platform.OS === 'android') {
-        // For Android, notifications in foreground must be handled manually
-        console.log('Android foreground notification:', remoteMessage.notification);
-      } else if (Platform.OS === 'ios') {
-        // iOS can show foreground notifications with permissions
-        console.log('iOS foreground notification:', remoteMessage.notification);
-      }
-    });
+    messaging().onMessage(
+      async (remoteMessage: FirebaseMessagingTypes.RemoteMessage) => {
+        console.log('Foreground message received:', remoteMessage);
+
+        if (Platform.OS === 'android') {
+          // For Android, notifications in foreground must be handled manually
+          console.log(
+            'Android foreground notification:',
+            remoteMessage.notification,
+          );
+        } else if (Platform.OS === 'ios') {
+          // iOS can show foreground notifications with permissions
+          console.log(
+            'iOS foreground notification:',
+            remoteMessage.notification,
+          );
+        }
+      },
+    );
 
     // Token更新時のリスナー
     messaging().onTokenRefresh((token: string) => {
@@ -103,7 +120,9 @@ export const initializeMessagingHandlers = async (): Promise<void> => {
     });
 
     isInitialized = true;
-    console.log('Firebase messaging handlers initialized (without requesting permissions)');
+    console.log(
+      'Firebase messaging handlers initialized (without requesting permissions)',
+    );
   } catch (error) {
     console.error('Error initializing Firebase messaging handlers:', error);
   }
@@ -121,37 +140,44 @@ export const requestiOSNotificationPermission = async (): Promise<boolean> => {
   try {
     // 現在の許可状態を確認
     const currentStatus = await messaging().hasPermission();
-    
+
     // すでに拒否されている場合は、システム設定に誘導するべき
     if (currentStatus === messaging.AuthorizationStatus.DENIED) {
-      console.log('iOS notifications are denied in system settings - user should be directed to settings');
+      console.log(
+        'iOS notifications are denied in system settings - user should be directed to settings',
+      );
       return false;
     }
-    
+
     // iOSデバイス向けにリモートメッセージ受信の登録
     await messaging().registerDeviceForRemoteMessages();
     console.log('Registered device for remote messages on iOS');
-    
+
     // 許可リクエスト
     const authStatus = await messaging().requestPermission({
-      announcement: true,  // 通知サウンド再生の許可をリクエスト
-      badge: true,         // アプリバッジ更新の許可をリクエスト
-      carPlay: false,      // ほとんどのアプリには不要
+      announcement: true, // 通知サウンド再生の許可をリクエスト
+      badge: true, // アプリバッジ更新の許可をリクエスト
+      carPlay: false, // ほとんどのアプリには不要
       criticalAlert: false, // ほとんどのアプリには不要
-      provisional: false,   // 仮の許可（最初はサイレント通知）ではなく完全な許可をリクエスト
-      sound: true,         // サウンド再生の許可をリクエスト
+      provisional: false, // 仮の許可（最初はサイレント通知）ではなく完全な許可をリクエスト
+      sound: true, // サウンド再生の許可をリクエスト
     });
-    
-    const enabled = 
+
+    const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
       authStatus === messaging.AuthorizationStatus.PROVISIONAL;
-    
-    console.log('iOS notification permission status:', 
-      authStatus === messaging.AuthorizationStatus.AUTHORIZED ? 'AUTHORIZED' :
-      authStatus === messaging.AuthorizationStatus.PROVISIONAL ? 'PROVISIONAL' :
-      authStatus === messaging.AuthorizationStatus.DENIED ? 'DENIED' : 'UNKNOWN'
+
+    console.log(
+      'iOS notification permission status:',
+      authStatus === messaging.AuthorizationStatus.AUTHORIZED
+        ? 'AUTHORIZED'
+        : authStatus === messaging.AuthorizationStatus.PROVISIONAL
+        ? 'PROVISIONAL'
+        : authStatus === messaging.AuthorizationStatus.DENIED
+        ? 'DENIED'
+        : 'UNKNOWN',
     );
-    
+
     return enabled;
   } catch (error) {
     console.error('Error requesting iOS notification permission:', error);
@@ -168,19 +194,25 @@ export const getFCMTokenWithPermissions = async (): Promise<string | null> => {
     // 現在の許可状態を確認
     const permissionStatus = await checkNotificationPermissionStatus();
     if (!permissionStatus.granted) {
-      console.log('Notification permission not granted:', permissionStatus.reason);
+      console.log(
+        'Notification permission not granted:',
+        permissionStatus.reason,
+      );
       return null;
     }
-    
+
     // 最初にメッセージングのハンドラを初期化
     await initializeMessagingHandlers();
-    
+
     // トークンを取得
     const token = await messaging().getToken();
-    console.log('FCM token obtained successfully:', token.substring(0, 10) + '...');
+    console.log(
+      'FCM token obtained successfully:',
+      token.substring(0, 10) + '...',
+    );
     return token;
   } catch (error) {
     console.error('Error getting FCM token with permissions:', error);
     return null;
   }
-}; 
+};

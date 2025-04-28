@@ -69,7 +69,12 @@ export async function sendPayload(
     flow?: 'registration' | 'disclosure';
     sessionId?: string;
   },
-): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string; uuid?: string }> {
+): Promise<{
+  status: ProofStatusEnum;
+  error_code?: string;
+  reason?: string;
+  uuid?: string;
+}> {
   const opts = {
     updateGlobalOnSuccess: true,
     updateGlobalOnFailure: true,
@@ -197,21 +202,36 @@ export async function sendPayload(
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.FAILURE, undefined, undefined, receivedUuid);
+                finalize(
+                  ProofStatusEnum.FAILURE,
+                  undefined,
+                  undefined,
+                  receivedUuid,
+                );
               } else if (data.status === 4) {
                 console.log('Proof verified');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.SUCCESS, undefined, undefined, receivedUuid);
+                finalize(
+                  ProofStatusEnum.SUCCESS,
+                  undefined,
+                  undefined,
+                  receivedUuid,
+                );
               } else if (data.status === 5) {
                 console.log('Failed to verify proof');
                 socket?.disconnect();
                 if (ws.readyState === WebSocket.OPEN) {
                   ws.close();
                 }
-                finalize(ProofStatusEnum.FAILURE, data.error_code, data.reason, receivedUuid);
+                finalize(
+                  ProofStatusEnum.FAILURE,
+                  data.error_code,
+                  data.reason,
+                  receivedUuid,
+                );
               }
             });
             socket.on('disconnect', reason => {

@@ -3,8 +3,8 @@
  */
 import React from 'react';
 import { AppRegistry, LogBox, Platform } from 'react-native';
-import messaging from '@react-native-firebase/messaging';
 
+import messaging from '@react-native-firebase/messaging';
 import { config } from '@tamagui/config/v2-native';
 import { ToastProvider } from '@tamagui/toast';
 import { TamaguiProvider, createTamagui } from 'tamagui';
@@ -29,7 +29,7 @@ messaging().setBackgroundMessageHandler(async remoteMessage => {
 // Configure foreground notifications
 messaging().onMessage(async remoteMessage => {
   console.log('Foreground message received:', remoteMessage);
-  
+
   if (Platform.OS === 'android') {
     // For Android, notifications in foreground must be handled manually
     // The notification will be automatically displayed when app is in background

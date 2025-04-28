@@ -1,10 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { StyleSheet, Text, View, Platform } from 'react-native';
+import { Platform, StyleSheet, Text, View } from 'react-native';
 import { PermissionsAndroid } from 'react-native';
 
+import messaging from '@react-native-firebase/messaging';
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import messaging from '@react-native-firebase/messaging';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
@@ -25,30 +25,36 @@ const { trackEvent } = analytics();
 const initializeMessaging = async () => {
   try {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
-      console.log('Message handled in the background in LoadingScreen!', remoteMessage);
+      console.log(
+        'Message handled in the background in LoadingScreen!',
+        remoteMessage,
+      );
     });
-    
+
     messaging().onMessage(async remoteMessage => {
-      console.log('Foreground message received in LoadingScreen:', remoteMessage);
-      
+      console.log(
+        'Foreground message received in LoadingScreen:',
+        remoteMessage,
+      );
+
       if (remoteMessage && remoteMessage.notification) {
         console.log('Notification title:', remoteMessage.notification.title);
         console.log('Notification body:', remoteMessage.notification.body);
         console.log('Notification data:', remoteMessage.data);
       }
     });
-    
+
     messaging().onTokenRefresh(token => {
       console.log('FCM token refreshed:', token);
     });
-    
+
     if (Platform.OS === 'android' && Platform.Version >= 33) {
       const hasPermission = await PermissionsAndroid.check(
-        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
       );
       console.log('Current notification permission status:', hasPermission);
     }
-    
+
     console.log('Firebase messaging initialized for', Platform.OS);
   } catch (error) {
     console.error('Firebase messaging initialization error:', error);
@@ -62,12 +68,11 @@ type LoadingScreenProps = StaticScreenProps<{
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const sessionId = route.params?.sessionId;
-  const mockPassportFlow = route.params?.mockPassportFlow;
-  
+
   useEffect(() => {
     initializeMessaging();
   }, []);
-  
+
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
   const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
@@ -149,13 +154,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             navigation.navigate('AccountRecoveryChoice');
             return;
           }
-          
-          await registerPassport(
-            passportData, 
-            secret, 
-            sessionId
-          );
-          
+
+          await registerPassport(passportData, secret, sessionId);
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
