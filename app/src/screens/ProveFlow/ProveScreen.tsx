@@ -53,19 +53,19 @@ const ProveScreen: React.FC = () => {
 
   useEffect(() => {
     // Only add proof history after generating a uuid
-    if (provingStore.uuid && selectedAppRef.current) {
+    if (provingStore.uuid && selectedApp) {
       addProofHistory({
-        appName: selectedAppRef.current.appName,
+        appName: selectedApp.appName,
         sessionId: provingStore.uuid!,
-        userId: selectedAppRef.current.userId,
-        userIdType: selectedAppRef.current.userIdType,
-        endpointType: selectedAppRef.current.endpointType,
+        userId: selectedApp.userId,
+        userIdType: selectedApp.userIdType,
+        endpointType: selectedApp.endpointType,
         status: ProofStatus.PENDING,
-        logoBase64: selectedAppRef.current.logoBase64,
-        disclosures: JSON.stringify(selectedAppRef.current.disclosures),
+        logoBase64: selectedApp.logoBase64,
+        disclosures: JSON.stringify(selectedApp.disclosures),
       });
     }
-  }, [provingStore.uuid]);
+  }, [provingStore.uuid, selectedApp]);
 
   /**
    * Whenever the relationship between content height vs. scroll view height changes,
