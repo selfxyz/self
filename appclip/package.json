@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
+    "install:clip": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build .yarn/cache && yarn install && cd ios && pod install",
     "ios": "react-native run-ios",
     "lint": "eslint .",
     "start": "react-native start",
@@ -30,8 +31,8 @@
     "react-test-renderer": "18.3.1",
     "typescript": "5.0.4"
   },
+  "packageManager": "yarn@4.6.0+sha224.acd0786f07ffc6c933940eb65fc1d627131ddf5455bddcc295dc90fd",
   "engines": {
     "node": ">=18"
-  },
-  "packageManager": "yarn@4.6.0+sha224.acd0786f07ffc6c933940eb65fc1d627131ddf5455bddcc295dc90fd"
+  }
 }

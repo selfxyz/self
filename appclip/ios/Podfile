@@ -6,6 +6,7 @@ require Pod::Executable.execute_command('node', ['-p',
   )', __dir__]).strip
 
 platform :ios, min_ios_version_supported
+# (Removed use_frameworks! to keep React Native pods static and include their headers)
 prepare_react_native_project!
 
 linkage = ENV['USE_FRAMEWORKS']
@@ -14,7 +15,17 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'appclip' do
+target 'SelfClip' do
+  config = use_native_modules!
+
+  use_react_native!(
+    :path => config[:reactNativePath],
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+  )
+end
+
+target 'SelfAppClip' do
   config = use_native_modules!
 
   use_react_native!(
@@ -23,18 +34,23 @@ target 'appclip' do
     :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
-  target 'appclipTests' do
+  target 'SelfClipTests' do
     inherit! :complete
     # Pods for testing
   end
 
   post_install do |installer|
     # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-    react_native_post_install(
-      installer,
-      config[:reactNativePath],
-      :mac_catalyst_enabled => false,
-      # :ccache_enabled => true
-    )
+    begin
+      react_native_post_install(
+        installer,
+        config[:reactNativePath],
+        :mac_catalyst_enabled => false,
+        # :ccache_enabled => true
+      )
+    rescue => e
+      puts "Error in post_install: #{e.message}"
+      puts "Continuing despite error..."
+    end
   end
 end

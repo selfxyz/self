@@ -1,0 +1,8 @@
+target 'SelfClip' do
+  inherit! :complete
+  pod 'React-Core'
+  # Add App Clip specific pods
+  pod 'QKMRZScanner'
+  pod 'NFCPassportReader', :git => 'https://github.com/zk-passport/NFCPassportReader.git'
+  pod 'SwiftQRScanner', :git => 'https://github.com/vinodiOS/SwiftQRScanner'
+end
