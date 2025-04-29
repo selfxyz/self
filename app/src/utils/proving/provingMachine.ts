@@ -123,10 +123,8 @@ interface ProvingState {
   circuitType: provingMachineCircuitType | null;
   error_code: string | null;
   reason: string | null;
-  init: (
-    circuitType: 'dsc' | 'disclose' | 'register',
-    userConfirmed?: boolean,
-  ) => Promise<void>;
+  endpointType: EndpointType | null;
+  init: (circuitType: 'dsc' | 'disclose' | 'register', userConfirmed?: boolean) => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
@@ -241,6 +239,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     selfApp: null,
     error_code: null,
     reason: null,
+    endpointType: null,
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -285,25 +284,15 @@ export const useProvingStore = create<ProvingState>((set, get) => {
               }). Using received UUID.`,
             );
           }
-          const { passportData } = get();
-          if (!statusUuid) {
+          const endpointType = get().endpointType;
+          if (!endpointType) {
             console.error(
-              'Cannot start Socket.IO listener: UUID missing from state or response.',
+              'Cannot start Socket.IO listener: endpointType not set.',
             );
             actor!.send({ type: 'PROVE_ERROR' });
             return;
           }
-          if (!passportData) {
-            console.error(
-              'Cannot start Socket.IO listener: passportData missing from state.',
-            );
-            actor!.send({ type: 'PROVE_ERROR' });
-            return;
-          }
-
-          const socketEndpointType =
-            passportData.documentType === 'passport' ? 'celo' : 'staging_celo';
-          get()._startSocketIOStatusListener(statusUuid, socketEndpointType);
+          get()._startSocketIOStatusListener(statusUuid, endpointType);
         } else if (result.error) {
           console.error('Received error from TEE:', result.error);
           actor!.send({ type: 'PROVE_ERROR' });
@@ -467,6 +456,8 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         userConfirmed: userConfirmed,
         passportData: null,
         secret: null,
+        circuitType,
+        endpointType: null,
       });
 
       actor = createActor(provingMachine);
@@ -691,6 +682,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         serverPublicKey: null,
         sharedKey: null,
         uuid: null,
+        endpointType: null,
       });
     },
 
@@ -742,6 +734,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         JSON.stringify(payload),
         forgeKey,
       );
+
+      // Persist endpointType for later Socket.IO connection
+      set({ endpointType: endpointType as EndpointType });
       return {
         jsonrpc: '2.0',
         method: 'openpassport_submit_request',

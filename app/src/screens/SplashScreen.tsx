@@ -23,46 +23,53 @@ const SplashScreen: React.FC = ({}) => {
       .then(setBiometricsAvailable)
       .catch(err => {
         console.warn('Error checking biometrics availability', err);
+        navigation.navigate('Launch');
+        throw new Error(`Error checking biometrics availability: ${err}`);
       });
-  }, []);
+  }, [navigation]);
 
   const handleAnimationFinish = useCallback(() => {
-    setTimeout(async () => {
-      impactLight();
-      const passportDataAndSecret = await loadPassportDataAndSecret();
+    try {
+      setTimeout(async () => {
+        impactLight();
+        const passportDataAndSecret = await loadPassportDataAndSecret();
 
-      if (!passportDataAndSecret) {
+        if (!passportDataAndSecret) {
+          navigation.navigate('Launch');
+          return;
+        }
+
+        const { passportData, secret } = JSON.parse(passportDataAndSecret);
+        if (!isPassportDataValid(passportData)) {
+          navigation.navigate('Launch');
+          return;
+        }
+        const environment =
+          (passportData as PassportData).documentType &&
+          (passportData as PassportData).documentType !== 'passport'
+            ? 'stg'
+            : 'prod';
+        await useProtocolStore.getState().passport.fetch_all(environment);
+        const isRegistered = await isUserRegistered(passportData, secret);
+        console.log('User is registered:', isRegistered);
+        if (isRegistered) {
+          console.log('Passport is registered already. Skipping to HomeScreen');
+          navigation.navigate('Home');
+          return;
+        }
+        // Currently, we dont check isPassportNullified(passportData);
+        // This could lead to AccountRecoveryChoice just like in LoadingScreen
+        // But it looks better right now to keep the LaunchScreen flow
+        // In case user wants to try with another passport.
+        // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
+
+        // Rest of the time, keep the LaunchScreen flow
         navigation.navigate('Launch');
-        return;
-      }
-
-      const { passportData, secret } = JSON.parse(passportDataAndSecret);
-      if (!isPassportDataValid(passportData)) {
-        navigation.navigate('Launch');
-        return;
-      }
-      const environment =
-        (passportData as PassportData).documentType &&
-        (passportData as PassportData).documentType !== 'passport'
-          ? 'stg'
-          : 'prod';
-      await useProtocolStore.getState().passport.fetch_all(environment);
-      const isRegistered = await isUserRegistered(passportData, secret);
-      console.log('User is registered:', isRegistered);
-      if (isRegistered) {
-        console.log('Passport is registered already. Skipping to HomeScreen');
-        navigation.navigate('Home');
-        return;
-      }
-      // Currently, we dont check isPassportNullified(passportData);
-      // This could lead to AccountRecoveryChoice just like in LoadingScreen
-      // But it looks better right now to keep the LaunchScreen flow
-      // In case user wants to try with another passport.
-      // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
-
-      // Rest of the time, keep the LaunchScreen flow
+      }, 1000);
+    } catch (error) {
       navigation.navigate('Launch');
-    }, 1000);
+      throw new Error(`Error in SplashScreen: ${error}`);
+    }
   }, [navigation]);
 
   return (
