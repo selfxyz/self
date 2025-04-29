@@ -24,4 +24,5 @@ const styles = StyleSheet.create({
   },
 });
 
-AppRegistry.registerComponent('appclip', () => AppClip);
+// Register the component with the name that matches what's used in SceneDelegate.m
+AppRegistry.registerComponent('SelfClip', () => AppClip);

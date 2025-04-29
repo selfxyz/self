@@ -13,6 +13,19 @@
 
 @implementation AppDelegate
 
+// Add getter for the window property that redirects to the main scene's window
+- (UIWindow *)window {
+    // For pre-iOS 13 compatibility and RCTRedBox error display
+    UIScene *scene = [[UIApplication sharedApplication] connectedScenes].allObjects.firstObject;
+    if ([scene isKindOfClass:[UIWindowScene class]]) {
+        UIWindowScene *windowScene = (UIWindowScene *)scene;
+        id<UIWindowSceneDelegate> delegate = windowScene.delegate;
+        if ([delegate respondsToSelector:@selector(window)]) {
+            return [delegate window];
+        }
+    }
+    return nil;
+}
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.

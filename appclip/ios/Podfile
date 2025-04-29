@@ -1,6 +1,6 @@
 # Resolve react_native_pods.rb with node to allow for hoisting
-require Pod::Executable.execute_command('node', ['-p',
-  'require.resolve(
+require Pod::Executable.execute_command("node", ["-p",
+                                                 'require.resolve(
     "react-native/scripts/react_native_pods.rb",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
@@ -9,50 +9,54 @@ platform :ios, min_ios_version_supported
 # (Removed use_frameworks! to keep React Native pods static and include their headers)
 prepare_react_native_project!
 
-linkage = ENV['USE_FRAMEWORKS']
+linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
   use_frameworks! :linkage => linkage.to_sym
 end
 
-target 'SelfClip' do
+# The main app target - keep only one active to avoid conflicts
+target "SelfClip" do
   config = use_native_modules!
 
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => false,
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    :app_path => "#{Pod::Config.instance.installation_root}/..",
   )
 end
 
-target 'SelfAppClip' do
-  config = use_native_modules!
+# The AppClip target - commented out to avoid duplicate product conflict
+# Uncomment and comment out the target above if you specifically need to work with the AppClip
+# target "SelfAppClip" do
+#   config = use_native_modules!
+#
+#   use_react_native!(
+#     :path => config[:reactNativePath],
+#     :hermes_enabled => false,
+#     # An absolute path to your application root.
+#     :app_path => "#{Pod::Config.instance.installation_root}/.."
+#   )
+#
+#   target "SelfClipTests" do
+#     inherit! :complete
+#     # Pods for testing
+#   end
+# end
 
-  use_react_native!(
-    :path => config[:reactNativePath],
-    :hermes_enabled => false,
-    # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/.."
-  )
-
-  target 'SelfClipTests' do
-    inherit! :complete
-    # Pods for testing
-  end
-
-  post_install do |installer|
-    # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
-    begin
-      react_native_post_install(
-        installer,
-        config[:reactNativePath],
-        :mac_catalyst_enabled => false,
-        # :ccache_enabled => true
-      )
-    rescue => e
-      puts "Error in post_install: #{e.message}"
-      puts "Continuing despite error..."
-    end
+post_install do |installer|
+  # https://github.com/facebook/react-native/blob/main/packages/react-native/scripts/react_native_pods.rb#L197-L202
+  react_native_path = "../node_modules/react-native"
+  begin
+    react_native_post_install(
+      installer,
+      react_native_path,
+      :mac_catalyst_enabled => false,
+      # :ccache_enabled => true
+    )
+  rescue => e
+    puts "Error in post_install: #{e.message}"
+    puts "Continuing despite error..."
   end
 end
