@@ -1,7 +1,7 @@
-import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature';
 import { CertificateData } from '../../certificate_parsing/dataStructure';
 import { parseCertificateSimple } from '../../certificate_parsing/parseCertificateSimple';
 import { getCSCAFromSKI } from '../../csca';
+import { brutforceSignatureAlgorithmDsc } from './brutForceDscSignature';
 import { getCurveOrExponent } from './parsePassportData';
 
 export interface DscCertificateMetaData {
@@ -16,7 +16,7 @@ export interface DscCertificateMetaData {
   cscaBits: number;
 }
 
-export function parseDscCertificateData(dscCert: CertificateData): DscCertificateMetaData {
+export function parseDscCertificateData(dscCert: CertificateData, skiPem: any = null): DscCertificateMetaData {
   let csca,
     cscaParsed,
     cscaHashAlgorithm,
@@ -24,11 +24,10 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
     cscaCurveOrExponent,
     cscaSignatureAlgorithmBits,
     cscaSaltLength;
-
   let cscaFound = false;
   if (dscCert.authorityKeyIdentifier) {
     try {
-      csca = getCSCAFromSKI(dscCert.authorityKeyIdentifier, true);
+      csca = getCSCAFromSKI(dscCert.authorityKeyIdentifier, skiPem);
       if (csca) {
         cscaParsed = parseCertificateSimple(csca);
         const details = brutforceSignatureAlgorithmDsc(dscCert, cscaParsed);

@@ -1,20 +1,20 @@
-import { ethers } from "hardhat";
 import { Signer } from "ethers";
-import { getSMTs } from "./generateProof";
-import { PassportData } from "../../../common/src/utils/types";
-import { genMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
-import { RegisterVerifierId, DscVerifierId } from "../../../common/src/constants/constants";
+import { ethers } from "hardhat";
+import { DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
+import { genAndInitMockPassportData } from "../../../common/src/utils/passports/genMockPassportData";
 import { getCscaTreeRoot } from "../../../common/src/utils/trees";
+import { PassportData } from "../../../common/src/utils/types";
+import { getSMTs } from "./generateProof";
 import serialized_csca_tree from "./pubkeys/serialized_csca_tree.json";
 import {
     DeployedActors,
-    VcAndDiscloseVerifier,
-    RegisterVerifier,
     DscVerifier,
-    IdentityVerificationHub,
-    IdentityVerificationHubImplV1,
     IdentityRegistry,
     IdentityRegistryImplV1,
+    IdentityVerificationHub,
+    IdentityVerificationHubImplV1,
+    RegisterVerifier,
+    VcAndDiscloseVerifier,
 } from "./types";
 
 // Verifier artifacts
@@ -46,7 +46,7 @@ export async function deploySystemFixtures(): Promise<DeployedActors> {
     await ethers.provider.send("hardhat_setBalance", [await user1.getAddress(), newBalance]);
     await ethers.provider.send("hardhat_setBalance", [await user2.getAddress(), newBalance]);
 
-    mockPassport = genMockPassportData(
+    mockPassport = genAndInitMockPassportData(
         "sha256",
         "sha256",
         "rsa_sha256_65537_4096",

@@ -1,67 +1,19 @@
-import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13, poseidon12 } from 'poseidon-lite';
-import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
-import { stringToAsciiBigIntArray } from './circuits/uuid';
+import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
+import countries from "i18n-iso-countries";
+import en from "i18n-iso-countries/langs/en.json";
+import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
+import { CSCA_TREE_DEPTH, DSC_TREE_DEPTH, max_csca_bytes, max_dsc_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
 import {
   CertificateData,
 } from './certificate_parsing/dataStructure';
-import { packBytesAndPoseidon } from './hash';
-import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, CSCA_TREE_URL_STAGING, DSC_TREE_DEPTH, DSC_TREE_URL_STAGING, IDENTITY_TREE_URL, IDENTITY_TREE_URL_STAGING, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
-import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
-import { max_dsc_bytes } from '../constants/constants';
-import { IMT } from '@openpassport/zk-kit-imt';
+import { stringToAsciiBigIntArray } from './circuits/uuid';
+import { packBytesAndPoseidon } from './hash';
 import { pad } from './passports/passport';
-import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json";
-import { EndpointType } from './appType';
-import { DocumentType } from './types';
+import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 countries.registerLocale(en);
-
-export async function getCSCATree(endpointType: EndpointType): Promise<string[][]> {
-  const cscaTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? CSCA_TREE_URL : CSCA_TREE_URL_STAGING
-  const response = await fetch(cscaTreeUrl);
-  const data = await response.json();
-  const status = data.status ? data.status : data;
-  if (status === 'error') {
-    throw new Error('Error fetching CSCA tree');
-  }
-  const tree = data.data ? JSON.parse(data.data) : data;
-
-  console.log('CSCA tree:', tree);
-  return tree;
-}
-
-export async function getDSCTree(endpointType: EndpointType): Promise<string> {
-  const dscTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? DSC_TREE_URL : DSC_TREE_URL_STAGING
-  const response = await fetch(dscTreeUrl);
-  const data = await response.json();
-  const status = data.status ? data.status : data;
-  if (status === 'error') {
-    throw new Error('Error fetching DSC tree');
-  }
-  const tree = data.data ? data.data : data;
-  console.log('DSC tree:', tree);
-  return tree;
-}
-
-export async function getCommitmentTree(documentType: DocumentType | null): Promise<string> {
-  const identityTreeUrl = !documentType || typeof documentType !== 'string' || documentType === 'passport' ? IDENTITY_TREE_URL : IDENTITY_TREE_URL_STAGING;
-  const response = await fetch(identityTreeUrl);
-  return await response.json().then(data => data.data ? data.data : data);
-}
-
-export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
-  }
-  const commitmentMerkleTree = await response.json();
-  console.log('\x1b[90m%s\x1b[0m', 'commitment merkle tree: ', commitmentMerkleTree);
-  const tree = LeanIMT.import((a, b) => poseidon2([a, b]), commitmentMerkleTree);
-  return tree;
-}
 
 /** get leaf for DSC and CSCA Trees */
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
@@ -82,7 +34,6 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
     return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
-
 
 export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string { // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);

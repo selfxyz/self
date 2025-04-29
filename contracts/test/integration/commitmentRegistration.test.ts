@@ -1,15 +1,15 @@
-import { expect } from "chai";
-import { deploySystemFixtures } from "../utils/deployment";
-import { DeployedActors } from "../utils/types";
-import { ethers } from "hardhat";
-import { RegisterVerifierId, DscVerifierId, CIRCUIT_CONSTANTS } from "../../../common/src/constants/constants";
-import { ATTESTATION_ID } from "../utils/constants";
-import { generateRegisterProof, generateDscProof } from "../utils/generateProof";
-import { generateRandomFieldElement } from "../utils/utils";
-import { TransactionReceipt, ZeroAddress } from "ethers";
-import serialized_dsc_tree from '../utils/pubkeys/serialized_dsc_tree.json';
 import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
-import {poseidon2} from "poseidon-lite";
+import { expect } from "chai";
+import { TransactionReceipt, ZeroAddress } from "ethers";
+import { ethers } from "hardhat";
+import { poseidon2 } from "poseidon-lite";
+import { CIRCUIT_CONSTANTS, DscVerifierId, RegisterVerifierId } from "../../../common/src/constants/constants";
+import { ATTESTATION_ID } from "../utils/constants";
+import { deploySystemFixtures } from "../utils/deployment";
+import { generateDscProof, generateRegisterProof } from "../utils/generateProof";
+import serialized_dsc_tree from '../utils/pubkeys/serialized_dsc_tree.json';
+import { DeployedActors } from "../utils/types";
+import { generateRandomFieldElement } from "../utils/utils";
 
 describe("Commitment Registration Tests", function () {
     this.timeout(0);
@@ -26,7 +26,7 @@ describe("Commitment Registration Tests", function () {
         deployedActors = await deploySystemFixtures();
         registerSecret = generateRandomFieldElement();
         baseDscProof = await generateDscProof(
-            deployedActors.mockPassport.dsc,
+            deployedActors.mockPassport,
         );
         baseRegisterProof = await generateRegisterProof(
             registerSecret,
@@ -50,7 +50,7 @@ describe("Commitment Registration Tests", function () {
         describe("Initialization", () => {
             it("should have consistent addresses between registry and hub", async () => {
                 const {hub, registry} = deployedActors;
-                
+
                 expect(await registry.hub()).to.equal(hub.target);
                 expect(await hub.registry()).to.equal(registry.target);
             });
@@ -263,25 +263,25 @@ describe("Commitment Registration Tests", function () {
 
             it("should register passport commitment successfully", async () => {
                 const {hub, registry, mockPassport} = deployedActors;
-    
+
                 const registerProof = await generateRegisterProof(
                     registerSecret,
                     mockPassport
                 );
-    
+
                 const previousRoot = await registry.getIdentityCommitmentMerkleRoot();
 
                 const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
                 const imt = new LeanIMT<bigint>(hashFunction);
                 await imt.insert(BigInt(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]));
-    
+
                 const tx = await hub.registerPassportCommitment(
                     RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
                     registerProof
                 );
                 const receipt = await tx.wait() as TransactionReceipt;
                 const blockTimestamp = (await ethers.provider.getBlock(receipt.blockNumber))!.timestamp;
-    
+
                 const currentRoot = await registry.getIdentityCommitmentMerkleRoot();
                 const size = await registry.getIdentityCommitmentMerkleTreeSize();
                 const rootTimestamp = await registry.rootTimestamps(currentRoot);
@@ -290,7 +290,7 @@ describe("Commitment Registration Tests", function () {
                     ATTESTATION_ID.E_PASSPORT,
                     registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX]
                 );
-    
+
                 const event = receipt?.logs.find(
                     log => log.topics[0] === registry.interface.getEvent("CommitmentRegistered").topicHash
                 );
@@ -299,14 +299,14 @@ describe("Commitment Registration Tests", function () {
                     event.data,
                     event.topics
                 ) : null;
-    
+
                 expect(eventArgs?.attestationId).to.equal(ATTESTATION_ID.E_PASSPORT);
                 expect(eventArgs?.nullifier).to.equal(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_NULLIFIER_INDEX]);
                 expect(eventArgs?.commitment).to.equal(registerProof.pubSignals[CIRCUIT_CONSTANTS.REGISTER_COMMITMENT_INDEX]);
                 expect(eventArgs?.timestamp).to.equal(blockTimestamp);
                 expect(eventArgs?.imtRoot).to.equal(currentRoot);
                 expect(eventArgs?.imtIndex).to.equal(0);
-    
+
                 expect(currentRoot).to.not.equal(previousRoot);
                 expect(currentRoot).to.be.equal(imt.root);
                 expect(size).to.equal(1);
@@ -317,9 +317,9 @@ describe("Commitment Registration Tests", function () {
 
             it("should fail when verifier is not set", async () => {
                 const {hub} = deployedActors;
-    
+
                 registerProof.a[0] = generateRandomFieldElement();
-    
+
                 await expect(
                     hub.registerPassportCommitment(
                         RegisterVerifierId.register_sha256_sha256_sha256_rsa_3_4096,
@@ -344,9 +344,9 @@ describe("Commitment Registration Tests", function () {
 
             it("should fail when register proof verification fails", async () => {
                 const {hub} = deployedActors;
-    
+
                 registerProof.a[0] = generateRandomFieldElement();
-    
+
                 await expect(
                     hub.registerPassportCommitment(
                         RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
@@ -357,17 +357,17 @@ describe("Commitment Registration Tests", function () {
 
             it("should fail when nullifier is already used", async () => {
                 const {hub, registry, mockPassport} = deployedActors;
-    
+
                 const registerProof = await generateRegisterProof(
                     registerSecret,
                     mockPassport
                 );
-    
+
                 await hub.registerPassportCommitment(
                     RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,
                     registerProof
                 );
-                
+
                 await expect(
                     hub.registerPassportCommitment(
                         RegisterVerifierId.register_sha256_sha256_sha256_rsa_65537_4096,

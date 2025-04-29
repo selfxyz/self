@@ -77,7 +77,6 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
     buttonTap();
     if (isNfcEnabled) {
       setIsNfcSheetOpen(true);
-
       // Add timestamp when scan starts
       const scanStartTime = Date.now();
 
@@ -112,6 +111,7 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           return;
         }
         try {
+          // TODO: fetch the skiPem from the production environment
           parsedPassportData = initPassportDataParsing(passportData);
           const passportMetadata = parsedPassportData.passportMetadata!;
           trackEvent('Passport Parsed', {

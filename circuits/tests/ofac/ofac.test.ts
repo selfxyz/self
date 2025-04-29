@@ -1,18 +1,18 @@
-import { expect } from 'chai';
-import path from 'path';
-import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
 import { SMT } from '@openpassport/zk-kit-smt';
+import { expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
+import path from 'path';
 import { poseidon2 } from 'poseidon-lite';
-import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import passportNoAndNationalityjson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import { generateCircuitInputsOfac } from '../../../common/src/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 
 let circuit: any;
 
 // Mock passport not added in ofac list
-const passportData = genMockPassportData(
+const passportData = genAndInitMockPassportData(
   'sha256',
   'sha256',
   'rsa_sha256_65537_2048',
@@ -21,7 +21,7 @@ const passportData = genMockPassportData(
   '300101'
 );
 // Mock passport in ofac list
-const passportDataInOfac = genMockPassportData(
+const passportDataInOfac = genAndInitMockPassportData(
   'sha256',
   'sha256',
   'rsa_sha256_65537_2048',
