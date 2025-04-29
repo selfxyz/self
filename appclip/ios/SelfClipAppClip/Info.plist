@@ -9,6 +9,15 @@
 		<key>NSAppClipRequestLocationConfirmation</key>
 		<false/>
 	</dict>
+	<key>NSCameraUsageDescription</key>
+	<string>We use your camera to scan your passport and QR codes.</string>
+	<key>NFCReaderUsageDescription</key>
+	<string>We use NFC to read the passport chip.</string>
+	<key>com.apple.developer.nfc.readersession.formats</key>
+	<array>
+		<string>TAG</string>
+		<string>NDEF</string>
+	</array>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
