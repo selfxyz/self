@@ -7,7 +7,7 @@ import {
   VenetianMask,
 } from '@tamagui/lucide-icons';
 import React, { PropsWithChildren, useEffect, useState } from 'react';
-import { Platform, TextInput } from 'react-native';
+import { Platform, StyleProp, TextInput } from 'react-native';
 import {
   Adapt,
   Button,
@@ -31,9 +31,22 @@ import {
 } from '../../stores/passportDataProvider';
 import { borderColor, textBlack } from '../../utils/colors';
 
-interface DevSettingsScreenProps {}
+interface DevSettingsScreenProps extends PropsWithChildren {
+  color?: string;
+  width?: number;
+  justifyContent?:
+    | 'center'
+    | 'unset'
+    | 'flex-start'
+    | 'flex-end'
+    | 'space-between'
+    | 'space-around'
+    | 'space-evenly';
+  userSelect?: 'all' | 'text' | 'none' | 'contain';
+  style?: StyleProp<any>;
+}
 
-function SelectableText({ children, ...props }: PropsWithChildren) {
+function SelectableText({ children, ...props }: DevSettingsScreenProps) {
   if (Platform.OS === 'ios') {
     return (
       <TextInput multiline editable={false} {...props}>
@@ -51,6 +64,7 @@ function SelectableText({ children, ...props }: PropsWithChildren) {
 
 const items = [
   'DevSettings',
+  'DevHapticFeedback',
   'Splash',
   'Launch',
   'PassportOnboarding',
@@ -80,8 +94,7 @@ const ScreenSelector = ({}) => {
   const navigation = useNavigation();
   return (
     <Select
-      onValueChange={screen => {
-        // @ts-expect-error - weird typing?
+      onValueChange={(screen: any) => {
         navigation.navigate(screen);
       }}
       disablePreventBodyScroll
