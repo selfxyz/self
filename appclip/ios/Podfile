@@ -5,8 +5,8 @@ require Pod::Executable.execute_command("node", ["-p",
     {paths: [process.argv[1]]},
   )', __dir__]).strip
 
-platform :ios, min_ios_version_supported
-# (Removed use_frameworks! to keep React Native pods static and include their headers)
+platform :ios, "15.0"
+use_frameworks!
 prepare_react_native_project!
 
 linkage = ENV["USE_FRAMEWORKS"]
@@ -18,6 +18,11 @@ end
 # The main app target - keep only one active to avoid conflicts
 target "SelfClip" do
   config = use_native_modules!
+
+  # App Clip specific dependencies
+  pod "QKMRZScanner"  # MRZ scanning
+  pod "NFCPassportReader", :git => "https://github.com/zk-passport/NFCPassportReader", commit: "e3e869b14fb7fb2417928079db3967f203523580"
+  pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
 
   use_react_native!(
     :path => config[:reactNativePath],

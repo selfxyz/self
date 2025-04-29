@@ -2,7 +2,7 @@
 //  ViewController.h
 //  SelfClip
 //
-//  Created by Justin Hernandez on 4/29/25.
+//  Created by Self Builder on 4/29/25.
 //
 
 #import <UIKit/UIKit.h>
@@ -11,4 +11,3 @@
 
 
 @end
-
