@@ -4,9 +4,11 @@
   "private": true,
   "scripts": {
     "android": "react-native run-android",
-    "install:clip": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build .yarn/cache && yarn install && cd ios && pod install",
+    "install:clip": "watchman watch-del-all && rm -rf node_modules ios/Pods ios/build .yarn/cache && yarn install && yarn pod:clean && yarn pod:install",
     "ios": "react-native run-ios",
     "lint": "eslint .",
+    "pod:clean": "cd ios && rm -rf Pods build && pod cache clean --all",
+    "pod:install": "cd ios && SWIFT_VERSION=5.0 DONT_VALIDATE_SWIFT_VERSION=1 pod install",
     "start": "react-native start",
     "test": "jest"
   },

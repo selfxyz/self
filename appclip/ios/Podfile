@@ -15,14 +15,14 @@ if linkage != nil
   use_frameworks! :linkage => linkage.to_sym
 end
 
-# The main app target - keep only one active to avoid conflicts
+# This is the App Clip target - the only one we need
 target "SelfClip" do
   config = use_native_modules!
 
   # App Clip specific dependencies
   pod "QKMRZScanner"  # MRZ scanning
   pod "NFCPassportReader", :git => "https://github.com/zk-passport/NFCPassportReader", commit: "e3e869b14fb7fb2417928079db3967f203523580"
-  pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner"
+  pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner", :modular_headers => true
 
   use_react_native!(
     :path => config[:reactNativePath],
@@ -63,5 +63,12 @@ post_install do |installer|
   rescue => e
     puts "Error in post_install: #{e.message}"
     puts "Continuing despite error..."
+  end
+
+  # Force Swift version for all targets
+  installer.pods_project.targets.each do |target|
+    target.build_configurations.each do |config|
+      config.build_settings["SWIFT_VERSION"] = "5.0"
+    end
   end
 end
