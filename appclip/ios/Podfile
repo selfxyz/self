@@ -9,6 +9,10 @@ platform :ios, "15.0"
 use_frameworks!
 prepare_react_native_project!
 
+# Set the required architectures for simulator and device builds
+$RN_ARCH_SIMULATOR = ["i386", "x86_64"]
+$RN_ARCH_DEVICE = ["armv7", "armv7s", "arm64"]
+
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -20,8 +24,8 @@ target "SelfClip" do
   config = use_native_modules!
 
   # App Clip specific dependencies
-  pod "QKMRZScanner"  # MRZ scanning
-  pod "NFCPassportReader", :git => "https://github.com/zk-passport/NFCPassportReader", commit: "e3e869b14fb7fb2417928079db3967f203523580"
+  pod "QKMRZScanner", :modular_headers => true
+  pod "NFCPassportReader", :git => "https://github.com/zk-passport/NFCPassportReader", commit: "e3e869b14fb7fb2417928079db3967f203523580", :modular_headers => true
   pod "SwiftQRScanner", :git => "https://github.com/vinodiOS/SwiftQRScanner", :modular_headers => true
 
   use_react_native!(
@@ -65,10 +69,23 @@ post_install do |installer|
     puts "Continuing despite error..."
   end
 
-  # Force Swift version for all targets
+  # Force Swift version and architecture settings for all targets
   installer.pods_project.targets.each do |target|
     target.build_configurations.each do |config|
+      # Set Swift version
       config.build_settings["SWIFT_VERSION"] = "5.0"
+
+      # Set architecture exclusions
+      if target.name == "QKMRZParser" || target.name == "QKMRZScanner" || target.name == "SwiftQRScanner" || target.name == "SwiftyTesseract"
+        puts "Setting architecture for #{target.name}"
+        config.build_settings["ONLY_ACTIVE_ARCH"] = "NO"
+        config.build_settings["BUILD_LIBRARY_FOR_DISTRIBUTION"] = "YES"
+        config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
+        config.build_settings["VALID_ARCHS"] = "x86_64 arm64"
+      end
+
+      # Exclude arm64 for simulator builds
+      config.build_settings["EXCLUDED_ARCHS[sdk=iphonesimulator*]"] = "arm64"
     end
   end
 end
