@@ -60,6 +60,7 @@
     "@tamagui/config": "1.110.0",
     "@tamagui/lucide-icons": "1.110.0",
     "@tamagui/toast": "1.110.0",
+    "@xstate/react": "^5.0.3",
     "add": "^2.0.6",
     "asn1js": "^3.0.5",
     "burnt": "^0.12.2",

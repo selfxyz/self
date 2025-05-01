@@ -124,7 +124,10 @@ interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
-  init: (circuitType: 'dsc' | 'disclose' | 'register', userConfirmed?: boolean) => Promise<void>;
+  init: (
+    circuitType: 'dsc' | 'disclose' | 'register',
+    userConfirmed?: boolean,
+  ) => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
   initTeeConnection: () => Promise<boolean>;

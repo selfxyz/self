@@ -1,6 +1,7 @@
 import { StaticScreenProps, usePreventRemove } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect } from 'react';
+import { ActivityIndicator, View } from 'react-native';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -30,6 +31,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     },
   });
   const provingStore = useProvingStore();
+  const currentState = useProvingStore(state => state.currentState);
+  const isReadyToProve = currentState === 'ready_to_prove';
 
   useEffect(() => {
     notificationSuccess();
@@ -78,7 +81,16 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             By continuing, you certify that this passport belongs to you and is
             not stolen or forged.
           </Description>
-          <PrimaryButton onPress={onOkPress}>Confirm</PrimaryButton>
+          <PrimaryButton onPress={onOkPress} disabled={!isReadyToProve}>
+            {isReadyToProve ? (
+              'Confirm'
+            ) : (
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+                <Description color={black}>Preparing verification</Description>
+              </View>
+            )}
+          </PrimaryButton>
         </ExpandableBottomLayout.BottomSection>
       </ExpandableBottomLayout.Layout>
     </>
