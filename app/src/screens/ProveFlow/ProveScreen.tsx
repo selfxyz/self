@@ -133,7 +133,7 @@ const ProveScreen: React.FC = () => {
     buttonTap();
     setTimeout(() => {
       navigate('ProofRequestStatusScreen');
-    }, 200);
+    }, 100);
   }
 
   const handleScroll = useCallback(

@@ -144,20 +144,12 @@ const buttonMachine = createMachine(
       },
       verifying: {
         entry: 'callOnVerify',
-        always: [
-          {
-            target: 'waitingForSession',
-            guard: ({ context }) => !context.selectedAppSessionId,
-          },
-          {
-            target: 'needsScroll',
-            guard: ({ context }) => !context.hasScrolledToBottom,
-          },
-          {
-            target: 'preparing',
-            guard: ({ context }) => !context.isReadyToProve,
-          },
-        ],
+        // Remove always transitions checking hasScrolledToBottom and isReadyToProve
+        // Keep the button visually verifying until the component unmounts or session changes
+        always: {
+          target: 'waitingForSession',
+          guard: ({ context }) => !context.selectedAppSessionId,
+        },
       },
     },
   },
@@ -250,15 +242,9 @@ export const HeldPrimaryButtonProveScreen: React.FC<
     }
     if (state.matches('verifying')) {
       return (
-        <View
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            height: '100%',
-          }}
-        >
-          <ActivityIndicator color={black} />
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <ActivityIndicator color={black} style={{ marginRight: 8 }} />
+          <Description color={black}>Generating proof</Description>
         </View>
       );
     }
@@ -267,7 +253,7 @@ export const HeldPrimaryButtonProveScreen: React.FC<
 
   return (
     <HeldPrimaryButton
-      onPress={() => {
+      onLongPress={() => {
         if (state.matches('ready')) {
           send({ type: 'VERIFY' });
         }
