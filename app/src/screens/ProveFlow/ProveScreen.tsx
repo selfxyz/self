@@ -24,6 +24,10 @@ import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import {
+  ProofStatus,
+  useProofHistoryStore,
+} from '../../stores/proofHistoryStore';
 import { useSelfAppStore } from '../../stores/selfAppStore';
 import { black, slate300, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
@@ -44,9 +48,28 @@ const ProveScreen: React.FC = () => {
     () => scrollViewContentHeight <= scrollViewHeight,
     [scrollViewContentHeight, scrollViewHeight],
   );
+
   const provingStore = useProvingStore();
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
+
+  const { addProofHistory } = useProofHistoryStore();
+
+  useEffect(() => {
+    // Only add proof history after generating a uuid
+    if (provingStore.uuid && selectedApp) {
+      addProofHistory({
+        appName: selectedApp.appName,
+        sessionId: provingStore.uuid!,
+        userId: selectedApp.userId,
+        userIdType: selectedApp.userIdType,
+        endpointType: selectedApp.endpointType,
+        status: ProofStatus.PENDING,
+        logoBase64: selectedApp.logoBase64,
+        disclosures: JSON.stringify(selectedApp.disclosures),
+      });
+    }
+  }, [provingStore.uuid, selectedApp]);
 
   /**
    * Whenever the relationship between content height vs. scroll view height changes,

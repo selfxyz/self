@@ -16,6 +16,7 @@ import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
 import accountScreens from './account';
 import aesopScreens from './aesop';
+import devScreens from './dev';
 import homeScreens from './home';
 import passportScreens from './passport';
 import proveScreens from './prove';
@@ -39,6 +40,7 @@ const AppNavigation = createNativeStackNavigator({
     ...accountScreens,
     ...settingsScreens,
     ...recoveryScreens,
+    ...devScreens,
     ...aesopScreens,
   },
 });

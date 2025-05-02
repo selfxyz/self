@@ -7,6 +7,7 @@ import { YStack } from 'tamagui';
 import AppNavigation from './src/Navigation';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 import { AuthProvider } from './src/stores/authProvider';
+import { DatabaseProvider } from './src/stores/databaseProvider';
 import { PassportProvider } from './src/stores/passportDataProvider';
 
 initSentry();
@@ -18,7 +19,9 @@ function App(): React.JSX.Element {
     <YStack f={1} h="100%" w="100%">
       <AuthProvider>
         <PassportProvider>
-          <AppNavigation />
+          <DatabaseProvider>
+            <AppNavigation />
+          </DatabaseProvider>
         </PassportProvider>
       </AuthProvider>
     </YStack>
