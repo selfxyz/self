@@ -124,6 +124,7 @@ export function findOIDPosition(
 export function getCSCAFromSKI(ski: string, skiPem: any = null ): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
   const isSkiProvided = skiPem !== null;
+  console.log('SKI-PEM provided');
   const cscaPemPROD = (SKI_PEM as any)[normalizedSki];
   const cscaPemDEV = (SKI_PEM_DEV as any)[normalizedSki];
   let cscaPem = null;

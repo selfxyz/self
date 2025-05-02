@@ -11,6 +11,7 @@ import {
 import NfcManager from 'react-native-nfc-manager';
 import { Image } from 'tamagui';
 
+import { getSKIPEM } from '../../../../common/src/utils/csca';
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PassportData } from '../../../../common/src/utils/types';
 import passportVerifyAnimation from '../../assets/animations/passport_verify.json';
@@ -111,8 +112,8 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           return;
         }
         try {
-          // TODO: fetch the skiPem from the production environment
-          parsedPassportData = initPassportDataParsing(passportData);
+          const skiPem = await getSKIPEM('production');
+          parsedPassportData = initPassportDataParsing(passportData, skiPem);
           const passportMetadata = parsedPassportData.passportMetadata!;
           trackEvent('Passport Parsed', {
             success: true,
