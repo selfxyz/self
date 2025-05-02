@@ -68,6 +68,7 @@ export async function sendPayload(
     updateGlobalOnFailure?: boolean;
     flow?: 'registration' | 'disclosure';
     sessionId?: string;
+    onPayloadSent?: () => void;
   },
 ): Promise<{
   status: ProofStatusEnum;
@@ -176,6 +177,10 @@ export async function sendPayload(
           };
           console.log('Truncated submit body:', truncatedBody);
           ws.send(JSON.stringify(submitBody));
+          
+          if (options?.onPayloadSent) {
+            options.onPayloadSent();
+          }
         } else {
           if (result.error) {
             finalize(ProofStatusEnum.ERROR);

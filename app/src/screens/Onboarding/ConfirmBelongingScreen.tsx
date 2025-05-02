@@ -89,82 +89,6 @@ const requestAndroidNotificationPermissions = async () => {
   }
 };
 
-const sendFCMTokenToServer = async (
-  deviceToken: string,
-  sessionId: string,
-  mockPassportFlow: boolean | undefined,
-) => {
-  if (!deviceToken || !sessionId) {
-    console.error(
-      'Missing device token or session ID for FCM token registration',
-    );
-    return;
-  }
-
-  const API_URL = mockPassportFlow
-    ? 'https://9ebd-133-3-201-46.ngrok-free.app'
-    : 'https://api.self.xyz';
-
-  // Ensure token is properly formatted - no spaces or unexpected characters
-  const cleanedToken = deviceToken.trim();
-
-  const deviceTokenRegistration = {
-    session_id: sessionId,
-    device_token: cleanedToken,
-    platform: Platform.OS === 'ios' ? 'ios' : 'android',
-  };
-
-  // Log only the first/last few characters of the token for security/debugging
-  if (cleanedToken.length > 10) {
-    console.log(
-      '- Device token:',
-      `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
-        cleanedToken.length - 5,
-      )}`,
-    );
-  } else {
-    console.log('- Device token: [token too short]');
-  }
-
-  try {
-    // Test that we can properly stringify this object
-    const requestBody = JSON.stringify(deviceTokenRegistration);
-    console.log('Request body length:', requestBody.length);
-
-    const response = await fetch(`${API_URL}/register-token`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Accept: 'application/json',
-      },
-      body: requestBody,
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Server response error:', response.status, errorText);
-      throw new Error(
-        `FCM token registration failed: ${response.status} - ${errorText}`,
-      );
-    }
-
-    // Safely handle the response
-    try {
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.indexOf('application/json') !== -1) {
-        console.log('FCM token registered successfully with session_id');
-      } else {
-        const text = await response.text();
-        console.log('FCM token registration response (non-JSON):', text);
-      }
-    } catch (responseError) {
-      console.error('Error processing response:', responseError);
-    }
-  } catch (error) {
-    console.error('Failed to send FCM token to server:', error);
-  }
-};
-
 type ConfirmBelongingScreenProps = StaticScreenProps<
   | {
       mockPassportFlow?: boolean;
@@ -177,7 +101,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
 }) => {
   const mockPassportFlow = route.params?.mockPassportFlow;
   const [permissionRequested, setPermissionRequested] = useState(false);
-  const [_fcmToken, setFcmToken] = useState<string | null>(null);
+  const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [sessionId] = useState(() => uuidv4());
 
   const navigation = useNavigation();
@@ -189,8 +113,6 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
       try {
         const token = await getFCMToken();
         if (token) {
-          setFcmToken(token);
-
           // Clean the token if it contains spaces
           let cleanedToken = token;
           if (typeof token === 'string' && token.includes(' ')) {
@@ -199,14 +121,14 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             );
             cleanedToken = token.trim().split(' ').pop() || token.trim();
           }
-
-          // Send FCM token to server before navigating
-          await sendFCMTokenToServer(cleanedToken, sessionId, mockPassportFlow);
-
+          
+          setFcmToken(cleanedToken);
+          
           impactLight();
           navigation.navigate('LoadingScreen', {
             mockPassportFlow,
             sessionId,
+            deviceToken: cleanedToken,
           });
           return;
         }

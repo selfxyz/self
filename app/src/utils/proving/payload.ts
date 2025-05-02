@@ -1,5 +1,6 @@
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { poseidon2 } from 'poseidon-lite';
+import { v4 as uuidv4 } from 'uuid';
 
 import {
   API_URL,
@@ -26,6 +27,8 @@ import {
   generateTeeInputsVCAndDisclose,
 } from './inputs';
 import { sendPayload } from './tee';
+import messaging from '@react-native-firebase/messaging';
+import { Platform } from 'react-native';
 
 export type PassportSupportStatus =
   | 'passport_metadata_missing'
@@ -78,6 +81,7 @@ export async function sendRegisterPayload(
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
   sessionId?: string,
+  onPayloadSent?: () => void,
 ) {
   const { inputs, circuitName } = await generateTeeInputsRegister(
     secret,
@@ -97,6 +101,7 @@ export async function sendRegisterPayload(
       updateGlobalOnFailure: true,
       flow: 'registration',
       sessionId,
+      onPayloadSent,
     },
   );
 }
@@ -106,42 +111,51 @@ async function checkIdPassportDscIsInTree(
   dscTree: string,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
-): Promise<boolean> {
+  deviceToken?: string,
+  statusCallback?: (status: string, canClose: boolean) => void
+): Promise<{ dscOk: boolean; dscSessionId?: string }> {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, dscTree);
   const leaf = getLeafDscTree(
     passportData.dsc_parsed!,
     passportData.csca_parsed!,
   );
-  console.log('DSC leaf:', leaf);
   const index = tree.indexOf(BigInt(leaf));
+  
   if (index === -1) {
+    statusCallback?.('Verifying DSC...', false);
     console.log('DSC is not found in the tree, sending DSC payload');
+    
+    const dscSessionId = uuidv4();
+    
+    await registerDeviceToken(dscSessionId, endpointType, deviceToken);
+    
     const dscStatus = await sendDscPayload(
       passportData,
       circuitDNSMapping,
       endpointType,
+      dscSessionId,
+      () => statusCallback?.('DSC verification started. You can close the app now. Processing will continue when you reopen the app.', true)
     );
+    
     if (dscStatus.status !== ProofStatusEnum.SUCCESS) {
       console.log('DSC proof failed');
-      return false;
+      return { dscOk: false };
     }
+    
+    return { dscOk: true, dscSessionId };
   } else {
-    // console.log('DSC i found in the tree, sending DSC payload for debug');
-    // const dscStatus = await sendDscPayload(passportData);
-    // if (dscStatus !== ProofStatusEnum.SUCCESS) {
-    //   console.log('DSC proof failed');
-    //   return false;
-    // }
     console.log('DSC is found in the tree, skipping DSC payload');
+    return { dscOk: true };
   }
-  return true;
 }
 
 export async function sendDscPayload(
   passportData: PassportData,
   circuitDNSMapping: Record<string, string>,
   endpointType: EndpointType,
+  sessionId?: string,
+  onPayloadSent?: () => void,
 ): Promise<{ status: ProofStatusEnum; error_code?: string; reason?: string }> {
   if (!passportData) {
     return { status: ProofStatusEnum.FAILURE };
@@ -164,7 +178,11 @@ export async function sendDscPayload(
     'https://self.xyz',
     (circuitDNSMapping.DSC as any)[circuitName],
     undefined,
-    { updateGlobalOnSuccess: false },
+    { 
+      updateGlobalOnSuccess: false,
+      sessionId,
+      onPayloadSent,
+    },
   );
   return dscStatus;
 }
@@ -234,37 +252,62 @@ export async function isPassportNullified(passportData: PassportData) {
   return data.data;
 }
 
-export async function registerPassport(
+export async function registerPassportWithStatus(
   passportData: PassportData,
   secret: string,
   sessionId?: string,
+  deviceToken?: string,
+  statusCallback?: (status: string, canClose: boolean) => void
 ) {
   // First get the mapping, then use it for the check
-  const endpointType =
-    passportData.documentType && passportData.documentType === 'mock_passport'
-      ? 'staging_celo'
-      : 'celo';
+  const endpointType = passportData.documentType && passportData.documentType === 'mock_passport'
+    ? 'staging_celo'
+    : 'celo';
+  
+  statusCallback?.('Retrieving configuration information...', false);
+  
   const [circuitDNSMapping, dscTree] = await Promise.all([
     getCircuitDNSMapping(endpointType),
     getDSCTree(endpointType),
   ]);
+  
   console.log('circuitDNSMapping', circuitDNSMapping);
-  const dscOk = await checkIdPassportDscIsInTree(
+  
+  // Use the shared function for DSC checking
+  const { dscOk, dscSessionId } = await checkIdPassportDscIsInTree(
     passportData,
     dscTree,
     circuitDNSMapping,
     endpointType,
+    deviceToken,
+    statusCallback
   );
+  
   if (!dscOk) {
     return { status: ProofStatusEnum.FAILURE };
   }
-  return await sendRegisterPayload(
+  
+  // もしDSCの処理でsessionIdが生成されていない場合は
+  // initialSessionIdを使用するか、新しいsessionIdを生成する
+  const registerSessionId = sessionId || uuidv4();
+  
+  // デバイストークンを登録
+  if (registerSessionId !== dscSessionId) {
+    await registerDeviceToken(registerSessionId, endpointType, deviceToken);
+  }
+  
+  // Send registration payload with callback
+  statusCallback?.('Registering passport...', false);
+  const registerResult = await sendRegisterPayload(
     passportData,
     secret,
     circuitDNSMapping,
     endpointType,
-    sessionId,
+    registerSessionId,
+    () => statusCallback?.('Passport registration started. You can close the app now. The process will be completed when you reopen the app.', true)
   );
+  
+  return registerResult;
 }
 
 export async function getDeployedCircuits(documentType: string) {
@@ -330,5 +373,62 @@ export async function getCircuitDNSMapping(endpointType?: EndpointType) {
     return data.data;
   } catch (error) {
     throw new Error('API returned invalid JSON response - server may be down');
+  }
+}
+
+async function registerDeviceToken(
+  sessionId: string, 
+  endpointType: EndpointType,
+  deviceToken?: string
+): Promise<void> {
+  try {
+    // deviceTokenが提供されていない場合のみ取得を試みる
+    let token = deviceToken;
+    if (!token) {
+      token = await messaging().getToken();
+      if (!token) {
+        console.log('No FCM token available');
+        return;
+      }
+    }
+
+    const cleanedToken = token.trim();
+    const baseUrl = endpointType === 'celo' || endpointType === 'https'
+      ? API_URL
+      // : API_URL_STAGING;
+      : "https://4abf-133-3-201-48.ngrok-free.app";
+    
+    const deviceTokenRegistration = {
+      session_id: sessionId,
+      device_token: cleanedToken,
+      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+    };
+
+    if (cleanedToken.length > 10) {
+      console.log(
+        'Registering device token:',
+        `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
+          cleanedToken.length - 5,
+        )}`,
+      );
+    }
+
+    const response = await fetch(`${baseUrl}/register-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(deviceTokenRegistration),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to register device token:', response.status, errorText);
+    } else {
+      console.log('Device token registered successfully with session_id:', sessionId);
+    }
+  } catch (error) {
+    console.error('Error registering device token:', error);
   }
 }

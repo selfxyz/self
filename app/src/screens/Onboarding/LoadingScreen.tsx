@@ -17,7 +17,7 @@ import {
   checkPassportSupported,
   isPassportNullified,
   isUserRegistered,
-  registerPassport,
+  registerPassportWithStatus,
 } from '../../utils/proving/payload';
 
 const { trackEvent } = analytics();
@@ -64,10 +64,12 @@ const initializeMessaging = async () => {
 type LoadingScreenProps = StaticScreenProps<{
   sessionId: string;
   mockPassportFlow?: boolean;
+  deviceToken?: string;
 }>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const sessionId = route.params?.sessionId;
+  const deviceToken = route.params?.deviceToken;
 
   useEffect(() => {
     initializeMessaging();
@@ -93,6 +95,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
   const { registrationStatus, resetProof } = useProofInfo();
   const { getPassportDataAndSecret, clearPassportData } = usePassport();
+
+  const [processingStatus, setProcessingStatus] = useState<string>("Initializing...");
+  const [canCloseApp, setCanCloseApp] = useState<boolean>(false);
 
   useEffect(() => {
     // TODO this makes sense if reset proof was only about passport registration
@@ -125,6 +130,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
+          setProcessingStatus('Verifying passport data...');
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
@@ -136,6 +142,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             clearPassportData();
             return;
           }
+          setProcessingStatus('Checking user registration status...');
           const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
@@ -155,7 +162,30 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             return;
           }
 
-          await registerPassport(passportData, secret, sessionId);
+          setProcessingStatus('Starting passport verification...');
+          const result = await registerPassportWithStatus(
+            passportData, 
+            secret, 
+            sessionId,
+            deviceToken,
+            (status, canClose) => {
+              setProcessingStatus(status);
+              setCanCloseApp(canClose);
+            }
+          );
+
+          if (result.status === ProofStatusEnum.SUCCESS) {
+            setAnimationSource(successAnimation);
+            goToSuccessScreenWithDelay();
+            setTimeout(() => resetProof(), 3000);
+          } else if (
+            result.status === ProofStatusEnum.FAILURE ||
+            result.status === ProofStatusEnum.ERROR
+          ) {
+            setAnimationSource(failAnimation);
+            goToErrorScreenWithDelay();
+            setTimeout(() => resetProof(), 3000);
+          }
         } catch (error) {
           console.error('Error processing payload:', error);
           setTimeout(() => resetProof(), 1000);
@@ -163,7 +193,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       };
       processPayload();
     }
-  }, [sessionId]);
+  }, [sessionId, deviceToken]);
 
   return (
     <View style={styles.container}>
@@ -175,8 +205,11 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
         resizeMode="cover"
         renderMode="HARDWARE"
       />
+      <Text style={styles.statusText}>{processingStatus}</Text>
       <Text style={styles.warningText}>
-        This can take up to one minute, don't close the app
+        {canCloseApp 
+          ? "Processing has started. You can close the app now." 
+          : "This can take up to one minute, don't close the app"}
       </Text>
     </View>
   );
@@ -197,6 +230,17 @@ const styles = StyleSheet.create({
   warningText: {
     position: 'absolute',
     bottom: 40,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+    padding: 16,
+  },
+  statusText: {
+    position: 'absolute',
+    bottom: 80,
     left: 0,
     right: 0,
     textAlign: 'center',
