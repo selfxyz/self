@@ -2,14 +2,12 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "../utils/aadhar/QrVerifier.circom";
 include "circomlib/circuits/poseidon.circom";
-include "circomlib/circuits/bitify.circom";
+include "../utils/aadhar/QrVerifier.circom";
 include "../utils/aadhar/extractor.circom";
-include "../utils/aadhar/constant.circom";
+include "../utils/aadhar/constants.circom";
 include "../utils/passport/customHashers.circom";
-include "../utils/aadhar/nullifier.circom";
-include "../passport/customHashers.circom";
+// include "../utils/aadhar/nullifier.circom";
 
 /// @title: AadhaarRegister
 /// notice: This circuit is reposonsible for verifing the Aadhaar QR data and then outputting the commitment and nullifier
@@ -47,7 +45,6 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
     component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
     n2bHeaderLength.in <== qrDataPaddedLength;
-
 
     //verify if the data provided is correct
     component qr = AadhaarQRVerifier(n,k,maxDataLength);

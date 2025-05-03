@@ -28,7 +28,9 @@ template AgeExtractor(maxDataLength) {
     signal input currentDay;
 
     signal output age;
-    signal output DobHash;
+    signal output year;
+    signal output month;
+    signal output day;
     signal output nDelimitedDataShiftedToDob[maxDataLength];
     
     // Shift the data to the right to until the DOB index
@@ -45,12 +47,10 @@ template AgeExtractor(maxDataLength) {
 
     // Convert DOB bytes to unix timestamp. 
     // Get year, month, name as int (DD-MM-YYYY format and starts from shiftedBytes[0])
-    signal year <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
-    signal month <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
-    signal day <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
+    year <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
+    month <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
+    day <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
 
-    // calculate a poseidon hash for the DOB to be used as nullifier 
-    DobHash <== Poseidon(3)([year,month,day]);
 
     // Completed age based on year value
     signal ageByYear <== currentYear - year - 1;

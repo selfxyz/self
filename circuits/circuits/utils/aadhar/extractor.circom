@@ -82,7 +82,9 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     signal output RefId;
     signal output timestamp;
     signal output age;
-    signal output DOBHash;
+    signal output yearofbirth;
+    signal output monthofbirth;
+    signal output dayofbirth;
     signal output gender;
     signal output state;
     signal output pinCode;
@@ -138,8 +140,13 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     ageExtractor.currentYear <== timestampExtractor.year;
     ageExtractor.currentMonth <== timestampExtractor.month;
     ageExtractor.currentDay <== timestampExtractor.day;
+
     age <== ageExtractor.age;
-    DOBHash <== ageExtractor.DobHash;
+
+    yearofbirth <== ageExtractor.year;
+    monthofbirth <== ageExtractor.month;
+    dayofbirth <== ageExtractor.day;
+
 
     // Extract Name
     component nameExtractor =NameExtractor(maxDataLength,nameMaxBytes);

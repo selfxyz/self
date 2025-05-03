@@ -41,7 +41,13 @@ include "../utils/extractor.circom";
 
 /// @output nullifier Scope nullifier - not deterministic on the aadhaar data
 
-template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
+template AADHAAR_VC_AND_DISCLOSE(
+    nLevels,
+    maxDataLength,    
+    passportNoTreeLevels,
+    namedobTreeLevels,
+    nameyobTreeLevels
+) {
 
     signal input secret;
     signal input attestation_id;// == 2,
@@ -49,6 +55,7 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
     signal input qrDataPadded[maxDataLength];
     signal input qrDataPaddedLength;
     signal input delimiterIndices[18];
+
     // commitment vc
     signal input merkle_root;
     signal input leaf_depth;
@@ -57,14 +64,26 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
 
     signal input scope;
     signal input user_identifier;
+
     //age related
     signal input majority[2];
-    signal input current_date[6];
+
     //selector bitmaps
     signal input revealAgeolderthan;
     signal input revealGender;
     signal input revealPinCode;
     signal input revealState;
+    signal input selector_ofac;
+
+    //OFAC Checks
+    signal input ofac_namedob_smt_leaf_key;
+    signal input ofac_namedob_smt_root;
+    signal input ofac_namedob_smt_siblings[namedobTreeLevels];
+
+    signal input ofac_nameyob_smt_leaf_key;
+    signal input ofac_nameyob_smt_root;
+    signal input ofac_nameyob_smt_siblings[nameyobTreeLevels]; 
+
     // Outputs
     signal output timestamp;
     signal output age;
@@ -72,19 +91,6 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
     signal output state;
     signal output pinCode;
     signal output nullifier;
-
-    /// TODO
-    // signal input ofac_passportno_smt_leaf_key;
-    // signal input ofac_passportno_smt_root;
-    // signal input ofac_passportno_smt_siblings[passportNoTreeLevels];
-
-    // signal input ofac_namedob_smt_leaf_key;
-    // signal input ofac_namedob_smt_root;
-    // signal input ofac_namedob_smt_siblings[namedobTreeLevels];
-
-    // signal input ofac_nameyob_smt_leaf_key;
-    // signal input ofac_nameyob_smt_root;
-    // signal input ofac_nameyob_smt_siblings[nameyobTreeLevels]; 
 
     // Assert data between qrDataPaddedLength and maxDataLength is zero
     AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
@@ -102,8 +108,30 @@ template AADHAAR_VC_AND_DISCLOSE(nLevels,maxDataLength) {
     );
 
 
-    component DiscloseAadhaar = DiscloseAadhaar(maxDataLength);
- 
+    component DiscloseAadhaar = DiscloseAadhaar(
+        maxDataLength,      
+        passportNoTreeLevels,
+        namedobTreeLevels,
+        nameyobTreeLevels
+    );
+
+    DiscloseAadhaar.qrDataPadded <== qrDataPadded;
+    DiscloseAadhaar.qrDataPaddedLength <== qrDataPaddedLength;
+    DiscloseAadhaar.delimiterIndices <== delimiterIndices;
+    DiscloseAadhaar.majority <==  majority;
+    DiscloseAadhaar.revealAgeolderthan <== revealAgeolderthan;
+    DiscloseAadhaar.revealGender <== revealGender;
+    DiscloseAadhaar.revealPinCode <== revealPinCode;
+    DiscloseAadhaar.revealState <== revealState;
+    DiscloseAadhaar.selector_ofac <== selector_ofac;
+    DiscloseAadhaar.ofac_namedob_smt_leaf_key <== ofac_namedob_smt_leaf_key;
+    DiscloseAadhaar.ofac_namedob_smt_root <== ofac_namedob_smt_root;
+    DiscloseAadhaar.ofac_namedob_smt_siblings <== ofac_namedob_smt_siblings;
+    DiscloseAadhaar.ofac_nameyob_smt_leaf_key <== ofac_nameyob_smt_leaf_key;
+    DiscloseAadhaar.ofac_nameyob_smt_root <== ofac_nameyob_smt_root;
+    DiscloseAadhaar.ofac_nameyob_smt_siblings <== ofac_nameyob_smt_siblings;
+
+    
 
 
     // action nullifier
