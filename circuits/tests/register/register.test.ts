@@ -11,8 +11,8 @@ import { getCircuitNameFromPassportData } from '../../../common/src/utils/circui
 import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import {
-    generateCommitment,
-    generateNullifier,
+  generateCommitment,
+  generateNullifier,
 } from '../../../common/src/utils/passports/passport';
 import { SignatureAlgorithm } from '../../../common/src/utils/types';
 import { fullSigAlgs, sigAlgs } from './test_cases';

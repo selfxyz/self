@@ -10,13 +10,13 @@ import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json'
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
-    attributeToPosition,
-    PASSPORT_ATTESTATION_ID,
+  attributeToPosition,
+  PASSPORT_ATTESTATION_ID,
 } from '../../../common/src/constants/constants';
 import {
-    formatAndUnpackForbiddenCountriesList,
-    formatAndUnpackReveal,
-    getAttributeFromUnpackedReveal,
+  formatAndUnpackForbiddenCountriesList,
+  formatAndUnpackReveal,
+  getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
 import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
 import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
