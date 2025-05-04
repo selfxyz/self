@@ -38,6 +38,7 @@ REGISTER_CIRCUITS=(
 
 DISCLOSE_CIRCUITS=(
     "vc_and_disclose:true"
+    "aadhar_vc_and_disclose:true"
 )
 
 DSC_CIRCUITS=(

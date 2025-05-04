@@ -140,10 +140,8 @@ template AADHAAR_VC_AND_DISCLOSE(
 
 component main {
     public [
-        merkle_root,
         scope,
         user_identifier,
-        current_date,
-        attestation_id        // == 2
+        attestation_id      // == 2
     ]
 } = AADHAAR_VC_AND_DISCLOSE(33);

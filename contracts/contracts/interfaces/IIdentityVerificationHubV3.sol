@@ -1,17 +1,18 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.28;
 
+// for aadhaar
 import {IRegisterCircuitVerifier} from "./IRegisterCircuitVerifier.sol";
 import {IDscCircuitVerifier} from "./IDscCircuitVerifier.sol";
 import {IVcAndDiscloseCircuitVerifier} from "./IVcAndDiscloseCircuitVerifier.sol";
 import {CircuitConstants} from "../constants/CircuitConstants.sol";
 
 /**
- * @title IIdentityVerificationHubV1
+ * @title IIdentityVerificationHubV2
  * @notice Interface for the Identity Verification Hub for verifying zero-knowledge proofs using VC and Disclose circuits.
  * @dev Defines data structures and external functions for verifying proofs and recovering human-readable data.
  */
-interface IIdentityVerificationHubV1 {
+interface IIdentityVerificationHubV2 {
 
     /**
      * @notice Enum representing types of data that may be revealed.
@@ -26,8 +27,8 @@ interface IIdentityVerificationHubV1 {
         EXPIRY_DATE,       // The passport expiry date.
         OLDER_THAN,        // The "older than" age verification value.
         PASSPORT_NO_OFAC,  // The passport number OFAC status.
-        NAME_AND_DOB_OFAC, // The name and date of birth OFAC status.
-        NAME_AND_YOB_OFAC  // The name and year of birth OFAC status.
+        NAME_AND_DOB_OFAC, // The name and date of birth OFAC verification result.
+        NAME_AND_YOB_OFAC  // The name and year of birth OFAC verification result.
     }
 
     /**
@@ -150,6 +151,18 @@ interface IIdentityVerificationHubV1 {
         external;
 
     /**
+     * @notice Registers an Id Card commitment using a register circuit proof.
+     * @dev Verifies the register circuit proof before registering the Id Card commitment.
+     * @param registerCircuitVerifierId The identifier for the register circuit verifier to be used.
+     * @param registerCircuitProof The proof data for the register circuit.
+     */
+    function registerIdCardCommitment(
+        uint256 registerCircuitVerifierId,
+        IRegisterCircuitVerifier.RegisterCircuitProof memory registerCircuitProof
+    )
+        external;
+
+    /**
      * @notice Registers a DSC key commitment using a DSC circuit proof.
      * @dev Verifies the DSC circuit proof before registering the DSC key commitment.
      * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to be used.
@@ -162,10 +175,29 @@ interface IIdentityVerificationHubV1 {
         external;
 
     /**
+     * @notice Registers an Id Card DSC key commitment using a DSC circuit proof.
+     * @dev Verifies the DSC proof and then calls the Id Card Identity Registry to register the dsc key commitment.
+     * @param dscCircuitVerifierId The identifier for the DSC circuit verifier to use.
+     * @param dscCircuitProof The DSC circuit proof data.
+     */
+    function registerIdCardDscKeyCommitment(
+        uint256 dscCircuitVerifierId,
+        IDscCircuitVerifier.DscCircuitProof memory dscCircuitProof
+    )
+        external;
+
+    /**
      * @notice Returns the address of the Identity Registry.
      * @return registryAddr The address of the Identity Registry contract.
      */
     function registry() external view returns (address registryAddr);
+
+
+    /**
+     * @notice Returns the address of the Identity Registry for Id Cards.
+     * @return registryIdCardAddr The address of the Identity Registry for Id Cards.
+     */
+    function registryIdCard() external view returns (address registryIdCardAddr);
 
     /**
      * @notice Returns the address of the VC and Disclose circuit verifier.
@@ -196,4 +228,29 @@ interface IIdentityVerificationHubV1 {
         external
         view
         returns (address verifier);
+
+    /**
+     * @notice Retrieves the register circuit verifier for a given signature type for Id Cards.
+     * @param typeId The signature type identifier.
+     * @return verifier The address of the register circuit verifier.
+     */
+    function sigTypeToRegisterCircuitVerifiersIdCard(
+        uint256 typeId
+    )
+        external
+        view
+        returns (address verifier);
+
+    /**
+     * @notice Retrieves the DSC circuit verifier for a given signature type for Id Cards.
+     * @param typeId The signature type identifier.
+     * @return verifier The address of the DSC circuit verifier.
+     */
+    function sigTypeToDscCircuitVerifiersIdCard(
+        uint256 typeId
+    )
+        external
+        view
+        returns (address verifier);
+
 } 
