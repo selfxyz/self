@@ -31,14 +31,24 @@ const getFCMToken = async () => {
     }
 
     if (Platform.OS === 'ios') {
+      console.log('Requesting iOS notification permissions...');
+      
+      try {
+        await messaging().registerDeviceForRemoteMessages();
+        console.log('Successfully registered for remote messages');
+      } catch (regError) {
+        console.warn('Error registering for remote messages:', regError);
+      }
+      
       const authStatus = await messaging().requestPermission({
-        announcement: true, // Request permission to play notification sounds
-        badge: true, // Request permission to update app badge
-        carPlay: false, // Not needed for most apps
-        criticalAlert: false, // Not needed for most apps
-        provisional: true, // Allow provisional permissions (silent notifications first)
-        sound: true, // Request permission to play sounds
+        announcement: true, 
+        badge: true,       
+        carPlay: false,
+        provisional: false,
+        sound: true,         
       });
+      
+      console.log('iOS permission request result:', authStatus);
 
       const enabled =
         authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
@@ -50,14 +60,13 @@ const getFCMToken = async () => {
       }
     }
 
-    // Register with APNs for iOS
-    if (Platform.OS === 'ios') {
-      await messaging().registerDeviceForRemoteMessages();
-    }
-
     // Get token using the new modular API
+    console.log('Attempting to get FCM token...');
     const token = await messaging().getToken();
     console.log('FCM token obtained successfully:', token ? 'yes' : 'no');
+    if (token) {
+      console.log('Token starts with:', token.substring(0, 10));
+    }
     return token;
   } catch (error) {
     console.error('Error getting FCM token:', error);
@@ -109,6 +118,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   const handleConfirm = useCallback(async () => {
     if (!permissionRequested) {
       setPermissionRequested(true);
+      console.log('Confirming belonging, requesting notification permissions...');
 
       try {
         const token = await getFCMToken();
@@ -123,6 +133,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
           }
           
           setFcmToken(cleanedToken);
+          console.log('Successfully obtained FCM token, navigating to LoadingScreen');
           
           impactLight();
           navigation.navigate('LoadingScreen', {
@@ -131,6 +142,8 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             deviceToken: cleanedToken,
           });
           return;
+        } else {
+          console.log('Failed to get FCM token, proceeding without it');
         }
       } catch (error) {
         console.error(
@@ -141,6 +154,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     }
 
     impactLight();
+    console.log('Navigating to LoadingScreen without FCM token');
     navigation.navigate('LoadingScreen', {
       mockPassportFlow,
       sessionId,
@@ -159,6 +173,15 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
           console.log('Already has notification permission:', hasPermission);
         } catch (error) {
           console.error('Error checking notification permission:', error);
+        }
+      }
+      
+      if (Platform.OS === 'ios') {
+        try {
+          const authStatus = await messaging().hasPermission();
+          console.log('Current iOS notification permission status:', authStatus);
+        } catch (error) {
+          console.error('Error checking iOS notification permission status:', error);
         }
       }
     };
