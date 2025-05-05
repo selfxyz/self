@@ -3,6 +3,7 @@ pragma circom 2.1.9;
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "@zk-kit/binary-merkle-root.circom/src/binary-merkle-root.circom";
 include "circomlib/circuits/poseidon.circom";
+include "../../passport/customHashers.circom";
 
 /// @notice verifies user's commitment is included in the merkle tree
 /// @input secret Secret of the user — used to reconstruct commitment and generate nullifier
@@ -32,7 +33,7 @@ template VERIFY_COMMITMENT_AADHAAR(nLevels,maxDataLength) {
     // Poseidon commitment
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
-    commitment <== dataCommit.out;
+    signal commitment <== dataCommit.out;
     
     // Verify commitment inclusion
     signal computedRoot <== BinaryMerkleRoot(nLevels)(commitment, merkletree_size, path, siblings);

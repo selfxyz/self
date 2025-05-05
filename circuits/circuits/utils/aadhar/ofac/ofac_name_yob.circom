@@ -11,7 +11,7 @@ template OFAC_NAME_YOB(nLevels) {
     signal input smt_root;
     signal input smt_siblings[nLevels];
 
-    signal name_yob_hash <== Poseidon(2)([yob,name_hash]);
+    signal name_yob_hash <== Poseidon(2)([yob,namehash]);
 
     signal output ofacCheckResult <== SMTVerify(nLevels)(name_yob_hash, smt_leaf_key, smt_root, smt_siblings, 0);
 }

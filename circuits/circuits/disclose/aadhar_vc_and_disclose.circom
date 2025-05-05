@@ -3,7 +3,8 @@ pragma circom 2.1.9;
 include "circomlib/circuits/poseidon.circom";
 include "../utils/aadhar/QrVerifier.circom";
 include "../utils/aadhar/disclose/verify_commitment_aadhaar.circom";
-include "../utils/extractor.circom";
+include "../utils/aadhar/disclose/disclose_aadhaar.circom";
+include "../utils/aadhar/extractor.circom";
 
 /// @title AADHAAR_VC_AND_DISCLOSE
 /// @notice verify user's commitment is part of the tree and discloses data selectively 
@@ -43,8 +44,8 @@ include "../utils/extractor.circom";
 
 template AADHAAR_VC_AND_DISCLOSE(
     nLevels,
-    maxDataLength,    
-    passportNoTreeLevels,
+    maxDataLength,
+    nameMaxBytes,
     namedobTreeLevels,
     nameyobTreeLevels
 ) {
@@ -95,7 +96,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     // Assert data between qrDataPaddedLength and maxDataLength is zero
     AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
 
-    VerifyAadhaarCommitment = VERIFY_COMMITMENT_AADHAAR(nLevels,maxDataLength)(        
+    VERIFY_COMMITMENT_AADHAAR(nLevels,maxDataLength)(        
         secret,
         attestation_id,
         qrDataPadded,
@@ -109,8 +110,8 @@ template AADHAAR_VC_AND_DISCLOSE(
 
 
     component DiscloseAadhaar = DiscloseAadhaar(
-        maxDataLength,      
-        passportNoTreeLevels,
+        maxDataLength,
+        nameMaxBytes,
         namedobTreeLevels,
         nameyobTreeLevels
     );
@@ -118,7 +119,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     DiscloseAadhaar.qrDataPadded <== qrDataPadded;
     DiscloseAadhaar.qrDataPaddedLength <== qrDataPaddedLength;
     DiscloseAadhaar.delimiterIndices <== delimiterIndices;
-    DiscloseAadhaar.majority <==  majority;
+    DiscloseAadhaar.majorityASCII <==  majority;
     DiscloseAadhaar.revealAgeolderthan <== revealAgeolderthan;
     DiscloseAadhaar.revealGender <== revealGender;
     DiscloseAadhaar.revealPinCode <== revealPinCode;
@@ -135,7 +136,7 @@ template AADHAAR_VC_AND_DISCLOSE(
 
 
     // action nullifier
-    signal output nullifier <== Poseidon(2)([secret, scope]);
+    nullifier <== Poseidon(2)([secret, scope]);
 }
 
 component main {
@@ -144,4 +145,4 @@ component main {
         user_identifier,
         attestation_id      // == 2
     ]
-} = AADHAAR_VC_AND_DISCLOSE(33);
+} = AADHAAR_VC_AND_DISCLOSE(33, 512 * 3, 256, 64, 64);

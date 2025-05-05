@@ -37,7 +37,7 @@ include "../ofac/ofac_name_yob.circom";
 
 template DiscloseAadhaar(
     maxDataLength,
-    passportNoTreeLevels,
+    nameMaxBytes,
     namedobTreeLevels,
     nameyobTreeLevels
 ) {
@@ -47,7 +47,7 @@ template DiscloseAadhaar(
     signal input qrDataPaddedLength;
     signal input delimiterIndices[18];
     //age related
-    signal input majority[2];
+    signal input majorityASCII[2];
 
     //selector bitmaps
     signal input revealAgeolderthan;
@@ -83,17 +83,17 @@ template DiscloseAadhaar(
     selector_ofac * (selector_ofac - 1) === 0;
 
     // extract all the data from QR and computer commitment + nullfier
-    component qrDataExtractor = QRDataExtractor(maxDataLength);
+    component qrDataExtractor = QRDataExtractor(maxDataLength,nameMaxBytes);
     qrDataExtractor.data <== qrDataPadded;
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
 
-    signal name[packedLength] <== qrDataExtractor.Name;
+    // signal name[packedLength] <== qrDataExtractor.Name;
     signal nameHash <== qrDataExtractor.NameHash;
     signal RefId <== qrDataExtractor.RefID;
     signal age <== qrDataExtractor.age;
     signal photo[photoPackSize()] <== qrDataExtractor.photo;
-    signal years <== qrDataExtractor.yearofbirth;
+    signal year <== qrDataExtractor.yearofbirth;
     signal month <== qrDataExtractor.monthofbirth;
     signal day <== qrDataExtractor.dayofbirth;
 
@@ -122,7 +122,7 @@ template DiscloseAadhaar(
     checkLessThan[3] === 1;
 
     signal TEN <== 10;
-    majorityNum <== ( majorityASCII[0] - 48 ) * TEN + ( majorityASCII[1] - 48 );
+    signal majorityNum <== ( majorityASCII[0] - 48 ) * TEN + ( majorityASCII[1] - 48 );
 
     component AgeCheck = GreaterEqThan(8);
     AgeCheck.in[0] <== age;
@@ -147,7 +147,7 @@ template DiscloseAadhaar(
     );
 
     signal ofacCheckResultNameYob <== OFAC_NAME_YOB(nameyobTreeLevels)(
-        namehash,
+        nameHash,
         year,
         ofac_nameyob_smt_leaf_key,
         ofac_nameyob_smt_root,

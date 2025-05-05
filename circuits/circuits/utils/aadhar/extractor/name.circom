@@ -5,6 +5,7 @@ include "circomlib/circuits/bitify.circom";
 include "@openpassport/zk-email-circuits/utils/array.circom";
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../constants.circom";
+include "../../passport/customHashers.circom";
 
 
 
