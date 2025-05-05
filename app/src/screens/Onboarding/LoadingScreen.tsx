@@ -130,7 +130,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             return;
           }
           const { passportData, secret } = passportDataAndSecret.data;
-          setProcessingStatus('Verifying passport data...');
+          setProcessingStatus('Checking if your passport is supported...');
           const isSupported = await checkPassportSupported(passportData);
           if (isSupported.status !== 'passport_supported') {
             trackEvent('Passport not supported', {
@@ -142,7 +142,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             clearPassportData();
             return;
           }
-          setProcessingStatus('Checking user registration status...');
+          setProcessingStatus('Checking your registration status...');
           const isRegistered = await isUserRegistered(passportData, secret);
           console.log('User is registered:', isRegistered);
           if (isRegistered) {
@@ -162,7 +162,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
             return;
           }
 
-          setProcessingStatus('Starting passport verification...');
+          setProcessingStatus('Preparing payload...');
           const result = await registerPassportWithStatus(
             passportData, 
             secret, 

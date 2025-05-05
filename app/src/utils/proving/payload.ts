@@ -123,7 +123,7 @@ async function checkIdPassportDscIsInTree(
   const index = tree.indexOf(BigInt(leaf));
   
   if (index === -1) {
-    statusCallback?.('Verifying DSC...', false);
+    statusCallback?.('Your DSC is not registered. sending DSC payload...', false);
     console.log('DSC is not found in the tree, sending DSC payload');
     
     const dscSessionId = uuidv4();
@@ -135,7 +135,7 @@ async function checkIdPassportDscIsInTree(
       circuitDNSMapping,
       endpointType,
       dscSessionId,
-      () => statusCallback?.('DSC verification started. You can close the app now. Processing will continue when you reopen the app.', true)
+      () => statusCallback?.('DSC verification started. You can close the app now. Pls come back when your dsc is verified', true)
     );
     
     if (dscStatus.status !== ProofStatusEnum.SUCCESS) {
@@ -264,7 +264,7 @@ export async function registerPassportWithStatus(
     ? 'staging_celo'
     : 'celo';
   
-  statusCallback?.('Retrieving configuration information...', false);
+  statusCallback?.('Checking if your DSC is registered...', false);
   
   const [circuitDNSMapping, dscTree] = await Promise.all([
     getCircuitDNSMapping(endpointType),
@@ -297,14 +297,14 @@ export async function registerPassportWithStatus(
   }
   
   // Send registration payload with callback
-  statusCallback?.('Registering passport...', false);
+  statusCallback?.('Sending your passport payload...', false);
   const registerResult = await sendRegisterPayload(
     passportData,
     secret,
     circuitDNSMapping,
     endpointType,
     registerSessionId,
-    () => statusCallback?.('Passport registration started. You can close the app now. The process will be completed when you reopen the app.', true)
+    () => statusCallback?.('Passport registration started. You can close the app now. We will notify once your passport is registered.', true)
   );
   
   return registerResult;
