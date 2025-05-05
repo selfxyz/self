@@ -2,8 +2,8 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@openpassport/zk-email/circuits/utils/array.circom";
-include "@openpassport/zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "../constants.circom";
 
 
@@ -28,9 +28,10 @@ template AgeExtractor(maxDataLength) {
     signal input currentDay;
 
     signal output age;
-    signal output year;
+    signal output year2;
     signal output month;
     signal output day;
+    signal output DOBHash;
     signal output nDelimitedDataShiftedToDob[maxDataLength];
     
     // Shift the data to the right to until the DOB index
@@ -47,13 +48,15 @@ template AgeExtractor(maxDataLength) {
 
     // Convert DOB bytes to unix timestamp. 
     // Get year, month, name as int (DD-MM-YYYY format and starts from shiftedBytes[0])
-    year <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
+    signal year1 <== DigitBytesToInt(4)([shiftedBytes[7], shiftedBytes[8], shiftedBytes[9], shiftedBytes[10]]);
+    //YY the last 2 year for the ofac
+    year2 <== DigitBytesToInt(2)([shiftedBytes[9],shiftedBytes[10]]);
     month <== DigitBytesToInt(2)([shiftedBytes[4], shiftedBytes[5]]);
     day <== DigitBytesToInt(2)([shiftedBytes[1], shiftedBytes[2]]);
 
 
     // Completed age based on year value
-    signal ageByYear <== currentYear - year - 1;
+    signal ageByYear <== currentYear - year1 - 1;
 
     // +1 to age if month is above currentMonth, or if months are same and day is higher
     signal monthGt <== GreaterThan(4)([currentMonth, month]);
@@ -62,7 +65,7 @@ template AgeExtractor(maxDataLength) {
     signal isHigherDayOnSameMonth <== monthEq * dayGt;
 
     age <== ageByYear + (monthGt + isHigherDayOnSameMonth);
-
+    DOBHash <== Poseidon(3)([year1,month,day]);
     nDelimitedDataShiftedToDob <== shiftedBytes;
 }
 

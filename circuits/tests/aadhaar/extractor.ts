@@ -10,8 +10,8 @@ import {
   extractPhoto,
 } from '@anon-aadhaar/core'
 import assert from 'assert'
-import { testQRData as QRData } from '../assets/dataInput.json'
-import { bigIntsToString, bigIntChunksToByteArray } from './util'
+import { testQRData as QRData } from '../../../common/tests/aadhaar/dataInput.json'
+import { bigIntsToString, bigIntChunksToByteArray } from './utils'
 
 describe('Extractor', function () {
   this.timeout(0)

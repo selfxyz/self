@@ -363,6 +363,7 @@ function processName(firstName: string, lastName: string, i: number): bigint {
       arr += '<';
     }
   }
+  //TODO pad till 256 
   let nameArr = stringToAsciiBigIntArray(arr);
   return getNameLeaf(nameArr, i);
 }

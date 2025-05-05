@@ -112,6 +112,7 @@ for item in "${allowed_circuits[@]}"; do
         -l "circuits/node_modules" \
         -l "circuits/node_modules/@zk-kit/binary-merkle-root.circom/src" \
         -l "circuits/node_modules/circomlib/circuits" \
+        -l "circuits/node_modules/@openpassport/zk-email-circuits/utils/array.circom" \
         --O1 -c --output $output && \
         cd $output/${circuit_name}_cpp && \
         make 

@@ -25,7 +25,7 @@
     "test-ofac": "yarn ts-mocha --max-old-space-size=8192 'tests/ofac/ofac.test.ts' --exit",
     "test-register": "yarn ts-mocha --max-old-space-size=40960 'tests/register/register.test.ts' --exit",
     "test-aadhaar-register": "yarn ts-mocha --max-old-space-size=40960 'tests/register/register.test.ts --exit",
-
+    "test-aadhaar-utils": "yarn ts-mocha -- --max-old-space-size=40960 'tests/aaddhaar/*.ts' --exit" ,
     "test-rsa": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsaPkcs1v1_5.test.ts' --exit",
     "test-rsa-pss": "yarn ts-mocha --max-old-space-size=8192 'tests/utils/rsapss.test.ts' --exit"
   },

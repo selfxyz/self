@@ -2,8 +2,8 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@openpassport/zk-email/circuits/utils/array.circom";
-include "@openpassport/zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 
 /// @title RefIdExtractor
 /// @notice Extracts the 4 digits of the aadhar number
@@ -12,7 +12,8 @@ include "@openpassport/zk-email/circuits/utils/bytes.circom";
 template RefIdExtractor(maxDataLength){
     signal input nDelimitedData[maxDataLength];
     signal output RefId;
-    RedId <== DigitBytesToInt([nDelimitedData[5],nDelimitedData[6],nDelimitedData[7],nDelimitedData[8]]);
+    
+    RefId <== DigitBytesToInt(4)([nDelimitedData[5],nDelimitedData[6],nDelimitedData[7],nDelimitedData[8]]);
 }
 
 

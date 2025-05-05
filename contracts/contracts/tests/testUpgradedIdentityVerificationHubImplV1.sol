@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.28;
+pragma solidity ^0.8.28;
 
 import {IdentityVerificationHubStorageV1} from "../IdentityVerificationHubImplV1.sol";
 

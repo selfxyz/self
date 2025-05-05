@@ -2,15 +2,15 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/comparators.circom";
 include "circomlib/circuits/bitify.circom";
-include "@openpassport/zk-email/circuits/utils/array.circom";
-include "@openpassport/zk-email/circuits/utils/bytes.circom";
+include "@openpassport/zk-email-circuits/utils/array.circom";
+include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "./constants.circom";
-include "../extractor/name.circom";
-include "../extractor/age.circom";
-include "../extractor/general.circom";
-include "../extractor/photo.circom";
-include "../extractor/timestamp.circom";
-include "../extractor/helper.circom";
+include "./extractor/name.circom";
+include "./extractor/age.circom";
+include "./extractor/general.circom";
+include "./extractor/photo.circom";
+include "./extractor/timestamp.circom";
+include "./extractor/helpers.circom";
 
 
 
@@ -79,12 +79,13 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
 
     signal output Name[packedLength];
     signal output NameHash;
-    signal output RefId;
+    signal output RefID;
     signal output timestamp;
     signal output age;
     signal output yearofbirth;
     signal output monthofbirth;
     signal output dayofbirth;
+    signal output DobHash;
     signal output gender;
     signal output state;
     signal output pinCode;
@@ -120,10 +121,9 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     }
 
     // Extract RefID
-    component refIdExt = RefIdExtractor( maxQrDataLength );
-    refIdExt.nDelimitedData   <== qrDataPadded;
-    refIdExt.delimiterIndices <== delimiterIndices;
-    RefId <== refIdExt.refId;
+    component refIdExt = RefIdExtractor(maxDataLength);
+    refIdExt.nDelimitedData   <== nDelimitedData;
+    RefID <== refIdExt.RefId;
 
     // Extract timestamp
     component timestampExtractor = TimestampExtractor(maxDataLength);
@@ -143,10 +143,10 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
 
     age <== ageExtractor.age;
 
-    yearofbirth <== ageExtractor.year;
+    yearofbirth <== ageExtractor.year2;
     monthofbirth <== ageExtractor.month;
     dayofbirth <== ageExtractor.day;
-
+    DobHash <== ageExtractor.DOBHash;
 
     // Extract Name
     component nameExtractor =NameExtractor(maxDataLength,nameMaxBytes);

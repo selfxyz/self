@@ -62,29 +62,31 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
 
     // extract all the data from QR and computer commitment + nullfier
-    component qrDataExtractor = QRDataExtractor(maxDataLength);
+    component qrDataExtractor = QRDataExtractor(maxDataLength,nameMaxBytes);
     qrDataExtractor.data <== qrDataPadded;
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
 
+    timestamp <== qrDataExtractor.timestamp;
+
     signal name[packedLength] <== qrDataExtractor.Name;
     signal nameHash <== qrDataExtractor.NameHash;
     signal RefId <== qrDataExtractor.RefID;
-    signal timestamp <== qrDataExtractor.timestamp;
     signal age <== qrDataExtractor.age;
-    signal DOBHash <== qrDataExtractor.DOBHash;
+    signal DobHasH <== qrDataExtractor.DobHash;
     signal gender <== qrDataExtractor.gender;
     signal state <== qrDataExtractor.state;
     signal pinCode <== qrDataExtractor.pinCode;
     signal photo[photoPackSize()] <== qrDataExtractor.photo;
+    signal DobHash <== qrDataExtractor.DobHash;
 
     // Poseidon commitment
     // the data has a max size of 
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
     commitment <== dataCommit.out;
-
+    //secret for commitment
     // nullifier - https://www.notion.so/Indian-identity-Integration-1dc57801cd1280bebd45f3527ef60150?pvs=4#1dc57801cd12800e8f51f89648ca37d5
-    nullifier <== poseidon(4)([NameHash,DOBHash,gender,RefID]);
+    nullifier <== Poseidon(4)([nameHash,DobHasH,gender,RefId]);
 
 }
