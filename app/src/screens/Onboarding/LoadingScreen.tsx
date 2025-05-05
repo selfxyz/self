@@ -1,31 +1,19 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { Platform, StyleSheet, Text, View } from 'react-native';
-import { PermissionsAndroid } from 'react-native';
-
 import messaging from '@react-native-firebase/messaging';
-import { StaticScreenProps, useNavigation } from '@react-navigation/native';
-import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
+import { StaticScreenProps, useIsFocused, useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { PermissionsAndroid, Platform, StyleSheet, Text, View } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
-import { usePassport } from '../../stores/passportDataProvider';
-import { ProofStatusEnum, useProofInfo } from '../../stores/proofProvider';
 import analytics from '../../utils/analytics';
-import {
-  checkPassportSupported,
-  isPassportNullified,
-  isUserRegistered,
-  registerPassportWithStatus,
-} from '../../utils/proving/payload';
-
-const { trackEvent } = analytics();
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
+const { trackEvent } = analytics();
+
+// Initialize Firebase Messaging
 const initializeMessaging = async () => {
   try {
     messaging().setBackgroundMessageHandler(async remoteMessage => {
@@ -74,126 +62,120 @@ type LoadingScreenProps = StaticScreenProps<{
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const sessionId = route.params?.sessionId;
   const deviceToken = route.params?.deviceToken;
+  const mockPassportFlow = route.params?.mockPassportFlow;
 
-  useEffect(() => {
-    initializeMessaging();
-  }, []);
+  // Animation states
+  const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
+
+  // Navigation hooks
+  const navigation = useNavigation();
+  const isFocused = useIsFocused();
+
+  // ProvingMachine state
+  const currentState = useProvingStore(state => state.currentState);
+  const errorCode = useProvingStore(state => state.error_code);
+  const errorReason = useProvingStore(state => state.reason);
+
+  // Status text that will be shown to the user
+  const [processingStatus, setProcessingStatus] = useState<string>("Initializing...");
+  const [canCloseApp, setCanCloseApp] = useState<boolean>(false);
 
   const goToSuccessScreen = useHapticNavigation('AccountVerifiedSuccess');
   const goToErrorScreen = useHapticNavigation('Launch');
   const goToUnsupportedScreen = useHapticNavigation('UnsupportedPassport');
-  const navigation = useNavigation();
+  const goToAccountRecoveryScreen = useHapticNavigation('AccountRecoveryChoice');
 
-  const processPayloadCalled = useRef(false);
+  // Initialize messaging system when component mounts
+  useEffect(() => {
+    initializeMessaging();
+  }, []);
 
-  const goToSuccessScreenWithDelay = () => {
-    setTimeout(() => {
-      goToSuccessScreen();
-    }, 3000);
-  };
-  const goToErrorScreenWithDelay = () => {
-    setTimeout(() => {
-      goToErrorScreen();
-    }, 3000);
-  };
-const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
-  const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const currentState = useProvingStore(state => state.currentState);
-  const isFocused = useIsFocused();
+  // Configure proving store with sessionId and deviceToken
+  useEffect(() => {
+    if (sessionId && deviceToken) {
+      console.log("Setting session ID and device token in proving store");
+      useProvingStore.getState().setSessionId(sessionId);
+      useProvingStore.getState().setDeviceToken(deviceToken);
 
-  const [processingStatus, setProcessingStatus] = useState<string>("Initializing...");
-  const [canCloseApp, setCanCloseApp] = useState<boolean>(false);
+      // If proving machine is in the 'idle' state, start the process
+      if (currentState === 'idle') {
+        // This will start the proving process now that we have the sessionId and deviceToken
+        useProvingStore.getState().init('register');
+      }
+    } else if (sessionId) {
+      // Set just the sessionId if that's all we have
+      useProvingStore.getState().setSessionId(sessionId);
 
-  // Monitor the state of the proving machine
+      if (currentState === 'idle') {
+        useProvingStore.getState().init('register');
+      }
+    }
+  }, [sessionId, deviceToken, currentState]);
+
+  // Monitor the proving machine state and update UI accordingly
   useEffect(() => {
     if (isFocused) {
       console.log('[LoadingScreen] Current proving state:', currentState);
-    }
 
-    if (currentState === 'completed') {
-      setAnimationSource(successAnimation);
-    } else if (currentState === 'error' || currentState === 'failure') {
-      setAnimationSource(failAnimation);
-    } else {
-      setAnimationSource(miscAnimation);
-    }
-  }, [registrationStatus]);
-
-  useEffect(() => {
-    if (!processPayloadCalled.current) {
-      processPayloadCalled.current = true;
-      const processPayload = async () => {
-        try {
-          const passportDataAndSecret = await getPassportDataAndSecret();
-          if (!passportDataAndSecret) {
-            return;
-          }
-          const { passportData, secret } = passportDataAndSecret.data;
-          setProcessingStatus('Checking if your passport is supported...');
-          const isSupported = await checkPassportSupported(passportData);
-          if (isSupported.status !== 'passport_supported') {
-            trackEvent('Passport not supported', {
-              reason: isSupported.status,
-              details: isSupported.details,
-            });
-            goToUnsupportedScreen();
-            console.log('Passport not supported');
-            clearPassportData();
-            return;
-          }
-          setProcessingStatus('Checking your registration status...');
-          const isRegistered = await isUserRegistered(passportData, secret);
-          console.log('User is registered:', isRegistered);
-          if (isRegistered) {
-            console.log(
-              'Passport is registered already. Skipping to AccountVerifiedSuccess',
-            );
-            navigation.navigate('AccountVerifiedSuccess');
-            return;
-          }
-          const isNullifierOnchain = await isPassportNullified(passportData);
-          console.log('Passport is nullified:', isNullifierOnchain);
-          if (isNullifierOnchain) {
-            console.log(
-              'Passport is nullified, but not registered with this secret. Prompt to restore secret from iCloud or manual backup',
-            );
-            navigation.navigate('AccountRecoveryChoice');
-            return;
-          }
-
-          setProcessingStatus('Preparing payload...');
-          const result = await registerPassportWithStatus(
-            passportData,
-            secret,
-            sessionId,
-            deviceToken,
-            (status, canClose) => {
-              setProcessingStatus(status);
-              setCanCloseApp(canClose);
-            }
-          );
-
-          if (result.status === ProofStatusEnum.SUCCESS) {
-            setAnimationSource(successAnimation);
-            goToSuccessScreenWithDelay();
-            setTimeout(() => resetProof(), 3000);
-          } else if (
-            result.status === ProofStatusEnum.FAILURE ||
-            result.status === ProofStatusEnum.ERROR
-          ) {
+      if (currentState) {
+        // Update UI based on state
+        switch (currentState) {
+          case 'checking_passport':
+            setProcessingStatus('Checking if your passport is supported...');
+            break;
+          case 'checking_registration':
+            setProcessingStatus('Checking your registration status...');
+            break;
+          case 'checking_dsc':
+            setProcessingStatus('Checking if your DSC is registered...');
+            break;
+          case 'sending_dsc':
+            setProcessingStatus('Your DSC is not registered. Sending DSC payload...');
+            break;
+          case 'dsc_processing':
+            setProcessingStatus('DSC verification started. You can close the app now.');
+            setCanCloseApp(true);
+            break;
+          case 'sending_registration':
+            setProcessingStatus('Sending your passport payload...');
+            break;
+          case 'registration_processing':
+            setProcessingStatus('Passport registration started. You can close the app now.');
+            setCanCloseApp(true);
+            break;
+          case 'passport_unsupported':
             setAnimationSource(failAnimation);
-            goToErrorScreenWithDelay();
-            setTimeout(() => resetProof(), 3000);
-          }
-        } catch (error) {
-          console.error('Error processing payload:', error);
-          setTimeout(() => resetProof(), 1000);
+            trackEvent('Passport not supported', {
+              reason: errorCode || 'unknown',
+              details: errorReason || 'No details available',
+            });
+            setTimeout(() => goToUnsupportedScreen(), 2000);
+            break;
+          case 'already_registered':
+            setAnimationSource(successAnimation);
+            setTimeout(() => navigation.navigate('AccountVerifiedSuccess'), 2000);
+            break;
+          case 'needs_recovery':
+            setAnimationSource(miscAnimation);
+            setTimeout(() => goToAccountRecoveryScreen(), 2000);
+            break;
+          case 'completed':
+            setAnimationSource(successAnimation);
+            setTimeout(() => goToSuccessScreen(), 3000);
+            break;
+          case 'error':
+          case 'failure':
+            setAnimationSource(failAnimation);
+            setTimeout(() => goToErrorScreen(), 3000);
+            break;
+          default:
+            setAnimationSource(miscAnimation);
+            setProcessingStatus('Processing your request...');
+            break;
         }
-      };
-      processPayload();
+      }
     }
-  }, [sessionId, deviceToken]);
-  }, [currentState, isFocused]);
+  }, [currentState, errorCode, errorReason, isFocused, navigation, goToSuccessScreen, goToErrorScreen, goToUnsupportedScreen, goToAccountRecoveryScreen]);
 
   return (
     <View style={styles.container}>

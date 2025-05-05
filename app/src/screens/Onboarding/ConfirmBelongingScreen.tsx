@@ -12,7 +12,7 @@ import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
-import { impactLight, notificationSuccess } from '../../utils/haptic';
+import { notificationSuccess } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
@@ -109,54 +109,16 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   const [permissionRequested, setPermissionRequested] = useState(false);
   const [fcmToken, setFcmToken] = useState<string | null>(null);
   const [sessionId] = useState(() => uuidv4());
-
+  const provingStore = useProvingStore();
   const navigation = useNavigation();
 
-  const handleConfirm = useCallback(async () => {
-    if (!permissionRequested) {
-      setPermissionRequested(true);
-      console.log('Confirming belonging, requesting notification permissions...');
-
-      try {
-        const token = await getFCMToken();
-        if (token) {
-          // Clean the token if it contains spaces
-          let cleanedToken = token;
-          if (typeof token === 'string' && token.includes(' ')) {
-            console.warn(
-              'FCM token contains spaces, which may cause issues. Cleaning token...',
-            );
-            cleanedToken = token.trim().split(' ').pop() || token.trim();
-          }
-
-          setFcmToken(cleanedToken);
-          console.log('Successfully obtained FCM token, navigating to LoadingScreen');
-
-          impactLight();
-          navigation.navigate('LoadingScreen', {
-            mockPassportFlow,
-            sessionId,
-            deviceToken: cleanedToken,
-          });
-          return;
-        } else {
-          console.log('Failed to get FCM token, proceeding without it');
-        }
-      } catch (error) {
-        console.error(
-          'Failed in notification permission or token flow:',
-          error,
-        );
-      }
-    }
-
-    impactLight();
-    console.log('Navigating to LoadingScreen without FCM token');
-    navigation.navigate('LoadingScreen', {
+  // Create navigation function with useHapticNavigation
+  const navigateToLoading = useHapticNavigation('LoadingScreen', {
+    params: {
       mockPassportFlow,
       sessionId,
-    });
-  }, [permissionRequested, navigation, mockPassportFlow, sessionId]);
+    },
+  });
 
   useEffect(() => {
     notificationSuccess();
@@ -184,30 +146,63 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     };
 
     checkNotificationPermission();
+    // Initialize the proving store
     provingStore.init('dsc');
-  const navigate = useHapticNavigation('LoadingScreen', {
-    params: {
-      mockPassportFlow,
-    },
-  });
-  const provingStore = useProvingStore();
-  }, []);
+  }, [provingStore]);
 
-  const onOkPress = async () => {
-    // Initialize the proving process just before navigation
-    // This ensures a fresh start each time
-    try {
-      // Initialize the state machine
+  const handleConfirm = useCallback(async () => {
+    if (!permissionRequested) {
+      setPermissionRequested(true);
+      console.log('Confirming belonging, requesting notification permissions...');
 
-      // Mark as user confirmed - proving will start automatically when ready
-      provingStore.setUserConfirmed();
+      try {
+        const token = await getFCMToken();
+        if (token) {
+          // Clean the token if it contains spaces
+          let cleanedToken = token;
+          if (typeof token === 'string' && token.includes(' ')) {
+            console.warn(
+              'FCM token contains spaces, which may cause issues. Cleaning token...',
+            );
+            cleanedToken = token.trim().split(' ').pop() || token.trim();
+          }
 
-      // Navigate to loading screen
-      navigate();
-    } catch (error) {
-      console.error('Error initializing proving process:', error);
+          setFcmToken(cleanedToken);
+          console.log('Successfully obtained FCM token, navigating to LoadingScreen');
+
+          // Initialize the state machine
+          provingStore.setUserConfirmed();
+
+          // Use haptic navigation with useHapticNavigation style
+          const navigateWithToken = useHapticNavigation('LoadingScreen', {
+            params: {
+              mockPassportFlow,
+              sessionId,
+              deviceToken: cleanedToken,
+            },
+          });
+          navigateWithToken();
+          return;
+        } else {
+          console.log('Failed to get FCM token, proceeding without it');
+        }
+      } catch (error) {
+        console.error(
+          'Failed in notification permission or token flow:',
+          error,
+        );
+      }
     }
-  };
+
+    // If we reach here, we proceed without a token
+    console.log('Navigating to LoadingScreen without FCM token');
+
+    // Initialize the state machine
+    provingStore.setUserConfirmed();
+
+    // Use haptic navigation without device token
+    navigateToLoading();
+  }, [permissionRequested, navigateToLoading, mockPassportFlow, sessionId, provingStore]);
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

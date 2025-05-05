@@ -1,10 +1,15 @@
 import forge from 'node-forge';
+import { Platform } from 'react-native';
 import io, { Socket } from 'socket.io-client';
 import { v4 } from 'uuid';
 import { AnyActorRef, createActor, createMachine } from 'xstate';
 import { create } from 'zustand';
 
-import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
+import {
+  API_URL,
+  API_URL_STAGING,
+  WS_RPC_URL_VC_AND_DISCLOSE
+} from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
 import { navigationRef } from '../../Navigation';
@@ -124,6 +129,8 @@ interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
+  sessionId: string | null;
+  deviceToken: string | null;
   init: (circuitType: 'dsc' | 'disclose' | 'register') => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
@@ -131,6 +138,8 @@ interface ProvingState {
   startProving: () => Promise<void>;
   postProving: () => void;
   setUserConfirmed: () => void;
+  setSessionId: (sessionId: string) => void;
+  setDeviceToken: (deviceToken: string) => void;
   _closeConnections: () => void;
   _generatePayload: () => Promise<any>;
   _handleWebSocketMessage: (event: MessageEvent) => Promise<void>;
@@ -236,10 +245,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     passportData: null,
     secret: null,
     circuitType: null,
-    selfApp: null,
     error_code: null,
     reason: null,
     endpointType: null,
+    sessionId: null,
+    deviceToken: null,
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -318,14 +328,28 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
 
-      const url = getWSDbRelayerUrl(endpointType);
-      let socket: Socket | null = io(url, {
+      // Close existing socket connection if any
+      if (get().socketConnection) {
+        get().socketConnection.disconnect();
+      }
+
+      // Create new socket connection
+      const socket = io(getWSDbRelayerUrl(endpointType), {
         path: '/',
         transports: ['websocket'],
       });
+
       set({ socketConnection: socket });
 
+      // Register device token with the API if available
+      const { deviceToken } = get();
+      if (deviceToken && receivedUuid) {
+        // Register the device token for notifications
+        registerDeviceToken(receivedUuid, endpointType, deviceToken);
+      }
+
       socket.on('connect', () => {
+        console.log('SocketIO: Connection opened');
         socket?.emit('subscribe', receivedUuid);
       });
 
@@ -433,61 +457,78 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     init: async (circuitType: 'dsc' | 'disclose' | 'register') => {
-      get()._closeConnections();
+      try {
+        // Clean up any existing state
+        get()._closeConnections();
 
-      if (actor) {
-        try {
+        // Initialize new state with circuit type
+        set({
+          circuitType,
+          currentState: 'idle',
+          userConfirmed: false,
+        });
+
+        // Create new actor instance
+        if (actor) {
           actor.stop();
-        } catch (error) {
-          console.error('Error stopping actor:', error);
         }
+        actor = createActor(provingMachine);
+        setupActorSubscriptions(actor);
+        actor.start();
+
+        // Set the endpoint type based on circuit type or document type
+        let endpointType: EndpointType;
+        const { passportData } = get();
+
+        if (passportData && passportData.documentType === 'mock_passport') {
+          endpointType = 'staging_celo';
+        } else {
+          endpointType = 'celo';
+        }
+
+        set({ endpointType });
+
+        console.log(`Initialized proving machine for circuit type: ${circuitType}`);
+        return Promise.resolve();
+      } catch (error) {
+        console.error(`Error initializing proving machine: ${error}`);
+        if (actor) {
+          actor.send({ type: 'ERROR' });
+        }
+        return Promise.reject(error);
       }
-      set({
-        currentState: 'idle',
-        attestation: null,
-        serverPublicKey: null,
-        sharedKey: null,
-        wsConnection: null,
-        socketConnection: null,
-        uuid: null,
-        userConfirmed: false,
-        passportData: null,
-        secret: null,
-        circuitType,
-        endpointType: null,
-      });
-
-      actor = createActor(provingMachine);
-      setupActorSubscriptions(actor);
-      actor.start();
-
-      const passportDataAndSecretStr = await loadPassportDataAndSecret();
-      if (!passportDataAndSecretStr) {
-        actor!.send({ type: 'ERROR' });
-        return;
-      }
-
-      const passportDataAndSecret = JSON.parse(passportDataAndSecretStr);
-      const { passportData, secret } = passportDataAndSecret;
-
-      set({ passportData, secret });
-      set({ circuitType });
-      actor.send({ type: 'FETCH_DATA' });
     },
 
     startFetchingData: async () => {
-      _checkActorInitialized(actor);
+      if (!actor) {
+        console.error('Cannot start fetching data: State machine not initialized.');
+        return;
+      }
+
       try {
-        const { passportData } = get();
-        const env =
-          passportData.documentType && passportData.documentType !== 'passport'
-            ? 'stg'
-            : 'prod';
-        await useProtocolStore.getState().passport.fetch_all(env);
-        actor!.send({ type: 'FETCH_SUCCESS' });
+        // Get session info
+        const { sessionId, deviceToken, circuitType } = get();
+
+        // Load passport data and secret
+        const passportDataAndSecret = await loadPassportDataAndSecret();
+        if (!passportDataAndSecret) {
+          actor.send({ type: 'FETCH_ERROR' });
+          set({ error_code: 'no_passport_data', reason: 'Passport data not found' });
+          return;
+        }
+
+        const { passportData, secret } = passportDataAndSecret.data;
+        set({ passportData, secret });
+
+        // Set UUID using provided sessionId or generate new one
+        const uuid = sessionId || v4();
+        set({ uuid });
+
+        actor.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
-        console.error('Error fetching data:', error);
-        actor!.send({ type: 'FETCH_ERROR' });
+        console.error('Error in startFetchingData:', error);
+        actor.send({ type: 'FETCH_ERROR' });
+        set({ error_code: 'fetch_error', reason: String(error) });
       }
     },
 
@@ -632,9 +673,18 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     setUserConfirmed: () => {
       set({ userConfirmed: true });
-      if (get().currentState === 'ready_to_prove') {
+      const currentState = get().currentState;
+
+      // If we're already in the ready_to_prove state, start proving
+      if (currentState === 'ready_to_prove') {
         get().startProving();
       }
+      // If we're still in idle state, start the process by sending FETCH_DATA
+      else if (currentState === 'idle' && actor) {
+        actor.send({ type: 'FETCH_DATA' });
+      }
+
+      console.log('User confirmed, current state:', currentState);
     },
 
     postProving: () => {
@@ -742,11 +792,81 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         },
       };
     },
+
+    setSessionId: (sessionId: string) => {
+      set({ sessionId });
+      console.log('Session ID set:', sessionId);
+    },
+
+    setDeviceToken: (deviceToken: string) => {
+      set({ deviceToken });
+      console.log('Device token set:', deviceToken);
+    },
   };
 });
 
 function _checkActorInitialized(actor: AnyActorRef | null) {
   if (!actor) {
     throw new Error('State machine not initialized. Call init() first.');
+  }
+}
+
+/**
+ * Registers a device token with the API for push notifications
+ * @param sessionId The session ID for this verification process
+ * @param endpointType The endpoint type (celo, staging_celo, etc.)
+ * @param deviceToken The Firebase device token for push notifications
+ */
+async function registerDeviceToken(
+  sessionId: string,
+  endpointType: EndpointType,
+  deviceToken: string
+): Promise<void> {
+  try {
+    if (!deviceToken || deviceToken.trim().length < 10) {
+      console.log('Invalid device token, not registering');
+      return;
+    }
+
+    const cleanedToken = deviceToken.trim();
+
+    // Determine base URL from endpoint type
+    let baseUrl;
+    if (endpointType === 'celo' || endpointType === 'https') {
+      baseUrl = API_URL; // Replace with your actual prod API URL
+    } else {
+      baseUrl = API_URL_STAGING; // Replace with your actual staging API URL
+    }
+
+    const deviceTokenRegistration = {
+      session_id: sessionId,
+      device_token: cleanedToken,
+      platform: Platform.OS === 'ios' ? 'ios' : 'android',
+    };
+
+    console.log(
+      'Registering device token:',
+      `${cleanedToken.substring(0, 5)}...${cleanedToken.substring(
+        cleanedToken.length - 5,
+      )}`,
+    );
+
+    const response = await fetch(`${baseUrl}/register-token`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Accept: 'application/json',
+      },
+      body: JSON.stringify(deviceTokenRegistration),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Failed to register device token:', response.status, errorText);
+    } else {
+      console.log('Device token registered successfully with session_id:', sessionId);
+    }
+  } catch (error) {
+    console.error('Error registering device token:', error);
   }
 }
