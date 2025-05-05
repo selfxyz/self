@@ -1,16 +1,17 @@
+import { useNavigation } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { useNavigation } from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
-
+import { PassportData } from '../../../common/src/utils/types';
 import splashAnimation from '../assets/animations/splash.json';
 import { useAuth } from '../stores/authProvider';
 import { loadPassportDataAndSecret } from '../stores/passportDataProvider';
+import { useProtocolStore } from '../stores/protocolStore';
 import { useSettingStore } from '../stores/settingStore';
 import { black } from '../utils/colors';
 import { impactLight } from '../utils/haptic';
-import { isUserRegistered } from '../utils/proving/payload';
+import { isUserRegistered } from '../utils/proving/validateDocument';
 
 const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
@@ -22,37 +23,53 @@ const SplashScreen: React.FC = ({}) => {
       .then(setBiometricsAvailable)
       .catch(err => {
         console.warn('Error checking biometrics availability', err);
+        navigation.navigate('Launch');
+        throw new Error(`Error checking biometrics availability: ${err}`);
       });
-  }, []);
+  }, [navigation]);
 
   const handleAnimationFinish = useCallback(() => {
-    setTimeout(async () => {
-      impactLight();
-      const passportDataAndSecret = await loadPassportDataAndSecret();
+    try {
+      setTimeout(async () => {
+        impactLight();
+        const passportDataAndSecret = await loadPassportDataAndSecret();
 
-      if (!passportDataAndSecret) {
+        if (!passportDataAndSecret) {
+          navigation.navigate('Launch');
+          return;
+        }
+
+        const { passportData, secret } = JSON.parse(passportDataAndSecret);
+        if (!isPassportDataValid(passportData)) {
+          navigation.navigate('Launch');
+          return;
+        }
+        const environment =
+          (passportData as PassportData).documentType &&
+          (passportData as PassportData).documentType !== 'passport'
+            ? 'stg'
+            : 'prod';
+        await useProtocolStore.getState().passport.fetch_all(environment);
+        const isRegistered = await isUserRegistered(passportData, secret);
+        console.log('User is registered:', isRegistered);
+        if (isRegistered) {
+          console.log('Passport is registered already. Skipping to HomeScreen');
+          navigation.navigate('Home');
+          return;
+        }
+        // Currently, we dont check isPassportNullified(passportData);
+        // This could lead to AccountRecoveryChoice just like in LoadingScreen
+        // But it looks better right now to keep the LaunchScreen flow
+        // In case user wants to try with another passport.
+        // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
+
+        // Rest of the time, keep the LaunchScreen flow
         navigation.navigate('Launch');
-        return;
-      }
-
-      const { passportData, secret } = JSON.parse(passportDataAndSecret);
-
-      const isRegistered = await isUserRegistered(passportData, secret);
-      console.log('User is registered:', isRegistered);
-      if (isRegistered) {
-        console.log('Passport is registered already. Skipping to HomeScreen');
-        navigation.navigate('Home');
-        return;
-      }
-      // Currently, we dont check isPassportNullified(passportData);
-      // This could lead to AccountRecoveryChoice just like in LoadingScreen
-      // But it looks better right now to keep the LaunchScreen flow
-      // In case user wants to try with another passport.
-      // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
-
-      // Rest of the time, keep the LaunchScreen flow
+      }, 1000);
+    } catch (error) {
       navigation.navigate('Launch');
-    }, 1000);
+      throw new Error(`Error in SplashScreen: ${error}`);
+    }
   }, [navigation]);
 
   return (
@@ -83,3 +100,22 @@ const styles = StyleSheet.create({
 });
 
 export default SplashScreen;
+
+function isPassportDataValid(passportData: PassportData) {
+  if (!passportData) {
+    return false;
+  }
+  if (!passportData.passportMetadata) {
+    return false;
+  }
+  if (!passportData.passportMetadata.dg1HashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.eContentHashFunction) {
+    return false;
+  }
+  if (!passportData.passportMetadata.signedAttrHashFunction) {
+    return false;
+  }
+  return true;
+}

@@ -1,6 +1,5 @@
-import React, { useCallback, useState } from 'react';
-
 import { useNavigation } from '@react-navigation/native';
+import React, { useCallback, useState } from 'react';
 import { Separator, View, XStack, YStack } from 'tamagui';
 
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -17,7 +16,7 @@ import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import { useSettingStore } from '../../stores/settingStore';
 import { STORAGE_NAME, useBackupMnemonic } from '../../utils/cloudBackup';
 import { black, slate500, slate600, white } from '../../utils/colors';
-import { isUserRegistered } from '../../utils/proving/payload';
+import { isUserRegistered } from '../../utils/proving/validateDocument';
 
 interface AccountRecoveryChoiceScreenProps {}
 

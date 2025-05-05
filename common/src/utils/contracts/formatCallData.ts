@@ -46,6 +46,13 @@ export function packForbiddenCountriesList(forbiddenCountries: string[]): string
     const REQUIRED_CHUNKS = 4;
     const bytes: number[] = [];
     
+    // Validate all country codes (3 characters)
+    for (const country of forbiddenCountries) {
+        if (!country || country.length !== 3) {
+            throw new Error(`Invalid country code: "${country}". Country codes must be exactly 3 characters long.`);
+        }
+    }
+    
     // Convert countries to bytes
     for (const country of forbiddenCountries) {
         const countryCode = country.padEnd(3, ' ').slice(0, 3);

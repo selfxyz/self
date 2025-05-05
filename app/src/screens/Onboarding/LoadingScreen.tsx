@@ -4,7 +4,10 @@ import { PermissionsAndroid } from 'react-native';
 
 import messaging from '@react-native-firebase/messaging';
 import { StaticScreenProps, useNavigation } from '@react-navigation/native';
+import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
+import React, { useEffect, useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
@@ -21,6 +24,7 @@ import {
 } from '../../utils/proving/payload';
 
 const { trackEvent } = analytics();
+import { useProvingStore } from '../../utils/proving/provingMachine';
 
 const initializeMessaging = async () => {
   try {
@@ -92,31 +96,26 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       goToErrorScreen();
     }, 3000);
   };
+const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const { registrationStatus, resetProof } = useProofInfo();
-  const { getPassportDataAndSecret, clearPassportData } = usePassport();
+  const currentState = useProvingStore(state => state.currentState);
+  const isFocused = useIsFocused();
 
   const [processingStatus, setProcessingStatus] = useState<string>("Initializing...");
   const [canCloseApp, setCanCloseApp] = useState<boolean>(false);
 
+  // Monitor the state of the proving machine
   useEffect(() => {
-    // TODO this makes sense if reset proof was only about passport registration
-    resetProof();
-  }, []);
+    if (isFocused) {
+      console.log('[LoadingScreen] Current proving state:', currentState);
+    }
 
-  useEffect(() => {
-    console.log('registrationStatus', registrationStatus);
-    if (registrationStatus === ProofStatusEnum.SUCCESS) {
+    if (currentState === 'completed') {
       setAnimationSource(successAnimation);
-      goToSuccessScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
-    } else if (
-      registrationStatus === ProofStatusEnum.FAILURE ||
-      registrationStatus === ProofStatusEnum.ERROR
-    ) {
+    } else if (currentState === 'error' || currentState === 'failure') {
       setAnimationSource(failAnimation);
-      goToErrorScreenWithDelay();
-      setTimeout(() => resetProof(), 3000);
+    } else {
+      setAnimationSource(miscAnimation);
     }
   }, [registrationStatus]);
 
@@ -164,8 +163,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
 
           setProcessingStatus('Preparing payload...');
           const result = await registerPassportWithStatus(
-            passportData, 
-            secret, 
+            passportData,
+            secret,
             sessionId,
             deviceToken,
             (status, canClose) => {
@@ -194,6 +193,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       processPayload();
     }
   }, [sessionId, deviceToken]);
+  }, [currentState, isFocused]);
 
   return (
     <View style={styles.container}>
@@ -207,8 +207,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
       />
       <Text style={styles.statusText}>{processingStatus}</Text>
       <Text style={styles.warningText}>
-        {canCloseApp 
-          ? "Processing has started. You can close the app now." 
+        {canCloseApp
+          ? "Processing has started. You can close the app now."
           : "This can take up to one minute, don't close the app"}
       </Text>
     </View>

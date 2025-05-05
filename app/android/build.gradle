@@ -30,6 +30,8 @@ buildscript {
 allprojects {
     repositories {
         google()
+        mavenCentral()
+        maven { url "https://jitpack.io" }
         jcenter()
         mavenCentral()
         maven { url "https://jitpack.io" }
@@ -39,7 +41,8 @@ allprojects {
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {
-        substitute(platform(module('com.gemalto.jp2:jp2-android'))) using module('com.github.Tgo1014:JP2ForAndroid:1.0.4')
+            substitute(platform(module('com.gemalto.jp2:jp2-android'))) using module('com.github.Tgo1014:JP2ForAndroid:1.0.4')
+            substitute module('io.fotoapparat:fotoapparat') using module('com.github.RedApparat:Fotoapparat:2.7.0')
         }
         resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
     }

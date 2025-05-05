@@ -1,12 +1,13 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 
 interface TextsContainerProps {
   children: React.ReactNode;
+  style?: ViewStyle;
 }
 
-const TextsContainer = ({ children }: TextsContainerProps) => {
-  return <View style={styles.textsContainer}>{children}</View>;
+const TextsContainer = ({ children, style }: TextsContainerProps) => {
+  return <View style={[styles.textsContainer, style]}>{children}</View>;
 };
 
 export default TextsContainer;

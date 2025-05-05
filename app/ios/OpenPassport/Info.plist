@@ -24,6 +24,53 @@
 	<string>2.5.1</string>
 	<key>CFBundleSignature</key>
 	<string>????</string>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>LSApplicationCategoryType</key>
+	<string />
+	<key>LSRequiresIPhoneOS</key>
+	<true />
+	<key>NFCReaderUsageDescription</key>
+	<string>Need NFC to read Passport</string>
+	<key>NSAppTransportSecurity</key>
+	<string />
+  <!-- Do not change NSAllowsArbitraryLoads to true, or you will risk app rejection! -->
+	<key>NSAllowsArbitraryLoads</key>
+	<false />
+	<key>NSAllowsLocalNetworking</key>
+	<true />
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false />
+	<key>NSCameraUsageDescription</key>
+	<string>Needed to scan the passport MRZ.</string>
+	<key>NSFaceIDUsageDescription</key>
+	<string>Needed to secure the secret</string>
+	<key>NSHumanReadableCopyright</key>
+	<string />
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string />
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We need access to your photo library to allow you to choose passport photos or save generated QR codes.</string>
+	<key>UILaunchStoryboardName</key>
+	<string>LaunchScreen</string>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>arm64</string>
+	</array>
+	<key>UISupportedInterfaceOrientations</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false />
+	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>
+	<array>
+		<string>A0000002471001</string>
+		<string>A0000002472001</string>
+		<string>00000000000000</string>
+	</array>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -106,5 +153,9 @@
 		<string>A0000002472001</string>
 		<string>00000000000000</string>
 	</array>
+  <key>UISupportedInterfaceOrientations</key>
+  <array>
+    <string>UIInterfaceOrientationPortrait</string>
+  </array>
 </dict>
 </plist>

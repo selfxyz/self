@@ -1,5 +1,4 @@
 import React from 'react';
-
 import { Text, View } from 'tamagui';
 
 import { slate500 } from '../utils/colors';

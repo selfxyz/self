@@ -87,7 +87,7 @@ android {
         applicationId "com.proofofpassportapp"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 54
+        versionCode 56
         versionName "2.5.1"
         externalNativeBuild {
             cmake {
@@ -99,11 +99,11 @@ android {
             }
         }
     }
-    
+
     buildFeatures {
         buildConfig = true
     }
-    
+
     signingConfigs {
         debug {
             storeFile file('debug.keystore')
@@ -150,7 +150,7 @@ dependencies {
     implementation("com.facebook.react:react-android")
     implementation(project(":react-native-passport-reader")) {
         exclude group: 'edu.ucar', module: 'jj2000'
-    }    
+    }
     implementation project(':passportreader')
     implementation 'org.jmrtd:jmrtd:0.7.18'
 
@@ -169,7 +169,7 @@ dependencies {
     implementation 'com.google.android.gms:play-services-mlkit-text-recognition-common:19.1.0'
     implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
     implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
-    implementation 'com.github.Fotoapparat:Fotoapparat:2.7.0'
+    implementation "com.github.RedApparat:Fotoapparat:2.7.0"
 
     implementation "androidx.concurrent:concurrent-futures:1.1.0"
     implementation "com.google.guava:guava:31.1-android"

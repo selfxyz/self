@@ -1,8 +1,7 @@
+import LottieView from 'lottie-react-native';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-
-import LottieView from 'lottie-react-native';
 import { Anchor, Text, XStack, YStack } from 'tamagui';
 import { useWindowDimensions } from 'tamagui';
 

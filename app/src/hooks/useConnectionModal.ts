@@ -1,10 +1,9 @@
+import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { useNetInfo } from '@react-native-community/netinfo';
-
 import { navigationRef } from '../Navigation';
-import { useModal } from '../hooks/useModal';
+import { useModal } from './useModal';
 
 const connectionModalParams = {
   titleText: 'Internet connection error',
@@ -22,7 +21,7 @@ const connectionModalParams = {
 } as const;
 
 export default function useConnectionModal() {
-  const { isInternetReachable } = useNetInfo();
+  const { isConnected } = useNetInfo();
   const { showModal, dismissModal, visible } = useModal(connectionModalParams);
 
   useEffect(() => {
@@ -30,12 +29,12 @@ export default function useConnectionModal() {
       return;
     }
 
-    if (isInternetReachable === false && !visible) {
+    if (isConnected === false && !visible) {
       showModal();
-    } else if (visible && isInternetReachable !== false) {
+    } else if (visible && isConnected !== false) {
       dismissModal();
     }
-  }, [isInternetReachable, dismissModal, visible, navigationRef.isReady()]);
+  }, [isConnected, dismissModal, visible, navigationRef.isReady()]);
 
   return {
     visible,

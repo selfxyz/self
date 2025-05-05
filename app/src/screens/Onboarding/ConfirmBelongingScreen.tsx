@@ -1,22 +1,19 @@
+import messaging from '@react-native-firebase/messaging';
+import { StaticScreenProps, useNavigation, usePreventRemove } from '@react-navigation/native';
+import LottieView from 'lottie-react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import { PermissionsAndroid, Platform } from 'react-native';
-
-import messaging from '@react-native-firebase/messaging';
-import {
-  StaticScreenProps,
-  useNavigation,
-  usePreventRemove,
-} from '@react-navigation/native';
-import LottieView from 'lottie-react-native';
 import { v4 as uuidv4 } from 'uuid';
 
 import successAnimation from '../../assets/animations/loading/success.json';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { impactLight, notificationSuccess } from '../../utils/haptic';
+import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
 // Attempt to get FCM token directly
@@ -32,22 +29,22 @@ const getFCMToken = async () => {
 
     if (Platform.OS === 'ios') {
       console.log('Requesting iOS notification permissions...');
-      
+
       try {
         await messaging().registerDeviceForRemoteMessages();
         console.log('Successfully registered for remote messages');
       } catch (regError) {
         console.warn('Error registering for remote messages:', regError);
       }
-      
+
       const authStatus = await messaging().requestPermission({
-        announcement: true, 
-        badge: true,       
+        announcement: true,
+        badge: true,
         carPlay: false,
         provisional: false,
-        sound: true,         
+        sound: true,
       });
-      
+
       console.log('iOS permission request result:', authStatus);
 
       const enabled =
@@ -131,10 +128,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
             );
             cleanedToken = token.trim().split(' ').pop() || token.trim();
           }
-          
+
           setFcmToken(cleanedToken);
           console.log('Successfully obtained FCM token, navigating to LoadingScreen');
-          
+
           impactLight();
           navigation.navigate('LoadingScreen', {
             mockPassportFlow,
@@ -175,7 +172,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
           console.error('Error checking notification permission:', error);
         }
       }
-      
+
       if (Platform.OS === 'ios') {
         try {
           const authStatus = await messaging().hasPermission();
@@ -187,7 +184,30 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     };
 
     checkNotificationPermission();
+    provingStore.init('dsc');
+  const navigate = useHapticNavigation('LoadingScreen', {
+    params: {
+      mockPassportFlow,
+    },
+  });
+  const provingStore = useProvingStore();
   }, []);
+
+  const onOkPress = async () => {
+    // Initialize the proving process just before navigation
+    // This ensures a fresh start each time
+    try {
+      // Initialize the state machine
+
+      // Mark as user confirmed - proving will start automatically when ready
+      provingStore.setUserConfirmed();
+
+      // Navigate to loading screen
+      navigate();
+    } catch (error) {
+      console.error('Error initializing proving process:', error);
+    }
+  };
 
   // Prevents back navigation
   usePreventRemove(true, () => {});

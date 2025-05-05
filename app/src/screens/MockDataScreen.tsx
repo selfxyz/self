@@ -1,12 +1,11 @@
-import React, { useCallback, useState } from 'react';
-import { TouchableOpacity } from 'react-native';
-import { Gesture, GestureDetector } from 'react-native-gesture-handler';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import { useNavigation } from '@react-navigation/native';
 import { ChevronDown, Minus, Plus, X } from '@tamagui/lucide-icons';
 import { flag } from 'country-emoji';
 import getCountryISO2 from 'country-iso-3-to-2';
+import React, { useCallback, useState } from 'react';
+import { TouchableOpacity } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
   ScrollView,
@@ -22,9 +21,9 @@ import {
 import { countryCodes } from '../../../common/src/constants/constants';
 import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
-import ButtonsContainer from '../components/ButtonsContainer';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../components/buttons/SecondaryButton';
+import ButtonsContainer from '../components/ButtonsContainer';
 import { BodyText } from '../components/typography/BodyText';
 import { Title } from '../components/typography/Title';
 import { storePassportData } from '../stores/passportDataProvider';

@@ -1,6 +1,5 @@
 import React from 'react';
 import { Platform } from 'react-native';
-
 import { Anchor, styled } from 'tamagui';
 
 const StyledAnchor = styled(Anchor, {
