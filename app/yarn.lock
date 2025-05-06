@@ -5992,6 +5992,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@types/react-native-sqlite-storage@npm:^6.0.5":
+  version: 6.0.5
+  resolution: "@types/react-native-sqlite-storage@npm:6.0.5"
+  checksum: 10c0/273dc0bc4cf6938ffd5463106c1a208e1459c0fa8e1c01c4dee51c67affee1def15a7210fe118d2676af97a091786379e0e69c3f2f297501af97ee9488168482
+  languageName: node
+  linkType: hard
+
 "@types/react-native@npm:^0.73.0":
   version: 0.73.0
   resolution: "@types/react-native@npm:0.73.0"
@@ -11922,6 +11929,7 @@ __metadata:
     "@types/react": "npm:^18.2.6"
     "@types/react-native": "npm:^0.73.0"
     "@types/react-native-dotenv": "npm:^0.2.0"
+    "@types/react-native-sqlite-storage": "npm:^6.0.5"
     add: "npm:^2.0.6"
     asn1js: "npm:^3.0.5"
     burnt: "npm:^0.12.2"
@@ -11961,6 +11969,7 @@ __metadata:
     react-native-quick-crypto: "npm:^0.7.12"
     react-native-safe-area-context: "npm:^5.2.0"
     react-native-screens: "npm:^4.6.0"
+    react-native-sqlite-storage: "npm:^6.0.1"
     react-native-svg: "npm:^15.11.1"
     react-native-svg-transformer: "npm:^1.5.0"
     socket.io-client: "npm:^4.7.5"
@@ -12692,6 +12701,15 @@ __metadata:
     react: "*"
     react-native: "*"
   checksum: 10c0/ba8208a8789b6521988fbd82615f906c22ca53c9efb8bfe259b8af8290775c74da190ad4a029a4acf9247912902887d71acbfb4debf9cdb30ce5ba935eafe9e6
+  languageName: node
+  linkType: hard
+
+"react-native-sqlite-storage@npm:^6.0.1":
+  version: 6.0.1
+  resolution: "react-native-sqlite-storage@npm:6.0.1"
+  peerDependencies:
+    react-native: ">=0.14.0"
+  checksum: 10c0/631787a64bf6ade75758a23289c138bb1346e0418d75fb013f7a64822560e0f29e1193ef20290c3eb7fbeb6d594b8f49b256895dfc188f7f0023a55f1ba57134
   languageName: node
   linkType: hard
 
