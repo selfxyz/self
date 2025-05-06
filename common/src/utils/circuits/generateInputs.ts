@@ -1,15 +1,16 @@
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
 import {
+  COMMITMENT_TREE_DEPTH,
   MAX_PADDED_ECONTENT_LEN,
   MAX_PADDED_SIGNED_ATTR_LEN,
-  max_dsc_bytes,
   max_csca_bytes,
-  COMMITMENT_TREE_DEPTH,
+  max_dsc_bytes,
 } from '../../constants/constants';
-import { PassportData } from '../types';
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { getCountryLeaf, getNameDobLeaf, getPassportNumberAndNationalityLeaf, getLeafCscaTree, getLeafDscTree, getNameYobLeaf } from '../trees';
-import { getCscaTreeInclusionProof, getDscTreeInclusionProof } from '../trees';
-import { SMT } from '@openpassport/zk-kit-smt';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { getCurrentDateYYMMDD } from '../date';
+import { hash, packBytesAndPoseidon } from '../hash';
+import { formatMrz } from '../passports/format';
 import {
   extractSignatureFromDSC,
   findStartPubKeyIndex,
@@ -20,14 +21,11 @@ import {
   pad,
   padWithZeroes,
 } from '../passports/passport';
-import { hash, packBytesAndPoseidon } from '../hash';
-import { formatMrz } from '../passports/format';
-import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
-import { getCurrentDateYYMMDD } from '../date';
-import { formatCountriesList } from './formatInputs';
-import { generateMerkleProof, generateSMTProof } from '../trees';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
+import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees';
+import { PassportData } from '../types';
+import { formatCountriesList } from './formatInputs';
+import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
 
 export function generateCircuitInputsDSC(
   dscCertificate: string,
@@ -119,7 +117,7 @@ export function generateCircuitInputsRegister(
     MAX_PADDED_SIGNED_ATTR_LEN[passportMetadata.eContentHashFunction]
   );
 
-  const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed); // TODO: WRONG 
+  const dsc_leaf = getLeafDscTree(dscParsed, passportData.csca_parsed); // TODO: WRONG
   const [root, path, siblings, leaf_depth] = getDscTreeInclusionProof(dsc_leaf, serializedDscTree);
   const csca_tree_leaf = getLeafCscaTree(passportData.csca_parsed);
 

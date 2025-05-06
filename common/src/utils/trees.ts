@@ -1,21 +1,19 @@
-import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13, poseidon12 } from 'poseidon-lite';
-import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
-import { stringToAsciiBigIntArray } from './circuits/uuid';
+import { IMT } from '@openpassport/zk-kit-imt';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
+import countries from "i18n-iso-countries";
+import en from "i18n-iso-countries/langs/en.json";
+import { poseidon12, poseidon13, poseidon2, poseidon3, poseidon6 } from 'poseidon-lite';
+import { CSCA_TREE_DEPTH, CSCA_TREE_URL, CSCA_TREE_URL_STAGING, DSC_TREE_DEPTH, DSC_TREE_URL, DSC_TREE_URL_STAGING, IDENTITY_TREE_URL, IDENTITY_TREE_URL_STAGING, max_csca_bytes, max_dsc_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import { EndpointType } from './appType';
 import {
   CertificateData,
 } from './certificate_parsing/dataStructure';
-import { packBytesAndPoseidon } from './hash';
-import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, CSCA_TREE_URL_STAGING, DSC_TREE_DEPTH, DSC_TREE_URL_STAGING, IDENTITY_TREE_URL, IDENTITY_TREE_URL_STAGING, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
-import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
-import { max_dsc_bytes } from '../constants/constants';
-import { IMT } from '@openpassport/zk-kit-imt';
+import { stringToAsciiBigIntArray } from './circuits/uuid';
+import { packBytesAndPoseidon } from './hash';
 import { pad } from './passports/passport';
-import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json";
-import { EndpointType } from './appType';
+import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
 import { DocumentType } from './types';
 countries.registerLocale(en);
 
