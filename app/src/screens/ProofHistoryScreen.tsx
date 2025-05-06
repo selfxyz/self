@@ -7,18 +7,17 @@ import {
   SectionList,
   StyleSheet,
 } from 'react-native';
-import { Card, Image, SelectIcon, Text, View, XStack, YStack } from 'tamagui';
+import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
-import { EndpointType } from '../../../common/src/utils/appType';
 import { BodyText } from '../components/typography/BodyText';
-import { Caption } from '../components/typography/Caption';
-import { useProofHistoryStore } from '../stores/proofHistoryStore';
-import { ProofHistory } from '../stores/proofHistoryStore';
+import {
+  ProofHistory,
+  useProofHistoryStore,
+} from '../stores/proofHistoryStore';
 import {
   black,
   blue100,
   blue600,
-  sky500,
   slate50,
   slate300,
   slate500,

@@ -1,7 +1,6 @@
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
-import React from 'react';
-import { useMemo } from 'react';
-import { ScrollView, StatusBar, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
 import { ProofHistory, ProofStatus } from '../stores/proofHistoryStore';
@@ -13,8 +12,6 @@ import {
   emerald500,
   red500,
   slate100,
-  slate200,
-  slate400,
   slate700,
   white,
   zinc400,
