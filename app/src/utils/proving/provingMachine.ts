@@ -124,6 +124,8 @@ interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
+  fcmToken: string | null;
+  setFcmToken: (token: string) => void;
   init: (circuitType: 'dsc' | 'disclose' | 'register') => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
@@ -240,6 +242,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    fcmToken: null,
+    setFcmToken: (token: string) => {
+      set({ fcmToken: token });
+    },
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -316,6 +322,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       if (!actor) {
         console.error('Cannot start Socket.IO listener: Actor not available.');
         return;
+      }
+
+      try {
+        const { fcmToken } = get();
+        if (fcmToken && receivedUuid) {
+          const { registerDeviceToken } = require('../../utils/notifications/notificationService');
+          registerDeviceToken(receivedUuid, endpointType, fcmToken);
+        }
+      } catch (error) {
+        console.error('Error registering device token:', error);
       }
 
       const url = getWSDbRelayerUrl(endpointType);

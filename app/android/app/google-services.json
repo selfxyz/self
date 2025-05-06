@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "260578412566",
+    "project_id": "selfxyz-app",
+    "storage_bucket": "selfxyz-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:260578412566:android:c52d3f8e947a7a90c78d37",
+        "android_client_info": {
+          "package_name": "com.proofofpassportapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDbMZ52EpHA-5BbMgTQK3OMOVcarGJQ-es"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
