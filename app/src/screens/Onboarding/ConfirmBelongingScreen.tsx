@@ -68,34 +68,32 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   usePreventRemove(true, () => {});
 
   return (
-    <>
-      <ExpandableBottomLayout.Layout backgroundColor={black}>
-        <ExpandableBottomLayout.TopSection backgroundColor={black}>
-          <LottieView
-            autoPlay
-            loop={false}
-            source={successAnimation}
-            style={styles.animation}
-            cacheComposition={true}
-            renderMode="HARDWARE"
-          />
-        </ExpandableBottomLayout.TopSection>
-        <ExpandableBottomLayout.BottomSection
-          gap={20}
-          paddingBottom={20}
-          backgroundColor={white}
-        >
-          <Title textAlign="center">Confirm your identity</Title>
-          <Description textAlign="center" paddingBottom={20}>
-            By continuing, you certify that this passport belongs to you and is
-            not stolen or forged.
-          </Description>
-          <PrimaryButton onPress={onOkPress} disabled={requestingPermission}>
-            {requestingPermission ? 'Please wait...' : 'Confirm'}
-          </PrimaryButton>
-        </ExpandableBottomLayout.BottomSection>
-      </ExpandableBottomLayout.Layout>
-    </>
+    <ExpandableBottomLayout.Layout backgroundColor={black}>
+      <ExpandableBottomLayout.TopSection backgroundColor={black}>
+        <LottieView
+          autoPlay
+          loop={false}
+          source={successAnimation}
+          style={styles.animation}
+          cacheComposition={true}
+          renderMode="HARDWARE"
+        />
+      </ExpandableBottomLayout.TopSection>
+      <ExpandableBottomLayout.BottomSection
+        gap={20}
+        paddingBottom={20}
+        backgroundColor={white}
+      >
+        <Title textAlign="center">Confirm your identity</Title>
+        <Description textAlign="center" paddingBottom={20}>
+          By continuing, you certify that this passport belongs to you and is
+          not stolen or forged.
+        </Description>
+        <PrimaryButton onPress={onOkPress} disabled={requestingPermission}>
+          {requestingPermission ? 'Please wait...' : 'Confirm'}
+        </PrimaryButton>
+      </ExpandableBottomLayout.BottomSection>
+    </ExpandableBottomLayout.Layout>
   );
 };
 

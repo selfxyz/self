@@ -1,6 +1,5 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
-import { EndpointType } from '../../../../common/src/utils/appType';
 
 const API_URL = 'https://api.self.xyz';
 const API_URL_STAGING = 'https://4abf-133-3-201-48.ngrok-free.app';
@@ -75,8 +74,8 @@ export async function getFCMToken(): Promise<string | null> {
 
 export async function registerDeviceToken(
   sessionId: string,
-  endpointType: EndpointType,
-  deviceToken?: string
+  deviceToken?: string,
+  isMockPassport?: boolean
 ): Promise<void> {
   try {
     let token = deviceToken;
@@ -89,8 +88,13 @@ export async function registerDeviceToken(
     }
 
     const cleanedToken = token.trim();
-    const isProduction = endpointType === 'https' || endpointType === 'celo';
-    const baseUrl = isProduction ? API_URL : API_URL_STAGING;
+    console.log("isMockPassport: ", isMockPassport);
+    const isProduction = !isMockPassport;
+    console.log("isProduction: ", isProduction);
+    const baseUrl = isProduction ?
+      API_URL
+      // : API_URL_STAGING;
+      : "https://e856-219-104-171-120.ngrok-free.app";
 
     const deviceTokenRegistration = {
       session_id: sessionId,
@@ -106,6 +110,7 @@ export async function registerDeviceToken(
         )}`,
       );
     }
+    console.log("endpoint: ", baseUrl);
 
     const response = await fetch(`${baseUrl}/register-token`, {
       method: 'POST',
@@ -129,7 +134,7 @@ export async function registerDeviceToken(
 
 export interface RemoteMessage {
   messageId?: string;
-  data?: Record<string, string>;
+  data?: { [key: string]: string | object };
   notification?: {
     title?: string;
     body?: string;

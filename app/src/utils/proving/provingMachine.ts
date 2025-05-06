@@ -324,16 +324,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         return;
       }
 
-      try {
-        const { fcmToken } = get();
-        if (fcmToken && receivedUuid) {
-          const { registerDeviceToken } = require('../../utils/notifications/notificationService');
-          registerDeviceToken(receivedUuid, endpointType, fcmToken);
-        }
-      } catch (error) {
-        console.error('Error registering device token:', error);
-      }
-
       const url = getWSDbRelayerUrl(endpointType);
       let socket: Socket | null = io(url, {
         path: '/',
@@ -553,6 +543,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           passportData,
           useProtocolStore.getState().passport.dsc_tree,
         );
+        console.log('isDscRegistered: ', isDscRegistered);
         if (isDscRegistered) {
           set({ circuitType: 'register' });
         }
@@ -622,21 +613,34 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     startProving: async () => {
       _checkActorInitialized(actor);
-      const { wsConnection, sharedKey, passportData, secret } = get();
+      const { wsConnection, sharedKey, passportData, secret, uuid, fcmToken } = get();
 
       if (get().currentState !== 'ready_to_prove') {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret) {
+      if (!wsConnection || !sharedKey || !passportData || !secret || !uuid) {
         console.error(
-          'Cannot start proving: Missing wsConnection, sharedKey, passportData, or secret.',
+          'Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.',
         );
         actor!.send({ type: 'PROVE_ERROR' });
         return;
       }
 
       try {
+        // Register device token before payload generation
+        if (fcmToken) {
+          try {
+            const { registerDeviceToken } = require('../../utils/notifications/notificationService');
+            console.log("passportData.documentType: ", passportData?.documentType);
+            const isMockPassport = passportData?.documentType === 'mock_passport';
+            await registerDeviceToken(uuid, fcmToken, isMockPassport);
+          } catch (error) {
+            console.error('Error registering device token:', error);
+            // Continue with the proving process even if token registration fails
+          }
+        }
+
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         actor!.send({ type: 'START_PROVING' });
@@ -699,6 +703,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey } = get();
+      console.log("circuitType: ", circuitType);
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;
@@ -713,6 +718,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             ));
           break;
         case 'dsc':
+          console.log("dsc!!!");
           ({ inputs, circuitName, endpointType, endpoint } =
             generateTEEInputsDSC(
               passportData,
