@@ -19,7 +19,8 @@ import {
 } from 'tamagui';
 
 import { countryCodes } from '../../../common/src/constants/constants';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
+import { getSKIPEM } from '../../../common/src/utils/csca';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
 import { PrimaryButton } from '../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../components/buttons/SecondaryButton';
@@ -170,7 +171,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           ];
 
         if (isInOfacList) {
-          mockPassportData = genMockPassportData(
+          mockPassportData = genAndInitMockPassportData(
             hashFunction1,
             hashFunction2,
             signatureAlgorithm,
@@ -183,7 +184,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             'ARCANGEL DE JESUS',
           );
         } else {
-          mockPassportData = genMockPassportData(
+          mockPassportData = genAndInitMockPassportData(
             hashFunction1,
             hashFunction2,
             signatureAlgorithm,
@@ -193,7 +194,8 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
             randomPassportNumber,
           );
         }
-        mockPassportData = initPassportDataParsing(mockPassportData);
+        const skiPem = await getSKIPEM('staging');
+        mockPassportData = initPassportDataParsing(mockPassportData, skiPem);
         await storePassportData(mockPassportData);
         resolve(null);
       }, 0),

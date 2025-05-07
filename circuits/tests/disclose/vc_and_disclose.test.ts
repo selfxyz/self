@@ -1,25 +1,25 @@
-import { describe } from 'mocha';
-import { assert, expect } from 'chai';
-import path from 'path';
-import { wasm as wasm_tester } from 'circom_tester';
-import {
-  attributeToPosition,
-  PASSPORT_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
-import { poseidon1, poseidon2 } from 'poseidon-lite';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
-import crypto from 'crypto';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { SMT } from '@openpassport/zk-kit-smt';
+import { assert, expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
+import crypto from 'crypto';
+import { describe } from 'mocha';
+import path from 'path';
+import { poseidon1, poseidon2 } from 'poseidon-lite';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 import {
-  formatAndUnpackReveal,
+  attributeToPosition,
+  PASSPORT_ATTESTATION_ID,
+} from '../../../common/src/constants/constants';
+import {
   formatAndUnpackForbiddenCountriesList,
+  formatAndUnpackReveal,
   getAttributeFromUnpackedReveal,
 } from '../../../common/src/utils/circuits/formatOutputs';
+import { generateCircuitInputsVCandDisclose } from '../../../common/src/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
 import { hashEndpointWithScope } from '../../../common/src/utils/scope';
 
@@ -28,7 +28,7 @@ describe('Disclose', function () {
   let inputs: any;
   let circuit: any;
   let w: any;
-  const passportData = genMockPassportData(
+  const passportData = genAndInitMockPassportData(
     'sha256',
     'sha256',
     'rsa_sha256_65537_2048',
@@ -247,7 +247,7 @@ describe('Disclose', function () {
       const testCases = [
         {
           desc: 'No details match',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -262,7 +262,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only passport number matches',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -277,7 +277,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only nationality matches',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -292,7 +292,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only passport number and nationality matches',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -307,7 +307,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Name and DOB matches (so YOB matches too)',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -322,7 +322,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'Only name and YOB match',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',
@@ -337,7 +337,7 @@ describe('Disclose', function () {
         },
         {
           desc: 'All details match',
-          data: genMockPassportData(
+          data: genAndInitMockPassportData(
             'sha256',
             'sha256',
             'rsa_sha256_65537_2048',

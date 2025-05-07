@@ -1,7 +1,6 @@
 import { CheckSquare2, Info, Wallet } from '@tamagui/lucide-icons';
-import React from 'react';
-import { useMemo } from 'react';
-import { ScrollView, StatusBar, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
 import { ProofHistory, ProofStatus } from '../stores/proofHistoryStore';
@@ -13,8 +12,6 @@ import {
   emerald500,
   red500,
   slate100,
-  slate200,
-  slate400,
   slate700,
   white,
   zinc400,
@@ -51,37 +48,37 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
     const result: string[] = [];
 
     Object.entries(parsedDisclosures).forEach(([key, value]) => {
-      if (key == DisclosureType.MINIMUM_AGE && value) {
+      if (key === DisclosureType.MINIMUM_AGE && value) {
         result.push(`Age is over ${value}`);
       }
-      if (key == DisclosureType.NAME && value) {
+      if (key === DisclosureType.NAME && value) {
         result.push(`Disclosed Name to ${data.appName}`);
       }
-      if (key == DisclosureType.OFAC && value) {
+      if (key === DisclosureType.OFAC && value) {
         result.push(`Not on the OFAC list`);
       }
-      if (key == DisclosureType.AGE && value) {
+      if (key === DisclosureType.AGE && value) {
         result.push(`Disclosed Age to ${data.appName}`);
       }
-      if (key == DisclosureType.ISSUING_STATE && value) {
+      if (key === DisclosureType.ISSUING_STATE && value) {
         result.push(`Disclosed Issuing State to ${data.appName}`);
       }
-      if (key == DisclosureType.PASSPORT_NUMBER && value) {
+      if (key === DisclosureType.PASSPORT_NUMBER && value) {
         result.push(`Disclosed Passport Number to ${data.appName}`);
       }
-      if (key == DisclosureType.NATIONALITY && value) {
+      if (key === DisclosureType.NATIONALITY && value) {
         result.push(`Disclosed Nationality to ${data.appName}`);
       }
-      if (key == DisclosureType.DATE_OF_BIRTH && value) {
+      if (key === DisclosureType.DATE_OF_BIRTH && value) {
         result.push(`Disclosed Date of Birth to ${data.appName}`);
       }
-      if (key == DisclosureType.GENDER && value) {
+      if (key === DisclosureType.GENDER && value) {
         result.push(`Disclosed Gender to ${data.appName}`);
       }
-      if (key == DisclosureType.EXPIRY_DATE && value) {
+      if (key === DisclosureType.EXPIRY_DATE && value) {
         result.push(`Disclosed Expiry Date to ${data.appName}`);
       }
-      if (key == DisclosureType.EXCLUDED_COUNTRIES) {
+      if (key === DisclosureType.EXCLUDED_COUNTRIES) {
         if (value && Array.isArray(value) && value.length > 0) {
           result.push(`Disclosed - Not from excluded countries`);
         }
@@ -101,9 +98,9 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
   }, [data.timestamp]);
 
   const proofStatus = useMemo(() => {
-    if (data.status == 'success') {
+    if (data.status === 'success') {
       return 'PROOF GRANTED';
-    } else if (data.status == ProofStatus.PENDING) {
+    } else if (data.status === ProofStatus.PENDING) {
       return 'PROOF PENDING';
     } else {
       return 'PROOF FAILED';
@@ -131,8 +128,8 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
   const isEthereumAddress = useMemo(() => {
     return (
       /^0x[a-fA-F0-9]+$/.test(data.userId) &&
-      (data.endpointType == 'staging_celo' || data.endpointType == 'celo') &&
-      data.userIdType == 'hex'
+      (data.endpointType === 'staging_celo' || data.endpointType === 'celo') &&
+      data.userIdType === 'hex'
     );
   }, [data.userId, data.endpointType, data.userIdType]);
 
@@ -266,7 +263,9 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                   >
                     <YStack
                       backgroundColor={
-                        data.status == ProofStatus.SUCCESS ? emerald500 : red500
+                        data.status === ProofStatus.SUCCESS
+                          ? emerald500
+                          : red500
                       }
                       width={8}
                       height={8}

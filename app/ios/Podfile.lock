@@ -2158,22 +2158,22 @@ SPEC CHECKSUMS:
   React-idlecallbacksnativemodule: fa07e0af59ec6c950b2156b14c73c7fce4d0a663
   React-ImageManager: 17772f78d93539a1a10901b5f537031772fa930c
   React-jsc: 4d3352be620f3fe2272238298aaccc9323b01824
-  React-jserrorhandler: 62af5111f6444688182a5850d4b584cbc0c5d6a8
-  React-jsi: 490deef195fd3f01d57dc89dda8233a84bd54b83
-  React-jsiexecutor: 13bcb5e11822b2a6b69dbb175a24a39e24a02312
-  React-jsinspector: 6961a23d4c11b72f3cbeb5083b0b18cc22bc48a1
-  React-jsitracing: dab78a74a581f63320604c9de4ab9039209e0501
-  React-logger: d79b704bf215af194f5213a6b7deec50ba8e6a9b
-  React-Mapbuffer: 42c779748af341935a63ad8831723b8cb1e97830
-  React-microtasksnativemodule: 744f7e26200ea3976fef8453101cefcc08756008
-  react-native-biometrics: 352e5a794bfffc46a0c86725ea7dc62deb085bdc
-  react-native-cloud-storage: 4c68bc6025c3624164461e15231efb28576f78a8
-  react-native-get-random-values: 21325b2244dfa6b58878f51f9aa42821e7ba3d06
-  react-native-netinfo: f0a9899081c185db1de5bb2fdc1c88c202a059ac
-  react-native-nfc-manager: 5213321cf6c18d879c8092c0bf56806b771ec5ac
-  react-native-quick-crypto: 07fd0ba954a08d8c6b4cd1ff8b1fd91df2b650d6
-  react-native-safe-area-context: 849d7df29ecb2a7155c769c0b76849ba952c2aa3
-  react-native-sqlite-storage: f6d515e1c446d1e6d026aa5352908a25d4de3261
+  React-jserrorhandler: 552c5fcd2ee64307c568734b965ea082e1be25cf
+  React-jsi: b187c826e5bda25afb36ede4c54c146cd50c9d6c
+  React-jsiexecutor: ac8478b6c5f53bcf411a66bf4461e923dafeb0bd
+  React-jsinspector: a82cfe0794b831d6e36cf0c8c07da56a0aaa1282
+  React-jsitracing: e512a1023a25de831b51be1c773caa6036125a44
+  React-logger: 80d87daf2f98bf95ab668b79062c1e0c3f0c2f8a
+  React-Mapbuffer: b2642edd9be75d51ead8cda109c986665eae09cf
+  React-microtasksnativemodule: 7ebf131e1792a668004d2719a36da0ff8d19c43c
+  react-native-biometrics: 43ed5b828646a7862dbc7945556446be00798e7d
+  react-native-cloud-storage: 74d1f1456d714e0fca6d10c7ab6fe9a52ba203b6
+  react-native-get-random-values: d16467cf726c618e9c7a8c3c39c31faa2244bbba
+  react-native-netinfo: cec9c4e86083cb5b6aba0e0711f563e2fbbff187
+  react-native-nfc-manager: a280ef94cd4871a471b052f0dc70381cf1223049
+  react-native-quick-crypto: a7cc5f870f270488fee9047b56e481de85c32e33
+  react-native-safe-area-context: 3e33e7c43c8b74dba436a5a32651cb8d7064c740
+  react-native-sqlite-storage: 0c84826214baaa498796c7e46a5ccc9a82e114ed
   React-nativeconfig: 31072ab0146e643594f6959c7f970a04b6c9ddd0
   React-NativeModulesApple: 5df767d9a2197ac25f4d8dd2d4ae1af3624022e2
   React-perflogger: 59e1a3182dca2cee7b9f1f7aab204018d46d1914

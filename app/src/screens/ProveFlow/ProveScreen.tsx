@@ -19,7 +19,7 @@ import { Image, Text, View, YStack } from 'tamagui';
 import { SelfAppDisclosureConfig } from '../../../../common/src/utils/appType';
 import { formatEndpoint } from '../../../../common/src/utils/scope';
 import miscAnimation from '../../assets/animations/loading/misc.json';
-import { HeldPrimaryButton } from '../../components/buttons/PrimaryButtonLongHold';
+import { HeldPrimaryButtonProveScreen } from '../../components/buttons/HeldPrimaryButtonProveScreen';
 import Disclosures from '../../components/Disclosures';
 import { BodyText } from '../../components/typography/BodyText';
 import { Caption } from '../../components/typography/Caption';
@@ -48,7 +48,11 @@ const ProveScreen: React.FC = () => {
     () => scrollViewContentHeight <= scrollViewHeight,
     [scrollViewContentHeight, scrollViewHeight],
   );
+
   const provingStore = useProvingStore();
+  const currentState = useProvingStore(state => state.currentState);
+  const isReadyToProve = currentState === 'ready_to_prove';
+
   const { addProofHistory } = useProofHistoryStore();
 
   useEffect(() => {
@@ -129,7 +133,7 @@ const ProveScreen: React.FC = () => {
     buttonTap();
     setTimeout(() => {
       navigate('ProofRequestStatusScreen');
-    }, 200);
+    }, 100);
   }
 
   const handleScroll = useCallback(
@@ -227,14 +231,12 @@ const ProveScreen: React.FC = () => {
             </Caption>
           </View>
         </ScrollView>
-        <HeldPrimaryButton
-          onPress={onVerify}
-          disabled={!selectedApp?.sessionId || !hasScrolledToBottom}
-        >
-          {hasScrolledToBottom
-            ? 'Hold To Verify'
-            : 'Please read all disclosures'}
-        </HeldPrimaryButton>
+        <HeldPrimaryButtonProveScreen
+          onVerify={onVerify}
+          selectedAppSessionId={selectedApp?.sessionId}
+          hasScrolledToBottom={hasScrolledToBottom}
+          isReadyToProve={isReadyToProve}
+        />
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>
   );

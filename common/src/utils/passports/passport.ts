@@ -1,5 +1,11 @@
+import * as forge from 'node-forge';
 import { poseidon5 } from 'poseidon-lite';
-import { hashAlgos, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
+import {
+  hashAlgos, k_csca, k_dsc, k_dsc_3072, k_dsc_4096, k_dsc_ecdsa, MAX_PUBKEY_DSC_BYTES, n_csca, n_dsc,
+  n_dsc_3072,
+  n_dsc_4096, n_dsc_ecdsa
+} from '../../constants/constants';
+import { bytesToBigDecimal, hexToDecimal, splitToWords } from '../bytes';
 import {
   CertificateData,
   PublicKeyDetailsECDSA,
@@ -9,35 +15,18 @@ import {
   getCertificateFromPem,
   parseCertificateSimple,
 } from '../certificate_parsing/parseCertificateSimple';
-import { parsePassportData } from './passport_parsing/parsePassportData';
-import { shaPad } from '../shaPad';
-import { sha384_512Pad } from '../shaPad';
-import { PassportData, SignatureAlgorithm } from '../types';
-import { customHasher, hash } from '../hash';
-import { bytesToBigDecimal, hexToDecimal } from '../bytes';
-import { packBytesAndPoseidon } from '../hash';
-import * as forge from 'node-forge';
-import {
-  n_dsc,
-  n_dsc_3072,
-  n_dsc_4096,
-  k_dsc,
-  k_dsc_4096,
-  n_dsc_ecdsa,
-  k_dsc_ecdsa,
-  n_csca,
-  k_csca,
-  k_dsc_3072,
-} from '../../constants/constants';
-import { splitToWords } from '../bytes';
-import { formatMrz } from './format';
-import { findStartIndex, findStartIndexEC } from '../csca';
 import { formatInput } from '../circuits/generateInputs';
+import { findStartIndex, findStartIndexEC } from '../csca';
+import { hash, packBytesAndPoseidon } from '../hash';
+import { sha384_512Pad, shaPad } from '../shaPad';
 import { getLeafDscTree } from '../trees';
+import { PassportData, SignatureAlgorithm } from '../types';
+import { formatMrz } from './format';
+import { parsePassportData } from './passport_parsing/parsePassportData';
 
 /// @dev will bruteforce passport and dsc signature
-export function initPassportDataParsing(passportData: PassportData) {
-  const passportMetadata = parsePassportData(passportData);
+export function initPassportDataParsing(passportData: PassportData, skiPem: any = null) {
+  const passportMetadata = parsePassportData(passportData, skiPem);
   passportData.passportMetadata = passportMetadata;
   const dscParsed = parseCertificateSimple(passportData.dsc);
   passportData.dsc_parsed = dscParsed;
@@ -183,7 +172,7 @@ export function formatCertificatePubKeyDSC(
 export function extractSignatureFromDSC(dscCertificate: string) {
   const cert = getCertificateFromPem(dscCertificate);
   const dscSignature = cert.signatureValue.valueBlock.valueHexView;
-  return Array.from(forge.util.createBuffer(dscSignature).getBytes(), (char) => char.charCodeAt(0));
+  return Array.from(dscSignature);
 }
 
 export function formatSignatureDSCCircuit(

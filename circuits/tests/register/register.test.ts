@@ -1,21 +1,21 @@
+import { expect } from 'chai';
+import { wasm as wasm_tester } from 'circom_tester';
 import dotenv from 'dotenv';
 import { describe } from 'mocha';
-import { expect } from 'chai';
 import path from 'path';
-import { wasm as wasm_tester } from 'circom_tester';
-import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { SignatureAlgorithm } from '../../../common/src/utils/types';
+import { poseidon6 } from 'poseidon-lite';
+import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
+import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
 import { getCircuitNameFromPassportData } from '../../../common/src/utils/circuits/circuitsName';
-import { sigAlgs, fullSigAlgs } from './test_cases';
+import { generateCircuitInputsRegister } from '../../../common/src/utils/circuits/generateInputs';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 import {
   generateCommitment,
   generateNullifier,
 } from '../../../common/src/utils/passports/passport';
-import { poseidon6 } from 'poseidon-lite';
-import { PASSPORT_ATTESTATION_ID } from '../../../common/src/constants/constants';
-import { parseCertificateSimple } from '../../../common/src/utils/certificate_parsing/parseCertificateSimple';
-import serialized_dsc_tree from '../../../common/pubkeys/serialized_dsc_tree.json';
+import { SignatureAlgorithm } from '../../../common/src/utils/types';
+import { fullSigAlgs, sigAlgs } from './test_cases';
 dotenv.config();
 
 const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
@@ -36,7 +36,7 @@ testSuite.forEach(
       this.timeout(0);
       let circuit: any;
 
-      const passportData = genMockPassportData(
+      const passportData = genAndInitMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
         `${sigAlg}_${hashFunction}_${domainParameter}_${keyLength}${saltLength ? `_${saltLength}` : ''}` as SignatureAlgorithm,

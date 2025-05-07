@@ -7,7 +7,6 @@ import {
   max_csca_bytes,
   max_dsc_bytes,
 } from '../../constants/constants';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
 import { getCurrentDateYYMMDD } from '../date';
 import { hash, packBytesAndPoseidon } from '../hash';
 import { formatMrz } from '../passports/format';
@@ -21,52 +20,46 @@ import {
   pad,
   padWithZeroes,
 } from '../passports/passport';
-import { parseDscCertificateData } from '../passports/passport_parsing/parseDscCertificateData';
 import { generateMerkleProof, generateSMTProof, getCountryLeaf, getCscaTreeInclusionProof, getDscTreeInclusionProof, getLeafCscaTree, getLeafDscTree, getNameDobLeaf, getNameYobLeaf, getPassportNumberAndNationalityLeaf } from '../trees';
 import { PassportData } from '../types';
 import { formatCountriesList } from './formatInputs';
 import { castFromUUID, stringToAsciiBigIntArray } from './uuid';
 
 export function generateCircuitInputsDSC(
-  dscCertificate: string,
+  passportData: PassportData,
   serializedCscaTree: string[][],
 ) {
-  const dscParsed = parseCertificateSimple(dscCertificate);
-  const dscMetadata = parseDscCertificateData(dscParsed);
-  const cscaParsed = parseCertificateSimple(dscMetadata.csca);
-
+  const passportMetadata = passportData.passportMetadata;
+  const cscaParsed = passportData.csca_parsed;
+  const dscParsed = passportData.dsc_parsed;
+  const raw_dsc = passportData.dsc;
   // CSCA is padded with 0s to max_csca_bytes
   const cscaTbsBytesPadded = padWithZeroes(cscaParsed.tbsBytes, max_csca_bytes);
   const dscTbsBytes = dscParsed.tbsBytes;
 
   // DSC is padded using sha padding because it will be hashed in the circuit
-  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(dscMetadata.cscaHashAlgorithm)(
+  const [dscTbsBytesPadded, dscTbsBytesLen] = pad(passportMetadata.cscaHashFunction)(
     dscTbsBytes,
     max_dsc_bytes
   );
-
   const leaf = getLeafCscaTree(cscaParsed);
   const [root, path, siblings] = getCscaTreeInclusionProof(leaf, serializedCscaTree);
-
   // Parse CSCA certificate and get its public key
   const csca_pubKey_formatted = getCertificatePubKey(
     cscaParsed,
-    dscMetadata.cscaSignatureAlgorithm,
-    dscMetadata.cscaHashAlgorithm
+    passportMetadata.cscaSignatureAlgorithm,
+    passportMetadata.cscaHashFunction
   );
 
-  const signatureRaw = extractSignatureFromDSC(dscCertificate);
+  const signatureRaw = extractSignatureFromDSC(raw_dsc);
   const signature = formatSignatureDSCCircuit(
-    dscMetadata.cscaSignatureAlgorithm,
-    dscMetadata.cscaHashAlgorithm,
+    passportMetadata.cscaSignatureAlgorithm,
+    passportMetadata.cscaHashFunction,
     cscaParsed,
     signatureRaw
   );
-
   // Get start index of CSCA pubkey based on algorithm
-  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, dscMetadata.cscaSignatureAlgorithm);
-
-
+  const [startIndex, keyLength] = findStartPubKeyIndex(cscaParsed, cscaTbsBytesPadded, passportMetadata.cscaSignatureAlgorithm);
   return {
     raw_csca: cscaTbsBytesPadded.map(x => x.toString()),
     raw_csca_actual_length: BigInt(cscaParsed.tbsBytes.length).toString(),

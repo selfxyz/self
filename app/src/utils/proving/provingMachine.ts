@@ -126,7 +126,10 @@ interface ProvingState {
   endpointType: EndpointType | null;
   fcmToken: string | null;
   setFcmToken: (token: string) => void;
-  init: (circuitType: 'dsc' | 'disclose' | 'register') => Promise<void>;
+  init: (
+    circuitType: 'dsc' | 'disclose' | 'register',
+    userConfirmed?: boolean,
+  ) => Promise<void>;
   startFetchingData: () => Promise<void>;
   validatingDocument: () => Promise<void>;
   initTeeConnection: () => Promise<boolean>;
@@ -438,7 +441,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       }
     },
 
-    init: async (circuitType: 'dsc' | 'disclose' | 'register') => {
+    init: async (
+      circuitType: 'dsc' | 'disclose' | 'register',
+      userConfirmed: boolean = false,
+    ) => {
       get()._closeConnections();
 
       if (actor) {
@@ -456,7 +462,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
         wsConnection: null,
         socketConnection: null,
         uuid: null,
-        userConfirmed: false,
+        userConfirmed: userConfirmed,
         passportData: null,
         secret: null,
         circuitType,
@@ -661,7 +667,9 @@ export const useProvingStore = create<ProvingState>((set, get) => {
       _checkActorInitialized(actor);
       const { circuitType } = get();
       if (circuitType === 'dsc') {
-        get().init('register');
+        setTimeout(() => {
+          get().init('register', true);
+        }, 1500);
       } else if (circuitType === 'register') {
         actor!.send({ type: 'COMPLETED' });
       } else if (circuitType === 'disclose') {
@@ -722,7 +730,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           ({ inputs, circuitName, endpointType, endpoint } =
             generateTEEInputsDSC(
               passportData,
-              protocolStore.passport.csca_tree,
+              protocolStore.passport.csca_tree as string[][],
             ));
           break;
         case 'disclose':

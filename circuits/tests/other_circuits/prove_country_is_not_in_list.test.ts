@@ -1,12 +1,11 @@
 import { expect } from 'chai';
-import { X509Certificate } from 'crypto';
-import path from 'path';
 import { wasm as wasm_tester } from 'circom_tester';
-import { genMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { formatInput } from '../../../common/src/utils/circuits/generateInputs';
-import { formatMrz } from '../../../common/src/utils/passports/format';
+import path from 'path';
 import { formatCountriesList } from '../../../common/src/utils/circuits/formatInputs';
 import { formatAndUnpackForbiddenCountriesList } from '../../../common/src/utils/circuits/formatOutputs';
+import { formatInput } from '../../../common/src/utils/circuits/generateInputs';
+import { formatMrz } from '../../../common/src/utils/passports/format';
+import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
 
 describe('ProveCountryIsNotInList', function () {
   this.timeout(0);
@@ -27,7 +26,7 @@ describe('ProveCountryIsNotInList', function () {
   });
 
   describe('ProveCountryIsNotInList', async () => {
-    const passportData = genMockPassportData(
+    const passportData = genAndInitMockPassportData(
       'sha256',
       'sha256',
       'rsa_sha256_65537_2048',

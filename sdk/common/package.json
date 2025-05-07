@@ -1,0 +1,17 @@
+{
+  "name": "@openpassport/common",
+  "version": "0.0.5",
+  "packageManager": "yarn@4.5.0",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/sdk/common/index.js",
+  "types": "dist/sdk/common/index.d.ts",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "build:ts": "tsc -b",
+    "copy-certs": "mkdir -p dist && cp -R ../../common/src/mock_certificates ./dist/",
+    "build": "yarn clean && yarn build:ts && yarn copy-certs",
+    "prepublishOnly": "yarn build"
+  }
+}

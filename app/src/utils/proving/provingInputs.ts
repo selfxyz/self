@@ -40,7 +40,7 @@ export function generateTEEInputsDSC(
   passportData: PassportData,
   cscaTree: string[][],
 ) {
-  const inputs = generateCircuitInputsDSC(passportData.dsc, cscaTree);
+  const inputs = generateCircuitInputsDSC(passportData, cscaTree);
   const circuitName = getCircuitNameFromPassportData(passportData, 'dsc');
   const endpointType =
     passportData.documentType && passportData.documentType !== 'passport'
@@ -78,7 +78,7 @@ export function generateTEEInputsDisclose(
 
   const { passportNoAndNationalitySMT, nameAndDobSMT, nameAndYobSMT } =
     getOfacSMTs();
-  const serialized_tree = useProtocolStore.getState().passport.commitment_tree; //await getCommitmentTree(passportData.documentType);
+  const serialized_tree = useProtocolStore.getState().passport.commitment_tree;
   const tree = LeanIMT.import((a, b) => poseidon2([a, b]), serialized_tree);
 
   const inputs = generateCircuitInputsVCandDisclose(

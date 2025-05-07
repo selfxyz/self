@@ -45,8 +45,10 @@ const SuccessScreen: React.FC = () => {
 
   function onOkPress() {
     buttonTap();
-    cleanSelfApp();
     goHome();
+    setTimeout(() => {
+      cleanSelfApp();
+    }, 2000); // Wait 2 seconds to user coming back to the home screen. If we don't wait the appname will change and user will see it.
   }
 
   useEffect(() => {

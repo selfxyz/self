@@ -1,6 +1,6 @@
 import { useNavigation } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import { StyleSheet } from 'react-native';
 
 import { PassportData } from '../../../common/src/utils/types';
@@ -17,60 +17,82 @@ const SplashScreen: React.FC = ({}) => {
   const navigation = useNavigation();
   const { checkBiometricsAvailable } = useAuth();
   const { setBiometricsAvailable } = useSettingStore();
+  const [isAnimationFinished, setIsAnimationFinished] = React.useState(false);
+  const [nextScreen, setNextScreen] = React.useState<string | null>(null);
+  const dataLoadInitiatedRef = useRef(false);
 
   useEffect(() => {
-    checkBiometricsAvailable()
-      .then(setBiometricsAvailable)
-      .catch(err => {
-        console.warn('Error checking biometrics availability', err);
-        navigation.navigate('Launch');
-        throw new Error(`Error checking biometrics availability: ${err}`);
-      });
-  }, [navigation]);
+    if (!dataLoadInitiatedRef.current) {
+      dataLoadInitiatedRef.current = true;
+      console.log('Starting data loading and validation...');
+
+      checkBiometricsAvailable()
+        .then(setBiometricsAvailable)
+        .catch(err => {
+          console.warn('Error checking biometrics availability', err);
+        });
+
+      const loadDataAndDetermineNextScreen = async () => {
+        try {
+          const passportDataAndSecret = await loadPassportDataAndSecret();
+
+          if (!passportDataAndSecret) {
+            setNextScreen('Launch');
+            return;
+          }
+
+          const { passportData, secret } = JSON.parse(passportDataAndSecret);
+          if (!isPassportDataValid(passportData)) {
+            setNextScreen('Launch');
+            return;
+          }
+          const environment =
+            (passportData as PassportData).documentType &&
+            (passportData as PassportData).documentType !== 'passport'
+              ? 'stg'
+              : 'prod';
+          await useProtocolStore.getState().passport.fetch_all(environment);
+          const isRegistered = await isUserRegistered(passportData, secret);
+          console.log('User is registered:', isRegistered);
+          if (isRegistered) {
+            console.log(
+              'Passport is registered already. Setting next screen to Home',
+            );
+            setNextScreen('Home');
+            return;
+          }
+          // Currently, we dont check isPassportNullified(passportData);
+          // This could lead to AccountRecoveryChoice just like in LoadingScreen
+          // But it looks better right now to keep the LaunchScreen flow
+          // In case user wants to try with another passport.
+          // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
+
+          // Rest of the time, keep the LaunchScreen flow
+
+          setNextScreen('Launch');
+        } catch (error) {
+          console.error(`Error in SplashScreen data loading: ${error}`);
+          setNextScreen('Launch');
+        }
+      };
+
+      loadDataAndDetermineNextScreen();
+    }
+  }, []);
 
   const handleAnimationFinish = useCallback(() => {
-    try {
-      setTimeout(async () => {
-        impactLight();
-        const passportDataAndSecret = await loadPassportDataAndSecret();
+    impactLight();
+    setIsAnimationFinished(true);
+  }, []);
 
-        if (!passportDataAndSecret) {
-          navigation.navigate('Launch');
-          return;
-        }
-
-        const { passportData, secret } = JSON.parse(passportDataAndSecret);
-        if (!isPassportDataValid(passportData)) {
-          navigation.navigate('Launch');
-          return;
-        }
-        const environment =
-          (passportData as PassportData).documentType &&
-          (passportData as PassportData).documentType !== 'passport'
-            ? 'stg'
-            : 'prod';
-        await useProtocolStore.getState().passport.fetch_all(environment);
-        const isRegistered = await isUserRegistered(passportData, secret);
-        console.log('User is registered:', isRegistered);
-        if (isRegistered) {
-          console.log('Passport is registered already. Skipping to HomeScreen');
-          navigation.navigate('Home');
-          return;
-        }
-        // Currently, we dont check isPassportNullified(passportData);
-        // This could lead to AccountRecoveryChoice just like in LoadingScreen
-        // But it looks better right now to keep the LaunchScreen flow
-        // In case user wants to try with another passport.
-        // Long term, we could also show a modal instead that prompts the user to recover or scan a new passport.
-
-        // Rest of the time, keep the LaunchScreen flow
-        navigation.navigate('Launch');
-      }, 1000);
-    } catch (error) {
-      navigation.navigate('Launch');
-      throw new Error(`Error in SplashScreen: ${error}`);
+  useEffect(() => {
+    if (isAnimationFinished && nextScreen) {
+      console.log(`Navigating to ${nextScreen}`);
+      requestAnimationFrame(() => {
+        navigation.navigate(nextScreen as any);
+      });
     }
-  }, [navigation]);
+  }, [isAnimationFinished, nextScreen, navigation]);
 
   return (
     <LottieView

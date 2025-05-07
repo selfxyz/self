@@ -19,7 +19,7 @@ import {
   YStack,
 } from 'tamagui';
 
-import { genMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
+import { genAndInitMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
 import { RootStackParamList } from '../../Navigation';
 import {
   unsafe_clearSecrets,
@@ -160,7 +160,7 @@ const DevSettingsScreen: React.FC<DevSettingsScreenProps> = ({}) => {
   }
 
   function handleGenerateMockPassportData() {
-    const passportData = genMockPassportData(
+    const passportData = genAndInitMockPassportData(
       'sha256',
       'sha256',
       'rsa_sha256_65537_2048',

@@ -10,7 +10,6 @@
 
   // ESLint Configuration
   "eslint.run": "onType",
-  "eslint.alwaysShowStatus": true,
   "eslint.format.enable": true,
   "eslint.lintTask.enable": true,
   "eslint.quiet": false,
@@ -30,9 +29,7 @@
   // Auto-fix Actions
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": "always",
-    "source.organizeImports": "always"
   },
-  "editor.codeActionsOnSave.mode": "all",
 
   // TypeScript Specific Rules
   "typescript.format.enable": false,  // Disable VS Code's built-in formatter for TypeScript

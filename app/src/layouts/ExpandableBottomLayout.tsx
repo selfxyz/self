@@ -14,7 +14,7 @@ import { black, white } from '../utils/colors';
 // Get the current font scale factor
 const fontScale = PixelRatio.getFontScale();
 // fontScale > 1 means the user has increased text size in accessibility settings
-const isLargerTextEnabled = fontScale > 1;
+const isLargerTextEnabled = fontScale > 1.3;
 
 interface ExpandableBottomLayoutProps extends ViewProps {
   children: React.ReactNode;
