@@ -1,5 +1,5 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform } from 'react-native';
+import { Platform, PermissionsAndroid } from 'react-native';
 
 const API_URL = 'https://api.self.xyz';
 const API_URL_STAGING = "https://e856-219-104-171-120.ngrok-free.app";
@@ -39,6 +39,18 @@ export const getStateMessage = (state: string): string => {
 
 export async function requestNotificationPermission(): Promise<boolean> {
   try {
+    if (Platform.OS === 'android') {
+      if (Platform.Version >= 33) {
+        const permission = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+        );
+        if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
+          console.log('Notification permission denied');
+          return false;
+        }
+      }
+    }
+
     const authStatus = await messaging().requestPermission();
     const enabled =
       authStatus === messaging.AuthorizationStatus.AUTHORIZED ||

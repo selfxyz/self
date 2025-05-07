@@ -44,6 +44,9 @@ allprojects {
         }
         maven { url 'https://jitpack.io' }
         jcenter()
+        maven {
+            url 'https://google.bintray.com/google-services'
+        }
     }
     configurations.configureEach {
         resolutionStrategy.dependencySubstitution {
@@ -51,6 +54,11 @@ allprojects {
             substitute module('io.fotoapparat:fotoapparat') using module('com.github.RedApparat:Fotoapparat:2.7.0')
         }
         resolutionStrategy.force 'com.google.guava:listenablefuture:9999.0-empty-to-avoid-conflict-with-guava'
+    }
+    configurations.all {
+        resolutionStrategy {
+            force 'com.google.firebase:firebase-iid:21.1.0'
+        }
     }
 }
 
