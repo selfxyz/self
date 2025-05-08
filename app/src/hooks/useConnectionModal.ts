@@ -21,20 +21,26 @@ const connectionModalParams = {
 } as const;
 
 export default function useConnectionModal() {
-  const { isConnected } = useNetInfo();
+  const { isConnected, isInternetReachable } = useNetInfo();
   const { showModal, dismissModal, visible } = useModal(connectionModalParams);
+  const hasConnection = isInternetReachable === true && isConnected === true;
 
   useEffect(() => {
-    if (!navigationRef.isReady()) {
-      return;
-    }
+    const timeoutId = setTimeout(() => {
+      if (!navigationRef.isReady()) {
+        return;
+      }
 
-    if (isConnected === false && !visible) {
-      showModal();
-    } else if (visible && isConnected !== false) {
-      dismissModal();
-    }
-  }, [isConnected, dismissModal, visible, navigationRef.isReady()]);
+      if (!hasConnection && !visible) {
+        showModal();
+      } else if (visible && hasConnection) {
+        dismissModal();
+      }
+      // Add a small delay to allow app initialization
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [hasConnection, dismissModal, visible, navigationRef.isReady()]);
 
   return {
     visible,
