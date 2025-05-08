@@ -1,8 +1,8 @@
 import messaging from '@react-native-firebase/messaging';
-import { Platform, PermissionsAndroid } from 'react-native';
+import { PermissionsAndroid, Platform } from 'react-native';
 
 const API_URL = 'https://notification.self.xyz';
-const API_URL_STAGING = "https://notification.staging.self.xyz";
+const API_URL_STAGING = 'https://notification.staging.self.xyz';
 
 export const getStateMessage = (state: string): string => {
   switch (state) {
@@ -42,7 +42,7 @@ export async function requestNotificationPermission(): Promise<boolean> {
     if (Platform.OS === 'android') {
       if (Platform.Version >= 33) {
         const permission = await PermissionsAndroid.request(
-          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS
+          PermissionsAndroid.PERMISSIONS.POST_NOTIFICATIONS,
         );
         if (permission !== PermissionsAndroid.RESULTS.GRANTED) {
           console.log('Notification permission denied');
@@ -87,7 +87,7 @@ export async function getFCMToken(): Promise<string | null> {
 export async function registerDeviceToken(
   sessionId: string,
   deviceToken?: string,
-  isMockPassport?: boolean
+  isMockPassport?: boolean,
 ): Promise<void> {
   try {
     let token = deviceToken;
@@ -100,9 +100,7 @@ export async function registerDeviceToken(
     }
 
     const cleanedToken = token.trim();
-    const baseUrl = isMockPassport ?
-      API_URL_STAGING
-      : API_URL;
+    const baseUrl = isMockPassport ? API_URL_STAGING : API_URL;
 
     const deviceTokenRegistration = {
       session_id: sessionId,
@@ -130,9 +128,16 @@ export async function registerDeviceToken(
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Failed to register device token:', response.status, errorText);
+      console.error(
+        'Failed to register device token:',
+        response.status,
+        errorText,
+      );
     } else {
-      console.log('Device token registered successfully with session_id:', sessionId);
+      console.log(
+        'Device token registered successfully with session_id:',
+        sessionId,
+      );
     }
   } catch (error) {
     console.error('Error registering device token:', error);
@@ -150,13 +155,17 @@ export interface RemoteMessage {
 }
 
 export function setupNotifications(): () => void {
-  messaging().setBackgroundMessageHandler(async (remoteMessage: RemoteMessage) => {
-    console.log('Message handled in the background!', remoteMessage);
-  });
+  messaging().setBackgroundMessageHandler(
+    async (remoteMessage: RemoteMessage) => {
+      console.log('Message handled in the background!', remoteMessage);
+    },
+  );
 
-  const unsubscribeForeground = messaging().onMessage(async (remoteMessage: RemoteMessage) => {
-    console.log('Foreground message received:', remoteMessage);
-  });
+  const unsubscribeForeground = messaging().onMessage(
+    async (remoteMessage: RemoteMessage) => {
+      console.log('Foreground message received:', remoteMessage);
+    },
+  );
 
   return unsubscribeForeground;
 }

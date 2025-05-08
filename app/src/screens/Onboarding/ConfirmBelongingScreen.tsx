@@ -11,7 +11,10 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
-import { getFCMToken, requestNotificationPermission } from '../../utils/notifications/notificationService';
+import {
+  getFCMToken,
+  requestNotificationPermission,
+} from '../../utils/notifications/notificationService';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from '../ProveFlow/ProofRequestStatusScreen';
 
@@ -32,7 +35,7 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
     },
   });
   const provingStore = useProvingStore();
-  const [requestingPermission, setRequestingPermission] = useState(false);
+  const [_requestingPermission, setRequestingPermission] = useState(false);
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
 

@@ -8,7 +8,7 @@ import {
   DSC_TREE_URL,
   DSC_TREE_URL_STAGING,
   IDENTITY_TREE_URL,
-  IDENTITY_TREE_URL_STAGING
+  IDENTITY_TREE_URL_STAGING,
 } from '../../../common/src/constants/constants';
 
 interface ProtocolState {

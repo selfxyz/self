@@ -6,7 +6,10 @@ import { StyleSheet, Text, View } from 'react-native';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
-import { getStateMessage, setupNotifications } from '../../utils/notifications/notificationService';
+import {
+  getStateMessage,
+  setupNotifications,
+} from '../../utils/notifications/notificationService';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
@@ -47,7 +50,9 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
 
   // Determine if we should show the "you can close the app" message
   // Show the message after the payload has been sent (when state is proving or later)
-  const canCloseApp = ['proving', 'post_proving', 'completed'].includes(currentState);
+  const canCloseApp = ['proving', 'post_proving', 'completed'].includes(
+    currentState,
+  );
 
   return (
     <View style={styles.container}>
@@ -67,7 +72,8 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           </Text>
         ) : (
           <Text style={styles.text}>
-            Your data has been securely transmitted. You can now safely close the app if needed.
+            Your data has been securely transmitted. You can now safely close
+            the app if needed.
           </Text>
         )}
       </View>
