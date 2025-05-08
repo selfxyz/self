@@ -12,7 +12,7 @@ import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
-import { styles } from '../ProveFlow/ProofRequestStatusScreen';
+import { styles } from './ProofRequestStatusScreen';
 
 type ConfirmBelongingScreenProps = StaticScreenProps<
   | {

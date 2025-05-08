@@ -1,11 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import PassportCameraScreen from '../screens/Onboarding/PassportCameraScreen';
-import PassportCameraTrouble from '../screens/Onboarding/PassportCameraTroubleScreen';
-import PassportNFCScanScreen from '../screens/Onboarding/PassportNFCScanScreen';
-import PassportNFCTrouble from '../screens/Onboarding/PassportNFCTroubleScreen';
-import PassportOnboardingScreen from '../screens/Onboarding/PassportOnboardingScreen';
-import UnsupportedPassportScreen from '../screens/Onboarding/UnsupportedPassportScreen';
+import PassportCameraScreen from '../screens/passport/PassportCameraScreen';
+import PassportCameraTrouble from '../screens/passport/PassportCameraTroubleScreen';
+import PassportNFCScanScreen from '../screens/passport/PassportNFCScanScreen';
+import PassportNFCTrouble from '../screens/passport/PassportNFCTroubleScreen';
+import PassportOnboardingScreen from '../screens/passport/PassportOnboardingScreen';
+import UnsupportedPassportScreen from '../screens/passport/UnsupportedPassportScreen';
 
 const passportScreens = {
   PassportCamera: {

@@ -2,21 +2,12 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
 
-import LaunchScreen from '../screens/LaunchScreen';
-import ModalScreen from '../screens/Settings/ModalScreen';
-import SplashScreen from '../screens/SplashScreen';
+import LaunchScreen from '../screens/static/LaunchScreen';
+import ModalScreen from '../screens/static/ModalScreen';
+import SplashScreen from '../screens/static/SplashScreen';
 import { black } from '../utils/colors';
 
 const staticScreens = {
-  Splash: {
-    screen: SplashScreen,
-    options: {
-      header: () => (
-        <StatusBar barStyle="light-content" backgroundColor={black} />
-      ),
-      navigationBarColor: black,
-    },
-  },
   Launch: {
     screen: LaunchScreen,
     options: {
@@ -31,6 +22,15 @@ const staticScreens = {
       presentation: 'transparentModal',
       animation: 'fade',
     } as NativeStackNavigationOptions,
+  },
+  Splash: {
+    screen: SplashScreen,
+    options: {
+      header: () => (
+        <StatusBar barStyle="light-content" backgroundColor={black} />
+      ),
+      navigationBarColor: black,
+    },
   },
 };
 

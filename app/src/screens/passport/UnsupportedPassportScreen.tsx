@@ -10,7 +10,7 @@ import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { notificationError } from '../../utils/haptic';
-import { styles } from '../ProveFlow/ProofRequestStatusScreen';
+import { styles } from '../prove/ProofRequestStatusScreen';
 
 const UnsupportedPassportScreen: React.FC = () => {
   const onPress = useHapticNavigation('Launch');

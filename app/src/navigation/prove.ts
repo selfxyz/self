@@ -1,11 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import ConfirmBelongingScreen from '../screens/Onboarding/ConfirmBelongingScreen';
-import LoadingScreen from '../screens/Onboarding/LoadingScreen';
-import ProofRequestStatusScreen from '../screens/ProveFlow/ProofRequestStatusScreen';
-import ProveScreen from '../screens/ProveFlow/ProveScreen';
-import QRCodeTroubleScreen from '../screens/ProveFlow/QRCodeTroubleScreen';
-import QRCodeViewFinderScreen from '../screens/ProveFlow/ViewFinderScreen';
+import ConfirmBelongingScreen from '../screens/prove/ConfirmBelongingScreen';
+import ProofRequestStatusScreen from '../screens/prove/ProofRequestStatusScreen';
+import ProveScreen from '../screens/prove/ProveScreen';
+import QRCodeTroubleScreen from '../screens/prove/QRCodeTroubleScreen';
+import QRCodeViewFinderScreen from '../screens/prove/ViewFinderScreen';
+import LoadingScreen from '../screens/static/LoadingScreen';
 import { black, white } from '../utils/colors';
 
 const proveScreens = {

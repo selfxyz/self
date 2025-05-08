@@ -10,7 +10,7 @@ import { Title } from '../../components/typography/Title';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
 import { black, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import { styles } from '../ProveFlow/ProofRequestStatusScreen';
+import { styles } from '../prove/ProofRequestStatusScreen';
 
 const AccountVerifiedSuccessScreen: React.FC = ({}) => {
   const navigation = useNavigation();
