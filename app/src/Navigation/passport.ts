@@ -8,12 +8,11 @@ import PassportOnboardingScreen from '../screens/Onboarding/PassportOnboardingSc
 import UnsupportedPassportScreen from '../screens/Onboarding/UnsupportedPassport';
 
 const passportScreens = {
-  PassportOnboarding: {
-    screen: PassportOnboardingScreen,
+  PassportCamera: {
+    screen: PassportCameraScreen,
     options: {
-      animation: 'slide_from_bottom',
-      // presentation: 'modal' wanted to do this but seems to break stuff
       headerShown: false,
+      animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
   PassportCameraTrouble: {
@@ -22,21 +21,6 @@ const passportScreens = {
       headerShown: false,
       animation: 'slide_from_bottom',
       presentation: 'modal',
-    } as NativeStackNavigationOptions,
-  },
-  PassportNFCTrouble: {
-    screen: PassportNFCTrouble,
-    options: {
-      headerShown: false,
-      animation: 'slide_from_bottom',
-      presentation: 'modal',
-    } as NativeStackNavigationOptions,
-  },
-  PassportCamera: {
-    screen: PassportCameraScreen,
-    options: {
-      headerShown: false,
-      animation: 'slide_from_bottom',
     } as NativeStackNavigationOptions,
   },
   PassportNFCScan: {
@@ -50,6 +34,22 @@ const passportScreens = {
       dateOfBirth: '',
       dateOfExpiry: '',
     },
+  },
+  PassportNFCTrouble: {
+    screen: PassportNFCTrouble,
+    options: {
+      headerShown: false,
+      animation: 'slide_from_bottom',
+      presentation: 'modal',
+    } as NativeStackNavigationOptions,
+  },
+  PassportOnboarding: {
+    screen: PassportOnboardingScreen,
+    options: {
+      animation: 'slide_from_bottom',
+      // presentation: 'modal' wanted to do this but seems to break stuff
+      headerShown: false,
+    } as NativeStackNavigationOptions,
   },
   UnsupportedPassport: {
     screen: UnsupportedPassportScreen,

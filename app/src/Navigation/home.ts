@@ -6,6 +6,13 @@ import HomeScreen from '../screens/HomeScreen';
 import { black } from '../utils/colors';
 
 const homeScreens = {
+  Disclaimer: {
+    screen: DisclaimerScreen,
+    options: {
+      title: 'Disclaimer',
+      headerShown: false,
+    } as NativeStackNavigationOptions,
+  },
   Home: {
     screen: HomeScreen,
     options: {
@@ -13,13 +20,6 @@ const homeScreens = {
       header: HomeNavBar,
       navigationBarColor: black,
       presentation: 'card',
-    } as NativeStackNavigationOptions,
-  },
-  Disclaimer: {
-    screen: DisclaimerScreen,
-    options: {
-      title: 'Disclaimer',
-      headerShown: false,
     } as NativeStackNavigationOptions,
   },
 };

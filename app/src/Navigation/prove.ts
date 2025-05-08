@@ -9,20 +9,24 @@ import QRCodeViewFinderScreen from '../screens/ProveFlow/ViewFinder';
 import { black, white } from '../utils/colors';
 
 const proveScreens = {
-  QRCodeViewFinder: {
-    screen: QRCodeViewFinderScreen,
+  ConfirmBelongingScreen: {
+    screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
-      animation: 'slide_from_bottom',
-      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
-  QRCodeTrouble: {
-    screen: QRCodeTroubleScreen,
+  LoadingScreen: {
+    screen: LoadingScreen,
+    options: {
+      headerShown: false,
+      navigationBarColor: black,
+    } as NativeStackNavigationOptions,
+  },
+  ProofRequestStatusScreen: {
+    screen: ProofRequestStatusScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
-      presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
   ProveScreen: {
@@ -37,24 +41,20 @@ const proveScreens = {
       },
     } as NativeStackNavigationOptions,
   },
-  ProofRequestStatusScreen: {
-    screen: ProofRequestStatusScreen,
+  QRCodeTrouble: {
+    screen: QRCodeTroubleScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
+      presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
-  ConfirmBelongingScreen: {
-    screen: ConfirmBelongingScreen,
+  QRCodeViewFinder: {
+    screen: QRCodeViewFinderScreen,
     options: {
       headerShown: false,
-    } as NativeStackNavigationOptions,
-  },
-  LoadingScreen: {
-    screen: LoadingScreen,
-    options: {
-      headerShown: false,
-      navigationBarColor: black,
+      animation: 'slide_from_bottom',
+      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
 };

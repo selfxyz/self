@@ -6,13 +6,10 @@ import DevSettingsScreen from '../screens/Settings/DevSettingsScreen';
 import { white } from '../utils/colors';
 
 const settingsScreens = {
-  DevSettings: {
-    screen: DevSettingsScreen,
+  CreateMock: {
+    screen: MockDataScreen,
     options: {
-      title: 'Developer Settings',
-      headerStyle: {
-        backgroundColor: white,
-      },
+      title: 'Mock Passport',
     } as NativeStackNavigationOptions,
   },
   DevHapticFeedback: {
@@ -21,10 +18,13 @@ const settingsScreens = {
       title: 'Haptic Feedback',
     } as NativeStackNavigationOptions,
   },
-  CreateMock: {
-    screen: MockDataScreen,
+  DevSettings: {
+    screen: DevSettingsScreen,
     options: {
-      title: 'Mock Passport',
+      title: 'Developer Settings',
+      headerStyle: {
+        backgroundColor: white,
+      },
     } as NativeStackNavigationOptions,
   },
 };

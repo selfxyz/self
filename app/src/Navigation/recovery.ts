@@ -21,11 +21,20 @@ const recoveryScreens = {
       headerShown: false,
     } as NativeStackNavigationOptions,
   },
-  SaveRecoveryPhrase: {
-    screen: SaveRecoveryPhraseScreen,
+  AccountVerifiedSuccess: {
+    screen: AccountVerifiedSuccessScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
+    } as NativeStackNavigationOptions,
+  },
+  PassportDataNotFound: {
+    screen: PassportDataNotFound,
+    options: {
+      headerShown: false,
+      gestureEnabled: false,
+      animation: 'slide_from_bottom',
+      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
   RecoverWithPhrase: {
@@ -42,20 +51,11 @@ const recoveryScreens = {
       headerBackTitle: 'close',
     } as NativeStackNavigationOptions,
   },
-  AccountVerifiedSuccess: {
-    screen: AccountVerifiedSuccessScreen,
+  SaveRecoveryPhrase: {
+    screen: SaveRecoveryPhraseScreen,
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
-    } as NativeStackNavigationOptions,
-  },
-  PassportDataNotFound: {
-    screen: PassportDataNotFound,
-    options: {
-      headerShown: false,
-      gestureEnabled: false,
-      animation: 'slide_from_bottom',
-      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
 };
