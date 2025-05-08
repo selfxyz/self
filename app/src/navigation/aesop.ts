@@ -2,7 +2,7 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { ProgressNavBar } from '../components/NavBar';
 import { shouldShowAesopRedesign } from '../hooks/useAesopRedesign';
-import PassportOnboardingScreen from '../screens/_Aesop/PassportOnboardingScreen';
+import PassportOnboardingScreen from '../screens/aesop/PassportOnboardingScreen';
 import { white } from '../utils/colors';
 
 const aesopScreens = {

@@ -5,7 +5,7 @@ import AccountRecoveryScreen from '../screens/AccountFlow/AccountRecoveryScreen'
 import AccountVerifiedSuccessScreen from '../screens/AccountFlow/AccountVerifiedSuccessScreen';
 import RecoverWithPhraseScreen from '../screens/AccountFlow/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from '../screens/AccountFlow/SaveRecoveryPhraseScreen';
-import PassportDataNotFound from '../screens/Onboarding/PassportDataNotFound';
+import PassportDataNotFound from '../screens/Onboarding/PassportDataNotFoundScreen';
 import { black, slate300 } from '../utils/colors';
 
 const recoveryScreens = {

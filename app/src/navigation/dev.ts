@@ -1,8 +1,8 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import MockDataScreen from '../screens/MockDataScreen';
-import DevHapticFeedbackScreen from '../screens/Settings/DevHapticFeedback';
-import DevSettingsScreen from '../screens/Settings/DevSettingsScreen';
+import DevHapticFeedbackScreen from '../screens/dev/DevHapticFeedback';
+import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
+import MockDataScreen from '../screens/dev/MockDataScreen';
 import { white } from '../utils/colors';
 
 const settingsScreens = {
