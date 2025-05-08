@@ -5,6 +5,7 @@ import AccountRecoveryScreen from '../screens/AccountFlow/AccountRecoveryScreen'
 import AccountVerifiedSuccessScreen from '../screens/AccountFlow/AccountVerifiedSuccessScreen';
 import RecoverWithPhraseScreen from '../screens/AccountFlow/RecoverWithPhraseScreen';
 import SaveRecoveryPhraseScreen from '../screens/AccountFlow/SaveRecoveryPhraseScreen';
+import PassportDataNotFound from '../screens/Onboarding/PassportDataNotFound';
 import { black, slate300 } from '../utils/colors';
 
 const recoveryScreens = {
@@ -46,6 +47,15 @@ const recoveryScreens = {
     options: {
       headerShown: false,
       animation: 'slide_from_bottom',
+    } as NativeStackNavigationOptions,
+  },
+  PassportDataNotFound: {
+    screen: PassportDataNotFound,
+    options: {
+      headerShown: false,
+      gestureEnabled: false,
+      animation: 'slide_from_bottom',
+      // presentation: 'modal',
     } as NativeStackNavigationOptions,
   },
 };
