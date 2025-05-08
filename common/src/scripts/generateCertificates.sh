@@ -219,7 +219,6 @@ generate_certificate() {
 
 # ------------------------------------------------------------------------------
 # Example usage:
-# use this one
 #   # 1) Generate a CSCA in "src/mock_certificates/sha256_rsapss_32_65537_4096"
 #   # => mock_csca.key/mem
 #   generate_certificate csca sha256 rsapss 32 65537 4096
