@@ -3,7 +3,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { Card, Image, Text, XStack, YStack } from 'tamagui';
 
-import { ProofHistory, ProofStatus } from '../stores/proofHistoryStore';
+import { ProofHistory, ProofStatus } from '../../stores/proofHistoryStore';
 import {
   black,
   blue100,
@@ -15,7 +15,7 @@ import {
   slate700,
   white,
   zinc400,
-} from '../utils/colors';
+} from '../../utils/colors';
 
 type ProofHistoryDetailScreenProps = {
   route: {

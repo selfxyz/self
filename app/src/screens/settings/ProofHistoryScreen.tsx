@@ -9,11 +9,11 @@ import {
 } from 'react-native';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
-import { BodyText } from '../components/typography/BodyText';
+import { BodyText } from '../../components/typography/BodyText';
 import {
   ProofHistory,
   useProofHistoryStore,
-} from '../stores/proofHistoryStore';
+} from '../../stores/proofHistoryStore';
 import {
   black,
   blue100,
@@ -22,7 +22,7 @@ import {
   slate300,
   slate500,
   white,
-} from '../utils/colors';
+} from '../../utils/colors';
 
 type Section = {
   title: string;

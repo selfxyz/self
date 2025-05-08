@@ -1,11 +1,11 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import AccountRecoveryChoiceScreen from '../screens/AccountFlow/AccountRecoveryChoiceScreen';
-import AccountRecoveryScreen from '../screens/AccountFlow/AccountRecoveryScreen';
-import AccountVerifiedSuccessScreen from '../screens/AccountFlow/AccountVerifiedSuccessScreen';
-import RecoverWithPhraseScreen from '../screens/AccountFlow/RecoverWithPhraseScreen';
-import SaveRecoveryPhraseScreen from '../screens/AccountFlow/SaveRecoveryPhraseScreen';
-import PassportDataNotFound from '../screens/Onboarding/PassportDataNotFoundScreen';
+import AccountRecoveryChoiceScreen from '../screens/recovery/AccountRecoveryChoiceScreen';
+import AccountRecoveryScreen from '../screens/recovery/AccountRecoveryScreen';
+import AccountVerifiedSuccessScreen from '../screens/recovery/AccountVerifiedSuccessScreen';
+import PassportDataNotFound from '../screens/recovery/PassportDataNotFoundScreen';
+import RecoverWithPhraseScreen from '../screens/recovery/RecoverWithPhraseScreen';
+import SaveRecoveryPhraseScreen from '../screens/recovery/SaveRecoveryPhraseScreen';
 import { black, slate300 } from '../utils/colors';
 
 const recoveryScreens = {

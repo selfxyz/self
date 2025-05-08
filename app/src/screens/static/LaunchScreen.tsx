@@ -5,17 +5,17 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Anchor, Text, XStack, YStack } from 'tamagui';
 import { useWindowDimensions } from 'tamagui';
 
-import onboardingAnimation from '../assets/animations/launch_onboarding.json';
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { BodyText } from '../components/typography/BodyText';
-import { Caption } from '../components/typography/Caption';
-import { privacyUrl, termsUrl } from '../consts/links';
-import useConnectionModal from '../hooks/useConnectionModal';
-import useHapticNavigation from '../hooks/useHapticNavigation';
-import Logo from '../images/logo.svg';
-import { ExpandableBottomLayout } from '../layouts/ExpandableBottomLayout';
-import { black, slate50, slate100, slate500, white } from '../utils/colors';
-import { advercase, dinot } from '../utils/fonts';
+import onboardingAnimation from '../../assets/animations/launch_onboarding.json';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { BodyText } from '../../components/typography/BodyText';
+import { Caption } from '../../components/typography/Caption';
+import { privacyUrl, termsUrl } from '../../consts/links';
+import useConnectionModal from '../../hooks/useConnectionModal';
+import useHapticNavigation from '../../hooks/useHapticNavigation';
+import Logo from '../../images/logo.svg';
+import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import { black, slate50, slate100, slate500, white } from '../../utils/colors';
+import { advercase, dinot } from '../../utils/fonts';
 
 interface LaunchScreenProps {}
 

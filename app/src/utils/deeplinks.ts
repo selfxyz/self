@@ -1,7 +1,7 @@
 import queryString from 'query-string';
 import { Linking } from 'react-native';
 
-import { navigationRef } from '../Navigation';
+import { navigationRef } from '../navigation';
 import { useSelfAppStore } from '../stores/selfAppStore';
 
 /**

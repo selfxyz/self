@@ -8,29 +8,35 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SvgProps } from 'react-native-svg';
 import { Button, ScrollView, View, XStack, YStack } from 'tamagui';
 
-import { version } from '../../package.json';
-import { pressedStyle } from '../components/buttons/pressedStyle';
-import { BodyText } from '../components/typography/BodyText';
+import { version } from '../../../package.json';
+import { pressedStyle } from '../../components/buttons/pressedStyle';
+import { BodyText } from '../../components/typography/BodyText';
 import {
   appStoreUrl,
   gitHubUrl,
   playStoreUrl,
   selfUrl,
   telegramUrl,
-} from '../consts/links';
-import Github from '../images/icons/github.svg';
-import Cloud from '../images/icons/settings_cloud_backup.svg';
-import Data from '../images/icons/settings_data.svg';
-import Feedback from '../images/icons/settings_feedback.svg';
-import Lock from '../images/icons/settings_lock.svg';
-import ShareIcon from '../images/icons/share.svg';
-import Star from '../images/icons/star.svg';
-import Telegram from '../images/icons/telegram.svg';
-import Web from '../images/icons/webpage.svg';
-import { RootStackParamList } from '../Navigation';
-import { useSettingStore } from '../stores/settingStore';
-import { amber500, black, neutral700, slate800, white } from '../utils/colors';
-import { impactLight } from '../utils/haptic';
+} from '../../consts/links';
+import Github from '../../images/icons/github.svg';
+import Cloud from '../../images/icons/settings_cloud_backup.svg';
+import Data from '../../images/icons/settings_data.svg';
+import Feedback from '../../images/icons/settings_feedback.svg';
+import Lock from '../../images/icons/settings_lock.svg';
+import ShareIcon from '../../images/icons/share.svg';
+import Star from '../../images/icons/star.svg';
+import Telegram from '../../images/icons/telegram.svg';
+import Web from '../../images/icons/webpage.svg';
+import { RootStackParamList } from '../../Navigation';
+import { useSettingStore } from '../../stores/settingStore';
+import {
+  amber500,
+  black,
+  neutral700,
+  slate800,
+  white,
+} from '../../utils/colors';
+import { impactLight } from '../../utils/haptic';
 
 interface SettingsScreenProps {}
 interface MenuButtonProps extends PropsWithChildren {

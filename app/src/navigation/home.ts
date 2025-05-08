@@ -1,8 +1,8 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import { HomeNavBar } from '../components/NavBar';
-import DisclaimerScreen from '../screens/DisclaimerScreen';
-import HomeScreen from '../screens/HomeScreen';
+import DisclaimerScreen from '../screens/home/DisclaimerScreen';
+import HomeScreen from '../screens/home/HomeScreen';
 import { black } from '../utils/colors';
 
 const homeScreens = {

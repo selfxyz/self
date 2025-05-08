@@ -7,7 +7,7 @@ import { create } from 'zustand';
 import { WS_RPC_URL_VC_AND_DISCLOSE } from '../../../../common/src/constants/constants';
 import { EndpointType, SelfApp } from '../../../../common/src/utils/appType';
 import { getCircuitNameFromPassportData } from '../../../../common/src/utils/circuits/circuitsName';
-import { navigationRef } from '../../Navigation';
+import { navigationRef } from '../../navigation';
 import {
   clearPassportData,
   loadPassportDataAndSecret,

@@ -18,18 +18,23 @@ import {
   YStack,
 } from 'tamagui';
 
-import { countryCodes } from '../../../common/src/constants/constants';
-import { getSKIPEM } from '../../../common/src/utils/csca';
-import { genAndInitMockPassportData } from '../../../common/src/utils/passports/genMockPassportData';
-import { initPassportDataParsing } from '../../../common/src/utils/passports/passport';
-import { PrimaryButton } from '../components/buttons/PrimaryButton';
-import { SecondaryButton } from '../components/buttons/SecondaryButton';
-import ButtonsContainer from '../components/ButtonsContainer';
-import { BodyText } from '../components/typography/BodyText';
-import { Title } from '../components/typography/Title';
-import { storePassportData } from '../stores/passportDataProvider';
-import { borderColor, separatorColor, textBlack, white } from '../utils/colors';
-import { buttonTap, selectionChange } from '../utils/haptic';
+import { getSKIPEM } from '../../../.././common/src/utils/csca';
+import { countryCodes } from '../../../../common/src/constants/constants';
+import { genAndInitMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
+import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
+import { PrimaryButton } from '../../components/buttons/PrimaryButton';
+import { SecondaryButton } from '../../components/buttons/SecondaryButton';
+import ButtonsContainer from '../../components/ButtonsContainer';
+import { BodyText } from '../../components/typography/BodyText';
+import { Title } from '../../components/typography/Title';
+import { storePassportData } from '../../stores/passportDataProvider';
+import {
+  borderColor,
+  separatorColor,
+  textBlack,
+  white,
+} from '../../utils/colors';
+import { buttonTap, selectionChange } from '../../utils/haptic';
 
 interface MockDataScreenProps {}
 

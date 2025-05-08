@@ -39,6 +39,7 @@ const AppNavigation = createNativeStackNavigator({
     ...settingsScreens,
     ...recoveryScreens,
     ...devScreens,
+    // add last to override other screens
     ...aesopScreens,
   },
 });

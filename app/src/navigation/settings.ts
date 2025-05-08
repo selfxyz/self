@@ -1,14 +1,48 @@
 import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
-import ProofHistoryDetailScreen from '../screens/ProofHistoryDetailScreen';
-import ProofHistoryScreen from '../screens/ProofHistoryScreen';
-import CloudBackupScreen from '../screens/Settings/CloudBackupScreen';
-import PassportDataInfoScreen from '../screens/Settings/PassportDataInfoScreen';
-import ShowRecoveryPhraseScreen from '../screens/Settings/ShowRecoveryPhraseScreen';
-import SettingsScreen from '../screens/SettingsScreen';
+import CloudBackupScreen from '../screens/settings/CloudBackupScreen';
+import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
+import ProofHistoryDetailScreen from '../screens/settings/ProofHistoryDetailScreen';
+import ProofHistoryScreen from '../screens/settings/ProofHistoryScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
+import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
 import { black, slate300, white } from '../utils/colors';
 
 const settingsScreens = {
+  CloudBackupSettings: {
+    screen: CloudBackupScreen,
+    options: {
+      title: 'Cloud backup',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: slate300,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  PassportDataInfo: {
+    screen: PassportDataInfoScreen,
+    options: {
+      title: 'Passport Data Info',
+      headerStyle: {
+        backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  ProofHistory: {
+    screen: ProofHistoryScreen,
+    options: {
+      title: 'Approved Requests',
+      navigationBarColor: black,
+    },
+  },
+  ProofHistoryDetail: {
+    screen: ProofHistoryDetailScreen,
+    options: {
+      title: 'Approval',
+    },
+  },
   Settings: {
     screen: SettingsScreen,
     options: {
@@ -34,40 +68,6 @@ const settingsScreens = {
         backgroundColor: white,
       },
     } as NativeStackNavigationOptions,
-  },
-  PassportDataInfo: {
-    screen: PassportDataInfoScreen,
-    options: {
-      title: 'Passport Data Info',
-      headerStyle: {
-        backgroundColor: white,
-      },
-    } as NativeStackNavigationOptions,
-  },
-  CloudBackupSettings: {
-    screen: CloudBackupScreen,
-    options: {
-      title: 'Cloud backup',
-      headerStyle: {
-        backgroundColor: black,
-      },
-      headerTitleStyle: {
-        color: slate300,
-      },
-    } as NativeStackNavigationOptions,
-  },
-  ProofHistory: {
-    screen: ProofHistoryScreen,
-    options: {
-      title: 'Approved Requests',
-      navigationBarColor: black,
-    },
-  },
-  ProofHistoryDetail: {
-    screen: ProofHistoryDetailScreen,
-    options: {
-      title: 'Approval',
-    },
   },
 };
 
