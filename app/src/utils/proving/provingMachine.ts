@@ -726,7 +726,6 @@ export const useProvingStore = create<ProvingState>((set, get) => {
             ));
           break;
         case 'dsc':
-          console.log("dsc!!!");
           ({ inputs, circuitName, endpointType, endpoint } =
             generateTEEInputsDSC(
               passportData,

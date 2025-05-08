@@ -1,8 +1,8 @@
 import messaging from '@react-native-firebase/messaging';
 import { Platform } from 'react-native';
 
-const API_URL = 'https://api.self.xyz';
-const API_URL_STAGING = "https://e856-219-104-171-120.ngrok-free.app";
+const API_URL = 'https://notification.self.xyz';
+const API_URL_STAGING = "https://notification.staging.self.xyz";
 
 export const getStateMessage = (state: string): string => {
   switch (state) {
