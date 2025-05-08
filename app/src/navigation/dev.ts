@@ -5,7 +5,7 @@ import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
 import { white } from '../utils/colors';
 
-const settingsScreens = {
+const devScreens = {
   CreateMock: {
     screen: MockDataScreen,
     options: {
@@ -29,4 +29,4 @@ const settingsScreens = {
   },
 };
 
-export default settingsScreens;
+export default devScreens;

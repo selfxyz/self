@@ -3,9 +3,9 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import PassportCameraScreen from '../screens/Onboarding/PassportCameraScreen';
 import PassportCameraTrouble from '../screens/Onboarding/PassportCameraTroubleScreen';
 import PassportNFCScanScreen from '../screens/Onboarding/PassportNFCScanScreen';
-import PassportNFCTrouble from '../screens/Onboarding/PassportNFCTrouble';
+import PassportNFCTrouble from '../screens/Onboarding/PassportNFCTroubleScreen';
 import PassportOnboardingScreen from '../screens/Onboarding/PassportOnboardingScreen';
-import UnsupportedPassportScreen from '../screens/Onboarding/UnsupportedPassport';
+import UnsupportedPassportScreen from '../screens/Onboarding/UnsupportedPassportScreen';
 
 const passportScreens = {
   PassportCamera: {

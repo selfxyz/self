@@ -4,8 +4,8 @@ import ConfirmBelongingScreen from '../screens/Onboarding/ConfirmBelongingScreen
 import LoadingScreen from '../screens/Onboarding/LoadingScreen';
 import ProofRequestStatusScreen from '../screens/ProveFlow/ProofRequestStatusScreen';
 import ProveScreen from '../screens/ProveFlow/ProveScreen';
-import QRCodeTroubleScreen from '../screens/ProveFlow/QRCodeTrouble';
-import QRCodeViewFinderScreen from '../screens/ProveFlow/ViewFinder';
+import QRCodeTroubleScreen from '../screens/ProveFlow/QRCodeTroubleScreen';
+import QRCodeViewFinderScreen from '../screens/ProveFlow/ViewFinderScreen';
 import { black, white } from '../utils/colors';
 
 const proveScreens = {
