@@ -51,7 +51,7 @@ describe('navigation', () => {
       ).toBeUndefined();
     });
 
-    it('should use regular passport screens when shouldShowAesopRedesign is true', () => {
+    it('should use aesop design passport screens when shouldShowAesopRedesign is true', () => {
       jest.mock('../../src/hooks/useAesopRedesign', () => ({
         shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
       }));
