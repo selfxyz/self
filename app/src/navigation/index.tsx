@@ -23,25 +23,26 @@ import recoveryScreens from './recovery';
 import settingsScreens from './settings';
 import staticScreens from './static';
 
+export const navigationScreens = {
+  ...staticScreens,
+  ...passportScreens,
+  ...homeScreens,
+  ...proveScreens,
+  ...settingsScreens,
+  ...recoveryScreens,
+  ...devScreens,
+  // add last to override other screens
+  ...aesopScreens,
+};
+
 const AppNavigation = createNativeStackNavigator({
   initialRouteName: 'Splash',
-  orientation: 'portrait_up',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
   },
   layout: AppLayout,
-  screens: {
-    ...staticScreens,
-    ...passportScreens,
-    ...homeScreens,
-    ...proveScreens,
-    ...settingsScreens,
-    ...recoveryScreens,
-    ...devScreens,
-    // add last to override other screens
-    ...aesopScreens,
-  },
+  screens: navigationScreens,
 });
 
 export type RootStackParamList = StaticParamList<typeof AppNavigation>;

@@ -30,7 +30,7 @@ import useUserStore from '../../stores/userStore';
 import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
 import { buttonTap } from '../../utils/haptic';
-import { parseScanResponse, scan } from '../../utils/nfcScannerNew';
+import { parseScanResponse, scan } from '../../utils/nfcScanner';
 
 const { trackEvent } = analytics();
 

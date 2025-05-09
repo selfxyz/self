@@ -3,7 +3,7 @@ import { renderHook } from '@testing-library/react-native';
 import {
   shouldShowAesopRedesign,
   useAesopRedesign,
-} from '../../src/hooks/useAesopRedesign';
+} from '../../../src/hooks/useAesopRedesign';
 
 describe('useAesopRedesign', () => {
   describe('shouldShowAesopRedesign', () => {
