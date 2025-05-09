@@ -14,7 +14,7 @@ import AppLayout from '../layouts/AppLayout';
 import analytics from '../utils/analytics';
 import { white } from '../utils/colors';
 import { setupUniversalLinkListenerInNavigation } from '../utils/deeplinks';
-import aesopScreens from './aesop';
+import { getAesopScreens } from './aesop';
 import devScreens from './dev';
 import homeScreens from './home';
 import passportScreens from './passport';
@@ -32,7 +32,7 @@ export const navigationScreens = {
   ...recoveryScreens,
   ...devScreens,
   // add last to override other screens
-  ...aesopScreens,
+  ...getAesopScreens(),
 };
 
 const AppNavigation = createNativeStackNavigator({

@@ -19,49 +19,8 @@ const aesopScreens = {
       headerTotalSteps: 4,
     } as NativeStackNavigationOptions,
   },
-
-  // stub the rest of the steps. will update in future pr
-  PassportCamera: {
-    screen: PassportOnboardingScreen,
-    options: {
-      animation: 'slide_from_bottom',
-      header: ProgressNavBar,
-      title: 'Take a photo',
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerCurrentStep: 2,
-      headerTotalSteps: 4,
-    } as NativeStackNavigationOptions,
-  },
-
-  PassportNFC: {
-    screen: PassportOnboardingScreen,
-    options: {
-      animation: 'slide_from_bottom',
-      header: ProgressNavBar,
-      title: 'Scan NFC',
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerCurrentStep: 3,
-      headerTotalSteps: 4,
-    } as NativeStackNavigationOptions,
-  },
-
-  PassportComplete: {
-    screen: PassportOnboardingScreen,
-    options: {
-      animation: 'slide_from_bottom',
-      header: ProgressNavBar,
-      title: 'Complete',
-      headerStyle: {
-        backgroundColor: white,
-      },
-      headerCurrentStep: 4,
-      headerTotalSteps: 4,
-    } as NativeStackNavigationOptions,
-  },
 };
 
-export default shouldShowAesopRedesign() ? aesopScreens : {};
+export const getAesopScreens = () =>
+  shouldShowAesopRedesign() ? aesopScreens : {};
+export default getAesopScreens();
