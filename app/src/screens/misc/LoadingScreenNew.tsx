@@ -7,7 +7,7 @@ import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
-import { black, slate400, white, zinc500 } from '../../utils/colors';
+import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { dinot } from '../../utils/fonts';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
@@ -80,8 +80,8 @@ const styles = StyleSheet.create({
     paddingBottom: 24,
     paddingHorizontal: 24,
     alignItems: 'center',
-    backgroundColor: '#18181B',
-    shadowColor: '#000',
+    backgroundColor: zinc900,
+    shadowColor: black,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 12,
@@ -91,6 +91,7 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: 24,
+    backgroundColor: '#18181B',
   },
   estimatedTimeSection: {
     width: '100%',
