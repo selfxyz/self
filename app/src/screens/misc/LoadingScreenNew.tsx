@@ -4,17 +4,19 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
-import miscAnimation from '../../assets/animations/loading/misc.json';
+import miscAnimation from '../../assets/animations/loading/misc-new.json';
 import successAnimation from '../../assets/animations/loading/success.json';
 import CloseWarningIcon from '../../images/icons/close-warning.svg';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
-import { dinot } from '../../utils/fonts';
+import { advercase, dinot } from '../../utils/fonts';
 import { useProvingStore } from '../../utils/proving/provingMachine';
 
 type LoadingScreenProps = StaticScreenProps<{
+  actionText?: string;
   estimatedTime?: string;
 }>;
 
+const defaultActionText = 'Registering your ID';
 const defaultEstimatedTime = '10 - 30 SECONDS';
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
@@ -22,6 +24,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   const currentState = useProvingStore(state => state.currentState);
   const isFocused = useIsFocused();
 
+  const actionText = route?.params?.actionText ?? defaultActionText;
   const estimatedTime = route?.params?.estimatedTime ?? defaultEstimatedTime;
 
   // Monitor the state of the proving machine
@@ -42,17 +45,23 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({ route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.card}>
-        <LottieView
-          autoPlay
-          loop={animationSource === miscAnimation}
-          source={animationSource}
-          style={styles.animation}
-          resizeMode="cover"
-          renderMode="HARDWARE"
-        />
+        <View style={styles.animationAndTitleGroup}>
+          <LottieView
+            autoPlay
+            loop={animationSource === miscAnimation}
+            source={animationSource}
+            style={styles.animation}
+            resizeMode="cover"
+            renderMode="HARDWARE"
+          />
+          <Text style={styles.title}>{actionText}</Text>
+        </View>
         <View style={styles.estimatedTimeSection}>
-          <Text style={styles.estimatedTimeLabel}>ESTIMATED TIME:</Text>
-          <Text style={styles.estimatedTimeValue}>{estimatedTime}</Text>
+          <View style={styles.estimatedTimeBorder} />
+          <View style={styles.estimatedTimeRow}>
+            <Text style={styles.estimatedTimeLabel}>ESTIMATED TIME:</Text>
+            <Text style={styles.estimatedTimeValue}>{estimatedTime}</Text>
+          </View>
         </View>
       </View>
       <View style={styles.warningSection}>
@@ -76,9 +85,7 @@ const styles = StyleSheet.create({
   card: {
     width: '92%',
     borderRadius: 16,
-    paddingTop: 32,
-    paddingBottom: 24,
-    paddingHorizontal: 24,
+    paddingVertical: 20,
     alignItems: 'center',
     backgroundColor: zinc900,
     shadowColor: black,
@@ -87,34 +94,52 @@ const styles = StyleSheet.create({
     shadowRadius: 12,
     elevation: 8,
   },
+  title: {
+    color: white,
+    fontSize: 24,
+    fontFamily: advercase,
+    textAlign: 'center',
+    letterSpacing: 1,
+    fontWeight: '100',
+  },
   animation: {
     width: 120,
     height: 120,
-    marginBottom: 24,
-    backgroundColor: '#18181B',
+    marginBottom: 0,
+  },
+  animationAndTitleGroup: {
+    alignItems: 'center',
+    marginBottom: 30,
   },
   estimatedTimeSection: {
     width: '100%',
-    borderTopWidth: 1,
-    borderTopColor: '#232329',
-    marginTop: 24,
-    paddingTop: 12,
     alignItems: 'center',
+  },
+  estimatedTimeBorder: {
+    width: '100%',
+    height: 1,
+    backgroundColor: '#232329',
+  },
+  estimatedTimeRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    textTransform: 'uppercase',
+    marginTop: 16,
   },
   estimatedTimeLabel: {
     color: slate400,
+    marginRight: 8,
     fontSize: 11,
     letterSpacing: 0.44,
-    textTransform: 'uppercase',
     fontFamily: dinot,
-    marginBottom: 2,
   },
   estimatedTimeValue: {
     color: white,
-    fontSize: 13,
-    fontWeight: '600',
+    fontSize: 11,
+    letterSpacing: 0.44,
     fontFamily: dinot,
-    letterSpacing: 0.5,
   },
   warningSection: {
     position: 'absolute',
