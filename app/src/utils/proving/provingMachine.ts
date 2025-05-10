@@ -109,8 +109,32 @@ const provingMachine = createMachine({
 
 export type provingMachineCircuitType = 'register' | 'dsc' | 'disclose';
 
+export type ProvingStateType =
+  // Initial states
+  | 'idle'
+  | undefined
+  // Data preparation states
+  | 'fetching_data'
+  | 'validating_document'
+  // Connection states
+  | 'init_tee_connexion'
+  | 'listening_for_status'
+  // Proving states
+  | 'ready_to_prove'
+  | 'proving'
+  | 'post_proving'
+  // Success state
+  | 'completed'
+  // Error states
+  | 'error'
+  | 'failure'
+  // Special case states
+  | 'passport_not_supported'
+  | 'account_recovery_choice'
+  | 'passport_data_not_found';
+
 interface ProvingState {
-  currentState: string;
+  currentState: ProvingStateType;
   attestation: any;
   serverPublicKey: string | null;
   sharedKey: Buffer | null;
@@ -154,7 +178,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
   function setupActorSubscriptions(newActor: AnyActorRef) {
     newActor.subscribe((state: any) => {
       console.log(`State transition: ${state.value}`);
-      set({ currentState: state.value as string });
+      set({ currentState: state.value as ProvingStateType });
 
       if (state.value === 'fetching_data') {
         get().startFetchingData();
