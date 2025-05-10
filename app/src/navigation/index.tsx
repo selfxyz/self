@@ -36,7 +36,7 @@ export const navigationScreens = {
 };
 
 const AppNavigation = createNativeStackNavigator({
-  initialRouteName: 'LoadingScreenNew',
+  initialRouteName: 'Splash',
   screenOptions: {
     header: DefaultNavBar,
     navigationBarColor: white,
