@@ -2,18 +2,34 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import React from 'react';
 import { StatusBar } from 'react-native';
 
-import LaunchScreen from '../screens/static/LaunchScreen';
-import ModalScreen from '../screens/static/ModalScreen';
-import SplashScreen from '../screens/static/SplashScreen';
+import LaunchScreen from '../screens/misc/LaunchScreen';
+import LoadingScreen from '../screens/misc/LoadingScreen';
+import LoadingScreenNew from '../screens/misc/LoadingScreenNew';
+import ModalScreen from '../screens/misc/ModalScreen';
+import SplashScreen from '../screens/misc/SplashScreen';
 import { black } from '../utils/colors';
 
-const staticScreens = {
+const miscScreens = {
   Launch: {
     screen: LaunchScreen,
     options: {
       headerShown: false,
       gestureEnabled: false,
     },
+  },
+  LoadingScreen: {
+    screen: LoadingScreen,
+    options: {
+      headerShown: false,
+      navigationBarColor: black,
+    } as NativeStackNavigationOptions,
+  },
+  LoadingScreenNew: {
+    screen: LoadingScreenNew,
+    options: {
+      headerShown: false,
+      navigationBarColor: black,
+    } as NativeStackNavigationOptions,
   },
   Modal: {
     screen: ModalScreen,
@@ -34,4 +50,4 @@ const staticScreens = {
   },
 };
 
-export default staticScreens;
+export default miscScreens;

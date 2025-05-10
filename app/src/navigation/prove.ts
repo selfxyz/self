@@ -5,7 +5,6 @@ import ProofRequestStatusScreen from '../screens/prove/ProofRequestStatusScreen'
 import ProveScreen from '../screens/prove/ProveScreen';
 import QRCodeTroubleScreen from '../screens/prove/QRCodeTroubleScreen';
 import QRCodeViewFinderScreen from '../screens/prove/ViewFinderScreen';
-import LoadingScreen from '../screens/static/LoadingScreen';
 import { black, white } from '../utils/colors';
 
 const proveScreens = {
@@ -13,13 +12,6 @@ const proveScreens = {
     screen: ConfirmBelongingScreen,
     options: {
       headerShown: false,
-    } as NativeStackNavigationOptions,
-  },
-  LoadingScreen: {
-    screen: LoadingScreen,
-    options: {
-      headerShown: false,
-      navigationBarColor: black,
     } as NativeStackNavigationOptions,
   },
   ProofRequestStatusScreen: {
