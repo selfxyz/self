@@ -8,6 +8,7 @@ import {
   feedbackUnsuccessful,
   impactLight,
   impactMedium,
+  loadingScreenProgress,
   notificationError,
   notificationSuccess,
   notificationWarning,
@@ -29,6 +30,12 @@ const StyledButton = styled(Button, {
 const DevHapticFeedback = () => {
   return (
     <ScrollView style={styles.container}>
+      <StyledButton onPress={() => loadingScreenProgress(true)}>
+        Loading Screen Progress
+      </StyledButton>
+      <StyledButton onPress={() => loadingScreenProgress(false)}>
+        Turn offLoading Screen Progress
+      </StyledButton>
       <StyledButton onPress={feedbackUnsuccessful}>
         Feedback Unsuccessful
       </StyledButton>

@@ -60,12 +60,12 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
     if (Platform.OS === 'android') {
       // Pattern: [delay, duration, delay, duration, ...]
       // First heavy impact at 500ms
-      // Then three light impacts at 800ms intervals
+      // Then three light impacts at 750ms intervals
       triggerFeedback('custom', {
         pattern: [
           500,
           100, // Heavy impact
-          700,
+          750,
           50, // First light impact
           750,
           50, // Second light impact
@@ -89,22 +89,22 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
   triggerHaptic();
 
   // Set up interval for continuous feedback
-  // Total pattern duration (3750ms) + 1 second pause (1000ms) = 4750ms
-  loadingScreenInterval = setInterval(triggerHaptic, 4750);
+  // Total pattern duration (2950ms) + 1 second pause (1000ms) = 3950ms
+  loadingScreenInterval = setInterval(triggerHaptic, 4000);
 };
 
 // consistent light feedback at a steady interval
 export const feedbackProgress = () => {
   if (Platform.OS === 'android') {
     // Pattern: [delay, duration, delay, duration, ...]
-    // Three light impacts at 500ms intervals
+    // Three light impacts at 750ms intervals
     triggerFeedback('custom', {
       pattern: [
         0,
         50, // First light impact
-        450,
+        750,
         50, // Second light impact
-        450,
+        750,
         50, // Third light impact
       ],
     });
@@ -116,17 +116,17 @@ export const feedbackProgress = () => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 700); // First light impact
+  }, 750); // First light impact
   setTimeout(() => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 1450); // Second light impact
+  }, 1500); // Second light impact (750ms after first)
   setTimeout(() => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 2200); // Third light impact
+  }, 2250); // Third light impact (750ms after second)
 };
 
 // light -> medium -> heavy intensity in sequence
