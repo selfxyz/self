@@ -71,8 +71,6 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
           50, // Second light impact
           750,
           50, // Third light impact
-          750,
-          50, // Fourth light impact
         ],
       });
     } else {
@@ -80,10 +78,10 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
         triggerFeedback('impactHeavy', {
           increaseIosIntensity: false,
         });
-      }, 500);
+      }, 750);
       setTimeout(() => {
         feedbackProgress();
-      }, 1000);
+      }, 1500);
     }
   };
 
@@ -91,7 +89,8 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
   triggerHaptic();
 
   // Set up interval for continuous feedback
-  loadingScreenInterval = setInterval(triggerHaptic, 10000); // 3 second interval
+  // Total pattern duration (3750ms) + 1 second pause (1000ms) = 4750ms
+  loadingScreenInterval = setInterval(triggerHaptic, 4750);
 };
 
 // consistent light feedback at a steady interval
@@ -112,21 +111,22 @@ export const feedbackProgress = () => {
     return;
   }
 
+  // Match the timing of the light impacts in the Android pattern
   setTimeout(() => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 500);
+  }, 700); // First light impact
   setTimeout(() => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 1000);
+  }, 1450); // Second light impact
   setTimeout(() => {
     triggerFeedback('impactLight', {
       increaseIosIntensity: false,
     });
-  }, 1500);
+  }, 2200); // Third light impact
 };
 
 // light -> medium -> heavy intensity in sequence
