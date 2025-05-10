@@ -126,3 +126,15 @@ export function formatDg2Hash(dg2Hash: number[]) {
     return unsignedBytesDg2Hash;
 }
 
+
+export function formatDG1Attribute(index: number[], value: string) {
+    const max_length = index[1] - index[0] + 1;
+    if (value.length > max_length) {
+        throw new Error(`Value is too long for index ${index[0]}-${index[1]}`);
+    }
+    return value.padEnd(max_length, '<');
+}
+
+export function formatName(firstName: string, lastName: string) {
+    return `${lastName.toUpperCase()}<<${firstName.toUpperCase()}`;
+}
