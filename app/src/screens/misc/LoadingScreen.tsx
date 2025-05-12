@@ -17,6 +17,14 @@ type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
+  const [passportData, setPassportData] = useState<any>(null);
+  const [loadingText, setLoadingText] = useState<{
+    actionText: string;
+    estimatedTime: string;
+  }>({
+    actionText: '',
+    estimatedTime: '',
+  });
   const currentState = useProvingStore(state => state.currentState);
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();

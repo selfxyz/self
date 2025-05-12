@@ -6,10 +6,18 @@ import {
 } from '../../../src/utils/proving/stateLoadingScreenText';
 
 describe('stateLoadingScreenText', () => {
+  // Default metadata for basic tests
+  const defaultMetadata: PassportMetadata = {
+    signatureAlgorithm: 'RSA',
+    curveOrExponent: '',
+    cscaSignatureAlgorithm: 'ECDSA',
+    cscaCurveOrExponent: 'secp256r1',
+  };
+
   // Helper function to test a state has a response
   const testStateHasResponse = (state: ProvingStateType) => {
     it(`should return a response for ${state} state`, () => {
-      const result = getLoadingScreenText(state);
+      const result = getLoadingScreenText(state, defaultMetadata);
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.actionText.length).toBeGreaterThan(0);
@@ -45,17 +53,33 @@ describe('stateLoadingScreenText', () => {
   // Test edge cases
   describe('Edge cases', () => {
     it('should handle undefined state', () => {
-      const result = getLoadingScreenText(undefined as ProvingStateType);
+      const result = getLoadingScreenText(
+        undefined as ProvingStateType,
+        defaultMetadata,
+      );
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.estimatedTime).toBeDefined();
     });
 
     it('should handle unknown state', () => {
-      const result = getLoadingScreenText('unknown' as ProvingStateType);
+      const result = getLoadingScreenText(
+        'unknown' as ProvingStateType,
+        defaultMetadata,
+      );
       expect(result).toBeDefined();
       expect(result.actionText).toBeDefined();
       expect(result.estimatedTime).toBeDefined();
+    });
+
+    it('should handle undefined metadata', () => {
+      const result = getLoadingScreenText(
+        'proving',
+        undefined as unknown as PassportMetadata,
+      );
+      expect(result).toBeDefined();
+      expect(result.actionText).toBeDefined();
+      expect(result.estimatedTime).toBe('30 - 90 SECONDS'); // Should use default time estimate
     });
   });
 

@@ -53,7 +53,7 @@ export function getProvingTimeEstimate(
 
 export function getLoadingScreenText(
   state: ProvingStateType,
-  metadata?: PassportMetadata,
+  metadata: PassportMetadata,
 ): LoadingScreenText {
   switch (state) {
     // Initial states
