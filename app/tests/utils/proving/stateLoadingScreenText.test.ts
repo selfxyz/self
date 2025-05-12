@@ -10,8 +10,6 @@ describe('stateLoadingScreenText', () => {
   const defaultMetadata: PassportMetadata = {
     signatureAlgorithm: 'RSA',
     curveOrExponent: '',
-    cscaSignatureAlgorithm: 'ECDSA',
-    cscaCurveOrExponent: 'secp256r1',
   };
 
   // Helper function to test a state has a response
@@ -87,8 +85,6 @@ describe('stateLoadingScreenText', () => {
     const rsaMetadata: PassportMetadata = {
       signatureAlgorithm: 'RSA',
       curveOrExponent: '',
-      cscaSignatureAlgorithm: 'ECDSA',
-      cscaCurveOrExponent: 'secp256r1',
     };
 
     it('should use algorithm information to estimate proving time', () => {
@@ -109,8 +105,6 @@ describe('stateLoadingScreenText', () => {
       const metadata: PassportMetadata = {
         signatureAlgorithm: 'RSA',
         curveOrExponent: '',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
       };
 
       const result = getProvingTimeEstimate(metadata);
@@ -121,68 +115,70 @@ describe('stateLoadingScreenText', () => {
       const metadata: PassportMetadata = {
         signatureAlgorithm: 'RSAPSS',
         curveOrExponent: '',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
       };
 
       const result = getProvingTimeEstimate(metadata);
       expect(result).toBe('6 SECONDS');
     });
 
-    it('should return correct time for ECDSA with 256-bit curve', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'ECDSA',
-        curveOrExponent: 'secp256r1',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
-      };
+    describe('ECDSA curves', () => {
+      it.each([['secp224r1'], ['brainpoolP224r1']])(
+        'should return correct time for 224-bit curve %s',
+        curve => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: 'ECDSA',
+            curveOrExponent: curve,
+          };
 
-      const result = getProvingTimeEstimate(metadata);
-      expect(result).toBe('50 SECONDS');
-    });
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('50 SECONDS');
+        },
+      );
 
-    it('should return correct time for ECDSA with 384-bit curve', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'ECDSA',
-        curveOrExponent: 'secp384r1',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
-      };
+      it.each([['secp256r1'], ['brainpoolP256r1']])(
+        'should return correct time for 256-bit curve %s',
+        curve => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: 'ECDSA',
+            curveOrExponent: curve,
+          };
 
-      const result = getProvingTimeEstimate(metadata);
-      expect(result).toBe('90 SECONDS');
-    });
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('50 SECONDS');
+        },
+      );
 
-    it('should return correct time for ECDSA with 512-bit curve', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'ECDSA',
-        curveOrExponent: 'secp512r1',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
-      };
+      it.each([['secp384r1'], ['brainpoolP384r1']])(
+        'should return correct time for 384-bit curve %s',
+        curve => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: 'ECDSA',
+            curveOrExponent: curve,
+          };
 
-      const result = getProvingTimeEstimate(metadata);
-      expect(result).toBe('200 SECONDS');
-    });
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('90 SECONDS');
+        },
+      );
 
-    it('should use CSCA algorithm when isCSCA is true', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'RSA',
-        curveOrExponent: '',
-        cscaSignatureAlgorithm: 'ECDSA',
-        cscaCurveOrExponent: 'secp384r1',
-      };
+      it.each([['secp521r1'], ['brainpoolP512r1']])(
+        'should return correct time for 512/521-bit curve %s',
+        curve => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: 'ECDSA',
+            curveOrExponent: curve,
+          };
 
-      const result = getProvingTimeEstimate(metadata, true);
-      expect(result).toBe('90 SECONDS');
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('200 SECONDS');
+        },
+      );
     });
 
     it('should return default time when algorithm is not recognized', () => {
       const metadata: PassportMetadata = {
         signatureAlgorithm: 'UNKNOWN_ALGORITHM',
         curveOrExponent: '',
-        cscaSignatureAlgorithm: '',
-        cscaCurveOrExponent: '',
       };
 
       const result = getProvingTimeEstimate(metadata);

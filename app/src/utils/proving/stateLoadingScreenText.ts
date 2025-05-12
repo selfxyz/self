@@ -8,22 +8,15 @@ interface LoadingScreenText {
 export interface PassportMetadata {
   signatureAlgorithm: string;
   curveOrExponent: string;
-  cscaSignatureAlgorithm: string;
-  cscaCurveOrExponent: string;
 }
 
 export function getProvingTimeEstimate(
   metadata: PassportMetadata | undefined,
-  isCSCA: boolean = false,
 ): string {
   if (!metadata) return '30 - 90 SECONDS';
 
-  const algorithm = isCSCA
-    ? metadata.cscaSignatureAlgorithm
-    : metadata.signatureAlgorithm;
-  const curveOrExponent = isCSCA
-    ? metadata.cscaCurveOrExponent
-    : metadata.curveOrExponent;
+  const algorithm = metadata.signatureAlgorithm;
+  const curveOrExponent = metadata.curveOrExponent;
 
   // RSA algorithms
   if (algorithm?.includes('RSA')) {
@@ -36,14 +29,14 @@ export function getProvingTimeEstimate(
   // ECDSA algorithms
   if (algorithm?.includes('ECDSA')) {
     // Check bit size from curve name
-    if (curveOrExponent?.includes('256')) {
+    if (curveOrExponent?.includes('224') || curveOrExponent?.includes('256')) {
       return '50 SECONDS';
     }
     if (curveOrExponent?.includes('384')) {
       return '90 SECONDS';
     }
-    if (curveOrExponent?.includes('512')) {
-      return '200 SECONDS';
+    if (curveOrExponent?.includes('512') || curveOrExponent?.includes('521')) {
+      return '200 SECONDS'; // Handle both 512-bit brainpool and 521-bit secp curves
     }
   }
 
@@ -97,7 +90,7 @@ export function getLoadingScreenText(
       return {
         actionText: 'Generating ZK proof',
         estimatedTime: metadata
-          ? getProvingTimeEstimate(metadata, false)
+          ? getProvingTimeEstimate(metadata)
           : '30 - 90 SECONDS',
       };
     case 'post_proving':
