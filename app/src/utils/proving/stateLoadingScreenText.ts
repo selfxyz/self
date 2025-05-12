@@ -5,8 +5,55 @@ interface LoadingScreenText {
   estimatedTime: string;
 }
 
+export interface PassportMetadata {
+  signatureAlgorithm: string;
+  curveOrExponent: string;
+  cscaSignatureAlgorithm: string;
+  cscaCurveOrExponent: string;
+}
+
+export function getProvingTimeEstimate(
+  metadata: PassportMetadata | undefined,
+  isCSCA: boolean = false,
+): string {
+  if (!metadata) return '30 - 90 SECONDS';
+
+  const algorithm = isCSCA
+    ? metadata.cscaSignatureAlgorithm
+    : metadata.signatureAlgorithm;
+  const curveOrExponent = isCSCA
+    ? metadata.cscaCurveOrExponent
+    : metadata.curveOrExponent;
+
+  // RSA algorithms
+  if (algorithm?.includes('RSA')) {
+    if (algorithm?.includes('PSS')) {
+      return '6 SECONDS';
+    }
+    return '4 SECONDS';
+  }
+
+  // ECDSA algorithms
+  if (algorithm?.includes('ECDSA')) {
+    // Check bit size from curve name
+    if (curveOrExponent?.includes('256')) {
+      return '50 SECONDS';
+    }
+    if (curveOrExponent?.includes('384')) {
+      return '90 SECONDS';
+    }
+    if (curveOrExponent?.includes('512')) {
+      return '200 SECONDS';
+    }
+  }
+
+  // Default case
+  return '30 - 90 SECONDS';
+}
+
 export function getLoadingScreenText(
   state: ProvingStateType,
+  metadata?: PassportMetadata,
 ): LoadingScreenText {
   switch (state) {
     // Initial states
@@ -19,7 +66,7 @@ export function getLoadingScreenText(
     // Data preparation states
     case 'fetching_data':
       return {
-        actionText: 'Fetching passport data',
+        actionText: 'Reading current state of the registry',
         estimatedTime: '5 - 10 SECONDS',
       };
     case 'validating_document':
@@ -48,8 +95,10 @@ export function getLoadingScreenText(
       };
     case 'proving':
       return {
-        actionText: 'Generating proof',
-        estimatedTime: '10 - 30 SECONDS',
+        actionText: 'Generating ZK proof',
+        estimatedTime: metadata
+          ? getProvingTimeEstimate(metadata, false)
+          : '30 - 90 SECONDS',
       };
     case 'post_proving':
       return {
@@ -60,7 +109,7 @@ export function getLoadingScreenText(
     // Success state
     case 'completed':
       return {
-        actionText: 'Verification complete',
+        actionText: 'Verified',
         estimatedTime: '1 - 3 SECONDS',
       };
 
