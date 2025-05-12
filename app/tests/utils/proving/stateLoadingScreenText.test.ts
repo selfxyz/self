@@ -101,24 +101,38 @@ describe('stateLoadingScreenText', () => {
       expect(result).toBe('30 - 90 SECONDS');
     });
 
-    it('should return correct time for RSA algorithm', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'RSA',
-        curveOrExponent: '',
-      };
+    describe('RSA algorithms', () => {
+      it.each([
+        ['RSA', '65537'], // Common RSA exponent
+        ['RSA', '3'], // Another common RSA exponent
+      ])(
+        'should return correct time for %s with exponent %s',
+        (algorithm, exponent) => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: algorithm,
+            curveOrExponent: exponent,
+          };
 
-      const result = getProvingTimeEstimate(metadata);
-      expect(result).toBe('4 SECONDS');
-    });
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('4 SECONDS');
+        },
+      );
 
-    it('should return correct time for RSAPSS algorithm', () => {
-      const metadata: PassportMetadata = {
-        signatureAlgorithm: 'RSAPSS',
-        curveOrExponent: '',
-      };
+      it.each([
+        ['RSAPSS', '65537'],
+        ['RSAPSS', '3'],
+      ])(
+        'should return correct time for %s with exponent %s',
+        (algorithm, exponent) => {
+          const metadata: PassportMetadata = {
+            signatureAlgorithm: algorithm,
+            curveOrExponent: exponent,
+          };
 
-      const result = getProvingTimeEstimate(metadata);
-      expect(result).toBe('6 SECONDS');
+          const result = getProvingTimeEstimate(metadata);
+          expect(result).toBe('6 SECONDS');
+        },
+      );
     });
 
     describe('ECDSA curves', () => {
