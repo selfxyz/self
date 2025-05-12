@@ -75,13 +75,11 @@ export const loadingScreenProgress = (shouldVibrate: boolean = true) => {
       });
     } else {
       setTimeout(() => {
-        triggerFeedback('impactHeavy', {
-          increaseIosIntensity: false,
-        });
+        triggerFeedback('impactHeavy');
       }, 750);
       setTimeout(() => {
         feedbackProgress();
-      }, 1500);
+      }, 750);
     }
   };
 
@@ -113,19 +111,13 @@ export const feedbackProgress = () => {
 
   // Match the timing of the light impacts in the Android pattern
   setTimeout(() => {
-    triggerFeedback('impactLight', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactLight');
   }, 750); // First light impact
   setTimeout(() => {
-    triggerFeedback('impactLight', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactLight');
   }, 1500); // Second light impact (750ms after first)
   setTimeout(() => {
-    triggerFeedback('impactLight', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactLight');
   }, 2250); // Third light impact (750ms after second)
 };
 
@@ -148,19 +140,13 @@ export const feedbackSuccess = () => {
   }
 
   setTimeout(() => {
-    triggerFeedback('impactLight', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactLight');
   }, 500);
   setTimeout(() => {
-    triggerFeedback('impactMedium', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactMedium');
   }, 750);
   setTimeout(() => {
-    triggerFeedback('impactHeavy', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactHeavy');
   }, 1000);
 };
 
@@ -183,19 +169,13 @@ export const feedbackUnsuccessful = () => {
   }
 
   setTimeout(() => {
-    triggerFeedback('impactHeavy', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactHeavy');
   }, 500);
   setTimeout(() => {
-    triggerFeedback('impactMedium', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactMedium');
   }, 750);
   setTimeout(() => {
-    triggerFeedback('impactLight', {
-      increaseIosIntensity: false,
-    });
+    triggerFeedback('impactLight');
   }, 1000);
 };
 
