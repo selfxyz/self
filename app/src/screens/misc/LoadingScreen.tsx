@@ -53,7 +53,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     } else if (currentState === 'error' || currentState === 'failure') {
       setAnimationSource(failAnimation);
     } else {
-      setAnimationSource(miscAnimation);
+      setAnimationSource(proveLoadingAnimation);
     }
   }, [currentState, isFocused, fcmToken]);
 
