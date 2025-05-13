@@ -48,6 +48,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       console.log('[LoadingScreen] FCM token available:', !!fcmToken);
     }
 
+    // Update loading text
+    const { actionText, estimatedTime } = getLoadingScreenText(
+      currentState,
+      passportData?.metadata,
+    );
+    setLoadingText({ actionText, estimatedTime });
+
+    // Update animation
     if (currentState === 'completed') {
       setAnimationSource(successAnimation);
     } else if (currentState === 'error' || currentState === 'failure') {
