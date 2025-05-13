@@ -8,6 +8,7 @@ import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
   Button,
+  Input,
   ScrollView,
   Separator,
   Sheet,
@@ -20,7 +21,10 @@ import {
 
 import { getSKIPEM } from '../../../.././common/src/utils/csca';
 import { countryCodes } from '../../../../common/src/constants/constants';
-import { genAndInitMockPassportData } from '../../../../common/src/utils/passports/genMockPassportData';
+import {
+  genMockIdDoc,
+  IdDocInput,
+} from '../../../../common/src/utils/passports/genMockIdDoc';
 import { initPassportDataParsing } from '../../../../common/src/utils/passports/passport';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
 import { SecondaryButton } from '../../components/buttons/SecondaryButton';
@@ -40,12 +44,12 @@ interface MockDataScreenProps {}
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
-  const [age, setAge] = useState(24);
+  const [birthDate, setBirthDate] = useState('');
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
-  const castDate = (yearsOffset: number) => {
+  const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
     return (
@@ -71,10 +75,45 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
     setAlgorithmSheetOpen(false);
   };
 
+  const handleBirthDateChange = (text: string) => {
+    if (isInOfacList) return;
+
+    let value = text.replace(/[^0-9]/g, '');
+    let formattedValue = '';
+
+    if (value.length > 0) {
+      formattedValue += value.substring(0, Math.min(4, value.length));
+    }
+    if (value.length > 4) {
+      formattedValue += '/' + value.substring(4, Math.min(6, value.length));
+    }
+    if (value.length > 6) {
+      formattedValue += '/' + value.substring(6, Math.min(8, value.length));
+    }
+    setBirthDate(formattedValue);
+  };
+
+  const formatBirthDateForGeneration = (inputDate: string): string => {
+    if (inputDate && inputDate.length === 10 && inputDate.includes('/')) {
+      const parts = inputDate.split('/');
+      if (
+        parts.length === 3 &&
+        parts[0].length === 4 &&
+        parts[1].length === 2 &&
+        parts[2].length === 2
+      ) {
+        return `${parts[0].slice(2)}${parts[1]}${parts[2]}`;
+      }
+    }
+    console.warn(
+      'Birth date is not in YYYY/MM/DD format for generation. Using default.',
+    );
+    return '900101';
+  };
+
   const signatureAlgorithmToStrictSignatureAlgorithm = {
     'sha256 rsa 65537 4096': ['sha256', 'sha256', 'rsa_sha256_65537_4096'],
     'sha1 rsa 65537 2048': ['sha1', 'sha1', 'rsa_sha1_65537_2048'],
-    // 'sha256 rsapss 65537 2048': ['sha256', 'sha256', 'rsapss_sha256_65537_2048'], // DSC was signed by a CSCA we don't need to support anymore, TODO sign it with another CSCA
     'sha256 brainpoolP256r1': [
       'sha256',
       'sha256',
@@ -162,63 +201,68 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
 
   const handleGenerate = useCallback(async () => {
     setIsGenerating(true);
-    const randomPassportNumber = Math.random()
-      .toString(36)
-      .substring(2, 11)
-      .replace(/[^a-z0-9]/gi, '')
-      .toUpperCase();
-    await new Promise(resolve =>
-      setTimeout(async () => {
-        let mockPassportData;
-        const [hashFunction1, hashFunction2, signatureAlgorithm] =
-          signatureAlgorithmToStrictSignatureAlgorithm[
-            selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
-          ];
+    try {
+      const randomPassportNumber = Math.random()
+        .toString(36)
+        .substring(2, 11)
+        .replace(/[^a-z0-9]/gi, '')
+        .toUpperCase();
+      const signatureTypeForGeneration =
+        signatureAlgorithmToStrictSignatureAlgorithm[
+          selectedAlgorithm as keyof typeof signatureAlgorithmToStrictSignatureAlgorithm
+        ][2];
 
-        if (isInOfacList) {
-          mockPassportData = genAndInitMockPassportData(
-            hashFunction1,
-            hashFunction2,
-            signatureAlgorithm,
-            selectedCountry as keyof typeof countryCodes,
-            // We disregard the age to stick with Arcangel's birth date
-            '541007',
-            castDate(expiryYears),
-            randomPassportNumber,
-            'HENAO MONTOYA', // this name is on the OFAC list
-            'ARCANGEL DE JESUS',
-          );
+      const idDocInput: Partial<IdDocInput> = {
+        idType: 'mock_passport',
+        signatureType:
+          signatureTypeForGeneration as IdDocInput['signatureType'],
+        expiryDate: castDateToYYMMDDForExpiry(expiryYears),
+        passportNumber: randomPassportNumber,
+      };
+
+      let dobForGeneration: string;
+      if (isInOfacList) {
+        dobForGeneration = '541007';
+        idDocInput.lastName = 'HENAO MONTOYA';
+        idDocInput.firstName = 'ARCANGEL DE JESUS';
+      } else {
+        if (birthDate.length === 10 && birthDate.split('/').length === 3) {
+          dobForGeneration = formatBirthDateForGeneration(birthDate);
         } else {
-          mockPassportData = genAndInitMockPassportData(
-            hashFunction1,
-            hashFunction2,
-            signatureAlgorithm,
-            selectedCountry as keyof typeof countryCodes,
-            castDate(-age),
-            castDate(expiryYears),
-            randomPassportNumber,
-          );
+          setIsGenerating(false);
+          return;
         }
-        const skiPem = await getSKIPEM('staging');
-        mockPassportData = initPassportDataParsing(mockPassportData, skiPem);
-        await storePassportData(mockPassportData);
-        resolve(null);
-      }, 0),
-    );
+      }
+      idDocInput.birthDate = dobForGeneration;
 
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    navigation.navigate('ConfirmBelongingScreen', {
-      mockPassportFlow: true,
-    });
-  }, [selectedAlgorithm, selectedCountry, age, expiryYears, isInOfacList]);
+      let rawMockData = genMockIdDoc(idDocInput);
+      const skiPem = await getSKIPEM('staging');
+      let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
+      await storePassportData(parsedMockData);
 
-  // Add gesture for advanced mode
+      navigation.navigate('ConfirmBelongingScreen', {
+        mockPassportFlow: true,
+      });
+    } catch (error) {
+      console.error('Error during mock data generation:', error);
+    } finally {
+      setIsGenerating(false);
+    }
+  }, [
+    selectedAlgorithm,
+    selectedCountry,
+    birthDate,
+    expiryYears,
+    isInOfacList,
+    navigation,
+  ]);
+
   const twoFingerTripleTap = Gesture.Tap()
     .minPointers(2)
     .numberOfTaps(3)
     .onStart(() => {
       setAdvancedMode(true);
-      buttonTap(); // Provide haptic feedback
+      buttonTap();
     });
 
   const { top, bottom } = useSafeAreaInsets();
@@ -283,44 +327,22 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
           </XStack>
 
           <XStack ai="center" jc="space-between">
-            <BodyText>Age (🎂)</BodyText>
-            <XStack ai="center" gap="$2">
-              <Button
-                h="$3.5"
-                w="$3.5"
-                bg="white"
-                jc="center"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$10"
-                onPress={() => {
-                  buttonTap();
-                  setAge(age - 1);
-                }}
-                disabled={age <= 0 || isInOfacList}
-              >
-                <Minus />
-              </Button>
-              <Text textAlign="center" w="$6" color={textBlack} fontSize="$5">
-                {isInOfacList ? 71 : age} yo
-              </Text>
-              <Button
-                h="$3.5"
-                w="$3.5"
-                bg="white"
-                jc="center"
-                borderColor={borderColor}
-                borderWidth={1}
-                borderRadius="$10"
-                onPress={() => {
-                  buttonTap();
-                  setAge(age + 1);
-                }}
-                disabled={isInOfacList}
-              >
-                <Plus />
-              </Button>
-            </XStack>
+            <BodyText>Birth Date (YYYY/MM/DD)</BodyText>
+            <Input
+              placeholder="YYYY/MM/DD"
+              value={isInOfacList ? '1954/10/07' : birthDate}
+              onChangeText={handleBirthDateChange}
+              keyboardType="numeric"
+              maxLength={10}
+              width={150}
+              textAlign="center"
+              borderColor={borderColor}
+              borderWidth={1}
+              borderRadius="$4"
+              p="$2"
+              disabled={isInOfacList}
+              opacity={isInOfacList ? 0.7 : 1}
+            />
           </XStack>
 
           <XStack ai="center" jc="space-between">
