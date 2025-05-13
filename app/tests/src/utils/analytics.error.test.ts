@@ -1,5 +1,3 @@
-import { Segment } from '@segment/analytics-react-native';
-
 import analytics from '../../../src/utils/analytics';
 import { getSegmentMock } from '../../__setup__/mockAnalytics';
 
@@ -58,7 +56,7 @@ describe('Analytics Error Handling', () => {
 
     // Call with null properties should not throw
     expect(() => {
-      trackEvent('Test Event', null);
+      trackEvent('Test Event', undefined);
     }).not.toThrow();
 
     // Verify that track was called without properties
@@ -71,7 +69,7 @@ describe('Analytics Error Handling', () => {
 
     // Call with null properties should not throw
     expect(() => {
-      trackScreenView('Test Screen', null);
+      trackScreenView('Test Screen', undefined);
     }).not.toThrow();
 
     // Verify that screen was called without properties

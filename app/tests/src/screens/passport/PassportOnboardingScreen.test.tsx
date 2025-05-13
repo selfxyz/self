@@ -1,4 +1,4 @@
-import { fireEvent, render, waitFor } from '@testing-library/react-native';
+import { fireEvent, render } from '@testing-library/react-native';
 import React from 'react';
 
 import PassportOnboardingScreen from '../../../../src/screens/passport/PassportOnboardingScreen';
