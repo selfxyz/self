@@ -3,6 +3,7 @@ import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useCallback } from 'react';
 
 import type { RootStackParamList } from '../Navigation';
+import analytics from '../utils/analytics';
 import { impactLight, impactMedium, selectionChange } from '../utils/haptic';
 
 type NavigationAction = 'default' | 'cancel' | 'confirm';
@@ -17,7 +18,20 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
   const navigation =
     useNavigation() as NativeStackScreenProps<RootStackParamList>['navigation'];
 
+  const { trackEvent } = analytics();
+
   return useCallback(() => {
+    // Get current screen for tracking context
+    const currentScreen = navigation.getCurrentRoute()?.name || 'Unknown';
+
+    // Track navigation event
+    trackEvent('Navigation', {
+      from_screen: currentScreen,
+      to_screen: screen,
+      action_type: options.action || 'default',
+      has_params: options.params ? true : false,
+    });
+
     switch (options.action) {
       case 'cancel':
         selectionChange();
@@ -35,7 +49,7 @@ const useHapticNavigation = <S extends keyof RootStackParamList>(
     }
     // it is safe to cast options.params as any because it is correct when entering the function
     navigation.navigate(screen, options.params as any);
-  }, [navigation, screen, options.action]);
+  }, [navigation, screen, options.action, options.params]);
 };
 
 export default useHapticNavigation;

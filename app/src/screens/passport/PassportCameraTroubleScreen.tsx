@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import Tips, { TipProps } from '../../components/Tips';
 import { Caption } from '../../components/typography/Caption';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import SimpleScrolledTitleLayout from '../../layouts/SimpleScrolledTitleLayout';
+import analytics from '../../utils/analytics';
 import { slate500 } from '../../utils/colors';
 
 const tips: TipProps[] = [
@@ -30,7 +31,16 @@ const tips: TipProps[] = [
 ];
 
 const PassportCameraTrouble: React.FC = () => {
+  const { trackEvent } = analytics();
   const go = useHapticNavigation('PassportCamera', { action: 'cancel' });
+
+  useEffect(() => {
+    trackEvent('Passport Troubleshooting Viewed', {
+      trouble_type: 'camera',
+      flow_stage: 'camera_scanning',
+    });
+  }, []);
+
   return (
     <SimpleScrolledTitleLayout
       title="Having trouble scanning your passport?"

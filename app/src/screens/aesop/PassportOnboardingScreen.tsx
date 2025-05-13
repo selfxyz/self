@@ -13,6 +13,7 @@ import { DescriptionTitle } from '../../components/typography/DescriptionTitle';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import Scan from '../../images/icons/passport_camera_scan.svg';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, slate100, white } from '../../utils/colors';
 
 interface PassportOnboardingScreenProps {}
@@ -20,6 +21,7 @@ interface PassportOnboardingScreenProps {}
 const PassportOnboardingScreen: React.FC<
   PassportOnboardingScreenProps
 > = ({}) => {
+  const { trackEvent } = analytics();
   const handleCameraPress = useHapticNavigation('PassportCamera');
   const onCancelPress = useHapticNavigation('Launch', { action: 'cancel' });
   const animationRef = useRef<LottieView>(null);
@@ -74,8 +76,28 @@ const PassportOnboardingScreen: React.FC<
           </Additional>
         </TextsContainer>
         <ButtonsContainer>
-          <PrimaryButton onPress={handleCameraPress}>Open Camera</PrimaryButton>
-          <SecondaryButton onPress={onCancelPress}>Cancel</SecondaryButton>
+          <PrimaryButton
+            onPress={() => {
+              trackEvent('Passport Onboarding Action', {
+                action: 'open_camera',
+                flow_type: 'aesop_redesign',
+              });
+              handleCameraPress();
+            }}
+          >
+            Open Camera
+          </PrimaryButton>
+          <SecondaryButton
+            onPress={() => {
+              trackEvent('Passport Onboarding Action', {
+                action: 'cancel',
+                flow_type: 'aesop_redesign',
+              });
+              onCancelPress();
+            }}
+          >
+            Cancel
+          </SecondaryButton>
         </ButtonsContainer>
       </ExpandableBottomLayout.BottomSection>
     </ExpandableBottomLayout.Layout>

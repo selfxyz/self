@@ -9,6 +9,7 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationSuccess } from '../../utils/haptic';
 import { useProvingStore } from '../../utils/proving/provingMachine';
@@ -34,16 +35,26 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
   const currentState = useProvingStore(state => state.currentState);
   const isReadyToProve = currentState === 'ready_to_prove';
 
+  const { trackEvent } = analytics();
+
   useEffect(() => {
     notificationSuccess();
     provingStore.init('dsc');
+
+    trackEvent('Passport Flow Completed', {
+      flow_stage: 'passport_verification_completed',
+      is_mock_flow: !!mockPassportFlow,
+    });
   }, []);
 
   const onOkPress = async () => {
     // Initialize the proving process just before navigation
     // This ensures a fresh start each time
     try {
-      // Initialize the state machine
+      trackEvent('Passport Identity Confirmed', {
+        is_ready_to_prove: isReadyToProve,
+        is_mock_flow: !!mockPassportFlow,
+      });
 
       // Mark as user confirmed - proving will start automatically when ready
       provingStore.setUserConfirmed();
@@ -52,6 +63,10 @@ const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
       navigate();
     } catch (error) {
       console.error('Error initializing proving process:', error);
+      trackEvent('Passport Proving Error', {
+        error: error.message || 'Unknown error',
+        is_mock_flow: !!mockPassportFlow,
+      });
     }
   };
 

@@ -8,14 +8,21 @@ import Description from '../../components/typography/Description';
 import { Title } from '../../components/typography/Title';
 import useHapticNavigation from '../../hooks/useHapticNavigation';
 import { ExpandableBottomLayout } from '../../layouts/ExpandableBottomLayout';
+import analytics from '../../utils/analytics';
 import { black, white } from '../../utils/colors';
 import { notificationError } from '../../utils/haptic';
 import { styles } from '../prove/ProofRequestStatusScreen';
 
 const UnsupportedPassportScreen: React.FC = () => {
+  const { trackEvent } = analytics();
   const onPress = useHapticNavigation('Launch');
+
   useEffect(() => {
     notificationError();
+    trackEvent('Passport Unsupported', {
+      flow_stage: 'verification_failed',
+      reason: 'unsupported_passport',
+    });
   }, []);
 
   return (

@@ -3,6 +3,8 @@ import { StyleSheet, ViewStyle } from 'react-native';
 import { Button, Text, ViewProps } from 'tamagui';
 
 import { shouldShowAesopRedesign } from '../../hooks/useAesopRedesign';
+import { navigationRef } from '../../navigation';
+import analytics from '../../utils/analytics';
 import { dinot } from '../../utils/fonts';
 import { pressedStyle } from './pressedStyle';
 
@@ -33,10 +35,29 @@ export default function AbstractButton({
   ...props
 }: AbstractButtonProps) {
   const hasBorder = borderColor ? true : false;
+  const { trackEvent } = analytics();
+
+  const handlePress = (e: any) => {
+    // Track button press with analytics
+    const currentScreen = navigationRef.getCurrentRoute()?.name || 'Unknown';
+    trackEvent('Button Press', {
+      screen: currentScreen,
+      button_text: typeof children === 'string' ? children : 'Unknown',
+      button_type: bgColor === 'transparent' ? 'Secondary' : 'Primary',
+      disabled: props.disabled || false,
+    });
+
+    // Call the original onPress handler if it exists
+    if (props.onPress) {
+      props.onPress(e);
+    }
+  };
+
   return (
     <Button
       unstyled
       {...props}
+      onPress={handlePress}
       style={[
         styles.container,
         { backgroundColor: bgColor, borderColor: borderColor },
