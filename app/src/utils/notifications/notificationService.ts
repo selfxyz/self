@@ -58,11 +58,6 @@ export async function requestNotificationPermission(): Promise<boolean> {
 
     console.log('Notification permission status:', enabled);
 
-    if (enabled && Platform.OS === 'ios') {
-      await messaging().registerDeviceForRemoteMessages();
-      console.log('Registered for remote notifications');
-    }
-
     return enabled;
   } catch (error) {
     console.error('Failed to request notification permission:', error);
