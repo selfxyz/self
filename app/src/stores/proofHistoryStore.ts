@@ -236,9 +236,9 @@ export const useProofHistoryStore = create<ProofHistoryState>()((set, get) => {
 
         const [results] = await db.executeSql(
           `WITH data AS (
-            SELECT *, COUNT(*) OVER() as total_count 
-            FROM ${TABLE_NAME} 
-            ORDER BY timestamp DESC 
+            SELECT *, COUNT(*) OVER() as total_count
+            FROM ${TABLE_NAME}
+            ORDER BY timestamp DESC
             LIMIT ? OFFSET ?
           )
           SELECT * FROM data`,

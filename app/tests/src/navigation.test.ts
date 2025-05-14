@@ -1,0 +1,64 @@
+describe('navigation', () => {
+  it('should have the correct navigation screens', () => {
+    const navigationScreens = require('../../src/navigation').navigationScreens;
+    const listOfScreens = Object.keys(navigationScreens).sort();
+    expect(listOfScreens).toEqual([
+      'AccountRecovery',
+      'AccountRecoveryChoice',
+      'AccountVerifiedSuccess',
+      'CloudBackupSettings',
+      'ConfirmBelongingScreen',
+      'CreateMock',
+      'DevHapticFeedback',
+      'DevSettings',
+      'Disclaimer',
+      'Home',
+      'Launch',
+      'LoadingScreen',
+      'Modal',
+      'PassportCamera',
+      'PassportCameraTrouble',
+      'PassportDataInfo',
+      'PassportDataNotFound',
+      'PassportNFCScan',
+      'PassportNFCTrouble',
+      'PassportOnboarding',
+      'ProofHistory',
+      'ProofHistoryDetail',
+      'ProofRequestStatusScreen',
+      'ProveScreen',
+      'QRCodeTrouble',
+      'QRCodeViewFinder',
+      'RecoverWithPhrase',
+      'SaveRecoveryPhrase',
+      'Settings',
+      'ShowRecoveryPhrase',
+      'Splash',
+      'UnsupportedPassport',
+    ]);
+  });
+
+  describe('Aesop design screen overrides', () => {
+    beforeEach(() => {
+      jest.resetModules();
+    });
+
+    it('should use regular passport screens when shouldShowAesopRedesign is false', () => {
+      const navigationScreens =
+        require('../../src/navigation').navigationScreens;
+      expect(
+        navigationScreens.PassportOnboarding.options.title,
+      ).toBeUndefined();
+    });
+
+    it('should use aesop design passport screens when shouldShowAesopRedesign is true', () => {
+      jest.mock('../../src/hooks/useAesopRedesign', () => ({
+        shouldShowAesopRedesign: jest.fn().mockReturnValue(true),
+      }));
+
+      const navigationScreens =
+        require('../../src/navigation').navigationScreens;
+      expect(navigationScreens.PassportOnboarding.options.title).toBeDefined();
+    });
+  });
+});

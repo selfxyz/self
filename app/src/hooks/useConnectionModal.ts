@@ -2,7 +2,7 @@ import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { navigationRef } from '../Navigation';
+import { navigationRef } from '../navigation';
 import { useModal } from './useModal';
 
 const connectionModalParams = {

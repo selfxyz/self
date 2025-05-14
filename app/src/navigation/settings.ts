@@ -1,0 +1,74 @@
+import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
+
+import CloudBackupScreen from '../screens/settings/CloudBackupScreen';
+import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
+import ProofHistoryDetailScreen from '../screens/settings/ProofHistoryDetailScreen';
+import ProofHistoryScreen from '../screens/settings/ProofHistoryScreen';
+import SettingsScreen from '../screens/settings/SettingsScreen';
+import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
+import { black, slate300, white } from '../utils/colors';
+
+const settingsScreens = {
+  CloudBackupSettings: {
+    screen: CloudBackupScreen,
+    options: {
+      title: 'Cloud backup',
+      headerStyle: {
+        backgroundColor: black,
+      },
+      headerTitleStyle: {
+        color: slate300,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  PassportDataInfo: {
+    screen: PassportDataInfoScreen,
+    options: {
+      title: 'Passport Data Info',
+      headerStyle: {
+        backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+  ProofHistory: {
+    screen: ProofHistoryScreen,
+    options: {
+      title: 'Approved Requests',
+      navigationBarColor: black,
+    },
+  },
+  ProofHistoryDetail: {
+    screen: ProofHistoryDetailScreen,
+    options: {
+      title: 'Approval',
+    },
+  },
+  Settings: {
+    screen: SettingsScreen,
+    options: {
+      animation: 'slide_from_bottom',
+      title: 'Settings',
+      headerStyle: {
+        backgroundColor: white,
+      },
+      headerTitleStyle: {
+        color: black,
+      },
+      navigationBarColor: black,
+    } as NativeStackNavigationOptions,
+    config: {
+      screens: {},
+    },
+  },
+  ShowRecoveryPhrase: {
+    screen: ShowRecoveryPhraseScreen,
+    options: {
+      title: 'Recovery Phrase',
+      headerStyle: {
+        backgroundColor: white,
+      },
+    } as NativeStackNavigationOptions,
+  },
+};
+
+export default settingsScreens;

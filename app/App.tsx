@@ -4,7 +4,7 @@ import { Buffer } from 'buffer';
 import React from 'react';
 import { YStack } from 'tamagui';
 
-import AppNavigation from './src/Navigation';
+import AppNavigation from './src/navigation';
 import { initSentry, wrapWithSentry } from './src/Sentry';
 import { AuthProvider } from './src/stores/authProvider';
 import { DatabaseProvider } from './src/stores/databaseProvider';
