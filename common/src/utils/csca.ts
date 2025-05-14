@@ -1,3 +1,4 @@
+import { API_URL, API_URL_STAGING } from '../constants/constants';
 import { SKI_PEM, SKI_PEM_DEV } from '../constants/skiPem';
 
 export function findStartIndexEC(point: string, messagePadded: number[]): [number, number] {
@@ -120,24 +121,53 @@ export function findOIDPosition(
   throw new Error('OID not found in message');
 }
 
-export function getCSCAFromSKI(ski: string, devMode: boolean): string {
+export function getCSCAFromSKI(ski: string, skiPem: any = null ): string {
   const normalizedSki = ski.replace(/\s+/g, '').toLowerCase();
-
+  const isSkiProvided = skiPem !== null;
+  console.log('SKI-PEM provided');
   const cscaPemPROD = (SKI_PEM as any)[normalizedSki];
   const cscaPemDEV = (SKI_PEM_DEV as any)[normalizedSki];
-
-  let cscaPem = devMode ? cscaPemDEV || cscaPemPROD : cscaPemPROD;
-
+  let cscaPem = null;
+  if (isSkiProvided) {
+    cscaPem = skiPem[normalizedSki];
+  } else {
+    cscaPem = cscaPemDEV || cscaPemPROD;
+  }
   if (!cscaPem) {
-    console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`, 'devMode: ', devMode);
+    console.log('\x1b[33m%s\x1b[0m', `[WRN] CSCA with SKI ${ski} not found`, 'isSkiProvided: ', isSkiProvided);
     throw new Error(
-      `CSCA not found, authorityKeyIdentifier: ${ski}, areMockPassportsAllowed: ${devMode}`
+      `CSCA not found, authorityKeyIdentifier: ${ski}, isSkiProvided: ${isSkiProvided}`
     );
   }
-
   if (!cscaPem.includes('-----BEGIN CERTIFICATE-----')) {
     cscaPem = `-----BEGIN CERTIFICATE-----\n${cscaPem}\n-----END CERTIFICATE-----`;
   }
-
   return cscaPem;
+}
+
+export async function getSKIPEM(environment: 'staging' | 'production'): Promise<{ [key: string]: string }> {
+  const skiPemUrl = ((environment === 'staging') ? API_URL_STAGING : API_URL) + '/ski-pem';
+  console.log('Fetching SKI-PEM mapping from:', skiPemUrl);
+  try {
+    const response = await fetch(skiPemUrl);
+    if (!response.ok) {
+      throw new Error(`HTTP error fetching ${skiPemUrl}! status: ${response.status}`);
+    }
+
+    const responseText = await response.text();
+    const jsonData = JSON.parse(responseText);
+
+    if (!jsonData || typeof jsonData !== 'object' || !jsonData.data || typeof jsonData.data !== 'object') {
+        console.error("Unexpected JSON structure received:", jsonData);
+        throw new Error('Unexpected JSON structure received from SKI-PEM endpoint.');
+    }
+
+    console.log("Parsed SKI-PEM data received.");
+
+    return jsonData.data;
+
+  } catch (error) {
+    console.error("Error fetching or parsing ski-pem:", error);
+    throw new Error(`Failed to get SKIPEM: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

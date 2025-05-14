@@ -1,10 +1,9 @@
+import { useNetInfo } from '@react-native-community/netinfo';
 import { useEffect } from 'react';
 import { Linking, Platform } from 'react-native';
 
-import { useNetInfo } from '@react-native-community/netinfo';
-
-import { navigationRef } from '../Navigation';
-import { useModal } from '../hooks/useModal';
+import { navigationRef } from '../navigation';
+import { useModal } from './useModal';
 
 const connectionModalParams = {
   titleText: 'Internet connection error',
@@ -22,20 +21,26 @@ const connectionModalParams = {
 } as const;
 
 export default function useConnectionModal() {
-  const { isInternetReachable } = useNetInfo();
+  const { isConnected, isInternetReachable } = useNetInfo();
   const { showModal, dismissModal, visible } = useModal(connectionModalParams);
+  const hasConnection = isInternetReachable === true && isConnected === true;
 
   useEffect(() => {
-    if (!navigationRef.isReady()) {
-      return;
-    }
+    const timeoutId = setTimeout(() => {
+      if (!navigationRef.isReady()) {
+        return;
+      }
 
-    if (isInternetReachable === false && !visible) {
-      showModal();
-    } else if (visible && isInternetReachable !== false) {
-      dismissModal();
-    }
-  }, [isInternetReachable, dismissModal, visible, navigationRef.isReady()]);
+      if (!hasConnection && !visible) {
+        showModal();
+      } else if (visible && hasConnection) {
+        dismissModal();
+      }
+      // Add a small delay to allow app initialization
+    }, 2000);
+
+    return () => clearTimeout(timeoutId);
+  }, [hasConnection, dismissModal, visible, navigationRef.isReady()]);
 
   return {
     visible,

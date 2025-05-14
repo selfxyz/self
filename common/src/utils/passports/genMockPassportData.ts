@@ -1,18 +1,16 @@
-import { PassportData } from '../types';
-import * as forge from 'node-forge';
 import * as asn1 from 'asn1js';
 import elliptic from 'elliptic';
-import { getHashLen, hash } from '../hash';
+import * as forge from 'node-forge';
 import { countryCodes } from '../../constants/constants';
-import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
-import { SignatureAlgorithm } from '../types';
+import { getCurveForElliptic } from '../certificate_parsing/curves';
 import {
   PublicKeyDetailsECDSA,
   PublicKeyDetailsRSAPSS,
 } from '../certificate_parsing/dataStructure';
-import { getCurveForElliptic } from '../certificate_parsing/curves';
-import { formatAndConcatenateDataHashes, formatMrz } from './format';
-import { generateSignedAttr } from './format';
+import { parseCertificateSimple } from '../certificate_parsing/parseCertificateSimple';
+import { getHashLen, hash } from '../hash';
+import { PassportData, SignatureAlgorithm } from '../types';
+import { formatAndConcatenateDataHashes, formatMrz, generateSignedAttr } from './format';
 import { initPassportDataParsing } from './passport';
 import getMockDSC from './getMockDSC';
 
@@ -103,8 +101,7 @@ export function genMockPassportData(
   const hashAlgo = signatureType.split('_')[1];
   const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
   const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
-
-  return initPassportDataParsing({
+  return {
     dsc: dsc,
     mrz: mrz,
     dg2Hash: dataGroupHashes.find(([dgNum]) => dgNum === 2)?.[1] || [],
@@ -112,9 +109,32 @@ export function genMockPassportData(
     signedAttr: signedAttr,
     encryptedDigest: signatureBytes,
     documentType: "mock_passport"
-  });
+  };
 }
 
+export function genAndInitMockPassportData(
+  dgHashAlgo: string,
+  eContentHashAlgo: string,
+  signatureType: SignatureAlgorithm,
+  nationality: keyof typeof countryCodes,
+  birthDate: string,
+  expiryDate: string,
+  passportNumber: string = '15AA81234',
+  lastName: string = 'DUPONT',
+  firstName: string = 'ALPHONSE HUGHUES ALBERT'
+): PassportData {
+  return initPassportDataParsing(genMockPassportData(
+    dgHashAlgo,
+    eContentHashAlgo,
+    signatureType,
+    nationality,
+    birthDate,
+    expiryDate,
+    passportNumber,
+    lastName,
+    firstName
+  ));
+}
 function sign(
   privateKeyPem: string,
   dsc: string,

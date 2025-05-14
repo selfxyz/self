@@ -1,3 +1,4 @@
+import { ethers } from 'ethers';
 import { useMemo } from 'react';
 import { Platform } from 'react-native';
 import {
@@ -5,8 +6,6 @@ import {
   CloudStorageProvider,
   CloudStorageScope,
 } from 'react-native-cloud-storage';
-
-import { ethers } from 'ethers';
 
 import { name } from '../../../package.json';
 import { Mnemonic } from '../../types/mnemonic';

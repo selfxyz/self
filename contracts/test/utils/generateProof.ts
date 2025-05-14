@@ -3,24 +3,24 @@ const YELLOW = '\x1b[33m';
 const GREEN = '\x1b[32m';
 const RESET = '\x1b[0m';
 
-import type { 
-    PublicSignals,
-    Groth16Proof,
+import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
+import { ChildNodes, SMT } from "@openpassport/zk-kit-smt";
+import fs from "fs";
+import path from "path";
+import { poseidon2, poseidon3 } from "poseidon-lite";
+import type {
     CircuitSignals,
+    Groth16Proof,
+    PublicSignals,
 } from "snarkjs";
 import { groth16 } from "snarkjs";
-import fs from "fs";
-import { SMT, ChildNodes } from "@openpassport/zk-kit-smt";
-import { poseidon2, poseidon3 } from "poseidon-lite";
-import { LeanIMT } from "@openpassport/zk-kit-lean-imt";
-import path from "path";
-import { RegisterCircuitProof, DscCircuitProof, CircuitArtifacts, VcAndDiscloseProof } from "./types";
 import { PassportData } from "../../../common/src/utils/types";
+import { CircuitArtifacts, DscCircuitProof, RegisterCircuitProof, VcAndDiscloseProof } from "./types";
 
-import {BigNumberish} from "ethers";
-import { 
-    generateCircuitInputsRegister,
+import { BigNumberish } from "ethers";
+import {
     generateCircuitInputsDSC,
+    generateCircuitInputsRegister,
     generateCircuitInputsVCandDisclose
 } from "../../../common/src/utils/circuits/generateInputs";
 import serialized_csca_tree from './pubkeys/serialized_csca_tree.json';
@@ -63,7 +63,7 @@ export async function generateRegisterProof(
 
     // Generate the proof
     const startTime = performance.now();
-    
+
     const registerProof: {
         proof: Groth16Proof,
         publicSignals: PublicSignals
@@ -72,7 +72,7 @@ export async function generateRegisterProof(
         registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].wasm,
         registerCircuits["register_sha256_sha256_sha256_rsa_65537_4096"].zkey
     );
-    
+
     const endTime = performance.now();
     console.log(GREEN, `groth16.fullProve execution time: ${((endTime - startTime) / 1000).toFixed(2)} seconds`, RESET);
 
@@ -92,12 +92,12 @@ export async function generateRegisterProof(
 }
 
 export async function generateDscProof(
-    dscCertificate: string,
+    passportData: PassportData,
 ): Promise<DscCircuitProof> {
     console.log(CYAN, "=== Start generateDscProof ===", RESET);
 
     const dscCircuitInputs: CircuitSignals = await generateCircuitInputsDSC(
-        dscCertificate,
+        passportData,
         serialized_csca_tree
     );
 
@@ -151,7 +151,7 @@ export async function generateVcAndDiscloseRawProof(
         nameAndDob_smt = smts.nameAndDob_smt;
         nameAndYob_smt = smts.nameAndYob_smt;
     }
-        
+
     const vcAndDiscloseCircuitInputs: CircuitSignals = generateCircuitInputsVCandDisclose(
         secret,
         attestationId,
@@ -233,10 +233,10 @@ export async function generateVcAndDiscloseProof(
 
 export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
     const parsed = JSON.parse("[" + rawCallData + "]");
-    
+
     return {
         a: parsed[0].map((x: string) => x.replace(/"/g, '')) as [BigNumberish, BigNumberish],
-        b: parsed[1].map((arr: string[]) => 
+        b: parsed[1].map((arr: string[]) =>
             arr.map((x: string) => x.replace(/"/g, ''))
         ) as [[BigNumberish, BigNumberish], [BigNumberish, BigNumberish]],
         c: parsed[2].map((x: string) => x.replace(/"/g, '')) as [BigNumberish, BigNumberish],
@@ -245,7 +245,7 @@ export function parseSolidityCalldata<T>(rawCallData: string, _type: T): T {
 }
 
 
-export function getSMTs() {    
+export function getSMTs() {
     const passportNo_smt = importSMTFromJsonFile("../common/ofacdata/outputs/passportNoAndNationalitySMT.json") as SMT;
     const nameAndDob_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndDobSMT.json") as SMT;
     const nameAndYob_smt = importSMTFromJsonFile("../common/ofacdata/outputs/nameAndYobSMT.json") as SMT;
@@ -260,13 +260,13 @@ export function getSMTs() {
 function importSMTFromJsonFile(filePath?: string): SMT | null {
     try {
         const jsonString = fs.readFileSync(path.resolve(process.cwd(), filePath as string), 'utf8');
-          
+
         const data = JSON.parse(jsonString);
-          
+
         const hash2 = (childNodes: ChildNodes) => (childNodes.length === 2 ? poseidon2(childNodes) : poseidon3(childNodes));
         const smt = new SMT(hash2, true);
         smt.import(data);
-          
+
         return smt;
     } catch (error) {
         console.error('Failed to import SMT from JSON file:', error);

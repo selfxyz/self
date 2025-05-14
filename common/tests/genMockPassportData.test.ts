@@ -1,8 +1,8 @@
-import { assert, expect } from 'chai';
+import { expect } from 'chai';
 import { describe, it } from 'mocha';
-import { genMockPassportData } from '../src/utils/passports/genMockPassportData';
-import { PassportData, SignatureAlgorithm } from '../src/utils/types';
+import { genAndInitMockPassportData } from '../src/utils/passports/genMockPassportData';
 import { parsePassportData } from '../src/utils/passports/passport_parsing/parsePassportData';
+import { PassportData, SignatureAlgorithm } from '../src/utils/types';
 
 const testCases = [
   { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'rsa_sha1_65537_2048' },
@@ -19,7 +19,7 @@ describe('Mock Passport Data Generator', function () {
 
   testCases.forEach(({ dgHashAlgo, eContentHashAlgo, sigAlg }) => {
     it(`should generate valid passport data for ${sigAlg}`, () => {
-      const passportData = genMockPassportData(
+      const passportData = genAndInitMockPassportData(
         dgHashAlgo,
         eContentHashAlgo,
         sigAlg as SignatureAlgorithm,

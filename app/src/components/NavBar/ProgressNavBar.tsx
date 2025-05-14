@@ -1,10 +1,9 @@
-import React from 'react';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
 import {
   NativeStackHeaderProps,
   NativeStackNavigationOptions,
 } from '@react-navigation/native-stack';
+import React from 'react';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { TextStyle, ViewStyle, XStack, YStack } from 'tamagui';
 
 import { cyan300, slate200, white } from '../../utils/colors';
