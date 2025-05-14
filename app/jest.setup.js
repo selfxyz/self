@@ -282,4 +282,6 @@ jest.mock('react-native-localize', () => ({
   }),
 }));
 
-jest.mock('./src/utils/notifications/notificationService', () => require('./tests/__setup__/notificationServiceMock.js'));
+jest.mock('./src/utils/notifications/notificationService', () =>
+  require('./tests/__setup__/notificationServiceMock.js'),
+);
