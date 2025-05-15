@@ -16,11 +16,14 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     throw new Error("Passport data are not parsed");
   }
   const passportMetadata = passportData.passportMetadata;
-  
+
   if (!passportMetadata.cscaFound) {
     console.error('CSCA not found in passport metadata');
     throw new Error("CSCA not found");
   }
+
+  const isIdCard = passportData.documentType === 'mock_id_card' || passportData.documentType === 'id_card';
+  const docTypePrefix = isIdCard ? 'id_' : '';
 
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
   const hashFunction = passportMetadata.cscaHashFunction;
@@ -32,7 +35,7 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     console.log('Processing ECDSA signature...');
     const curve = passportMetadata.cscaCurveOrExponent;
     console.log('ECDSA curve:', curve);
-    const circuitName = `dsc_${hashFunction}_${signatureAlgorithm}_${curve}`;
+    const circuitName = `dsc_${docTypePrefix}${hashFunction}_${signatureAlgorithm}_${curve}`;
     console.log('Generated circuit name:', circuitName);
     return circuitName;
 
@@ -42,9 +45,9 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     const bits = passportMetadata.cscaSignatureAlgorithmBits;
     console.log('RSA exponent:', exponent);
     console.log('RSA bits:', bits);
-    
+
     if (bits <= 4096) {
-      const circuitName = `dsc_${hashFunction}_${signatureAlgorithm}_${exponent}_${4096}`;
+      const circuitName = `dsc_${docTypePrefix}${hashFunction}_${signatureAlgorithm}_${exponent}_${4096}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {
@@ -62,7 +65,7 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
     console.log('RSA-PSS bits:', bits);
 
     if (bits <= 4096) {
-      const circuitName = `dsc_${hashFunction}_${signatureAlgorithm}_${exponent}_${saltLength}_${bits}`;
+      const circuitName = `dsc_${docTypePrefix}${hashFunction}_${signatureAlgorithm}_${exponent}_${saltLength}_${bits}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {
@@ -91,6 +94,9 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
 
   const parsedDsc = passportData.dsc_parsed;
 
+  const isIdCard = passportData.documentType === 'mock_id_card' || passportData.documentType === 'id_card';
+  const docTypePrefix = isIdCard ? 'id_' : '';
+
   const dgHashAlgo = passportMetadata.dg1HashFunction;
   const eContentHashAlgo = passportMetadata.eContentHashFunction;
   const signedAttrHashAlgo = passportMetadata.signedAttrHashFunction;
@@ -107,7 +113,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
       curveOrExponent,
     } = passportMetadata
     console.log('ECDSA curve:', curveOrExponent);
-    const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}`;
+    const circuitName = `register_${docTypePrefix}${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}`;
     console.log('Generated circuit name:', circuitName);
     return circuitName;
 
@@ -121,7 +127,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('RSA bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-      const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
+      const circuitName = `register_${docTypePrefix}${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${4096}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {
@@ -141,7 +147,7 @@ function getRegisterNameFromPassportData(passportData: PassportData) {
     console.log('RSA-PSS bits:', signatureAlgorithmBits);
 
     if (signatureAlgorithmBits <= 4096) {
-      const circuitName = `register_${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${saltLength}_${signatureAlgorithmBits}`;
+      const circuitName = `register_${docTypePrefix}${dgHashAlgo}_${eContentHashAlgo}_${signedAttrHashAlgo}_${sigAlg}_${curveOrExponent}_${saltLength}_${signatureAlgorithmBits}`;
       console.log('Generated circuit name:', circuitName);
       return circuitName;
     } else {

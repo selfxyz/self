@@ -4,6 +4,6 @@ import { parseCertificateSimple } from "../../common/src/utils/certificate_parsi
 import { findStartPubKeyIndex } from "../../common/src/utils/passports/passport";
 import { parseDscCertificateData } from "../../common/src/utils/passports/passport_parsing/parseDscCertificateData";
 import { getLeafCscaTree, getLeafDscTree } from "../../common/src/utils/trees";
-import { genMockIdDoc } from "../../common/src/utils/passports/genMockIdDoc";
+import { genMockIdDocAndInitDataParsing } from "../../common/src/utils/passports/genMockIdDoc";
 
-export { CertificateData, findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificate, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDoc };
+export { CertificateData, findStartPubKeyIndex, getLeafCscaTree, getLeafDscTree, parseCertificate, parseCertificateSimple, parseDscCertificateData, PublicKeyDetailsECDSA, PublicKeyDetailsRSA, genMockIdDocAndInitDataParsing };

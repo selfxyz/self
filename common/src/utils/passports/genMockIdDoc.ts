@@ -1,6 +1,6 @@
 // generate a mock id document
 
-import { DocumentType, SignatureAlgorithm } from "../types";
+import { DocumentType, PassportData, SignatureAlgorithm } from "../types";
 import { hashAlgosTypes } from "../../constants/constants";
 import { countries } from "../../constants/countries";
 import { genDG1 } from "./dg1";
@@ -45,7 +45,7 @@ const defaultIdDocInput: IdDocInput = {
     sex: 'M',
 }
 
-export function genMockIdDoc(userInput: Partial<IdDocInput> = {}) {
+export function genMockIdDoc(userInput: Partial<IdDocInput> = {}):PassportData {
     const mergedInput: IdDocInput = {
         ...defaultIdDocInput,
         ...userInput
@@ -61,7 +61,7 @@ export function genMockIdDoc(userInput: Partial<IdDocInput> = {}) {
     const hashAlgo = mergedInput.signatureType.split('_')[1];
     const signature = sign(privateKeyPem, dsc, hashAlgo, signedAttr);
     const signatureBytes = Array.from(signature, (byte) => (byte < 128 ? byte : byte - 256));
-    return initPassportDataParsing({
+    return {
         dsc: dsc,
         mrz: dg1,
         dg2Hash: dataGroupHashes.find(([dgNum]) => dgNum === 2)?.[1] || [],
@@ -69,9 +69,14 @@ export function genMockIdDoc(userInput: Partial<IdDocInput> = {}) {
         signedAttr: signedAttr,
         encryptedDigest: signatureBytes,
         documentType: mergedInput.idType as DocumentType
-    });
+    };
 }
 
+export function genMockIdDocAndInitDataParsing(userInput: Partial<IdDocInput> = {}) {
+    return initPassportDataParsing({
+        ...genMockIdDoc(userInput),
+    });
+}
 
 function generateRandomBytes(length: number): number[] {
     // Generate numbers between -128 and 127 to match the existing signed byte format

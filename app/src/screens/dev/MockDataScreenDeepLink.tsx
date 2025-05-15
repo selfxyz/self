@@ -8,7 +8,7 @@ import { ScrollView, Text, XStack, YStack } from 'tamagui';
 
 import { countryCodes } from '../../../../common/src/constants/constants';
 import {
-  genMockIdDoc,
+  genMockIdDocAndInitDataParsing,
   IdDocInput,
 } from '../../../../common/src/utils/passports/genMockIdDoc';
 import { PrimaryButton } from '../../components/buttons/PrimaryButton';
@@ -64,7 +64,7 @@ const MockDataScreenDeepLink: React.FC = () => {
       lastName: storeState.deepLinkSurname,
       birthDate: storeState.deepLinkBirthDate,
     };
-    const passportData = genMockIdDoc(idDocInput);
+    const passportData = genMockIdDocAndInitDataParsing(idDocInput);
     await storePassportData(passportData);
     navigation.navigate('ConfirmBelongingScreen', {
       mockPassportFlow: true,

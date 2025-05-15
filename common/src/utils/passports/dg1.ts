@@ -1,6 +1,6 @@
 import { formatName } from "./format";
 import { formatDG1Attribute } from "./format";
-import { IdDocInput } from "./genMockIdDoc";
+import { IdDocInput } from "./genMockIdDocAndInitDataParsing";
 
 
 export function genDG1(idDocInput: IdDocInput) {
