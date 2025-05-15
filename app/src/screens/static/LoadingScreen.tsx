@@ -1,7 +1,8 @@
 import { StaticScreenProps, useIsFocused } from '@react-navigation/native';
 import LottieView from 'lottie-react-native';
 import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Text } from 'tamagui';
 
 import failAnimation from '../../assets/animations/loading/fail.json';
 import miscAnimation from '../../assets/animations/loading/misc.json';
@@ -65,17 +66,21 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
         renderMode="HARDWARE"
       />
       <View style={styles.textContainer}>
-        <Text style={[styles.text]}>{getStateMessage(currentState)}</Text>
+        <Text mb={'$2'} color="gray" fontSize={14} textAlign="center">
+          This operation can take few minutes.
+        </Text>
         {!canCloseApp ? (
-          <Text style={styles.text}>
-            This can take up to one minute, don't close the app
+          <Text color="white" textAlign="center" fontSize={18}>
+            Please don't close the app.
           </Text>
         ) : (
-          <Text style={styles.text}>
-            Your data has been securely transmitted. You can now safely close
-            the app if needed.
+          <Text color="white" textAlign="center" fontSize={18}>
+            You can now safely close the app.
           </Text>
         )}
+        <Text mt={'$5'} color="gray" fontSize={14} textAlign="center">
+          {getStateMessage(currentState)}
+        </Text>
       </View>
     </View>
   );
@@ -99,12 +104,6 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     padding: 16,
-  },
-  text: {
-    textAlign: 'center',
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '500',
   },
 });
 

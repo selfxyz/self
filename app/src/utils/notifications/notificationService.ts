@@ -11,9 +11,9 @@ export const getStateMessage = (state: string): string => {
     case 'fetching_data':
       return 'Fetching data...';
     case 'validating_document':
-      return 'Validating your document...';
+      return 'Validating document...';
     case 'init_tee_connexion':
-      return 'Establishing secure connection...';
+      return 'Preparing secure environment...';
     case 'ready_to_prove':
       return 'Ready to prove...';
     case 'proving':
