@@ -18,7 +18,6 @@ include "./nullifier.circom";
 /// @input delimiterIndices Indices of delimiters (255) in the QR text data. 18 delimiters including photo
 /// @input signature RSA signature
 /// @input pubKey RSA public key (of the government)
-/// @input nullifierSeed A random value used as an input to compute the nullifier;we treat this as the secret the user will pass as per the self scheme
 /// @output pubkeyHash Poseidon hash of the RSA public key (after merging nearby chunks)
 
 template AadhaarQRVerifier(n, k, maxDataLength) {
@@ -27,14 +26,13 @@ template AadhaarQRVerifier(n, k, maxDataLength) {
     signal input delimiterIndices[18];
     signal input signature[k];
     signal input pubKey[k];
-    signal input nullifierSeed;
+
 
     signal output pubkeyHash;
 
     // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
     component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
     n2bHeaderLength.in <== qrDataPaddedLength;
-
 
     // Verify the RSA signature
     component signatureVerifier = SignatureVerifier(n, k, maxDataLength);

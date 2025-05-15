@@ -11,7 +11,7 @@ include "../FpPowMod.circom";
 /// @param CHUNK_NUMBER Number of chunks (32 for 2048-bit RSA, 48 for 3072-bit, 64 for 4096-bit)
 /// @param HASH_SIZE Size of the hash in bits (160 for SHA1, 256 for SHA256, 384 for SHA384 and 512 for SHA512)
 /// @input signature The RSA signature split into chunks
-/// @input modulus The RSA modulus split into chunks
+/// @input modulus The RSA modulus split into chunks1
 /// @input message The message hash to verify
 template VerifyRsa3Pkcs1v1_5(CHUNK_SIZE, CHUNK_NUMBER, HASH_SIZE) {
     signal input signature[CHUNK_NUMBER];

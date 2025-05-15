@@ -14,6 +14,7 @@ include "../utils/passport/customHashers.circom";
 /// @param n RSA pubic key size per chunk
 /// @param k Number of chunks the RSA public key is split into
 /// @param maxDataLength Maximum length of the data
+/// @param nameMaxBytes 
 /// @input qrDataPadded QR data without the signature; assumes elements to be bytes; remaining space is padded with 0
 /// @input qrDataPaddedLength Length of padded QR data
 /// @input delimiterIndices Indices of delimiters (255) in the QR text data. 18 delimiters including photo
@@ -27,8 +28,8 @@ include "../utils/passport/customHashers.circom";
 template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
 
     // This means the attestation is aadhaar
-    var attestation_id = 2;
-    var packedLength  = computeIntChunkLength(nameMaxBytes);
+    var attestation_id = 3;
+    // var packedLength  = computeIntChunkLength(nameMaxBytes);
 
     signal input qrDataPadded[maxDataLength];
     signal input qrDataPaddedLength;
@@ -37,10 +38,10 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     signal input pubKey[k];
     signal input secret;
 
-    signal output commitment;
-    signal output nullifier;
-    signal output timestamp;
     signal output pubKeyHash;
+    signal output timestamp;
+    signal output nullifier;
+    signal output commitment;
 
     // Assert `qrDataPaddedLength` fits in `ceil(log2(maxDataLength))`
     component n2bHeaderLength = Num2Bits(log2Ceil(maxDataLength));
@@ -53,9 +54,9 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     qr.delimiterIndices    <== delimiterIndices;
     qr.signature           <== signature;
     qr.pubKey              <== pubKey;
-    qr.nullifierSeed       <== secret;
 
     pubKeyHash <== qr.pubkeyHash;
+    log("pubKeyHash ",pubKeyHash);
 
 
     // Assert data between qrDataPaddedLength and maxDataLength is zero
@@ -69,7 +70,7 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
 
     timestamp <== qrDataExtractor.timestamp;
 
-    signal name[packedLength] <== qrDataExtractor.Name;
+    // signal name[packedLength] <== qrDataExtractor.Name;
     signal nameHash <== qrDataExtractor.NameHash;
     signal RefId <== qrDataExtractor.RefID;
     signal age <== qrDataExtractor.age;
@@ -84,9 +85,14 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     // the data has a max size of 
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
-    commitment <== dataCommit.out;
+    signal Datacommitment <== dataCommit.out;//field element
+
+
+    commitment <== Poseidon(2)([Datacommitment,secret]); 
+    log("Commitment ",commitment);
     //secret for commitment
     // nullifier - https://www.notion.so/Indian-identity-Integration-1dc57801cd1280bebd45f3527ef60150?pvs=4#1dc57801cd12800e8f51f89648ca37d5
     nullifier <== Poseidon(4)([nameHash,DobHasH,gender,RefId]);
+    log("Nullifier ",nullifier);
 
 }

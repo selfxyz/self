@@ -54,7 +54,7 @@ template CustomHasher(k) {
 /// @param out Output hash
 template PackBytesAndPoseidon(k) {
     signal input in[k];
-
+    
     AssertBytes(k)(in);
 
     var packed_length = computeIntChunkLength(k);

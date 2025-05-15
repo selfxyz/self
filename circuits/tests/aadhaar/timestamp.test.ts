@@ -1,6 +1,7 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const circom_tester = require('circom_tester/wasm/tester')
-import path from 'path'
+const circom_tester = require('circom_tester/wasm/tester');
+const path = require('path');
+const dotenv=require('dotenv');
 
 // Convert date to string format expected by circom
 // ASCII encoding of YYYYMMDDHHMMSS
@@ -15,6 +16,8 @@ function getDataParts(date: Date) {
   }
 }
 
+dotenv.config();
+
 describe('date-to-timestamp', function () {
   this.timeout(0)
 
@@ -22,15 +25,14 @@ describe('date-to-timestamp', function () {
 
   this.beforeAll(async () => {
     circuit = await circom_tester(
-      path.join(__dirname, './', 'circuits', 'timestamp-test.circom'),
-      {
-        recompile: true,
-        include: [
-          path.join(__dirname, '../node_modules'),
-          path.join(__dirname, '../../../node_modules'),
-        ],
-      },
+        path.join(__dirname,'../../circuits/tests/aadhaar/timestamp.circom'),
+        {include:[
+            'node_modules',
+            './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            './node_modules/circomlib/circuits'
+        ]}
     )
+    
   })
 
   it('should calculate unix time for date string correctly', async () => {

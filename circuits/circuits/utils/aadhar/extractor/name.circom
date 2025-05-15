@@ -25,34 +25,33 @@ template NameExtractor(maxDataLength,nameMaxBytes){
     signal input startDelimiterIndex;
     signal input endIndex;
 
-    var packedLength  = computeIntChunkLength(nameMaxBytes); // limbs count
-    var bytesLength   = nameMaxBytes + 1;                    // +1 for delimiter
+    // var packedLength  = computeIntChunkLength(nameMaxBytes); // limbs count
+    var bytesLength   = nameMaxBytes+1;                    // +1 for delimiter
 
-    signal output namepacked[packedLength];
     signal output namehash;
+    // signal output namepacked[packedLength];
+    // signal out[packedLength];
 
-    signal shiftedBytes[bytesLength];
-    signal out[packedLength];
-
+    // size= namemaxbytes + 1 for delimiter
     component selector = SelectSubArray(maxDataLength, bytesLength);
     selector.in         <== nDelimitedData;
     selector.startIndex <== startDelimiterIndex;
-    selector.length     <== (endIndex - startDelimiterIndex + 1);
+    selector.length     <== (endIndex - startDelimiterIndex);
 
-    for (var i = 0; i < bytesLength; i++)
-        shiftedBytes[i] <== selector.out[i];
-
-    // leading delimiter (position index · 255) must match first byte
-    shiftedBytes[0] === namePosition() * 255;
-
-    component packer = PackBytes(nameMaxBytes);
-    for (var i = 0; i < nameMaxBytes; i++) {
-        packer.in[i] <== shiftedBytes[i + 1];       // drop the delimiter
+    signal nameBytes[nameMaxBytes];
+    // 1st element of selector is the (position index · 255),so do not copy  
+    for (var i = 0; i < nameMaxBytes; i++){
+        nameBytes[i] <== selector.out[i+1];
     }
+    // should not assert as we copy after 1st position
+    // leading delimiter (position index · 255) must match first byte
+    // shiftedBytes[0] === namePosition() * 255;
+   
+    // /* ---------- debug dump -------- */
+    // for (var i = 0; i < nameMaxBytes; i++) {
+    //     log(nameBytes[i]); 
+    // }
 
-    for (var i = 0; i < packedLength; i++)
-        namepacked[i] <== packer.out[i];
-    
-    namehash <== PackBytesAndPoseidon(packedLength)(namepacked);
-
+    namehash <== PackBytesAndPoseidon(nameMaxBytes)(nameBytes);
+    log(namehash);
 }

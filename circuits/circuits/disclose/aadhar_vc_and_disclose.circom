@@ -35,10 +35,10 @@ include "../utils/aadhar/extractor.circom";
 /// @output pinCode Pin code of the address as int; 0 if not revealed
 /// @output state State packed as int (reverse order); 0 if not revealed
 
-/// @output age
-/// @output pincode
-/// @output gender
-/// @output state
+/// @output aboveage ;0 if not revealed
+/// @output pincode;0 if not revealed
+/// @output gender;0 if not revealed
+/// @output state ;0 if not revealed
 
 /// @output nullifier Scope nullifier - not deterministic on the aadhaar data
 
@@ -141,8 +141,11 @@ template AADHAAR_VC_AND_DISCLOSE(
 
 component main {
     public [
+        merkle_root,
         scope,
-        user_identifier,
-        attestation_id      // == 2
+        attestation_id,     // == 3
+        ofac_namedob_smt_root,
+        ofac_nameyob_smt_root,
+        current_date
     ]
 } = AADHAAR_VC_AND_DISCLOSE(33, 512 * 3, 256, 64, 64);

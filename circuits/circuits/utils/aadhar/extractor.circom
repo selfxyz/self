@@ -153,7 +153,7 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     nameExtractor.nDelimitedData      <== nDelimitedData;
     nameExtractor.startDelimiterIndex <== delimiterIndices[namePosition() - 1];
     nameExtractor.endIndex            <== delimiterIndices[namePosition()];
-    Name <== nameExtractor.namepacked;
+    // Name <== nameExtractor.namepacked;
     NameHash   <== nameExtractor.namehash;
 
 

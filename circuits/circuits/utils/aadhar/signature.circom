@@ -1,6 +1,7 @@
 pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
+// include "../crypto/signature/rsa";
 include "@openpassport/zk-email-circuits/lib/rsa.circom";
 include "@openpassport/zk-email-circuits/lib/sha.circom";
 
@@ -31,6 +32,7 @@ template SignatureVerifier(n, k, maxDataLength) {
   signal sha[256];
   sha <== shaHasher.out;
   
+//   component ras = VerifyRsa65537Pkcs1v1_5(64, 32, 256);
   component rsa = RSAVerifier65537(n, k);
   var rsaMsgLength = (256 + n) \ n;
   component rsaBaseMsg[rsaMsgLength];
