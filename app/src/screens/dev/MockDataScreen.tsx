@@ -49,8 +49,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
   const [advancedMode, setAdvancedMode] = useState(false);
-  const [selectedDocumentType, setSelectedDocumentType] =
-    useState<'mock_passport' | 'mock_id_card'>('mock_passport');
+  const [selectedDocumentType, setSelectedDocumentType] = useState<
+    'mock_passport' | 'mock_id_card'
+  >('mock_passport');
   const castDateToYYMMDDForExpiry = (yearsOffset: number) => {
     const date = new Date();
     date.setFullYear(date.getFullYear() + yearsOffset);
@@ -324,7 +325,9 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
                     borderColor={borderColor}
                     borderWidth={1}
                     color={
-                      selectedDocumentType === 'mock_id_card' ? white : textBlack
+                      selectedDocumentType === 'mock_id_card'
+                        ? white
+                        : textBlack
                     }
                   >
                     ID Card

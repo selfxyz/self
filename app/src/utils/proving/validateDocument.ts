@@ -44,7 +44,10 @@ export async function checkPassportSupported(
   console.log('circuitNameRegister', circuitNameRegister);
   if (
     !circuitNameRegister ||
-    !(deployedCircuits.REGISTER.includes(circuitNameRegister) ||deployedCircuits.REGISTER_ID.includes(circuitNameRegister))
+    !(
+      deployedCircuits.REGISTER.includes(circuitNameRegister) ||
+      deployedCircuits.REGISTER_ID.includes(circuitNameRegister)
+    )
   ) {
     return {
       status: 'registration_circuit_not_supported',
@@ -52,7 +55,13 @@ export async function checkPassportSupported(
     };
   }
   const circuitNameDsc = getCircuitNameFromPassportData(passportData, 'dsc');
-  if (!circuitNameDsc || !(deployedCircuits.DSC.includes(circuitNameDsc) || deployedCircuits.DSC_ID.includes(circuitNameDsc))) {
+  if (
+    !circuitNameDsc ||
+    !(
+      deployedCircuits.DSC.includes(circuitNameDsc) ||
+      deployedCircuits.DSC_ID.includes(circuitNameDsc)
+    )
+  ) {
     console.log('DSC circuit not supported:', circuitNameDsc);
     return { status: 'dsc_circuit_not_supported', details: circuitNameDsc };
   }
