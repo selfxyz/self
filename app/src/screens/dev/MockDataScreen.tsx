@@ -44,7 +44,7 @@ interface MockDataScreenProps {}
 
 const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
   const navigation = useNavigation();
-  const [birthDate, setBirthDate] = useState('');
+  const [birthDate, setBirthDate] = useState('2000/01/01');
   const [expiryYears, setExpiryYears] = useState(5);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isInOfacList, setIsInOfacList] = useState(false);
