@@ -17,15 +17,7 @@ type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(miscAnimation);
-  const [passportData, setPassportData] = useState<any>(null);
-  const [loadingText, setLoadingText] = useState<{
-    actionText: string;
-    estimatedTime: string;
-  }>({
-    actionText: '',
-    estimatedTime: '',
-  });
-  const currentState = useProvingStore(state => state.currentState);
+  const currentState = useProvingStore(state => state.currentState) ?? '';
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();
 
@@ -48,20 +40,12 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       console.log('[LoadingScreen] FCM token available:', !!fcmToken);
     }
 
-    // Update loading text
-    const { actionText, estimatedTime } = getLoadingScreenText(
-      currentState,
-      passportData?.metadata,
-    );
-    setLoadingText({ actionText, estimatedTime });
-
-    // Update animation
     if (currentState === 'completed') {
       setAnimationSource(successAnimation);
     } else if (currentState === 'error' || currentState === 'failure') {
       setAnimationSource(failAnimation);
     } else {
-      setAnimationSource(proveLoadingAnimation);
+      setAnimationSource(miscAnimation);
     }
   }, [currentState, isFocused, fcmToken]);
 
