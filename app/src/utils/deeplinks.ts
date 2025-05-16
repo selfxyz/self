@@ -30,6 +30,7 @@ const handleUrl = (uri: string) => {
     try {
       const selfAppJson = JSON.parse(selfAppStr);
       useSelfAppStore.getState().setSelfApp(selfAppJson);
+      useSelfAppStore.getState().startAppListener(selfAppJson.sessionId);
       navigationRef.navigate('ProveScreen');
 
       return;
@@ -39,7 +40,7 @@ const handleUrl = (uri: string) => {
     }
   }
 
-  if (sessionId && typeof sessionId === 'string') {
+  else if (sessionId && typeof sessionId === 'string') {
     useSelfAppStore.getState().cleanSelfApp();
     useSelfAppStore.getState().startAppListener(sessionId);
     navigationRef.navigate('ProveScreen');
