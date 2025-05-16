@@ -18,21 +18,11 @@ import {
 import { useProvingStore } from '../../utils/proving/provingMachine';
 import { styles } from './ProofRequestStatusScreen';
 
-type ConfirmBelongingScreenProps = StaticScreenProps<
-  | {
-      mockPassportFlow?: boolean;
-    }
-  | undefined
->;
+type ConfirmBelongingScreenProps = StaticScreenProps<{}>;
 
-const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({
-  route,
-}) => {
-  const mockPassportFlow = route.params?.mockPassportFlow;
+const ConfirmBelongingScreen: React.FC<ConfirmBelongingScreenProps> = ({}) => {
   const navigate = useHapticNavigation('LoadingScreen', {
-    params: {
-      mockPassportFlow,
-    },
+    params: {},
   });
   const provingStore = useProvingStore();
   const [_requestingPermission, setRequestingPermission] = useState(false);
