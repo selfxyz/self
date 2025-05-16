@@ -97,94 +97,136 @@ describe('stateLoadingScreenText', () => {
 
   describe('getProvingTimeEstimate', () => {
     it('should return default time when metadata is undefined', () => {
-      const result = getProvingTimeEstimate(undefined);
+      const result = getProvingTimeEstimate(undefined, 'register');
       expect(result).toBe('30 - 90 SECONDS');
     });
 
     describe('RSA algorithms', () => {
       it.each([
-        ['RSA', '65537'], // Common RSA exponent
-        ['RSA', '3'], // Another common RSA exponent
+        ['RSA', '65537', 'register', '4 SECONDS'], // Common RSA exponent
+        ['RSA', '3', 'register', '4 SECONDS'], // Another common RSA exponent
+        ['RSA', '65537', 'dsc', '2 SECONDS'], // DSC proof
+        ['RSA', '3', 'dsc', '2 SECONDS'], // DSC proof
       ])(
-        'should return correct time for %s with exponent %s',
-        (algorithm, exponent) => {
+        'should return correct time for %s with exponent %s and type %s',
+        (algorithm, exponent, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: algorithm,
             curveOrExponent: exponent,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('4 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
 
       it.each([
-        ['RSAPSS', '65537'],
-        ['RSAPSS', '3'],
+        ['RSAPSS', '65537', 'register', '6 SECONDS'],
+        ['RSAPSS', '3', 'register', '6 SECONDS'],
+        ['RSAPSS', '65537', 'dsc', '3 SECONDS'],
+        ['RSAPSS', '3', 'dsc', '3 SECONDS'],
       ])(
-        'should return correct time for %s with exponent %s',
-        (algorithm, exponent) => {
+        'should return correct time for %s with exponent %s and type %s',
+        (algorithm, exponent, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: algorithm,
             curveOrExponent: exponent,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('6 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
     });
 
     describe('ECDSA curves', () => {
-      it.each([['secp224r1'], ['brainpoolP224r1']])(
-        'should return correct time for 224-bit curve %s',
-        curve => {
+      it.each([
+        ['secp224r1', 'register', '50 SECONDS'],
+        ['brainpoolP224r1', 'register', '50 SECONDS'],
+        ['secp224r1', 'dsc', '25 SECONDS'],
+        ['brainpoolP224r1', 'dsc', '25 SECONDS'],
+      ])(
+        'should return correct time for 224-bit curve %s with type %s',
+        (curve, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: 'ECDSA',
             curveOrExponent: curve,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('50 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
 
-      it.each([['secp256r1'], ['brainpoolP256r1']])(
-        'should return correct time for 256-bit curve %s',
-        curve => {
+      it.each([
+        ['secp256r1', 'register', '50 SECONDS'],
+        ['brainpoolP256r1', 'register', '50 SECONDS'],
+        ['secp256r1', 'dsc', '25 SECONDS'],
+        ['brainpoolP256r1', 'dsc', '25 SECONDS'],
+      ])(
+        'should return correct time for 256-bit curve %s with type %s',
+        (curve, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: 'ECDSA',
             curveOrExponent: curve,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('50 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
 
-      it.each([['secp384r1'], ['brainpoolP384r1']])(
-        'should return correct time for 384-bit curve %s',
-        curve => {
+      it.each([
+        ['secp384r1', 'register', '90 SECONDS'],
+        ['brainpoolP384r1', 'register', '90 SECONDS'],
+        ['secp384r1', 'dsc', '45 SECONDS'],
+        ['brainpoolP384r1', 'dsc', '45 SECONDS'],
+      ])(
+        'should return correct time for 384-bit curve %s with type %s',
+        (curve, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: 'ECDSA',
             curveOrExponent: curve,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('90 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
 
-      it.each([['secp521r1'], ['brainpoolP512r1']])(
-        'should return correct time for 512/521-bit curve %s',
-        curve => {
+      it.each([
+        ['secp521r1', 'register', '200 SECONDS'],
+        ['brainpoolP512r1', 'register', '200 SECONDS'],
+        ['secp521r1', 'dsc', '100 SECONDS'],
+        ['brainpoolP512r1', 'dsc', '100 SECONDS'],
+      ])(
+        'should return correct time for 512/521-bit curve %s with type %s',
+        (curve, type, expectedTime) => {
           const metadata: PassportMetadata = {
             signatureAlgorithm: 'ECDSA',
             curveOrExponent: curve,
           };
 
-          const result = getProvingTimeEstimate(metadata);
-          expect(result).toBe('200 SECONDS');
+          const result = getProvingTimeEstimate(
+            metadata,
+            type as 'dsc' | 'register',
+          );
+          expect(result).toBe(expectedTime);
         },
       );
     });
@@ -195,7 +237,7 @@ describe('stateLoadingScreenText', () => {
         curveOrExponent: '',
       };
 
-      const result = getProvingTimeEstimate(metadata);
+      const result = getProvingTimeEstimate(metadata, 'register');
       expect(result).toBe('30 - 90 SECONDS');
     });
   });

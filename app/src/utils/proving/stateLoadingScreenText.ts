@@ -12,6 +12,7 @@ export interface PassportMetadata {
 
 export function getProvingTimeEstimate(
   metadata: PassportMetadata | undefined,
+  type: 'dsc' | 'register',
 ): string {
   if (!metadata) return '30 - 90 SECONDS';
 
@@ -19,24 +20,27 @@ export function getProvingTimeEstimate(
   const curveOrExponent = metadata.curveOrExponent;
 
   // RSA algorithms
-  if (algorithm?.includes('RSA')) {
-    if (algorithm?.includes('PSS')) {
-      return '6 SECONDS';
+  if (algorithm?.toLowerCase().includes('rsa')) {
+    if (algorithm?.toLowerCase().includes('pss')) {
+      return type === 'dsc' ? '3 SECONDS' : '6 SECONDS';
     }
-    return '4 SECONDS';
+    return type === 'dsc' ? '2 SECONDS' : '4 SECONDS';
   }
 
   // ECDSA algorithms
-  if (algorithm?.includes('ECDSA')) {
+  if (algorithm?.toLowerCase().includes('ecdsa')) {
     // Check bit size from curve name
-    if (curveOrExponent?.includes('224') || curveOrExponent?.includes('256')) {
-      return '50 SECONDS';
+    if (
+      curveOrExponent?.toLowerCase().includes('224') ||
+      curveOrExponent?.toLowerCase().includes('256')
+    ) {
+      return type === 'dsc' ? '25 SECONDS' : '50 SECONDS';
     }
-    if (curveOrExponent?.includes('384')) {
-      return '90 SECONDS';
+    if (curveOrExponent?.toLowerCase().includes('384')) {
+      return type === 'dsc' ? '45 SECONDS' : '90 SECONDS';
     }
     if (curveOrExponent?.includes('512') || curveOrExponent?.includes('521')) {
-      return '200 SECONDS'; // Handle both 512-bit brainpool and 521-bit secp curves
+      return type === 'dsc' ? '100 SECONDS' : '200 SECONDS';
     }
   }
 
@@ -47,6 +51,7 @@ export function getProvingTimeEstimate(
 export function getLoadingScreenText(
   state: ProvingStateType,
   metadata: PassportMetadata,
+  type: 'dsc' | 'register' = 'register',
 ): LoadingScreenText {
   switch (state) {
     // Initial states
@@ -90,7 +95,7 @@ export function getLoadingScreenText(
       return {
         actionText: 'Generating ZK proof',
         estimatedTime: metadata
-          ? getProvingTimeEstimate(metadata)
+          ? getProvingTimeEstimate(metadata, type)
           : '30 - 90 SECONDS',
       };
     case 'post_proving':
