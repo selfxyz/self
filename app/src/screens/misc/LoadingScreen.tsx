@@ -27,10 +27,15 @@ import { getLoadingScreenText } from '../../utils/proving/stateLoadingScreenText
 type LoadingScreenProps = StaticScreenProps<{}>;
 
 const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
+  // Animation states
   const [animationSource, setAnimationSource] = useState<any>(
     proveLoadingAnimation,
   );
+
+  // Passport data state
   const [passportData, setPassportData] = useState<PassportData | null>(null);
+
+  // Loading text state
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
     estimatedTime: string;
@@ -38,103 +43,119 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     actionText: '',
     estimatedTime: '',
   });
+
+  // Get current state from proving machine, default to 'idle' if undefined
   const currentState = useProvingStore(state => state.currentState) ?? 'idle';
   const fcmToken = useProvingStore(state => state.fcmToken);
   const isFocused = useIsFocused();
   const { bottom } = useSafeAreaInsets();
 
-  // Initialize notifications when component mounts
+  // Define all terminal states that should stop animations and haptics
+  const terminalStates: ProvingStateType[] = [
+    'completed',
+    'error',
+    'failure',
+    'passport_not_supported',
+    'account_recovery_choice',
+    'passport_data_not_found',
+  ];
+
+  // States where it's safe to close the app
+  const safeToCloseStates = ['proving', 'post_proving', 'completed'];
+  const canCloseApp = safeToCloseStates.includes(currentState);
+
+  // Initialize notifications and load passport data
   useEffect(() => {
-    if (isFocused) {
+    let isMounted = true;
+
+    const initialize = async () => {
+      if (!isFocused) return;
+
+      // Setup notifications
       const unsubscribe = setupNotifications();
+
+      // Load passport data if not already loaded
+      if (!passportData) {
+        try {
+          const result = await loadPassportDataAndSecret();
+          if (result && isMounted) {
+            const { passportData: _passportData } = JSON.parse(result);
+            setPassportData(_passportData);
+          }
+        } catch (error) {
+          console.error('Error loading passport data:', error);
+        }
+      }
+
       return () => {
         if (typeof unsubscribe === 'function') {
           unsubscribe();
         }
       };
-    }
-  }, [isFocused]);
-
-  // Load passport data only once
-  useEffect(() => {
-    const loadData = async () => {
-      if (passportData) return;
-
-      try {
-        const result = await loadPassportDataAndSecret();
-        if (result) {
-          const { passportData: _passportData } = JSON.parse(result);
-          setPassportData(_passportData);
-        }
-      } catch (error) {
-        console.error('Error loading passport data:', error);
-      }
     };
-    loadData();
-  }, [passportData]);
 
-  // Update UI based on state changes
+    initialize();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [isFocused]); // Only depend on isFocused
+
+  // Handle UI updates and haptic feedback based on state changes
   useEffect(() => {
-    if (isFocused) {
-      console.log('[LoadingScreen] Current proving state:', currentState);
-      console.log('[LoadingScreen] FCM token available:', !!fcmToken);
-    }
-
-    if (!passportData?.passportMetadata) {
-      return;
-    }
-
-    // Update loading text
-    const { actionText, estimatedTime } = getLoadingScreenText(
-      currentState as ProvingStateType,
-      passportData?.passportMetadata,
-    );
-    setLoadingText({ actionText, estimatedTime });
-
-    // Update animation
-    if (currentState === 'completed') {
-      setAnimationSource(successAnimation);
-    } else if (currentState === 'error' || currentState === 'failure') {
-      setAnimationSource(failAnimation);
-    } else {
-      setAnimationSource(proveLoadingAnimation);
-    }
-  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
-
-  // Handle haptic feedback
-  useEffect(() => {
+    // Stop haptics if screen is not focused
     if (!isFocused) {
       loadingScreenProgress(false);
       return;
     }
 
-    // Check if we're in a terminal state
-    const terminalStates: ProvingStateType[] = [
-      'completed',
-      'error',
-      'failure',
-      'passport_not_supported',
-      'account_recovery_choice',
-      'passport_data_not_found',
-    ];
+    console.log('[LoadingScreen] Current proving state:', currentState);
+    console.log('[LoadingScreen] FCM token available:', !!fcmToken);
 
+    // Update UI if passport data is available
+    if (passportData?.passportMetadata) {
+      // Update loading text based on current state
+      const { actionText, estimatedTime } = getLoadingScreenText(
+        currentState as ProvingStateType,
+        passportData?.passportMetadata,
+      );
+      setLoadingText({ actionText, estimatedTime });
+
+      // Update animation based on state
+      switch (currentState) {
+        case 'completed':
+          setAnimationSource(successAnimation);
+          break;
+        case 'error':
+        case 'failure':
+        case 'passport_not_supported':
+        case 'account_recovery_choice':
+        case 'passport_data_not_found':
+          setAnimationSource(failAnimation);
+          break;
+        default:
+          setAnimationSource(proveLoadingAnimation);
+      }
+    }
+
+    // Stop haptics if we're in a terminal state
     if (terminalStates.includes(currentState as ProvingStateType)) {
       loadingScreenProgress(false);
       return;
     }
 
-    // Start haptic feedback
+    // Start haptic feedback for non-terminal states
     loadingScreenProgress(true);
 
-    // Cleanup on unmount
+    // Cleanup on unmount or state change
     return () => {
       loadingScreenProgress(false);
     };
-  }, [isFocused, currentState]);
+  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
 
-  // Determine if we should show the "you can close the app" message
-  const canCloseApp = ['proving', 'post_proving', 'completed'].includes(
-    currentState,
+  // Determine if animation should loop based on terminal states
+  const shouldLoopAnimation = !terminalStates.includes(
+    currentState as ProvingStateType,
   );
 
   return (
@@ -151,7 +172,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
           <View style={styles.animationAndTitleGroup}>
             <LottieView
               autoPlay
-              loop={animationSource === proveLoadingAnimation}
+              loop={shouldLoopAnimation}
               source={animationSource}
               style={styles.animation}
               resizeMode="cover"
