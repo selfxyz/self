@@ -124,6 +124,8 @@ interface ProvingState {
   error_code: string | null;
   reason: string | null;
   endpointType: EndpointType | null;
+  fcmToken: string | null;
+  setFcmToken: (token: string) => void;
   init: (
     circuitType: 'dsc' | 'disclose' | 'register',
     userConfirmed?: boolean,
@@ -243,6 +245,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     error_code: null,
     reason: null,
     endpointType: null,
+    fcmToken: null,
+    setFcmToken: (token: string) => {
+      set({ fcmToken: token });
+    },
     _handleWebSocketMessage: async (event: MessageEvent) => {
       if (!actor) {
         console.error('Cannot process message: State machine not initialized.');
@@ -337,9 +343,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           typeof message === 'string' ? JSON.parse(message) : message;
         console.log('Received status update with status:', data.status);
         if (data.status === 3 || data.status === 5) {
-          console.error(
-            'Proof generation/verification failed (status 3 or 5).',
-          );
+          console.log('Proof generation/verification failed (status 3 or 5).');
           set({ error_code: data.error_code, reason: data.reason });
           actor!.send({ type: 'PROVE_FAILURE' });
           socket?.disconnect();
@@ -543,6 +547,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           passportData,
           useProtocolStore.getState().passport.dsc_tree,
         );
+        console.log('isDscRegistered: ', isDscRegistered);
         if (isDscRegistered) {
           set({ circuitType: 'register' });
         }
@@ -612,21 +617,41 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     startProving: async () => {
       _checkActorInitialized(actor);
-      const { wsConnection, sharedKey, passportData, secret } = get();
+      const { wsConnection, sharedKey, passportData, secret, uuid, fcmToken } =
+        get();
 
       if (get().currentState !== 'ready_to_prove') {
         console.error('Cannot start proving: Not in ready_to_prove state.');
         return;
       }
-      if (!wsConnection || !sharedKey || !passportData || !secret) {
+      if (!wsConnection || !sharedKey || !passportData || !secret || !uuid) {
         console.error(
-          'Cannot start proving: Missing wsConnection, sharedKey, passportData, or secret.',
+          'Cannot start proving: Missing wsConnection, sharedKey, passportData, secret, or uuid.',
         );
         actor!.send({ type: 'PROVE_ERROR' });
         return;
       }
 
       try {
+        // Register device token before payload generation
+        if (fcmToken) {
+          try {
+            const {
+              registerDeviceToken,
+            } = require('../../utils/notifications/notificationService');
+            console.log(
+              'passportData.documentType: ',
+              passportData?.documentType,
+            );
+            const isMockPassport =
+              passportData?.documentType === 'mock_passport';
+            await registerDeviceToken(uuid, fcmToken, isMockPassport);
+          } catch (error) {
+            console.error('Error registering device token:', error);
+            // Continue with the proving process even if token registration fails
+          }
+        }
+
         const submitBody = await get()._generatePayload();
         wsConnection.send(JSON.stringify(submitBody));
         actor!.send({ type: 'START_PROVING' });
@@ -691,6 +716,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
 
     _generatePayload: async () => {
       const { circuitType, passportData, secret, uuid, sharedKey } = get();
+      console.log('circuitType: ', circuitType);
       const selfApp = useSelfAppStore.getState().selfApp;
       // TODO: according to the circuitType we could check that the params are valid.
       let inputs, circuitName, endpointType, endpoint;

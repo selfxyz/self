@@ -3,6 +3,7 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import DevHapticFeedbackScreen from '../screens/dev/DevHapticFeedback';
 import DevSettingsScreen from '../screens/dev/DevSettingsScreen';
 import MockDataScreen from '../screens/dev/MockDataScreen';
+import MockDataScreenDeepLink from '../screens/dev/MockDataScreenDeepLink';
 import { white } from '../utils/colors';
 
 const devScreens = {
@@ -10,6 +11,12 @@ const devScreens = {
     screen: MockDataScreen,
     options: {
       title: 'Mock Passport',
+    } as NativeStackNavigationOptions,
+  },
+  MockDataDeepLink: {
+    screen: MockDataScreenDeepLink,
+    options: {
+      headerShown: false,
     } as NativeStackNavigationOptions,
   },
   DevHapticFeedback: {

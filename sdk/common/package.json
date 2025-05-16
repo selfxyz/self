@@ -1,6 +1,6 @@
 {
   "name": "@openpassport/common",
-  "version": "0.0.5",
+  "version": "0.0.10",
   "packageManager": "yarn@4.5.0",
   "files": [
     "dist"
@@ -13,5 +13,39 @@
     "copy-certs": "mkdir -p dist && cp -R ../../common/src/mock_certificates ./dist/",
     "build": "yarn clean && yarn build:ts && yarn copy-certs",
     "prepublishOnly": "yarn build"
+  },
+  "dependencies": {
+    "@babel/runtime": "^7.23.4",
+    "@openpassport/zk-kit-imt": "^0.0.5",
+    "@openpassport/zk-kit-lean-imt": "^0.0.6",
+    "@openpassport/zk-kit-smt": "^0.0.1",
+    "asn1.js": "^5.4.1",
+    "asn1js": "^3.0.5",
+    "axios": "^1.7.2",
+    "buffer": "^6.0.3",
+    "chai": "^4.3.8",
+    "country-emoji": "^1.5.6",
+    "country-iso-3-to-2": "^1.1.1",
+    "elliptic": "^6.5.5",
+    "fs": "^0.0.1-security",
+    "i18n-iso-countries": "^7.13.0",
+    "js-sha1": "^0.7.0",
+    "js-sha256": "^0.11.0",
+    "js-sha512": "^0.9.0",
+    "json-to-ts": "^2.1.0",
+    "jsrsasign": "^11.1.0",
+    "mocha": "^10.7.3",
+    "node-forge": "https://github.com/remicolin/forge",
+    "path": "^0.12.7",
+    "pkijs": "^3.2.4",
+    "poseidon-lite": "^0.2.0",
+    "snarkjs": "^0.7.5",
+    "ts-mocha": "^10.0.0",
+    "typescript-parser": "^2.6.1",
+    "uuid": "^11.0.5"
+  },
+  "devDependencies": {
+    "@types/node-forge": "^1.3.10",
+    "prettier": "^3.3.3"
   }
 }

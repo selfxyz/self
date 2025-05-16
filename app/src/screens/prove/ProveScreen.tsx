@@ -37,7 +37,7 @@ const ProveScreen: React.FC = () => {
   const { navigate } = useNavigation();
   const isFocused = useIsFocused();
   const selectedApp = useSelfAppStore(state => state.selfApp);
-  const selectedAppRef = useRef(selectedApp);
+  const selectedAppRef = useRef<typeof selectedApp>(null);
 
   const [hasScrolledToBottom, setHasScrolledToBottom] = useState(false);
   const [scrollViewContentHeight, setScrollViewContentHeight] = useState(0);
@@ -84,16 +84,14 @@ const ProveScreen: React.FC = () => {
   }, [isContentShorterThanScrollView]);
 
   useEffect(() => {
-    if (
-      !isFocused ||
-      !selectedApp ||
-      selectedAppRef.current?.sessionId === selectedApp.sessionId
-    ) {
+    if (!isFocused || !selectedApp) {
       return; // Avoid unnecessary updates or processing when not focused
     }
+    if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
+      console.log('[ProveScreen] Selected app updated:', selectedApp);
+      provingStore.init('disclose');
+    }
     selectedAppRef.current = selectedApp;
-    console.log('[ProveScreen] Selected app updated:', selectedApp);
-    provingStore.init('disclose');
   }, [selectedApp, isFocused]);
 
   const disclosureOptions = useMemo(() => {

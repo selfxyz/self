@@ -13,6 +13,9 @@ project "Self.xcodeproj"
 platform :ios, '15.0' if !ENV['ACT']
 prepare_react_native_project!
 
+flipper_enabled = ENV['NO_FLIPPER'] != "1"
+flipper_config = { 'Flipper' => flipper_enabled ? '~> 0.125.0' : nil }
+
 linkage = ENV["USE_FRAMEWORKS"]
 if linkage != nil
   Pod::UI.puts "Configuring Pod with #{linkage}ally linked Frameworks".green
@@ -32,13 +35,23 @@ target "Self" do
   use_react_native!(
     :path => config[:reactNativePath],
     :hermes_enabled => false,
-    # :fabric_enabled => flags[:fabric_enabled],
     # An absolute path to your application root.
-    :app_path => "#{Pod::Config.instance.installation_root}/..",
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
+    # Flipper設定は削除
   )
 
   pod "Sentry", :modular_headers => true
   pod "SentryPrivate", :modular_headers => true
+
+  pod 'Firebase', :modular_headers => true
+  pod 'FirebaseCore', :modular_headers => true
+  pod 'FirebaseCoreInternal', :modular_headers => true
+  pod 'GoogleUtilities', :modular_headers => true
+  pod 'FirebaseMessaging'
+
+  if flipper_enabled
+    pod 'RCT-Folly', :podspec => "#{config[:reactNativePath]}/third-party-podspecs/RCT-Folly.podspec"
+  end
 
   post_install do |installer|
     installer.generated_projects.each do |project|

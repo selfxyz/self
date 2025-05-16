@@ -2,6 +2,7 @@ apply plugin: "com.android.application"
 apply plugin: "com.facebook.react"
 apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: 'kotlin-android'
+apply plugin: 'com.google.gms.google-services'
 
 
 /**
@@ -141,6 +142,10 @@ dependencies {
     implementation 'org.jmrtd:jmrtd:0.7.18'
 
     implementation 'com.github.blikoon:QRCodeScanner:0.1.2'
+
+    // Firebase Dependencies
+    implementation platform('com.google.firebase:firebase-bom:32.7.3')
+    implementation 'com.google.firebase:firebase-messaging'
 
     if (hermesEnabled.toBoolean()) {
         implementation("com.facebook.react:hermes-android")

@@ -115,6 +115,14 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
           const skiPem = await getSKIPEM('production');
           parsedPassportData = initPassportDataParsing(passportData, skiPem);
           const passportMetadata = parsedPassportData.passportMetadata!;
+          let dscObject;
+          try {
+            dscObject = JSON.parse(passportMetadata.dsc);
+          } catch (error) {
+            console.error('Failed to parse dsc:', error);
+            dscObject = {};
+          }
+
           trackEvent('Passport Parsed', {
             success: true,
             data_groups: passportMetadata.dataGroups,
@@ -140,7 +148,9 @@ const PassportNFCScanScreen: React.FC<PassportNFCScanScreenProps> = ({}) => {
             csca_curve_or_exponent: passportMetadata.cscaCurveOrExponent,
             csca_signature_algorithm_bits:
               passportMetadata.cscaSignatureAlgorithmBits,
-            dsc: passportMetadata.dsc,
+            dsc: dscObject,
+            dsc_aki: passportData.dsc_parsed?.authorityKeyIdentifier,
+            dsc_ski: passportData.dsc_parsed?.subjectKeyIdentifier,
           });
           await storePassportData(parsedPassportData);
           // Feels better somehow

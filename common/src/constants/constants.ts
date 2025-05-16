@@ -31,6 +31,7 @@ export const DEVELOPMENT_MODE = true;
 export const DEFAULT_MAJORITY = '18';
 
 export const hashAlgos = ['sha512', 'sha384', 'sha256', 'sha224', 'sha1'];
+export type hashAlgosTypes = 'sha512' | 'sha384' | 'sha256' | 'sha224' | 'sha1';
 export const saltLengths = [64, 48, 32];
 
 /**
@@ -222,6 +223,17 @@ export const attributeToPosition = {
   expiry_date: [65, 70],
   older_than: [88, 89],
   ofac: [90, 90],
+};
+export const attributeToPosition_ID = {
+  issuing_state: [2, 4],
+  name: [60, 89],
+  passport_number: [5, 13],
+  nationality: [45, 47],
+  date_of_birth: [30, 35],
+  gender: [37, 37],
+  expiry_date: [38, 43],
+  older_than: [90, 91],
+  ofac: [92, 92],
 };
 
 export const circuitToSelectorMode = {
