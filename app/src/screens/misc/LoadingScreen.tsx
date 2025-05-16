@@ -18,11 +18,11 @@ import {
   getStateMessage,
   setupNotifications,
 } from '../../utils/notifications/notificationService';
+import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {
   ProvingStateType,
   useProvingStore,
 } from '../../utils/proving/provingMachine';
-import { getLoadingScreenText } from '../../utils/proving/stateLoadingScreenText';
 
 type LoadingScreenProps = StaticScreenProps<{}>;
 

@@ -16,27 +16,24 @@ export function getProvingTimeEstimate(
 ): string {
   if (!metadata) return '30 - 90 SECONDS';
 
-  const algorithm = metadata.signatureAlgorithm;
+  const algorithm = metadata.signatureAlgorithm?.toLowerCase();
   const curveOrExponent = metadata.curveOrExponent;
 
   // RSA algorithms
-  if (algorithm?.toLowerCase().includes('rsa')) {
-    if (algorithm?.toLowerCase().includes('pss')) {
+  if (algorithm?.includes('rsa')) {
+    if (algorithm?.includes('pss')) {
       return type === 'dsc' ? '3 SECONDS' : '6 SECONDS';
     }
     return type === 'dsc' ? '2 SECONDS' : '4 SECONDS';
   }
 
   // ECDSA algorithms
-  if (algorithm?.toLowerCase().includes('ecdsa')) {
+  if (algorithm?.includes('ecdsa')) {
     // Check bit size from curve name
-    if (
-      curveOrExponent?.toLowerCase().includes('224') ||
-      curveOrExponent?.toLowerCase().includes('256')
-    ) {
+    if (curveOrExponent?.includes('224') || curveOrExponent?.includes('256')) {
       return type === 'dsc' ? '25 SECONDS' : '50 SECONDS';
     }
-    if (curveOrExponent?.toLowerCase().includes('384')) {
+    if (curveOrExponent?.includes('384')) {
       return type === 'dsc' ? '45 SECONDS' : '90 SECONDS';
     }
     if (curveOrExponent?.includes('512') || curveOrExponent?.includes('521')) {

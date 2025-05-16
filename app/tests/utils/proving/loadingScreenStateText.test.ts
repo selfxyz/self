@@ -1,9 +1,9 @@
-import { ProvingStateType } from '../../../src/utils/proving/provingMachine';
 import {
   getLoadingScreenText,
   getProvingTimeEstimate,
   PassportMetadata,
-} from '../../../src/utils/proving/stateLoadingScreenText';
+} from '../../../src/utils/proving/loadingScreenStateText';
+import { ProvingStateType } from '../../../src/utils/proving/provingMachine';
 
 describe('stateLoadingScreenText', () => {
   // Default metadata for basic tests
