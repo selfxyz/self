@@ -56,7 +56,7 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     qr.pubKey              <== pubKey;
 
     pubKeyHash <== qr.pubkeyHash;
-    log("pubKeyHash ",pubKeyHash);
+    // log("pubKeyHash ",pubKeyHash);
 
 
     // Assert data between qrDataPaddedLength and maxDataLength is zero
@@ -81,16 +81,14 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     signal photo[photoPackSize()] <== qrDataExtractor.photo;
     signal DobHash <== qrDataExtractor.DobHash;
 
-    // Poseidon commitment
-    // the data has a max size of 
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
     signal Datacommitment <== dataCommit.out;//field element
+    log("data-Commitment",Datacommitment);
 
-
-    commitment <== Poseidon(2)([Datacommitment,secret]); 
+    commitment <== Poseidon(3)([secret,attestation_id,Datacommitment]); 
     log("Commitment ",commitment);
-    //secret for commitment
+
     // nullifier - https://www.notion.so/Indian-identity-Integration-1dc57801cd1280bebd45f3527ef60150?pvs=4#1dc57801cd12800e8f51f89648ca37d5
     nullifier <== Poseidon(4)([nameHash,DobHasH,gender,RefId]);
     log("Nullifier ",nullifier);

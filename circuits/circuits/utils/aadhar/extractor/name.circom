@@ -53,5 +53,5 @@ template NameExtractor(maxDataLength,nameMaxBytes){
     // }
 
     namehash <== PackBytesAndPoseidon(nameMaxBytes)(nameBytes);
-    log(namehash);
+    // log(namehash);
 }

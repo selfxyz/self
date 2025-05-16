@@ -18,6 +18,7 @@ export const IDENTITY_TREE_URL = 'https://tree.self.xyz/identity';
 export const IDENTITY_TREE_URL_STAGING = 'https://tree.staging.self.xyz/identity';
 
 export const PASSPORT_ATTESTATION_ID = '1'; //"8518753152044246090169372947057357973469996808638122125210848696986717482788"
+export const AADHAAR_ATTESTATION_ID = '3'; 
 
 export const CHAIN_NAME = 'celo';
 export const RPC_URL = 'https://forno.celo.org';

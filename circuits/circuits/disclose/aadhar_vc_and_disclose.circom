@@ -2,6 +2,8 @@ pragma circom 2.1.9;
 
 include "circomlib/circuits/poseidon.circom";
 include "../utils/aadhar/QrVerifier.circom";
+include "../utils/passport/ofac/ofac_name_dob.circom";
+include "../utils/passport/ofac/ofac_name_yob.circom";
 include "../utils/aadhar/disclose/verify_commitment_aadhaar.circom";
 include "../utils/aadhar/disclose/disclose_aadhaar.circom";
 include "../utils/aadhar/extractor.circom";
@@ -28,17 +30,12 @@ include "../utils/aadhar/extractor.circom";
 /// @input revealPinCode Flag to reveal extracted pin code
 /// @input revealState Flag to reveal extracted state
 
-/// @output pubkeyHash Poseidon hash of the RSA public key (after merging nearby chunks)
 /// @output timestamp Timestamp of when the data was signed - extracted and converted to Unix timestamp
 /// @output ageAbove18 Boolean flag indicating age is above 18; 0 if not revealed
 /// @output gender Gender 70(F) or 77(M); 0 if not revealed
 /// @output pinCode Pin code of the address as int; 0 if not revealed
 /// @output state State packed as int (reverse order); 0 if not revealed
 
-/// @output aboveage ;0 if not revealed
-/// @output pincode;0 if not revealed
-/// @output gender;0 if not revealed
-/// @output state ;0 if not revealed
 
 /// @output nullifier Scope nullifier - not deterministic on the aadhaar data
 

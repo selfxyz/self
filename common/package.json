@@ -7,13 +7,16 @@
     "format": "prettier --write .",
     "lint": "prettier --check .",
     "test": "yarn ts-mocha tests/**/*.test.ts --exit",
-    "test:scope": "yarn ts-mocha tests/scope.test.ts --exit"
+    "test:scope": "yarn ts-mocha tests/scope.test.ts --exit",
+    "test-aadhaarUtils": "yarn ts-mocha tests/utilsTest/utils.test.ts --exit"
   },
   "dependencies": {
+    "@anon-aadhaar/core": "^2.4.3",
     "@babel/runtime": "^7.23.4",
     "@openpassport/zk-kit-imt": "^0.0.5",
     "@openpassport/zk-kit-lean-imt": "^0.0.6",
     "@openpassport/zk-kit-smt": "^0.0.1",
+    "@zk-email/helpers": "^6.1.1",
     "asn1.js": "^5.4.1",
     "asn1js": "^3.0.5",
     "axios": "^1.7.2",
@@ -21,6 +24,7 @@
     "chai": "^4.3.8",
     "country-emoji": "^1.5.6",
     "country-iso-3-to-2": "^1.1.1",
+    "dotenv": "^16.5.0",
     "elliptic": "^6.5.5",
     "fs": "^0.0.1-security",
     "i18n-iso-countries": "^7.13.0",

@@ -1,35 +1,49 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// import path from 'path'
-// // eslint-disable-next-line @typescript-eslint/no-var-requires
-// const circom_tester = require('circom_tester/wasm/tester')
-// import { sha256Pad } from '@zk-email/helpers/dist/sha-utils'
-// import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format'
-// import {
-//   convertBigIntToByteArray,
-//   decompressByteArray,
-//   extractPhoto,
-// } from '@anon-aadhaar/core'
-// import assert from 'assert'
-// import { testQRData as QRData } from '../../../common/tests/aadhaar/dataInput.json'
-// import { bigIntsToString, bigIntChunksToByteArray } from './utils'
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import path from 'path'
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const circom_tester = require('circom_tester/wasm/tester')
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils'
+import { Uint8ArrayToCharArray } from '@zk-email/helpers/dist/binary-format'
+import {
+  convertBigIntToByteArray,
+  decompressByteArray,
+  extractPhoto,
+} from '@anon-aadhaar/core'
+import assert from 'assert'
+import { testQRData as QRData } from '../../../common/tests/aadhaar/dataInput.json'
+import { bigIntsToString, bigIntChunksToByteArray } from '../../../common/src/utils/aadhaar/utils'
+import {
+  prepareTestData,
+  splitTestData
+} from '../../../common/src/utils/aadhaar/aadhaar';
 
-// describe('Extractor', function () {
-//   this.timeout(0)
 
-//   let circuit: any
+describe('Extractor', function () {
+  this.timeout(0)
 
-//   this.beforeAll(async () => {
-//     circuit = await circom_tester(
-//         path.join(__dirname,'../../circuits/register/instances/register_aadhaar.circom'),
-//         {include:[
-//             'node_modules',
-//             './node_modules/@zk-kit/binary-merkle-root.circom/src',
-//             './node_modules/circomlib/circuits'
-//         ]}
-//     )
+  let circuit: any
+
+  this.beforeAll(async () => {
+    circuit = await circom_tester(
+        path.join(__dirname,'../../circuits/register/instances/register_aadhaar.circom'),
+        {include:[
+            'node_modules',
+            './node_modules/@zk-kit/binary-merkle-root.circom/src',
+            './node_modules/circomlib/circuits'
+        ]}
+    )
     
-//   })
+  })
 
+  // figure oput some way to get rid of this weird stuff
+   it('should generate witness for circuit',  async () => {
+      const { inputs,decodedData ,qrDataPadded,delimiterIndices} = prepareTestData()
+      console.log(decodedData.length)
+      const output = splitTestData(qrDataPadded,delimiterIndices)
+      // console.log(output)
+      // await circuit.calculateWitness(inputs)
+    })
+  
 //   it('should extract data', async () => {
 //     const QRDataBytes = convertBigIntToByteArray(BigInt(QRData))
 //     const QRDataDecode = decompressByteArray(QRDataBytes)
@@ -82,4 +96,4 @@
 //       assert(photoWitness[i] === photo.bytes[i])
 //     }
 //   })
-// })
+})

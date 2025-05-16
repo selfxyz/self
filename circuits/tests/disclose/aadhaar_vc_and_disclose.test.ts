@@ -31,88 +31,16 @@ import {
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
 import { buildPoseidon } from 'circomlibjs'
 import { testQRData } from '../../../common/tests/aadhaar/dataInput.json'
-import { bytesToIntChunks, padArrayWithZeros, bigIntsToString } from '../aadhaar/utils'
+import { bytesToIntChunks, padArrayWithZeros, bigIntsToString } from '../../../common/src/utils/aadhaar/utils'
 import { poseidon1, poseidon2 } from 'poseidon-lite';
-
+import {
+  prepareTestData
+} from '../../../common/src/utils/aadhaar/aadhaar';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 
 dotenv.config();
-
-// const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
-let testAadhaar = true
-let QRData: string = testQRData
-if (process.env.REAL_DATA === 'true') {
-  testAadhaar = false
-  if (typeof process.env.AADHAAR_QR_DATA === 'string') {
-    QRData = process.env.AADHAAR_QR_DATA
-  } else {
-    throw Error('You must set .env var AADHAAR_QR_DATA when using real data.')
-  }
-}
-
-const getCertificate = (_isTest: boolean) => {
-  return _isTest ? 'testPublicKey.pem' : 'uidai_offline_publickey_26022021.cer'
-}
-
-function prepareTestData() {
-  const qrDataBytes = convertBigIntToByteArray(BigInt(QRData))
-  const decodedData = decompressByteArray(qrDataBytes)
-
-  const signatureBytes = decodedData.slice(
-    decodedData.length - 256,
-    decodedData.length,
-  )
-
-  const signedData = decodedData.slice(0, decodedData.length - 256)
-
-  const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3)
-
-  const delimiterIndices: number[] = []
-  for (let i = 0; i < qrDataPadded.length; i++) {
-    if (qrDataPadded[i] === 255) {
-      delimiterIndices.push(i)
-    }
-    if (delimiterIndices.length === 18) {
-      break
-    }
-  }
-
-  const signature = BigInt(
-    '0x' + bufferToHex(Buffer.from(signatureBytes)).toString(),
-  )
-
-  const pkPem = fs.readFileSync(
-    path.join(__dirname, '../../../common/aadhaar', getCertificate(testAadhaar)),
-  )
-  const pk = crypto.createPublicKey(pkPem)
-
-  const pubKey = BigInt(
-    '0x' +
-      bufferToHex(
-        Buffer.from(pk.export({ format: 'jwk' }).n as string, 'base64url'),
-      ),
-  )
-
-  const inputs = {
-    qrDataPadded: Uint8ArrayToCharArray(qrDataPadded),
-    qrDataPaddedLength: qrDataPaddedLen,
-    delimiterIndices: delimiterIndices,
-    signature: splitToWords(signature, BigInt(121), BigInt(17)),
-    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
-    secret : 0
-  }
-
-  return {
-    inputs,
-    qrDataPadded,
-    signedData,
-    decodedData,
-    pubKey,
-    qrDataPaddedLen,
-  }
-}
 
 
 describe('Disclose_aadhaar', function () {
