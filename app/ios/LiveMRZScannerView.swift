@@ -109,7 +109,8 @@ struct LiveMRZScannerView: View {
 
             VStack {
                 if !scanComplete {
-                    Text("Scanning... Hold steady for a valid scan.")
+                    Text("Position the camera 30-40cm away from the passport for best results")
+                        .font(.footnote)
                         .padding()
                         .background(Color.black.opacity(0.7))
                         .foregroundColor(.white)
@@ -119,4 +120,4 @@ struct LiveMRZScannerView: View {
             }
         }
     }
-} 
+}
