@@ -5,6 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Text, YStack } from 'tamagui';
 
+import { PassportData } from '../../../../common/src/utils/types';
 import failAnimation from '../../assets/animations/loading/fail.json';
 import proveLoadingAnimation from '../../assets/animations/loading/prove.json';
 import successAnimation from '../../assets/animations/loading/success.json';
@@ -29,7 +30,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
   const [animationSource, setAnimationSource] = useState<any>(
     proveLoadingAnimation,
   );
-  const [passportData, setPassportData] = useState<any>(null);
+  const [passportData, setPassportData] = useState<PassportData | null>(null);
   const [loadingText, setLoadingText] = useState<{
     actionText: string;
     estimatedTime: string;
@@ -79,10 +80,14 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
       console.log('[LoadingScreen] FCM token available:', !!fcmToken);
     }
 
+    if (!passportData?.passportMetadata) {
+      return;
+    }
+
     // Update loading text
     const { actionText, estimatedTime } = getLoadingScreenText(
       currentState as ProvingStateType,
-      passportData?.metadata,
+      passportData?.passportMetadata,
     );
     setLoadingText({ actionText, estimatedTime });
 
@@ -94,7 +99,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
     } else {
       setAnimationSource(proveLoadingAnimation);
     }
-  }, [currentState, isFocused, fcmToken, passportData?.metadata]);
+  }, [currentState, isFocused, fcmToken, passportData?.passportMetadata]);
 
   // Handle haptic feedback
   useEffect(() => {
