@@ -172,7 +172,7 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
               : 'Closing the app will cancel this process'}
           </Text>
           <Text style={styles.stateMessage}>
-            {getStateMessage(currentState || 'idle')}
+            {getStateMessage(currentState)}
           </Text>
         </View>
       </View>
