@@ -13,7 +13,6 @@ const testCases = [
   { dgHashAlgo: 'sha1', eContentHashAlgo: 'sha1', sigAlg: 'ecdsa_sha1_secp256r1_256' },
 ];
 
-
 describe('Mock Passport Data Generator', function () {
   this.timeout(0);
 

@@ -39,9 +39,8 @@ export function parseDscCertificateData(dscCert: CertificateData): DscCertificat
         cscaSignatureAlgorithmBits = parseInt(cscaParsed.publicKeyDetails.bits);
         cscaSaltLength = details.saltLength;
       }
-    } catch (error) { }
-  }
-  else {
+    } catch (error) {}
+  } else {
     console.log('js: dscCert.authorityKeyIdentifier not found');
   }
   return {

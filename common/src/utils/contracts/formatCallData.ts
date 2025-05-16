@@ -42,43 +42,42 @@ export function formatCallData_disclose(parsedCallData: any[]) {
 }
 
 export function packForbiddenCountriesList(forbiddenCountries: string[]): string[] {
-    const MAX_BYTES_IN_FIELD = 31;
-    const REQUIRED_CHUNKS = 4;
-    const bytes: number[] = [];
-    
-    // Convert countries to bytes
-    for (const country of forbiddenCountries) {
-        const countryCode = country.padEnd(3, ' ').slice(0, 3);
-        for (const char of countryCode) {
-            bytes.push(char.charCodeAt(0));
-        }
+  const MAX_BYTES_IN_FIELD = 31;
+  const REQUIRED_CHUNKS = 4;
+  const bytes: number[] = [];
+
+  // Convert countries to bytes
+  for (const country of forbiddenCountries) {
+    const countryCode = country.padEnd(3, ' ').slice(0, 3);
+    for (const char of countryCode) {
+      bytes.push(char.charCodeAt(0));
     }
-    
-    // Calculate number of chunks needed
-    const packSize = MAX_BYTES_IN_FIELD;
-    const maxBytes = bytes.length;
-    const remain = maxBytes % packSize;
-    const numChunks = remain > 0 
-        ? Math.floor(maxBytes / packSize) + 1 
-        : Math.floor(maxBytes / packSize);
-    
-    // Pack bytes into chunks
-    const output: string[] = new Array(REQUIRED_CHUNKS).fill('0x' + '0'.repeat(64));
-    for (let i = 0; i < numChunks; i++) {
-        let sum = BigInt(0);
-        for (let j = 0; j < packSize; j++) {
-            const idx = packSize * i + j;
-            if (idx < maxBytes) {
-                const value = BigInt(bytes[idx]);
-                const shift = BigInt(8 * j);
-                sum += value << shift;
-            }
-        }
-        const hexString = sum.toString(16).padStart(64, '0');
-        output[i] = '0x' + hexString;
+  }
+
+  // Calculate number of chunks needed
+  const packSize = MAX_BYTES_IN_FIELD;
+  const maxBytes = bytes.length;
+  const remain = maxBytes % packSize;
+  const numChunks =
+    remain > 0 ? Math.floor(maxBytes / packSize) + 1 : Math.floor(maxBytes / packSize);
+
+  // Pack bytes into chunks
+  const output: string[] = new Array(REQUIRED_CHUNKS).fill('0x' + '0'.repeat(64));
+  for (let i = 0; i < numChunks; i++) {
+    let sum = BigInt(0);
+    for (let j = 0; j < packSize; j++) {
+      const idx = packSize * i + j;
+      if (idx < maxBytes) {
+        const value = BigInt(bytes[idx]);
+        const shift = BigInt(8 * j);
+        sum += value << shift;
+      }
     }
-    
-    return output;
+    const hexString = sum.toString(16).padStart(64, '0');
+    output[i] = '0x' + hexString;
+  }
+
+  return output;
 }
 
 export function formatProof(proof: any, publicSignals: any) {

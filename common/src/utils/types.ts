@@ -1,5 +1,5 @@
-import { CertificateData } from "./certificate_parsing/dataStructure";
-import { PassportMetadata } from "./passports/passport_parsing/parsePassportData";
+import { CertificateData } from './certificate_parsing/dataStructure';
+import { PassportMetadata } from './passports/passport_parsing/parsePassportData';
 
 export type PassportData = {
   mrz: string;
@@ -16,7 +16,7 @@ export type PassportData = {
   documentType: DocumentType;
 };
 
-export type DocumentType = "passport" | "mock_passport";
+export type DocumentType = 'passport' | 'mock_passport';
 
 // Define the signature algorithm in "algorithm_hashfunction_domainPapameter_keyLength"
 export type SignatureAlgorithm =

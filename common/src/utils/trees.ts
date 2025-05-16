@@ -2,25 +2,36 @@ import { poseidon9, poseidon3, poseidon2, poseidon6, poseidon13, poseidon12 } fr
 import { ChildNodes, SMT } from '@openpassport/zk-kit-smt';
 import { stringToAsciiBigIntArray } from './circuits/uuid';
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import {
-  CertificateData,
-} from './certificate_parsing/dataStructure';
+import { CertificateData } from './certificate_parsing/dataStructure';
 import { packBytesAndPoseidon } from './hash';
-import { DscCertificateMetaData, parseDscCertificateData } from './passports/passport_parsing/parseDscCertificateData';
+import {
+  DscCertificateMetaData,
+  parseDscCertificateData,
+} from './passports/passport_parsing/parseDscCertificateData';
 import { parseCertificateSimple } from './certificate_parsing/parseCertificateSimple';
-import { CSCA_TREE_DEPTH, CSCA_TREE_URL_STAGING, DSC_TREE_DEPTH, DSC_TREE_URL_STAGING, IDENTITY_TREE_URL, IDENTITY_TREE_URL_STAGING, max_csca_bytes, OFAC_TREE_LEVELS } from '../constants/constants';
+import {
+  CSCA_TREE_DEPTH,
+  CSCA_TREE_URL_STAGING,
+  DSC_TREE_DEPTH,
+  DSC_TREE_URL_STAGING,
+  IDENTITY_TREE_URL,
+  IDENTITY_TREE_URL_STAGING,
+  max_csca_bytes,
+  OFAC_TREE_LEVELS,
+} from '../constants/constants';
 import { CSCA_TREE_URL, DSC_TREE_URL } from '../constants/constants';
 import { max_dsc_bytes } from '../constants/constants';
 import { IMT } from '@openpassport/zk-kit-imt';
 import { pad } from './passports/passport';
-import countries from "i18n-iso-countries";
-import en from "i18n-iso-countries/langs/en.json";
+import countries from 'i18n-iso-countries';
+import en from 'i18n-iso-countries/langs/en.json';
 import { EndpointType } from './appType';
 import { DocumentType } from './types';
 countries.registerLocale(en);
 
 export async function getCSCATree(endpointType: EndpointType): Promise<string[][]> {
-  const cscaTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? CSCA_TREE_URL : CSCA_TREE_URL_STAGING
+  const cscaTreeUrl =
+    endpointType === 'celo' || endpointType === 'https' ? CSCA_TREE_URL : CSCA_TREE_URL_STAGING;
   const response = await fetch(cscaTreeUrl);
   const data = await response.json();
   const status = data.status ? data.status : data;
@@ -34,7 +45,8 @@ export async function getCSCATree(endpointType: EndpointType): Promise<string[][
 }
 
 export async function getDSCTree(endpointType: EndpointType): Promise<string> {
-  const dscTreeUrl = (endpointType === 'celo' || endpointType === 'https') ? DSC_TREE_URL : DSC_TREE_URL_STAGING
+  const dscTreeUrl =
+    endpointType === 'celo' || endpointType === 'https' ? DSC_TREE_URL : DSC_TREE_URL_STAGING;
   const response = await fetch(dscTreeUrl);
   const data = await response.json();
   const status = data.status ? data.status : data;
@@ -47,9 +59,12 @@ export async function getDSCTree(endpointType: EndpointType): Promise<string> {
 }
 
 export async function getCommitmentTree(documentType: DocumentType | null): Promise<string> {
-  const identityTreeUrl = !documentType || typeof documentType !== 'string' || documentType === 'passport' ? IDENTITY_TREE_URL : IDENTITY_TREE_URL_STAGING;
+  const identityTreeUrl =
+    !documentType || typeof documentType !== 'string' || documentType === 'passport'
+      ? IDENTITY_TREE_URL
+      : IDENTITY_TREE_URL_STAGING;
   const response = await fetch(identityTreeUrl);
-  return await response.json().then(data => data.data ? data.data : data);
+  return await response.json().then((data) => (data.data ? data.data : data));
 }
 
 export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
@@ -67,7 +82,7 @@ export async function fetchTreeFromUrl(url: string): Promise<LeanIMT> {
 export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
   if (type === 'dsc') {
     // for now, we pad it for sha
-    const tbsArray = Object.keys(parsed.tbsBytes).map(key => parsed.tbsBytes[key]);
+    const tbsArray = Object.keys(parsed.tbsBytes).map((key) => parsed.tbsBytes[key]);
     const [paddedTbsBytes, tbsBytesPaddedLength] = pad(parsed.hashAlgorithm)(
       tbsArray,
       max_dsc_bytes
@@ -77,14 +92,19 @@ export function getLeaf(parsed: CertificateData, type: 'dsc' | 'csca'): string {
     return poseidon2([dsc_hash, tbsArray.length]).toString();
   } else {
     const tbsBytesArray = Array.from(parsed.tbsBytes);
-    const paddedTbsBytesArray = tbsBytesArray.concat(new Array(max_csca_bytes - tbsBytesArray.length).fill(0));
+    const paddedTbsBytesArray = tbsBytesArray.concat(
+      new Array(max_csca_bytes - tbsBytesArray.length).fill(0)
+    );
     const csca_hash = packBytesAndPoseidon(paddedTbsBytesArray);
     return poseidon2([csca_hash, tbsBytesArray.length]).toString();
   }
 }
 
-
-export function getLeafDscTreeFromDscCertificateMetadata(dscParsed: CertificateData, dscMetaData: DscCertificateMetaData): string { // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
+export function getLeafDscTreeFromDscCertificateMetadata(
+  dscParsed: CertificateData,
+  dscMetaData: DscCertificateMetaData
+): string {
+  // TODO: WRONG  change this function using raw dsc and hashfunctions from passportMetadata
   const cscaParsed = parseCertificateSimple(dscMetaData.csca);
   return getLeafDscTree(dscParsed, cscaParsed);
 }
@@ -103,8 +123,10 @@ export function getLeafCscaTree(csca_parsed: CertificateData): string {
   return getLeaf(csca_parsed, 'csca');
 }
 
-
-export function getDscTreeInclusionProof(leaf: string, serialized_dsc_tree: string): [string, number[], bigint[], number] {
+export function getDscTreeInclusionProof(
+  leaf: string,
+  serialized_dsc_tree: string
+): [string, number[], bigint[], number] {
   const hashFunction = (a: any, b: any) => poseidon2([a, b]);
   const tree = LeanIMT.import(hashFunction, serialized_dsc_tree);
   const index = tree.indexOf(BigInt(leaf));
@@ -123,7 +145,11 @@ export function getCscaTreeInclusionProof(leaf: string, _serialized_csca_tree: a
     throw new Error('Your public key was not found in the registry');
   }
   const proof = tree.createProof(index);
-  return [tree.root, proof.pathIndices.map(index => index.toString()), proof.siblings.flat().map(sibling => sibling.toString())];
+  return [
+    tree.root,
+    proof.pathIndices.map((index) => index.toString()),
+    proof.siblings.flat().map((sibling) => sibling.toString()),
+  ];
 }
 
 export function getCscaTreeRoot(serialized_csca_tree: any[][]) {
@@ -251,7 +277,11 @@ export function buildSMT(field: any[], treetype: string): [number, number, SMT] 
   return [count, performance.now() - startTime, tree];
 }
 
-function processPassportNoAndNationality(passno: string, nationality: string, index: number): bigint {
+function processPassportNoAndNationality(
+  passno: string,
+  nationality: string,
+  index: number
+): bigint {
   if (passno.length > 9) {
     console.log('passport number length is greater than 9:', index, passno);
   } else if (passno.length < 9) {
@@ -283,21 +313,21 @@ function processPassportNoAndNationality(passno: string, nationality: string, in
 // will be removed once we parse the OFAC list better, starting from the XML file.
 const normalizeCountryName = (country: string): string => {
   const mapping: Record<string, string> = {
-    "palestinian": "Palestine",
-    "korea, north": "North Korea",
-    "korea, south": "Korea, Republic of",
-    "united kingdom": "United Kingdom",
-    "syria": "Syrian Arab Republic",
-    "burma": "Myanmar",
-    "cabo verde": "Cape Verde",
-    "congo, democratic republic of the": "Democratic Republic of the Congo",
-    "macau": "Macao",
+    palestinian: 'Palestine',
+    'korea, north': 'North Korea',
+    'korea, south': 'Korea, Republic of',
+    'united kingdom': 'United Kingdom',
+    syria: 'Syrian Arab Republic',
+    burma: 'Myanmar',
+    'cabo verde': 'Cape Verde',
+    'congo, democratic republic of the': 'Democratic Republic of the Congo',
+    macau: 'Macao',
   };
   return mapping[country.toLowerCase()] || country;
 };
 
 const getCountryCode = (countryName: string): string | undefined => {
-  return countries.getAlpha3Code(normalizeCountryName(countryName), "en");
+  return countries.getAlpha3Code(normalizeCountryName(countryName), 'en');
 };
 
 function generateSmallKey(input: bigint): bigint {
@@ -363,7 +393,7 @@ function processName(firstName: string, lastName: string, i: number): bigint {
       arr += '<';
     }
   }
-  //TODO pad till 256 
+  //TODO pad till 256
   let nameArr = stringToAsciiBigIntArray(arr);
   return getNameLeaf(nameArr, i);
 }
@@ -421,7 +451,11 @@ export function getCountryLeaf(
   }
 }
 
-export function getPassportNumberAndNationalityLeaf(passport: (bigint | number)[], nationality: (bigint | number)[], i?: number): bigint {
+export function getPassportNumberAndNationalityLeaf(
+  passport: (bigint | number)[],
+  nationality: (bigint | number)[],
+  i?: number
+): bigint {
   if (passport.length !== 9) {
     console.log('parsed passport length is not 9:', i, passport);
     return;

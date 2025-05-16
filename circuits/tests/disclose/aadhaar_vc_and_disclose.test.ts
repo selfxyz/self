@@ -1,19 +1,19 @@
 // eslint-disable-next-line @typescript-eslint/no-var-requires
-const circom_tester = require('circom_tester/wasm/tester')
+const circom_tester = require('circom_tester/wasm/tester');
 
-import fs from 'fs'
-import crypto from 'crypto'
-import path from 'path'
+import fs from 'fs';
+import crypto from 'crypto';
+import path from 'path';
 import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils'
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils';
 import {
   bigIntToChunkedBytes,
   bufferToHex,
   Uint8ArrayToCharArray,
-} from '@zk-email/helpers/dist/binary-format'
+} from '@zk-email/helpers/dist/binary-format';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
@@ -24,31 +24,29 @@ import {
   splitToWords,
   extractPhoto,
   timestampToUTCUnix,
-} from '@anon-aadhaar/core'
-import {
-  AADHAAR_ATTESTATION_ID,
-} from '../../../common/src/constants/constants';
+} from '@anon-aadhaar/core';
+import { AADHAAR_ATTESTATION_ID } from '../../../common/src/constants/constants';
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { buildPoseidon } from 'circomlibjs'
-import { testQRData } from '../../../common/tests/aadhaar/dataInput.json'
-import { bytesToIntChunks, padArrayWithZeros, bigIntsToString } from '../../../common/src/utils/aadhaar/utils'
-import { poseidon1, poseidon2 } from 'poseidon-lite';
+import { buildPoseidon } from 'circomlibjs';
+import { testQRData } from '../../../common/tests/aadhaar/dataInput.json';
 import {
-  prepareTestData
-} from '../../../common/src/utils/aadhaar/aadhaar';
+  bytesToIntChunks,
+  padArrayWithZeros,
+  bigIntsToString,
+} from '../../../common/src/utils/aadhaar/utils';
+import { poseidon1, poseidon2 } from 'poseidon-lite';
+import { prepareTestData } from '../../../common/src/utils/aadhaar/aadhaar';
 import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
 import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
 
 dotenv.config();
 
-
 describe('Disclose_aadhaar', function () {
   this.timeout(0);
   let inputs: any;
   let circuit: any;
   let w: any;
-
 
   const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
   const majority = '18';
@@ -85,13 +83,11 @@ describe('Disclose_aadhaar', function () {
         ],
       }
     );
-
-    
   });
 
   it('should compile and load the circuit', async function () {
-    const { inputs } = prepareTestData()
-    await circuit.calculateWitness(inputs)
+    const { inputs } = prepareTestData();
+    await circuit.calculateWitness(inputs);
   });
 
   // it('should have nullifier == poseidon(secret, scope)', async function () {
@@ -119,10 +115,7 @@ describe('Disclose_aadhaar', function () {
   //   }
   // });
 
-  describe('selective disclosure', function () {
-
-
-  });
+  describe('selective disclosure', function () {});
 
   // it('should allow disclosing majority', async function () {
   //   const selector_dg1 = Array(88).fill('0');
@@ -174,20 +167,17 @@ describe('Disclose_aadhaar', function () {
   //     expect(ofac_results).to.not.equal(['\x00', '\x00', '\x00'], 'OFAC result should be revealed');
   //   });
 
-    // it('should not disclose OFAC check result when selector is 0', async function () {
-    //   w = await circuit.calculateWitness({
-    //     ...inputs,
-    //     selector_ofac: '0',
-    //   });
+  // it('should not disclose OFAC check result when selector is 0', async function () {
+  //   w = await circuit.calculateWitness({
+  //     ...inputs,
+  //     selector_ofac: '0',
+  //   });
 
-    //   const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
-    //   const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+  //   const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
+  //   const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
 
-    //   // OFAC result should be hidden (null byte)
-    //   const ofac_result = reveal_unpacked[90];
-    //   expect(ofac_result).to.equal('\x00', 'OFAC result should not be revealed');
-    // });
-
-
-  });
-
+  //   // OFAC result should be hidden (null byte)
+  //   const ofac_result = reveal_unpacked[90];
+  //   expect(ofac_result).to.equal('\x00', 'OFAC result should not be revealed');
+  // });
+});

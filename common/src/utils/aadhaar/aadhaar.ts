@@ -3,91 +3,83 @@
 import { poseidon5 } from 'poseidon-lite';
 import { hashAlgos, MAX_PUBKEY_DSC_BYTES } from '../../constants/constants';
 import { PassportData, SignatureAlgorithm } from '../types';
-import { customHasher, hash, packBytesAndPoseidon  } from '../hash';
+import { customHasher, hash, packBytesAndPoseidon } from '../hash';
 import { bytesToBigDecimal, hexToDecimal } from '../bytes';
 
-import fs from 'fs'
-import crypto from 'crypto'
-import assert from 'assert'
-import path from 'path'
-import dotenv from 'dotenv'
+import fs from 'fs';
+import crypto from 'crypto';
+import assert from 'assert';
+import path from 'path';
+import dotenv from 'dotenv';
 
-import { sha256Pad } from '@zk-email/helpers/dist/sha-utils'
+import { sha256Pad } from '@zk-email/helpers/dist/sha-utils';
 import {
   bigIntToChunkedBytes,
   bufferToHex,
   Uint8ArrayToCharArray,
-} from '@zk-email/helpers/dist/binary-format'
+} from '@zk-email/helpers/dist/binary-format';
 import {
   convertBigIntToByteArray,
   decompressByteArray,
   splitToWords,
   extractPhoto,
   timestampToUTCUnix,
-} from '@anon-aadhaar/core'
+} from '@anon-aadhaar/core';
 
-import { buildPoseidon } from 'circomlibjs'
+import { buildPoseidon } from 'circomlibjs';
 
-import { testQRData } from '../../../tests/aadhaar/dataInput.json'
-import { bytesToIntChunks, padArrayWithZeros, bigIntsToString, ProcessReferenceId } from './utils'
+import { testQRData } from '../../../tests/aadhaar/dataInput.json';
+import { bytesToIntChunks, padArrayWithZeros, bigIntsToString, ProcessReferenceId } from './utils';
 
 dotenv.config();
 
 // const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
-let testAadhaar = true
-let QRData: string = testQRData
+let testAadhaar = true;
+let QRData: string = testQRData;
 if (process.env.REAL_DATA === 'true') {
-  testAadhaar = false
+  testAadhaar = false;
   if (typeof process.env.AADHAAR_QR_DATA === 'string') {
-    QRData = process.env.AADHAAR_QR_DATA
+    QRData = process.env.AADHAAR_QR_DATA;
   } else {
-    throw Error('You must set .env var AADHAAR_QR_DATA when using real data.')
+    throw Error('You must set .env var AADHAAR_QR_DATA when using real data.');
   }
 }
 
 const getCertificate = (_isTest: boolean) => {
-  return _isTest ? 'testPublicKey.pem' : 'uidai_offline_publickey_26022021.cer'
-}
+  return _isTest ? 'testPublicKey.pem' : 'uidai_offline_publickey_26022021.cer';
+};
 
 export function prepareTestData() {
-  const qrDataBytes = convertBigIntToByteArray(BigInt(QRData))
-  const decodedData = decompressByteArray(qrDataBytes)
+  const qrDataBytes = convertBigIntToByteArray(BigInt(QRData));
+  const decodedData = decompressByteArray(qrDataBytes);
 
   // last 256 bytes
-  const signatureBytes = decodedData.slice(
-    decodedData.length - 256,
-    decodedData.length,
-  )
+  const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
   //
-  const signedData = decodedData.slice(0, decodedData.length - 256)
+  const signedData = decodedData.slice(0, decodedData.length - 256);
 
-  const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3)
+  const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3);
 
-  const delimiterIndices: number[] = []
+  const delimiterIndices: number[] = [];
   for (let i = 0; i < qrDataPadded.length; i++) {
     if (qrDataPadded[i] === 255) {
-      delimiterIndices.push(i)
+      delimiterIndices.push(i);
     }
     if (delimiterIndices.length === 18) {
-      break
+      break;
     }
   }
 
-  const signature = BigInt(
-    '0x' + bufferToHex(Buffer.from(signatureBytes)).toString(),
-  )
+  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
 
   const pkPem = fs.readFileSync(
-    path.join(__dirname, '../../../aadhaar', getCertificate(testAadhaar)),
-  )
-  const pk = crypto.createPublicKey(pkPem)
+    path.join(__dirname, '../../../aadhaar', getCertificate(testAadhaar))
+  );
+  const pk = crypto.createPublicKey(pkPem);
 
   const pubKey = BigInt(
-    '0x' +
-      bufferToHex(
-        Buffer.from(pk.export({ format: 'jwk' }).n as string, 'base64url'),
-      ),
-  )
+    '0x' + bufferToHex(Buffer.from(pk.export({ format: 'jwk' }).n as string, 'base64url'))
+  );
 
   const inputs = {
     qrDataPadded: Uint8ArrayToCharArray(qrDataPadded),
@@ -95,8 +87,8 @@ export function prepareTestData() {
     delimiterIndices: delimiterIndices,
     signature: splitToWords(signature, BigInt(121), BigInt(17)),
     pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
-    secret : 0
-  }
+    secret: 0,
+  };
 
   return {
     inputs,
@@ -105,8 +97,8 @@ export function prepareTestData() {
     decodedData,
     pubKey,
     qrDataPaddedLen,
-    delimiterIndices
-  }
+    delimiterIndices,
+  };
 }
 
 export interface AadhaarQRFields {
@@ -128,7 +120,7 @@ export interface AadhaarQRFields {
   SubDistrict: string;
   VTC: string;
   PhoneNumberLast4: string;
-  Photo: Uint8Array;        
+  Photo: Uint8Array;
 }
 
 /**
@@ -139,35 +131,30 @@ export interface AadhaarQRFields {
  * @param delimiterIdx   18-long array of indices of byte value 255
  * @param origLen        optional: signedData length (lets us strip padding)
  */
-export function splitTestData(
-  qrDataPadded : Uint8Array,
-  delimiterIdx : number[]
-): AadhaarQRFields {
-
+export function splitTestData(qrDataPadded: Uint8Array, delimiterIdx: number[]): AadhaarQRFields {
   const fieldNames = [
-    "undefined", // "V2"
-    "Email_mobile_present_bit_indicator_value",
-    "ReferenceId",
-    "Name",
-    "DOB",
-    "Gender",
-    "CareOf",
-    "District",
-    "Landmark",
-    "House",
-    "Location",
-    "PinCode",
-    "PostOffice",
-    "State",
-    "Street",
-    "SubDistrict",
-    "VTC",
-    "PhoneNumberLast4",
-    "Photo",
-  ]
+    'undefined', // "V2"
+    'Email_mobile_present_bit_indicator_value',
+    'ReferenceId',
+    'Name',
+    'DOB',
+    'Gender',
+    'CareOf',
+    'District',
+    'Landmark',
+    'House',
+    'Location',
+    'PinCode',
+    'PostOffice',
+    'State',
+    'Street',
+    'SubDistrict',
+    'VTC',
+    'PhoneNumberLast4',
+    'Photo',
+  ];
 
-  if (delimiterIdx.length !== 18)
-    throw new Error("Expected exactly 18 delimiter indices");
+  if (delimiterIdx.length !== 18) throw new Error('Expected exactly 18 delimiter indices');
 
   let dataEnd = qrDataPadded.length;
   for (let i = qrDataPadded.length - 1; i >= 0; --i) {
@@ -177,11 +164,11 @@ export function splitTestData(
     }
   }
 
-  const decoder = new TextDecoder("utf-8");
+  const decoder = new TextDecoder('utf-8');
   const sliceField = (start: number, end: number) => qrDataPadded.subarray(start, end);
 
   const fields: Uint8Array[] = [];
-   // 0: from 0 to first delimiter
+  // 0: from 0 to first delimiter
   fields.push(sliceField(0, delimiterIdx[0]));
   // 1–17: between delimiters
   for (let i = 0; i < 17; i++) {
@@ -191,7 +178,7 @@ export function splitTestData(
   // 18: photo blob from after 18th delimiter up to dataEnd
   fields.push(sliceField(delimiterIdx[17] + 1, dataEnd));
   // ❸  decode text fields, leave photo as raw bytes
-  const result: Partial<Record<typeof fieldNames[number] | "Photo", any>> = {};
+  const result: Partial<Record<(typeof fieldNames)[number] | 'Photo', any>> = {};
 
   fields.forEach((bytes, idx) => {
     if (idx < 18) {
@@ -219,18 +206,17 @@ export async function generateCommitmentAadhaar(
   attestationId: bigint,
   qrDataPadded: Uint8Array
 ): Promise<bigint> {
-  const poseidon = await buildPoseidon()
-  const F = poseidon.F
-  const sec = typeof secret === 'bigint' ? secret : BigInt(secret)
+  const poseidon = await buildPoseidon();
+  const F = poseidon.F;
+  const sec = typeof secret === 'bigint' ? secret : BigInt(secret);
 
-  const dataCommitment= packBytesAndPoseidon(Array.from(qrDataPadded))
-  console.log(dataCommitment)
-  const out = poseidon([ sec, attestationId, dataCommitment])
-  // console.log(out)
-  console.log("Final commitment",F.toObject(out))
-  return F.toObject(out)
+  const dataCommitment = packBytesAndPoseidon(Array.from(qrDataPadded));
+  // console.log("dataCommitment",dataCommitment)
+  const out = poseidon([sec, attestationId, dataCommitment]);
+  const commitment = F.toObject(out);
+  console.log('Final commitment', commitment);
+  return commitment;
 }
-
 
 // export function generateNullifier(passportData: PassportData) {
 //   const signedAttr_shaBytes = hash(
@@ -274,7 +260,3 @@ export async function generateCommitmentAadhaar(
 //     return splitToWords(BigInt(hexToDecimal(modulus)), 8, 525);
 //   }
 // }
-
-
-
-
