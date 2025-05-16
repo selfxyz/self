@@ -240,9 +240,7 @@ const MockDataScreen: React.FC<MockDataScreenProps> = ({}) => {
       let parsedMockData = initPassportDataParsing(rawMockData, skiPem);
       await storePassportData(parsedMockData);
 
-      navigation.navigate('ConfirmBelongingScreen', {
-        mockPassportFlow: true,
-      });
+      navigation.navigate('ConfirmBelongingScreen', {});
     } catch (error) {
       console.error('Error during mock data generation:', error);
     } finally {

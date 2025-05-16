@@ -66,9 +66,7 @@ const MockDataScreenDeepLink: React.FC = () => {
     };
     const passportData = genMockIdDoc(idDocInput);
     await storePassportData(passportData);
-    navigation.navigate('ConfirmBelongingScreen', {
-      mockPassportFlow: true,
-    });
+    navigation.navigate('ConfirmBelongingScreen', {});
     useUserStore.getState().clearDeepLinkUserDetails();
   }, [navigation]);
 
