@@ -38,9 +38,7 @@ const handleUrl = (uri: string) => {
       console.error('Error parsing selfApp:', error);
       navigationRef.navigate('QRCodeTrouble');
     }
-  }
-
-  else if (sessionId && typeof sessionId === 'string') {
+  } else if (sessionId && typeof sessionId === 'string') {
     useSelfAppStore.getState().cleanSelfApp();
     useSelfAppStore.getState().startAppListener(sessionId);
     navigationRef.navigate('ProveScreen');

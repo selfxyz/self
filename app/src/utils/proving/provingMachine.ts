@@ -343,9 +343,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           typeof message === 'string' ? JSON.parse(message) : message;
         console.log('Received status update with status:', data.status);
         if (data.status === 3 || data.status === 5) {
-          console.log(
-            'Proof generation/verification failed (status 3 or 5).',
-          );
+          console.log('Proof generation/verification failed (status 3 or 5).');
           set({ error_code: data.error_code, reason: data.reason });
           actor!.send({ type: 'PROVE_FAILURE' });
           socket?.disconnect();

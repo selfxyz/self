@@ -84,10 +84,7 @@ const ProveScreen: React.FC = () => {
   }, [isContentShorterThanScrollView]);
 
   useEffect(() => {
-    if (
-      !isFocused ||
-      !selectedApp
-    ) {
+    if (!isFocused || !selectedApp) {
       return; // Avoid unnecessary updates or processing when not focused
     }
     if (selectedAppRef.current?.sessionId !== selectedApp.sessionId) {
