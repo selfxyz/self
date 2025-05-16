@@ -340,6 +340,7 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error(
             'Proof generation/verification failed (status 3 or 5).',
           );
+          console.error(data);
           set({ error_code: data.error_code, reason: data.reason });
           actor!.send({ type: 'PROVE_FAILURE' });
           socket?.disconnect();
@@ -568,7 +569,11 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           get().circuitType as 'register' | 'dsc',
         );
         if (get().circuitType === 'register') {
+          if (passportData.documentType === 'passport' || passportData.documentType === 'mock_passport') {
           wsRpcUrl = circuitsMapping?.REGISTER?.[circuitName];
+          } else {
+            wsRpcUrl = circuitsMapping?.REGISTER_ID?.[circuitName];
+          }
         } else {
           wsRpcUrl = circuitsMapping?.DSC?.[circuitName];
         }
