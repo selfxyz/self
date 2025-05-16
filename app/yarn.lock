@@ -2232,9 +2232,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@react-native-firebase/app@npm:^18.7.3":
-  version: 18.9.0
-  resolution: "@react-native-firebase/app@npm:18.9.0"
+"@react-native-firebase/app@npm:^19.0.1":
+  version: 19.3.0
+  resolution: "@react-native-firebase/app@npm:19.3.0"
   dependencies:
     opencollective-postinstall: "npm:^2.0.3"
     superstruct: "npm:^0.6.2"
@@ -2245,20 +2245,20 @@ __metadata:
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: 10c0/8780772cf9d778709903db20d039472b57f8dd7b694f9fb0e2439c9135916125114cf871fba1a571161dbd4b08de729336924b9fa36c4742e83e0bccf3b98ac7
+  checksum: 10c0/3c20b94935ca03407aa1ad159938c8d7dc2e129f8bd2ebb6089698ff05431c6c286ee320d61b7c225c82eb89e9eb0b995399f01d181ac7e1e78150de32515214
   languageName: node
   linkType: hard
 
-"@react-native-firebase/messaging@npm:^18.7.3":
-  version: 18.9.0
-  resolution: "@react-native-firebase/messaging@npm:18.9.0"
+"@react-native-firebase/messaging@npm:^19.0.1":
+  version: 19.3.0
+  resolution: "@react-native-firebase/messaging@npm:19.3.0"
   peerDependencies:
-    "@react-native-firebase/app": 18.9.0
+    "@react-native-firebase/app": 19.3.0
     expo: ">=47.0.0"
   peerDependenciesMeta:
     expo:
       optional: true
-  checksum: 10c0/7935210c73a79eb17c36a99c6e66d90dff36109d77f9b9dc8fc0108998c41f2d1e3d6780f2ae64dff267bcc18f761a0c6d68638c7deebe2a4fa4cc5905158ca0
+  checksum: 10c0/57c0a86074b9827b699262857ac329e49c92b942bf2c8cf3fca5c42d21a7ea8f556a6901606929dba1f47bdf1a8c121576ae5db658244af328eedce1941224ac
   languageName: node
   linkType: hard
 
@@ -12100,8 +12100,8 @@ __metadata:
     "@react-native-clipboard/clipboard": "npm:1.13.2"
     "@react-native-community/cli": "npm:^14.1.1"
     "@react-native-community/netinfo": "npm:^11.4.1"
-    "@react-native-firebase/app": "npm:^18.7.3"
-    "@react-native-firebase/messaging": "npm:^18.7.3"
+    "@react-native-firebase/app": "npm:^19.0.1"
+    "@react-native-firebase/messaging": "npm:^19.0.1"
     "@react-native-google-signin/google-signin": "npm:^13.1.0"
     "@react-native/babel-preset": "npm:0.75.4"
     "@react-native/eslint-config": "npm:0.75.4"
