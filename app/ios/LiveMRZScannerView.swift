@@ -13,10 +13,16 @@ struct LiveMRZScannerView: View {
 
     func singleCorrectDocumentNumberInMRZ(result: String, docNumber: String, parser: QKMRZParser) -> QKMRZResult? {
         let replacements: [Character: [Character]] = [
-            "0": ["O"], "O": ["0"],
-            "1": ["I"], "I": ["1"],
-            "2": ["Z"], "Z": ["2"],
-            "8": ["B"], "B": ["8"]
+            // "0": ["O", "D"], 
+            // "1": ["I"], 
+            "O": ["0"], 
+            "D": ["0"],
+            "I": ["1"],
+            "L": ["1"],
+            "S": ["5"],
+            "G": ["6"],
+            // "2": ["Z"], "Z": ["2"],
+            // "8": ["B"], "B": ["8"]
         ]
         let lines = result.components(separatedBy: "\n")
         guard lines.count >= 2 else { return nil }
@@ -109,7 +115,7 @@ struct LiveMRZScannerView: View {
 
             VStack {
                 if !scanComplete {
-                    Text("Position the camera 30-40cm away from the passport for best results")
+                    Text("Align the animation with the MRZ on the passport.")
                         .font(.footnote)
                         .padding()
                         .background(Color.black.opacity(0.7))
