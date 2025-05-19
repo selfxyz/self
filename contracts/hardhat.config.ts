@@ -46,27 +46,27 @@ const config: HardhatUserConfig = {
     mainnet: {
       chainId: 1,
       url: process.env.MAINNET_RPC_URL || "https://eth.llamarpc.com",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY as string] : [],
     },
     sepolia: {
       chainId: 11155111,
       url: process.env.SEPOLIA_RPC_URL || "https://eth-sepolia.public.blastapi.io",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY as string] : [],
     },
     celo: {
       chainId: 42220,
       url: process.env.CELO_RPC_URL || "https://forno.celo.org",
-      accounts: [process.env.CELO_KEY as string],
+      accounts: process.env.CELO_KEY ? [process.env.CELO_KEY as string] : [],
     },
     celoAlfajores: {
       chainId: 44787,
       url: process.env.CELO_ALFAJORES_RPC_URL || "https://alfajores-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY as string] : [],
     },
     celoBaklava: {
       chainId: 62320,
       url: process.env.CELO_BAKLAVA_RPC_URL || "https://baklava-forno.celo-testnet.org",
-      accounts: [process.env.PRIVATE_KEY as string],
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY as string] : [],
     },
   },
   etherscan: {
