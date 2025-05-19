@@ -31,7 +31,7 @@ describe('Extractor', function () {
   // figure oput some way to get rid of this weird stuff
   it('should generate witness for circuit', async () => {
     const { inputs, decodedData, qrDataPadded, delimiterIndices } = prepareTestData();
-    console.log(decodedData.length);
+    // console.log(decodedData.length);
     const output = splitTestData(qrDataPadded, delimiterIndices);
     // console.log(output)
     // await circuit.calculateWitness(inputs)

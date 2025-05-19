@@ -156,7 +156,6 @@ template QRDataExtractor(maxDataLength,nameMaxBytes) {
     // Name <== nameExtractor.namepacked;
     NameHash   <== nameExtractor.namehash;
 
-
     // Extract gender
     // Age extractor returns data shifted till DOB. Since size for DOB data is fixed,
     // we can use the same shifted data to extract gender.

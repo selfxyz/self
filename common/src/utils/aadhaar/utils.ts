@@ -90,4 +90,22 @@ export function ProcessReferenceId(referenceId: string): {
 
 // Takes in a string say name and converts it into a byte array and padding till lenght
 // useful for namehash
-export function convertStringToByteArrayPad() {}
+export function convertStringToByteArrayPad(name:string,maxNameBytes: number): Uint8Array  {
+  const encoder = new TextEncoder();
+  const nameBytes = encoder.encode(name);        // UTF-8 encode
+
+  if (nameBytes.length > maxNameBytes) {
+    throw new Error(
+      `String too long: encoded length ${nameBytes.length} > max ${maxNameBytes}`
+    );
+  }
+
+  // Allocate a zero-filled buffer of the target size
+  const padded = new Uint8Array(maxNameBytes);
+
+  // Copy the name bytes into the start of the buffer
+  padded.set(nameBytes, 0);
+
+  return padded;
+}
+

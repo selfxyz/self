@@ -57,7 +57,8 @@ template AgeExtractor(maxDataLength) {
 
     // Completed age based on year value
     signal ageByYear <== currentYear - year1 - 1;
-
+    // log(year1,month,day);
+    // log(ageByYear);
     // +1 to age if month is above currentMonth, or if months are same and day is higher
     signal monthGt <== GreaterThan(4)([currentMonth, month]);
     signal monthEq <== IsEqual()([currentMonth, month]);

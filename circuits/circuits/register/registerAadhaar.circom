@@ -84,13 +84,17 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     component dataCommit = PackBytesAndPoseidon(maxDataLength);
     dataCommit.in <== qrDataPadded;// whole buffer including zeros
     signal Datacommitment <== dataCommit.out;//field element
-    log("data-Commitment",Datacommitment);
+    // log("data-Commitment",Datacommitment);
 
     commitment <== Poseidon(3)([secret,attestation_id,Datacommitment]); 
-    log("Commitment ",commitment);
+    // log("Commitment ",commitment);
 
     // nullifier - https://www.notion.so/Indian-identity-Integration-1dc57801cd1280bebd45f3527ef60150?pvs=4#1dc57801cd12800e8f51f89648ca37d5
     nullifier <== Poseidon(4)([nameHash,DobHasH,gender,RefId]);
-    log("Nullifier ",nullifier);
+    // log("age",age);
+    // log("RefId",RefId);
+    // log("DobHash",DobHash);
+    // log("Nullifier ",nullifier);
+    // log("gender",gender);
 
 }
