@@ -12164,7 +12164,7 @@ __metadata:
     react-native-gesture-handler: "npm:^2.22.1"
     react-native-get-random-values: "npm:^1.11.0"
     react-native-haptic-feedback: "npm:^2.3.3"
-    react-native-keychain: "npm:^8.2.0"
+    react-native-keychain: "npm:^10.0.0"
     react-native-localize: "npm:^3.4.1"
     react-native-nfc-manager: "npm:^3.15.1"
     react-native-passport-reader: "npm:^1.0.3"
@@ -12830,10 +12830,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-native-keychain@npm:^8.2.0":
-  version: 8.2.0
-  resolution: "react-native-keychain@npm:8.2.0"
-  checksum: 10c0/7c32335f673c60bd64576bd21b087cdf601087f1588296367546b5fca15aa83be86723d5414ea90667ebc251237918853f65147de7f8df0707b228e6a13ab829
+"react-native-keychain@npm:^10.0.0":
+  version: 10.0.0
+  resolution: "react-native-keychain@npm:10.0.0"
+  checksum: 10c0/a632ad27e58264506d2b373d329a867f042fb014e8a78db3a63031e953d61b5c98066eed1be238ee6c186d3f213d0efaa2a26526fb3a1d36a624c4460e982230
   languageName: node
   linkType: hard
 
