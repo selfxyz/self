@@ -20,6 +20,8 @@ import {
   black,
   blue100,
   blue600,
+  slate50,
+  slate200,
   slate300,
   slate500,
   white,
@@ -218,14 +220,11 @@ const ProofHistoryScreen: React.FC = () => {
       ).length;
 
       return (
-        <View
-          marginHorizontal={16}
-          // marginVertical={8}
-          borderRadius={12}
-        >
+        <View paddingHorizontal={20} borderRadius={12}>
           <YStack gap={8}>
             <Card
-              bordered
+              borderBottomWidth={1}
+              borderColor={slate200}
               padded
               backgroundColor={white}
               onPress={() =>
@@ -297,10 +296,10 @@ const ProofHistoryScreen: React.FC = () => {
     ({ section }: { section: Section }) => {
       return (
         <View
-          paddingHorizontal={16}
-          paddingVertical={20}
-          backgroundColor={white}
-          marginTop={8}
+          paddingHorizontal={20}
+          backgroundColor={slate50}
+          marginTop={30}
+          marginBottom={12}
           gap={12}
         >
           <Text
@@ -362,7 +361,7 @@ const ProofHistoryScreen: React.FC = () => {
   }, [isLoading, refreshing]);
 
   return (
-    <YStack flex={1} bg={white} pb={bottom + extraYPadding}>
+    <YStack flex={1} bg={black} pb={bottom + extraYPadding}>
       <SectionList
         sections={groupedProofs}
         renderItem={renderItem}
