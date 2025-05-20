@@ -18,7 +18,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       barStyle={'light-content'}
       padding={16}
       justifyContent="space-between"
-      paddingTop={Math.max(Math.ceil(insets.top), 15) + extraYPadding}
+      paddingTop={Math.max(insets.top, 15) + extraYPadding}
     >
       <NavBar.LeftAction
         component={
