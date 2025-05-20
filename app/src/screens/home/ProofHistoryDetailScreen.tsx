@@ -15,7 +15,9 @@ import {
   slate700,
   white,
   zinc400,
+  zinc500,
 } from '../../utils/colors';
+import { advercase, dinot, plexMono } from '../../utils/fonts';
 
 type ProofHistoryDetailScreenProps = {
   route: {
@@ -87,6 +89,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
     return result;
   }, [data.disclosures]);
 
+  // TODO: fix timestamp format
   const formattedDate = useMemo(() => {
     return new Date(data.timestamp).toLocaleString('en-US', {
       month: 'long',
@@ -146,6 +149,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
             paddingBottom={20}
           >
             <YStack alignItems="center" gap={12} marginTop={40}>
+              {/* TODO: add background gradient */}
               {logoSource && (
                 <Image
                   source={logoSource}
@@ -155,10 +159,21 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                   objectFit="contain"
                 />
               )}
-              <Text color={white} fontSize={32} fontWeight="600">
+              <Text
+                color={white}
+                fontSize={28}
+                fontWeight={400}
+                letterSpacing={1}
+                fontFamily={advercase}
+              >
                 {data.appName}
               </Text>
-              <Text color={zinc400} fontSize={16}>
+              <Text
+                color={zinc500}
+                fontSize={12}
+                fontWeight={500}
+                fontFamily={plexMono}
+              >
                 {data.appName}
               </Text>
             </YStack>
@@ -168,10 +183,12 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                 color={zinc400}
                 fontSize={16}
                 textAlign="center"
-                fontWeight="500"
+                fontWeight={500}
+                fontFamily={dinot}
               >
-                {data.appName} was granted access to the following information
-                from your verified Passport.
+                <Text color={white}>{data.appName}</Text> was granted access to
+                the following information from your verified{' '}
+                <Text color={white}>Passport.</Text>
               </Text>
             </YStack>
           </YStack>
@@ -183,10 +200,21 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
           >
             <XStack alignItems="center" gap={8}>
               <CheckSquare2 color={blue600} size={12} />
-              <Text color={blue600} fontSize={12} fontWeight="500">
+              <Text
+                color={blue600}
+                fontSize={12}
+                fontWeight={500}
+                fontFamily={plexMono}
+              >
                 {proofStatus}
               </Text>
-              <Text color={blue600} fontSize={12} marginLeft="auto">
+              <Text
+                color={blue600}
+                fontSize={12}
+                marginLeft="auto"
+                fontWeight={500}
+                fontFamily={plexMono}
+              >
                 {formattedDate}
               </Text>
             </XStack>
@@ -231,7 +259,9 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                   <Text
                     color={isEthereumAddress ? white : zinc400}
                     fontSize={12}
-                    fontWeight="500"
+                    fontWeight={500}
+                    fontFamily={plexMono}
+                    textTransform={'uppercase'}
                   >
                     {isEthereumAddress
                       ? 'CONNECTED WALLET ADDRESS'
@@ -257,7 +287,7 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                     key={index}
                     backgroundColor={slate100}
                     paddingVertical={16}
-                    paddingHorizontal={20}
+                    paddingHorizontal={10}
                     borderRadius={12}
                     alignItems="center"
                   >
@@ -276,12 +306,14 @@ const ProofHistoryDetailScreen: React.FC<ProofHistoryDetailScreenProps> = ({
                       color={slate700}
                       fontSize={12}
                       flex={1}
-                      fontWeight="500"
-                      letterSpacing={0.4}
+                      fontWeight={500}
+                      letterSpacing={0.48}
+                      fontFamily={dinot}
+                      textTransform={'uppercase'}
                     >
                       {disclosure}
                     </Text>
-                    <Info color={blue600} size={16} />
+                    <Info color={blue600} size={16} fontWeight={700} />
                   </XStack>
                 ))}
               </YStack>

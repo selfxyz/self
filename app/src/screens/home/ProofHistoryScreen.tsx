@@ -202,95 +202,114 @@ const ProofHistoryScreen: React.FC = () => {
     return sections;
   }, [testData, getTimePeriod]);
 
-  const renderItem = useCallback(({ item }: { item: ProofHistory }) => {
-    try {
-      const disclosures = JSON.parse(item.disclosures);
-      const logoSource = item.logoBase64
-        ? {
-            uri:
-              item.logoBase64.startsWith('data:') ||
-              item.logoBase64.startsWith('http')
-                ? item.logoBase64
-                : `data:image/png;base64,${item.logoBase64}`,
-          }
-        : null;
+  const renderItem = useCallback(
+    ({
+      item,
+      index,
+      section,
+    }: {
+      item: ProofHistory;
+      index: number;
+      section: Section;
+    }) => {
+      try {
+        const disclosures = JSON.parse(item.disclosures);
+        const logoSource = item.logoBase64
+          ? {
+              uri:
+                item.logoBase64.startsWith('data:') ||
+                item.logoBase64.startsWith('http')
+                  ? item.logoBase64
+                  : `data:image/png;base64,${item.logoBase64}`,
+            }
+          : null;
 
-      const disclosureCount = Object.values(disclosures).filter(
-        value => value,
-      ).length;
+        const disclosureCount = Object.values(disclosures).filter(
+          value => value,
+        ).length;
 
-      return (
-        <View paddingHorizontal={20} borderRadius={12}>
-          <YStack gap={8}>
-            <Card
-              borderBottomWidth={1}
-              borderColor={slate200}
-              padded
-              backgroundColor={white}
-              onPress={() =>
-                navigation.navigate('ProofHistoryDetail', { data: item })
-              }
-            >
-              <XStack alignItems="center">
-                {logoSource && (
-                  <Image
-                    source={logoSource}
-                    width={46}
-                    height={46}
-                    marginRight={12}
-                    borderRadius={3}
-                    gap={10}
-                    objectFit="contain"
-                  />
-                )}
-                <YStack flex={1}>
-                  <BodyText fontSize={20} color={black} fontWeight="500">
-                    {item.appName}
-                  </BodyText>
-                  <BodyText color={slate300} gap={2} fontSize={14}>
-                    {formatDate(item.timestamp)}
-                  </BodyText>
-                </YStack>
-                {(item.endpointType === 'staging_celo' ||
-                  item.endpointType === 'celo') && (
+        const borderRadiusSize = 16;
+        const isFirstItem = index === 0;
+        const isLastItem = index === section.data.length - 1;
+
+        return (
+          <View paddingHorizontal={20}>
+            <YStack gap={8}>
+              <Card
+                borderTopLeftRadius={isFirstItem ? borderRadiusSize : 0}
+                borderTopRightRadius={isFirstItem ? borderRadiusSize : 0}
+                borderBottomLeftRadius={isLastItem ? borderRadiusSize : 0}
+                borderBottomRightRadius={isLastItem ? borderRadiusSize : 0}
+                borderBottomWidth={1}
+                borderColor={slate200}
+                padded
+                backgroundColor={white}
+                onPress={() =>
+                  navigation.navigate('ProofHistoryDetail', { data: item })
+                }
+              >
+                <XStack alignItems="center">
+                  {logoSource && (
+                    <Image
+                      source={logoSource}
+                      width={46}
+                      height={46}
+                      marginRight={12}
+                      borderRadius={3}
+                      gap={10}
+                      objectFit="contain"
+                    />
+                  )}
+                  <YStack flex={1}>
+                    <BodyText fontSize={20} color={black} fontWeight="500">
+                      {item.appName}
+                    </BodyText>
+                    <BodyText color={slate300} gap={2} fontSize={14}>
+                      {formatDate(item.timestamp)}
+                    </BodyText>
+                  </YStack>
+                  {(item.endpointType === 'staging_celo' ||
+                    item.endpointType === 'celo') && (
+                    <XStack
+                      backgroundColor={blue100}
+                      paddingVertical={2}
+                      paddingHorizontal={8}
+                      borderRadius={4}
+                      alignItems="center"
+                    >
+                      <Wallet color={blue600} height={14} width={14} />
+                    </XStack>
+                  )}
                   <XStack
                     backgroundColor={blue100}
                     paddingVertical={2}
                     paddingHorizontal={8}
                     borderRadius={4}
                     alignItems="center"
+                    marginLeft={4}
                   >
-                    <Wallet color={blue600} height={14} width={14} />
+                    <Text
+                      color={blue600}
+                      fontSize={14}
+                      fontWeight="600"
+                      marginRight={4}
+                    >
+                      {disclosureCount}
+                    </Text>
+                    <CheckSquare2 color={blue600} height={14} width={14} />
                   </XStack>
-                )}
-                <XStack
-                  backgroundColor={blue100}
-                  paddingVertical={2}
-                  paddingHorizontal={8}
-                  borderRadius={4}
-                  alignItems="center"
-                  marginLeft={4}
-                >
-                  <Text
-                    color={blue600}
-                    fontSize={14}
-                    fontWeight="600"
-                    marginRight={4}
-                  >
-                    {disclosureCount}
-                  </Text>
-                  <CheckSquare2 color={blue600} height={14} width={14} />
                 </XStack>
-              </XStack>
-            </Card>
-          </YStack>
-        </View>
-      );
-    } catch (e) {
-      console.error('Error rendering item:', e, item);
-      return null;
-    }
-  }, []);
+              </Card>
+            </YStack>
+          </View>
+        );
+      } catch (e) {
+        console.error('Error rendering item:', e, item);
+        return null;
+      }
+    },
+    [],
+  );
 
   const renderSectionHeader = useCallback(
     ({ section }: { section: Section }) => {
@@ -361,7 +380,7 @@ const ProofHistoryScreen: React.FC = () => {
   }, [isLoading, refreshing]);
 
   return (
-    <YStack flex={1} bg={black} pb={bottom + extraYPadding}>
+    <YStack flex={1} bg={slate50} pb={bottom + extraYPadding}>
       <SectionList
         sections={groupedProofs}
         renderItem={renderItem}
