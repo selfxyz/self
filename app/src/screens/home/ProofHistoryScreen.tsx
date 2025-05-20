@@ -7,6 +7,7 @@ import {
   SectionList,
   StyleSheet,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 
 import { BodyText } from '../../components/typography/BodyText';
@@ -19,11 +20,12 @@ import {
   black,
   blue100,
   blue600,
-  slate50,
   slate300,
   slate500,
   white,
 } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
+import { dinot } from '../../utils/fonts';
 
 type Section = {
   title: string;
@@ -51,6 +53,7 @@ const ProofHistoryScreen: React.FC = () => {
   } = useProofHistoryStore();
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+  const { bottom } = useSafeAreaInsets();
 
   // Add test data for development
   const testData = useMemo(() => {
@@ -304,7 +307,8 @@ const ProofHistoryScreen: React.FC = () => {
             color={slate500}
             fontSize={15}
             fontWeight="500"
-            letterSpacing={4}
+            letterSpacing={0.6}
+            fontFamily={dinot}
           >
             {section.title.toUpperCase()}
           </Text>
@@ -358,7 +362,7 @@ const ProofHistoryScreen: React.FC = () => {
   }, [isLoading, refreshing]);
 
   return (
-    <View flex={1} backgroundColor={slate50}>
+    <YStack flex={1} bg={white} pb={bottom + extraYPadding}>
       <SectionList
         sections={groupedProofs}
         renderItem={renderItem}
@@ -382,7 +386,7 @@ const ProofHistoryScreen: React.FC = () => {
         windowSize={10}
         removeClippedSubviews={true}
       />
-    </View>
+    </YStack>
   );
 };
 

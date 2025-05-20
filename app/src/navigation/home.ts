@@ -29,6 +29,7 @@ const homeScreens = {
     options: {
       title: 'Approved Requests',
       navigationBarColor: black,
+      headerBackTitle: 'close',
     },
   },
   ProofHistoryDetail: {
