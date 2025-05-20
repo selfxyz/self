@@ -41,84 +41,87 @@ const dscTree = new LeanIMT<bigint>(hashFunction);
 
 // Function to initialize the tree with all commitments
 function initializeTree() {
-    console.log("Initializing DSC tree...");
-    // The first array in serialized_dsc_tree[0] contains the leaf nodes
-    for (let i = 0; i < serialized_dsc_tree[0].length; i++) {
-        dscTree.insert(BigInt(serialized_dsc_tree[0][i]));
-    }
-    console.log(`Initialized DSC tree with ${dscTree.size} commitments. Root: ${dscTree.root}`);
+  console.log("Initializing DSC tree...");
+  // The first array in serialized_dsc_tree[0] contains the leaf nodes
+  for (let i = 0; i < serialized_dsc_tree[0].length; i++) {
+    dscTree.insert(BigInt(serialized_dsc_tree[0][i]));
+  }
+  console.log(`Initialized DSC tree with ${dscTree.size} commitments. Root: ${dscTree.root}`);
 }
 
 async function main() {
-    try {
-        // Set up connection to blockchain
-        const provider = new ethers.JsonRpcProvider(process.env.RPC_URL as string);
-        const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
+  try {
+    // Set up connection to blockchain
+    const provider = new ethers.JsonRpcProvider(process.env.RPC_URL as string);
+    const wallet = new ethers.Wallet(process.env.PRIVATE_KEY as string, provider);
 
-        // Load the registry contract
-        const registryAbiFile = fs.readFileSync(path.join(__dirname, "../ignition/deployments/chain-11155111/artifacts/DeployRegistryModule#IdentityRegistryImplV1.json"), "utf-8");
-        const registryAbi = JSON.parse(registryAbiFile).abi;
-        const registryAddress = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"; // Update with your contract address
-        const registry = new ethers.Contract(registryAddress, registryAbi, wallet);
+    // Load the registry contract
+    const registryAbiFile = fs.readFileSync(
+      path.join(
+        __dirname,
+        "../ignition/deployments/chain-11155111/artifacts/DeployRegistryModule#IdentityRegistryImplV1.json",
+      ),
+      "utf-8",
+    );
+    const registryAbi = JSON.parse(registryAbiFile).abi;
+    const registryAddress = "0xD961B67B35739cCF16326B087C9aD2c0095cCc4E"; // Update with your contract address
+    const registry = new ethers.Contract(registryAddress, registryAbi, wallet);
 
-        // Initialize our tree with all the DSC key commitments
-        initializeTree();
+    // Initialize our tree with all the DSC key commitments
+    initializeTree();
 
-        // Get all commitments to delete
-        const commitments = serialized_dsc_tree[0];
-        console.log(`Total commitments to delete: ${commitments.length}`);
+    // Get all commitments to delete
+    const commitments = serialized_dsc_tree[0];
+    console.log(`Total commitments to delete: ${commitments.length}`);
 
-        // Delete each commitment one by one
-        for (let i = 0; i < commitments.length; i++) {
-            try {
-                const commitment = BigInt(commitments[i]);
-                console.log(`Processing commitment ${i+1}/${commitments.length}: ${commitment.toString()}`);
+    // Delete each commitment one by one
+    for (let i = 0; i < commitments.length; i++) {
+      try {
+        const commitment = BigInt(commitments[i]);
+        console.log(`Processing commitment ${i + 1}/${commitments.length}: ${commitment.toString()}`);
 
-                // Find the index of the commitment in the tree
-                const index = dscTree.indexOf(commitment);
-                if (index === -1) {
-                    console.warn(`Commitment ${commitment.toString()} not found in the tree, skipping...`);
-                    continue;
-                }
-
-                // Generate the proof for the current commitment
-                const { siblings } = dscTree.generateProof(index);
-
-                // Convert siblings to string array for contract call
-                const siblingNodes = siblings.map(s => s.toString());
-
-                // Call the contract to remove the commitment
-                console.log(`Removing commitment from contract...`);
-                const tx = await registry.devRemoveDscKeyCommitment(
-                    commitment.toString(),
-                    siblingNodes
-                );
-
-                console.log(`Transaction sent. Waiting for confirmation...`);
-                const receipt = await tx.wait();
-                console.log(`Transaction confirmed! Hash: ${receipt.hash}`);
-
-                // Update the commitment in our local tree to keep it in sync with the contract
-                // According to documentation, update takes index and new value
-                dscTree.update(index, BigInt(0));  // Update to zero, effectively "removing" it
-                console.log(`Removed commitment ${i+1}. New tree root: ${dscTree.root}`);
-
-                // Small delay to avoid spamming the network
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } catch (error) {
-                console.error(`Error processing commitment ${i+1}:`, error);
-                // Continue with the next commitment
-            }
+        // Find the index of the commitment in the tree
+        const index = dscTree.indexOf(commitment);
+        if (index === -1) {
+          console.warn(`Commitment ${commitment.toString()} not found in the tree, skipping...`);
+          continue;
         }
 
-        console.log("All DSC key commitments have been removed.");
-    } catch (error) {
-        console.error("Error in main function:", error);
-        process.exitCode = 1;
+        // Generate the proof for the current commitment
+        const { siblings } = dscTree.generateProof(index);
+
+        // Convert siblings to string array for contract call
+        const siblingNodes = siblings.map((s) => s.toString());
+
+        // Call the contract to remove the commitment
+        console.log(`Removing commitment from contract...`);
+        const tx = await registry.devRemoveDscKeyCommitment(commitment.toString(), siblingNodes);
+
+        console.log(`Transaction sent. Waiting for confirmation...`);
+        const receipt = await tx.wait();
+        console.log(`Transaction confirmed! Hash: ${receipt.hash}`);
+
+        // Update the commitment in our local tree to keep it in sync with the contract
+        // According to documentation, update takes index and new value
+        dscTree.update(index, BigInt(0)); // Update to zero, effectively "removing" it
+        console.log(`Removed commitment ${i + 1}. New tree root: ${dscTree.root}`);
+
+        // Small delay to avoid spamming the network
+        await new Promise((resolve) => setTimeout(resolve, 1000));
+      } catch (error) {
+        console.error(`Error processing commitment ${i + 1}:`, error);
+        // Continue with the next commitment
+      }
     }
+
+    console.log("All DSC key commitments have been removed.");
+  } catch (error) {
+    console.error("Error in main function:", error);
+    process.exitCode = 1;
+  }
 }
 
 main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+  console.error(error);
+  process.exitCode = 1;
 });

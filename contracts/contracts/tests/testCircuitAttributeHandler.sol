@@ -58,15 +58,14 @@ contract TestCircuitAttributeHandler {
         bool checkNameAndDob,
         bool checkNameAndYob
     ) external pure returns (bool) {
-        return CircuitAttributeHandler.compareOfac(
-            charcodes,
-            checkPassportNo,
-            checkNameAndDob,
-            checkNameAndYob
-        );
+        return CircuitAttributeHandler.compareOfac(charcodes, checkPassportNo, checkNameAndDob, checkNameAndYob);
     }
 
-    function testExtractStringAttribute(bytes memory charcodes, uint256 start, uint256 end) external pure returns (string memory) {
+    function testExtractStringAttribute(
+        bytes memory charcodes,
+        uint256 start,
+        uint256 end
+    ) external pure returns (string memory) {
         return CircuitAttributeHandler.extractStringAttribute(charcodes, start, end);
     }
 }

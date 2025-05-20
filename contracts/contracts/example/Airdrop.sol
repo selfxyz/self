@@ -97,8 +97,8 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param _ofacEnabled Array of flags indicating which OFAC checks are enabled. [passportNo, nameAndDob, nameAndYob]
      */
     constructor(
-        address _identityVerificationHub, 
-        uint256 _scope, 
+        address _identityVerificationHub,
+        uint256 _scope,
         uint256 _attestationId,
         address _token,
         bool _olderThanEnabled,
@@ -106,11 +106,11 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         bool _forbiddenCountriesEnabled,
         uint256[4] memory _forbiddenCountriesListPacked,
         bool[3] memory _ofacEnabled
-    ) 
+    )
         SelfVerificationRoot(
-            _identityVerificationHub, 
-            _scope, 
-            _attestationId, 
+            _identityVerificationHub,
+            _scope,
+            _attestationId,
             _olderThanEnabled,
             _olderThan,
             _forbiddenCountriesEnabled,
@@ -120,7 +120,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         Ownable(_msgSender())
     {
         token = IERC20(_token);
-    }  
+    }
 
     // ====================================================
     // External/Public Functions
@@ -152,7 +152,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      */
     function openRegistration() external onlyOwner {
         isRegistrationOpen = true;
-        emit RegistrationOpen();    
+        emit RegistrationOpen();
     }
 
     /**
@@ -187,17 +187,11 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Reverts if the registration phase is not open.
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
-    function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
-    ) 
-        public 
-        override 
-    {
-
+    function verifySelfProof(IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof) public override {
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
-        
+
         if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
@@ -209,26 +203,30 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         if (_nullifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_NULLIFIER_INDEX]] != 0) {
             revert RegisteredNullifier();
         }
-        
+
         if (proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX] == 0) {
             revert InvalidUserIdentifier();
         }
 
-        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub.verifyVcAndDisclose(
-            IIdentityVerificationHubV1.VcAndDiscloseHubProof({
-                olderThanEnabled: _verificationConfig.olderThanEnabled,
-                olderThan: _verificationConfig.olderThan,
-                forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
-                forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
-                ofacEnabled: _verificationConfig.ofacEnabled,
-                vcAndDiscloseProof: proof
-            })
-        );
+        IIdentityVerificationHubV1.VcAndDiscloseVerificationResult memory result = _identityVerificationHub
+            .verifyVcAndDisclose(
+                IIdentityVerificationHubV1.VcAndDiscloseHubProof({
+                    olderThanEnabled: _verificationConfig.olderThanEnabled,
+                    olderThan: _verificationConfig.olderThan,
+                    forbiddenCountriesEnabled: _verificationConfig.forbiddenCountriesEnabled,
+                    forbiddenCountriesListPacked: _verificationConfig.forbiddenCountriesListPacked,
+                    ofacEnabled: _verificationConfig.ofacEnabled,
+                    vcAndDiscloseProof: proof
+                })
+            );
 
         _nullifiers[result.nullifier] = proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX];
         _registeredUserIdentifiers[proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX]] = true;
 
-        emit UserIdentifierRegistered(proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX], result.nullifier);
+        emit UserIdentifierRegistered(
+            proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_USER_IDENTIFIER_INDEX],
+            result.nullifier
+        );
     }
 
     /**
@@ -281,11 +279,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param amount The amount of tokens to be claimed.
      * @param merkleProof The Merkle proof verifying the claim.
      */
-    function claim(
-        uint256 index,
-        uint256 amount,
-        bytes32[] memory merkleProof
-    ) external {
+    function claim(uint256 index, uint256 amount, bytes32[] memory merkleProof) external {
         if (isRegistrationOpen) {
             revert RegistrationNotClosed();
         }

@@ -7,7 +7,6 @@ pragma solidity 0.8.28;
  * @dev This interface defines the structure of a DSC circuit proof and exposes a function to verify such proofs.
  */
 interface IDscCircuitVerifier {
-
     /**
      * @notice Represents a DSC circuit proof.
      * @param a An array of two unsigned integers representing the proof component 'a'.
@@ -31,7 +30,7 @@ interface IDscCircuitVerifier {
      * @param _pubSignals The public signals associated with the proof.
      * @return A boolean value indicating whether the provided proof is valid (true) or not (false).
      */
-    function verifyProof (
+    function verifyProof(
         uint[2] calldata _pA,
         uint[2][2] calldata _pB,
         uint[2] calldata _pC,

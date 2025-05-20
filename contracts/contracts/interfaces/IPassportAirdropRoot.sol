@@ -8,7 +8,6 @@ pragma solidity 0.8.28;
  * the verification process during passport airdrop registration.
  */
 interface IPassportAirdropRoot {
-
     /**
      * @notice Configuration settings for the verification process.
      * @dev These settings determine which attributes are enabled for verification and the expected values.
@@ -25,5 +24,4 @@ interface IPassportAirdropRoot {
         uint256[4] forbiddenCountriesListPacked;
         bool[3] ofacEnabled;
     }
-
 }

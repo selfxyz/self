@@ -3,8 +3,7 @@ pragma solidity 0.8.28;
 
 import {IdentityVerificationHubStorageV1} from "../IdentityVerificationHubImplV1.sol";
 
-abstract contract UpgradedIdentityVerificationHubStorageV1
-{
+abstract contract UpgradedIdentityVerificationHubStorageV1 {
     bool internal _isTest;
 }
 
@@ -13,11 +12,10 @@ abstract contract UpgradedIdentityVerificationHubStorageV1
  * @notice Implementation contract for the Identity Verification Hub.
  * @dev Provides functions for registering commitments and verifying groth16 proofs and inclusion proofs.
  */
-contract testUpgradedIdentityVerificationHubImplV1 is 
+contract testUpgradedIdentityVerificationHubImplV1 is
     IdentityVerificationHubStorageV1,
     UpgradedIdentityVerificationHubStorageV1
 {
-
     // ====================================================
     // Events
     // ====================================================
@@ -48,12 +46,7 @@ contract testUpgradedIdentityVerificationHubImplV1 is
      * @dev Sets the registry, VC and Disclose circuit verifier address, register circuit verifiers, and DSC circuit verifiers.
      * @param isTestInput Boolean value which shows it is test or not
      */
-    function initialize(
-        bool isTestInput
-    ) 
-        external 
-        reinitializer(3) 
-    {
+    function initialize(bool isTestInput) external reinitializer(3) {
         __ImplRoot_init();
         _isTest = isTestInput;
         emit TestHubInitialized();
@@ -63,58 +56,23 @@ contract testUpgradedIdentityVerificationHubImplV1 is
     // External View Functions
     // ====================================================
 
-    function isTest()
-        external 
-        virtual
-        onlyProxy
-        view
-        returns (bool)
-    {
+    function isTest() external view virtual onlyProxy returns (bool) {
         return _isTest;
     }
 
-    function registry() 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (address) 
-    {
+    function registry() external view virtual onlyProxy returns (address) {
         return _registry;
     }
 
-    function vcAndDiscloseCircuitVerifier() 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (address) 
-    {
+    function vcAndDiscloseCircuitVerifier() external view virtual onlyProxy returns (address) {
         return _vcAndDiscloseCircuitVerifier;
     }
-    
-    function sigTypeToRegisterCircuitVerifiers(
-        uint256 typeId
-    ) 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (address) 
-    {
+
+    function sigTypeToRegisterCircuitVerifiers(uint256 typeId) external view virtual onlyProxy returns (address) {
         return _sigTypeToRegisterCircuitVerifiers[typeId];
     }
 
-    function sigTypeToDscCircuitVerifiers(
-        uint256 typeId
-    ) 
-        external
-        virtual
-        onlyProxy
-        view 
-        returns (address) 
-    {
+    function sigTypeToDscCircuitVerifiers(uint256 typeId) external view virtual onlyProxy returns (address) {
         return _sigTypeToDscCircuitVerifiers[typeId];
     }
-
 }

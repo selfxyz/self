@@ -23,9 +23,7 @@ library Formatter {
      * @param input The input string structured as "lastName<<firstName(s)".
      * @return names An array of two strings: [firstName(s), lastName].
      */
-    function formatName(
-        string memory input
-    ) internal pure returns (string[] memory) {
+    function formatName(string memory input) internal pure returns (string[] memory) {
         bytes memory inputBytes = bytes(input);
         bytes memory firstNameBytes;
         bytes memory lastNameBytes;
@@ -49,10 +47,7 @@ library Formatter {
                 }
                 firstNameBytes = abi.encodePacked(firstNameBytes, " ");
             } else {
-                firstNameBytes = abi.encodePacked(
-                    firstNameBytes,
-                    inputBytes[i]
-                );
+                firstNameBytes = abi.encodePacked(firstNameBytes, inputBytes[i]);
             }
             i++;
         }
@@ -69,19 +64,17 @@ library Formatter {
      * @param date A string representing the date in YYMMDD format.
      * @return A formatted date string in the format "DD-MM-YY".
      */
-    function formatDate(
-        string memory date
-    ) internal pure returns (string memory) {
+    function formatDate(string memory date) internal pure returns (string memory) {
         bytes memory dateBytes = bytes(date);
         if (dateBytes.length != 6) {
             revert InvalidDateLength();
         }
 
-        if (dateBytes[2] > '1' || (dateBytes[2] == '1' && dateBytes[3] > '2')) {
+        if (dateBytes[2] > "1" || (dateBytes[2] == "1" && dateBytes[3] > "2")) {
             revert InvalidMonthRange();
         }
 
-        if (dateBytes[4] > '3' || (dateBytes[4] == '3' && dateBytes[5] > '1')) {
+        if (dateBytes[4] > "3" || (dateBytes[4] == "3" && dateBytes[5] > "1")) {
             revert InvalidDayRange();
         }
 
@@ -109,9 +102,7 @@ library Formatter {
      * @param publicSignals An array of three unsigned integers representing field elements.
      * @return bytesArray A bytes array of total length 93 that encodes the three field elements.
      */
-    function fieldElementsToBytes(
-        uint256[3] memory publicSignals
-    ) internal pure returns (bytes memory) {
+    function fieldElementsToBytes(uint256[3] memory publicSignals) internal pure returns (bytes memory) {
         if (
             publicSignals[0] >= SNARK_SCALAR_FIELD ||
             publicSignals[1] >= SNARK_SCALAR_FIELD ||
@@ -142,13 +133,7 @@ library Formatter {
      */
     function extractForbiddenCountriesFromPacked(
         uint256[4] memory publicSignals
-    )
-        internal
-        pure
-        returns (
-            string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries
-        )
-    {
+    ) internal pure returns (string[MAX_FORBIDDEN_COUNTRIES_LIST_LENGTH] memory forbiddenCountries) {
         for (uint256 i = 0; i < 4; i++) {
             if (publicSignals[i] >= SNARK_SCALAR_FIELD) {
                 revert InvalidFieldElement();
@@ -187,30 +172,25 @@ library Formatter {
         }
 
         return forbiddenCountries;
-
     }
 
     /**
      * @notice Converts an array of 6 numerical values representing a date into a Unix timestamp.
-     * @dev Each element in the dateNum array is taken modulo 10, converted to its ASCII digit, 
-     *      and concatenated to form a date string in YYMMDD format. This string is then converted 
+     * @dev Each element in the dateNum array is taken modulo 10, converted to its ASCII digit,
+     *      and concatenated to form a date string in YYMMDD format. This string is then converted
      *      into a Unix timestamp using dateToUnixTimestamp.
      * @param dateNum An array of 6 unsigned integers representing a date in YYMMDD format.
      * @return timestamp The Unix timestamp corresponding to the provided date.
      */
-    function proofDateToUnixTimestamp(
-        uint256[6] memory dateNum
-    ) internal pure returns (uint256) {
+    function proofDateToUnixTimestamp(uint256[6] memory dateNum) internal pure returns (uint256) {
         for (uint256 i = 0; i < 6; i++) {
-        if (dateNum[i] > 9) {
-            revert InvalidDateDigit();
+            if (dateNum[i] > 9) {
+                revert InvalidDateDigit();
             }
         }
         string memory date = "";
         for (uint256 i = 0; i < 6; i++) {
-            date = string(
-                abi.encodePacked(date, bytes1(uint8(48 + (dateNum[i] % 10))))
-            );
+            date = string(abi.encodePacked(date, bytes1(uint8(48 + (dateNum[i] % 10)))));
         }
         uint256 currentTimestamp = dateToUnixTimestamp(date);
         return currentTimestamp;
@@ -224,19 +204,17 @@ library Formatter {
      * @param date A 6-character string representing the date in YYMMDD format.
      * @return timestamp The Unix timestamp corresponding to the input date.
      */
-    function dateToUnixTimestamp(
-        string memory date
-    ) internal pure returns (uint256) {
+    function dateToUnixTimestamp(string memory date) internal pure returns (uint256) {
         bytes memory dateBytes = bytes(date);
         if (dateBytes.length != 6) {
             revert InvalidDateLength();
         }
 
-        if (dateBytes[2] > '1' || (dateBytes[2] == '1' && dateBytes[3] > '2')) {
+        if (dateBytes[2] > "1" || (dateBytes[2] == "1" && dateBytes[3] > "2")) {
             revert InvalidMonthRange();
         }
 
-        if (dateBytes[4] > '3' || (dateBytes[4] == '3' && dateBytes[5] > '1')) {
+        if (dateBytes[4] > "3" || (dateBytes[4] == "3" && dateBytes[5] > "1")) {
             revert InvalidDayRange();
         }
 
@@ -255,11 +233,7 @@ library Formatter {
      * @param endIndex The ending index of the substring (exclusive).
      * @return The resulting substring.
      */
-    function substring(
-        string memory str,
-        uint startIndex,
-        uint endIndex
-    ) internal pure returns (string memory) {
+    function substring(string memory str, uint startIndex, uint endIndex) internal pure returns (string memory) {
         bytes memory strBytes = bytes(str);
         bytes memory result = new bytes(endIndex - startIndex);
 
@@ -300,11 +274,7 @@ library Formatter {
      * @param day The day of the month.
      * @return timestamp The Unix timestamp corresponding to the given date.
      */
-    function toTimestamp(
-        uint256 year,
-        uint256 month,
-        uint256 day
-    ) internal pure returns (uint timestamp) {
+    function toTimestamp(uint256 year, uint256 month, uint256 day) internal pure returns (uint timestamp) {
         uint16 i;
 
         if (year < 1970 || year > 2100) {
@@ -377,5 +347,4 @@ library Formatter {
             return true;
         }
     }
-
 }

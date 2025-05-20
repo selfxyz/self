@@ -12,7 +12,6 @@ import {CircuitConstants} from "../constants/CircuitConstants.sol";
  * @dev Provides base functionality for verifying and disclosing identity credentials
  */
 abstract contract SelfVerificationRoot is ISelfVerificationRoot {
-
     // ====================================================
     // Storage Variables
     // ====================================================
@@ -81,12 +80,7 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
      * @dev Validates scope and attestation ID before performing verification through the identity hub
      * @param proof The proof data for verification and disclosure
      */
-    function verifySelfProof(
-        IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof
-    ) 
-        public
-        virtual
-    {
+    function verifySelfProof(IVcAndDiscloseCircuitVerifier.VcAndDiscloseProof memory proof) public virtual {
         if (_scope != proof.pubSignals[CircuitConstants.VC_AND_DISCLOSE_SCOPE_INDEX]) {
             revert InvalidScope();
         }
@@ -106,5 +100,4 @@ abstract contract SelfVerificationRoot is ISelfVerificationRoot {
             })
         );
     }
-
 }
