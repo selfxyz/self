@@ -2,8 +2,6 @@ import { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 
 import CloudBackupScreen from '../screens/settings/CloudBackupScreen';
 import PassportDataInfoScreen from '../screens/settings/PassportDataInfoScreen';
-import ProofHistoryDetailScreen from '../screens/settings/ProofHistoryDetailScreen';
-import ProofHistoryScreen from '../screens/settings/ProofHistoryScreen';
 import SettingsScreen from '../screens/settings/SettingsScreen';
 import ShowRecoveryPhraseScreen from '../screens/settings/ShowRecoveryPhraseScreen';
 import { black, slate300, white } from '../utils/colors';
@@ -29,19 +27,6 @@ const settingsScreens = {
         backgroundColor: white,
       },
     } as NativeStackNavigationOptions,
-  },
-  ProofHistory: {
-    screen: ProofHistoryScreen,
-    options: {
-      title: 'Approved Requests',
-      navigationBarColor: black,
-    },
-  },
-  ProofHistoryDetail: {
-    screen: ProofHistoryDetailScreen,
-    options: {
-      title: 'Approval',
-    },
   },
   Settings: {
     screen: SettingsScreen,

@@ -12,6 +12,7 @@ import { Card, Image, Text, View, XStack, YStack } from 'tamagui';
 import { BodyText } from '../../components/typography/BodyText';
 import {
   ProofHistory,
+  ProofStatus,
   useProofHistoryStore,
 } from '../../stores/proofHistoryStore';
 import {
@@ -50,6 +51,35 @@ const ProofHistoryScreen: React.FC = () => {
   } = useProofHistoryStore();
   const [refreshing, setRefreshing] = useState(false);
   const navigation = useNavigation();
+
+  // Add test data for development
+  const testData = useMemo(() => {
+    const baseItem = {
+      appName: 'Self Playground',
+      disclosures:
+        '{"date_of_birth":false,"excludedCountries":["IRN","IRQ","PRK","RUS","SYR","VEN"],"expiry_date":false,"gender":false,"issuing_state":false,"minimumAge":18,"name":false,"nationality":true,"ofac":true,"passport_number":false}',
+      endpointType: 'https' as const,
+      errorCode: undefined,
+      errorReason:
+        'UNKNOWN_ERROR:{"status":"error","result":false,"message":"Verification failed","details":{"isValid":false,"isValidDetails":{"isValidScope":true,"isValidAttestationId":true,"isValidProof":false,"isValidNationality":true},"userId":"e3a87f05-f8ab-433b-994c-6846e2edfadf","application":"13934606664243914063643606771911468856671016933765586820821710153612586828695","nullifier":"2927151816679492703333863020486267909654130379821290868406419633191803103929","credentialSubject":{"merkle_root":"16928847117903556080027044690527049954693278163127554140808284015165387547536","attestation_id":"1","current_date":"2025-05-20T14:25:21.672Z","issuing_state":"","name":[],"passport_number":"","nationality":"","date_of_birth":"","gender":"","expiry_date":"","older_than":"0","passport_no_ofac":true,"name_and_dob_ofac":true,"name_and_yob_ofac":true},"proof":{"value":{"proof":{"a":["17040830599389915703187942157464034953191623669965852892089757311908942641836","115068541290307147228009745447404697798970799996440879411059953..."}}}',
+      logoBase64: 'https://i.imgur.com/Rz8B3s7.png',
+      status: ProofStatus.FAILURE,
+      userId: 'e3a87f05-f8ab-433b-994c-6846e2edfadf',
+      userIdType: 'uuid' as const,
+    };
+
+    const items = [];
+    const now = Date.now();
+    for (let i = 0; i < 20; i++) {
+      items.push({
+        ...baseItem,
+        id: String(i + 1),
+        sessionId: `test-session-${i + 1}`,
+        timestamp: now - i * 3600000, // Subtract i hours from now
+      });
+    }
+    return [...proofHistory, ...items];
+  }, [proofHistory]);
 
   useEffect(() => {
     initDatabase();
@@ -110,7 +140,7 @@ const ProofHistoryScreen: React.FC = () => {
 
     const monthGroups = new Set<string>();
 
-    proofHistory.forEach(proof => {
+    testData.forEach(proof => {
       const period = getTimePeriod(proof.timestamp);
 
       if (
@@ -165,7 +195,7 @@ const ProofHistoryScreen: React.FC = () => {
     }
 
     return sections;
-  }, [proofHistory, getTimePeriod]);
+  }, [testData, getTimePeriod]);
 
   const renderItem = useCallback(({ item }: { item: ProofHistory }) => {
     try {

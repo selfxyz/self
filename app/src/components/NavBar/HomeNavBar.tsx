@@ -23,7 +23,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       <NavBar.LeftAction
         component={
           <Button
-            size="$3"
+            size={'$3'}
             unstyled
             icon={
               <ActivityIcon width={'24'} height={'100%'} color={neutral400} />
@@ -33,11 +33,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
         // disable icon click for now
         onPress={() => {
           buttonTap();
-          // props.navigation.navigate('Activity');
-          return false;
-        }}
-        style={{
-          opacity: 0,
+          props.navigation.navigate('ProofHistory');
         }}
       />
       <NavBar.Title size="large" color={white}>
