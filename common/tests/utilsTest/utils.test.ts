@@ -1,6 +1,10 @@
 import { assert, expect } from 'chai';
 import { describe, it } from 'mocha';
 import { convertStringToByteArrayPad, ProcessReferenceId } from '../../src/utils/aadhaar/utils';
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { poseidon1, poseidon2 } from 'poseidon-lite';
+import { SMT } from '@openpassport/zk-kit-smt';
+
 import {
   generateCommitmentAadhaar,
   nameHash,
@@ -8,7 +12,10 @@ import {
   splitTestData,
   DobHash,
   generateNullifier,
+  generateCircuitInputsAadhaarVCandDisclose,
 } from '../../src/utils/aadhaar/aadhaar';
+import nameAndDobjson from '../../ofacdata/outputs/nameAndDobSMT.json';
+import nameAndYobjson from '../../ofacdata/outputs/nameAndYobSMT.json';
 
 //Test the util functions
 describe('utils', function () {
@@ -65,5 +72,47 @@ describe('produce desired nullifier', function () {
       '14300676060298489109925451265331000889291307788153914741032606453496314896133'
     );
     assert(value == nullifier);
+  });
+});
+
+describe('Should output the vc_and_disclose Cicuit input', async function () {
+  it('should output Inputs to vc_and_disclose Circuit for aadhaar', async function () {
+    const secret = BigInt(0);
+    const attestationId = BigInt(3); //for aadhaar
+
+    const {
+      inputs: regInputs,
+      qrDataPadded,
+      qrDataPaddedLen,
+      delimiterIndices,
+    } = prepareTestData();
+    const tree = new LeanIMT((a, b) => poseidon2([a, b]), []);
+    const commitment = await generateCommitmentAadhaar(secret, attestationId, qrDataPadded);
+    tree.insert(commitment);
+    const nameDobSMT = new SMT(poseidon2, true);
+    nameDobSMT.import(nameAndDobjson);
+    const nameYobSMT = new SMT(poseidon2, true);
+    nameYobSMT.import(nameAndYobjson);
+    const userId = crypto.randomUUID();
+    const inputs = await generateCircuitInputsAadhaarVCandDisclose(
+      tree,
+      nameDobSMT,
+      nameYobSMT,
+      userId,
+      {
+        selectors: {
+          revealAge: true,
+          revealGender: true,
+          revealPin: true,
+          revealState: true,
+          selectorOfac: true,
+        },
+        majorityYears: 18,
+        scope: '1',
+        userIdentifier: userId,
+        // now: new Date("2025-12-01T00:00:00Z"), // override date if you like
+      }
+    );
+    console.log(inputs);
   });
 });

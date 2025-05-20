@@ -1,3 +1,6 @@
+import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
+import { SMT } from '@openpassport/zk-kit-smt';
+
 export function bytesToIntChunks(bytes: Uint8Array, maxBytesInField: number): bigint[] {
   const numChunks = Math.ceil(bytes.length / maxBytesInField);
   const ints: bigint[] = new Array(numChunks).fill(BigInt(0));
@@ -105,4 +108,40 @@ export function convertStringToByteArrayPad(name: string, maxNameBytes: number):
   padded.set(nameBytes, 0);
 
   return padded;
+}
+
+// this get the commitment index whether it is a string or a bigint
+export function findIndexInTree(tree: LeanIMT, commitment: bigint): number {
+  let index = tree.indexOf(commitment);
+  if (index === -1) {
+    index = tree.indexOf(commitment.toString() as unknown as bigint);
+  }
+  if (index === -1) {
+    throw new Error('This commitment was not found in the tree');
+  } else {
+    //  console.log(`Index of commitment in the registry: ${index}`);
+  }
+  return index;
+}
+
+export function formatInput(input: any) {
+  if (Array.isArray(input)) {
+    return input.map((item) => BigInt(item).toString());
+  } else if (input instanceof Uint8Array) {
+    return Array.from(input).map((num) => BigInt(num).toString());
+  } else if (typeof input === 'string' && input.includes(',')) {
+    const numbers = input
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s !== '' && !isNaN(Number(s)))
+      .map(Number);
+
+    try {
+      return numbers.map((num) => BigInt(num).toString());
+    } catch (e) {
+      throw e;
+    }
+  } else {
+    return [BigInt(input).toString()];
+  }
 }

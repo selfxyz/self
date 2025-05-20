@@ -15,9 +15,11 @@ import { convertStringToByteArrayPad } from './utils';
 
 import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
 import { SMT } from '@openpassport/zk-kit-smt';
-import { poseidon1, poseidon2 } from 'poseidon-lite';
 
-import { AADHAAR_ATTESTATION_ID } from '../../../src/constants/constants';
+import { generateMerkleProof, generateSMTProof } from '../trees';
+import { findIndexInTree, formatInput } from './utils';
+import { castFromUUID, stringToAsciiBigIntArray } from '../circuits/uuid';
+import { AADHAAR_ATTESTATION_ID, COMMITMENT_TREE_DEPTH } from '../../../src/constants/constants';
 import nameAndDobjson from '../../../ofacdata/outputs/nameAndDobSMT.json';
 import nameAndYobjson from '../../../ofacdata/outputs/nameAndYobSMT.json';
 
@@ -45,17 +47,37 @@ interface AadhaarQRFields {
   Photo: Uint8Array;
 }
 
+interface SelectorFlags {
+  revealAge?: boolean;
+  revealGender?: boolean;
+  revealPin?: boolean;
+  revealState?: boolean;
+  selectorOfac?: boolean;
+}
+
+interface AadhaarInputOpts {
+  selectors?: SelectorFlags;
+  majorityYears?: number;
+  scope?: string;
+  userIdentifier?: string;
+  now?: Date;
+}
+
 const today = new Date();
-const yyyy = today.getFullYear().toString();  // "2025"
+const yyyy = today.getFullYear().toString(); // "2025"
 const mm = (today.getMonth() + 1).toString().padStart(2, '0'); // "05"
-const dd = today.getDate().toString().padStart(2, '0');        // "20"
+const dd = today.getDate().toString().padStart(2, '0'); // "20"
 
 const current_date = [
-  parseInt(yyyy[0]), parseInt(yyyy[1]),
-  parseInt(yyyy[2]), parseInt(yyyy[3]),
-  parseInt(mm[0]), parseInt(mm[1]),
-  parseInt(dd[0]), parseInt(dd[1]),
-].slice(-6); 
+  parseInt(yyyy[0]),
+  parseInt(yyyy[1]),
+  parseInt(yyyy[2]),
+  parseInt(yyyy[3]),
+  parseInt(mm[0]),
+  parseInt(mm[1]),
+  parseInt(dd[0]),
+  parseInt(dd[1]),
+].slice(-6);
 
 // const testSuite = process.env.FULL_TEST_SUITE === 'true' ? fullSigAlgs : sigAlgs;
 let testAadhaar = true;
@@ -79,7 +101,6 @@ export function prepareTestData() {
 
   // last 256 bytes
   const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
-  //
   const signedData = decodedData.slice(0, decodedData.length - 256);
 
   const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3);
@@ -126,96 +147,81 @@ export function prepareTestData() {
   };
 }
 
-export function prepareTestDataDisclosure(){
+export async function generateCircuitInputsAadhaarVCandDisclose(
+  commitmentTree: LeanIMT,
+  nameDobSMT: SMT,
+  nameYobSMT: SMT,
+  user_identifier: string,
+  opts: AadhaarInputOpts = {}
+) {
+  const {
+    selectors: {
+      revealAge = true,
+      revealGender = true,
+      revealPin = true,
+      revealState = true,
+      selectorOfac = true,
+    } = {},
+    majorityYears = 18,
+    scope = '1',
+    userIdentifier = crypto.randomUUID(),
+    now = new Date(),
+  } = opts;
+  const { inputs, qrDataPadded, qrDataPaddedLen, delimiterIndices } = prepareTestData();
 
-  const qrDataBytes = convertBigIntToByteArray(BigInt(QRData));
-  const decodedData = decompressByteArray(qrDataBytes);
+  const secret = BigInt(0);
+  const commitment = await generateCommitmentAadhaar(secret, BigInt(3), qrDataPadded);
 
-  // last 256 bytes
-  const signatureBytes = decodedData.slice(decodedData.length - 256, decodedData.length);
-  const signedData = decodedData.slice(0, decodedData.length - 256);
-  const [qrDataPadded, qrDataPaddedLen] = sha256Pad(signedData, 512 * 3);
-
-  const delimiterIndices: number[] = [];
-  for (let i = 0; i < qrDataPadded.length; i++) {
-    if (qrDataPadded[i] === 255) {
-      delimiterIndices.push(i);
-    }
-    if (delimiterIndices.length === 18) {
-      break;
-    }
-  }
-
-  const signature = BigInt('0x' + bufferToHex(Buffer.from(signatureBytes)).toString());
-  const pkPem = fs.readFileSync(
-    path.join(__dirname, '../../../aadhaar', getCertificate(testAadhaar))
+  const idx = findIndexInTree(commitmentTree, BigInt(commitment));
+  const { siblings, path, leaf_depth } = generateMerkleProof(
+    commitmentTree,
+    idx,
+    COMMITMENT_TREE_DEPTH
   );
-  const pk = crypto.createPublicKey(pkPem);
-  const pubKey = BigInt(
-    '0x' + bufferToHex(Buffer.from(pk.export({ format: 'jwk' }).n as string, 'base64url'))
-  );
 
-  const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-  const majority = '18';
-  const user_identifier = crypto.randomUUID();
+  const { root: ndRoot, closestleaf: ndLeaf, siblings: ndSib } = generateSMTProof(nameDobSMT, 0n);
+  const { root: nyRoot, closestleaf: nyLeaf, siblings: nySib } = generateSMTProof(nameYobSMT, 0n);
 
-  const selector_older_than = '1';
-  const scope = '@coboyApp';
-  const attestation_id = AADHAAR_ATTESTATION_ID;
-
-  // // compute the commitment and insert it in the tree
-  // const commitment = generateCommitment(secret, attestation_id, passportData);
-  // console.log('commitment in js ', commitment);
-  // const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
-  // tree.insert(BigInt(commitment));
-
-
-  const nameAndDob_smt = new SMT(poseidon2, true);
-  nameAndDob_smt.import(nameAndDobjson);
-
-  const nameAndYob_smt = new SMT(poseidon2, true);
-  nameAndYob_smt.import(nameAndYobjson);
-
-
-    // signal input merkle_root;
-    // signal input leaf_depth;
-    // signal input path[nLevels];
-    // signal input siblings[nLevels];
-
-
-    // //age related
-    // signal input majority[2];
-    // signal input current_date[6];
-
-    // //selector bitmaps
-    // signal input revealAgeolderthan;
-    // signal input revealGender;
-    // signal input revealPinCode;
-    // signal input revealState;
-    // signal input selector_ofac;
-        //OFAC Checks
-
-
-  const inputs = {
-    qrDataPadded: Uint8ArrayToCharArray(qrDataPadded),
-    qrDataPaddedLength: qrDataPaddedLen,
-    delimiterIndices: delimiterIndices,
-    signature: splitToWords(signature, BigInt(121), BigInt(17)),
-    pubKey: splitToWords(pubKey, BigInt(121), BigInt(17)),
-    secret: secret,
-    current_date: current_date,
-  };
+  const majorityAscii = majorityYears.toString().padStart(2, '0').split('');
+  const yy = (now.getUTCFullYear() % 100).toString().padStart(2, '0');
+  const mm = (now.getUTCMonth() + 1).toString().padStart(2, '0');
+  const dd = now.getUTCDate().toString().padStart(2, '0');
+  const currentDateYYMMDD = [yy, mm, dd].join('').split('');
 
   return {
-    inputs,
-    qrDataPadded,
-    signedData,
-    decodedData,
-    pubKey,
-    qrDataPaddedLen,
-    delimiterIndices,
+    qrDataPadded: qrDataPadded,
+    qrDataPaddedLength: qrDataPaddedLen,
+    delimiterIndices: delimiterIndices,
+    Signature: inputs.signature,
+    pubKey: inputs.pubKey,
+    secret,
+    attestation_id: AADHAAR_ATTESTATION_ID.toString(),
+    scope: formatInput(opts.scope),
+    user_identifier: formatInput(castFromUUID(user_identifier)),
+    majority: majorityAscii,
+    current_date: currentDateYYMMDD,
+
+    revealAgeolderthan: revealAge ? '1' : '0',
+    revealGender: revealGender ? '1' : '0',
+    revealPinCode: revealPin ? '1' : '0',
+    revealState: revealState ? '1' : '0',
+    selector_ofac: selectorOfac ? '1' : '0',
+
+    merkle_root: formatInput(commitmentTree.root),
+    leaf_depth: formatInput(leaf_depth),
+    path: formatInput(path),
+    siblings: formatInput(siblings),
+
+    ofac_namedob_smt_root: formatInput(ndRoot),
+    ofac_namedob_smt_leaf_key: formatInput(ndLeaf),
+    ofac_namedob_smt_siblings: formatInput(ndSib),
+
+    ofac_nameyob_smt_root: formatInput(nyRoot),
+    ofac_nameyob_smt_leaf_key: formatInput(nyLeaf),
+    ofac_nameyob_smt_siblings: formatInput(nySib),
   };
 }
+
 /**
  * Decode the 18 text fields + photo directly from the padded byte array,
  * using delimiterIndices supplied by prepareTestData().
