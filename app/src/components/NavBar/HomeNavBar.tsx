@@ -6,6 +6,7 @@ import { Button } from 'tamagui';
 import ActivityIcon from '../../images/icons/activity.svg';
 import SettingsIcon from '../../images/icons/settings.svg';
 import { black, neutral400, white } from '../../utils/colors';
+import { extraYPadding } from '../../utils/constants';
 import { buttonTap } from '../../utils/haptic';
 import { NavBar } from './BaseNavBar';
 
@@ -17,7 +18,7 @@ export const HomeNavBar = (props: NativeStackHeaderProps) => {
       barStyle={'light-content'}
       padding={16}
       justifyContent="space-between"
-      paddingTop={Math.max(insets.top, 20)}
+      paddingTop={Math.max(Math.ceil(insets.top), 15) + extraYPadding}
     >
       <NavBar.LeftAction
         component={
