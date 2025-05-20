@@ -14,10 +14,7 @@ import { loadPassportDataAndSecret } from '../../stores/passportDataProvider';
 import { black, slate400, white, zinc500, zinc900 } from '../../utils/colors';
 import { advercase, dinot } from '../../utils/fonts';
 import { loadingScreenProgress } from '../../utils/haptic';
-import {
-  getStateMessage,
-  setupNotifications,
-} from '../../utils/notifications/notificationService';
+import { setupNotifications } from '../../utils/notifications/notificationService';
 import { getLoadingScreenText } from '../../utils/proving/loadingScreenStateText';
 import {
   ProvingStateType,
@@ -196,9 +193,6 @@ const LoadingScreen: React.FC<LoadingScreenProps> = ({}) => {
             {canCloseApp
               ? 'You can now safely close the app'
               : 'Closing the app will cancel this process'}
-          </Text>
-          <Text style={styles.stateMessage}>
-            {getStateMessage(currentState)}
           </Text>
         </View>
       </View>
