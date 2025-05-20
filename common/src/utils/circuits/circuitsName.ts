@@ -23,7 +23,7 @@ function getDSCircuitNameFromPassportData(passportData: PassportData) {
   }
 
   const isIdCard = passportData.documentType === 'mock_id_card' || passportData.documentType === 'id_card';
-  const docTypePrefix = isIdCard ? 'id_' : '';
+  const docTypePrefix = isIdCard ? '' : '';
 
   const signatureAlgorithm = passportMetadata.cscaSignatureAlgorithm;
   const hashFunction = passportMetadata.cscaHashFunction;

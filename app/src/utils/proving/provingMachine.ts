@@ -34,6 +34,7 @@ import {
   isPassportNullified,
   isUserRegistered,
 } from './validateDocument';
+import { PassportData } from '../../../../common/src/utils/types';
 
 const provingMachine = createMachine({
   id: 'proving',
@@ -485,12 +486,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     startFetchingData: async () => {
       _checkActorInitialized(actor);
       try {
-        const { passportData } = get();
-        const env =
-          passportData.documentType && passportData.documentType !== 'passport'
-            ? 'stg'
-            : 'prod';
-        await useProtocolStore.getState().passport.fetch_all(env);
+        const { passportData }: { passportData: PassportData } = get();
+        const env = passportData.documentType === 'mock_passport' || passportData.documentType === 'mock_id_card' ? 'stg' : 'prod';
+        const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+        await useProtocolStore.getState()[document].fetch_all(env);
         actor!.send({ type: 'FETCH_SUCCESS' });
       } catch (error) {
         console.error('Error fetching data:', error);
@@ -540,9 +539,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           actor!.send({ type: 'ACCOUNT_RECOVERY_CHOICE' });
           return;
         }
+        const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
         const isDscRegistered = await checkIfPassportDscIsInTree(
           passportData,
-          useProtocolStore.getState().passport.dsc_tree,
+          useProtocolStore.getState()[document].dsc_tree,
         );
         if (isDscRegistered) {
           set({ circuitType: 'register' });
@@ -555,9 +555,10 @@ export const useProvingStore = create<ProvingState>((set, get) => {
     },
 
     initTeeConnection: async (): Promise<boolean> => {
+      const { passportData }: { passportData: PassportData } = get();
+      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
       const circuitsMapping =
-        useProtocolStore.getState().passport.circuits_dns_mapping;
-      const passportData = get().passportData;
+        useProtocolStore.getState()[document].circuits_dns_mapping;
 
       let circuitName, wsRpcUrl;
       if (get().circuitType === 'disclose') {
@@ -728,13 +729,16 @@ export const useProvingStore = create<ProvingState>((set, get) => {
           console.error('Invalid circuit type:' + circuitType);
           throw new Error('Invalid circuit type:' + circuitType);
       }
+      const document : 'passport' | 'id_card' = passportData.documentType === 'passport' || passportData.documentType === 'mock_passport' ? 'passport' : 'id_card';
+      let circuitTypeWithDocumentExtension = `${circuitType}${document === 'passport' ? '' : '_id'}`;
       const payload = getPayload(
         inputs,
-        circuitType as provingMachineCircuitType,
+        circuitTypeWithDocumentExtension as 'register_id' | 'dsc_id' | 'register' | 'dsc',
         circuitName as string,
         endpointType as EndpointType,
         endpoint as string,
       );
+      console.log(payload);
       const forgeKey = forge.util.createBuffer(
         sharedKey?.toString('binary') as string,
       );
