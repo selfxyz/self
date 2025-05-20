@@ -4,7 +4,6 @@ pragma solidity 0.8.28;
 import {IVcAndDiscloseCircuitVerifier} from "./IVcAndDiscloseCircuitVerifier.sol";
 
 interface ISelfVerificationRoot {
-
     struct VerificationConfig {
         bool olderThanEnabled;
         uint256 olderThan;
@@ -19,13 +18,10 @@ interface ISelfVerificationRoot {
         uint256[2] c;
         uint256[21] pubSignals;
     }
-    
+
     /**
      * @notice Verifies a self-proof
      * @param proof The proof data for verification and disclosure
      */
-    function verifySelfProof(
-        DiscloseCircuitProof memory proof
-    ) external;
-
+    function verifySelfProof(DiscloseCircuitProof memory proof) external;
 }

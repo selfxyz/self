@@ -4,7 +4,6 @@ import fs from "fs";
 import path from "path";
 
 module.exports = buildModule("UpdateRegistryHub", (m) => {
-
   const networkName = hre.network.config.chainId;
 
   const deployedAddressesPath = path.join(__dirname, `../../deployments/chain-${networkName}/deployed_addresses.json`);

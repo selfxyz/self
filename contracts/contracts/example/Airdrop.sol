@@ -95,20 +95,13 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param _token The address of the ERC20 token for airdrop.
      */
     constructor(
-        address _identityVerificationHub, 
-        uint256 _scope, 
+        address _identityVerificationHub,
+        uint256 _scope,
         uint256[] memory _attestationIds,
         address _token
-    ) 
-        SelfVerificationRoot(
-            _identityVerificationHub, 
-            _scope, 
-            _attestationIds
-        )
-        Ownable(_msgSender())
-    {
+    ) SelfVerificationRoot(_identityVerificationHub, _scope, _attestationIds) Ownable(_msgSender()) {
         token = IERC20(_token);
-    }  
+    }
 
     // ====================================================
     // External/Public Functions
@@ -170,7 +163,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      */
     function openRegistration() external onlyOwner {
         isRegistrationOpen = true;
-        emit RegistrationOpen();    
+        emit RegistrationOpen();
     }
 
     /**
@@ -205,13 +198,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @dev Reverts if the registration phase is not open.
      * @param proof The VC and Disclose proof data used to verify and register the user.
      */
-    function verifySelfProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof
-    ) 
-        public 
-        override 
-    {
-
+    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof memory proof) public override {
         if (!isRegistrationOpen) {
             revert RegistrationNotOpen();
         }
@@ -219,7 +206,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
         if (_nullifiers[proof.pubSignals[NULLIFIER_INDEX]] != 0) {
             revert RegisteredNullifier();
         }
-        
+
         if (proof.pubSignals[USER_IDENTIFIER_INDEX] == 0) {
             revert InvalidUserIdentifier();
         }
@@ -283,11 +270,7 @@ contract Airdrop is SelfVerificationRoot, Ownable {
      * @param amount The amount of tokens to be claimed.
      * @param merkleProof The Merkle proof verifying the claim.
      */
-    function claim(
-        uint256 index,
-        uint256 amount,
-        bytes32[] memory merkleProof
-    ) external {
+    function claim(uint256 index, uint256 amount, bytes32[] memory merkleProof) external {
         if (isRegistrationOpen) {
             revert RegistrationNotClosed();
         }

@@ -32,18 +32,14 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     // Events
     // ====================================================
 
-    event PassportNFTMinted(
-        uint256 indexed tokenId,
-        address indexed owner,
-        SelfCircuitLibrary.PassportData attributes
-    );
+    event PassportNFTMinted(uint256 indexed tokenId, address indexed owner, SelfCircuitLibrary.PassportData attributes);
 
     /// @notice Emitted when the scope is updated
     event ScopeUpdated(uint256 newScope);
-    
+
     /// @notice Emitted when a new attestation ID is added
     event AttestationIdAdded(uint256 attestationId);
-    
+
     /// @notice Emitted when an attestation ID is removed
     event AttestationIdRemoved(uint256 attestationId);
 
@@ -73,11 +69,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
         uint256[] memory attestationIds,
         string memory name,
         string memory symbol
-    )
-        SelfVerificationRoot(identityVerificationHub, scope, attestationIds)
-        ERC721(name, symbol)
-        Ownable(_msgSender())
-    {}
+    ) SelfVerificationRoot(identityVerificationHub, scope, attestationIds) ERC721(name, symbol) Ownable(_msgSender()) {}
 
     // ====================================================
     // External/Public Functions
@@ -128,9 +120,7 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
      * @notice Verifies a self-proof and mints an NFT with passport attributes
      * @param proof The VC and Disclose proof data used to verify and register the user
      */
-    function verifySelfProof(
-        ISelfVerificationRoot.DiscloseCircuitProof memory proof
-    ) public override {
+    function verifySelfProof(ISelfVerificationRoot.DiscloseCircuitProof memory proof) public override {
         if (_usedNullifiers[proof.pubSignals[NULLIFIER_INDEX]]) {
             revert NullifierAlreadyUsed();
         }
@@ -213,4 +203,4 @@ contract SelfPassportERC721 is SelfVerificationRoot, ERC721, Ownable {
     function _exists(uint256 tokenId) internal view returns (bool) {
         return _ownerOf(tokenId) != address(0);
     }
-} 
+}

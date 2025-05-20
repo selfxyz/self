@@ -7,7 +7,6 @@ pragma solidity 0.8.28;
  * @dev This interface defines the structure of a VC and Disclose proof and a function to verify such proofs.
  */
 interface IVcAndDiscloseCircuitVerifier {
-
     /**
      * @notice Represents a VC and Disclose proof.
      * @param a An array of two unsigned integers representing the proof component 'a'.
@@ -31,7 +30,7 @@ interface IVcAndDiscloseCircuitVerifier {
      * @param pubSignals The public signals associated with the proof.
      * @return A boolean value indicating whether the proof is valid (true) or not (false).
      */
-    function verifyProof (
+    function verifyProof(
         uint[2] calldata a,
         uint[2][2] calldata b,
         uint[2] calldata c,

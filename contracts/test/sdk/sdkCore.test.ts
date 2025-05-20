@@ -53,7 +53,7 @@
 //         registerSecret = generateRandomFieldElement();
 //         nullifier = generateRandomFieldElement();
 //         commitment = generateCommitment(registerSecret, ATTESTATION_ID.E_PASSPORT, deployedActors.mockPassport);
-        
+
 //         const hashFunction = (a: bigint, b: bigint) => poseidon2([a, b]);
 //         imt = new LeanIMT<bigint>(hashFunction);
 //         await imt.insert(BigInt(commitment));
