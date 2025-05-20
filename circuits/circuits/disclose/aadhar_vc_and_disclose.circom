@@ -23,7 +23,6 @@ include "../utils/aadhar/extractor.circom";
 /// @input scope Scope of the application users generates the proof for
 
 /// @input majority Majority user wants to prove he is older than: YY — ASCII
-/// @input current_date Current date: YYMMDD — number
 
 /// @input revealAgeolderthan Flag to reveal age older than
 /// @input revealGender Flag to reveal extracted gender
@@ -48,13 +47,14 @@ template AADHAAR_VC_AND_DISCLOSE(
 ) {
 
     signal input secret;
-    signal input attestation_id;// == 2,
+    signal input attestation_id;// == 3,
+
     // data inputs
     signal input qrDataPadded[maxDataLength];
     signal input qrDataPaddedLength;
     signal input delimiterIndices[18];
 
-    // commitment vc
+    // commitment tree
     signal input merkle_root;
     signal input leaf_depth;
     signal input path[nLevels];
@@ -65,12 +65,14 @@ template AADHAAR_VC_AND_DISCLOSE(
 
     //age related
     signal input majority[2];
+    signal input current_date[6];
 
     //selector bitmaps
     signal input revealAgeolderthan;
     signal input revealGender;
     signal input revealPinCode;
     signal input revealState;
+    
     signal input selector_ofac;
 
     //OFAC Checks
@@ -83,11 +85,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     signal input ofac_nameyob_smt_siblings[nameyobTreeLevels]; 
 
     // Outputs
-    signal output timestamp;
-    signal output age;
-    signal output gender;
-    signal output state;
-    signal output pinCode;
+    signal output RevealDataPacked;
     signal output nullifier;
 
     // Assert data between qrDataPaddedLength and maxDataLength is zero
@@ -97,14 +95,11 @@ template AADHAAR_VC_AND_DISCLOSE(
         secret,
         attestation_id,
         qrDataPadded,
-        qrDataPaddedLength,
-        delimiterIndices,
         merkle_root,
         leaf_depth,
         path,
         siblings
     );
-
 
     component DiscloseAadhaar = DiscloseAadhaar(
         maxDataLength,
@@ -116,6 +111,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     DiscloseAadhaar.qrDataPadded <== qrDataPadded;
     DiscloseAadhaar.qrDataPaddedLength <== qrDataPaddedLength;
     DiscloseAadhaar.delimiterIndices <== delimiterIndices;
+    DiscloseAadhaar.current_date <== current_date;
     DiscloseAadhaar.majorityASCII <==  majority;
     DiscloseAadhaar.revealAgeolderthan <== revealAgeolderthan;
     DiscloseAadhaar.revealGender <== revealGender;
@@ -129,9 +125,7 @@ template AADHAAR_VC_AND_DISCLOSE(
     DiscloseAadhaar.ofac_nameyob_smt_root <== ofac_nameyob_smt_root;
     DiscloseAadhaar.ofac_nameyob_smt_siblings <== ofac_nameyob_smt_siblings;
 
-    
-
-
+    RevealDataPacked <==  DiscloseAadhaar.DataPacked[0];
     // action nullifier
     nullifier <== Poseidon(2)([secret, scope]);
 }
@@ -142,7 +136,6 @@ component main {
         scope,
         attestation_id,     // == 3
         ofac_namedob_smt_root,
-        ofac_nameyob_smt_root,
-        current_date
+        ofac_nameyob_smt_root
     ]
 } = AADHAAR_VC_AND_DISCLOSE(33, 512 * 3, 256, 64, 64);

@@ -35,4 +35,5 @@ template TimestampExtractor(maxDataLength) {
     dateToUnixTime.second <== 0;
 
     timestamp <== dateToUnixTime.out - 19800; // 19800 is the offset for IST
+    log("timestamp ",timestamp);
 }

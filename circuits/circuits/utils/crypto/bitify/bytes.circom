@@ -1,5 +1,7 @@
 pragma circom 2.1.9;
 
+include "circomlib/circuits/bitify.circom"; 
+
 template BitsToBytesArray(bits_len){
     var bytes_len = bits_len / 8;
     component b2n[bytes_len];
@@ -26,4 +28,21 @@ template BytesToBitsArray(bytes_len){
             out[i * 8 + j] <== n2b[i].out[7 - j];
         }
     }
+}
+
+
+// Little Endian
+template FeToByteArray(nBytes){
+    var bits_len = nBytes* 8;
+
+    signal input  fe;            
+    signal output out[nBytes]; 
+
+    component n2b = Num2Bits(bits_len);
+    n2b.in <== fe;
+
+    component bit2byte = BitsToBytesArray(bits_len);
+     bit2byte.in <== n2b.out;
+
+    out <== bit2byte.out;
 }

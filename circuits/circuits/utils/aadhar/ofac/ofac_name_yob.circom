@@ -3,7 +3,7 @@ pragma circom 2.1.9;
 include "circomlib/circuits/poseidon.circom";
 include "../../crypto/merkle-trees/smt.circom";
 
-template OFAC_NAME_YOB(nLevels) {
+template OFAC_NAME_YOB_AADHAAR(nLevels) {
     signal input namehash;
     signal input yob;
 

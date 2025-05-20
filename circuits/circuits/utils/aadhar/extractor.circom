@@ -70,12 +70,13 @@ There are no official spec docs for Aadhaar V2 available publicly, but the diffe
 /// @output photo - Photo of the user along the SHA padding
 
 template QRDataExtractor(maxDataLength,nameMaxBytes) {
-
+    log("QrdataExtractor used");
     var packedLength  = computeIntChunkLength(nameMaxBytes);
 
     signal input data[maxDataLength];
     signal input qrDataPaddedLength;
     signal input delimiterIndices[18];
+    signal input current_date[6];
 
     signal output Name[packedLength];
     signal output NameHash;

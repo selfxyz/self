@@ -8,7 +8,12 @@ import dotenv from 'dotenv';
 import { bigIntToChunkedBytes } from '@zk-email/helpers/dist/binary-format';
 import { timestampToUTCUnix } from '@anon-aadhaar/core';
 import { buildPoseidon } from 'circomlibjs';
-import { prepareTestData ,splitTestData, generateCommitmentAadhaar, generateNullifier} from '../../../common/src/utils/aadhaar/aadhaar';
+import {
+  prepareTestData,
+  splitTestData,
+  generateCommitmentAadhaar,
+  generateNullifier,
+} from '../../../common/src/utils/aadhaar/aadhaar';
 
 dotenv.config();
 
@@ -35,7 +40,6 @@ describe('Register-Aadhaar', function () {
     await circuit.calculateWitness(inputs);
   });
 
-
   it('should output hash of pubkey', async () => {
     const { inputs, pubKey } = prepareTestData();
 
@@ -53,7 +57,7 @@ describe('Register-Aadhaar', function () {
     const { inputs, decodedData } = prepareTestData();
 
     const witness = await circuit.calculateWitness(inputs);
-    
+
     //example
     // This is the time in the QR data above is 20190308114407437.
     // 2019-03-08 11:44:07.437 rounded down to nearest hour is 2019-03-08 11:00:00.000
@@ -64,22 +68,19 @@ describe('Register-Aadhaar', function () {
   });
 
   it('should compute nullifier correctly', async () => {
-    const { inputs, qrDataPadded, delimiterIndices} = prepareTestData();
+    const { inputs, qrDataPadded, delimiterIndices } = prepareTestData();
     const witness = await circuit.calculateWitness(inputs);
     const fields = splitTestData(qrDataPadded, delimiterIndices);
-    const nullifier=await generateNullifier(fields);
+    const nullifier = await generateNullifier(fields);
 
-    assert(witness[3] == BigInt(nullifier))
+    assert(witness[3] == BigInt(nullifier));
   });
 
   it('Should compute commitment correctly', async () => {
-
-    const { inputs, qrDataPadded,delimiterIndices } = prepareTestData();
+    const { inputs, qrDataPadded, delimiterIndices } = prepareTestData();
     const witness = await circuit.calculateWitness(inputs);
     // const fields = splitTestData(qrDataPadded, delimiterIndices)
-    const commitment= await generateCommitmentAadhaar(inputs.secret,BigInt(3),qrDataPadded);
-    assert(witness[4] == BigInt(commitment))
+    const commitment = await generateCommitmentAadhaar(inputs.secret, BigInt(3), qrDataPadded);
+    assert(witness[4] == BigInt(commitment));
   });
-
-
 });

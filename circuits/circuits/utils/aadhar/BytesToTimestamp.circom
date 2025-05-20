@@ -46,7 +46,7 @@ template DigitBytesToTimestamp(maxYears) {
 
     var maxLeapYears = (maxYears - 1972) \ 4;   // 1972 is first leap year since epoch
     var arrLength = 14 + maxLeapYears + maxLeapYears;
-
+    // log("arrLength",arrLength);
     signal daysPassed[arrLength];
     daysPassed[0] <== (year - 1970) * 365;
     daysPassed[1] <== day - 1;

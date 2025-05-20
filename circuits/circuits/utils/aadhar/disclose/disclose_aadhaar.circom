@@ -2,11 +2,14 @@ pragma circom 2.1.9;
 
 include "@openpassport/zk-email-circuits/utils/bytes.circom";
 include "circomlib/circuits/poseidon.circom";
+include "../../crypto/bitify/bytes.circom";
 include "../extractor.circom";
 include "../constants.circom";
-include "../../passport/date/isOlderThan.circom";
+include "../date/datecomp.circom";
+// include "../../passport/date/isOlderThan.circom";
 include "../ofac/ofac_name_dob.circom";
 include "../ofac/ofac_name_yob.circom";
+
 
 /// @notice  Aadhaar Disclosure circuit — used after user registration
 /// @input qrDataPadded QR data without the signature; assumes elements to be bytes; remaining space is padded with 0
@@ -48,6 +51,7 @@ template DiscloseAadhaar(
     signal input delimiterIndices[18];
     //age related
     signal input majorityASCII[2];
+    signal input current_date[6];
 
     //selector bitmaps
     signal input revealAgeolderthan;
@@ -66,11 +70,15 @@ template DiscloseAadhaar(
     signal input ofac_nameyob_smt_siblings[nameyobTreeLevels];
 
     // Outputs
+    signal output DataPacked[1];
+
     signal output timestamp;
     signal output Ageolderthan;
     signal output gender;
     signal output state;
     signal output pinCode;
+    signal output ofacCheckResultNameDob;
+    signal output ofacCheckResultNameYob;
 
     // Assert data between qrDataPaddedLength and maxDataLength is zero
     AssertZeroPadding(maxDataLength)(qrDataPadded, qrDataPaddedLength);
@@ -87,6 +95,7 @@ template DiscloseAadhaar(
     qrDataExtractor.data <== qrDataPadded;
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
+    qrDataExtractor.current_date <== current_date;
 
     // signal name[packedLength] <== qrDataExtractor.Name;
     signal nameHash <== qrDataExtractor.NameHash;
@@ -97,46 +106,24 @@ template DiscloseAadhaar(
     signal month <== qrDataExtractor.monthofbirth;
     signal day <== qrDataExtractor.dayofbirth;
 
-    //TODO
-    //either move age logic to ageextractor or a new tmeplate
+    component AgeComp = AgeComperator();
+    AgeComp.majority <== majorityASCII;
+    AgeComp.age <== age;
 
-    // assert majority is between 0 and 99 (48-57 in ASCII)
-    component lessThan[4];
-    for (var i = 0; i < 4; i++) {
-        lessThan[i] = LessThan(8);
-    }
-    lessThan[0].in[0] <== 47;
-    lessThan[0].in[1] <== majorityASCII[0];
-    lessThan[1].in[0] <== 47;
-    lessThan[1].in[1] <== majorityASCII[1];
-    lessThan[2].in[0] <== majorityASCII[0];
-    lessThan[2].in[1] <== 58;
-    lessThan[3].in[0] <== majorityASCII[1];
-    lessThan[3].in[1] <== 58;
-
-    signal checkLessThan[4];
-    checkLessThan[0] <== lessThan[0].out;
-    for (var i = 1; i < 4; i++) {
-        checkLessThan[i] <== checkLessThan[i-1] * lessThan[i].out;
-    }
-    checkLessThan[3] === 1;
-
-    signal TEN <== 10;
-    signal majorityNum <== ( majorityASCII[0] - 48 ) * TEN + ( majorityASCII[1] - 48 );
-
-    component AgeCheck = GreaterEqThan(8);
-    AgeCheck.in[0] <== age;
-    AgeCheck.in[1] <== majorityNum;
-
-
+    signal AgeComperasion <== AgeComp.out;
+    
     pinCode <== revealPinCode * qrDataExtractor.pinCode;
     state <== revealState * qrDataExtractor.state;
     gender <== revealGender * qrDataExtractor.gender;
     timestamp <== qrDataExtractor.timestamp;
-    Ageolderthan <==  revealAgeolderthan * AgeCheck.out; // Note: 0 does not necessarily mean age is below 18
+    Ageolderthan <==  revealAgeolderthan * AgeComperasion; // Note: 0 does not necessarily mean age is below 18
 
+    component timestamp2bytes=FeToByteArray(31);
+    timestamp2bytes.fe <== timestamp;
 
-    signal ofacCheckResultNameDob <== OFAC_NAME_DOB(namedobTreeLevels)(
+    signal timestampBytes[31] <== timestamp2bytes.out;
+
+    ofacCheckResultNameDob <== OFAC_NAME_DOB_AADHAAR(namedobTreeLevels)(
         nameHash,
         year,
         month,
@@ -146,13 +133,34 @@ template DiscloseAadhaar(
         ofac_namedob_smt_siblings
     );
 
-    signal ofacCheckResultNameYob <== OFAC_NAME_YOB(nameyobTreeLevels)(
+    ofacCheckResultNameYob <== OFAC_NAME_YOB_AADHAAR(nameyobTreeLevels)(
         nameHash,
         year,
         ofac_nameyob_smt_leaf_key,
         ofac_nameyob_smt_root,
         ofac_nameyob_smt_siblings
     );
-    
+
+    // TODO
+    // convert timetamp to bytes 
+
+    // DataRevealed in packed version 
+    // 1 -> Timestamp
+    // 2 -> AgeOlderThan
+    // 3 -> gender
+    // 4 -> state
+    // 5 -> pincode
+    // 6 -> ofacCheckResultNameDo
+    // 7 -> ofacCheckResultNameYob
+    signal dataReveal[7];
+    dataReveal[0] <== timestamp;
+    dataReveal[1] <== Ageolderthan;
+    dataReveal[2] <== gender;
+    dataReveal[3] <== state;
+    dataReveal[4] <== pinCode;
+    dataReveal[5] <== ofacCheckResultNameDob;
+    dataReveal[6] <== ofacCheckResultNameYob ;
+
+    DataPacked <== PackBytes(7)(dataReveal);
 }
 

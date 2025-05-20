@@ -8,6 +8,8 @@ import dotenv from 'dotenv';
 import { describe } from 'mocha';
 import { assert, expect } from 'chai';
 
+import { buildPoseidon } from 'circomlibjs';
+
 import { sha256Pad } from '@zk-email/helpers/dist/sha-utils';
 import {
   bigIntToChunkedBytes,
@@ -15,8 +17,6 @@ import {
   Uint8ArrayToCharArray,
 } from '@zk-email/helpers/dist/binary-format';
 
-import { LeanIMT } from '@openpassport/zk-kit-lean-imt';
-import { SMT } from '@openpassport/zk-kit-smt';
 
 import {
   convertBigIntToByteArray,
@@ -25,53 +25,18 @@ import {
   extractPhoto,
   timestampToUTCUnix,
 } from '@anon-aadhaar/core';
-import { AADHAAR_ATTESTATION_ID } from '../../../common/src/constants/constants';
+
+
 import { generateCommitment } from '../../../common/src/utils/passports/passport';
-import { buildPoseidon } from 'circomlibjs';
-import { testQRData } from '../../../common/tests/aadhaar/dataInput.json';
-import {
-  bytesToIntChunks,
-  padArrayWithZeros,
-  bigIntsToString,
-} from '../../../common/src/utils/aadhaar/utils';
-import { poseidon1, poseidon2 } from 'poseidon-lite';
-import { prepareTestData } from '../../../common/src/utils/aadhaar/aadhaar';
-import nameAndDobjson from '../../../common/ofacdata/outputs/nameAndDobSMT.json';
-import nameAndYobjson from '../../../common/ofacdata/outputs/nameAndYobSMT.json';
-import passportNojson from '../../../common/ofacdata/outputs/passportNoAndNationalitySMT.json';
+import { prepareTestDataDisclosure } from '../../../common/src/utils/aadhaar/aadhaar';
+
 
 dotenv.config();
 
 describe('Disclose_aadhaar', function () {
   this.timeout(0);
-  let inputs: any;
+
   let circuit: any;
-  let w: any;
-
-  const secret = BigInt(Math.floor(Math.random() * Math.pow(2, 254))).toString();
-  const majority = '18';
-  const user_identifier = crypto.randomUUID();
-  const selector_older_than = '1';
-  const scope = '@coboyApp';
-  const attestation_id = AADHAAR_ATTESTATION_ID;
-
-  // // compute the commitment and insert it in the tree
-  // const commitment = generateCommitment(secret, attestation_id, passportData);
-  // console.log('commitment in js ', commitment);
-  // const tree: any = new LeanIMT((a, b) => poseidon2([a, b]), []);
-  // tree.insert(BigInt(commitment));
-
-  const passportNo_smt = new SMT(poseidon2, true);
-  passportNo_smt.import(passportNojson);
-
-  const nameAndDob_smt = new SMT(poseidon2, true);
-  nameAndDob_smt.import(nameAndDobjson);
-
-  const nameAndYob_smt = new SMT(poseidon2, true);
-  nameAndYob_smt.import(nameAndYobjson);
-
-  const selector_ofac = 1;
-
   before(async () => {
     circuit = await circom_tester(
       path.join(__dirname, '../../circuits/disclose/vc_and_disclose.circom'),
@@ -86,66 +51,108 @@ describe('Disclose_aadhaar', function () {
   });
 
   it('should compile and load the circuit', async function () {
-    const { inputs } = prepareTestData();
+    const { inputs } = prepareTestDataDisclosure();
     await circuit.calculateWitness(inputs);
   });
 
-  // it('should have nullifier == poseidon(secret, scope)', async function () {
-  //   w = await circuit.calculateWitness(inputs);
-  //   const nullifier_js = poseidon2([inputs.secret, inputs.scope]).toString();
-  //   const nullifier_circom = (await circuit.getOutput(w, ['nullifier'])).nullifier;
+  it('should have nullifier == poseidon(secret, scope)', async function () {
+    // w = await circuit.calculateWitness(inputs);
+    // const nullifier_js = poseidon2([inputs.secret, inputs.scope]).toString();
+    // const nullifier_circom = (await circuit.getOutput(w, ['nullifier'])).nullifier;
 
-  //   console.log('nullifier_circom', nullifier_circom);
-  //   console.log('nullifier_js', nullifier_js);
-  //   expect(nullifier_circom).to.equal(nullifier_js);
-  // });
+    // console.log('nullifier_circom', nullifier_circom);
+    // console.log('nullifier_js', nullifier_js);
+    // expect(nullifier_circom).to.equal(nullifier_js);
+  });
 
-  // it('should fail to calculate witness with different attestation_id', async function () {
-  //   try {
-  //     const invalidInputs = {
-  //       ...inputs,
-  //       attestation_id: poseidon1([
-  //         BigInt(Buffer.from('ANON-AADHAAR').readUIntBE(0, 6)),
-  //       ]).toString(),
-  //     };
-  //     await circuit.calculateWitness(invalidInputs);
-  //     expect.fail('Expected an error but none was thrown.');
-  //   } catch (error) {
-  //     // expect(error.message).to.include('Assert Failed');
-  //   }
-  // });
+  it('should fail to calculate witness with different attestation_id', async function () {
+    // try {
+    //   const invalidInputs = {
+    //     ...inputs,
+    //     attestation_id: poseidon1([
+    //       BigInt(Buffer.from('ANON-AADHAAR').readUIntBE(0, 6)),
+    //     ]).toString(),
+    //   };
+    //   await circuit.calculateWitness(invalidInputs);
+    //   expect.fail('Expected an error but none was thrown.');
+    // } catch (error) {
+    //   // expect(error.message).to.include('Assert Failed');
+    // }
+  });
 
-  describe('selective disclosure', function () {});
+  describe('selective disclosure ', function (){
+    // set the combinations
+    const attributeCombinations = [
+      ['issuing_state', 'name'],
+      ['passport_number', 'nationality', 'date_of_birth'],
+      ['gender', 'expiry_date'],
+    ];
 
-  // it('should allow disclosing majority', async function () {
-  //   const selector_dg1 = Array(88).fill('0');
 
-  //   w = await circuit.calculateWitness({
-  //     ...inputs,
-  //     selector_dg1: selector_dg1.map(String),
-  //   });
-  //   const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
+    // attributeCombinations.forEach((combination) => {
+    //   it(`Disclosing ${combination.join(', ')}`, async function () {
+    //     const attributeToReveal = Object.keys(attributeToPosition).reduce((acc, attribute) => {
+    //       acc[attribute] = combination.includes(attribute);
+    //       return acc;
+    //     }, {});
 
-  //   const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-  //   const older_than = getAttributeFromUnpackedReveal(reveal_unpacked, 'older_than');
-  //   expect(older_than).to.equal('18');
-  // });
+    //     const selector_dg1 = Array(88).fill('0');
 
-  // it("shouldn't allow disclosing wrong majority", async function () {
-  //   const selector_dg1 = Array(88).fill('0');
+    //     Object.entries(attributeToReveal).forEach(([attribute, reveal]) => {
+    //       if (reveal) {
+    //         const [start, end] = attributeToPosition[attribute];
+    //         selector_dg1.fill('1', start, end + 1);
+    //       }
+    //     });
 
-  //   w = await circuit.calculateWitness({
-  //     ...inputs,
-  //     majority: ['5', '0'].map((char) => BigInt(char.charCodeAt(0)).toString()),
-  //     selector_dg1: selector_dg1.map(String),
-  //   });
+    //     inputs = {
+    //       ...inputs,
+    //       selector_dg1: selector_dg1.map(String),
+    //     };
 
-  //   const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
+    //     w = await circuit.calculateWitness(inputs);
 
-  //   const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
-  //   expect(reveal_unpacked[88]).to.equal('\x00');
-  //   expect(reveal_unpacked[89]).to.equal('\x00');
-  // });
+    //     const revealedData_packed = await circuit.getOutput(w, ['revealedData_packed[3]']);
+
+    //     const reveal_unpacked = formatAndUnpackReveal(revealedData_packed);
+
+    //     for (let i = 0; i < 88; i++) {
+    //       if (selector_dg1[i] == '1') {
+    //         const char = String.fromCharCode(Number(inputs.dg1[i + 5]));
+    //         assert(reveal_unpacked[i] == char, 'Should reveal the right character');
+    //       } else {
+    //         assert(reveal_unpacked[i] == '\x00', 'Should not reveal');
+    //       }
+    //     }
+
+    //     const forbidden_countries_list_packed = await circuit.getOutput(w, [
+    //       'forbidden_countries_list_packed[1]',
+    //     ]);
+    //     const forbidden_countries_list_unpacked = formatAndUnpackForbiddenCountriesList(
+    //       forbidden_countries_list_packed
+    //     );
+    //     expect(forbidden_countries_list_unpacked).to.deep.equal(forbidden_countries_list);
+    //   });
+    // });
+
+  });
+
+  describe('majority disclose',function(){
+    // it('should allow disclosing majority ',async function (){
+
+    // })
+
+    // it("shouldn't allow disclosing wrong majority", async function () {
+    //   const selector_dg1 = Array(88).fill('0');
+  
+    //   w = await circuit.calculateWitness({
+    //     ...inputs,
+    //     majority: ['5', '0'].map((char) => BigInt(char.charCodeAt(0)).toString()),
+    //     selector_dg1: selector_dg1.map(String),
+    //   };
+  })
+
+
 
   // describe('OFAC disclosure', function () {
   //   it('should allow disclosing OFAC check result when selector is 1', async function () {
@@ -180,4 +187,6 @@ describe('Disclose_aadhaar', function () {
   //   const ofac_result = reveal_unpacked[90];
   //   expect(ofac_result).to.equal('\x00', 'OFAC result should not be revealed');
   // });
+
+  // it('should show different levels of OFAC matching', async function () {})
 });

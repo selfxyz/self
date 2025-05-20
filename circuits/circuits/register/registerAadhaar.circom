@@ -37,7 +37,8 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     signal input signature[k];
     signal input pubKey[k];
     signal input secret;
-
+    signal input current_date[6];
+    
     signal output pubKeyHash;
     signal output timestamp;
     signal output nullifier;
@@ -67,6 +68,7 @@ template AadhaarRegister(n,k,maxDataLength,nameMaxBytes) {
     qrDataExtractor.data <== qrDataPadded;
     qrDataExtractor.qrDataPaddedLength <== qrDataPaddedLength;
     qrDataExtractor.delimiterIndices <== delimiterIndices;
+    qrDataExtractor.current_date <== current_date;
 
     timestamp <== qrDataExtractor.timestamp;
 
